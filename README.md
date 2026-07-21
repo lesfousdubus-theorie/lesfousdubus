@@ -55,7 +55,7 @@ Le projet est ouvert : chacun peut consulter le code, proposer des changements, 
 
 ## Origine de la théorie
 
-La théorie est attribuée à **Mont Corvo** et provient de la vidéo :
+La théorie est attribuée au **Mont Corvo** et provient de la vidéo :
 
 - [Le Siècle oublié est le présent](https://youtu.be/SgJ25zjMJyo)
 
@@ -647,16 +647,10 @@ En proposant une contribution au dépôt, son auteur accepte que les éléments 
 
 Ce projet est un site de fans non officiel consacré à l’analyse de *One Piece*.
 
-La théorie originale est attribuée à **Mont Corvo**, notamment à travers [cette vidéo](https://youtu.be/SgJ25zjMJyo).
+La théorie originale est attribuée au **Mont Corvo**, à travers [cette vidéo](https://youtu.be/SgJ25zjMJyo).
 
 *One Piece*, ses personnages, son univers, ses illustrations et ses autres éléments protégés appartiennent à leurs auteurs et ayants droit respectifs, notamment Eiichiro Oda, Shueisha et leurs partenaires.
 
 Le projet n’est ni affilié, ni approuvé, ni sponsorisé par les détenteurs de ces droits.
 
 Les contenus, images, extraits, marques et personnages issus de *One Piece* ne sont pas placés sous la licence libre du projet. Ils restent soumis aux droits de leurs propriétaires respectifs.
-
-Le code source, les textes originaux du site, les schémas originaux et les autres créations propres au projet sont placés sous la licence **CC0 1.0 Universal**.
-
-Chacun peut librement les utiliser, les copier, les modifier, les redistribuer, créer une version dérivée ou publier sa propre version du site, sans demander d’autorisation et sans obligation d’attribution.
-
-Une attribution reste appréciée, mais elle n’est pas obligatoire.
