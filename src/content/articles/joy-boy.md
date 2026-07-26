@@ -3,6 +3,7 @@ title: "Joy Boy"
 summary: "Fiche consacrée à la figure légendaire de Joy Boy, sa promesse au Royaume Ryūgū, son rôle dans le Siècle Oublié et les analyses de la théorie."
 category: "figures-principales"
 status: "published"
+sources: [967, 968, 1115, 1122, 1049, 1052, 1]
 editorialStatus: "hypothese-centrale"
 lastUpdatedChapter: 1188
 order: 20

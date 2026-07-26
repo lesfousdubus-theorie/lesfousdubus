@@ -1,192 +1,27 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+
+const sections = [
+  { id: 'cadre', title: '1. Le point de départ : le Siècle oublié comme présent', text: "La théorie propose de lire le Siècle oublié non comme un passé définitivement clos, mais comme l’histoire que le récit est encore en train de produire. Cette hypothèse inverse l’ordre habituel de lecture : les traces anciennes deviennent les échos d’événements à venir.", links: [['Le Siècle oublié est le présent', '/theorie/siecle-oublie-present'], ['Une communication à travers le temps', '/theorie/communication-temps']] },
+  { id: 'temps', title: '2. Ponéglyphes, mémoire et boucle temporelle', text: "Dans cette lecture, les Ponéglyphes ne sont pas seulement des archives. Ils participeraient à une transmission entre les époques. C’est le mécanisme le plus spéculatif de la théorie ; il doit donc être lu avec les objections et limites associées.", links: [['Les Ponéglyphes et le futur', '/theorie/ponelyphes-futur'], ['Objections sur les Ponéglyphes', '/verifier/objections']] },
+  { id: 'figures', title: '3. Luffy, Joy Boy et Nika', text: "Le cœur de l’hypothèse rapproche Luffy des noms de Joy Boy et Nika. Le site distingue les éléments observés dans le manga des interprétations qui en sont tirées, notamment autour de Zunesha, de l’Éveil et de la promesse de Joy Boy.", links: [['Joy Boy', '/theorie/joy-boy'], ['Nika', '/theorie/nika'], ['Monkey D. Luffy', '/theorie/luffy']] },
+  { id: 'monde', title: '4. Monde, destinations et One Piece', text: "La géographie — Grand Line, Laugh Tale, Red Line et les mers — structure le raisonnement. Les articles ci-dessous développent les hypothèses sur le trésor, la dernière île et l’évolution future du monde.", links: [['Dossiers du monde', '/dossiers#monde-destinations'], ['Laugh Tale', '/theorie/laugh-tale'], ['One Piece', '/theorie/one-piece-histoire']] },
+  { id: 'allies', title: '5. Armes antiques, peuples et transmission', text: "Poséidon, Pluton, Uranus, Elbaf, Wano et l’Île des Hommes-Poissons sont lus comme des acteurs et des lieux appelés à converger. Ces rapprochements sont présentés comme des pistes de lecture, pas comme des faits confirmés.", links: [['Armes antiques', '/dossiers#armes-antiques'], ['Elbaf et le Harley', '/theorie/elbaf-halley'], ['La volonté héritée', '/theorie/volonte-heritee']] },
+  { id: 'final', title: '6. Imu, le Déluge et la guerre finale', text: "La conclusion proposée associe la chute du Gouvernement mondial, le Déluge, la destruction de Red Line et la création d’All Blue. Elle rassemble plusieurs prédictions actuellement non confirmées : leur statut peut être suivi dans la section dédiée.", links: [['Imu Nerona', '/theorie/imu-nerona'], ['Le Déluge et All Blue', '/theorie/deluge-all-blue'], ['Prédictions', '/chapitres/predictions']] },
+];
 ---
-
 <WikiLayout title="Théorie complète" currentPath="/theorie/theorie-complete">
-  <div class="complete-page">
-    <div class="text-violet font-semibold tracking-widest uppercase text-sm mb-3">La théorie</div>
-    <h1>Théorie complète</h1>
-    <p class="intro">
-      L'argumentation principale dans son ensemble, présentée dans l'ordre de lecture recommandé.
-      Chaque section renvoie au dossier correspondant pour les détails et les preuves.
-    </p>
-
-    <div class="toc">
-      <h2>Sommaire</h2>
-      <ol>
-        <li><a href="/dossiers/blue-star">Blue Star et la géographie</a></li>
-        <li><a href="/dossiers/lodestar">Lodestar et Laugh Tale</a></li>
-        <li><a href="/dossiers/one-piece">One Piece</a></li>
-        <li><a href="/dossiers/siecle-oublie">Siècle oublié</a></li>
-        <li><a href="/dossiers/royaume-antique">Royaume antique</a></li>
-        <li><a href="/dossiers/ponelyphes">Ponéglyphes</a></li>
-        <li><a href="/dossiers/joy-boy">Joy Boy</a></li>
-        <li><a href="/dossiers/nika">Nika</a></li>
-        <li><a href="/dossiers/luffy">Monkey D. Luffy</a></li>
-        <li><a href="/dossiers/poseidon">Poséidon et les Armes antiques</a></li>
-        <li><a href="/dossiers/vivi">Les figures secondaires</a></li>
-        <li><a href="/dossiers/emeth">Emeth, Zunesha et Toki</a></li>
-        <li><a href="/dossiers/vegapunk">Vegapunk, Mother Flame et les technologies</a></li>
-        <li><a href="/dossiers/elbaf">Peuples, royaumes et missions</a></li>
-        <li><a href="/dossiers/dieux-one-piece">Dieux, foi et volonté</a></li>
-        <li><a href="/dossiers/imu">Imu et le Gouvernement mondial</a></li>
-        <li><a href="/dossiers/deluge">Déluge</a></li>
-        <li><a href="/dossiers/guerre-finale">Guerre finale</a></li>
-        <li><a href="/dossiers/creation-all-blue">Red Line, All Blue et One Piece</a></li>
-        <li><a href="/verifier/preuves">Preuves, objections et questions en suspens</a></li>
-      </ol>
-    </div>
-
-    <div class="info-box">
-      <h3>📖 Lecture recommandée</h3>
-      <p>
-        Cet ordre n'est pas chronologique dans l'univers. C'est l'ordre nécessaire pour
-        <strong>comprendre le raisonnement</strong> : il commence par le problème géographique
-        (Laugh Tale), explique ensuite le mécanisme temporel (Ponéglyphes), présente les figures
-        et les missions, puis conduit vers Imu, le déluge et la guerre finale.
-      </p>
-    </div>
-
-    <div class="placeholder-content">
-      <div class="placeholder-box">
-        <h3>📝 Contenu en cours de rédaction</h3>
-        <p>
-          La théorie complète sera progressivement assemblée à partir des articles existants et
-          des transcriptions. Chaque section ci-dessus renvoie déjà au dossier correspondant
-          où les éléments disponibles sont regroupés.
-        </p>
-      </div>
-    </div>
-  </div>
-
+  <article class="complete-page">
+    <p class="eyebrow">Synthèse éditoriale</p>
+    <h1>La théorie complète</h1>
+    <p class="intro">Cette page présente le fil directeur de la théorie et renvoie vers les articles disponibles pour l’argumentation détaillée. Les éléments non confirmés restent des interprétations ou des prédictions.</p>
+    <nav class="toc" aria-label="Sommaire de la théorie"><h2>Sommaire</h2><ol>{sections.map((section) => <li><a href={`#${section.id}`}>{section.title.replace(/^\d+\. /, '')}</a></li>)}</ol></nav>
+    {sections.map((section) => <section id={section.id} class="theory-section"><h2>{section.title}</h2><p>{section.text}</p><div class="links">{section.links.map(([label, href]) => <a href={href}>{label} →</a>)}</div></section>)}
+    <aside class="method"><h2>Comment lire cette synthèse</h2><p>Les pages « Vérifier » regroupent les preuves, objections et questions ouvertes. Une correspondance narrative ou une prédiction ne vaut pas confirmation canonique : les limites sont affichées lorsqu’elles sont connues.</p><a href="/verifier">Consulter la méthode de vérification →</a></aside>
+  </article>
   <Footer />
 </WikiLayout>
-
 <style>
-  .complete-page {
-    max-width: 700px;
-  }
-
-  .complete-page h1 {
-    font-size: clamp(1.8rem, 4vw, 2.5rem);
-    font-weight: 700;
-    margin-bottom: 16px;
-    line-height: 1.2;
-  }
-
-  .intro {
-    font-size: 16px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    max-width: 600px;
-    margin-bottom: 48px;
-  }
-
-  .toc {
-    margin-bottom: 48px;
-  }
-
-  .toc h2 {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 24px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .toc ol {
-    padding-left: 0;
-    list-style: none;
-    counter-reset: toc-item;
-  }
-
-  .toc ol li {
-    counter-increment: toc-item;
-    padding: 11px 16px 11px 48px;
-    position: relative;
-    border-radius: var(--border-radius);
-    font-size: 15px;
-    border: 1px solid transparent;
-    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-  }
-
-  .toc ol li:hover {
-    background-color: var(--surface);
-    border-color: var(--border-color);
-    transform: translateX(3px);
-  }
-
-  .toc ol li::before {
-    content: counter(toc-item) '.';
-    position: absolute;
-    left: 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--violet);
-  }
-
-  .toc ol li a {
-    color: var(--text-main);
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-
-  .toc ol li:hover a {
-    color: var(--cyan);
-  }
-
-  .info-box {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-left: 3px solid var(--violet);
-    padding: 20px 24px;
-    border-radius: var(--border-radius-lg);
-    margin-bottom: 40px;
-  }
-
-  .info-box h3 {
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-
-  .info-box p {
-    font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  .info-box strong {
-    color: var(--text-main);
-  }
-
-  .placeholder-content {
-    margin-bottom: 40px;
-  }
-
-  .placeholder-box {
-    background: var(--gradient-card);
-    border: 1px solid var(--border-color);
-    padding: 32px;
-    border-radius: var(--border-radius-xl);
-    text-align: center;
-  }
-
-  .placeholder-box h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-
-  .placeholder-box p {
-    font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin: 0;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+.complete-page{max-width:760px}.eyebrow{color:var(--violet-light);font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}.complete-page h1{font-size:clamp(2rem,5vw,2.8rem);margin:.4rem 0 12px}.intro{font-size:1.05rem;line-height:1.65;color:var(--text-secondary);margin-bottom:36px}.toc,.theory-section,.method{border:1px solid var(--border-color);border-radius:var(--border-radius-lg);background:var(--gradient-card);padding:22px;margin-bottom:18px}.toc h2,.theory-section h2,.method h2{font-size:1.2rem;margin:0 0 12px}.toc ol{margin:0;padding-left:20px;columns:2}.toc li{margin:7px 0}.toc a,.links a,.method a{color:var(--cyan);text-decoration:none}.theory-section{scroll-margin-top:calc(var(--nav-h) + 16px)}.theory-section p,.method p{line-height:1.7;color:var(--text-secondary);margin:0}.links{display:flex;flex-wrap:wrap;gap:12px;margin-top:15px;font-size:.93rem}.method{border-left:3px solid var(--violet)}@media(max-width:600px){.toc ol{columns:1}}
 </style>

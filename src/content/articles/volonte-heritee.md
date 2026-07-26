@@ -5,6 +5,7 @@ category: "transmission-memoire"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
+sources: [576, 602]
 order: 51
 ---
 

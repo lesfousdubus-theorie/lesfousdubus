@@ -3,6 +3,7 @@ title: "Marshall D. Teach"
 summary: "Fiche d'analyse consacrée à Marshall D. Teach, son double pouvoir et sa place dans la théorie."
 category: "personnages-identites"
 status: "published"
+sources: []
 editorialStatus: "canon"
 lastUpdatedChapter: 1188
 order: 41

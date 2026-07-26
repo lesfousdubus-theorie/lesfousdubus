@@ -3,6 +3,7 @@ title: "Laugh Tale"
 summary: "Fiche d'analyse sur l'île finale de Laugh Tale, le trésor de Joy Boy et les hypothèses entourant sa nature."
 category: "monde-destinations"
 status: "published"
+sources: []
 editorialStatus: "hypothese-centrale"
 lastUpdatedChapter: 1188
 order: 10

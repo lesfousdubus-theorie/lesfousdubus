@@ -3,6 +3,7 @@ title: "Emeth"
 summary: "Fiche d'analyse consacrée au robot géant Emeth de l'Ancien Royaume, son rôle sur Egghead et ses liens avec Joy Boy."
 category: "technologies-pouvoirs"
 status: "published"
+sources: [1120, 1118, 1176, 523]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 lastUpdatedChapter: 1188

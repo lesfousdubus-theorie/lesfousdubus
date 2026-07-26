@@ -1,17 +1,21 @@
 ---
 import { editorialStatusToFrench } from '../utils/format';
+import { certaintyLabel } from '../utils/labels';
 
 interface Props {
   lastUpdatedChapter: string;
   editorialStatus?: string;
+  certainty?: 'central' | 'elevee' | 'moyenne' | 'hypothese';
 }
 
-const { lastUpdatedChapter, editorialStatus } = Astro.props;
+const { lastUpdatedChapter, editorialStatus, certainty } = Astro.props;
 const status = editorialStatus ? editorialStatusToFrench(editorialStatus) : undefined;
+const certaintyText = certainty ? certaintyLabel(certainty) : undefined;
 ---
 
 <div class="meta-row" aria-label="Informations éditoriales">
   <span>Mis à jour jusqu’au chapitre {lastUpdatedChapter}</span>
+  {certaintyText && <span class="meta-badge meta-badge--muted">Niveau : {certaintyText}</span>}
   {status && <span class:list={['meta-badge', status.badgeClass]}>{status.label}</span>}
 </div>
 

@@ -5,6 +5,7 @@ category: "armes-antiques"
 status: "published"
 certainty: "moyenne"
 lastUpdatedChapter: 1188
+sources: []
 order: 32
 ---
 

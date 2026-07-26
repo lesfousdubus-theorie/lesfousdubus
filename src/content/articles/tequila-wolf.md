@@ -6,6 +6,8 @@ status: 'published'
 certainty: 'moyenne'
 lastUpdatedChapter: 1188
 related: ['signification-d', 'communication-temps']
+sources: []
+
 ---
 
 ## Un pont qui ne mène nulle part

@@ -32,7 +32,9 @@ const hasToc = !!(headings && headings.length > 0);
         document.documentElement.classList.add('sidebar-left-collapsed');
       }
       const storedWidth = localStorage.getItem('sidebar-left-width');
-      if (storedWidth && !collapsed) {
+      if (storedWidth) {
+        // The grid gutter keeps its width while the sidebar is visually hidden,
+        // so restoring it here prevents the reading column from jumping.
         document.documentElement.style.setProperty('--sidebar-left-width', storedWidth);
       }
     })();
@@ -69,14 +71,22 @@ const hasToc = !!(headings && headings.length > 0);
 <style>
   .layout {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) 240px;
+    /* Symmetrical outer tracks keep the reading column centered in the viewport.
+       The right track remains reserved on pages without a TOC as well: otherwise
+       the main block would be centered only in the space to the right of the nav. */
+    grid-template-columns:
+      var(--sidebar-left-width, 260px)
+      minmax(0, 1fr)
+      var(--sidebar-left-width, 260px);
     flex: 1;
     width: 100%;
   }
 
-  /* Pages without a table of contents: no empty 240px gutter */
   .layout--no-toc {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns:
+      var(--sidebar-left-width, 260px)
+      minmax(0, 1fr)
+      var(--sidebar-left-width, 260px);
   }
 
   .sidebar-left-container {
@@ -86,9 +96,11 @@ const hasToc = !!(headings && headings.length > 0);
     flex-shrink: 0;
   }
 
+  /* Keep the grid gutter when the sidebar is hidden. The reading column must
+     retain its position instead of recentering into the newly freed space. */
   .sidebar-left-container.collapsed,
   :global(.sidebar-left-collapsed) .sidebar-left-container {
-    --sidebar-left-width: 0px !important;
+    width: var(--sidebar-left-width, 260px);
   }
 
   /* Header inside sidebar containing title & collapse button */

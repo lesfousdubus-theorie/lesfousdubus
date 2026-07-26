@@ -3,6 +3,7 @@ title: "One Piece"
 summary: "Fiche d'analyse consacrée à la nature du One Piece, la promesse de Gol D. Roger et les hypothèses entourant le trésor."
 category: "monde-destinations"
 status: "published"
+sources: [1]
 editorialStatus: "hypothese-centrale"
 certainty: "moyenne"
 lastUpdatedChapter: 1188

@@ -3,6 +3,7 @@ title: "Monkey D. Luffy"
 summary: "Fiche d'analyse consacrée au capitaine des Chapeaux de Paille, à la Volonté du D., son fruit du démon et son rôle central dans la théorie."
 category: "figures-principales"
 status: "published"
+sources: []
 editorialStatus: "canon"
 lastUpdatedChapter: 1188
 order: 19

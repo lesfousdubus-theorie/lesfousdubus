@@ -3,6 +3,7 @@ title: "Roronoa Zoro"
 summary: "Fiche d'analyse consacrée au sabreur des Chapeaux de Paille, à la lignée Shimotsuki et à son lien avec Ryuma."
 category: "personnages-identites"
 status: "published"
+sources: []
 editorialStatus: "canon"
 lastUpdatedChapter: 1188
 order: 43

@@ -3,6 +3,7 @@ title: "Davy Jones et Marshall D. Teach"
 summary: "Fiche d'analyse sur le mythe de Davy Jones, Marshall D. Teach et le clan Davy."
 category: "personnages-identites"
 status: "published"
+sources: [1164]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 lastUpdatedChapter: 1188

@@ -1,135 +1,66 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import { getCollection } from 'astro:content';
+import { effectLabel, predictionStatusLabel } from '@utils/labels';
 
 export async function getStaticPaths() {
-  return [
-    {
-      params: { page: 'derniere-analyse' },
-      props: {
-        title: 'Dernière analyse',
-        icon: '📖',
-        desc: "L'analyse du chapitre le plus récent et son apport à la théorie.",
-      },
-    },
-    {
-      params: { page: 'toutes-les-analyses' },
-      props: {
-        title: 'Toutes les analyses',
-        icon: '📚',
-        desc: 'Liste complète des analyses chapitre par chapitre.',
-      },
-    },
-    {
-      params: { page: 'predictions' },
-      props: {
-        title: 'Prédictions',
-        icon: '🔮',
-        desc: 'Prédictions formulées par la théorie et leur statut actuel.',
-      },
-    },
-    {
-      params: { page: 'modifications' },
-      props: {
-        title: 'Modifications',
-        icon: '📋',
-        desc: 'Modifications apportées aux articles suite aux nouveaux chapitres.',
-      },
-    },
-  ];
+  return ['derniere-analyse', 'toutes-les-analyses', 'predictions', 'modifications'].map((page) => ({ params: { page } }));
 }
 
-const { title, icon, desc } = Astro.props;
+const page = Astro.params.page!;
+const chapters = (await getCollection('chapters')).sort((a, b) => b.data.chapter - a.data.chapter);
+const articles = await getCollection('articles', ({ data }) => data.status === 'published');
+const predictions = await getCollection('predictions');
+const latest = chapters[0];
+const updated = articles
+  .filter((article) => (article.data.lastUpdatedChapter ?? 0) > 0)
+  .sort((a, b) => (b.data.lastUpdatedChapter ?? 0) - (a.data.lastUpdatedChapter ?? 0));
+
+const config = {
+  'derniere-analyse': { title: 'Dernière analyse', icon: '📖', description: "Le dernier chapitre analysé et les articles qu'il a fait évoluer." },
+  'toutes-les-analyses': { title: 'Toutes les analyses', icon: '📚', description: 'Toutes les analyses publiées, de la plus récente à la plus ancienne.' },
+  predictions: { title: 'Prédictions', icon: '🔮', description: 'Les prédictions formulées par la théorie et leur statut actuel.' },
+  modifications: { title: 'Modifications', icon: '📋', description: 'Les articles dont la lecture a été actualisée au fil des chapitres.' },
+}[page]!;
 ---
 
-<WikiLayout title={title} currentPath={`/chapitres/${Astro.params.page}`}>
-  <div class="placeholder-page">
-    <span class="placeholder-icon">{icon}</span>
-    <h1>{title}</h1>
-    <p class="placeholder-desc">{desc}</p>
+<WikiLayout title={config.title} currentPath={`/chapitres/${page}`}>
+  <header class="page-header">
+    <span class="icon" aria-hidden="true">{config.icon}</span>
+    <h1>{config.title}</h1>
+    <p>{config.description}</p>
+  </header>
 
-    <div class="placeholder-box">
-      <h3>📊 En construction</h3>
-      <p>
-        Cette section sera alimentée au fur et à mesure de l'avancement de la théorie et de la
-        publication des nouveaux chapitres.
-      </p>
-    </div>
+  {page === 'derniere-analyse' && latest && (
+    <section class="feature-card">
+      <p class="eyebrow">Chapitre {latest.data.chapter} · {effectLabel(latest.data.effect)}</p>
+      <h2>{latest.data.title}</h2>
+      {latest.data.summary && <p>{latest.data.summary}</p>}
+      <a class="button" href={`/chapitres/${latest.data.chapter}`}>Lire l’analyse du chapitre {latest.data.chapter} →</a>
+      {latest.data.updatedArticles.length > 0 && (
+        <><h3>Articles concernés</h3><ul class="link-list">{latest.data.updatedArticles.map((id) => {
+          const article = articles.find((item) => item.id === id);
+          return article && <li><a href={`/theorie/${article.id}`}>{article.data.title}</a></li>;
+        })}</ul></>
+      )}
+    </section>
+  )}
 
-    <div class="placeholder-links">
-      <a href="/chapitres" class="placeholder-link">← Retour à Chapitres</a>
-      <a href="/theorie" class="placeholder-link">📖 La théorie</a>
-    </div>
-  </div>
+  {page === 'toutes-les-analyses' && <section class="cards">{chapters.map((chapter) => (
+    <a class="card" href={`/chapitres/${chapter.data.chapter}`}><span>Chapitre {chapter.data.chapter}</span><h2>{chapter.data.title}</h2><p>{effectLabel(chapter.data.effect)}{chapter.data.summary ? ` · ${chapter.data.summary}` : ''}</p></a>
+  ))}</section>}
+
+  {page === 'predictions' && <section class="cards">{predictions.sort((a, b) => (b.data.chapter ?? 0) - (a.data.chapter ?? 0)).map((prediction) => (
+    <article class="card"><span>Statut : {predictionStatusLabel(prediction.data.status)}</span><h2>{prediction.data.title}</h2><p>{prediction.data.statement}</p>{prediction.data.chapter && <small>Suivie jusqu’au chapitre {prediction.data.chapter}</small>}<div class="article-links">{prediction.data.articles.map((id) => { const article = articles.find((item) => item.id === id); return article && <a href={`/theorie/${id}`}>Lire l’article associé</a>; })}</div></article>
+  ))}</section>}
+
+  {page === 'modifications' && <section class="cards">{updated.map((article) => (
+    <a class="card" href={`/theorie/${article.id}`}><span>Mis à jour au chapitre {article.data.lastUpdatedChapter}</span><h2>{article.data.title}</h2><p>{article.data.summary}</p></a>
+  ))}</section>}
   <Footer />
 </WikiLayout>
 
 <style>
-  .placeholder-page {
-    text-align: center;
-    padding: 48px 0;
-  }
-  .placeholder-icon {
-    font-size: 3rem;
-    display: block;
-    margin-bottom: 16px;
-  }
-  .placeholder-page h1 {
-    font-size: clamp(1.5rem, 4vw, 2rem);
-    font-weight: 700;
-    margin-bottom: 12px;
-  }
-  .placeholder-desc {
-    font-size: 16px;
-    color: var(--text-secondary);
-    max-width: 500px;
-    margin: 0 auto 32px;
-    line-height: 1.6;
-  }
-  .placeholder-box {
-    background: var(--gradient-card);
-    border: 1px solid var(--border-color);
-    padding: 32px;
-    border-radius: var(--border-radius-xl);
-    max-width: 500px;
-    margin: 0 auto 32px;
-  }
-  .placeholder-box h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-  .placeholder-box p {
-    font-size: 14.5px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin: 0;
-  }
-  .placeholder-links {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .placeholder-link {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-main);
-    text-decoration: none;
-    font-size: 14px;
-    transition: all 0.2s;
-  }
-  .placeholder-link {
-    transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .placeholder-link:hover {
-    border-color: var(--cyan);
-    color: var(--cyan);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px color-mix(in srgb, var(--bg-main) 45%, transparent);
-  }
+.page-header{max-width:720px;margin-bottom:36px}.icon{font-size:2.5rem;display:block;margin-bottom:8px}.page-header h1{font-size:clamp(1.8rem,4vw,2.5rem);margin:0 0 12px}.page-header p,.feature-card>p,.card p{color:var(--text-secondary);line-height:1.6}.feature-card,.card{background:var(--gradient-card);border:1px solid var(--border-color);border-radius:var(--border-radius-lg);padding:22px}.feature-card{margin-bottom:28px}.feature-card h2,.card h2{font-size:1.2rem;margin:8px 0}.feature-card h3{font-size:1rem;margin:24px 0 8px}.eyebrow,.card>span{font-size:.78rem;font-weight:700;letter-spacing:.04em;color:var(--cyan);text-transform:uppercase}.cards{display:grid;gap:14px}.card{text-decoration:none;color:var(--text-main);transition:transform .2s,border-color .2s}.card:hover{border-color:var(--cyan);transform:translateY(-2px)}small{color:var(--text-secondary)}.button,.article-links a,.link-list a{color:var(--cyan);text-decoration:none}.button{display:inline-flex;margin-top:10px;padding:9px 14px;border:1px solid var(--cyan);border-radius:7px}.link-list{padding-left:18px}.article-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:.9rem}
 </style>

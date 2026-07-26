@@ -5,6 +5,7 @@ category: "gouvernement-mondial"
 status: "published"
 certainty: "moyenne"
 lastUpdatedChapter: 1188
+sources: [906, 1170]
 order: 61
 ---
 

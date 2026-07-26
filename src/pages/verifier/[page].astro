@@ -1,6 +1,7 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
   return [
@@ -57,6 +58,7 @@ export async function getStaticPaths() {
 
 const { title, icon, desc } = Astro.props;
 const page = Astro.params.page;
+const evidenceEntries = await getCollection('evidence');
 
 // Sample tailored proofs with exact nuances
 const detailedProofs = [
@@ -217,7 +219,29 @@ const detailedQuestions = [
     </div>
   )}
 
-  {page !== 'preuves' && page !== 'objections' && page !== 'questions' && (
+  {page === 'citations' && (
+    <div class="verify-grid">
+      {evidenceEntries.filter((item) => item.data.type === 'dialogue' || item.data.type === 'narratif').map((item) => (
+        <article class="proof-card">
+          <div class="proof-header"><span class="proof-badge proof-badge--type">{item.data.type}</span><span class="proof-chapter">Chapitre {item.data.chapter}</span></div>
+          <h3 class="proof-title">{item.data.title}</h3>
+          {item.data.quote && <blockquote class="proof-quote">{item.data.quote}</blockquote>}
+          <p class="text-textSecondary">{item.body?.slice(0, 260)}</p>
+        </article>
+      ))}
+    </div>
+  )}
+
+  {page === 'sources' && (
+    <div class="verify-box">
+      <h3>Sources et méthode</h3>
+      <p>Les analyses s’appuient d’abord sur les chapitres du manga explicitement cités dans chaque article. Les éléments observés, les lectures proposées et les limites doivent rester distincts.</p>
+      <ul><li>Source primaire : chapitres de <em>One Piece</em> mentionnés dans les articles.</li><li>Source d’origine de la théorie : la vidéo « Le Siècle oublié est le présent » du Mont Corvo.</li><li>Les choix d’adaptation (voix, mise en scène) sont indiqués comme indices d’interprétation, non comme preuves canoniques.</li></ul>
+      <a class="btn-back" href="https://youtu.be/SgJ25zjMJyo" target="_blank" rel="noopener noreferrer">Voir la vidéo d’origine →</a>
+    </div>
+  )}
+
+  {page !== 'preuves' && page !== 'objections' && page !== 'questions' && page !== 'citations' && page !== 'sources' && (
     <div class="verify-box">
       <h3>📚 Dossier de vérification ({title})</h3>
       <p>
