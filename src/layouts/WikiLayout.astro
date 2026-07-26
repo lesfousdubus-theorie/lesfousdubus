@@ -71,14 +71,22 @@ const hasToc = !!(headings && headings.length > 0);
 <style>
   .layout {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) 240px;
+    /* Symmetrical outer tracks keep the reading column centered in the viewport.
+       The right track remains reserved on pages without a TOC as well: otherwise
+       the main block would be centered only in the space to the right of the nav. */
+    grid-template-columns:
+      var(--sidebar-left-width, 260px)
+      minmax(0, 1fr)
+      var(--sidebar-left-width, 260px);
     flex: 1;
     width: 100%;
   }
 
-  /* Pages without a table of contents: no empty 240px gutter */
   .layout--no-toc {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns:
+      var(--sidebar-left-width, 260px)
+      minmax(0, 1fr)
+      var(--sidebar-left-width, 260px);
   }
 
   .sidebar-left-container {
