@@ -32,7 +32,9 @@ const hasToc = !!(headings && headings.length > 0);
         document.documentElement.classList.add('sidebar-left-collapsed');
       }
       const storedWidth = localStorage.getItem('sidebar-left-width');
-      if (storedWidth && !collapsed) {
+      if (storedWidth) {
+        // The grid gutter keeps its width while the sidebar is visually hidden,
+        // so restoring it here prevents the reading column from jumping.
         document.documentElement.style.setProperty('--sidebar-left-width', storedWidth);
       }
     })();
@@ -86,9 +88,11 @@ const hasToc = !!(headings && headings.length > 0);
     flex-shrink: 0;
   }
 
+  /* Keep the grid gutter when the sidebar is hidden. The reading column must
+     retain its position instead of recentering into the newly freed space. */
   .sidebar-left-container.collapsed,
   :global(.sidebar-left-collapsed) .sidebar-left-container {
-    --sidebar-left-width: 0px !important;
+    width: var(--sidebar-left-width, 260px);
   }
 
   /* Header inside sidebar containing title & collapse button */
