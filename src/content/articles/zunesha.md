@@ -6,7 +6,8 @@ status: "published"
 certainty: "moyenne"
 lastUpdatedChapter: 1188
 sources: [1050]
-order: 91
+order: 92
+parent: "zunesha-fiche"
 ---
 
 ## Le crime de Zunesha

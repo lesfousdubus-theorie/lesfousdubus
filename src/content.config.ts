@@ -31,6 +31,8 @@ const articles = defineCollection({
       'canon', 'fait-observe', 'interpretation', 'hypothese-centrale',
       'hypothese-secondaire', 'nouvelle-piste', 'contredite', 'refutee',
     ]).optional(),
+    /** Identifiant (slug) de la fiche canonique parente pour les articles de démonstration. */
+    parent: z.string().optional(),
   }),
 });
 

@@ -40,13 +40,58 @@ const sortedCategories = Array.from(articlesByCategory.entries()).sort(
   ([catA], [catB]) => (categoryConfig[catA]?.order ?? 99) - (categoryConfig[catB]?.order ?? 99)
 );
 
-// Build navigation sections
+interface SidebarLink {
+  label: string;
+  href: string;
+  level: 0 | 1;
+}
+
 interface NavSection {
   title: string;
   label: string;
   icon: string;
-  links: Array<{ label: string; href: string }>;
+  links: SidebarLink[];
 }
+
+// Build navigation sections with hierarchical structure:
+// fiche canonique au niveau 0, article de démonstration rattaché (parent) au niveau 1.
+// L'article parent peut se trouver dans une autre catégorie : on cherche les enfants
+// dans toute la collection, puis on les rattache à la fiche parente rencontrée.
+const childrenByParent = new Map<string, typeof articles>();
+for (const article of articles) {
+  if (article.data.parent) {
+    if (!childrenByParent.has(article.data.parent)) {
+      childrenByParent.set(article.data.parent, []);
+    }
+    childrenByParent.get(article.data.parent)!.push(article);
+  }
+}
+
+const buildLinks = (catArticles: typeof articles): SidebarLink[] => {
+  const topLevel = catArticles
+    .filter((a) => !a.data.parent)
+    .sort((a, b) => a.data.order - b.data.order);
+
+  const links: SidebarLink[] = [];
+  for (const article of topLevel) {
+    links.push({
+      label: article.data.title,
+      href: `/theorie/${article.id}`,
+      level: 0,
+    });
+    const children = (childrenByParent.get(article.id) ?? [])
+      .slice()
+      .sort((a, b) => a.data.order - b.data.order);
+    for (const child of children) {
+      links.push({
+        label: child.data.title,
+        href: `/theorie/${child.id}`,
+        level: 1,
+      });
+    }
+  }
+  return links;
+};
 
 const navSections: NavSection[] = [
   {
@@ -54,11 +99,11 @@ const navSections: NavSection[] = [
     label: 'Commencer',
     icon: '🚀',
     links: [
-      { label: 'Présentation', href: '/' },
-      { label: 'Résumé de la théorie', href: '/theorie/resume' },
-      { label: 'Théorie complète', href: '/theorie/theorie-complete' },
-      { label: 'Carte mentale', href: '/explorer/carte-mentale' },
-      { label: 'Lexique essentiel', href: '/aide/glossaire' },
+      { label: 'Présentation', href: '/', level: 0 },
+      { label: 'Résumé de la théorie', href: '/theorie/resume', level: 0 },
+      { label: 'Théorie complète', href: '/theorie/theorie-complete', level: 0 },
+      { label: 'Carte mentale', href: '/explorer/carte-mentale', level: 0 },
+      { label: 'Lexique essentiel', href: '/aide/glossaire', level: 0 },
     ],
   },
   ...sortedCategories.map(([catKey, catArticles]) => {
@@ -67,12 +112,7 @@ const navSections: NavSection[] = [
       title: catKey.toUpperCase().replace(/-/g, ' '),
       label: config?.label ?? catKey,
       icon: config?.icon ?? '📄',
-      links: catArticles
-        .sort((a, b) => (b.data.lastUpdatedChapter ?? 0) - (a.data.lastUpdatedChapter ?? 0))
-        .map((article) => ({
-          label: article.data.title,
-          href: `/theorie/${article.id}`,
-        })),
+      links: buildLinks(catArticles),
     };
   }),
 ];
@@ -90,6 +130,7 @@ navSections.push({
       ? chapter.data.title
       : `Chapitre ${chapter.data.chapter} — ${chapter.data.title}`,
     href: `/chapitres/${chapter.data.chapter}`,
+    level: 0,
   })),
 });
 
@@ -99,11 +140,11 @@ navSections.push({
   label: 'Aide & ressources',
   icon: '❓',
   links: [
-    { label: 'À propos', href: '/aide/a-propos' },
-    { label: 'FAQ', href: '/aide/faq' },
-    { label: 'Glossaire', href: '/aide/glossaire' },
-    { label: 'Proposer une correction', href: '/aide/correction' },
-    { label: 'Crédits', href: '/aide/credits' },
+    { label: 'À propos', href: '/aide/a-propos', level: 0 },
+    { label: 'FAQ', href: '/aide/faq', level: 0 },
+    { label: 'Glossaire', href: '/aide/glossaire', level: 0 },
+    { label: 'Proposer une correction', href: '/aide/correction', level: 0 },
+    { label: 'Crédits', href: '/aide/credits', level: 0 },
   ],
 });
 ---
@@ -148,8 +189,9 @@ navSections.push({
               <li>
                 <a
                   href={link.href}
-                  class={`sidebar-link ${isActive ? 'sidebar-link--active' : ''}`}
+                  class={`sidebar-link ${link.level === 1 ? 'sidebar-link--child' : ''} ${isActive ? 'sidebar-link--active' : ''}`}
                 >
+                  {link.level === 1 && <span class="sidebar-link__tree" aria-hidden="true">└</span>}
                   {link.label}
                 </a>
               </li>
@@ -217,7 +259,9 @@ navSections.push({
   }
 
   .sidebar-link {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     padding: 5px 12px;
     margin-left: -4px;
     border-radius: 7px;
@@ -244,6 +288,22 @@ navSections.push({
   .sidebar-link--active:hover {
     background: color-mix(in srgb, var(--cyan) 12%, transparent);
     border-left-color: var(--cyan);
+  }
+
+  /* Sous-niveau : fiche canonique parente → article de démonstration rattaché. */
+  .sidebar-link--child {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    opacity: 0.92;
+    padding-left: 22px;
+    margin-left: 0;
+  }
+
+  .sidebar-link--child .sidebar-link__tree {
+    font-family: monospace;
+    color: var(--violet-light);
+    opacity: 0.6;
+    flex-shrink: 0;
   }
 </style>
 

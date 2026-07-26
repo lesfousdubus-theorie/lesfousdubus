@@ -15,9 +15,9 @@ export const certaintyLabels: Record<Certainty, { label: string; color: BadgeCol
 };
 
 export const effectLabels: Record<string, string> = {
-  renforcement: 'Renforcement',
-  'nouvelle-piste': 'Nouv. piste',
-  modification: 'Modification',
+  renforcement: 'Approfondissement',
+  'nouvelle-piste': 'Nouvelle piste',
+  modification: 'Mise à jour',
   contradiction: 'Contradiction',
   refutation: 'Réfutation',
   'aucun-apport': 'Aucun apport',

@@ -1,12 +1,13 @@
 ---
-title: "Imu Nerona : le créateur terrifié par l'avenir"
+title: "Imu, le créateur terrifié par l'avenir"
 summary: "Imu existe depuis 800 ans grâce au Ope Ope no Mi. Il a lu les Ponéglyphes et sait que Joy Boy apparaîtra, mais il ne connaît pas son identité. Il confond les générations."
 category: "gouvernement-mondial"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
 sources: [1164, 1188]
-order: 60
+order: 64
+parent: "imu-nerona-fiche"
 ---
 
 ## Le Dark Vador de One Piece

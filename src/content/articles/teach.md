@@ -6,8 +6,8 @@ status: "published"
 sources: []
 editorialStatus: "canon"
 lastUpdatedChapter: 1188
-order: 41
-related: ["davy-jones", "theorie-complete"]
+order: 40
+related: ["davy-jones-fiche", "theorie-complete"]
 ---
 
 ## Présentation canonique

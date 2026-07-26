@@ -6,7 +6,7 @@ status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
 sources: [1113, 1115, 1114]
-order: 80
+order: 2
 ---
 
 ## Le discours de Vegapunk

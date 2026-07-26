@@ -7,6 +7,7 @@ certainty: 'elevee'
 lastUpdatedChapter: 1187
 related: ['nika', 'communication-temps']
 sources: []
+order: 72
 
 ---
 

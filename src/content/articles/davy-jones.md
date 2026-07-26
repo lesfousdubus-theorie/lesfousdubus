@@ -7,7 +7,9 @@ sources: [1164]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 lastUpdatedChapter: 1188
-order: 40
+order: 46
+parent: "davy-jones-fiche"
+related: ["davy-jones-fiche", "teach"]
 ---
 
 ## Le clan Davy

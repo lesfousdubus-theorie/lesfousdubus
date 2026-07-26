@@ -18,7 +18,7 @@ Joy Boy est une figure centrale de l'univers de One Piece, mentionnée pour la p
 
 Au chapitre 967, Roger pleure de rire en atteignant Laugh Tale et dit : « Joy Boy, j'aurais aimé naître à la même époque que toi. » Sans préciser s'il parle du passé ou du futur, Roger s'adresserait en réalité à Monkey D. Luffy.
 
-L'équipage de Roger attendait depuis 25 ans la venue de Joy Boy, sachant qu'il n'était « pas encore né » (chapitre 968). Cette phrase est capitale : elle prouve que Joy Boy n'existait pas il y a 25 ans.
+L'équipage de Roger attendait depuis 25 ans la venue de Joy Boy, sachant qu'il n'était « pas encore né » (chapitre 968). Dans la lecture des Fous du Bus, cette phrase indique que le Joy Boy attendu par l'équipage de Roger n'existait pas encore il y a vingt-cinq ans.
 
 ## Les preuves visuelles
 

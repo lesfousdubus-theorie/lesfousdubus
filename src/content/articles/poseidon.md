@@ -7,7 +7,9 @@ sources: [610, 967, 653]
 editorialStatus: "fait-observe"
 certainty: "elevee"
 lastUpdatedChapter: 1188
-order: 30
+order: 36
+parent: "poseidon-fiche"
+related: ["poseidon-fiche", "shirahoshi"]
 ---
 
 ## La prophétie
