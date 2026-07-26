@@ -40,9 +40,9 @@ export async function getStaticPaths() {
     {
       params: { page: 'questions' },
       props: {
-        title: 'Questions en suspens',
+        title: 'Points encore à expliquer',
         icon: '❓',
-        desc: 'Les éléments dont le fonctionnement exact n\'est pas encore complètement expliqué dans la version actuelle de la théorie.',
+        desc: "Les éléments dont le fonctionnement exact n'est pas encore complètement explicité dans la version actuelle de la théorie.",
       },
     },
     {
@@ -82,9 +82,9 @@ const detailedProofs = [
     chapter: '1043',
     title: 'La déclaration de Zunesha à Momonosuke',
     quote: '« Les tambours de la libération... Joy Boy est de retour ! »',
-    established: 'L\'éveil du Fruit du Démon de Luffy réactive le rythme des tambours perçus par Zunesha.',
-    theory: 'La signature de Joy Boy réside dans l\'état d\'esprit et le pouvoir d\'Éveil manifestés par Luffy.',
-    limit: 'Zunesha peut reconnaître le Fruit du Démon ou la volonté héritée plutôt qu\'une réincarnation physique.',
+    established: "L'éveil du Fruit du Démon de Luffy réactive le rythme des tambours perçus par Zunesha.",
+    theory: "La signature de Joy Boy réside dans l'état d'esprit et le pouvoir d'Éveil manifestés par Luffy.",
+    limit: "Zunesha peut reconnaître le Fruit du Démon ou la volonté héritée plutôt qu'une réincarnation physique.",
   },
   {
     chapter: '968',
@@ -118,17 +118,17 @@ const detailedQuestions = [
   {
     title: 'La recherche du Fruit de Nika depuis huit cents ans',
     argument: 'Le Gouvernement Mondial cherche le Hito Hito no Mi modèle Nika depuis 800 ans.',
-    explanation: 'Point nécessitant une explication plus complète : l\'interaction exacte entre les recherches séculaires de la Marine et le déclenchement de l\'Éveil au présent.',
+    explanation: "L'interaction exacte entre les recherches séculaires de la Marine et le déclenchement de l'Éveil au présent.",
   },
   {
-    title: 'L\'origine déclarée de Kozuki Toki',
-    argument: 'Toki affirme venir d\'une époque située 800 ans dans le passé avant ses sauts temporels.',
-    explanation: 'Point nécessitant une explication plus complète : l\'articulation précise entre ses origines et son rôle exact dans l\'acheminement des prophéties.',
+    title: "L'origine déclarée de Kozuki Toki",
+    argument: "Toki affirme venir d'une époque située 800 ans dans le passé avant ses sauts temporels.",
+    explanation: "L'articulation précise entre ses origines et son rôle exact dans l'acheminement des prophéties.",
   },
   {
-    title: 'La présence physique d\'Emeth et de Zunesha',
+    title: "La présence physique d'Emeth et de Zunesha",
     argument: 'Le robot géant Emeth et Zunesha portent les marques directes des événements survenus il y a 800 ans.',
-    explanation: 'Point nécessitant une explication plus complète : les mécanismes assurant leur longévité et leur rôle exact au cours du Siècle Oublié.',
+    explanation: 'Les mécanismes assurant leur longévité et leur rôle exact au cours du Siècle Oublié.',
   },
 ];
 ---
@@ -210,7 +210,7 @@ const detailedQuestions = [
               <p>{q.argument}</p>
             </div>
             <div class="proof-section proof-section--limit">
-              <span class="proof-label proof-label--limit">Point nécessitant une explication plus complète :</span>
+              <span class="proof-label proof-label--limit">Ce qu'il reste à expliquer :</span>
               <p>{q.explanation}</p>
             </div>
           </div>

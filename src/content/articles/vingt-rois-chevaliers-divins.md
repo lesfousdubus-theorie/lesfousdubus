@@ -6,7 +6,8 @@ status: "published"
 certainty: "moyenne"
 lastUpdatedChapter: 1188
 sources: [906, 1170]
-order: 61
+order: 65
+parent: "vingt-rois"
 ---
 
 ## Les 14 familles connues

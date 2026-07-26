@@ -7,7 +7,9 @@ sources: [1023]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 lastUpdatedChapter: 1188
-order: 42
+order: 47
+parent: "shimotsuki-ryuma"
+related: ["shimotsuki-ryuma", "zoro"]
 ---
 
 ## Le samouraï borgne

@@ -7,6 +7,7 @@ certainty: 'elevee'
 lastUpdatedChapter: 1188
 related: ['joy-boy', 'communication-temps', 'tequila-wolf']
 sources: []
+order: 23
 
 ---
 
