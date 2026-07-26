@@ -4,6 +4,7 @@ summary: "L'analyse complète de la théorie des Fous du Bus : Joy Boy est Luffy
 category: "histoire-temporalite"
 status: "published"
 certainty: "central"
+sources: [1]
 order: 1
 ---
 

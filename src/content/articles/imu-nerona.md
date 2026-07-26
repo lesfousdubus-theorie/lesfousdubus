@@ -5,6 +5,7 @@ category: "gouvernement-mondial"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
+sources: [1164, 1188]
 order: 60
 ---
 

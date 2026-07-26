@@ -2,7 +2,9 @@
 
 > Site wiki éditorial sur la théorie du Siècle oublié dans One Piece  
 > Stack : Astro 7 + React + Tailwind CSS + Pagefind  
-> Date de l'audit : 22 juillet 2026
+> Date de l'audit : 26 juillet 2026
+>
+> **Mise à jour :** plusieurs constats historiques de ce document ont été traités (navigation 404, composants éditoriaux conditionnels, URL canonique via `Astro.site`, CTA d’accueil, chargement différé de la recherche, lien d’évitement, retour en haut et façade vidéo). Les priorités encore ouvertes sont la complétude du contenu et les outils d’exploration.
 
 ---
 

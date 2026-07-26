@@ -24,6 +24,8 @@ const articles = defineCollection({
     certainty: z.enum(['central', 'elevee', 'moyenne', 'hypothese']).optional(),
     lastUpdatedChapter: z.number().optional(),
     related: z.array(z.string()).default([]),
+    /** Numéros de chapitres explicitement cités dans l'article. */
+    sources: z.array(z.number()).default([]),
     order: z.number().default(0),
     editorialStatus: z.enum([
       'canon', 'fait-observe', 'interpretation', 'hypothese-centrale',

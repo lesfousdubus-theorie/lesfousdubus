@@ -3,6 +3,7 @@ title: "Poséidon et Shirahoshi"
 summary: "Fiche d'analyse sur Poséidon, l'Arme Antique capable d'invoquer les Rois des Mers, et la princesse Shirahoshi."
 category: "armes-antiques"
 status: "published"
+sources: [610, 967, 653]
 editorialStatus: "fait-observe"
 certainty: "elevee"
 lastUpdatedChapter: 1188

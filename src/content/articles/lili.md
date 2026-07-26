@@ -3,6 +3,7 @@ title: "Nefertari D. Lili"
 summary: "Fiche d'analyse sur la reine Nefertari D. Lili d'Alabasta et la dispersion des Ponéglyphes."
 category: "personnages-identites"
 status: "published"
+sources: []
 editorialStatus: "canon"
 lastUpdatedChapter: 1188
 order: 42

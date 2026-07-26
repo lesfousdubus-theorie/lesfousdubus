@@ -6,6 +6,8 @@ status: 'published'
 certainty: 'elevee'
 lastUpdatedChapter: 1187
 related: ['nika', 'communication-temps']
+sources: []
+
 ---
 
 ## La Flamme Mère

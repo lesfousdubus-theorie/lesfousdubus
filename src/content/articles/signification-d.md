@@ -6,6 +6,8 @@ status: 'published'
 certainty: 'elevee'
 lastUpdatedChapter: 1188
 related: ['joy-boy', 'communication-temps', 'tequila-wolf']
+sources: []
+
 ---
 
 ## Le D. comme serment

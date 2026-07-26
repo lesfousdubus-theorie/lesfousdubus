@@ -5,7 +5,7 @@ import sitemap from '@astrojs/sitemap';
 import pagefind from 'astro-pagefind';
 
 export default defineConfig({
-  site: 'https://test-site-les-fous-du-bus.epikaigle444.workers.dev',
+  site: 'https://lesfousdubus.sbs',
   output: 'static',
   prefetch: true,
   integrations: [

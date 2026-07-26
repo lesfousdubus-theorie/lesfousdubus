@@ -3,6 +3,7 @@ title: "Nika"
 summary: "Fiche d'analyse sur Nika, le Dieu du Soleil, son rôle dans les croyances de la mer et les interprétations de la théorie."
 category: "dieux-croyances"
 status: "published"
+sources: [1069, 1117, 1102]
 editorialStatus: "hypothese-centrale"
 certainty: "central"
 lastUpdatedChapter: 1188

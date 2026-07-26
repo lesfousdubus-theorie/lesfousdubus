@@ -5,6 +5,7 @@ category: "technologies-pouvoirs"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
+sources: []
 order: 71
 ---
 
