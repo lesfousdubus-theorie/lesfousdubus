@@ -119,8 +119,16 @@ const next = position.next ? { ...position.next, title: titleOf(position.next.sl
     text-align: right;
   }
 
+  /* L'état « début de parcours » doit rester lisible : on le distingue par un
+     contour en tirets plutôt qu'en diluant le texte avec une opacité. */
   .parcours__link--empty {
-    opacity: 0.5;
+    border-style: dashed;
+    background: transparent;
+  }
+
+  .parcours__link--empty .parcours__title {
+    color: var(--text-secondary);
+    font-weight: 500;
   }
 
   .parcours__dir {
