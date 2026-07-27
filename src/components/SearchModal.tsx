@@ -49,9 +49,7 @@ export default function SearchModal() {
         const pagefind = await import(/* @vite-ignore */ pagefindUrl);
         await pagefind.init();
         const search = await pagefind.search(query);
-        const fiveResults = await Promise.all(
-          search.results.slice(0, 5).map((r: any) => r.data()),
-        );
+        const fiveResults = await Promise.all(search.results.slice(0, 5).map((r: any) => r.data()));
         setResults(fiveResults);
         setActiveIndex(-1);
       } catch (e) {
@@ -181,9 +179,7 @@ export default function SearchModal() {
             aria-label="Rechercher"
             aria-autocomplete="list"
             aria-controls="search-results"
-            aria-activedescendant={
-              activeIndex >= 0 ? `search-result-${activeIndex}` : undefined
-            }
+            aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined}
           />
           <button
             onClick={() => setIsOpen(false)}
@@ -206,17 +202,23 @@ export default function SearchModal() {
         {/* Initial state */}
         {!query && (
           <div className="px-6 py-10 text-center" style={{ color: 'var(--text-secondary)' }}>
-            <p className="mb-2" style={{ fontSize: '14px' }}>Tapez pour rechercher dans la théorie…</p>
-            <p style={{ fontSize: '12px', opacity: 0.6 }}>
-              Naviguez avec ↑ ↓ et validez avec Entrée
+            <p className="mb-2" style={{ fontSize: '14px' }}>
+              Tapez pour rechercher dans la théorie…
             </p>
+            <p style={{ fontSize: '12px' }}>Naviguez avec ↑ ↓ et validez avec Entrée</p>
           </div>
         )}
 
         {/* Results */}
         {results.length > 0 && (
           <div className="max-h-[50vh] overflow-y-auto">
-            <ul ref={resultsRef} id="search-results" className="py-2" role="listbox" style={{ listStyle: 'none', margin: 0, padding: '8px 0' }}>
+            <ul
+              ref={resultsRef}
+              id="search-results"
+              className="py-2"
+              role="listbox"
+              style={{ listStyle: 'none', margin: 0, padding: '8px 0' }}
+            >
               {results.map((result, idx) => (
                 <li
                   key={idx}
@@ -229,11 +231,13 @@ export default function SearchModal() {
                     style={{
                       display: 'block',
                       padding: '14px 24px',
-                      borderBottom: '1px solid color-mix(in srgb, var(--border-color) 50%, transparent)',
+                      borderBottom:
+                        '1px solid color-mix(in srgb, var(--border-color) 50%, transparent)',
                       textDecoration: 'none',
-                      background: idx === activeIndex
-                        ? 'color-mix(in srgb, var(--violet) 15%, transparent)'
-                        : 'transparent',
+                      background:
+                        idx === activeIndex
+                          ? 'color-mix(in srgb, var(--violet) 15%, transparent)'
+                          : 'transparent',
                       transition: 'background 0.15s ease',
                     }}
                     onMouseEnter={() => setActiveIndex(idx)}

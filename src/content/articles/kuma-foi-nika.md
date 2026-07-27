@@ -7,6 +7,7 @@ certainty: "elevee"
 lastUpdatedChapter: 1188
 sources: [1094, 1102]
 order: 22
+parent: "bartholomew-kuma"
 ---
 
 ## Le crime des boucaniers

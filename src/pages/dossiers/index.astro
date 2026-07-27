@@ -4,7 +4,7 @@ import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
 
 const articles = await getCollection('articles');
-const publishedArticles = articles.filter(a => a.data.status === 'published');
+const publishedArticles = articles.filter((a) => a.data.status === 'published');
 
 interface DossierSection {
   id: string;
@@ -48,13 +48,14 @@ const sections: DossierSection[] = [
     id: 'technologies-pouvoirs',
     icon: '⚡',
     title: 'Technologies et pouvoirs',
-    description: 'Vegapunk, Mother Flame, Fruits du Démon et les technologies perdues.',
+    description: 'Vegapunk, Mother Flame, Fruits du Démon, Zoans et les technologies perdues.',
   },
   {
     id: 'peuples-royaumes',
     icon: '🗺️',
     title: 'Peuples, royaumes et témoins',
-    description: 'Les nations, les peuples et les témoins vivants de l\'histoire.',
+    description:
+      "Les nations, les peuples et les témoins vivants de l'histoire, et la mission confiée à chacun.",
   },
   {
     id: 'dieux-croyances',
@@ -88,40 +89,44 @@ const sections: DossierSection[] = [
     <div class="text-violet font-semibold tracking-widest uppercase text-sm mb-3">Dossiers</div>
     <h1>Dossiers</h1>
     <p class="subtitle">
-      Pour atteindre directement un sujet précis. Chaque dossier explore un thème de la théorie
-      de manière autonome, avec ses preuves, ses objections et ses liens vers les autres articles.
+      Pour atteindre directement un sujet précis. Chaque dossier explore un thème de la théorie de
+      manière autonome, avec ses preuves, ses objections et ses liens vers les autres articles.
     </p>
   </div>
 
   <div class="sections">
-    {sections.map((section) => {
-      const sectionArticles = publishedArticles.filter(a => a.data.category === section.id);
-      return (
-        <div class="section-block" id={section.id}>
-          <div class="section-header">
-            <span class="section-icon">{section.icon}</span>
-            <div>
-              <h2>{section.title}</h2>
-              <p>{section.description}</p>
+    {
+      sections.map((section) => {
+        const sectionArticles = publishedArticles.filter((a) => a.data.category === section.id);
+        return (
+          <div class="section-block" id={section.id}>
+            <div class="section-header">
+              <span class="section-icon">{section.icon}</span>
+              <div>
+                <h2>{section.title}</h2>
+                <p>{section.description}</p>
+              </div>
             </div>
+            {sectionArticles.length > 0 ? (
+              <div class="article-list">
+                {sectionArticles
+                  .sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr'))
+                  .map((article) => (
+                    <a href={`/theorie/${article.id}`} class="article-link">
+                      <span class="article-title">{article.data.title}</span>
+                      {article.data.lastUpdatedChapter && (
+                        <span class="article-chapter">Chap. {article.data.lastUpdatedChapter}</span>
+                      )}
+                    </a>
+                  ))}
+              </div>
+            ) : (
+              <p class="no-articles">Dossier en cours de rédaction</p>
+            )}
           </div>
-          {sectionArticles.length > 0 ? (
-            <div class="article-list">
-              {sectionArticles.sort((a, b) => a.data.order - b.data.order).map((article) => (
-                <a href={`/theorie/${article.id}`} class="article-link">
-                  <span class="article-title">{article.data.title}</span>
-                  {article.data.lastUpdatedChapter && (
-                    <span class="article-chapter">Chap. {article.data.lastUpdatedChapter}</span>
-                  )}
-                </a>
-              ))}
-            </div>
-          ) : (
-            <p class="no-articles">Dossier en cours de rédaction</p>
-          )}
-        </div>
-      );
-    })}
+        );
+      })
+    }
   </div>
 
   <Footer />
@@ -209,7 +214,10 @@ const sections: DossierSection[] = [
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     text-decoration: none;
-    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease,
+      transform 0.2s ease;
   }
 
   .article-link:hover {

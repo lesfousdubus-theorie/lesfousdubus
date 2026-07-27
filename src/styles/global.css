@@ -23,8 +23,10 @@
     --text-main: #f3efe6; /* moonlit paper      */
     --text-secondary: #aeb7c2;
     --accent-gold: #e0ab4e; /* straw / sun        */
-    --alert: #c25b4f;
-    --border-color: rgba(243, 239, 230, 0.1);
+    --alert: #d48d84;
+    --border-color: rgba(243, 239, 230, 0.16);
+    /* Contour porteur d'information (champs, contrôles, focus) : >= 3:1 sur --bg-main. */
+    --border-strong: rgba(243, 239, 230, 0.42);
     --glow-violet: rgba(128, 145, 207, 0.22);
     --glow-cyan: rgba(95, 185, 194, 0.2);
     --gradient-hero: linear-gradient(
@@ -47,17 +49,19 @@
     --bg-secondary: #f1ede3;
     --surface: #e6e0d0;
     --violet: #3f4a7a;
-    --violet-light: #515f96;
+    --violet-light: #485586;
     --magenta: #b34f3f;
-    --cyan: #0c6e79;
+    --cyan: #0b626b;
     --cyan-dim: #0a5e69;
     --text-main: #1f1d18;
     --text-secondary: #555047;
-    --accent-gold: #8a5f0f;
+    --accent-gold: #76520d;
     --alert: #a02f23;
-    --border-color: rgba(31, 29, 24, 0.18);
+    --border-color: rgba(31, 29, 24, 0.24);
+    /* Contour porteur d'information (champs, contrôles, focus) : >= 3:1 sur --bg-main. */
+    --border-strong: rgba(31, 29, 24, 0.55);
     --glow-violet: rgba(63, 74, 122, 0.22);
-    --glow-cyan: rgba(12, 110, 121, 0.20);
+    --glow-cyan: rgba(12, 110, 121, 0.2);
     --gradient-hero: linear-gradient(
       120deg,
       var(--cyan) 0%,
@@ -74,8 +78,7 @@
   }
 
   :root {
-    --font-sans: 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
-      Roboto, sans-serif;
+    --font-sans: 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-display: 'Fraunces', Georgia, Cambria, 'Times New Roman', serif;
     --nav-h: 56px;
     --border-radius: 8px;
@@ -104,9 +107,13 @@
       ),
       var(--wave-url);
     background-repeat: no-repeat, repeat;
-    background-position: center top, center top;
+    background-position:
+      center top,
+      center top;
     background-attachment: scroll, fixed;
-    background-size: auto, 240px 84px;
+    background-size:
+      auto,
+      240px 84px;
     box-sizing: border-box;
     margin: 0;
     min-height: 100vh;
@@ -165,7 +172,10 @@
   }
 
   .card-hover {
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
   }
   .card-hover:hover {
     border-color: var(--violet);
@@ -415,44 +425,44 @@ iframe {
   z-index: 1;
 }
 
-  /* Scroll-reveal animation for content blocks */
-  .reveal {
+/* Scroll-reveal animation for content blocks */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Staggered entrance for sibling cards (delay cleared by JS after reveal) */
+.card-stagger {
+  will-change: opacity, transform;
+}
+
+/* Soft entrance for the whole page */
+@keyframes page-fade-in {
+  from {
     opacity: 0;
-    transform: translateY(16px);
-    transition:
-      opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .reveal.is-visible {
+  to {
     opacity: 1;
-    transform: none;
   }
+}
+.app {
+  animation: page-fade-in 0.35s ease-out;
+}
 
-  /* Staggered entrance for sibling cards (delay cleared by JS after reveal) */
-  .card-stagger {
-    will-change: opacity, transform;
-  }
-
-  /* Soft entrance for the whole page */
-  @keyframes page-fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
   .app {
-    animation: page-fade-in 0.35s ease-out;
+    animation: none !important;
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    .reveal {
-      opacity: 1 !important;
-      transform: none !important;
-      transition: none !important;
-    }
-    .app {
-      animation: none !important;
-    }
-  }
+}

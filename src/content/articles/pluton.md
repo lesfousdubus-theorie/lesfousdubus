@@ -24,9 +24,9 @@ La Galley-La est aussi le nom de la brigade au grand marteau, l'escouade de géa
 
 Cet équipage serait en réalité l'équipage de Loki, cryogénisé par Ragnir pour les protéger. Ils rejoindront Water Seven et la transformeront en Pluton.
 
-## Le Poneglyphe d'Alabasta
+## Le Ponéglyphe d'Alabasta
 
-Le Poneglyphe indique Pluton à Wa no Kuni. Mais Roger ne comprenait pas pourquoi Poséidon n'était pas sur l'île des Hommes-Poissons alors que la pierre le disait.
+Le Ponéglyphe indique Pluton à Wa no Kuni. Mais Roger ne comprenait pas pourquoi Poséidon n'était pas sur l'île des Hommes-Poissons alors que la pierre le disait.
 
 C'est la même mécanique : Pluton n'est pas encore à Wa no Kuni. Il y sera envoyé plus tard.
 

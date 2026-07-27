@@ -8,7 +8,12 @@ interface Props {
 const { currentPath } = Astro.props;
 
 // Fetch all published articles
-const articles = await getCollection('articles', ({ data }) => data.status === 'published');
+// Source unique de la navigation latérale : toutes les pages consomment ce même
+// composant, et la collection est triée ici de façon déterministe (order puis id)
+// pour que la sidebar soit strictement identique sur l'ensemble du site.
+const articles = (await getCollection('articles', ({ data }) => data.status === 'published')).sort(
+  (a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr'),
+);
 
 // Category mapping with French labels and icons
 const categoryConfig: Record<string, { label: string; icon: string; order: number }> = {
@@ -37,7 +42,9 @@ for (const article of articles) {
 
 // Sort categories by order
 const sortedCategories = Array.from(articlesByCategory.entries()).sort(
-  ([catA], [catB]) => (categoryConfig[catA]?.order ?? 99) - (categoryConfig[catB]?.order ?? 99)
+  ([catA], [catB]) =>
+    (categoryConfig[catA]?.order ?? 99) - (categoryConfig[catB]?.order ?? 99) ||
+    catA.localeCompare(catB, 'fr'),
 );
 
 interface SidebarLink {
@@ -67,10 +74,13 @@ for (const article of articles) {
   }
 }
 
+// Tri déterministe : `order` puis `id`, afin que deux articles partageant le même
+// `order` ne puissent jamais permuter d'un build (ou d'une page) à l'autre.
+const byOrderThenId = (a: (typeof articles)[number], b: (typeof articles)[number]) =>
+  a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr');
+
 const buildLinks = (catArticles: typeof articles): SidebarLink[] => {
-  const topLevel = catArticles
-    .filter((a) => !a.data.parent)
-    .sort((a, b) => a.data.order - b.data.order);
+  const topLevel = catArticles.filter((a) => !a.data.parent).sort(byOrderThenId);
 
   const links: SidebarLink[] = [];
   for (const article of topLevel) {
@@ -79,9 +89,7 @@ const buildLinks = (catArticles: typeof articles): SidebarLink[] => {
       href: `/theorie/${article.id}`,
       level: 0,
     });
-    const children = (childrenByParent.get(article.id) ?? [])
-      .slice()
-      .sort((a, b) => a.data.order - b.data.order);
+    const children = (childrenByParent.get(article.id) ?? []).slice().sort(byOrderThenId);
     for (const child of children) {
       links.push({
         label: child.data.title,
@@ -119,7 +127,7 @@ const navSections: NavSection[] = [
 
 // Add chapters section
 const chapters = await getCollection('chapters');
-const sortedChapters = chapters.sort((a, b) => b.data.chapter - a.data.chapter);
+const sortedChapters = chapters.slice().sort((a, b) => b.data.chapter - a.data.chapter);
 
 navSections.push({
   title: 'CHAPITRES',
@@ -150,57 +158,63 @@ navSections.push({
 ---
 
 <nav data-pagefind-ignore>
-  {navSections.map((section, index) => {
-    const isExpanded = section.links.some(
-      (link) => currentPath === link.href || currentPath === link.href + '/' || (link.href !== '/' && currentPath.startsWith(link.href)),
-    );
-    return (
-      <div class={index > 0 ? 'mt-5' : ''} data-sidebar-section>
-        <button
-          class="sidebar-section-toggle"
-          aria-expanded={isExpanded ? 'true' : 'false'}
-        >
-          <span class="flex items-center gap-2">
-            <span class="text-base">{section.icon}</span>
-            <span>{section.label}</span>
-          </span>
-          <svg
-            class="sidebar-chevron"
-            class:list={[{ 'rotate-90': isExpanded }]}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            width="12"
-            height="12"
+  {
+    navSections.map((section, index) => {
+      const isExpanded = section.links.some(
+        (link) =>
+          currentPath === link.href ||
+          currentPath === link.href + '/' ||
+          (link.href !== '/' && currentPath.startsWith(link.href)),
+      );
+      return (
+        <div class={index > 0 ? 'mt-5' : ''} data-sidebar-section>
+          <button class="sidebar-section-toggle" aria-expanded={isExpanded ? 'true' : 'false'}>
+            <span class="flex items-center gap-2">
+              <span class="text-base">{section.icon}</span>
+              <span>{section.label}</span>
+            </span>
+            <svg
+              class="sidebar-chevron"
+              class:list={[{ 'rotate-90': isExpanded }]}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              width="12"
+              height="12"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+          <ul
+            class="sidebar-section-links"
+            class:list={[{ collapsed: !isExpanded }, { expanded: isExpanded }]}
           >
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
-        <ul
-          class="sidebar-section-links"
-          class:list={[{ 'collapsed': !isExpanded }, { 'expanded': isExpanded }]}
-        >
-          {section.links.map((link) => {
-            const isActive = currentPath === link.href || currentPath === link.href + '/';
-            return (
-              <li>
-                <a
-                  href={link.href}
-                  class={`sidebar-link ${link.level === 1 ? 'sidebar-link--child' : ''} ${isActive ? 'sidebar-link--active' : ''}`}
-                >
-                  {link.level === 1 && <span class="sidebar-link__tree" aria-hidden="true">└</span>}
-                  {link.label}
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    );
-  })}
+            {section.links.map((link) => {
+              const isActive = currentPath === link.href || currentPath === link.href + '/';
+              return (
+                <li>
+                  <a
+                    href={link.href}
+                    class={`sidebar-link ${link.level === 1 ? 'sidebar-link--child' : ''} ${isActive ? 'sidebar-link--active' : ''}`}
+                  >
+                    {link.level === 1 && (
+                      <span class="sidebar-link__tree" aria-hidden="true">
+                        └
+                      </span>
+                    )}
+                    {link.label}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      );
+    })
+  }
 </nav>
 
 <style>
@@ -245,7 +259,9 @@ navSections.push({
     flex-direction: column;
     gap: 2px;
     overflow: hidden;
-    transition: max-height 0.25s ease, opacity 0.2s ease;
+    transition:
+      max-height 0.25s ease,
+      opacity 0.2s ease;
   }
 
   .sidebar-section-links.collapsed {
@@ -294,15 +310,15 @@ navSections.push({
   .sidebar-link--child {
     font-size: 12.5px;
     color: var(--text-secondary);
-    opacity: 0.92;
     padding-left: 22px;
     margin-left: 0;
   }
 
+  /* Glyphe purement décoratif (aria-hidden) : il ne porte aucune information,
+     mais il reste au-dessus de 3:1 pour ne pas disparaître visuellement. */
   .sidebar-link--child .sidebar-link__tree {
     font-family: monospace;
     color: var(--violet-light);
-    opacity: 0.6;
     flex-shrink: 0;
   }
 </style>

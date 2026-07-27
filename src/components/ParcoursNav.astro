@@ -1,0 +1,158 @@
+---
+/**
+ * Navigation séquentielle « article précédent / article suivant » du parcours
+ * principal, affichée en bas des fiches qui appartiennent au parcours.
+ * Permet de lire la théorie comme un livre sans repasser par la sidebar.
+ */
+import { getParcoursPosition } from '@utils/parcours';
+import { getCollection } from 'astro:content';
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const position = getParcoursPosition(slug);
+
+const articles = await getCollection('articles', ({ data }) => data.status === 'published');
+const titleOf = (s: string) => articles.find((a) => a.id === s)?.data.title ?? s;
+
+const previous = position.previous
+  ? { ...position.previous, title: titleOf(position.previous.slug) }
+  : null;
+const next = position.next ? { ...position.next, title: titleOf(position.next.slug) } : null;
+---
+
+{
+  position.step !== null && (previous || next) && (
+    <nav class="parcours" aria-label="Parcours de lecture de la théorie">
+      <div class="parcours__meta">
+        <span class="parcours__label">Parcours de lecture</span>
+        <span class="parcours__step">
+          Étape {position.step} sur {position.total}
+        </span>
+      </div>
+
+      <div class="parcours__links">
+        {previous ? (
+          <a href={previous.href} class="parcours__link parcours__link--prev" rel="prev">
+            <span class="parcours__dir">← Article précédent</span>
+            <span class="parcours__title">{previous.title}</span>
+          </a>
+        ) : (
+          <span class="parcours__link parcours__link--empty">
+            <span class="parcours__dir">Début du parcours</span>
+            <span class="parcours__title">Blue Star ouvre la lecture</span>
+          </span>
+        )}
+
+        {next ? (
+          <a href={next.href} class="parcours__link parcours__link--next" rel="next">
+            <span class="parcours__dir">Article suivant →</span>
+            <span class="parcours__title">{next.title}</span>
+          </a>
+        ) : (
+          <a href="/verifier/preuves" class="parcours__link parcours__link--next">
+            <span class="parcours__dir">Fin du parcours →</span>
+            <span class="parcours__title">Passer aux preuves principales</span>
+          </a>
+        )}
+      </div>
+    </nav>
+  )
+}
+
+<style>
+  .parcours {
+    margin: 40px 0 8px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .parcours__meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .parcours__label {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--violet-light);
+  }
+
+  .parcours__step {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+  }
+
+  .parcours__links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .parcours__link {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    background: var(--bg-main);
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  a.parcours__link:hover {
+    border-color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 6%, transparent);
+  }
+
+  .parcours__link--next {
+    text-align: right;
+  }
+
+  /* L'état « début de parcours » doit rester lisible : on le distingue par un
+     contour en tirets plutôt qu'en diluant le texte avec une opacité. */
+  .parcours__link--empty {
+    border-style: dashed;
+    background: transparent;
+  }
+
+  .parcours__link--empty .parcours__title {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .parcours__dir {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .parcours__title {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  a.parcours__link:hover .parcours__title {
+    color: var(--cyan);
+  }
+
+  @media (max-width: 640px) {
+    .parcours__links {
+      grid-template-columns: 1fr;
+    }
+
+    .parcours__link--next {
+      text-align: left;
+    }
+  }
+</style>

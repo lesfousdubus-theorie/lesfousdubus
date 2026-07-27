@@ -17,7 +17,8 @@ export default {
         textSecondary: 'var(--text-secondary)',
         accentGold: 'var(--accent-gold)',
         alert: 'var(--alert)',
-        borderColor: 'var(--border-color)'
+        borderColor: 'var(--border-color)',
+        borderStrong: 'var(--border-strong)',
       },
       fontFamily: {
         sans: [
@@ -27,27 +28,27 @@ export default {
           '-apple-system',
           'Segoe UI',
           'Roboto',
-          'sans-serif'
+          'sans-serif',
         ],
-        display: ['Fraunces', 'Georgia', 'Cambria', 'Times New Roman', 'serif']
+        display: ['Fraunces', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
       },
       borderRadius: {
         DEFAULT: '8px',
         sm: '5px',
         md: '10px',
         lg: '14px',
-        xl: '20px'
+        xl: '20px',
       },
       boxShadow: {
         glowViolet: '0 0 18px var(--glow-violet)',
         glowCyan: '0 0 18px var(--glow-cyan)',
         card: '0 6px 28px color-mix(in srgb, var(--bg-main) 45%, transparent)',
-        cardHover: '0 10px 36px color-mix(in srgb, var(--violet) 18%, transparent)'
+        cardHover: '0 10px 36px color-mix(in srgb, var(--violet) 18%, transparent)',
       },
       letterSpacing: {
-        widest2: '0.18em'
-      }
-    }
+        widest2: '0.18em',
+      },
+    },
   },
-  plugins: []
-}
+  plugins: [],
+};

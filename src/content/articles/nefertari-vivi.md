@@ -6,7 +6,7 @@ status: "published"
 sources: [1085, 1116]
 editorialStatus: "canon"
 lastUpdatedChapter: 1188
-order: 47
+order: 48
 related: ["lili", "vivi", "theorie-complete"]
 ---
 

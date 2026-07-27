@@ -1,0 +1,102 @@
+---
+/**
+ * Petite carte de relations affichée en tête de fiche : « JOY BOY — Lié à : … ».
+ * Alimentée par le champ `related` du frontmatter, elle donne d'un coup d'œil
+ * les sujets connexes sans avoir à parcourir tout l'article.
+ */
+import { getCollection } from 'astro:content';
+
+interface Props {
+  title: string;
+  related: string[];
+  currentSlug: string;
+}
+
+const { title, related, currentSlug } = Astro.props;
+
+const articles = await getCollection('articles', ({ data }) => data.status === 'published');
+const links = related
+  .filter((slug) => slug !== currentSlug)
+  .map((slug) => articles.find((a) => a.id === slug))
+  .filter((a): a is (typeof articles)[number] => Boolean(a))
+  .map((a) => ({ title: a.data.title, href: `/theorie/${a.id}` }));
+---
+
+{
+  links.length > 0 && (
+    <aside class="relation-map" aria-label={`Sujets liés à ${title}`}>
+      <div class="relation-map__head">{title}</div>
+      <div class="relation-map__body">
+        <span class="relation-map__label">Lié à :</span>
+        <ul class="relation-map__list">
+          {links.map((link) => (
+            <li>
+              <a href={link.href}>{link.title}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
+  )
+}
+
+<style>
+  .relation-map {
+    margin: 24px 0 32px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg-main);
+  }
+
+  .relation-map__head {
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 8%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .relation-map__body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+
+  .relation-map__label {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+  }
+
+  .relation-map__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .relation-map__list a {
+    display: inline-block;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 12.5px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .relation-map__list a:hover {
+    color: var(--cyan);
+    border-color: var(--cyan);
+  }
+</style>

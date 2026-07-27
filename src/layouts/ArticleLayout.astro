@@ -7,23 +7,19 @@ import EvidenceSection from '@components/EvidenceSection.astro';
 import ChapterReferences from '@components/ChapterReferences.astro';
 import ReadingProgressBar from '@components/ReadingProgressBar.astro';
 import BackToTop from '@components/BackToTop.astro';
+import ParcoursNav from '@components/ParcoursNav.astro';
+import RelationMap from '@components/RelationMap.astro';
 import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
 
-const {
-  title,
-  description,
-  currentPath,
-  headings,
-  frontmatter,
-} = Astro.props;
+const { title, description, currentPath, headings, frontmatter } = Astro.props;
 const lastUpdatedChapter = String(frontmatter.lastUpdatedChapter ?? '?');
 
 // Fetch related articles from the articles collection
 const allArticles = await getCollection('articles', ({ data }) => data.status === 'published');
 const currentSlug = currentPath.replace('/theorie/', '');
-const relatedArticleEntries = allArticles.filter((a) =>
-  frontmatter.related?.includes(a.id) && a.id !== currentSlug
+const relatedArticleEntries = allArticles.filter(
+  (a) => frontmatter.related?.includes(a.id) && a.id !== currentSlug,
 );
 const relatedArticles = relatedArticleEntries.map((entry) => ({
   title: entry.data.title,
@@ -33,19 +29,23 @@ const relatedArticles = relatedArticleEntries.map((entry) => ({
 
 // Fetch evidence related to this article
 const evidenceEntries = await getCollection('evidence');
-const articleEvidence = evidenceEntries.filter((e) =>
-  e.data.articles?.includes(currentSlug)
-);
+const articleEvidence = evidenceEntries.filter((e) => e.data.articles?.includes(currentSlug));
 
 // Fetch chapter references related to this article
 const chapterEntries = await getCollection('chapters');
-const articleChapters = chapterEntries.filter((c) =>
-  c.data.updatedArticles?.includes(currentSlug)
-);
+const articleChapters = chapterEntries.filter((c) => c.data.updatedArticles?.includes(currentSlug));
+
+// Article d'analyse rattaché à une fiche neutre : on affiche explicitement le
+// rattachement pour que son titre affirmatif soit lu comme une lecture de la
+// théorie, et non comme un fait canonique.
+const parentEntry = frontmatter.parent
+  ? allArticles.find((a) => a.id === frontmatter.parent)
+  : undefined;
 
 const breadcrumbItems = [
   { label: 'Accueil', href: '/' },
   { label: 'La théorie', href: '/theorie' },
+  ...(parentEntry ? [{ label: parentEntry.data.title, href: `/theorie/${parentEntry.id}` }] : []),
   { label: title },
 ];
 
@@ -58,20 +58,20 @@ const articleJsonLd = {
   url: new URL(currentPath, Astro.site).toString(),
   author: {
     '@type': 'Organization',
-    name: 'Les Fous du Bus'
+    name: 'Les Fous du Bus',
   },
   publisher: {
     '@type': 'Organization',
     name: 'Les Fous du Bus',
     logo: {
       '@type': 'ImageObject',
-      url: new URL('/favicon.svg', Astro.site).toString()
-    }
+      url: new URL('/favicon.svg', Astro.site).toString(),
+    },
   },
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': new URL(currentPath, Astro.site).toString()
-  }
+    '@id': new URL(currentPath, Astro.site).toString(),
+  },
 };
 ---
 
@@ -89,10 +89,32 @@ const articleJsonLd = {
       editorialStatus={frontmatter.editorialStatus}
     />
 
+    {
+      !parentEntry && frontmatter.related?.length > 0 && (
+        <RelationMap title={title} related={frontmatter.related} currentSlug={currentSlug} />
+      )
+    }
+
+    {
+      parentEntry && (
+        <aside class="analysis-notice">
+          <span class="analysis-notice__tag">Article d’analyse</span>
+          <p>
+            Ce texte développe une lecture des Fous du Bus et non un fait établi par le manga. Il
+            est rattaché à la fiche neutre{' '}
+            <a href={`/theorie/${parentEntry.id}`}>{parentEntry.data.title}</a>, qui présente ce que
+            l’œuvre montre effectivement.
+          </p>
+        </aside>
+      )
+    }
+
     <div class="content">
       <slot />
     </div>
   </article>
+
+  <ParcoursNav slug={currentSlug} />
 
   <!-- Article Reading Continuation Navigation -->
   <nav class="article-reading-nav" aria-label="Poursuite de lecture">
@@ -113,6 +135,39 @@ const articleJsonLd = {
 </WikiLayout>
 
 <style>
+  .analysis-notice {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 20px 0 28px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--violet) 30%, transparent);
+    background: color-mix(in srgb, var(--violet) 7%, transparent);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+
+  .analysis-notice__tag {
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--violet-light);
+  }
+
+  .analysis-notice p {
+    margin: 0;
+  }
+
+  .analysis-notice a {
+    color: var(--cyan);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
   .article-title {
     font-size: clamp(1.8rem, 4.5vw, 2.5rem);
     font-weight: 800;
