@@ -4,7 +4,7 @@ interface ChapterItem {
   data: {
     chapter: number;
     title: string;
-    effect: 'renforcement' | 'nouvelle-piste' | 'modification' | 'contradiction' | 'refutation' | 'aucun-apport';
+    effect: 'fondation' | 'approfondissement' | 'nouvelle-piste' | 'modification';
     themes: string[];
     updatedArticles: string[];
     summary?: string;
@@ -18,12 +18,10 @@ interface Props {
 const { items } = Astro.props;
 
 const effectLabels: Record<string, { label: string; color: string }> = {
-  'renforcement': { label: 'Renforcement', color: 'var(--accent-gold)' },
+  'fondation': { label: 'Fondation', color: 'var(--cyan)' },
+  'approfondissement': { label: 'Approfondissement', color: 'var(--accent-gold)' },
   'nouvelle-piste': { label: 'Nouvelle piste', color: 'var(--violet)' },
-  'modification': { label: 'Modification', color: 'var(--accent-gold)' },
-  'contradiction': { label: 'Contradiction', color: 'var(--alert)' },
-  'refutation': { label: 'Réfutation', color: 'var(--alert)' },
-  'aucun-apport': { label: 'Aucun apport', color: 'var(--text-secondary)' },
+  'modification': { label: 'Mise à jour', color: 'var(--accent-gold)' },
 };
 ---
 
