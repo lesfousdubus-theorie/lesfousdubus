@@ -6,7 +6,7 @@ status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
 sources: [576, 602]
-order: 51
+order: 52
 ---
 
 ## Les paroles de Barbe Blanche

@@ -12,7 +12,7 @@ related: ["theorie-complete", "laugh-tale", "nika"]
 
 ## Présentation générale
 
-Joy Boy est une figure centrale de l'univers de One Piece, mentionnée pour la première fois sur le Poncglyphe de l'île des Hommes-Poissons comme le signataire d'une promesse non tenue il y a 800 ans.
+Joy Boy est une figure centrale de l'univers de One Piece, mentionnée pour la première fois sur le Ponéglyphe de l'île des Hommes-Poissons comme le signataire d'une promesse non tenue il y a 800 ans.
 
 ## La lecture des Fous du Bus : Joy Boy pourrait-il être Monkey D. Luffy ?
 
@@ -29,7 +29,7 @@ La silhouette de Joy Boy apparaît au chapitre 1115 (Vegapunk) et 1122 (Emeth). 
 - Même taille
 - Même sourire
 
-Mais la preuve la plus accablante vient de l'adaptation animée du chapitre 1122 : Joy Boy est interprété par **Urara Takano**, la toute première voix de Monkey D. Luffy dans l'épisode original de 1998, avant que Mayumi Tanaka ne prenne le relais.
+Mais l'un des indices symboliques les plus marquants vient de l'adaptation animée du chapitre 1122 : Joy Boy est interprété par **Urara Takano**, la toute première voix de Monkey D. Luffy dans l'épisode original de 1998, avant que Mayumi Tanaka ne prenne le relais.
 
 Oda a délibérément choisi l'ancienne voix de Luffy pour créer un lien direct sans confirmer officiellement qu'ils sont la même personne. C'est subtil, élégant, et cela maintient l'ambiguïté.
 

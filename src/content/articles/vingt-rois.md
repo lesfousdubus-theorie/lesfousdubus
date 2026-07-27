@@ -26,4 +26,4 @@ Quatorze de ces familles sont identifiées à ce jour : Nerona, Donquixote, Topm
 
 Les Vingt Rois ne sont pas une génération définitivement éteinte : leur lignée est aujourd'hui incarnée par les Dragons Célestes, dont les Chevaliers Divins représentent la version militaire. Garling Figarland pourrait réactiver ce pacte originel pour reprendre les pays libérés par Joy Boy.
 
-L'article de démonstration Les 20 Rois deviendront les Chevaliers Divins développe cette hypothèse.
+L'article d'analyse **Les Vingt Rois et les Chevaliers Divins** développe cette hypothèse.

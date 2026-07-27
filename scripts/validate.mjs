@@ -34,7 +34,8 @@ const ENUMS = {
   'articles.category': CATEGORIES,
   'articles.certainty': ['central', 'elevee', 'moyenne', 'hypothese'],
   'articles.status': ['draft', 'published'],
-  'chapters.effect': ['renforcement', 'nouvelle-piste', 'modification', 'contradiction', 'refutation', 'aucun-apport'],
+  // Doit rester aligné sur le schéma `chapters` de src/content.config.ts.
+  'chapters.effect': ['fondation', 'approfondissement', 'nouvelle-piste', 'modification'],
   'evidence.type': ['dialogue', 'visuel', 'narratif', 'structure'],
   'evidence.strength': ['majeure', 'secondaire'],
   'characters.era': ['ancien', 'moderne', 'transversal'],
@@ -134,7 +135,10 @@ function parseFrontmatter(raw) {
     if (/^\[.*\]$/.test(val)) {
       const inner = val.slice(1, -1).trim();
       data[key] = inner
-        ? inner.split(',').map((s) => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean)
+        ? inner
+            .split(',')
+            .map((s) => s.trim().replace(/^["']|["']$/g, ''))
+            .filter(Boolean)
         : [];
     } else {
       data[key] = val;
@@ -200,6 +204,42 @@ for (const file of files) {
     path = path.replace(/[?#].*$/, '').replace(/\/$/, '') || '/';
     if (!KNOWN_PAGES.has(path)) {
       errors.push(`${rel} : lien interne cassé vers "${match[1]}".`);
+    }
+  }
+}
+
+// --- Cohérence de la navigation latérale -----------------------------------
+// La sidebar est construite à partir de `category` / `order` / `parent`.
+// Deux articles publiés partageant le même couple (catégorie, order) rendaient
+// l'ordre d'affichage ambigu : on l'interdit pour garantir une sidebar
+// strictement identique sur toutes les pages.
+{
+  const seen = new Map();
+  for (const file of files) {
+    const rel = relative(CONTENT_DIR, file).split(sep).join('/');
+    if (!rel.startsWith('articles/')) continue;
+    const parsed = parseFrontmatter(readFileSync(file, 'utf8'));
+    if (!parsed) continue;
+    const { data } = parsed;
+    if (data.status !== 'published') continue;
+    const id = rel.replace(/^articles\//, '').replace(/\.(md|mdx)$/, '');
+
+    if (data.parent) {
+      if (!articleIds.includes(data.parent)) {
+        errors.push(`${rel} : "parent" -> fiche inexistante : "${data.parent}".`);
+      } else if (data.parent === id) {
+        errors.push(`${rel} : "parent" ne peut pas pointer vers l'article lui-même.`);
+      }
+    }
+
+    const key = `${data.category}#${data.order}`;
+    if (seen.has(key)) {
+      errors.push(
+        `${rel} : "order"=${data.order} déjà utilisé par "${seen.get(key)}" dans la catégorie ` +
+          `"${data.category}" (ordre de sidebar ambigu).`,
+      );
+    } else {
+      seen.set(key, rel);
     }
   }
 }

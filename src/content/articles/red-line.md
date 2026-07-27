@@ -7,7 +7,7 @@ sources: [906, 1114, 1115]
 editorialStatus: "canon"
 certainty: "elevee"
 lastUpdatedChapter: 1188
-order: 2
+order: 3
 ---
 
 ## Présentation canonique
