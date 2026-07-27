@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { READING_PATH, getParcoursPosition } from '../src/utils/parcours';
 
 /**
  * La barre latérale est rendue par un composant unique (`SidebarNav.astro`) à partir
@@ -88,5 +89,48 @@ describe('sidebar : source unique et ordre déterministe', () => {
     const banned = /\b(deviendront|est Joy Boy|n'existe pas encore)\b/i;
     const offenders = articles.filter((a) => banned.test(a.title)).map((a) => a.title);
     expect(offenders).toEqual([]);
+  });
+});
+
+describe('parcours de lecture', () => {
+  const articles = readArticles();
+  const ids = new Set(articles.map((a) => a.id));
+
+  it('ne référence que des articles publiés existants', () => {
+    const missing = READING_PATH.filter((slug) => !ids.has(slug));
+    expect(missing).toEqual([]);
+  });
+
+  it('ne contient aucun doublon', () => {
+    expect(new Set(READING_PATH).size).toBe(READING_PATH.length);
+  });
+
+  it('ne fait figurer que des fiches neutres, jamais des articles d’analyse', () => {
+    const withParent = articles
+      .filter((a) => a.parent && READING_PATH.includes(a.id))
+      .map((a) => a.id);
+    expect(withParent).toEqual([]);
+  });
+
+  it('chaîne correctement précédent et suivant', () => {
+    const first = getParcoursPosition(READING_PATH[0]);
+    expect(first.step).toBe(1);
+    expect(first.previous).toBeNull();
+    expect(first.next?.slug).toBe(READING_PATH[1]);
+
+    const last = getParcoursPosition(READING_PATH[READING_PATH.length - 1]);
+    expect(last.step).toBe(READING_PATH.length);
+    expect(last.next).toBeNull();
+
+    const middle = getParcoursPosition('joy-boy');
+    expect(middle.previous?.slug).toBe('ponelyphes');
+    expect(middle.next?.slug).toBe('nika');
+  });
+
+  it('renvoie une position vide pour un article hors parcours', () => {
+    const off = getParcoursPosition('binks-no-sake');
+    expect(off.step).toBeNull();
+    expect(off.previous).toBeNull();
+    expect(off.next).toBeNull();
   });
 });

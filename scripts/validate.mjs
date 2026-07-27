@@ -78,7 +78,17 @@ const KNOWN_PAGES = new Set([
   '/verifier/paralleles',
   '/verifier/objections',
   '/verifier/contradictions',
+  '/verifier/questions',
   '/verifier/sources',
+  '/dossiers',
+  '/chapitres',
+  '/chapitres/derniere-analyse',
+  '/chapitres/toutes-les-analyses',
+  '/chapitres/predictions',
+  '/chapitres/modifications',
+  '/theorie/resume',
+  '/theorie/theorie-complete',
+  '/explorer/carte-mentale',
   '/aide',
   '/aide/faq',
   '/aide/glossaire',
@@ -202,6 +212,16 @@ for (const file of files) {
   while ((match = linkRe.exec(body)) !== null) {
     let path = match[1];
     path = path.replace(/[?#].*$/, '').replace(/\/$/, '') || '/';
+    // `/theorie/<slug>` et `/chapitres/<n>` sont générés dynamiquement : on valide
+    // le slug contre la collection plutôt que contre la liste statique.
+    const articleLink = path.match(/^\/theorie\/([a-z0-9-]+)$/);
+    if (articleLink) {
+      if (!articleIds.includes(articleLink[1])) {
+        errors.push(`${rel} : lien interne vers un article inexistant : "${match[1]}".`);
+      }
+      continue;
+    }
+    if (/^\/chapitres\/\d+$/.test(path)) continue;
     if (!KNOWN_PAGES.has(path)) {
       errors.push(`${rel} : lien interne cassé vers "${match[1]}".`);
     }

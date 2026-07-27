@@ -7,6 +7,8 @@ import EvidenceSection from '@components/EvidenceSection.astro';
 import ChapterReferences from '@components/ChapterReferences.astro';
 import ReadingProgressBar from '@components/ReadingProgressBar.astro';
 import BackToTop from '@components/BackToTop.astro';
+import ParcoursNav from '@components/ParcoursNav.astro';
+import RelationMap from '@components/RelationMap.astro';
 import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
 
@@ -88,6 +90,12 @@ const articleJsonLd = {
     />
 
     {
+      !parentEntry && frontmatter.related?.length > 0 && (
+        <RelationMap title={title} related={frontmatter.related} currentSlug={currentSlug} />
+      )
+    }
+
+    {
       parentEntry && (
         <aside class="analysis-notice">
           <span class="analysis-notice__tag">Article d’analyse</span>
@@ -105,6 +113,8 @@ const articleJsonLd = {
       <slot />
     </div>
   </article>
+
+  <ParcoursNav slug={currentSlug} />
 
   <!-- Article Reading Continuation Navigation -->
   <nav class="article-reading-nav" aria-label="Poursuite de lecture">

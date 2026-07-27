@@ -1,27 +1,279 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import { READING_PATH } from '@utils/parcours';
+import { getCollection } from 'astro:content';
+
+// Parcours de lecture séquentiel, aligné sur la navigation « article suivant »
+// affichée en bas de chaque fiche : une seule source (src/utils/parcours.ts).
+const allArticles = await getCollection('articles', ({ data }) => data.status === 'published');
+const parcours = READING_PATH.map((slug) => ({
+  slug,
+  title: allArticles.find((a) => a.id === slug)?.data.title ?? slug,
+  href: `/theorie/${slug}`,
+}));
 
 const sections = [
-  { id: 'cadre', title: '1. Le point de départ : le Siècle oublié comme présent', text: "La théorie propose de lire le Siècle oublié non comme un passé définitivement clos, mais comme l’histoire que le récit est encore en train de produire. Cette hypothèse inverse l’ordre habituel de lecture : les traces anciennes deviennent les échos d’événements à venir.", links: [['Le Siècle oublié est le présent', '/theorie/siecle-oublie-present'], ['Une communication à travers le temps', '/theorie/communication-temps']] },
-  { id: 'temps', title: '2. Ponéglyphes, mémoire et boucle temporelle', text: "Dans cette lecture, les Ponéglyphes ne sont pas seulement des archives. Ils participeraient à une transmission entre les époques. C’est le mécanisme le plus spéculatif de la théorie ; il doit donc être lu avec les objections et limites associées.", links: [['Les Ponéglyphes et le futur', '/theorie/ponelyphes-futur'], ['Objections sur les Ponéglyphes', '/verifier/objections']] },
-  { id: 'figures', title: '3. Luffy, Joy Boy et Nika', text: "Le cœur de l’hypothèse rapproche Luffy des noms de Joy Boy et Nika. Le site distingue les éléments observés dans le manga des interprétations qui en sont tirées, notamment autour de Zunesha, de l’Éveil et de la promesse de Joy Boy.", links: [['Joy Boy', '/theorie/joy-boy'], ['Nika', '/theorie/nika'], ['Monkey D. Luffy', '/theorie/luffy']] },
-  { id: 'monde', title: '4. Monde, destinations et One Piece', text: "La géographie — Grand Line, Laugh Tale, Red Line et les mers — structure le raisonnement. Les articles ci-dessous développent les hypothèses sur le trésor, la dernière île et l’évolution future du monde.", links: [['Dossiers du monde', '/dossiers#monde-destinations'], ['Laugh Tale', '/theorie/laugh-tale'], ['One Piece', '/theorie/one-piece-histoire']] },
-  { id: 'allies', title: '5. Armes antiques, peuples et transmission', text: "Poséidon, Pluton, Uranus, Elbaf, Wano et l’Île des Hommes-Poissons sont lus comme des acteurs et des lieux appelés à converger. Ces rapprochements sont présentés comme des pistes de lecture, pas comme des faits confirmés.", links: [['Armes antiques', '/dossiers#armes-antiques'], ['Elbaf et le Harley', '/theorie/elbaf-halley'], ['La volonté héritée', '/theorie/volonte-heritee']] },
-  { id: 'final', title: '6. Imu, le Déluge et la guerre finale', text: "La conclusion proposée associe la chute du Gouvernement mondial, le Déluge, la destruction de Red Line et la création d’All Blue. Elle rassemble plusieurs prédictions actuellement non confirmées : leur statut peut être suivi dans la section dédiée.", links: [['Imu Nerona', '/theorie/imu-nerona'], ['Le Déluge et All Blue', '/theorie/deluge-all-blue'], ['Prédictions', '/chapitres/predictions']] },
+  {
+    id: 'cadre',
+    title: '1. Le point de départ : le Siècle oublié comme présent',
+    text: 'La théorie propose de lire le Siècle oublié non comme un passé définitivement clos, mais comme l’histoire que le récit est encore en train de produire. Cette hypothèse inverse l’ordre habituel de lecture : les traces anciennes deviennent les échos d’événements à venir.',
+    links: [
+      ['Le Siècle oublié est le présent', '/theorie/siecle-oublie-present'],
+      ['Une communication à travers le temps', '/theorie/communication-temps'],
+    ],
+  },
+  {
+    id: 'temps',
+    title: '2. Ponéglyphes, mémoire et boucle temporelle',
+    text: 'Dans cette lecture, les Ponéglyphes ne sont pas seulement des archives. Ils participeraient à une transmission entre les époques. C’est le mécanisme le plus spéculatif de la théorie ; il doit donc être lu avec les objections et limites associées.',
+    links: [
+      ['Les Ponéglyphes et le futur', '/theorie/ponelyphes-futur'],
+      ['Objections sur les Ponéglyphes', '/verifier/objections'],
+    ],
+  },
+  {
+    id: 'figures',
+    title: '3. Luffy, Joy Boy et Nika',
+    text: 'Le cœur de l’hypothèse rapproche Luffy des noms de Joy Boy et Nika. Le site distingue les éléments observés dans le manga des interprétations qui en sont tirées, notamment autour de Zunesha, de l’Éveil et de la promesse de Joy Boy.',
+    links: [
+      ['Joy Boy', '/theorie/joy-boy'],
+      ['Nika', '/theorie/nika'],
+      ['Monkey D. Luffy', '/theorie/luffy'],
+    ],
+  },
+  {
+    id: 'monde',
+    title: '4. Monde, destinations et One Piece',
+    text: 'La géographie — Grand Line, Laugh Tale, Red Line et les mers — structure le raisonnement. Les articles ci-dessous développent les hypothèses sur le trésor, la dernière île et l’évolution future du monde.',
+    links: [
+      ['Dossiers du monde', '/dossiers#monde-destinations'],
+      ['Laugh Tale', '/theorie/laugh-tale'],
+      ['One Piece', '/theorie/one-piece-histoire'],
+    ],
+  },
+  {
+    id: 'allies',
+    title: '5. Armes antiques, peuples et transmission',
+    text: 'Poséidon, Pluton, Uranus, Elbaf, Wano et l’Île des Hommes-Poissons sont lus comme des acteurs et des lieux appelés à converger. Ces rapprochements sont présentés comme des pistes de lecture, pas comme des faits confirmés.',
+    links: [
+      ['Armes antiques', '/dossiers#armes-antiques'],
+      ['Elbaf et le Harley', '/theorie/elbaf-halley'],
+      ['La volonté héritée', '/theorie/volonte-heritee'],
+    ],
+  },
+  {
+    id: 'final',
+    title: '6. Imu, le Déluge et la guerre finale',
+    text: 'La conclusion proposée associe la chute du Gouvernement mondial, le Déluge, la destruction de Red Line et la création d’All Blue. Elle rassemble plusieurs prédictions actuellement non confirmées : leur statut peut être suivi dans la section dédiée.',
+    links: [
+      ['Imu Nerona', '/theorie/imu-nerona'],
+      ['Le Déluge et All Blue', '/theorie/deluge-all-blue'],
+      ['Prédictions', '/chapitres/predictions'],
+    ],
+  },
 ];
 ---
+
 <WikiLayout title="Théorie complète" currentPath="/theorie/theorie-complete">
   <article class="complete-page">
     <p class="eyebrow">Synthèse éditoriale</p>
     <h1>La théorie complète</h1>
-    <p class="intro">Cette page présente le fil directeur de la théorie et renvoie vers les articles disponibles pour l’argumentation détaillée. Les éléments non confirmés restent des interprétations ou des prédictions.</p>
-    <nav class="toc" aria-label="Sommaire de la théorie"><h2>Sommaire</h2><ol>{sections.map((section) => <li><a href={`#${section.id}`}>{section.title.replace(/^\d+\. /, '')}</a></li>)}</ol></nav>
-    {sections.map((section) => <section id={section.id} class="theory-section"><h2>{section.title}</h2><p>{section.text}</p><div class="links">{section.links.map(([label, href]) => <a href={href}>{label} →</a>)}</div></section>)}
-    <aside class="method"><h2>Comment lire cette synthèse</h2><p>Les pages « Vérifier » regroupent les preuves, objections et questions ouvertes. Une correspondance narrative ou une prédiction ne vaut pas confirmation canonique : les limites sont affichées lorsqu’elles sont connues.</p><a href="/verifier">Consulter la méthode de vérification →</a></aside>
+    <p class="intro">
+      Cette page présente le fil directeur de la théorie et renvoie vers les articles disponibles
+      pour l’argumentation détaillée. Les éléments non confirmés restent des interprétations ou des
+      prédictions.
+    </p>
+    <nav class="parcours-list" aria-label="Parcours de lecture de la théorie">
+      <h2>Parcours de lecture ({parcours.length} étapes)</h2>
+      <p class="parcours-list__intro">
+        Suivez cet ordre pour lire la théorie comme un livre. Chaque fiche affiche en bas un lien «
+        article précédent / article suivant » qui reprend exactement ce parcours.
+      </p>
+      <ol class="parcours-list__items">
+        {
+          parcours.map((item, i) => (
+            <li>
+              <a href={item.href}>
+                <span class="parcours-list__num">{i + 1}</span>
+                {item.title}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+      <a class="parcours-list__start" href={parcours[0].href}>Commencer par {parcours[0].title} →</a
+      >
+    </nav>
+
+    <nav class="toc" aria-label="Sommaire de la théorie">
+      <h2>Sommaire</h2><ol>
+        {
+          sections.map((section) => (
+            <li>
+              <a href={`#${section.id}`}>{section.title.replace(/^\d+\. /, '')}</a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+    {
+      sections.map((section) => (
+        <section id={section.id} class="theory-section">
+          <>
+            <h2>{section.title}</h2>
+            <p>{section.text}</p>
+            <div class="links">
+              {section.links.map(([label, href]) => (
+                <a href={href}>{label} →</a>
+              ))}
+            </div>
+          </>
+        </section>
+      ))
+    }
+    <aside class="method">
+      <h2>Comment lire cette synthèse</h2><p>
+        Les pages « Vérifier » regroupent les preuves, objections et questions ouvertes. Une
+        correspondance narrative ou une prédiction ne vaut pas confirmation canonique : les limites
+        sont affichées lorsqu’elles sont connues.
+      </p><a href="/verifier">Consulter la méthode de vérification →</a>
+    </aside>
   </article>
   <Footer />
 </WikiLayout>
 <style>
-.complete-page{max-width:760px}.eyebrow{color:var(--violet-light);font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}.complete-page h1{font-size:clamp(2rem,5vw,2.8rem);margin:.4rem 0 12px}.intro{font-size:1.05rem;line-height:1.65;color:var(--text-secondary);margin-bottom:36px}.toc,.theory-section,.method{border:1px solid var(--border-color);border-radius:var(--border-radius-lg);background:var(--gradient-card);padding:22px;margin-bottom:18px}.toc h2,.theory-section h2,.method h2{font-size:1.2rem;margin:0 0 12px}.toc ol{margin:0;padding-left:20px;columns:2}.toc li{margin:7px 0}.toc a,.links a,.method a{color:var(--cyan);text-decoration:none}.theory-section{scroll-margin-top:calc(var(--nav-h) + 16px)}.theory-section p,.method p{line-height:1.7;color:var(--text-secondary);margin:0}.links{display:flex;flex-wrap:wrap;gap:12px;margin-top:15px;font-size:.93rem}.method{border-left:3px solid var(--violet)}@media(max-width:600px){.toc ol{columns:1}}
+  .complete-page {
+    max-width: 760px;
+  }
+  .eyebrow {
+    color: var(--violet-light);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .complete-page h1 {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    margin: 0.4rem 0 12px;
+  }
+  .intro {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    margin-bottom: 36px;
+  }
+  .parcours-list {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--gradient-card);
+    padding: 22px;
+    margin-bottom: 18px;
+    border-left: 3px solid var(--cyan);
+  }
+  .parcours-list h2 {
+    font-size: 1.2rem;
+    margin: 0 0 8px;
+  }
+  .parcours-list__intro {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0 0 14px;
+    font-size: 0.95rem;
+  }
+  .parcours-list__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 4px;
+  }
+  .parcours-list__items a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.92rem;
+  }
+  .parcours-list__items a:hover {
+    background: color-mix(in srgb, var(--cyan) 8%, transparent);
+    color: var(--cyan);
+  }
+  .parcours-list__num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--violet) 18%, transparent);
+    color: var(--violet-light);
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .parcours-list__start {
+    display: inline-block;
+    margin-top: 14px;
+    color: var(--cyan);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .toc,
+  .theory-section,
+  .method {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--gradient-card);
+    padding: 22px;
+    margin-bottom: 18px;
+  }
+  .toc h2,
+  .theory-section h2,
+  .method h2 {
+    font-size: 1.2rem;
+    margin: 0 0 12px;
+  }
+  .toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  .toc li {
+    margin: 7px 0;
+  }
+  .toc a,
+  .links a,
+  .method a {
+    color: var(--cyan);
+    text-decoration: none;
+  }
+  .theory-section {
+    scroll-margin-top: calc(var(--nav-h) + 16px);
+  }
+  .theory-section p,
+  .method p {
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 15px;
+    font-size: 0.93rem;
+  }
+  .method {
+    border-left: 3px solid var(--violet);
+  }
+  @media (max-width: 600px) {
+    .toc ol {
+      columns: 1;
+    }
+  }
 </style>

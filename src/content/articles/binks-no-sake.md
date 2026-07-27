@@ -7,6 +7,8 @@ certainty: "moyenne"
 lastUpdatedChapter: 1188
 sources: []
 order: 53
+parent: "brook"
+related: ["brook", "equipage-rumbar", "dozan", "volonte-heritee"]
 ---
 
 ## La chanson mystérieuse
