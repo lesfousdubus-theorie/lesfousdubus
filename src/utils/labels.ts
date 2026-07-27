@@ -15,12 +15,10 @@ export const certaintyLabels: Record<Certainty, { label: string; color: BadgeCol
 };
 
 export const effectLabels: Record<string, string> = {
-  renforcement: 'Approfondissement',
+  fondation: 'Fondation',
+  approfondissement: 'Approfondissement',
   'nouvelle-piste': 'Nouvelle piste',
   modification: 'Mise à jour',
-  contradiction: 'Contradiction',
-  refutation: 'Réfutation',
-  'aucun-apport': 'Aucun apport',
 };
 
 export const categoryLabels: Record<string, string> = {

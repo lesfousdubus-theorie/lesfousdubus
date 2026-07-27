@@ -22,8 +22,7 @@ const { Content } = await render(entry);
       <span class="badge-chapter">Chapitre {entry.data.chapter}</span>
       <span class="badge-effect" class:list={[
         { 'badge-effect--violet': entry.data.effect === 'nouvelle-piste' },
-        { 'badge-effect--gold': entry.data.effect === 'renforcement' || entry.data.effect === 'modification' },
-        { 'badge-effect--alert': entry.data.effect === 'contradiction' || entry.data.effect === 'refutation' },
+        { 'badge-effect--gold': entry.data.effect === 'approfondissement' || entry.data.effect === 'modification' },
       ]}>{effectLabel(entry.data.effect)}</span>
     </div>
     <h1>{entry.data.title}</h1>

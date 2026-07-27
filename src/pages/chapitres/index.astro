@@ -60,7 +60,7 @@ const sortedChapters = chapters.sort((a, b) => b.data.chapter - a.data.chapter);
             <span class="badge-chapter">Chap {ch.data.chapter}</span>
             <span class="badge-effect" class:list={[
               { 'badge-effect--violet': ch.data.effect === 'nouvelle-piste' },
-              { 'badge-effect--gold': ch.data.effect === 'renforcement' || ch.data.effect === 'modification' },
+              { 'badge-effect--gold': ch.data.effect === 'approfondissement' || ch.data.effect === 'modification' },
             ]}>{effectLabel(ch.data.effect)}</span>
           </div>
           <h4>{ch.data.title}</h4>
