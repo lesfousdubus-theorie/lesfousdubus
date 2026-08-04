@@ -5,6 +5,7 @@ import Footer from '@components/Footer.astro';
 interface LoopStep {
   id: number;
   surTitle: string;
+  shortLabel: string;
   title: string;
   text: string;
   tags: string[];
@@ -16,6 +17,7 @@ const loopSteps: LoopStep[] = [
   {
     id: 1,
     surTitle: "Présent du manga",
+    shortLabel: "Présent",
     title: "Le monde actuel",
     text: "Selon la théorie, l’histoire centrale se déroule maintenant. Luffy progresse sur Grand Line, libère des peuples, rassemble sans le savoir la future coalition de Joy Boy et s’approche du moment où tout doit basculer. Imu, de son côté, gouverne dans l’ombre et cherche à empêcher l’avenir qu’il redoute.",
     tags: ["Luffy", "Imu", "Alliés", "Coalition"],
@@ -25,42 +27,47 @@ const loopSteps: LoopStep[] = [
   {
     id: 2,
     surTitle: "Clé de la théorie",
+    shortLabel: "Clé",
     title: "Laugh Tale et le “trop tôt” de Roger",
     text: "La théorie propose que Laugh Tale ne soit pas seulement une destination cachée dans l’espace, mais aussi un lieu lié au temps. Roger y serait arrivé trop tôt, ce qui expliquerait pourquoi il a compris quelque chose d’essentiel sans pouvoir agir lui-même.",
-    tags: ["Laugh-Tale", "Roger", "Lodestar", "Temps"],
+    tags: ["Laugh Tale", "Roger", "Lodestar", "Temps"],
     image: "/images/threads/silhouette-scan-1181-roger/img_6.jpg",
     chapterBadge: "Chapitre 967"
   },
   {
     id: 3,
     surTitle: "Futur proche",
+    shortLabel: "Futur proche",
     title: "La guerre finale",
     text: "Dans la lecture des Fous du Bus, la grande guerre n’appartient pas au passé : elle arrive. Luffy et ses alliés affronteront Imu, le Gouvernement mondial, les Dragons Célestes et les forces qui maintiennent le monde dans l’oppression.",
-    tags: ["Guerre-finale", "Imu", "Gouvernement-mondial", "Joy-Boy"],
+    tags: ["Guerre finale", "Imu", "Gouvernement mondial", "Joy Boy"],
     image: "/images/threads/coalition-des-20-rois/img_2.png",
     chapterBadge: "Futur Proche"
   },
   {
     id: 4,
     surTitle: "Conséquence de la guerre",
+    shortLabel: "Conséquence",
     title: "Le déluge et la transformation du monde",
     text: "La théorie avance que l’utilisation des Armes antiques provoquera la destruction de Red Line, la montée des eaux et la naissance d’un nouveau monde. Ce bouleversement rendrait possibles All Blue, la réunion des peuples et l’accomplissement de plusieurs promesses majeures du récit.",
-    tags: ["Red-Line", "Déluge", "All-Blue", "Armes-antiques"],
+    tags: ["Red Line", "Déluge", "All Blue", "Armes antiques"],
     image: "/images/threads/le-deluge-et-all-blue/img_7.jpg",
     chapterBadge: "Changement de monde"
   },
   {
     id: 5,
     surTitle: "Futur",
+    shortLabel: "Futur",
     title: "Le monde que l’histoire appellera “Royaume antique”",
-    text: "Selon la théorie, ce que le monde considers plus tard comme le “Royaume antique” pourrait en réalité être le monde futur né après la guerre. Ce royaume ne serait pas une civilisation disparue du passé, mais un monde nouveau, technologiquement avancé, créé après la victoire de Luffy et de ses alliés.",
-    tags: ["Royaume-antique", "Futur", "Technologie", "Vegapunk"],
+    text: "Selon la théorie, ce que le monde considère plus tard comme le “Royaume antique” pourrait en réalité être le monde futur né après la guerre. Ce royaume ne serait pas une civilisation disparue du passé, mais un monde nouveau, technologiquement avancé, créé après la victoire de Luffy et de ses alliés.",
+    tags: ["Royaume antique", "Futur", "Technologie", "Vegapunk"],
     image: "/images/threads/professeur-clover-et-ohara/img_3.jpg",
     chapterBadge: "Nouvel Âge"
   },
   {
     id: 6,
     surTitle: "Mémoire du futur",
+    shortLabel: "Mémoire",
     title: "La rédaction et la transmission de l’histoire",
     text: "Dans cette théorie, l’histoire véritable serait ensuite gravée, transmise ou envoyée vers le passé. Les Ponéglyphes deviendraient alors une mémoire du futur : non pas le récit d’un passé oublié, mais le témoignage des événements que Luffy et ses alliés auront réellement vécus.",
     tags: ["Ponéglyphes", "Robin", "Mémoire", "Transmission"],
@@ -70,18 +77,20 @@ const loopSteps: LoopStep[] = [
   {
     id: 7,
     surTitle: "Il y a 800 ans",
+    shortLabel: "800 ans",
     title: "Le passé reçoit les traces du futur",
     text: "Une fois ces informations reçues dans le passé, le monde interprète cette mémoire comme l’histoire d’une époque ancienne. C’est là que naissent les missions de conservation : protéger Noah, transmettre le nom de Nika, garder certains Ponéglyphes, préserver des royaumes, attendre Joy Boy.",
-    tags: ["Noah", "Nika", "Alabasta", "Wa-no-Kuni", "Shandora", "Zou"],
+    tags: ["Noah", "Nika", "Alabasta", "Wa no Kuni", "Shandora", "Zou"],
     image: "/images/threads/lili-vivi-et-les-poneglyphes/img_3.jpg",
     chapterBadge: "800 ans plus tôt"
   },
   {
     id: 8,
     surTitle: "Boucle complète",
+    shortLabel: "Boucle",
     title: "Huit siècles d’attente aboutissent à Luffy",
     text: "Pendant huit siècles, peuples, royaumes et témoins attendent l’accomplissement de cette histoire. Le présent du manga devient alors le point où la boucle se referme : Luffy accomplit ce que le monde croyait être le passé, et devient la figure que l’histoire nommera Joy Boy.",
-    tags: ["Luffy", "Joy-Boy", "Boucle", "Accomplissement"],
+    tags: ["Luffy", "Joy Boy", "Boucle", "Accomplissement"],
     image: "/images/threads/emeth-robot-du-futur/img_6.png",
     chapterBadge: "Boucle accomplie"
   }
@@ -114,7 +123,7 @@ const loopSteps: LoopStep[] = [
           aria-label={`Aller à l'étape ${step.id}`}
         >
           <span class="stepper-num">{step.id}</span>
-          <span class="stepper-label">{step.surTitle}</span>
+          <span class="stepper-label">{step.shortLabel}</span>
         </button>
       ))}
     </div>
@@ -167,7 +176,7 @@ const loopSteps: LoopStep[] = [
 
                 <div class="card-tags">
                   {step.tags.map((tag) => (
-                    <span class="tag-pill">#{tag}</span>
+                    <span class="tag-pill">{tag}</span>
                   ))}
                 </div>
 
@@ -272,17 +281,17 @@ const loopSteps: LoopStep[] = [
   /* STEPPER NAVIGATION BAR */
   .stepper-bar {
     position: relative;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
     align-items: center;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 16px;
-    padding: 12px 18px;
+    padding: 12px 6px;
     margin-bottom: 24px;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
   }
 
   .stepper-bar::-webkit-scrollbar {
@@ -291,24 +300,23 @@ const loopSteps: LoopStep[] = [
 
   .stepper-track-bg {
     position: absolute;
-    top: 50%;
-    left: 40px;
-    right: 40px;
+    top: 28px;
+    left: calc(100% / 16);
+    right: calc(100% / 16);
     height: 3px;
     background: var(--surface);
     z-index: 1;
-    transform: translateY(-50%);
   }
 
   .stepper-progress {
     position: absolute;
-    top: 50%;
-    left: 40px;
+    top: 28px;
+    left: calc(100% / 16);
     height: 3px;
     width: 0%;
+    max-width: calc(100% - (100% / 8));
     background: linear-gradient(90deg, var(--cyan), var(--violet), var(--accent-gold));
     z-index: 2;
-    transform: translateY(-50%);
     transition: width 0.3s ease;
     box-shadow: 0 0 12px var(--glow-cyan);
   }
