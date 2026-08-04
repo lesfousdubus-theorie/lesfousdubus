@@ -213,11 +213,9 @@
       0 0 36px color-mix(in srgb, var(--glow-cyan) 45%, transparent);
   }
 
-  /* Glass effect */
+  /* Solid block effect (no transparency) */
   .glass {
-    background-color: color-mix(in srgb, var(--bg-main) 72%, transparent);
-    backdrop-filter: blur(14px) saturate(1.25);
-    -webkit-backdrop-filter: blur(14px) saturate(1.25);
+    background-color: var(--bg-secondary);
   }
 
   /* Decorative gradient border */
