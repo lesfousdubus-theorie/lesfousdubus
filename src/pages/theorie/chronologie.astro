@@ -218,19 +218,6 @@ const loopSteps: LoopStep[] = [
 </WikiLayout>
 
 <style>
-  /* COLOR PALETTE VARIABLES ACCORDING TO SPEC */
-  :root {
-    --bg-dark-main: #07020A;
-    --bg-dark-sec: #160B27;
-    --surface-dark: #22124A;
-    --violet-elec: #6E3BBC;
-    --magenta-energy: #AD57A7;
-    --cyan-teal: #4DE7FF;
-    --text-bright: #FEFBF8;
-    --text-muted: #DDE4EA;
-    --gold-accent: #F4B63F;
-  }
-
   .chrono-page-header {
     margin-bottom: 32px;
   }
@@ -241,9 +228,9 @@ const loopSteps: LoopStep[] = [
     gap: 8px;
     padding: 6px 14px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--violet-elec) 15%, transparent);
-    border: 1px solid color-mix(in srgb, var(--violet-elec) 35%, transparent);
-    color: var(--cyan-teal);
+    background: color-mix(in srgb, var(--violet) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--violet) 35%, transparent);
+    color: var(--cyan);
     font-size: 12.5px;
     font-weight: 600;
     margin-bottom: 16px;
@@ -253,31 +240,28 @@ const loopSteps: LoopStep[] = [
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: var(--cyan-teal);
-    box-shadow: 0 0 10px var(--cyan-teal);
+    background-color: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
     animation: pulse-glow 2s infinite ease-in-out;
   }
 
   @keyframes pulse-glow {
     0%, 100% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 16px var(--cyan-teal); }
+    50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 16px var(--cyan); }
   }
 
   .chrono-page-header h1 {
     font-size: clamp(2rem, 5vw, 2.8rem);
     font-weight: 800;
-    color: var(--text-bright);
+    color: var(--text-main);
     margin-bottom: 14px;
     line-height: 1.15;
     letter-spacing: -0.02em;
-    background: linear-gradient(135deg, var(--text-bright) 0%, var(--cyan-teal) 50%, var(--magenta-energy) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
   }
 
   .header-subtitle {
     font-size: 16.5px;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     max-width: 820px;
     line-height: 1.6;
     margin-bottom: 32px;
@@ -289,8 +273,8 @@ const loopSteps: LoopStep[] = [
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--bg-dark-sec);
-    border: 1px solid color-mix(in srgb, var(--violet-elec) 30%, transparent);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 12px 18px;
     margin-bottom: 24px;
@@ -309,7 +293,7 @@ const loopSteps: LoopStep[] = [
     left: 40px;
     right: 40px;
     height: 3px;
-    background: color-mix(in srgb, var(--surface-dark) 80%, white 20%);
+    background: var(--surface);
     z-index: 1;
     transform: translateY(-50%);
   }
@@ -320,11 +304,11 @@ const loopSteps: LoopStep[] = [
     left: 40px;
     height: 3px;
     width: 0%;
-    background: linear-gradient(90deg, var(--cyan-teal), var(--violet-elec), var(--gold-accent));
+    background: linear-gradient(90deg, var(--cyan), var(--violet), var(--accent-gold));
     z-index: 2;
     transform: translateY(-50%);
     transition: width 0.3s ease;
-    box-shadow: 0 0 12px var(--cyan-teal);
+    box-shadow: 0 0 12px var(--glow-cyan);
   }
 
   .stepper-node {
@@ -346,9 +330,9 @@ const loopSteps: LoopStep[] = [
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--surface-dark);
-    border: 2px solid color-mix(in srgb, var(--violet-elec) 40%, transparent);
-    color: var(--text-muted);
+    background: var(--surface);
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
     font-size: 13px;
     font-weight: 700;
     display: flex;
@@ -358,30 +342,30 @@ const loopSteps: LoopStep[] = [
   }
 
   .stepper-node:hover .stepper-num {
-    border-color: var(--cyan-teal);
-    color: var(--cyan-teal);
+    border-color: var(--cyan);
+    color: var(--cyan);
     transform: scale(1.1);
   }
 
   .stepper-node.is-active .stepper-num {
-    background: var(--violet-elec);
-    border-color: var(--cyan-teal);
+    background: var(--violet);
+    border-color: var(--cyan);
     color: white;
-    box-shadow: 0 0 16px var(--violet-elec);
+    box-shadow: 0 0 14px var(--glow-violet);
     transform: scale(1.18);
   }
 
   .stepper-label {
     font-size: 11px;
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     white-space: nowrap;
     opacity: 0.7;
     transition: opacity 0.2s ease;
   }
 
   .stepper-node.is-active .stepper-label {
-    color: var(--cyan-teal);
+    color: var(--cyan);
     opacity: 1;
     font-weight: 700;
   }
@@ -404,12 +388,11 @@ const loopSteps: LoopStep[] = [
     gap: 10px;
     padding: 8px 18px;
     border-radius: 999px;
-    background: linear-gradient(90deg, color-mix(in srgb, var(--violet-elec) 25%, transparent), color-mix(in srgb, var(--gold-accent) 25%, transparent));
-    border: 1px solid var(--gold-accent);
-    color: var(--gold-accent);
+    background: color-mix(in srgb, var(--accent-gold) 12%, transparent);
+    border: 1px solid var(--accent-gold);
+    color: var(--accent-gold);
     font-size: 13.5px;
     font-weight: 700;
-    box-shadow: 0 0 20px rgba(244, 182, 63, 0.25);
   }
 
   .timeline-slider {
@@ -421,7 +404,7 @@ const loopSteps: LoopStep[] = [
     scroll-behavior: smooth;
     padding: 30px 10px 24px;
     scrollbar-width: thin;
-    scrollbar-color: var(--violet-elec) var(--surface-dark);
+    scrollbar-color: var(--violet) var(--surface);
   }
 
   .timeline-slider::-webkit-scrollbar {
@@ -429,12 +412,12 @@ const loopSteps: LoopStep[] = [
   }
 
   .timeline-slider::-webkit-scrollbar-track {
-    background: var(--bg-dark-sec);
+    background: var(--bg-secondary);
     border-radius: 4px;
   }
 
   .timeline-slider::-webkit-scrollbar-thumb {
-    background: var(--violet-elec);
+    background: var(--violet);
     border-radius: 4px;
   }
 
@@ -444,8 +427,8 @@ const loopSteps: LoopStep[] = [
     left: 20px;
     right: 20px;
     height: 4px;
-    background: linear-gradient(90deg, var(--cyan-teal) 0%, var(--violet-elec) 50%, var(--gold-accent) 100%);
-    box-shadow: 0 0 14px var(--violet-elec);
+    background: linear-gradient(90deg, var(--cyan) 0%, var(--violet) 50%, var(--accent-gold) 100%);
+    box-shadow: 0 0 12px var(--glow-violet);
     z-index: 1;
   }
 
@@ -470,45 +453,45 @@ const loopSteps: LoopStep[] = [
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: var(--bg-dark-main);
-    border: 3px solid var(--violet-elec);
-    color: var(--cyan-teal);
+    background: var(--bg-main);
+    border: 3px solid var(--violet);
+    color: var(--cyan);
     font-weight: 800;
     font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 16px var(--violet-elec);
+    box-shadow: 0 0 14px var(--glow-violet);
     transition: all 0.3s ease;
   }
 
   .step-card-item:hover .node-dot {
-    border-color: var(--cyan-teal);
-    box-shadow: 0 0 24px var(--cyan-teal);
+    border-color: var(--cyan);
+    box-shadow: 0 0 20px var(--glow-cyan);
     transform: scale(1.15);
   }
 
   .node-connector {
     width: 2px;
     height: 16px;
-    background: color-mix(in srgb, var(--violet-elec) 50%, transparent);
+    background: var(--border-color);
   }
 
   .card-box {
-    background: var(--bg-dark-sec);
-    border: 1px solid color-mix(in srgb, var(--surface-dark) 90%, var(--violet-elec) 30%);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 16px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     height: 100%;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
   }
 
   .step-card-item:hover .card-box {
-    border-color: var(--violet-elec);
-    box-shadow: 0 12px 36px color-mix(in srgb, var(--violet-elec) 25%, transparent);
+    border-color: var(--violet);
+    box-shadow: 0 8px 24px var(--glow-violet);
     transform: translateY(-4px);
   }
 
@@ -517,8 +500,8 @@ const loopSteps: LoopStep[] = [
     justify-content: space-between;
     align-items: center;
     padding: 14px 16px 10px;
-    background: color-mix(in srgb, var(--surface-dark) 50%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--violet-elec) 20%, transparent);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-color);
   }
 
   .sur-title {
@@ -526,7 +509,7 @@ const loopSteps: LoopStep[] = [
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: var(--gold-accent);
+    color: var(--accent-gold);
   }
 
   .badge-chip {
@@ -534,9 +517,9 @@ const loopSteps: LoopStep[] = [
     font-weight: 700;
     padding: 2px 8px;
     border-radius: 4px;
-    background: color-mix(in srgb, var(--cyan-teal) 15%, transparent);
-    color: var(--cyan-teal);
-    border: 1px solid color-mix(in srgb, var(--cyan-teal) 30%, transparent);
+    background: color-mix(in srgb, var(--cyan) 15%, transparent);
+    color: var(--cyan);
+    border: 1px solid color-mix(in srgb, var(--cyan) 30%, transparent);
   }
 
   .card-media {
@@ -544,7 +527,7 @@ const loopSteps: LoopStep[] = [
     width: 100%;
     height: 160px;
     overflow: hidden;
-    background: var(--bg-dark-main);
+    background: var(--bg-main);
   }
 
   .card-media img {
@@ -561,7 +544,7 @@ const loopSteps: LoopStep[] = [
   .card-media-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, transparent 50%, var(--bg-dark-sec) 100%);
+    background: linear-gradient(180deg, transparent 50%, var(--bg-secondary) 100%);
   }
 
   .card-content {
@@ -574,14 +557,14 @@ const loopSteps: LoopStep[] = [
   .card-content h3 {
     font-size: 16.5px;
     font-weight: 700;
-    color: var(--text-bright);
+    color: var(--text-main);
     margin-bottom: 10px;
     line-height: 1.3;
   }
 
   .card-content p {
     font-size: 13.5px;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     line-height: 1.6;
     margin-bottom: 16px;
     flex: 1;
@@ -595,19 +578,19 @@ const loopSteps: LoopStep[] = [
     gap: 8px;
     padding: 10px 16px;
     border-radius: 10px;
-    background: linear-gradient(90deg, var(--violet-elec), var(--cyan-teal));
-    color: white;
+    background: var(--surface);
+    color: var(--cyan);
+    border: 1px solid var(--cyan);
     font-size: 13px;
     font-weight: 700;
-    border: none;
     cursor: pointer;
-    box-shadow: 0 4px 16px color-mix(in srgb, var(--violet-elec) 40%, transparent);
     transition: all 0.25s ease;
   }
 
   .btn-loop-restart:hover {
+    background: var(--cyan);
+    color: var(--bg-main);
     transform: scale(1.04);
-    box-shadow: 0 6px 22px color-mix(in srgb, var(--cyan-teal) 50%, transparent);
   }
 
   .tag-pill {
@@ -615,29 +598,29 @@ const loopSteps: LoopStep[] = [
     font-weight: 600;
     padding: 3px 9px;
     border-radius: 999px;
-    background: var(--surface-dark);
-    color: var(--cyan-teal);
-    border: 1px solid color-mix(in srgb, var(--cyan-teal) 20%, transparent);
+    background: var(--surface);
+    color: var(--cyan);
+    border: 1px solid var(--border-color);
   }
 
   /* EXPLANATION BOX */
   .explanation-box {
-    background: var(--bg-dark-sec);
-    border: 1px solid var(--violet-elec);
-    border-radius: 20px;
-    padding: 32px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--violet);
+    border-radius: 16px;
+    padding: 28px;
     display: flex;
     gap: 24px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px color-mix(in srgb, var(--violet-elec) 15%, transparent);
   }
 
   .explanation-icon {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
     border-radius: 12px;
-    background: color-mix(in srgb, var(--violet-elec) 20%, transparent);
-    border: 1px solid var(--violet-elec);
-    color: var(--cyan-teal);
+    background: color-mix(in srgb, var(--violet) 15%, transparent);
+    border: 1px solid var(--violet);
+    color: var(--cyan);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -645,15 +628,15 @@ const loopSteps: LoopStep[] = [
   }
 
   .explanation-body h2 {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 800;
-    color: var(--text-bright);
+    color: var(--text-main);
     margin-bottom: 12px;
   }
 
   .explanation-body p {
     font-size: 15px;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     line-height: 1.65;
     margin-bottom: 16px;
   }
@@ -669,7 +652,7 @@ const loopSteps: LoopStep[] = [
 
   .explanation-list li {
     font-size: 14px;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     line-height: 1.5;
     padding-left: 20px;
     position: relative;
@@ -679,25 +662,24 @@ const loopSteps: LoopStep[] = [
     content: "•";
     position: absolute;
     left: 4px;
-    color: var(--cyan-teal);
+    color: var(--cyan);
     font-weight: bold;
   }
 
   .explanation-list strong {
-    color: var(--text-bright);
+    color: var(--text-main);
   }
 
   .isolated-quote {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 800;
-    color: var(--gold-accent);
+    color: var(--accent-gold);
     text-align: center;
     padding: 16px 20px;
     border-radius: 12px;
-    background: color-mix(in srgb, var(--gold-accent) 10%, transparent);
-    border: 1px solid color-mix(in srgb, var(--gold-accent) 30%, transparent);
+    background: color-mix(in srgb, var(--accent-gold) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-gold) 30%, transparent);
     letter-spacing: 0.3px;
-    box-shadow: 0 0 24px color-mix(in srgb, var(--gold-accent) 15%, transparent);
   }
 
   /* MOBILE ADAPTATION */
