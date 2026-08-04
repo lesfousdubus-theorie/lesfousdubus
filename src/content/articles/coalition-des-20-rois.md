@@ -1,7 +1,7 @@
 ---
 title: "La Coalition des 20 Rois et les Chevaliers Divins"
 summary: "Pourquoi la véritable coalition opposée à Joy Boy ne serait pas une alliance passée, mais l'affrontement présent entre Luffy et le Gorosei/Chevaliers Divins."
-category: "gouvernement-guerre"
+category: "gouvernement-mondial"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
@@ -24,3 +24,23 @@ Imu semble actuellement "rendre" ou réactiver l'autorité martiale aux descenda
 
 ## 5. Les armes de Luffy et la matérialisation
 Les anciennes représentations graphiques de Joy Boy le montrent souvent avec des armes ou des objets singuliers. Grâce aux capacités d'imagination illimitée du Gear 5, Luffy est en mesure de matérialiser ce dont il a besoin pour répondre à la coalition.
+
+
+## Illustrations & Preuves du Thread
+
+![Illustration du thread](/images/threads/coalition-des-20-rois/img_1.jpg)
+
+![Illustration du thread](/images/threads/coalition-des-20-rois/img_2.png)
+
+![Illustration du thread](/images/threads/coalition-des-20-rois/img_3.jpg)
+
+![Illustration du thread](/images/threads/coalition-des-20-rois/img_4.png)
+
+![Illustration du thread](/images/threads/coalition-des-20-rois/img_5.png)
+
+![Illustration du thread](/images/threads/coalition-des-20-rois/img_6.jpg)
+
+![Illustration du thread](/images/threads/coalition-des-20-rois/img_7.png)
+
+![Illustration du thread](/images/threads/coalition-des-20-rois/img_8.png)
+

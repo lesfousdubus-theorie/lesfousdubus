@@ -1,7 +1,7 @@
 ---
 title: "Zoro est Ryuma : Le Dieu des Lames"
 summary: "5 preuves expliquant pourquoi Roronoa Zoro deviendra le samouraï légendaire Ryuma dont l'histoire a célébré le nom."
-category: "figures-identites"
+category: "personnages-identites"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
@@ -24,3 +24,19 @@ Dans l'un de ses premiers One-Shots, *Monsters* (1994), Eiichiro Oda avait déj�
 
 ## 5. La cicatrice manquante
 Pour que l'apparence de Zoro devienne 100% conforme aux représentations murales de Ryuma, il ne lui manque plus qu'une dernière cicatrice sur la joue droite, qu'il obtiendra lors des prochains combats décisifs.
+
+
+## Illustrations & Preuves du Thread
+
+![Illustration du thread](/images/threads/zoro-est-ryuma/img_1.jpg)
+
+![Illustration du thread](/images/threads/zoro-est-ryuma/img_2.png)
+
+![Illustration du thread](/images/threads/zoro-est-ryuma/img_3.jpg)
+
+![Illustration du thread](/images/threads/zoro-est-ryuma/img_4.png)
+
+![Illustration du thread](/images/threads/zoro-est-ryuma/img_5.jpg)
+
+![Illustration du thread](/images/threads/zoro-est-ryuma/img_6.png)
+

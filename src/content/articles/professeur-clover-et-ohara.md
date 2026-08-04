@@ -24,3 +24,19 @@ Cela signifie que le rôle d'Ohara et des érudits est de transmettre le relais 
 
 ## 4. L'évolution de Vegapunk
 Contrairement aux archéologues d'Ohara, Vegapunk a d'abord douté. Au début de ses recherches, il restait sceptique vis-à-vis des interprétations audacieuses de Clover. Mais en étudiant les technologies d'Egghead et surtout en découvrant l'éveil du Gear 5 de Luffy (Nika / Joy Boy), le déclic s'est produit : la légende est vivante et se déroule sous ses yeux.
+
+
+## Illustrations & Preuves du Thread
+
+![Illustration du thread](/images/threads/professeur-clover-et-ohara/img_1.jpg)
+
+![Illustration du thread](/images/threads/professeur-clover-et-ohara/img_2.png)
+
+![Illustration du thread](/images/threads/professeur-clover-et-ohara/img_3.jpg)
+
+![Illustration du thread](/images/threads/professeur-clover-et-ohara/img_4.jpg)
+
+![Illustration du thread](/images/threads/professeur-clover-et-ohara/img_5.png)
+
+![Illustration du thread](/images/threads/professeur-clover-et-ohara/img_6.png)
+

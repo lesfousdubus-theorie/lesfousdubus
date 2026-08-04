@@ -1,7 +1,7 @@
 ---
 title: "Les Bases de la Théorie du Siècle Oublié"
 summary: "Comprendre en 5 points clés pourquoi nous lisons le Siècle Oublié en direct depuis le premier chapitre de One Piece."
-category: "fondations"
+category: "histoire-temporalite"
 status: "published"
 certainty: "central"
 lastUpdatedChapter: 1188
@@ -23,3 +23,15 @@ Les steppes indestructibles taillées par le clan Kozuki sont gravées par Nico 
 
 ## 4. La préparation des peuples
 Pourquoi envoyer des messages dans le passé ? Pour que les nations (Hommes-Poissons, Géants d'Elbaf, Mink, Wano) construisent les outils nécessaires (Noah, Pluton, frontières fermées) afin d'être prêts le jour J.
+
+
+## Illustrations & Preuves du Thread
+
+![Illustration du thread](/images/threads/les-bases-du-siecle-oublie/img_1.jpg)
+
+![Illustration du thread](/images/threads/les-bases-du-siecle-oublie/img_2.jpg)
+
+![Illustration du thread](/images/threads/les-bases-du-siecle-oublie/img_3.jpg)
+
+![Illustration du thread](/images/threads/les-bases-du-siecle-oublie/img_4.jpg)
+

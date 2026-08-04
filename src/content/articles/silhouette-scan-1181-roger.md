@@ -1,7 +1,7 @@
 ---
 title: "La Silhouette du Scan 1181 : Joy Boy ou Gol D. Roger ?"
 summary: "Analyse détaillée en 6 points expliquant pourquoi la mystérieuse silhouette dévoilée dans les récents chapitres pourrait être Gol D. Roger plutôt que Joy Boy."
-category: "figures-identites"
+category: "personnages-identites"
 status: "published"
 certainty: "hypothese"
 lastUpdatedChapter: 1188
@@ -24,3 +24,21 @@ Roger et Luffy partagent mot pour mot le même "rêve secret" (le fameux vœu qu
 
 ## 5. Pourquoi cela concorde avec les propos d'Imu
 Si Imu a longtemps cru que Gol D. Roger était le Joy Boy annoncé par la prophétie, alors la mort de Roger à Loguetown explique parfaitement pourquoi Imu pensait que *"Joy Boy était mort"*, avant de réaliser avec horreur à Marineford et Egghead que le véritable héritier arrive.
+
+
+## Illustrations & Preuves du Thread
+
+![Illustration du thread](/images/threads/silhouette-scan-1181-roger/img_1.png)
+
+![Illustration du thread](/images/threads/silhouette-scan-1181-roger/img_2.png)
+
+![Illustration du thread](/images/threads/silhouette-scan-1181-roger/img_3.png)
+
+![Illustration du thread](/images/threads/silhouette-scan-1181-roger/img_4.png)
+
+![Illustration du thread](/images/threads/silhouette-scan-1181-roger/img_5.png)
+
+![Illustration du thread](/images/threads/silhouette-scan-1181-roger/img_6.jpg)
+
+![Illustration du thread](/images/threads/silhouette-scan-1181-roger/img_7.png)
+

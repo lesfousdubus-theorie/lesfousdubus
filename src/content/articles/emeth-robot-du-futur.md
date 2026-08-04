@@ -1,7 +1,7 @@
 ---
 title: "Emeth, le Robot Géant venu du Futur"
 summary: "8 indices démontrant qu'Emeth n'est pas un vestige de l'Antiquité mais le chef-d'œuvre ultime de Franky conçu dans le futur."
-category: "science-energie"
+category: "technologies-pouvoirs"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
@@ -21,3 +21,19 @@ Lors de son sacrifice face au Gorosei sur Egghead, Emeth dénoue une corde renfe
 
 ## 4. L'assaut de Mary Geoise il y a 200 ans
 L'incursion mystérieuse d'Emeth à Mary Geoise il y a 200 ans prend tout son sens : il s'agissait d'un saut temporel imprécis ou d'une directive d'attente programmée avant la réactivation par le tambour de la libération (Gear 5).
+
+
+## Illustrations & Preuves du Thread
+
+![Illustration du thread](/images/threads/emeth-robot-du-futur/img_1.jpg)
+
+![Illustration du thread](/images/threads/emeth-robot-du-futur/img_2.jpg)
+
+![Illustration du thread](/images/threads/emeth-robot-du-futur/img_3.jpg)
+
+![Illustration du thread](/images/threads/emeth-robot-du-futur/img_4.png)
+
+![Illustration du thread](/images/threads/emeth-robot-du-futur/img_5.png)
+
+![Illustration du thread](/images/threads/emeth-robot-du-futur/img_6.png)
+

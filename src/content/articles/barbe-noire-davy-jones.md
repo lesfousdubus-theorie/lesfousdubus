@@ -1,7 +1,7 @@
 ---
 title: "Barbe Noire, alias Davy Jones et futur Roi du Monde"
 summary: "Comment Marshall D. Teach incarne la figure mythique de Davy Jones et s'apprête à ravir le titre de Roi du Monde à Mary Geoise."
-category: "figures-identites"
+category: "personnages-identites"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
@@ -21,3 +21,19 @@ Chez Oda, "Le Monde" désigne l'autorité suprême incarnée par Imu au sommet d
 
 ## 3. Le rôle de Catarina Devon et l'assaut sur Mary Geoise
 En touchant St. Saturn à Egghead, Catarina Devon a copié l'apparence physique et les empreintes d'un des Doyens du Gorosei. Cet élément prépare une infiltration directe des appartements sacrés de Mary Geoise. Teach ne cherche pas seulement des Road Ponéglyphes : il s'apprête à usurper le Trône Vide et à devenir le Roi du Monde (Davy Jones).
+
+
+## Illustrations & Preuves du Thread
+
+![Illustration du thread](/images/threads/barbe-noire-davy-jones/img_1.jpg)
+
+![Illustration du thread](/images/threads/barbe-noire-davy-jones/img_2.jpg)
+
+![Illustration du thread](/images/threads/barbe-noire-davy-jones/img_3.jpg)
+
+![Illustration du thread](/images/threads/barbe-noire-davy-jones/img_4.jpg)
+
+![Illustration du thread](/images/threads/barbe-noire-davy-jones/img_5.png)
+
+![Illustration du thread](/images/threads/barbe-noire-davy-jones/img_6.png)
+

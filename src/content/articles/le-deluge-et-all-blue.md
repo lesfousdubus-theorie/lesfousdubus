@@ -1,7 +1,7 @@
 ---
 title: "Le Déluge et la naissance de All Blue"
 summary: "Pourquoi la montée des eaux de 200 mètres n'a pas eu lieu il y a 800 ans mais constitue le climax de la bataille finale de One Piece."
-category: "monde-peuples"
+category: "peuples-royaumes"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
@@ -21,3 +21,21 @@ Pourquoi le peuple des Hommes-Poissons préserve-t-il l'Arche Noah depuis des si
 
 ## 4. La création de All Blue
 La destruction des parois mondiales et la montée des eaux qui en découle fusionneront les quatre mers (East Blue, West Blue, North Blue, South Blue) et Grand Line en un seul océan unifié : **All Blue**, le rêve de Sanji.
+
+
+## Illustrations & Preuves du Thread
+
+![Illustration du thread](/images/threads/le-deluge-et-all-blue/img_1.png)
+
+![Illustration du thread](/images/threads/le-deluge-et-all-blue/img_2.jpg)
+
+![Illustration du thread](/images/threads/le-deluge-et-all-blue/img_3.png)
+
+![Illustration du thread](/images/threads/le-deluge-et-all-blue/img_4.jpg)
+
+![Illustration du thread](/images/threads/le-deluge-et-all-blue/img_5.png)
+
+![Illustration du thread](/images/threads/le-deluge-et-all-blue/img_6.jpg)
+
+![Illustration du thread](/images/threads/le-deluge-et-all-blue/img_7.jpg)
+
