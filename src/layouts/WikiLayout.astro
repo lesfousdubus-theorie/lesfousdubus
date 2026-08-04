@@ -71,13 +71,10 @@ const hasToc = !!(headings && headings.length > 0);
 <style>
   .layout {
     display: grid;
-    /* Symmetrical outer tracks keep the reading column centered in the viewport.
-       The right track remains reserved on pages without a TOC as well: otherwise
-       the main block would be centered only in the space to the right of the nav. */
     grid-template-columns:
       var(--sidebar-left-width, 260px)
       minmax(0, 1fr)
-      var(--sidebar-left-width, 260px);
+      240px;
     flex: 1;
     width: 100%;
   }
@@ -86,7 +83,7 @@ const hasToc = !!(headings && headings.length > 0);
     grid-template-columns:
       var(--sidebar-left-width, 260px)
       minmax(0, 1fr)
-      var(--sidebar-left-width, 260px);
+      0px;
   }
 
   .sidebar-left-container {
@@ -252,7 +249,7 @@ const hasToc = !!(headings && headings.length > 0);
   }
 
   .sidebar-right {
-    width: 240px;
+    width: 100%;
     border-left: 1px solid var(--border-color);
     background-color: var(--bg-secondary);
   }
