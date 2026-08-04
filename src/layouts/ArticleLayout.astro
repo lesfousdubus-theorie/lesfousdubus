@@ -89,11 +89,7 @@ const articleJsonLd = {
       editorialStatus={frontmatter.editorialStatus}
     />
 
-    {
-      !parentEntry && frontmatter.related?.length > 0 && (
-        <RelationMap title={title} related={frontmatter.related} currentSlug={currentSlug} />
-      )
-    }
+
 
     {
       parentEntry && (
@@ -128,7 +124,6 @@ const articleJsonLd = {
 
   {articleEvidence.length > 0 && <EvidenceSection items={articleEvidence} />}
   {articleChapters.length > 0 && <ChapterReferences items={articleChapters} />}
-  {relatedArticles.length > 0 && <RelatedArticles articles={relatedArticles} />}
 
   <BackToTop />
   <Footer />

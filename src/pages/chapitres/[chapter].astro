@@ -33,16 +33,7 @@ const { Content } = await render(entry);
     <Content />
   </div>
 
-  {entry.data.themes.length > 0 && (
-    <div class="themes-box">
-      <h3>Thèmes abordés</h3>
-      <div class="themes-list">
-        {entry.data.themes.map((theme: string) => (
-          <span class="theme-tag">{theme}</span>
-        ))}
-      </div>
-    </div>
-  )}
+
 
   <div class="nav-links">
     <a href="/chapitres" class="nav-link">← Tous les chapitres</a>
