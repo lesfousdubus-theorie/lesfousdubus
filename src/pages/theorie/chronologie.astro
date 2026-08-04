@@ -159,21 +159,31 @@ const loopSteps: LoopStep[] = [
               <div class="card-media-overlay"></div>
             </div>
 
-            <div class="card-content">
-              <h3>{step.title}</h3>
-              <p>{step.text}</p>
+              <div class="card-content">
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
 
-              <div class="card-tags">
-                {step.tags.map((tag) => (
-                  <span class="tag-pill">#{tag}</span>
-                ))}
+                <div class="card-tags">
+                  {step.tags.map((tag) => (
+                    <span class="tag-pill">#{tag}</span>
+                  ))}
+                </div>
+
+                {step.id === 8 && (
+                  <button id="btn-loop-restart" class="btn-loop-restart">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                      <path d="M3 3v5h5"></path>
+                    </svg>
+                    <span>Boucler le cycle → Étape 1</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
-  </div>
 
   <!-- EXPLANATORY COMPLEMENTARY BLOCK -->
   <div class="explanation-box mt-12">
@@ -577,10 +587,27 @@ const loopSteps: LoopStep[] = [
     flex: 1;
   }
 
-  .card-tags {
+  .btn-loop-restart {
+    margin-top: 14px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--violet-elec), var(--cyan-teal));
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--violet-elec) 40%, transparent);
+    transition: all 0.25s ease;
+  }
+
+  .btn-loop-restart:hover {
+    transform: scale(1.04);
+    box-shadow: 0 6px 22px color-mix(in srgb, var(--cyan-teal) 50%, transparent);
   }
 
   .tag-pill {
@@ -748,6 +775,12 @@ const loopSteps: LoopStep[] = [
         }
       }
     };
+
+    const btnLoopRestart = document.getElementById('btn-loop-restart');
+    btnLoopRestart?.addEventListener('click', () => {
+      const step1 = document.getElementById('step-card-1');
+      step1?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    });
 
     slider.addEventListener('scroll', updateActiveStep);
     updateActiveStep();
