@@ -10,33 +10,27 @@ lastUpdatedChapter: 1188
 order: 70
 ---
 
-## Le paradoxe d'Emeth
+**Résumé** : Le robot géant Emeth découvert à Egghead conserve le Haki de Joy Boy et utilise des technologies d'alimentation et de nœuds de vent (Wind Knot). Selon la théorie des Fous du Bus, Emeth est le dernier *Battle Franky* construit par Franky à la fin de l'aventure et envoyé dans le passé.
 
-Emeth apparaît au chapitre 1120 et dit à Luffy : « Je suis si content de te revoir, Joy Boy. » Mais Luffy ne le connaît pas. Emeth réalise son erreur : « Tu lui ressembles tellement que j'étais nostalgique. »
+![Emeth le robot](/images/threads/emeth-robot-du-futur/img_1.jpg)
+![Emeth et Joyboy](/images/threads/emeth-robot-du-futur/img_2.jpg)
 
-En réalité, Emeth ne s'est pas trompé : il a bien rencontré Joy Boy. Mais il n'a pas voyagé 900 ans dans le futur, seulement 200 ans dans le passé. Il ne pouvait pas savoir que Joy Boy n'existe pas encore.
+## 1. La continuité des Battle Franky
+La silhouette, l'armature et la conception d'Emeth présentent une filiation directe avec le style de Franky. Son système d'engrenages et sa charpente d'épaulières rappellent immédiatement Franky Shogun en version colossale.
 
-## Le Gorosei ne le connaît pas
+![Franky et Emeth](/images/threads/emeth-robot-du-futur/img_3.jpg)
 
-Le Gorosei connaît Joy Boy, Nika, le Siècle oublié. Mais ils ignorent Emeth. Warcury dit au chapitre 1118 : « C'est le robot qui a attaqué Mary Geoise il y a 200 ans. »
+## 2. Le système d'alimentation autonome
+Sur Egghead, Lilith explique que la station tente de capter l'énergie naturelle environnante. Emeth utilise exactement cette source d'énergie mystérieuse qu'aucun savant contemporain n'arrive à reproduire, car c'est la technologie future perfectionnée par le scientifique des Mugiwaras.
 
-Il ne parle pas du compagnon de Joy Boy d'il y a 800 ans, seulement du robot d'il y a 200 ans. Preuve qu'Emeth n'a jamais existé il y a 8 siècles.
+![Energie autonome](/images/threads/emeth-robot-du-futur/img_4.png)
 
-## Le Battle Franky 39
+## 3. Le Wind Knot et le Haki scellé
+Lors de son sacrifice face au Gorosei sur Egghead, Emeth déroule une corde renfermant le Haki de déferlement de Joy Boy. Cette méthode de stockage d'énergie et d'éléments dans des cordes est exactement la technologie des *Wind Knots* étudiée par Nami à Weatheria.
 
-Franky construit des Battle Franky depuis l'enfance. Il est le BF-36, puis BF-37 après Baltigo, puis BF-38 (Iron Franky Shogun). Emeth serait le BF-39.
+![Wind knot et Haki](/images/threads/emeth-robot-du-futur/img_5.png)
 
-Les ressemblances morphologiques sont frappantes : gros bras, gros ventre, petites jambes et tête. Et la pose Weapon Left : bras gauche tendu, main droite dessus pour stabiliser. Emeth fait exactement la même pose au chapitre 1120.
+## 4. L'assaut de Mary Geoise il y a 200 ans
+L'incursion mystérieuse d'Emeth à Mary Geoise il y a 200 ans prend tout son sens : il s'agissait d'un saut temporel imprécis ou d'une directive d'attente programmée avant la réactivation par le tambour de la libération (Gear 5).
 
-## Mother Flame et le Odyssey
-
-Emeth porte dans son dos un appareil rond avec quatre entrées, exactement comme l'Odyssey Omnidrain Converter de Lilith au chapitre 1176. Cette machine aspire l'énergie ambiante pour la transformer en Mother Flame.
-
-Le cœur d'Emeth est Mother Flame, l'énergie du Gear 5. C'est pourquoi le robot se réveille uniquement quand Luffy se transforme en Nika.
-
-## Le Haki Node
-
-Le Weather Node de Haredas (chapitre 523) permet de sceller du vent dans des nœuds. La même technologie sera utilisée pour sceller le Haki des Rois de Luffy dans Emeth.
-
-Luffy ne reconnaît pas son propre Haki car ce n'est pas encore le sien : c'est le Haki de Joy Boy, celui de la fin du manga. Comme Harry Potter qui ne reconnaît pas son propre Patronus.
-
+![Assaut de Mary Geoise par Emeth](/images/threads/emeth-robot-du-futur/img_6.png)

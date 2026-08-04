@@ -10,25 +10,33 @@ order: 65
 parent: "vingt-rois"
 ---
 
-## La lecture des Fous du Bus : les Vingt Rois pourraient-ils devenir les Chevaliers Divins ?
+**Résumé** : Le récit officiel transmis par Vegapunk et le Gouvernement Mondial parle d'une coalition de 20 rois ayant vaincu Joy Boy il y a 800 ans. Selon la théorie des Fous du Bus, cette alliance décrit en réalité la bataille finale à venir entre Luffy (Joy Boy) et l'élite du Gouvernement Mondial (Gorosei et Chevaliers Divins).
 
-Cet article d'analyse est rattaché à la fiche neutre **Vingt Rois**. Il expose une hypothèse de la théorie, et non un fait établi par le manga : les vingt familles fondatrices du Gouvernement Mondial seraient celles des Chevaliers Divins actuels, et Garling pourrait les redéployer comme rois face à Joy Boy.
+![Illustration coalition](/images/threads/coalition-des-20-rois/img_1.jpg)
+![Illustration coalition](/images/threads/coalition-des-20-rois/img_2.png)
+![Illustration coalition](/images/threads/coalition-des-20-rois/img_3.jpg)
 
-## Les 14 familles connues
+## 1. Ce que nous dit le manga
+À travers les révélations du Professeur Vegapunk sur Egghead, le manga nous enseigne qu'il y a environ 800 ans, un personnage nommé Joy Boy aurait affronté une coalition de 20 rois (les 20 familles fondatrices du Gouvernement Mondial, à l'exception de la famille Nefertari de Alabasta).
 
-Sur les 20 familles fondatrices, nous en connaissons 14 : Nerona, Donquixote, Topman, Shepherd, Limosives, Mame, Figarland, Jaygarcia, Ethanbaron, Bavette, Satiel, Marcus, Rosward, Nefertari.
+![Ce que le manga nous dit](/images/threads/coalition-des-20-rois/img_4.png)
 
-Les statues des 20 rois sont visibles dans l'escalier infini de Mary Geoise (chapitre 906). La théorie y reconnaît les silhouettes des Chevaliers Divins sous leur capuche ; le manga ne l'établit pas explicitement.
+## 2. La relecture des Fous du Bus
+Dans notre grille de lecture, le Siècle Oublié ne décrit pas une guerre ancienne enterrée, mais les événements que Luffy et ses alliés provoquent actuellement sous nos yeux. La "coalition des 20 rois" est la représentation future de l'alliance mise en place par Imu pour écraser la rébellion finale.
 
-## Gaban ne les connaît pas
+![La vision des fous du bus](/images/threads/coalition-des-20-rois/img_5.png)
 
-Scopper Gaban, témoin de Laugh Tale, connaît l'histoire du monde mais ignore l'existence d'Imu et le lien avec les Chevaliers Divins. Au chapitre 1170, il dit : « Je pensais que tous les dragons célestes n'étaient que des bons à rien. »
+## 3. Des rois ou des Chevaliers Divins ?
+Une objection fréquente est : *"Ce sont des Chevaliers Divins et des Doyens, pas des rois régissants des nations."* Cependant, les récents développements (notamment la nomination de St. Figarland Garling au sein du Gorosei) montrent que le pouvoir suprême de Mary Geoise est directement issu des lignées nobles fondatrices. Les épées plantées autour du Trône Vide représentent ces 20 familles.
 
-La théorie y voit un indice que les Chevaliers Divins, tels qu'on les connaît, n'existaient pas il y a 800 ans. *Limite* : l'ignorance de Gaban peut aussi s'expliquer par le simple secret entourant Mary Geoise.
+![Chevaliers divins et Gorosei](/images/threads/coalition-des-20-rois/img_6.jpg)
 
-## La stratégie de Garling
+## 4. La restitution des épées et le combat final
+Imu semble actuellement "rendre" ou réactiver l'autorité martiale aux descendants de ces 20 familles pour faire face à l'éveil du Nika. La véritable guerre sainte opposera la coalition des figures de Mary Geoise à Luffy et ses alliés.
 
-Le nouveau dieu militaire de la défense scientifique pourrait envoyer les Chevaliers Divins reprendre leurs pays d'origine (comme les Donquixote retournent à Dressrosa). Ils deviendraient rois pour former des armées contre Joy Boy.
+![La guerre sainte](/images/threads/coalition-des-20-rois/img_7.png)
 
-Chamrock et Ginko furent envoyés sur Elbaf pour faire de Loki un Chevalier Divin et le nouveau souverain. Les épées d'Imu deviennent des rois pour la guerre du Siècle oublié.
+## 5. Les armes de Luffy et la matérialisation
+Les anciennes représentations graphiques de Joy Boy le montrent souvent avec des armes ou des objets singuliers. Grâce aux capacités d'imagination illimitée du Gear 5, Luffy est en mesure de matérialiser ce dont il a besoin pour répondre à la coalition.
 
+![Armes de Luffy Gear 5](/images/threads/coalition-des-20-rois/img_8.png)

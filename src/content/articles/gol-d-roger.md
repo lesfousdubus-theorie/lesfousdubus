@@ -10,16 +10,32 @@ order: 18
 related: ["luffy", "joy-boy", "laugh-tale"]
 ---
 
-## Présentation canonique
+**Résumé** : Les chapitres récents ont révélé une silhouette énigmatique associée aux récits anciens. Bien que beaucoup y aient vu la première apparition directe de Joy Boy, 6 indices troublants suggèrent qu'il s'agirait en réalité de Gol D. Roger.
 
-Gol D. Roger est le seul pirate à avoir conquis Grand Line et atteint Laugh Tale, ce qui lui valut le titre de Seigneur des Pirates. Porteur du D., il déclencha l'Âge d'Or de la piraterie par son exécution publique à Loguetown.
+![Silhouette scan 1181](/images/threads/silhouette-scan-1181-roger/img_1.png)
+![Silhouette comparée](/images/threads/silhouette-scan-1181-roger/img_2.png)
 
-## Ce que le manga établit
+## 1. Le principe de la double lecture
+Dans la vision du Mont Corvo, Imu attend désespérément l'arrivée du véritable Joy Boy (Luffy). Mais tout au long de l'histoire, d'autres prétendants ont été pris par erreur pour cette figure légendaire.
 
-- Roger et son équipage ont atteint Laugh Tale et appris la véritable histoire du monde.
-- Roger a ri en découvrant le One Piece et déclaré : « Joy Boy, j'aurais aimé naître à la même époque que toi. »
-- L'équipage de Roger savait que le véritable Joy Boy n'était pas encore né et que la prochaine génération accomplirait la promesse.
+![Double lecture](/images/threads/silhouette-scan-1181-roger/img_3.png)
 
-## La lecture des Fous du Bus
+## 2. Le mystère de la jeunesse de Roger
+Eiichiro Oda a sciemment gardé le passé et la jeunesse de Gol D. Roger sous le sceau du secret. Les rares aperçus de Roger jeune (notamment sa première rencontre avec Silvers Rayleigh avec son chapeau de paille) montrent une posture et une esthétique quasi identiques à cette silhouette.
 
-Dans la théorie, Roger est le premier à comprendre que le Siècle oublié n'a pas encore eu lieu. En atteignant Laugh Tale, il réalise que l'histoire est en train de s'écrire et que Joy Boy — Monkey D. Luffy — apparaîtra dans le futur. Il ne peut pas agir lui-même, mais il peut préparer le terrain : il lance l'Âge d'Or de la piraterie pour que Luffy puisse accomplir ce qui est écrit.
+![Jeunesse de Roger](/images/threads/silhouette-scan-1181-roger/img_4.png)
+
+## 3. Analyse de la composition de la case
+La posture, le port de tête et la découpe d'ombre de la vignette rappellent étrangement plusieurs planches iconiques de Gol D. Roger lors de son périple vers Loguetown et Grand Line.
+
+![Composition de la case](/images/threads/silhouette-scan-1181-roger/img_5.png)
+
+## 4. L'écho des mêmes paroles
+Roger et Luffy partagent mot pour mot le même "rêve secret" (le fameux vœu qui a fait rire Shanks et Oden). Si la légende a confondu leurs voix à travers les époques, il est naturel que les récits d'Imu et du Gouvernement associent leurs silhouettes.
+
+![Paroles identiques Roger et Luffy](/images/threads/silhouette-scan-1181-roger/img_6.jpg)
+
+## 5. Pourquoi cela concorde avec les propos d'Imu
+Si Imu a longtemps cru que Gol D. Roger était le Joy Boy annoncé par la prophétie, alors la mort de Roger à Loguetown explique parfaitement pourquoi Imu pensait que *"Joy Boy était mort"*, avant de réaliser avec horreur à Marineford et Egghead que le véritable héritier arrive.
+
+![Discours d'Imu sur Joyboy](/images/threads/silhouette-scan-1181-roger/img_7.png)

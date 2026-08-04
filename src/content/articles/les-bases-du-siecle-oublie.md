@@ -1,4 +1,5 @@
 ---
+parent: "siecle-oublie-present"
 title: "Les Bases de la Théorie du Siècle Oublié"
 summary: "Comprendre en 5 points clés pourquoi nous lisons le Siècle Oublié en direct depuis le premier chapitre de One Piece."
 category: "histoire-temporalite"

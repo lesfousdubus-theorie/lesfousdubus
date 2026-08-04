@@ -1,4 +1,5 @@
 ---
+parent: "zoro"
 title: "Zoro est Ryuma : Le Dieu des Lames"
 summary: "5 preuves expliquant pourquoi Roronoa Zoro deviendra le samouraï légendaire Ryuma dont l'histoire a célébré le nom."
 category: "personnages-identites"

@@ -1,4 +1,5 @@
 ---
+parent: "vingt-rois-chevaliers-divins"
 title: "La Coalition des 20 Rois et les Chevaliers Divins"
 summary: "Pourquoi la véritable coalition opposée à Joy Boy ne serait pas une alliance passée, mais l'affrontement présent entre Luffy et le Gorosei/Chevaliers Divins."
 category: "gouvernement-mondial"

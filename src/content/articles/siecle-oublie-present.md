@@ -9,31 +9,26 @@ sources: [1]
 order: 4
 ---
 
-## Le principe
+**Résumé** : Le principe fondateur de la théorie du Mont Corvo est d'inverser le vecteur temporel de l'Histoire de *One Piece*. Le Siècle Oublié n'est pas un passé révolu, mais la chronique gravée d'avance des aventures de Luffy et de son équipage.
 
-Tout ce qui est « antique » vient du futur. Les personnages actuels deviendront les légendes. L'histoire ne se répète pas : elle s'écrit pour la première fois.
+![Bases de la théorie](/images/threads/les-bases-du-siecle-oublie/img_1.jpg)
 
-## Pourquoi un flash-back classique ne fonctionne pas
+## 1. L'illusion du passé
+Le récit du Gouvernement Mondial présente les 800 dernières années comme l'après-guerre d'un royaume antique mystérieux. En réalité, le monde vit dans une attente prophétique.
 
-Si le Siècle oublié était un simple flash-back, nous verrions un garçon nommé Joy Boy, élastique, forme blanche, chapeau de paille, libérant le monde. C'est exactement l'histoire de Luffy.
+## 2. Le rôle des Ponéglyphes
+Les steppes indestructibles taillées par le clan Kozuki sont gravées par Nico Robin et envoyées 800 ans en arrière à la fin du récit. Ce que les personnages lisent comme des "légendes" sont les actions que les Mugiwaras viennent d'accomplir.
 
-Oda ne nous montrerait pas une copie de ce que nous lisons depuis 30 ans. Ce serait trop répétitif.
+![Les poneglyphes du futur](/images/threads/les-bases-du-siecle-oublie/img_2.jpg)
 
-## Les preuves qui s'accumulent
+## 3. Le trio de la boucle
+- **Nico Robin** : la seule capable de traduire et rédiger les messages sur les pierres.
+- **Momonosuke Kozuki** : l'héritier du clan capable de tailler les stèles.
+- **Nefertari Vivi** : la figure de la famille royale dispersant les pierres aux quatre coins des mers.
 
-1. **Roger** dit « trop tôt » — il est au bon endroit, mauvaise époque
-2. **Imu** confond Xebec/Teach, Titi/Vivi — il ne connaît pas les identités
-3. **La voix de Joy Boy** est l'ancienne voix de Luffy (Urara Takano)
-4. **Kaido** prouve que Joy Boy est celui qui le vainc
-5. **Kuma** a parié sa vie sur Luffy = Nika
-6. **Emeth** ne connaît pas le Gorosei — il vient du futur
-7. **Les prophéties** sont trop précises pour être du passé
-8. **Les Ponéglyphes** sont indestructibles — matière futuriste
-9. **Parallèles** : Les aventures attribuées à Joy Boy présentent de nombreux parallèles avec celles de Luffy.
+![Robin Momonosuke Vivi](/images/threads/les-bases-du-siecle-oublie/img_3.jpg)
 
-## Joy Boy n'est pas une origine, c'est une conséquence
+## 4. La préparation des peuples
+Pourquoi envoyer des messages dans le passé ? Pour que les nations (Hommes-Poissons, Géants d'Elbaf, Mink, Wano) construisent les outils nécessaires (Noah, Pluton, frontières fermées) afin d'être prêts le jour J.
 
-Joy Boy est le résultat de huit siècles d'oppression, de résistance et de transmission. Chaque peuple a joué son rôle : construire Noah, protéger les Ponéglyphes, transmettre le culte de Nika.
-
-Toutes ces volontés convergent vers Luffy. Il n'est pas la réincarnation d'un héros ancien. Il est l'homme créé par l'histoire elle-même.
-
+![L'arche Noah et les hommes poissons](/images/threads/les-bases-du-siecle-oublie/img_4.jpg)

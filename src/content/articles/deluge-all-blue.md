@@ -9,29 +9,28 @@ sources: [1113, 1115, 1114]
 order: 2
 ---
 
-## Le discours de Vegapunk
+**Résumé** : Le message mondial de Vegapunk affirme que le monde s'est effondré sous une montée des eaux de 200 mètres au cours du Siècle Oublié. Selon notre analyse, ce grand cataclysme n'est pas un souvenir du passé mais l'événement cataclysmique imminent qui détruira Red Line et engendrera la mer légendaire : All Blue.
 
-Au chapitre 1113, Vegapunk annonce que le monde va sombrer sous l'océan. Le niveau de la mer augmentera de 200m, comme lors de la « grande guerre d'il y a 800 ans ».
+![Le deluge](/images/threads/le-deluge-et-all-blue/img_1.png)
+![Le deluge et les eaux](/images/threads/le-deluge-et-all-blue/img_2.jpg)
 
-Mais cette guerre n'a pas encore eu lieu. Elle est toujours d'actualité, comme le confirme Vegapunk au chapitre 1115.
+## 1. L'incohérence des 200 mètres
+Dans le monde de *One Piece*, une immersion sous 200 mètres d'eau reste une profondeur extrêmement superficielle pour la navigation et l'exploration (rappelons que l'île des Hommes-Poissons se trouve à -10 000 mètres). Si un monde entier avait été englouti à seulement 200 mètres, ses cités et vestiges seraient découverts quotidiennement par les pirates et la Marine.
 
-## Les mégastructures
+![Montée des eaux 200m](/images/threads/le-deluge-et-all-blue/img_3.png)
 
-Depuis 700 ans, le Gouvernement Mondial construit des ponts titanesques : Tequila Wolf, Bourbon, Vodka, Rum. Ces ponts de plusieurs centaines de mètres de hauteur ne sont pas pour relier les îles mais pour survivre au déluge.
+## 2. La grande guerre à venir
+Tous les grands prophètes de l'œuvre — Kozuki Oden, Barbe Blanche, Vegapunk — ont annoncé une guerre totale d'une ampleur inédite. C'est l'utilisation des Armes Antiques (Mother Flame, Uranus, Pluton) durant le conflit présent entre Luffy et le Gouvernement qui va provoquer le véritable effondrement des continents et de Red Line.
 
-Le gouvernement sait que le niveau de la mer va monter et se prépare.
+![Prophétie de la grande guerre](/images/threads/le-deluge-et-all-blue/img_4.jpg)
 
-## La création d'All Blue
+## 3. La promesse de l'Arche Noah
+Pourquoi le peuple des Hommes-Poissons préserve-t-il l'Arche Noah depuis des siècles sous les ordres du Ponéglyphe de la forêt ? Parce que ce navire titanesque n'a pas servi dans le passé : il a été construit par avance pour sauver les habitants lors du Déluge **à venir**, lorsque Poséidon (Shirahoshi) et Luffy accompliront la promesse.
 
-La destruction de Red Line par les armes antiques réunifiera les quatre mers en une seule : All Blue. Cette mer légendaire où les poissons de chaque mer se retrouvent n'existe pas encore.
+![L'arche Noah](/images/threads/le-deluge-et-all-blue/img_5.png)
 
-Sanji la créera en détruisant Red Line. Le rêve du cuisinier sera réalisé par son propre capitaine.
+## 4. La création de All Blue
+La destruction des parois mondiales et la montée des eaux qui en découle fusionneront les quatre mers (East Blue, West Blue, North Blue, South Blue) et Grand Line en un seul océan unifié : **All Blue**, le rêve de Sanji.
 
-## Luffy, le premier pirate
-
-Vegapunk dit au chapitre 1114 que Joy Boy fut le premier pirate car il fut le premier à « prendre la mer ». Cette mer serait All Blue.
-
-Luffy deviendra le premier pirate à naviguer sur All Blue, la mer nouvelle jamais explorée. Comme Magellan qui a fait le premier le tour du monde, Luffy fera le premier le tour d'All Blue.
-
-C'est ainsi qu'il deviendra le « premier pirate » raconté par les Ponéglyphes.
-
+![Creation de All Blue](/images/threads/le-deluge-et-all-blue/img_6.jpg)
+![Effondrement du monde](/images/threads/le-deluge-et-all-blue/img_7.jpg)

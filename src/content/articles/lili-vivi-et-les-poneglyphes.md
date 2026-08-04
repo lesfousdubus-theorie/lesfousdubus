@@ -1,4 +1,5 @@
 ---
+parent: "lili"
 title: "Lili, Vivi et la disparition de la Reine d'Alabasta"
 summary: "Analyse des scans 1084 à 1086 : Pourquoi la Reine Lili et la Princesse Vivi sont une seule et même personne emportée par la boucle temporelle."
 category: "personnages-identites"

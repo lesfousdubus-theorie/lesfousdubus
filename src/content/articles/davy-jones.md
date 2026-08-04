@@ -12,25 +12,26 @@ parent: "davy-jones-fiche"
 related: ["davy-jones-fiche", "teach"]
 ---
 
-## Le clan Davy
+**Résumé** : Le nom de Davy Jones est cité dans le manga comme une légende des mers et l'ancien "Roi du Monde" d'après Rocks D. Xebec. Selon la théorie des Fous du Bus, Davy Jones n'est pas un pirate d'il y a 800 ans : c'est le titre que l'Histoire donnera à Marshall D. Teach (Barbe Noire).
 
-Il y a 800 ans vivait Davy Jones, un pirate légendaire dont le nom donna naissance au Davy Back Fight. Après sa mort, sa famille se cacha à God Valley.
+![Barbe noire Davy Jones](/images/threads/barbe-noire-davy-jones/img_1.jpg)
 
-## L'incident de God Valley
+## 1. L'ambition de Rocks et de Teach
+La ruche de Hachinosu, le navire *Saber of Xebec*, et le sang de la lignée D. : Teach marche exactement dans les pas de Rocks D. Xebec. L'objectif ultime de Rocks n'était pas de devenir le Roi des Pirates, mais le **Roi du Monde**.
 
-Il y a 38 ans, la famille Figarland tenta d'éradiquer le clan Davy. Rocks D. Xebec, descendant de Jones, survécut et transmit la volonté à son fils Marshall D. Teach.
+![Lignée Rocks et Teach](/images/threads/barbe-noire-davy-jones/img_2.jpg)
 
-## Imu confond
+## 2. "Le Monde" comme cible explicite
+Lors de l'incident d'Egghead, St. Jaygarcia Saturn demande à Catarina Devon et Van Augur quel est le véritable objectif de Barbe Noire. Leur réponse est cinglante et immédiate :
+> *"Le monde."*
 
-Au chapitre 1164, Imu appelle Xebec « Davy Jones ». Xebec répond qu'il y a méprise. Imu confond le père avec le fils, exactement comme il a confondu Titi avec Vivi.
+Chez Oda, "Le Monde" désigne l'autorité suprême incarnée par Imu au sommet de Mary Geoise.
 
-## Le plan de Teach
+![Catarina Devon et Saturn](/images/threads/barbe-noire-davy-jones/img_3.jpg)
 
-Teach attend depuis 20 ans. Il a infiltré l'équipage de Barbe Blanche pour obtenir le Yami Yami no Mi. Son objectif : devenir roi du monde en plantant son épée devant le trône vacant et en pénétrant le château de Panga.
+## 3. Le rôle de Catarina Devon et l'assaut sur Mary Geoise
+En touchant St. Saturn à Egghead, Catarina Devon a copié l'apparence physique et les empreintes d'un des Doyens du Gorosei. Cet élément prépare une infiltration directe des appartements sacrés de Mary Geoise. Teach ne cherche pas seulement des Road Ponéglyphes : il s'apprête à usurper le Trône Vide et à devenir le Roi du Monde (Davy Jones).
 
-Au chapitre 1164, Imu dit que Davy Jones n'a jamais été roi. C'est vrai : pas encore.
-
-## Kuma a sauvé Davy Jones
-
-C'est grâce au pouvoir de Kuma que Teach a survécu au massacre de God Valley. Le boucanier est à l'origine de la survie des deux rois qui effraient le plus Imu : Joy Boy et Davy Jones.
-
+![Infiltration Mary Geoise](/images/threads/barbe-noire-davy-jones/img_4.jpg)
+![Trone vide Teach](/images/threads/barbe-noire-davy-jones/img_5.png)
+![Barbe noire vainqueur](/images/threads/barbe-noire-davy-jones/img_6.png)
