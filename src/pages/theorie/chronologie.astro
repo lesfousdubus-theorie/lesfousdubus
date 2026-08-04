@@ -501,8 +501,7 @@ const loopSteps: LoopStep[] = [
 
   .step-card-item:hover .node-dot {
     border-color: var(--cyan);
-    box-shadow: 0 0 20px var(--glow-cyan);
-    transform: scale(1.15);
+    box-shadow: 0 0 16px var(--glow-cyan);
   }
 
   .node-connector {
@@ -520,13 +519,12 @@ const loopSteps: LoopStep[] = [
     flex-direction: column;
     height: 100%;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .step-card-item:hover .card-box {
     border-color: var(--violet);
-    box-shadow: 0 8px 24px var(--glow-violet);
-    transform: translateY(-4px);
+    box-shadow: 0 6px 20px var(--glow-violet);
   }
 
   .card-header-tag {
@@ -568,11 +566,6 @@ const loopSteps: LoopStep[] = [
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.4s ease;
-  }
-
-  .step-card-item:hover .card-media img {
-    transform: scale(1.08);
   }
 
   .card-media-overlay {
