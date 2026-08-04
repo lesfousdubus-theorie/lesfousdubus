@@ -288,8 +288,13 @@ const articleJsonLd = {
 
   .content :global(img) {
     border-radius: 10px;
-    margin: 1.5rem 0;
+    margin: 1.5rem auto;
     border: 1px solid var(--border-color);
+    max-height: 450px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
 
   .content :global(blockquote) {
