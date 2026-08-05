@@ -98,10 +98,7 @@ const nav: NavItem[] = [
       {
         title: 'Méthode',
         links: [
-          { label: 'Preuves', href: '/verifier/preuves' },
-          { label: 'Citations', href: '/verifier/citations' },
           { label: 'Parallèles', href: '/verifier/paralleles' },
-          { label: 'Objections', href: '/verifier/objections' },
           { label: 'Points encore à expliquer', href: '/verifier/questions' },
           { label: 'Sources', href: '/verifier/sources' },
         ],
@@ -518,16 +515,20 @@ const isActive = (href: string) =>
     border: 1px solid var(--border-color);
     border-radius: 8px;
     cursor: pointer;
+    outline: none;
     transition:
-      border-color 0.2s ease,
       color 0.2s ease,
-      box-shadow 0.2s ease;
+      background-color 0.2s ease;
   }
 
-  .search-trigger:hover {
+  .search-trigger:hover,
+  .search-trigger:focus,
+  .search-trigger:focus-visible {
     color: var(--text-main);
-    border-color: var(--cyan);
-    box-shadow: 0 0 10px var(--glow-cyan);
+    border-color: var(--border-color);
+    background-color: var(--surface);
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   .search-shortcut {

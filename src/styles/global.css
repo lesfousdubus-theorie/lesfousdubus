@@ -35,11 +35,7 @@
       var(--violet-light) 52%,
       var(--magenta) 100%
     );
-    --gradient-card: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--violet) 7%, transparent),
-      color-mix(in srgb, var(--cyan) 4%, transparent)
-    );
+    --gradient-card: var(--bg-secondary);
     --gradient-border: linear-gradient(120deg, var(--violet), var(--cyan-dim));
     --wave-url: url('/waves-dark.svg');
   }
@@ -68,11 +64,7 @@
       var(--violet-light) 52%,
       var(--magenta) 100%
     );
-    --gradient-card: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--violet) 9%, transparent),
-      color-mix(in srgb, var(--cyan) 6%, transparent)
-    );
+    --gradient-card: var(--bg-secondary);
     --gradient-border: linear-gradient(120deg, var(--violet), var(--cyan-dim));
     --wave-url: url('/waves-light.svg');
   }

@@ -151,7 +151,6 @@ navSections.push({
     { label: 'À propos', href: '/aide/a-propos', level: 0 },
     { label: 'FAQ', href: '/aide/faq', level: 0 },
     { label: 'Glossaire', href: '/aide/glossaire', level: 0 },
-    { label: 'Proposer une correction', href: '/aide/correction', level: 0 },
     { label: 'Crédits', href: '/aide/credits', level: 0 },
   ],
 });
@@ -278,32 +277,30 @@ navSections.push({
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 12px;
-    margin-left: -4px;
-    border-radius: 7px;
+    padding: 6px 12px;
+    border-radius: 8px;
     font-size: 13.5px;
     text-decoration: none;
     color: var(--text-secondary);
     transition: all 0.15s ease;
-    border-left: 2px solid transparent;
+    box-sizing: border-box;
   }
 
   .sidebar-link:hover {
-    background-color: color-mix(in srgb, var(--surface) 60%, transparent);
+    background-color: var(--surface);
     color: var(--text-main);
-    border-left-color: color-mix(in srgb, var(--violet) 40%, transparent);
   }
 
   .sidebar-link--active {
     color: var(--cyan);
-    font-weight: 500;
-    background: color-mix(in srgb, var(--cyan) 8%, transparent);
-    border-left-color: var(--cyan);
+    font-weight: 600;
+    background: color-mix(in srgb, var(--cyan) 12%, transparent);
+    box-shadow: inset 3px 0 0 var(--cyan);
+    border-radius: 8px;
   }
 
   .sidebar-link--active:hover {
-    background: color-mix(in srgb, var(--cyan) 12%, transparent);
-    border-left-color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 16%, transparent);
   }
 
   /* Sous-niveau : fiche canonique parente → article de démonstration rattaché. */

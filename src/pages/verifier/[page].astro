@@ -6,35 +6,11 @@ import { getCollection } from 'astro:content';
 export async function getStaticPaths() {
   return [
     {
-      params: { page: 'preuves' },
-      props: {
-        title: 'Preuves principales',
-        icon: '🧩',
-        desc: 'Les éléments probants tirés du manga qui soutiennent la théorie.',
-      },
-    },
-    {
-      params: { page: 'citations' },
-      props: {
-        title: 'Citations et scènes',
-        icon: '💬',
-        desc: 'Les dialogues et scènes clés du manga qui alimentent la théorie.',
-      },
-    },
-    {
       params: { page: 'paralleles' },
       props: {
         title: 'Parallèles',
         icon: '🔍',
         desc: 'Comparaisons entre personnages, lieux et événements à travers les époques.',
-      },
-    },
-    {
-      params: { page: 'objections' },
-      props: {
-        title: 'Objections',
-        icon: '⚠️',
-        desc: 'Les arguments contre la théorie et les réponses apportées.',
       },
     },
     {
