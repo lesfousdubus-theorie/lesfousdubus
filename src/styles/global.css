@@ -288,7 +288,7 @@ iframe {
 }
 
 /* Better focus styles for accessibility */
-:focus-visible {
+:focus-visible:not(.search-trigger) {
   outline: 2px solid var(--cyan);
   outline-offset: 2px;
   border-radius: 3px;

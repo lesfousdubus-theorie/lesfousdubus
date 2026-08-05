@@ -515,7 +515,8 @@ const isActive = (href: string) =>
     border: 1px solid var(--border-color);
     border-radius: 8px;
     cursor: pointer;
-    outline: none;
+    outline: none !important;
+    box-shadow: none !important;
     transition:
       color 0.2s ease,
       background-color 0.2s ease;
@@ -523,11 +524,13 @@ const isActive = (href: string) =>
 
   .search-trigger:hover,
   .search-trigger:focus,
-  .search-trigger:focus-visible {
+  .search-trigger:focus-visible,
+  .search-trigger:active {
     color: var(--text-main);
-    border-color: var(--border-color);
+    border-color: var(--border-color) !important;
     background-color: var(--surface);
     outline: none !important;
+    outline-offset: 0 !important;
     box-shadow: none !important;
   }
 
