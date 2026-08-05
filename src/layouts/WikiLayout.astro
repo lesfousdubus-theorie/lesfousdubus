@@ -74,7 +74,7 @@ const hasToc = !!(headings && headings.length > 0);
     grid-template-columns:
       var(--sidebar-left-width, 260px)
       minmax(0, 1fr)
-      240px;
+      var(--sidebar-left-width, 260px);
     flex: 1;
     width: 100%;
   }
@@ -83,7 +83,7 @@ const hasToc = !!(headings && headings.length > 0);
     grid-template-columns:
       var(--sidebar-left-width, 260px)
       minmax(0, 1fr)
-      0px;
+      var(--sidebar-left-width, 260px);
   }
 
   .sidebar-left-container {
