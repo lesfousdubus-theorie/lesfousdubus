@@ -77,15 +77,13 @@ const hasToc = !!(headings && headings.length > 0);
       240px;
     flex: 1;
     width: 100%;
-    max-width: 1440px;
-    margin: 0 auto;
   }
 
   .layout--no-toc {
     grid-template-columns:
       var(--sidebar-left-width, 260px)
       minmax(0, 1fr)
-      var(--sidebar-left-width, 260px);
+      0px;
   }
 
   .sidebar-left-container {
