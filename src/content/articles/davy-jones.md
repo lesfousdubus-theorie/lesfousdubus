@@ -1,37 +1,71 @@
 ---
-title: "Davy Jones et Marshall D. Teach"
-summary: "Fiche d'analyse sur le mythe de Davy Jones, Marshall D. Teach et le clan Davy."
+title: "Teach est Davy Jones : le futur Roi du Monde"
+summary: "5 preuves expliquant pourquoi Davy Jones ne serait pas un pirate du Siècle oublié, mais le nom légendaire que Marshall D. Teach recevra après avoir tenté de conquérir le monde."
 category: "personnages-identites"
 status: "published"
-sources: [1164]
+sources: [1164, 1107, 957]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 lastUpdatedChapter: 1188
 order: 46
 parent: "davy-jones-fiche"
-related: ["davy-jones-fiche", "teach"]
+related: ["davy-jones-fiche", "teach", "guerre-finale", "gouvernement-mondial", "gorosei"]
 ---
 
-**Résumé** : Le nom de Davy Jones est cité dans le manga comme une légende des mers et l'ancien "Roi du Monde" d'après Rocks D. Xebec. Selon la théorie des Fous du Bus, Davy Jones n'est pas un pirate d'il y a 800 ans : c'est le titre que l'Histoire donnera à Marshall D. Teach (Barbe Noire).
+**Résumé** : Davy Jones est présenté comme une figure légendaire liée aux profondeurs de l'océan, au Davy Back Fight et au titre de Roi du Monde. Selon la théorie des Fous du Bus, cette figure n'appartiendrait pas au passé. Elle correspondrait au destin futur de Marshall D. Teach, dernier héritier d'une lignée que le Gouvernement mondial aurait tenté d'effacer à God Valley.
 
-![Barbe noire Davy Jones](/images/threads/barbe-noire-davy-jones/img_1.jpg)
+![Teach est Davy Jones](/images/threads/barbe-noire-davy-jones/img_1.jpg)
 
-## 1. L'ambition de Rocks et de Teach
-La ruche de Hachinosu, le navire *Saber of Xebec*, et le sang de la lignée D. : Teach marche exactement dans les pas de Rocks D. Xebec. L'objectif ultime de Rocks n'était pas de devenir le Roi des Pirates, mais le **Roi du Monde**.
+## 1. Le clan Davy et God Valley
 
-![Lignée Rocks et Teach](/images/threads/barbe-noire-davy-jones/img_2.jpg)
+![God Valley et le clan Davy](/images/threads/barbe-noire-davy-jones/img_2.jpg)
 
-## 2. "Le Monde" comme cible explicite
-Lors de l'incident d'Egghead, St. Jaygarcia Saturn demande à Catarina Devon et Van Augur quel est le véritable objectif de Barbe Noire. Leur réponse est cinglante et immédiate :
-> *"Le monde."*
+Le nom « Davy » n'apparaît pas par hasard dans *One Piece*. Le Davy Back Fight, le casier de Davy Jones, la légende des profondeurs — tout converge vers un patronyme qui évoque une lignée plutôt qu'un simple individu. La théorie des Fous du Bus propose que cette lignée ait vécu sur God Valley, l'île effacée de l'Histoire par le Gouvernement Mondial après l'incident de 38 ans plus tôt.
 
-Chez Oda, "Le Monde" désigne l'autorité suprême incarnée par Imu au sommet de Mary Geoise.
+God Valley n'était pas seulement le théâtre de l'affrontement entre Rocks D. Xebec et l'alliance Garp-Roger. C'était, selon la théorie, le territoire du clan Davy — une famille que le Gouvernement considérait comme une menace existentielle. L'extermination de God Valley n'aurait pas visé uniquement Rocks et son équipage : elle aurait ciblé un peuple entier, une lignée que le pouvoir voulait éradiquer comme il avait tenté d'éradiquer le Siècle oublié.
 
-![Catarina Devon et Saturn](/images/threads/barbe-noire-davy-jones/img_3.jpg)
+Marshall D. Teach est un orphelin sans pays. Il a été trouvé enfant sur le navire de Barbe Blanche, seul, pleurant dans l'obscurité. La théorie propose qu'il soit le dernier survivant du clan Davy, arraché à God Valley avant ou pendant sa destruction. Son nom — Marshall **D.** Teach — porterait la marque du D. comme les héritiers de la Volonté, mais aussi celle de Davy comme les derniers membres d'une famille éteinte. Le Gouvernement pensait avoir achevé le clan à God Valley. Teach serait la preuve vivante de son échec.
 
-## 3. Le rôle de Catarina Devon et l'assaut sur Mary Geoise
-En touchant St. Saturn à Egghead, Catarina Devon a copié l'apparence physique et les empreintes d'un des Doyens du Gorosei. Cet élément prépare une infiltration directe des appartements sacrés de Mary Geoise. Teach ne cherche pas seulement des Road Ponéglyphes : il s'apprête à usurper le Trône Vide et à devenir le Roi du Monde (Davy Jones).
+## 2. Imu appelle Rocks « Davy Jones »
 
-![Infiltration Mary Geoise](/images/threads/barbe-noire-davy-jones/img_4.jpg)
-![Trone vide Teach](/images/threads/barbe-noire-davy-jones/img_5.png)
-![Barbe noire vainqueur](/images/threads/barbe-noire-davy-jones/img_6.png)
+![Imu et Rocks](/images/threads/barbe-noire-davy-jones/img_3.jpg)
+
+Au chapitre 1164, Imu prononce le nom de « Davy Jones » en référence à Rocks D. Xebec. Cette appellation est surprenante : Rocks n'a jamais été présenté comme Davy Jones dans le manga. Pourquoi Imu utiliserait-il ce nom pour désigner un pirate qu'il a déjà affronté et vaincu à God Valley ?
+
+La lecture de la théorie propose une explication : Imu connaît l'existence d'une figure annoncée, prophétisée ou redoutée sous le nom de Davy Jones, mais il ignore quand et sous quelle forme elle se manifestera. Face à Rocks — un pirate issu du clan du D., lié à God Valley, visant le trône du monde —, Imu a cru reconnaître l'accomplissement de cette menace. Il a identifié Rocks comme Davy Jones. Et il s'est trompé.
+
+Cette erreur d'identification est capitale. Elle révèle qu'Imu n'est pas omniscient : il craint une figure dont il ne maîtrise pas l'identité exacte. Rocks était un candidat plausible, mais son élimination à God Valley n'a pas mis fin à la menace. Le véritable Davy Jones — celui que l'Histoire retiendra sous ce nom — serait Teach, l'héritier que Rocks n'a jamais su qu'il portait dans son sillage. Imu a confondu le messager avec le message, le précurseur avec l'accomplissement.
+
+## 3. Rocks et Teach visent le même trône
+
+![Ambitions parallèles](/images/threads/barbe-noire-davy-jones/img_4.jpg)
+
+L'ambition de Rocks D. Xebec n'a jamais été de devenir Roi des Pirates. Son objectif, explicitement nommé dans le manga, était de devenir le **Roi du Monde**. Pas le roi d'un océan, pas le maître de Grand Line — le souverain absolu de la planète entière, celui qui siégerait au-dessus de tous les rois et de tous les gouvernements.
+
+Marshall D. Teach poursuit exactement le même objectif. Il ne se contente pas de chercher le One Piece comme les autres Empereurs. Il fait reconnaître Hachinosu comme un royaume affilié au Gouvernement Mondial. Il intègre le système politique des nations. Il obtient un statut officiel. Chacun de ces actes dépasse l'horizon classique de la piraterie : Teach construit une souveraineté légitime, pierre après pierre, en utilisant les propres mécanismes du Gouvernement contre lui.
+
+Le navire de Teach s'appelle le *Saber of Xebec*. Ce n'est pas un hommage discret : c'est une revendication ouverte. Teach ne cache pas son lien avec Rocks — il le brandit. Il ne marche pas dans l'ombre de son prédécesseur : il reprend son projet exactement là où God Valley l'a interrompu. Là où Rocks a échoué, Teach entend réussir. Et le trône qu'ils visent tous les deux n'est pas celui de Laugh Tale : c'est le Trône Vide de Mary Geoise.
+
+## 4. « Le monde » est l'objectif de Barbe Noire
+
+![Van Augur et Catarina Devon](/images/threads/barbe-noire-davy-jones/img_5.png)
+
+Lors de l'incident d'Egghead, St. Jaygarcia Saturn pose à Catarina Devon et Van Augur une question directe : quel est le véritable objectif de Barbe Noire ? La réponse est immédiate, prononcée sans hésitation ni emphase :
+
+> *« Le monde. »*
+
+Cette réplique est l'une des plus lourdes de conséquences dans *One Piece*. Elle distingue définitivement Teach de tous les autres pirates de sa génération. Luffy veut être le plus libre des mers. Shanks protège l'équilibre du monde. Kid cherchait la gloire. Teach, lui, veut **posséder** le monde — le gouverner, le dominer, le soumettre.
+
+Dans la grille de lecture des Fous du Bus, « le monde » ne désigne pas un concept abstrait. C'est le titre même du pouvoir incarné par Imu au sommet de Mary Geoise. Teach ne veut pas simplement vaincre Imu : il veut le *remplacer*. Il veut s'asseoir sur le Trône Vide, exercer l'autorité suprême, devenir le souverain visible que le Gouvernement Mondial a toujours dissimulé derrière cinq Doyens et un trône prétendument vacant.
+
+C'est exactement ce que la légende attribue à Davy Jones : un pirate si puissant qu'il a régné sur les mers et sur les terres, un roi absolu dont le nom est devenu synonyme du fond de l'océan. Teach n'hérite pas du titre de Davy Jones : il est en train de le créer par ses actes.
+
+## 5. Catarina Devon ouvre la route de Mary Geoise
+
+![Catarina Devon et l'infiltration](/images/threads/barbe-noire-davy-jones/img_6.png)
+
+À Egghead, Catarina Devon touche St. Jaygarcia Saturn. Par son pouvoir du Inu Inu no Mi, modèle Kyubi, elle copie instantanément l'apparence physique et les empreintes d'un des cinq Doyens du Gorosei. Ce geste, apparemment anodin dans le feu de l'action, est un acte de préparation stratégique d'une ampleur considérable.
+
+Avec l'apparence d'un Doyen, l'équipage de Barbe Noire peut franchir chaque porte, chaque contrôle, chaque protocole de sécurité de Mary Geoise. Saturn est l'un des cinq êtres les plus puissants de la hiérarchie mondiale : son visage est un passe universel. L'infiltration des appartements sacrés de Pangea, l'accès au château, la pénétration jusqu'au Trône Vide — tout devient possible avec ce seul déguisement. Catarina Devon n'a pas volé une apparence : elle a volé une clé.
+
+La théorie conclut sur l'opposition centrale du récit. Joy Boy et Davy Jones ne seraient pas deux figures du Siècle oublié, mais les deux grands pirates de la même époque — l'époque actuelle de *One Piece*. Luffy est Joy Boy : celui qui libère, qui refuse de gouverner, qui brise les chaînes sans vouloir en forger de nouvelles. Teach est Davy Jones : celui qui conquiert, qui usurpe, qui veut s'emparer du monde entier et régner par la force. L'un est la lumière du D., l'autre son ombre. Et leur affrontement final ne serait pas un écho du passé, mais l'événement fondateur qui créera les légendes que le monde appellera Joy Boy et Davy Jones dans huit cents ans.

@@ -9,7 +9,7 @@ certainty: "elevee"
 lastUpdatedChapter: 1188
 order: 50
 parent: "lili"
-related: ["lili"]
+related: ["lili", "lili-vivi-et-les-poneglyphes", "nefertari-vivi"]
 ---
 
 ## Les preuves physiques
@@ -32,3 +32,4 @@ Lili a écrit une lettre à sa descendance et dispersé les Ponéglyphes à trav
 
 L'opening 28 montre Vivi avec les Ponéglyphes qui s'éparpillent derrière elle, suggérant son rôle futur.
 
+L'article de démonstration *Vivi est Lili : la reine qui dispersera les Ponéglyphes* détaille cette analyse en cinq preuves.
