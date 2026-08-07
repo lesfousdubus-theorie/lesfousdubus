@@ -7,6 +7,7 @@ sources: [1, 434, 907, 1054, 1055]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "gol-d-roger"
 order: 24
 related: ["luffy", "gol-d-roger", "joy-boy", "gouvernement-mondial"]
 ---

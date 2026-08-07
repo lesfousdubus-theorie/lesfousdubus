@@ -7,6 +7,7 @@ sources: [818, 967, 1057]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "ponelyphes"
 order: 51
 ---
 

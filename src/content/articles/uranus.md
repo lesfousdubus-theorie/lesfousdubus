@@ -6,6 +6,7 @@ category: "armes-antiques"
 status: "published"
 certainty: "moyenne"
 reviewedUntilChapter: 1188
+parent: "armes-antiques"
 sources: []
 order: 30
 ---

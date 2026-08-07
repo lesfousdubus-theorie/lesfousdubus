@@ -7,6 +7,7 @@ sources: [1120, 1118, 1176, 523]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "vegapunk"
 order: 70
 ---
 

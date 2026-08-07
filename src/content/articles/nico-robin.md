@@ -7,6 +7,7 @@ sources: [391, 395, 398, 649, 818]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "ponelyphes"
 order: 26
 related: ["ponelyphes", "ponelyphes-futur", "rio-ponelyphe", "wa-no-kuni", "siecle-oublie"]
 ---

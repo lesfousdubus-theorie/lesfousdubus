@@ -6,6 +6,7 @@ status: "published"
 sources: []
 editorialStatus: "canon"
 reviewedUntilChapter: 1188
+parent: "poseidon-fiche"
 order: 31
 related: ["poseidon", "theorie-complete"]
 ---

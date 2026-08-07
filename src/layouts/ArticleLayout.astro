@@ -1,19 +1,16 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Breadcrumb from '@components/Breadcrumb.astro';
-import ArticleMeta from '@components/ArticleMeta.astro';
 import RelatedArticles from '@components/RelatedArticles.astro';
 import ChapterReferences from '@components/ChapterReferences.astro';
 import ReadingProgressBar from '@components/ReadingProgressBar.astro';
 import BackToTop from '@components/BackToTop.astro';
 import ParcoursNav from '@components/ParcoursNav.astro';
-import RelationMap from '@components/RelationMap.astro';
 import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
 
 const { title, description, currentPath, headings, frontmatter } = Astro.props;
 const socialImage = new URL('/og-default.png', Astro.site).toString();
-// SEO title riche (auditor) : si seoTitle fourni on l'utilise, sinon fallback historique via BaseLayout
 const seoTitle = frontmatter.seoTitle ?? undefined;
 
 // Fetch related articles from the articles collection
@@ -28,26 +25,15 @@ const relatedArticles = relatedArticleEntries.map((entry) => ({
   category: entry.data.category,
 }));
 
-// Fetch chapter references related to this article. These chapter entries are
-// the source of truth for visible "Chap." labels: `reviewedUntilChapter` is only
-// an editorial/relecture marker and can be shared by many unrelated articles.
+// Fetch chapter references related to this article.
 const chapterEntries = await getCollection('chapters');
 const articleChapters = chapterEntries
   .filter((c) => c.data.updatedArticles?.includes(currentSlug))
   .sort((a, b) => b.data.chapter - a.data.chapter);
-const updateChapter = articleChapters[0]?.data.chapter;
-
-// Article d'analyse rattaché à une fiche neutre : on affiche explicitement le
-// rattachement pour que son titre affirmatif soit lu comme une lecture de la
-// théorie, et non comme un fait canonique.
-const parentEntry = frontmatter.parent
-  ? allArticles.find((a) => a.id === frontmatter.parent)
-  : undefined;
 
 const breadcrumbItems = [
   { label: 'Accueil', href: '/' },
   { label: 'La théorie', href: '/theorie' },
-  ...(parentEntry ? [{ label: parentEntry.data.title, href: `/theorie/${parentEntry.id}` }] : []),
   { label: title },
 ];
 
@@ -115,27 +101,6 @@ const articleJsonLd = {
   <article data-pagefind-body>
     <h1 class="article-title">{title}</h1>
     {description && <p class="article-lead">{description}</p>}
-    <ArticleMeta
-      updateChapter={updateChapter}
-      editorialStatus={frontmatter.editorialStatus}
-      certainty={frontmatter.certainty}
-    />
-
-    <RelationMap title={title} related={frontmatter.related ?? []} currentSlug={currentSlug} />
-
-    {
-      parentEntry && (
-        <aside class="analysis-notice">
-          <span class="analysis-notice__tag">Article d’analyse</span>
-          <p>
-            Ce texte développe une lecture des Fous du Bus et non un fait établi par le manga. Il
-            est rattaché à la fiche neutre{' '}
-            <a href={`/theorie/${parentEntry.id}`}>{parentEntry.data.title}</a>, qui présente ce que
-            l’œuvre montre effectivement.
-          </p>
-        </aside>
-      )
-    }
 
     <div class="content">
       <slot />
@@ -210,39 +175,6 @@ const articleJsonLd = {
 </WikiLayout>
 
 <style>
-  .analysis-notice {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin: 20px 0 28px;
-    padding: 14px 16px;
-    border-radius: 10px;
-    border: 1px solid color-mix(in srgb, var(--violet) 30%, transparent);
-    background: color-mix(in srgb, var(--violet) 7%, transparent);
-    font-size: 14px;
-    line-height: 1.55;
-    color: var(--text-secondary);
-  }
-
-  .analysis-notice__tag {
-    align-self: flex-start;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    color: var(--violet-light);
-  }
-
-  .analysis-notice p {
-    margin: 0;
-  }
-
-  .analysis-notice a {
-    color: var(--cyan);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-
   .article-title {
     font-size: clamp(1.8rem, 4.5vw, 2.5rem);
     font-weight: 800;
@@ -318,9 +250,39 @@ const articleJsonLd = {
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
     position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: block;
+  }
+
+  /* Pastilles de statut au niveau des blocs : Canon, Interprétation, Hypothèse.
+     Usage dans le markdown : <div class="section-pill section-pill--canon">Canon</div> juste après le H2. */
+  .content :global(.section-pill) {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid;
+    margin: -6px 0 18px;
+  }
+
+  .content :global(.section-pill--canon) {
+    color: var(--cyan);
+    border-color: color-mix(in srgb, var(--cyan) 40%, transparent);
+    background: color-mix(in srgb, var(--cyan) 10%, transparent);
+  }
+
+  .content :global(.section-pill--interpretation) {
+    color: var(--violet-light);
+    border-color: color-mix(in srgb, var(--violet) 40%, transparent);
+    background: color-mix(in srgb, var(--violet) 10%, transparent);
+  }
+
+  .content :global(.section-pill--hypothese) {
+    color: var(--accent-gold);
+    border-color: color-mix(in srgb, var(--accent-gold) 40%, transparent);
+    background: color-mix(in srgb, var(--accent-gold) 10%, transparent);
   }
 
   .content :global(h2::before) {

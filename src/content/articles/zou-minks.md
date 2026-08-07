@@ -7,6 +7,7 @@ sources: [802, 820, 821, 1037]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "peuples-royaumes"
 order: 84
 related: ["peuples-royaumes", "zunesha-fiche", "ponelyphes", "guerre-finale", "joy-boy"]
 ---

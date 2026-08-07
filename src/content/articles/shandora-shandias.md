@@ -7,6 +7,7 @@ sources: [292, 293, 301, 429, 967]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "peuples-royaumes"
 order: 85
 related: ["peuples-royaumes", "ponelyphes", "poseidon-fiche", "dieux-one-piece", "guerre-finale"]
 ---

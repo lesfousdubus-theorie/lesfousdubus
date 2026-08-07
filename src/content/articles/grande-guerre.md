@@ -7,6 +7,7 @@ sources: [1113, 1114, 1115]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "guerre-finale"
 order: 1
 ---
 

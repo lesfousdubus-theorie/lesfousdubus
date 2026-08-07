@@ -5,6 +5,7 @@ category: 'figures-principales'
 status: 'published'
 certainty: 'elevee'
 reviewedUntilChapter: 1188
+parent: "luffy"
 related: ['joy-boy', 'communication-temps', 'tequila-wolf']
 sources: []
 order: 23

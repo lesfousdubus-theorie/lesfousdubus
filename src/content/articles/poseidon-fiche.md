@@ -8,6 +8,7 @@ sources: [610, 967, 653]
 editorialStatus: "canon"
 certainty: "central"
 reviewedUntilChapter: 1188
+parent: "armes-antiques"
 order: 34
 related: ["poseidon", "shirahoshi"]
 ---

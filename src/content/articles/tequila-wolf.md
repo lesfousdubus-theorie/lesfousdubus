@@ -5,6 +5,7 @@ category: 'peuples-royaumes'
 status: 'published'
 certainty: 'moyenne'
 reviewedUntilChapter: 1188
+parent: "guerre-finale"
 related: ['signification-d', 'communication-temps']
 order: 91
 sources: []

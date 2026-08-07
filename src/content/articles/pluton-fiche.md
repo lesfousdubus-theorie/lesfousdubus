@@ -8,6 +8,7 @@ sources: [431]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "armes-antiques"
 order: 33
 related: ["pluton"]
 ---

@@ -5,6 +5,7 @@ category: 'technologies-pouvoirs'
 status: 'published'
 certainty: 'elevee'
 reviewedUntilChapter: 1187
+parent: "vegapunk"
 related: ['nika', 'communication-temps']
 sources: []
 order: 72

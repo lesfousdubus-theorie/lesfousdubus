@@ -7,6 +7,7 @@ sources: [486, 487, 488]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "brook"
 order: 52
 related: ["brook", "binks-no-sake", "volonte-heritee", "dozan"]
 ---

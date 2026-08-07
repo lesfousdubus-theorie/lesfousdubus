@@ -1,5 +1,5 @@
 ---
-parent: "vegapunk"
+parent: "siecle-oublie"
 title: "Le Professeur Clover et les pionniers d'Ohara"
 summary: "Clover, Olvia et Vegapunk : comment les chercheurs d'Ohara ont été les tout premiers 'Fous du Bus' à deviner la vérité sur l'Histoire."
 category: "transmission-memoire"

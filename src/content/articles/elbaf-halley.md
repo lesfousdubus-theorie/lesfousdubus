@@ -5,6 +5,7 @@ category: "peuples-royaumes"
 status: "published"
 certainty: "moyenne"
 reviewedUntilChapter: 1188
+parent: "peuples-royaumes"
 sources: [1174, 1175, 1132]
 order: 90
 ---

@@ -5,6 +5,7 @@ category: "guerre-finale"
 status: "published"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "guerre-finale"
 sources: [1113, 1115, 1114]
 order: 2
 ---

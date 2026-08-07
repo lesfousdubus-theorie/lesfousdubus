@@ -7,6 +7,7 @@ sources: [906, 908, 1084, 1085, 1114]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "gouvernement-mondial"
 order: 69
 related: ["gouvernement-mondial", "imu-nerona-fiche", "vingt-rois", "red-line", "lunariens", "fruits-du-demon"]
 ---

@@ -7,6 +7,7 @@ sources: [963, 971, 972, 973]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "ponelyphes"
 order: 58
 related: ["communication-temps", "wa-no-kuni", "ponelyphes-futur", "madame-shirley", "fruits-du-demon"]
 ---
