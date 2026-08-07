@@ -37,17 +37,9 @@ const articleChapters = chapterEntries
   .sort((a, b) => b.data.chapter - a.data.chapter);
 const updateChapter = articleChapters[0]?.data.chapter;
 
-// Article d'analyse rattaché à une fiche neutre : on affiche explicitement le
-// rattachement pour que son titre affirmatif soit lu comme une lecture de la
-// théorie, et non comme un fait canonique.
-const parentEntry = frontmatter.parent
-  ? allArticles.find((a) => a.id === frontmatter.parent)
-  : undefined;
-
 const breadcrumbItems = [
   { label: 'Accueil', href: '/' },
   { label: 'La théorie', href: '/theorie' },
-  ...(parentEntry ? [{ label: parentEntry.data.title, href: `/theorie/${parentEntry.id}` }] : []),
   { label: title },
 ];
 
@@ -123,20 +115,6 @@ const articleJsonLd = {
 
     <RelationMap title={title} related={frontmatter.related ?? []} currentSlug={currentSlug} />
 
-    {
-      parentEntry && (
-        <aside class="analysis-notice">
-          <span class="analysis-notice__tag">Article d’analyse</span>
-          <p>
-            Ce texte développe une lecture des Fous du Bus et non un fait établi par le manga. Il
-            est rattaché à la fiche neutre{' '}
-            <a href={`/theorie/${parentEntry.id}`}>{parentEntry.data.title}</a>, qui présente ce que
-            l’œuvre montre effectivement.
-          </p>
-        </aside>
-      )
-    }
-
     <div class="content">
       <slot />
     </div>
@@ -210,39 +188,6 @@ const articleJsonLd = {
 </WikiLayout>
 
 <style>
-  .analysis-notice {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin: 20px 0 28px;
-    padding: 14px 16px;
-    border-radius: 10px;
-    border: 1px solid color-mix(in srgb, var(--violet) 30%, transparent);
-    background: color-mix(in srgb, var(--violet) 7%, transparent);
-    font-size: 14px;
-    line-height: 1.55;
-    color: var(--text-secondary);
-  }
-
-  .analysis-notice__tag {
-    align-self: flex-start;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    color: var(--violet-light);
-  }
-
-  .analysis-notice p {
-    margin: 0;
-  }
-
-  .analysis-notice a {
-    color: var(--cyan);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-
   .article-title {
     font-size: clamp(1.8rem, 4.5vw, 2.5rem);
     font-weight: 800;
