@@ -30,6 +30,7 @@ La « guerre finale » désigne l’affrontement annoncé entre le Gouvernement 
 ## Ce que le manga établit
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 Quatre personnages, à dix-sept ans d’intervalle éditorial, annoncent la même bataille :
 
 - **Barbe Blanche**, chapitre 576 : « Vous vivez dans la peur de cette grande bataille qui engloutira le monde. »
@@ -61,6 +62,7 @@ Poséidon (Shirahoshi et les rois des mers), Pluton (le navire de guerre) et Ura
 ## La lecture des Fous du Bus
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 Dans la lecture des Fous du Bus, cette guerre n’est pas un écho d’un conflit passé : c’est **le même conflit**, lu par le monde comme appartenant au Siècle oublié parce que les Ponéglyphes qui le racontent ont été gravés après coup puis envoyés en arrière.
 
 L’enchaînement proposé est le suivant :

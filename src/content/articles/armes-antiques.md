@@ -32,6 +32,7 @@ Ce sujet mélange des faits clairement établis et des hypothèses d’interpré
 ## Cadre général
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 - Les Armes antiques sont mentionnées pour la première fois dans la période d’Alabasta, à travers la lecture des Ponéglyphes par Crocodile (chapitre 200+), puis au fil de l’aventure.
 - Le Gouvernement mondial les considère comme des menaces existentielles : il en poursuit les détenteurs et interdit toute recherche à leur sujet.
 - Chacune des trois armes est associée à un élément (mer, terre, ciel) et à un peuple ou un savoir-faire particulier.
@@ -91,6 +92,7 @@ La lecture proposée sur ce site est que **l’identité et la nature exactes d�
 ## Les trois peuples liés
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 Dans la lecture de la théorie, chaque Arme antique est liée à un peuple qui la protège en attendant le Jour du Serment :
 
 - **Poséidon** ↔ le royaume Ryugu / les hommes-poissons
@@ -100,6 +102,7 @@ Dans la lecture de la théorie, chaque Arme antique est liée à un peuple qui l
 ## Rôle dans la guerre finale
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 La lecture des Fous du Bus attribue aux trois Armes antiques un rôle coordonné dans la destruction de Red Line et la création d’All Blue :
 
 - **Poséidon** : commanderait les Rois des Mers pour déplacer Noah et aider à la démolition de la partie sous-marine de Red Line.

@@ -30,6 +30,7 @@ Le professeur Clover a payé de sa vie pour avoir prononcé son nom à Ohara (ch
 ## Ce que le manga établit
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 - Un grand royaume a existé pendant le Siècle oublié ; il a été vaincu par une coalition de vingt rois, qui ont ensuite fondé le Gouvernement mondial (chapitres 395, 398).
 - Ce royaume maîtrisait une **technologie extrêmement avancée**, au point que Vegapunk lui-même tente de reconstituer certains de ses savoirs huit siècles plus tard.
 - Il a laissé plusieurs vestiges :
@@ -44,6 +45,7 @@ Le professeur Clover a payé de sa vie pour avoir prononcé son nom à Ohara (ch
 ## Un paradoxe technologique
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 Le principal indice qui intrigue les analystes est le suivant : comment une civilisation d’il y a huit cents ans a-t-elle pu produire une technologie **plus avancée** que celle du présent de Luffy ?
 
 Plusieurs réponses sont possibles :
@@ -56,6 +58,7 @@ Cette seconde hypothèse est celle que développe la théorie.
 ## La lecture des Fous du Bus : un royaume « à construire »
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 Dans la lecture temporelle, le Royaume antique n’est pas une civilisation disparue qu’il faudrait exhumer : c’est un **monde à construire**. Autrement dit, ce que le passé a pris pour le souvenir d’un royaume perdu serait en réalité le **souvenir transmis** du monde de l’après-guerre finale — un monde réunifié (All Blue), libéré du Gouvernement mondial, porté par Luffy et ses alliés.
 
 Les grandes lignes de cette lecture :

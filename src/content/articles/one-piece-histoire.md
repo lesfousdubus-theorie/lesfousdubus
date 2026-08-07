@@ -28,6 +28,7 @@ Cette fiche distingue ce que l’œuvre établit explicitement, la lecture propo
 ## Ce que le manga établit
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 - Roger et son équipage ont atteint Laugh Tale, ont découvert le trésor, et ont ri aux éclats (chapitres 967–968). C’est ce moment qui donne son nom à l’île : « Laugh Tale », le « conte du rire ».
 - Roger déclare, en redescendant de l’île : « Nous sommes arrivés trop tôt. »
 - Avant de mourir, Roger annonce au monde qu’il a laissé « tout ce qu’il possède en un seul endroit », lançant la grande ère de la piraterie (chapitre 1).
@@ -47,6 +48,7 @@ Aucune de ces lectures n’est à ce jour confirmée par le manga.
 ## La lecture des Fous du Bus : le One Piece comme « l’histoire que nous lisons »
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 L’hypothèse défendue sur ce site est que le One Piece pourrait être **l’histoire même que nous lisons depuis le chapitre 1**, parvenue jusqu’à Roger sous une forme ou une autre depuis l’époque future de Luffy.
 
 Le raisonnement s’appuie sur plusieurs piliers convergents :
@@ -60,6 +62,7 @@ Ce n’est qu’une **possibilité** parmi d’autres, pas une conclusion établ
 ## Un parallèle supplémentaire relevé chez Oda
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 En décembre 2025, dans le carnet « Legend and Next », Oda écrit : « Le légendaire pirate Joy Boy vécut des aventures aux quatre coins du monde tout comme Monkey D. Luffy. »
 
 Certains lecteurs voient dans cette phrase un indice appuyant la lecture « méta » : Joy Boy aurait vécu les mêmes aventures que Luffy parce que Joy Boy serait Luffy, et que l’histoire racontée par les Ponéglyphes ne serait autre que celle que nous suivons. D’autres y voient un simple parallèle narratif, la marque d’un schéma de répétition classique dans *One Piece* (comme il y en a entre Roger et Luffy depuis le début du manga).

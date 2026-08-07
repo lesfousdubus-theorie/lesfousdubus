@@ -32,6 +32,7 @@ Mais qui est Joy Boy, exactement ? Un homme du passé ? Un titre ? Un dieu ? Cet
 ## Ce que le manga établit
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 - Au chapitre 628 (île des Hommes-Poissons), on lit pour la première fois le nom de Joy Boy sur un Ponéglyphe adressé au roi Ryugu : il y est question d’une **promesse non tenue** il y a huit cents ans, et d’un jour où quelqu’un viendrait la tenir.
 - Au chapitre 967, Roger pleure de rire en atteignant Laugh Tale et dit : « Joy Boy, j’aurais aimé naître à la même époque que toi. »
 - Au chapitre 968, l’équipage de Roger apprend que Poséidon (Shirahoshi) va naître dans dix ans ; Roger en conclut que quelqu’un viendra après eux, « dans un peu plus de vingt ans ».
@@ -45,6 +46,7 @@ Ce sont là des **faits** ; l’interprétation commence quand on se demande *qu
 ## La lecture des Fous du Bus : Joy Boy est le nom futur de Luffy
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 La thèse centrale défendue ici est la suivante : **Joy Boy n’est pas un homme du passé dont Luffy serait la réincarnation. Joy Boy est le nom que l’Histoire donnera à Luffy lui-même, à l’issue de son aventure.**
 
 Autrement dit, pendant huit cents ans, le monde croit attendre le retour d’un héros ancien — mais ce héros, c’est Luffy que nous suivons en train d’agir. La légende de Joy Boy se fabrique sous nos yeux.
@@ -60,6 +62,7 @@ Les éléments clefs de cette lecture :
 ## Le paradoxe de Kaido
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 Kaido joue, dans cette lecture, le rôle d’un **miroir brisé** de Joy Boy. Comme lui, il veut renverser le monde ; comme lui, il cherche la force et la liberté. Mais il incarne la liberté par la destruction, là où Joy Boy l’incarne par le rire.
 
 Tant que Kaido règne sur Wa no Kuni, Joy Boy ne peut pas « exister » au sens de la légende : le monde ne peut être libéré par quelqu’un qui ne vainc pas Kaido. Le jour où Kaido tombe (chapitre 1049–1050), Joy Boy **naît** — au sens où la légende commence à se former autour de Luffy. Au chapitre 1052, les citoyens de Wa racontent déjà « qu’un guerrier nommé Joy Boy a vaincu Kaido ».
@@ -67,6 +70,7 @@ Tant que Kaido règne sur Wa no Kuni, Joy Boy ne peut pas « exister » au sens 
 ## Le chapeau de paille
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 Shanks confie son chapeau à Luffy au chapitre 1, avec la promesse de le lui rendre lorsqu’il sera devenu un grand pirate. Dans la lecture de la théorie, ce chapeau est en réalité celui de Joy Boy depuis le début — autrement dit, Roger et Shanks n’ont fait que **porter en attendant** le chapeau de Luffy. Au sommet de la piraterie, Shanks rendrait à Luffy ce qui lui revient : son propre chapeau, porté pendant des siècles par ceux qui attendaient sa venue.
 
 Ce point reste spéculatif.

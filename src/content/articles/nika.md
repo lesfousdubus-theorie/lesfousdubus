@@ -29,6 +29,7 @@ L’apparition de Nika, aux chapitres 1044–1046, a redistribué les cartes de 
 ## Ce que le manga établit
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 - Nika est mentionné pour la première fois par Who’s-Who au chapitre 1018 : un dieu du soleil dont les esclaves attendaient la venue pour les libérer.
 - Le fruit que le Gouvernement mondial a poursuivi pendant huit cents ans sans jamais parvenir à le saisir durablement est le **Hito Hito no Mi, modèle Nika**, caché sous le nom de *Gomu Gomu no Mi* (chapitres 1044–1046).
 - L’éveil de ce fruit donne à Luffy sa forme Gear 5, reconnaissable à ses cheveux blancs, ses yeux étoilés, sa liberté corporelle totale et le rythme des « Tambours de la Libération ».
@@ -40,6 +41,7 @@ L’apparition de Nika, aux chapitres 1044–1046, a redistribué les cartes de 
 ## Qui est Nika ?
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 Nika n’est pas un dieu au sens théologique traditionnel : c’est une **figure d’espoir**, un nom donné à celui qui libère. Les esclaves l’appellent en rêvant de délivrance ; les Boucaniers transmettent son nom comme un serment. Ce point est capital : Nika existe d’abord comme **nom de la libération**, avant d’être un personnage historique.
 
 Plusieurs lectures coexistent dans la communauté :
@@ -51,6 +53,7 @@ Plusieurs lectures coexistent dans la communauté :
 ## La lecture des Fous du Bus : le nom divin de Luffy
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 La thèse défendue ici est que **Nika est à Luffy ce que Joy Boy est à son histoire** : un nom donné par un groupe d’hommes pour désigner la même personne, mais sous un angle différent.
 
 - **Luffy** est son identité (le garçon de Fusha).
@@ -68,6 +71,7 @@ Ce point est cohérent avec le fait que :
 ## La preuve par Kuma
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 Kuma est, avec Emeth, l’argument le plus fort de la cohérence entre Luffy et Nika :
 
 - Il est Boucanier, il a la foi en Nika depuis l’enfance.

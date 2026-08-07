@@ -31,6 +31,7 @@ Tout le manga est raconté de son point de vue : son équipage, ses rencontres, 
 ## Ce que le manga établit
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 - Au chapitre 1, Shanks confie à Luffy son chapeau de paille en lui disant de le lui rendre une fois devenu un grand pirate.
 - Luffy a mangé le fruit que le Gouvernement mondial appelait officiellement le *Gomu Gomu no Mi* mais dont le nom véritable est **Hito Hito no Mi, modèle Nika* (révélation chapitres 1044–1046).
 - Son **Éveil** (Gear 5) s’accompagne du rythme des « Tambours de la Libération ». C’est sous cette forme qu’il vainc Kaido sur Onigashima.
@@ -43,6 +44,7 @@ Tout le manga est raconté de son point de vue : son équipage, ses rencontres, 
 ## Luffy et la promesse du chapeau
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 Le chapeau de paille est la figure de transmission la plus visible du manga : Roger → Rayleigh ? → Shanks → Luffy. Dans la lecture traditionnelle, c’est un symbole de la volonté héritée, transmis d’un homme libre à un autre. Dans la lecture des Fous du Bus, la boucle se referme d’une façon différente : le chapeau aurait été originellement celui de **Joy Boy** — c’est-à-dire celui de Luffy lui-même —, et Roger et Shanks n’auraient fait que le « garder » pendant huit cents ans en attendant que vienne le moment où Luffy le porte.
 
 Cette lecture explique la présence du chapeau de paille géant congelé dans la chambre froide de Marie Geoise (chapitre 906) : Imu conserverait une trace matérielle du Joy Boy qu’il craint.
@@ -50,6 +52,7 @@ Cette lecture explique la présence du chapeau de paille géant congelé dans la
 ## La lecture des Fous du Bus : Luffy créateur de la légende
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 Contrairement à la lecture la plus répandue (qui fait de Luffy la réincarnation ou l’héritier d’un Joy Boy ayant existé huit cents ans plus tôt), la thèse défendue ici est la suivante :
 
 > **Luffy n’hérite pas d’un héros ancien. Il devient, par ses actes mêmes, la légende que le monde croit avoir perdue.**

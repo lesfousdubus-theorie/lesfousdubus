@@ -30,6 +30,7 @@ Malgré ce statut central, l’île reste l’une des grandes zones d’ombre du
 ## Ce que le manga établit
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 - Laugh Tale est la dernière île de Grand Line. Seul l’équipage de Roger l’a officiellement atteinte à ce jour.
 - Pour y parvenir, il faut réunir les quatre **Road Ponéglyphes** : chacun indique une coordonnée, et l’île se trouve à leur intersection (chapitre 1056).
 - C’est en découvrant le trésor laissé par Joy Boy que Roger et son équipage rient aux éclats et donnent son nom à l’île (chapitres 967–968).
@@ -39,6 +40,7 @@ Malgré ce statut central, l’île reste l’une des grandes zones d’ombre du
 ## Le problème géographique
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 Le point de départ de la lecture des Fous du Bus est un problème purement géographique, rarement posé explicitement : à l’heure actuelle, **faire le tour du monde semble impossible** si l’on en croit la carte.
 
 - Blue Star est une planète à 90 % d’eau, coupée en deux par un continent unique — la Red Line, haut de dix mille mètres.
@@ -58,6 +60,7 @@ C’est la seconde réponse que développe la théorie.
 ## La lecture des Fous du Bus : Laugh Tale comme coordonnée temporelle
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 Dans la lecture temporelle, le « quatrième » Road Ponéglyphe ne désignerait pas uniquement une coordonnée spatiale mais une coordonnée de **temps**. Laugh Tale ne se trouverait pas simplement *quelque part*, mais *quelque temps*.
 
 Cette hypothèse s’appuie sur plusieurs indices convergents :

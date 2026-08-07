@@ -29,6 +29,7 @@ Cette fiche décrit ce que le manga établit explicitement, puis expose la lectu
 ## Ce que le manga établit
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 - Les Ponéglyphes sont des blocs d’une matière **indestructible** : aucune force humaine, aucune érosion, aucune arme connue n’est parvenue à les abîmer en huit cents ans, y compris Vegapunk lui-même.
 - Ils ont été gravés par le **clan Kozuki** de Wa no Kuni à la fin du Siècle oublié, dans une langue que seule la lignée des Kozuki (et Nico Robin, qui a appris à la déchiffrer à Ohara) sait lire.
 - On distingue plusieurs types de stèles :
@@ -42,6 +43,7 @@ Cette fiche décrit ce que le manga établit explicitement, puis expose la lectu
 ## La lecture des Fous du Bus : la « mémoire de l’avenir »
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 L’hypothèse centrale des Fous du Bus est que les Ponéglyphes ne sont pas des archives du **passé**, mais des messages émis depuis le **futur**.
 
 Les grandes lignes de cette lecture :
@@ -63,6 +65,7 @@ Cette idée est le cœur mécanique de la théorie : elle se trouve détaillée 
 ## Limites et nuances
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 - **La lecture traditionnelle reste défendable.** On peut très bien comprendre les Ponéglyphes comme des archives d’un Royaume antique techniquement très avancé, dont la technologie de la pierre a simplement été perdue.
 - **La transmission vers le passé reste un mécanisme non précisé.** Comment des informations remontent-elles de huit siècles ? La théorie s’appuie sur le Toki Toki no Mi et, plus récemment, sur la « communication à travers le temps » évoquée aux chapitres 1187–1188, mais ce mécanisme est encore **en construction** — c’est un point de fragilité assumé.
 - **La langue n’est pas un indice décisif.** Que Robin sache la lire s’explique aussi parfaitement par sa formation à Ohara, sans recourir au futur.

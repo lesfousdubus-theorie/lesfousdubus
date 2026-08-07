@@ -31,6 +31,7 @@ C’est l’antagoniste final de *One Piece*, et l’une des figures les plus my
 ## Ce que le manga établit
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 - Imu apparaît pour la première fois au chapitre 908, sous forme d’une silhouette qui s’assied sur le Trône Vide.
 - Le nom « Nerona Imu » est prononcé au chapitre 1084, lors du conseil des rois.
 - Imu semble exister depuis au moins la fondation du Gouvernement mondial, soit huit cents ans, et entretient un rapport privilégié avec Nefertari D. Lili (chapitres 1084–1085).
@@ -43,6 +44,7 @@ C’est l’antagoniste final de *One Piece*, et l’une des figures les plus my
 ## L’immortalité
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 Le manga n’a pas encore dit explicitement comment Imu a survécu huit cents ans. L’hypothèse la plus répandue — qui n’est pas propre aux Fous du Bus — est qu’Imu a bénéficié de l’**opération de la jeunesse éternelle** de l’Ope Ope no Mi, celle qui donne l’immortalité à autrui au prix de la vie de l’utilisateur. Cette lecture est cohérente avec l’importance donnée à l’opération par Doflamingo (Dressrosa) et par le fait que le fruit est actuellement détenu par Trafalgar Law.
 
 Elle n’est cependant pas confirmée.
@@ -50,6 +52,7 @@ Elle n’est cependant pas confirmée.
 ## La lecture des Fous du Bus : la malédiction de la préscience
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 La thèse défendue ici est qu’**Imu ne craint pas son passé : il craint son avenir.**
 
 Dans cette lecture, Imu disposerait d’une forme de **préscience** — une capacité à voir des fragments du futur, sans maîtriser le *moment* où ils se produiront. C’est la même « malédiction » que celle que l’on voit à l’œuvre chez Madame Shirley (qui voit l’avenir mais ne sait pas quand il se produit).
@@ -72,6 +75,7 @@ Ce point reste **en cours de stabilisation** : il s’appuie sur une interpréta
 ## La peur qui a fabriqué l’ennemi
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 La dimension tragique d’Imu, dans cette lecture, c’est qu’il est lui-même la cause de ce qu’il redoute. En persécutant depuis huit cents ans tous ceux qui pourraient correspondre à Joy Boy, en écrasant les peuples et en effaçant l’histoire, il fabrique exactement les conditions de l’apparition de ce Joy Boy : un monde qui a besoin d’être libéré, et un garçon libre qui le fera. C’est un classique des récits de préscience auto-réalisatrice.
 
 Le Gouvernement mondial lui-même, fruit de cette peur, devient un régime totalitaire dont l’existence même prépare la coalition qui le renversera.

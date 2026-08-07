@@ -31,6 +31,7 @@ Cette fiche décrit ce que le manga établit de ce siècle, puis expose la lectu
 ## Ce que le manga établit
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 - Il y a huit cents ans, une période de cent ans a été **effacée de l’histoire officielle** par les vainqueurs de la guerre qui a fondé le Gouvernement mondial.
 - Cette période a vu exister un grand royaume (le Royaume antique), qui a été vaincu par une coalition de **vingt rois** à l’issue d’une grande guerre.
 - À la fin de ce siècle, les vingt rois fondateurs se sont installés à Marie Geoise et ont créé le Gouvernement mondial.
@@ -43,11 +44,13 @@ Cette fiche décrit ce que le manga établit de ce siècle, puis expose la lectu
 ## Une stratégie délibérée de l’oubli
 
 <div class="section-pill section-pill--canon">Canon</div>
+
 Le Siècle oublié n’est pas une période dont les traces ont disparu par hasard : c’est un **effacement organisé**, une politique délibérée du Gouvernement mondial depuis huit siècles. Ce point est capital : si le Gouvernement prend tant de peine à effacer cette période, c’est que la vérité qui s’y trouve le menace directement. Clover résume cela à Ohara : la simple existence de ce royaume, la simple prononciation de son nom, constituent en elles-mêmes une menace pour le pouvoir mondial.
 
 ## Interprétations classiques
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
+
 La lecture la plus répandue dans la communauté consiste à dire :
 
 - Le Royaume antique était une civilisation libre et avancée ;
@@ -60,6 +63,7 @@ Dans cette lecture, le Siècle oublié est un **passé** qu’il faut exhumer : 
 ## La lecture des Fous du Bus : le Siècle oublié est le présent
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
+
 La thèse défendue sur ce site est un renversement complet : **le Siècle oublié n’a pas eu lieu il y a huit cents ans. Il est en train de se produire maintenant.**
 
 Autrement dit, ce que le monde croit être un passé effacé serait en réalité un **avenir en cours d’écriture** — l’époque de Luffy, de la guerre finale, de la destruction de Red Line et de la naissance d’All Blue. Les « oublis » de ce siècle ne seraient pas des traces effacées, mais des événements qui n’ont **pas encore eu lieu** au moment où le Gouvernement mondial les croit anciens.
