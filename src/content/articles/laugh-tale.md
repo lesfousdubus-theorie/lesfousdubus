@@ -12,7 +12,7 @@ order: 5
 related:
   [
     "lodestar",
-    "road-ponelyphes",
+    "road-poneglyphes",
     "poneglyphes",
     "gol-d-roger",
     "one-piece-histoire",

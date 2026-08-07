@@ -9,7 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "poneglyphes"
 order: 26
-related: ["poneglyphes", "ponelyphes-futur", "rio-ponelyphe", "wa-no-kuni", "siecle-oublie"]
+related: ["poneglyphes", "poneglyphes-futur", "rio-poneglyphe", "wa-no-kuni", "siecle-oublie"]
 ---
 
 ## Présentation

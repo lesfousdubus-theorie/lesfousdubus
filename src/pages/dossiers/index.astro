@@ -4,7 +4,7 @@ import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
 
 const articles = await getCollection('articles');
-const publishedArticles = articles.filter((a) => a.data.status === 'published');
+const publishedArticles = articles.filter((a) => a.data.status === 'published' && !a.data.sidebarHidden);
 
 interface DossierSection {
   id: string;

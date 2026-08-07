@@ -14,6 +14,12 @@ export default defineConfig({
     '/theorie/ponelyphes/': '/theorie/poneglyphes',
     '/theorie/imu-nerona-fiche': '/theorie/imu-nerona',
     '/theorie/imu-nerona-fiche/': '/theorie/imu-nerona',
+    '/theorie/ponelyphes-futur': '/theorie/poneglyphes-futur',
+    '/theorie/ponelyphes-futur/': '/theorie/poneglyphes-futur',
+    '/theorie/rio-ponelyphe': '/theorie/rio-poneglyphe',
+    '/theorie/rio-ponelyphe/': '/theorie/rio-poneglyphe',
+    '/theorie/road-ponelyphes': '/theorie/road-poneglyphes',
+    '/theorie/road-ponelyphes/': '/theorie/road-poneglyphes',
   },
   integrations: [
     react(),

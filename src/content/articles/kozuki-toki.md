@@ -9,7 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "poneglyphes"
 order: 58
-related: ["communication-temps", "wa-no-kuni", "ponelyphes-futur", "madame-shirley", "fruits-du-demon"]
+related: ["communication-temps", "wa-no-kuni", "poneglyphes-futur", "madame-shirley", "fruits-du-demon"]
 ---
 
 ## Présentation

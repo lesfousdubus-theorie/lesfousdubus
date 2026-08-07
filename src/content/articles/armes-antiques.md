@@ -35,7 +35,6 @@ Ce sujet mélange des faits clairement établis et des hypothèses d’interpré
 
 - Les Armes antiques sont mentionnées pour la première fois dans la période d’Alabasta, à travers la lecture des Ponéglyphes par Crocodile (chapitre 200+), puis au fil de l’aventure.
 - Le Gouvernement mondial les considère comme des menaces existentielles : il en poursuit les détenteurs et interdit toute recherche à leur sujet.
-- Chacune des trois armes est associée à un élément (mer, terre, ciel) et à un peuple ou un savoir-faire particulier.
 - Contrairement à des « armes » au sens militaire classique, **au moins une d’entre elles est une personne** (Poséidon). Ce point redéfinit d’emblée ce que sont les Armes antiques : non pas des outils, mais des **puissances incarnées**.
 
 ## Poséidon
@@ -93,11 +92,11 @@ La lecture proposée sur ce site est que **l’identité et la nature exactes d�
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>
 
-Dans la lecture de la théorie, chaque Arme antique est liée à un peuple qui la protège en attendant le Jour du Serment :
+Dans la lecture de la théorie, chaque Arme antique est associée à un élément (mer, terre, ciel) et à un peuple qui la protège en attendant le Jour du Serment :
 
-- **Poséidon** ↔ le royaume Ryugu / les hommes-poissons
-- **Pluton** ↔ Water Seven (charpentiers) et, dans une lecture plus spéculative, les **géants d’Elbaf**
-- **Uranus** ↔ le savoir de l’Ancien Royaume (Vegapunk, la Mother Flame), possiblement lié à Imu ou à Egghead
+- **Poséidon** ↔ le royaume Ryugu / les hommes-poissons (mer)
+- **Pluton** ↔ Water Seven (charpentiers) et, dans une lecture plus spéculative, les **géants d’Elbaf** (terre)
+- **Uranus** ↔ le savoir de l’Ancien Royaume (Vegapunk, la Mother Flame), possiblement lié à Imu ou à Egghead (ciel)
 
 ## Rôle dans la guerre finale
 

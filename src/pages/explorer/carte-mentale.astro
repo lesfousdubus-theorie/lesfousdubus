@@ -9,11 +9,11 @@ import Footer from '@components/Footer.astro';
     <h1>Carte mentale de la théorie</h1>
     <p class="page-desc">
       Une lecture causale de la théorie, de la géographie de Blue Star jusqu'au One Piece.
-      Chaque nœud renvoie vers la fiche correspondante. Les couleurs indiquent le niveau
-      de certitude éditoriale :
-      <span class="legend"><span class="dot dot--central"></span> noyau central</span>
-      <span class="legend"><span class="dot dot--elevee"></span> probable</span>
-      <span class="legend"><span class="dot dot--hypothese"></span> spéculatif</span>
+      Chaque nœud renvoie vers la fiche correspondante. Les couleurs reprennent les quatre
+      niveaux de la <a href="/theorie/theorie-complete#niveaux-de-lecture">théorie complète</a>&nbsp;:
+      <span class="legend"><span class="dot dot--central"></span> noyau de la théorie</span>
+      <span class="legend"><span class="dot dot--elevee"></span> conséquence</span>
+      <span class="legend"><span class="dot dot--hypothese"></span> mécanisme spéculatif</span>
     </p>
   </div>
 
@@ -53,7 +53,7 @@ import Footer from '@components/Footer.astro';
     <ol class="chain">
       <li><a href="/theorie/blue-star"><strong>Blue Star</strong></a> — une planète à 90 % d'eau, coupée en deux par la Red Line. Le point de départ est <em>géographique</em>, pas temporel.</li>
       <li><a href="/theorie/laugh-tale"><strong>Laugh Tale</strong></a> — la dernière île, que personne n'a retrouvée en huit cents ans. L'impossibilité géographique de faire le tour du monde (trois Red Line sans issue) est le premier indice. Pourquoi reste-t-elle introuvable ?</li>
-      <li><a href="/theorie/road-ponelyphes"><strong>La quatrième coordonnée : le temps</strong></a> — et si le problème n'était pas <em>où</em> est le One Piece, mais <em>quand</em> il est ? Les Road Ponéglyphes encoderaient une coordonnée temporelle.</li>
+      <li><a href="/theorie/road-poneglyphes"><strong>La quatrième coordonnée : le temps</strong></a> — et si le problème n'était pas <em>où</em> est le One Piece, mais <em>quand</em> il est ? Les Road Ponéglyphes encoderaient une coordonnée temporelle.</li>
       <li><a href="/theorie/poneglyphes"><strong>Les Ponéglyphes</strong></a> — stèles indestructibles gravées depuis huit cents ans… qui raconteraient en réalité l'avenir. C'est le mécanisme fondamental : la mémoire de l'avenir.</li>
       <li><a href="/theorie/siecle-oublie"><strong>Le Siècle oublié</strong></a> — les cent ans effacés par le Gouvernement mondial ne seraient pas un passé disparu ; ils seraient en train de se produire maintenant, sous nos yeux.</li>
       <li><a href="/theorie/royaume-antique"><strong>Le Royaume antique</strong></a> — ce que le monde croit être une civilisation perdue serait en réalité le monde <em>à construire</em> par Luffy et ses alliés. Les technologies « antiques » (Emeth, Mother Flame) ne sont pas à exhumer, elles sont à inventer.</li>
@@ -79,7 +79,7 @@ import Footer from '@components/Footer.astro';
   const chain = [
     { slug: 'blue-star',           title: 'Blue Star',                  level: 'central',   x: 120,  y: 200 },
     { slug: 'laugh-tale',          title: 'Laugh Tale',                 level: 'central',   x: 270,  y: 380 },
-    { slug: 'road-ponelyphes',     title: 'Quatrième\ncoordonnée : temps', level: 'elevee', x: 420,  y: 200 },
+    { slug: 'road-poneglyphes',     title: 'Quatrième\ncoordonnée : temps', level: 'elevee', x: 420,  y: 200 },
     { slug: 'poneglyphes',          title: 'Ponéglyphes',                level: 'central',   x: 560,  y: 380 },
     { slug: 'siecle-oublie',       title: 'Siècle oublié',              level: 'central',   x: 700,  y: 200 },
     { slug: 'royaume-antique',     title: 'Royaume antique',            level: 'elevee',    x: 840,  y: 380 },
@@ -94,7 +94,7 @@ import Footer from '@components/Footer.astro';
   const subs = [
     { parent: 'laugh-tale',       slug: 'lodestar',         title: 'Lodestar',         x: 220, y: 510, level: 'central' },
     { parent: 'laugh-tale',       slug: 'one-piece-histoire', title: 'One Piece',       x: 330, y: 510, level: 'hypothese' },
-    { parent: 'poneglyphes',       slug: 'rio-ponelyphe',     title: 'Rio Ponéglyphe',   x: 510, y: 510, level: 'elevee' },
+    { parent: 'poneglyphes',       slug: 'rio-poneglyphe',     title: 'Rio Ponéglyphe',   x: 510, y: 510, level: 'elevee' },
     { parent: 'poneglyphes',       slug: 'communication-temps', title: 'Communication\ntemporelle (1187–88)', x: 610, y: 520, level: 'hypothese' },
     { parent: 'siecle-oublie',    slug: 'professeur-clover-et-ohara', title: 'Clover & Ohara', x: 650, y: 90, level: 'central' },
     { parent: 'royaume-antique',  slug: 'vegapunk',          title: 'Vegapunk',         x: 790, y: 510, level: 'central' },
