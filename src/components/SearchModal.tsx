@@ -18,7 +18,7 @@ export default function SearchModal() {
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLUListElement>(null);
-  const lockedScrollY = useRef(0);
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -56,23 +56,31 @@ export default function SearchModal() {
     setActiveIndex(-1);
   }, [isOpen]);
 
-  // Lock body scroll without layout shift (no paddingRight — scrollbar-gutter handles it)
+  // Lock body scroll without layout shift (no position:fixed, no paddingRight)
   useEffect(() => {
     if (!isOpen) return;
 
-    lockedScrollY.current = window.scrollY || window.pageYOffset || 0;
     const html = document.documentElement;
     const body = document.body;
+    const main = document.getElementById('main-content');
 
     html.classList.add('search-modal-open');
     body.classList.add('search-modal-open');
-    body.style.top = `-${lockedScrollY.current}px`;
+    main?.setAttribute('inert', '');
+
+    const onTouchMove = (e: TouchEvent) => {
+      const target = e.target as Node | null;
+      // Allow scrolling inside the modal panel only
+      if (panelRef.current && target && panelRef.current.contains(target)) return;
+      e.preventDefault();
+    };
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
 
     return () => {
       html.classList.remove('search-modal-open');
       body.classList.remove('search-modal-open');
-      body.style.top = '';
-      window.scrollTo(0, lockedScrollY.current);
+      main?.removeAttribute('inert');
+      document.removeEventListener('touchmove', onTouchMove);
     };
   }, [isOpen]);
 
@@ -219,17 +227,11 @@ export default function SearchModal() {
           to { opacity: 1; transform: none; }
         }
 
+        /* Overflow-only lock — never position:fixed (that shifts background blocks) */
         html.search-modal-open,
         body.search-modal-open {
           overflow: hidden !important;
           overscroll-behavior: none;
-        }
-        body.search-modal-open {
-          position: fixed;
-          left: 0;
-          right: 0;
-          width: 100%;
-          max-width: 100%;
         }
 
         .search-modal-overlay {

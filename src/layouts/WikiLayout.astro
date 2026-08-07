@@ -411,47 +411,54 @@ const canonicalWikiUrl = new URL(
 
   /* Mobile: single navigation becomes drawer, no duplicate DOM */
   @media (max-width: 768px) {
-    /* Take the drawer completely out of document flow so it can never
-       expand the page width or create a horizontal slide bar. */
+    /*
+     * Critical: the drawer must never participate in layout metrics.
+     * - position:fixed + left:0 takes it out of flow
+     * - when closed, translate fully off-screen AND visibility:hidden
+     * - box-shadow only when open, clipped by html overflow-x:clip
+     * - background page must NOT move (no width/padding changes on open)
+     */
     .sidebar-left-container {
-      position: fixed;
+      position: fixed !important;
       top: var(--nav-h);
       left: 0;
+      right: auto;
       bottom: 0;
       width: min(86%, 300px);
       max-width: 300px;
       height: calc(100vh - var(--nav-h));
       height: calc(100dvh - var(--nav-h));
+      margin: 0;
       z-index: 50;
       background: var(--bg-secondary);
       border-right: 1px solid var(--border-color);
-      transform: translate3d(-105%, 0, 0);
-      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-      /* Single scroll surface — avoid nested slide bars */
+      transform: translate3d(-100%, 0, 0);
+      /* Only animate transform — never width (desktop rule would reflow the page) */
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
       overflow-x: hidden;
       overflow-y: auto;
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
       display: block;
-      will-change: transform;
-      /* Clip any child that could poke outside and widen the page */
-      contain: strict;
+      /* paint isolation without affecting page size */
+      contain: layout style paint;
       visibility: hidden;
       pointer-events: none;
       box-shadow: none;
+      touch-action: pan-y;
     }
 
     .sidebar-left-container.is-mobile-open {
       transform: translate3d(0, 0, 0);
       visibility: visible;
       pointer-events: auto;
-      box-shadow: 8px 0 28px rgba(0, 0, 0, 0.45);
+      /* Soft shadow that does not expand document width (html clips x) */
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
     }
 
     .sidebar-left {
       position: relative;
       top: 0;
-      /* Let the container own vertical scroll — no second bar */
       height: auto;
       min-height: 100%;
       max-height: none;
@@ -464,6 +471,8 @@ const canonicalWikiUrl = new URL(
       overflow: visible !important;
       padding: 16px 12px 28px;
       scrollbar-width: none;
+      /* Kill desktop slide/opacity transitions that could fight the drawer */
+      transition: none !important;
     }
 
     .sidebar-left::-webkit-scrollbar {
@@ -480,24 +489,30 @@ const canonicalWikiUrl = new URL(
       display: block;
     }
 
+    /*
+     * Single block layout: the drawer is position:fixed so it must not
+     * reserve any grid track. display:block keeps main at full width
+     * whether the drawer is open or closed — zero width delta.
+     */
     .layout,
     .layout--no-toc {
-      display: block;
+      display: block !important;
       width: 100%;
       max-width: 100%;
       overflow-x: clip;
     }
 
     .main-content {
+      display: block;
       padding: 24px 16px;
       width: 100%;
       max-width: 100%;
       overflow-x: clip;
       min-width: 0;
+      /* Page content stays put under the overlay — never translated */
+      transform: none !important;
+      margin: 0;
     }
-
-    /* Body scroll lock is handled in JS via position:fixed to avoid
-       layout shift / double scrollbars. No CSS overflow tricks here. */
   }
 
   /* Small mobile */
@@ -524,21 +539,38 @@ const canonicalWikiUrl = new URL(
     }
   }
 
-  /* While the mobile drawer is open, freeze page scroll without shifting layout.
-     scrollbar-gutter: stable (global) already reserves gutter space — do NOT
-     also pad the body, or the text will jump sideways. */
-  :global(html.mobile-nav-open),
-  :global(body.mobile-nav-open) {
+  /*
+   * Scroll lock WITHOUT position:fixed on <body>.
+   * position:fixed was causing a subtle horizontal/vertical shift of the
+   * background page (sticky navbar reflow + width recalculation).
+   * We only freeze overflow; scroll position is preserved natively.
+   * scrollbar-gutter: stable (global) keeps the width identical if a classic
+   * scrollbar would otherwise appear/disappear.
+   */
+  :global(html.mobile-nav-open) {
     overflow: hidden !important;
     overscroll-behavior: none;
   }
 
   :global(body.mobile-nav-open) {
-    position: fixed;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-width: 100%;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+    /* Do NOT set position/top/width/left — any of these reflow the page. */
+  }
+
+  /* Keep background content inert visually; no transform/filter that reflows */
+  :global(body.mobile-nav-open) .layout,
+  :global(body.mobile-nav-open) .main-content {
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Drawer + overlay must remain interactive above the frozen page */
+  :global(body.mobile-nav-open) .sidebar-left-container,
+  :global(body.mobile-nav-open) .sidebar-mobile-overlay,
+  :global(body.mobile-nav-open) .navbar {
+    pointer-events: auto;
+    user-select: auto;
   }
 </style>
 
@@ -552,6 +584,7 @@ const canonicalWikiUrl = new URL(
   const mobileOverlay = document.getElementById('sidebar-mobile-overlay');
   const hamburgerIcon = document.getElementById('hamburger-icon');
   const closeIcon = document.getElementById('close-icon');
+  const mainContent = document.getElementById('main-content');
 
   const updateAriaState = () => {
     const isCollapsed = document.documentElement.classList.contains('sidebar-left-collapsed');
@@ -585,22 +618,32 @@ const canonicalWikiUrl = new URL(
   // --- Mobile drawer : single navigation DOM, pas de duplication ---
   const isMobileOpen = () => sidebarContainer?.classList.contains('is-mobile-open');
 
-  let lockedScrollY = 0;
   let scrollLocked = false;
+  let touchMoveHandler = null;
 
   /**
-   * Lock background scroll without introducing horizontal slide bars or
-   * shifting the reading column. Uses position:fixed + restore scrollY
-   * (iOS-safe). Relies on scrollbar-gutter: stable for desktop alignment —
-   * never adds paddingRight (that was double-compensating and shifting text).
+   * Freeze background scroll with zero layout shift.
+   * - No position:fixed on body (that was shifting blocks slightly)
+   * - No paddingRight compensation
+   * - overflow:hidden only; native scrollY is kept
+   * - touchmove blocked outside the drawer (iOS rubber-band)
    */
   const lockScroll = () => {
     if (scrollLocked) return;
     scrollLocked = true;
-    lockedScrollY = window.scrollY || window.pageYOffset || 0;
     document.documentElement.classList.add('mobile-nav-open');
     document.body.classList.add('mobile-nav-open');
-    document.body.style.top = `-${lockedScrollY}px`;
+    mainContent?.setAttribute('inert', '');
+    mainContent?.setAttribute('aria-hidden', 'true');
+
+    touchMoveHandler = (e) => {
+      if (!isMobileOpen()) return;
+      const target = e.target;
+      // Allow scrolling inside the drawer only
+      if (sidebarContainer && sidebarContainer.contains(target)) return;
+      e.preventDefault();
+    };
+    document.addEventListener('touchmove', touchMoveHandler, { passive: false });
   };
 
   const unlockScroll = () => {
@@ -608,20 +651,29 @@ const canonicalWikiUrl = new URL(
     scrollLocked = false;
     document.documentElement.classList.remove('mobile-nav-open');
     document.body.classList.remove('mobile-nav-open');
-    document.body.style.top = '';
-    window.scrollTo(0, lockedScrollY);
+    mainContent?.removeAttribute('inert');
+    mainContent?.removeAttribute('aria-hidden');
+
+    if (touchMoveHandler) {
+      document.removeEventListener('touchmove', touchMoveHandler);
+      touchMoveHandler = null;
+    }
   };
 
   const toggleMobile = (force) => {
     const willOpen = force !== undefined ? force : !isMobileOpen();
     if (willOpen) {
-      sidebarContainer?.classList.add('is-mobile-open');
-      mobileOverlay?.classList.add('is-open');
-      mobileOverlay?.setAttribute('aria-hidden', 'false');
-      hamburgerIcon?.classList.add('hidden');
-      closeIcon?.classList.remove('hidden');
-      mobileToggle?.setAttribute('aria-expanded', 'true');
+      // Lock first so the open animation never races a layout shift
       lockScroll();
+      // Double-rAF: apply open class after lock styles are committed
+      requestAnimationFrame(() => {
+        sidebarContainer?.classList.add('is-mobile-open');
+        mobileOverlay?.classList.add('is-open');
+        mobileOverlay?.setAttribute('aria-hidden', 'false');
+        hamburgerIcon?.classList.add('hidden');
+        closeIcon?.classList.remove('hidden');
+        mobileToggle?.setAttribute('aria-expanded', 'true');
+      });
     } else {
       sidebarContainer?.classList.remove('is-mobile-open');
       mobileOverlay?.classList.remove('is-open');
@@ -629,6 +681,7 @@ const canonicalWikiUrl = new URL(
       hamburgerIcon?.classList.remove('hidden');
       closeIcon?.classList.add('hidden');
       mobileToggle?.setAttribute('aria-expanded', 'false');
+      // Unlock after the close transition starts (layout stays put either way)
       unlockScroll();
     }
   };
@@ -658,15 +711,6 @@ const canonicalWikiUrl = new URL(
       }
     }, 100);
   });
-
-  // Prevent touchmove on overlay from scrolling body (iOS)
-  mobileOverlay?.addEventListener(
-    'touchmove',
-    (e) => {
-      if (isMobileOpen()) e.preventDefault();
-    },
-    { passive: false },
-  );
 
   // Sidebar drag resizer logic
   const resizer = document.getElementById('sidebar-resizer');

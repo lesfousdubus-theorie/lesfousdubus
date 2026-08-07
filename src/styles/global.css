@@ -103,9 +103,11 @@
       240px 84px;
     overflow-x: clip;
     max-width: 100%;
-    /* Reserve classic scrollbar space on desktop so opening drawers/modals
-       never shifts the reading column. On mobile (overlay scrollbars) this
-       is a no-op and does not create phantom gutters. */
+    /*
+     * Always reserve classic scrollbar space so opening a drawer/modal
+     * (overflow:hidden) never changes the content width — even by 1px.
+     * On overlay-scrollbar platforms this is a no-op.
+     */
     scrollbar-gutter: stable;
   }
 
@@ -295,13 +297,12 @@ html, body {
   overflow-x: clip;
 }
 
-/* On narrow viewports, classic scrollbars are rare; disable gutter reserve
-   so content is edge-to-edge without a dead strip on the right. */
-@media (max-width: 768px) {
-  html {
-    scrollbar-gutter: auto;
-  }
-}
+/*
+ * Keep scrollbar-gutter: stable on mobile too.
+ * Setting it to `auto` made overflow:hidden (drawer open) reclaim the
+ * gutter and nudge page blocks by a few pixels on browsers with classic
+ * scrollbars (some Android WebViews / desktop-mobile emulators).
+ */
 img,
 video,
 iframe,

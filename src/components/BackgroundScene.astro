@@ -85,17 +85,19 @@
     animation: scene-left var(--dur, 60s) linear var(--delay, 0s) infinite;
   }
 
+  /* Use % of the fixed scene (not 100vw) so decorative motion never
+     expands the document width or triggers a horizontal slide bar. */
   @keyframes scene-right {
-    0% { transform: translateX(-18vw); opacity: 0; }
+    0% { transform: translateX(-20%); opacity: 0; }
     6% { opacity: var(--op, 0.06); }
     94% { opacity: var(--op, 0.06); }
-    100% { transform: translateX(118vw); opacity: 0; }
+    100% { transform: translateX(120%); opacity: 0; }
   }
   @keyframes scene-left {
-    0% { transform: translateX(118vw) scaleX(-1); opacity: 0; }
+    0% { transform: translateX(120%) scaleX(-1); opacity: 0; }
     6% { opacity: var(--op, 0.06); }
     94% { opacity: var(--op, 0.06); }
-    100% { transform: translateX(-18vw) scaleX(-1); opacity: 0; }
+    100% { transform: translateX(-20%) scaleX(-1); opacity: 0; }
   }
   @keyframes scene-bob {
     from { transform: translateY(-4px); }
