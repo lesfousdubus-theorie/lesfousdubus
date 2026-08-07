@@ -6,7 +6,7 @@ category: "histoire-temporalite"
 status: "published"
 certainty: "central"
 lastUpdatedChapter: 1188
-related: ["luffy-deviendra-joy-boy", "lili-vivi-et-les-poneglyphes"]
+related: ["joy-boy", "lili-vivi-et-les-poneglyphes"]
 ---
 
 **Résumé** : Le principe fondateur de la théorie du Mont Corvo est d'inverser le vecteur temporel de l'Histoire de *One Piece*. Le Siècle Oublié n'est pas un passé révolu, mais la chronique gravée d'avance des aventures de Luffy et de son équipage.

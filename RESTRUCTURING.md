@@ -110,7 +110,6 @@ src/
 │   │   ├── index.astro (sommaire complet)
 │   │   ├── resume.astro (nouveau)
 │   │   ├── theorie-complete.astro (nouveau)
-│   │   ├── [category].astro (mis à jour)
 │   │   └── [...slug].astro (articles)
 │   ├── dossiers/
 │   │   ├── index.astro (nouveau)

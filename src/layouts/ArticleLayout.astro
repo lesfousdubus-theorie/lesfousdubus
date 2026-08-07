@@ -89,7 +89,11 @@ const articleJsonLd = {
       editorialStatus={frontmatter.editorialStatus}
     />
 
-
+    <RelationMap
+      title={title}
+      related={frontmatter.related ?? []}
+      currentSlug={currentSlug}
+    />
 
     {
       parentEntry && (
@@ -122,6 +126,7 @@ const articleJsonLd = {
     </a>
   </nav>
 
+  {relatedArticles.length > 0 && <RelatedArticles articles={relatedArticles} />}
   {articleEvidence.length > 0 && <EvidenceSection items={articleEvidence} />}
   {articleChapters.length > 0 && <ChapterReferences items={articleChapters} />}
 

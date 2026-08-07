@@ -6,7 +6,8 @@ category: "personnages-identites"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
-related: ["luffy-deviendra-joy-boy", "les-bases-du-siecle-oublie"]
+order: 58
+related: ["joy-boy", "les-bases-du-siecle-oublie"]
 ---
 
 **Résumé** : Shimotsuki Ryuma est qualifié de "Dieu des Lames" à Wa no Kuni. Selon notre grille de lecture, Ryuma n'est pas un ancêtre lointain mais l'identité future que la légende donnera à Roronoa Zoro après la libération de Wano et la bataille finale.

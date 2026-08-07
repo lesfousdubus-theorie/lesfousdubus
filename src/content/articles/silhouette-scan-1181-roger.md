@@ -6,7 +6,8 @@ category: "personnages-identites"
 status: "published"
 certainty: "hypothese"
 lastUpdatedChapter: 1188
-related: ["luffy-deviendra-joy-boy", "la-prescience-et-imu"]
+order: 57
+related: ["joy-boy", "la-prescience-et-imu"]
 ---
 
 **Résumé** : Les chapitres récents ont révélé une silhouette énigmatique associée aux récits anciens. Bien que beaucoup y aient vu la première apparition directe de Joy Boy, 6 indices troublants suggèrent qu'il s'agirait en réalité de Gol D. Roger.

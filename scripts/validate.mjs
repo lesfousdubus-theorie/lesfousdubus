@@ -11,10 +11,11 @@
  * Usage : `node scripts/validate.mjs` (ou `npm run validate`).
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 const CONTENT_DIR = join(process.cwd(), 'src', 'content');
+const PUBLIC_DIR = join(process.cwd(), 'public');
 
 const CATEGORIES = [
   'monde-destinations',
@@ -222,6 +223,10 @@ for (const file of files) {
       continue;
     }
     if (/^\/chapitres\/\d+$/.test(path)) continue;
+    // Astro exposes files from `public/` at the site root. Validate these paths
+    // against the filesystem instead of maintaining a brittle route list.
+    const publicFile = join(PUBLIC_DIR, path.replace(/^\/+/, ''));
+    if (existsSync(publicFile) && statSync(publicFile).isFile()) continue;
     if (!KNOWN_PAGES.has(path)) {
       errors.push(`${rel} : lien interne cassé vers "${match[1]}".`);
     }
