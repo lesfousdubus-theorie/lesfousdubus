@@ -53,9 +53,9 @@ Elle n’est cependant pas confirmée.
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
 
-La thèse défendue ici est qu’**Imu ne craint pas son passé : il craint son avenir.**
+La lecture proposée ici est qu’**Imu ne craindrait pas son passé, mais son avenir.**
 
-Dans cette lecture, Imu disposerait d’une forme de **préscience** — une capacité à voir des fragments du futur, sans maîtriser le *moment* où ils se produiront. C’est la même « malédiction » que celle que l’on voit à l’œuvre chez Madame Shirley (qui voit l’avenir mais ne sait pas quand il se produit).
+Dans cette hypothèse, Imu aurait accès à une forme de **préscience** — des fragments d’un futur possible, sans en maîtriser le *moment*. Le rapprochement avec Madame Shirley est une piste de lecture, non une capacité confirmée chez Imu.
 
 Les grandes lignes de l’interprétation :
 
@@ -66,7 +66,7 @@ Les grandes lignes de l’interprétation :
 
 ### La confusion Roger / Joy Boy (chapitres 1187–1188) <span class="pill pill--hypothese">Évolution récente</span>
 
-Une évolution récente de la théorie, nourrie par les chapitres 1187 et 1188, précise cette lecture : quand Imu affirme que Joy Boy est mort, il penserait en réalité à **Gol D. Roger**. Le seul homme à avoir atteint Laugh Tale en huit cents ans, celui qui a ri et compris l’histoire, aurait été pris pour Joy Boy par Imu lui-même. Roger mort, Imu croit avoir gagné — mais comme Roger n’était que le « précurseur », le vrai Joy Boy (Luffy) se présente un quart de siècle plus tard.
+Une évolution récente de la théorie, nourrie par les chapitres 1187 et 1188, précise cette lecture : quand Imu affirme que Joy Boy est mort, il pourrait en réalité penser à **Gol D. Roger**. Le seul homme à avoir atteint Laugh Tale en huit cents ans, celui qui a ri et compris l’histoire, aurait été pris pour Joy Boy par Imu lui-même. Roger mort, Imu croit avoir gagné — mais comme Roger n’était que le « précurseur », le vrai Joy Boy (Luffy) se présente un quart de siècle plus tard.
 
 Cette lecture rend compte de la confiance étrange d’Imu au moment même où Luffy s’éveille : il croit avoir déjà vaincu.
 

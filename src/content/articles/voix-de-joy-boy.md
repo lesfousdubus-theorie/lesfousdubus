@@ -12,7 +12,7 @@ related: ["joy-boy", "luffy", "emeth-futur", "communication-temps", "volonte-her
 
 ## Présentation
 
-Lors de la séquence où Emeth entend la voix de Joy Boy, l’anime confie cette voix à **Urara Takano**, qui avait interprété Luffy dans l’OAV *Romance Dawn Story*. Eiichiro Oda aurait personnellement souhaité ce choix. C’est un fait de production ; son sens dans l’histoire, lui, reste à interpréter.
+Lors de la séquence où Emeth entend la voix de Joy Boy, l’anime confie cette voix à **Urara Takano**, qui avait interprété Luffy dans *One Piece: Defeat Him! The Pirate Ganzack!*, première adaptation animée de *One Piece* réalisée en 1998 avant la série télévisée de Toei. Eiichiro Oda aurait personnellement souhaité ce choix. C’est un fait de production ; son sens dans l’histoire, lui, reste à interpréter.
 
 ## Ce que l’œuvre établit
 
