@@ -7,7 +7,7 @@ sources: [218, 628, 906, 1084]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-parent: "lili"
+parent: "peuples-royaumes"
 order: 82
 related: ["peuples-royaumes", "nefertari-vivi", "lili", "vingt-rois", "gouvernement-mondial"]
 ---

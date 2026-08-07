@@ -9,7 +9,6 @@ editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 reviewedUntilChapter: 1188
 order: 45
-parent: "shimotsuki-ryuma"
 related: ['shimotsuki-ryuma', 'zoro']
 ---
 

@@ -33,11 +33,22 @@ const categoryConfig: Record<string, { label: string; icon: string; order: numbe
 // Group articles by category
 const articlesByCategory = new Map<string, typeof articles>();
 for (const article of articles) {
-  const cat = article.data.category;
-  if (!articlesByCategory.has(cat)) {
-    articlesByCategory.set(cat, []);
+  const categories = [article.data.category];
+  // Special case: Nika belongs to both "Figures principales" and "Dieux et croyances"
+  if (article.id === 'nika') {
+    if (!categories.includes('dieux-croyances')) {
+      categories.push('dieux-croyances');
+    }
+    if (!categories.includes('figures-principales')) {
+      categories.push('figures-principales');
+    }
   }
-  articlesByCategory.get(cat)!.push(article);
+  for (const cat of categories) {
+    if (!articlesByCategory.has(cat)) {
+      articlesByCategory.set(cat, []);
+    }
+    articlesByCategory.get(cat)!.push(article);
+  }
 }
 
 // Sort categories by order
