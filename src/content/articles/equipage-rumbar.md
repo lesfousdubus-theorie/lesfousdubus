@@ -8,7 +8,7 @@ editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "brook"
-order: 52
+order: 50
 related: ["brook", "binks-no-sake", "volonte-heritee", "dozan"]
 ---
 

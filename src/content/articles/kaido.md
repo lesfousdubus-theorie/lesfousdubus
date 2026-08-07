@@ -7,8 +7,7 @@ sources: [795, 1010, 1049, 1044]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-parent: "joy-boy"
-order: 25
+order: 26
 related: ["joy-boy", "luffy", "lunariens", "nika", "wa-no-kuni"]
 ---
 

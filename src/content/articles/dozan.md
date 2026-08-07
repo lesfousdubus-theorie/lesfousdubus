@@ -8,7 +8,7 @@ editorialStatus: "nouvelle-piste"
 certainty: "hypothese"
 reviewedUntilChapter: 1188
 parent: "brook"
-order: 53
+order: 51
 related: ["brook", "binks-no-sake", "wa-no-kuni", "equipage-rumbar"]
 ---
 

@@ -1,0 +1,179 @@
+---
+import WikiLayout from '@layouts/WikiLayout.astro';
+import Footer from '@components/Footer.astro';
+
+interface Step {
+  id: number;
+  title: string;
+  subtitle: string;
+  body: string;
+  position: 'left' | 'right';
+}
+
+const steps: Step[] = [
+  {
+    id: 1, title: "Le futur crée l'histoire", subtitle: "Époque de Luffy — la guerre finale",
+    body: "Luffy et ses alliés accomplissent la guerre finale. Le monde est transformé : Red Line détruite, All Blue formée, les peuples libérés. Cette histoire vraie est gravée dans un matériau indestructible, dans une langue qui ne peut être lue que par une seule personne par génération.",
+    position: 'right',
+  },
+  {
+    id: 2, title: "Les Ponéglyphes sont envoyés vers le passé", subtitle: "Mécanisme de transmission temporelle",
+    body: "Les stèles ne voyagent pas physiquement dans le temps. Selon la théorie, les informations qu'elles contiennent sont transmises vers le passé via un mécanisme encore inconnu. Le Toki Toki no Mi, la communication temporelle (ch. 1187-1188) et les technologies du Royaume antique sont des pistes explorées.",
+    position: 'right',
+  },
+  {
+    id: 3, title: "Le passé reçoit le futur", subtitle: "Il y a 800 ans — les stèles apparaissent",
+    body: "Il y a huit siècles, les Ponéglyphes apparaissent dans le monde. Le clan Kozuki de Wa no Kuni est le seul capable de les lire et de les graver. Le monde les prend pour les vestiges d'une civilisation disparue, sans comprendre qu'ils racontent un avenir.",
+    position: 'left',
+  },
+  {
+    id: 4, title: "Le Gouvernement mondial efface la mémoire", subtitle: "Le Siècle oublié comme arme de contrôle",
+    body: "Le Gouvernement mondial interdit l'étude des Ponéglyphes et détruit Ohara. Imu, qui a lu les Ponéglyphes, sait que Joy Boy apparaîtra — mais ignore quand et sous quelle identité. Il gouverne dans la peur de l'inévitable.",
+    position: 'left',
+  },
+  {
+    id: 5, title: "Le passé prépare le présent", subtitle: "Huit siècles de conservation",
+    body: "Chaque peuple reçoit une mission : Ryugu conserve Noah, Wa no Kuni protège le savoir des stèles, les Minks gardent Zunesha, Alabasta protège le Ponéglyphe des Nefertari, les Shandias veillent sur leur héritage, les Boucaniers transmettent la foi en Nika.",
+    position: 'left',
+  },
+  {
+    id: 6, title: "Le présent accomplit la promesse", subtitle: "Luffy — le point de convergence",
+    body: "Luffy, sans le savoir, accomplit tout ce que les Ponéglyphes ont annoncé. Il devient ce que le monde appelait Joy Boy. Le début (chapitre 1) et la fin (Laugh Tale) se rejoignent. L'histoire que nous lisons est celle que racontent les Ponéglyphes.",
+    position: 'right',
+  },
+];
+
+const poneglyphTypes = [
+  { type: 'Road Ponéglyphes', count: '4', description: "Indiquent les coordonnées de Laugh Tale. Selon la théorie, la quatrième encode une coordonnée temporelle.", href: '/theorie/road-poneglyphes' },
+  { type: 'Rio Ponéglyphe', count: '1', description: "La véritable histoire complète, formée par l'assemblage de tous les Ponéglyphes informatifs.", href: '/theorie/rio-poneglyphe' },
+  { type: 'Ponéglyphes informatifs', count: '~20', description: "Chacun raconte une partie de l'histoire. Nico Robin les collecte pour reconstituer le Rio Ponéglyphe.", href: '/theorie/poneglyphes' },
+];
+---
+
+<WikiLayout
+  title="La boucle des Ponéglyphes"
+  seoTitle="Boucle des Ponéglyphes One Piece : schéma de la mémoire du futur | Les Fous du Bus"
+  description="Schéma visuel de la boucle des Ponéglyphes : comment l'histoire du futur devient la mémoire du passé, et comment Luffy accomplit ce que les stèles ont annoncé."
+  currentPath="/explorer/poneglyphes"
+>
+  <div class="page-header">
+    <p class="eyebrow">📜 Schéma temporel</p>
+    <h1>La boucle des Ponéglyphes</h1>
+    <p class="page-desc">
+      Comment des pierres gravées il y a 800 ans racontent-elles une histoire qui ne s'est pas
+      encore produite ? Ce schéma visualise la boucle complète : de la guerre finale au chapitre 1,
+      en passant par la transmission temporelle et la conservation par les peuples.
+    </p>
+  </div>
+
+  <!-- Central loop diagram -->
+  <div class="loop-diagram">
+    <svg viewBox="0 0 900 900" class="loop-svg" preserveAspectRatio="xMidYMid meet" aria-label="Schéma circulaire de la boucle des Ponéglyphes">
+      <defs>
+        <linearGradient id="loopGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#5fb9c2" />
+          <stop offset="50%" stop-color="#7c3aed" />
+          <stop offset="100%" stop-color="#e0ab4e" />
+        </linearGradient>
+        <filter id="loopGlow"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+        <marker id="aGold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0ab4e" /></marker>
+        <marker id="aPurple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b07cc6" /></marker>
+        <marker id="aGray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8899aa" /></marker>
+      </defs>
+      <!-- Outer orbit -->
+      <circle cx="450" cy="450" r="340" fill="none" stroke="url(#loopGrad)" stroke-width="2" stroke-opacity="0.25" stroke-dasharray="10,6" />
+      <!-- Central hub -->
+      <circle cx="450" cy="450" r="72" fill="#0e1722" stroke="#5fb9c2" stroke-width="2" filter="url(#loopGlow)" />
+      <text x="450" y="435" text-anchor="middle" fill="#5fb9c2" font-size="13" font-weight="700" font-family="Inter,system-ui,sans-serif">LE PRÉSENT</text>
+      <text x="450" y="455" text-anchor="middle" fill="#f3efe6" font-size="18" font-weight="800" font-family="Inter,system-ui,sans-serif">Luffy</text>
+      <text x="450" y="475" text-anchor="middle" fill="#aeb7c2" font-size="11" font-family="Inter,system-ui,sans-serif">Joy Boy · Nika</text>
+      <!-- Orbital nodes -->
+      <circle cx="720" cy="220" r="42" fill="#0e1722" stroke="#e0ab4e" stroke-width="2" filter="url(#loopGlow)" />
+      <text x="720" y="215" text-anchor="middle" fill="#e0ab4e" font-size="10" font-weight="700" font-family="Inter,system-ui,sans-serif">FUTUR</text>
+      <text x="720" y="230" text-anchor="middle" fill="#f3efe6" font-size="13" font-weight="700" font-family="Inter,system-ui,sans-serif">Guerre</text>
+      <circle cx="800" cy="450" r="38" fill="#0e1722" stroke="#b07cc6" stroke-width="1.5" />
+      <text x="800" y="445" text-anchor="middle" fill="#b07cc6" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">GRAVURE</text>
+      <text x="800" y="460" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">Ponéglyphes</text>
+      <circle cx="720" cy="680" r="38" fill="#0e1722" stroke="#8899aa" stroke-width="1.5" />
+      <text x="720" y="675" text-anchor="middle" fill="#8899aa" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">PASSÉ</text>
+      <text x="720" y="690" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">800 ans</text>
+      <circle cx="450" cy="790" r="38" fill="#0e1722" stroke="#8899aa" stroke-width="1.5" />
+      <text x="450" y="785" text-anchor="middle" fill="#8899aa" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">RÉPRESSION</text>
+      <text x="450" y="800" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">Gouv. mondial</text>
+      <circle cx="180" cy="680" r="38" fill="#0e1722" stroke="#8899aa" stroke-width="1.5" />
+      <text x="180" y="675" text-anchor="middle" fill="#8899aa" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">CONSERVATION</text>
+      <text x="180" y="690" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">Peuples</text>
+      <circle cx="100" cy="450" r="38" fill="#0e1722" stroke="#b07cc6" stroke-width="1.5" />
+      <text x="100" y="445" text-anchor="middle" fill="#b07cc6" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">ATTENTE</text>
+      <text x="100" y="460" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">8 siècles</text>
+      <!-- Arrows -->
+      <path d="M720,260 A340,340 0 0,1 800,450" fill="none" stroke="#e0ab4e" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#aGold)" />
+      <path d="M800,488 A340,340 0 0,1 720,680" fill="none" stroke="#b07cc6" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#aPurple)" />
+      <path d="M680,700 A340,340 0 0,1 450,790" fill="none" stroke="#8899aa" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#aGray)" />
+      <path d="M410,790 A340,340 0 0,1 180,680" fill="none" stroke="#8899aa" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#aGray)" />
+      <path d="M140,660 A340,340 0 0,1 100,450" fill="none" stroke="#8899aa" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#aGray)" />
+      <path d="M100,412 A340,340 0 0,1 450,378" fill="none" stroke="#b07cc6" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#aPurple)" />
+    </svg>
+  </div>
+
+  <!-- Timeline steps -->
+  <div class="timeline">
+    {steps.map((step) => (
+      <div class={`step step--${step.position}`} id={`step-${step.id}`}>
+        <div class="step__dot"><span>{step.id}</span></div>
+        <div class="step__card">
+          <h3 class="step__title">{step.title}</h3>
+          <p class="step__subtitle">{step.subtitle}</p>
+          <p class="step__body">{step.body}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- Types -->
+  <section class="types-section">
+    <h2>Les types de Ponéglyphes</h2>
+    <div class="types-grid">
+      {poneglyphTypes.map((pt) => (
+        <a href={pt.href} class="type-card">
+          <span class="type-card__count">{pt.count}</span>
+          <div class="type-card__info">
+            <h3>{pt.type}</h3>
+            <p>{pt.description}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <Footer />
+</WikiLayout>
+
+<style>
+  .page-header { margin-bottom: 32px; }
+  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
+  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 780px; line-height: 1.65; }
+  .loop-diagram { width: 100%; max-width: 700px; margin: 0 auto 48px; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: var(--bg-secondary); overflow: hidden; }
+  .loop-svg { width: 100%; display: block; }
+  .timeline { position: relative; display: flex; flex-direction: column; gap: 0; margin-bottom: 48px; padding-left: 0; }
+  .timeline::before { content: ''; position: absolute; left: 21px; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, var(--accent-gold), var(--cyan), var(--violet), var(--accent-gold)); }
+  .step { display: flex; gap: 16px; padding: 14px 0; position: relative; }
+  .step__dot { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-secondary); border: 3px solid var(--violet); display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 1; font-weight: 800; font-size: 14px; color: var(--cyan); box-shadow: 0 0 10px var(--glow-violet); }
+  .step__card { flex: 1; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px 20px; max-width: 620px; }
+  .step--right .step__card { border-left: 3px solid var(--accent-gold); }
+  .step--left .step__card { border-left: 3px solid var(--cyan); }
+  .step__title { font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0 0 4px; }
+  .step__subtitle { font-size: 12px; font-weight: 600; color: var(--violet-light); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 10px; }
+  .step__body { font-size: 13.5px; color: var(--text-secondary); line-height: 1.65; margin: 0; }
+  .types-section { margin-top: 8px; }
+  .types-section h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 18px; }
+  .types-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .type-card { display: flex; align-items: flex-start; gap: 14px; padding: 18px; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: var(--gradient-card); text-decoration: none; transition: all 0.2s ease; }
+  .type-card:hover { border-color: var(--violet); transform: translateY(-2px); }
+  .type-card__count { display: flex; align-items: center; justify-content: center; min-width: 38px; height: 38px; border-radius: 10px; background: color-mix(in srgb, var(--cyan) 12%, transparent); color: var(--cyan); font-weight: 800; font-size: 15px; flex-shrink: 0; }
+  .type-card__info h3 { font-size: 15px; font-weight: 600; color: var(--text-main); margin: 0 0 6px; }
+  .type-card__info p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+  .type-card:hover .type-card__info h3 { color: var(--cyan); }
+  @media (max-width: 640px) { .step { gap: 12px; } .step__card { padding: 14px 16px; } .loop-diagram { max-width: 100%; } }
+</style>

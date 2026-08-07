@@ -341,5 +341,6 @@ Suite à une nouvelle revue complète du code (analyse statique + inspection du 
 - `aria-current` sur le lien actif de navigation.
 
 ### Non traité (dette existante, hors scope de ce correctif)
-- `npm run validate` : 33 erreurs **préexistantes** de taxonomie du contenu (les articles utilisent l'ancien jeu de catégories `monde-destinations`, `technologies-pouvoirs`… alors que `scripts/validate.mjs` attend `fondations`, `figures-identites`…) et références croisées orphelines. À traiter dans un lot dédié.
-- 6 erreurs TS préexistantes dans `Navbar.astro`, `SidebarNav.astro` et `carte-mentale.astro` (non introduites par ce correctif).
+- ~~`npm run validate` : 33 erreurs préexistantes de taxonomie du contenu~~ → **Corrigé** : la validation (`npm run validate`) passe désormais sans erreur (131 fichiers vérifiés, 0 erreur).
+- ~~6 erreurs TS préexistantes dans `Navbar.astro`, `SidebarNav.astro` et `carte-mentale.astro`~~ → **Corrigé** : `npm run check` (astro check) passe sans erreur (0 erreur, 0 warning, 0 hint).
+- **Tests** : tous les tests passent (63/63, 4 fichiers).

@@ -1,14 +1,15 @@
 ---
-title: 'Shimotsuki Ryuma et Roronoa Zoro'
+title: "Shimotsuki Ryuma et Roronoa Zoro"
 summary: "Fiche d'analyse sur Shimotsuki Ryuma, le Dieu de la Lame de Wano, et ses parallèles avec Roronoa Zoro."
-category: 'personnages-identites'
-status: 'published'
-navigationType: 'dossier'
+category: "personnages-identites"
+status: "published"
+navigationType: "dossier"
 sources: [1023]
-editorialStatus: 'hypothese-secondaire'
-certainty: 'elevee'
+editorialStatus: "hypothese-secondaire"
+certainty: "elevee"
 reviewedUntilChapter: 1188
-order: 47
+order: 45
+parent: "shimotsuki-ryuma"
 related: ['shimotsuki-ryuma', 'zoro']
 ---
 

@@ -7,7 +7,6 @@ sources: []
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-parent: "blue-star"
 order: 2
 ---
 

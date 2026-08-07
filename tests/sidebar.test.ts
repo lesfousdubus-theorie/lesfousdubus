@@ -123,7 +123,7 @@ describe('parcours de lecture', () => {
     expect(last.next).toBeNull();
 
     const middle = getParcoursPosition('joy-boy');
-    expect(middle.previous?.slug).toBe('ponelyphes');
+    expect(middle.previous?.slug).toBe('poneglyphes');
     expect(middle.next?.slug).toBe('nika');
   });
 

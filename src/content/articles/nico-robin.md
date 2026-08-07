@@ -7,8 +7,7 @@ sources: [391, 395, 398, 649, 818]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-parent: "poneglyphes"
-order: 26
+order: 27
 related: ["poneglyphes", "poneglyphes-futur", "rio-poneglyphe", "wa-no-kuni", "siecle-oublie"]
 ---
 

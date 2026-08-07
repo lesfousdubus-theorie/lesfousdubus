@@ -7,7 +7,7 @@ sidebarHidden: true
 certainty: "hypothese"
 reviewedUntilChapter: 1188
 sources: [1183, 1184]
-order: 54
+order: 52
 parent: "brook"
 related: ["brook", "dozan", "binks-no-sake", "wa-no-kuni"]
 ---

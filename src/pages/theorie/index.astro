@@ -36,7 +36,7 @@ const recentUpdates = getRecentArticleUpdates(publishedArticles, chapters, 6);
     <div class="text-violet font-semibold tracking-widest uppercase text-sm mb-3">Guide de lecture</div>
     <h1>La théorie</h1>
     <p class="subtitle">
-      Suivez l'ordre chronologique et logique ci-dessous (de 1 à 16) pour appréhender le raisonnement et la démonstration globale étape par étape.
+      La démonstration complète se déploie en <strong>22 chapitres</strong> dans la <a href="/theorie/theorie-complete">théorie complète</a>. Les étapes ci-dessous vous orientent vers les articles-clés et les points de départ recommandés pour explorer chaque pan de la théorie.
     </p>
   </div>
 
@@ -51,6 +51,13 @@ const recentUpdates = getRecentArticleUpdates(publishedArticles, chapters, 6);
         </div>
       </a>
     ))}
+  </div>
+
+  <div class="cta-complete">
+    <a href="/theorie/theorie-complete" class="cta-complete__btn">
+      Lire la démonstration complète en 22 chapitres →
+    </a>
+    <p class="cta-complete__hint">La page maîtresse du site : un seul article continu qui construit le raisonnement pas à pas, de Blue Star au retournement final.</p>
   </div>
 
   <h2 class="section-title">Mises à jour récentes</h2>
@@ -167,5 +174,39 @@ const recentUpdates = getRecentArticleUpdates(publishedArticles, chapters, 6);
   .article-chapter {
     font-size: 12.5px;
     color: var(--text-secondary);
+  }
+
+  .cta-complete {
+    margin: 32px 0 40px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--gradient-card);
+    border-left: 3px solid var(--cyan);
+    text-align: center;
+  }
+
+  .cta-complete__btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: var(--gradient-border);
+    color: white;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .cta-complete__btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--glow-cyan);
+  }
+
+  .cta-complete__hint {
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
   }
 </style>

@@ -63,6 +63,8 @@ const KNOWN_PAGES = new Set([
   '/explorer/schemas',
   '/explorer/elbaf',
   '/explorer/globe',
+  '/explorer/correspondances',
+  '/explorer/poneglyphes',
   '/evolution',
   '/evolution/chapitres',
   '/evolution/previsions',
