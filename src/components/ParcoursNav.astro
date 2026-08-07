@@ -51,12 +51,7 @@ const next = position.next ? { ...position.next, title: titleOf(position.next.sl
             <span class="parcours__dir">Article suivant →</span>
             <span class="parcours__title">{next.title}</span>
           </a>
-        ) : (
-          <a href="/verifier" class="parcours__link parcours__link--next">
-            <span class="parcours__direction">Section suivante</span>
-            <span class="parcours__title">Vérifier la théorie</span>
-          </a>
-        )}
+        ) : null}
       </div>
     </nav>
   )

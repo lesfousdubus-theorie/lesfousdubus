@@ -37,10 +37,7 @@ const ENUMS = {
   'articles.status': ['draft', 'published'],
   // Doit rester aligné sur le schéma `chapters` de src/content.config.ts.
   'chapters.effect': ['fondation', 'approfondissement', 'nouvelle-piste', 'modification'],
-  'evidence.type': ['dialogue', 'visuel', 'narratif', 'structure'],
-  'evidence.strength': ['majeure', 'secondaire'],
   'characters.era': ['ancien', 'moderne', 'transversal'],
-  'objections.strength': ['mineure', 'moderee', 'majeure'],
   'predictions.status': ['en-cours', 'confirmee', 'refutee', 'en-attente'],
   'timelines.period': ['siecle-oublie', 'present', 'futur', 'boucle'],
 };
@@ -48,11 +45,9 @@ const ENUMS = {
 const SCHEMA = {
   articles: { required: ['title', 'summary', 'category'], refArrays: ['related'] },
   chapters: { required: ['chapter', 'title', 'effect'], refArrays: ['updatedArticles'] },
-  evidence: { required: ['title', 'chapter', 'type', 'strength'], refArrays: ['articles'] },
   glossary: { required: ['term', 'definition'], refArrays: ['relatedArticles'] },
   characters: { required: ['name', 'summary'], refArrays: ['articles'] },
   locations: { required: ['name', 'summary'], refArrays: ['articles'] },
-  objections: { required: ['title', 'argument', 'response'], refArrays: ['articles'] },
   predictions: { required: ['title', 'statement'], refArrays: ['articles'] },
   timelines: { required: ['title', 'summary'], refArrays: ['articles'] },
 };
@@ -73,14 +68,6 @@ const KNOWN_PAGES = new Set([
   '/evolution/previsions',
   '/evolution/historique',
   '/evolution/abandonnees',
-  '/verifier',
-  '/verifier/preuves',
-  '/verifier/citations',
-  '/verifier/paralleles',
-  '/verifier/objections',
-  '/verifier/contradictions',
-  '/verifier/questions',
-  '/verifier/sources',
   '/dossiers',
   '/chapitres',
   '/chapitres/derniere-analyse',

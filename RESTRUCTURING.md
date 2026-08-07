@@ -10,7 +10,7 @@ Le site a été entièrement restructuré selon les spécifications fournies, av
 
 **Avant :** `La théorie` | `Explorer` | `Évolution` | `Vérifier`
 
-**Après :** `La théorie` | `Dossiers` | `Chapitres` | `Explorer` | `Vérifier` + `[Recherche]` + `[Dernière analyse]`
+**Après :** `La théorie` | `Dossiers` | `Chapitres` | `Explorer` + `[Recherche]` + `[Dernière analyse]`
 
 La nouvelle navbar reflète les usages principaux :
 - **Dossiers** : pour atteindre directement un sujet précis
@@ -57,15 +57,6 @@ Hub central pour atteindre directement un sujet précis. Organisé par catégori
 - Graphe des correspondances
 - Schéma des Ponéglyphes
 - Fresque d'Elbaf
-
-#### Vérifier (`/verifier`) — mis à jour
-- **Preuves principales** (anciennement "Pièces du puzzle")
-- Citations et scènes
-- Parallèles
-- Objections
-- Contradictions
-- **Questions non résolues** (nouveau)
-- Sources
 
 ### 4. Nouvelles pages créées
 

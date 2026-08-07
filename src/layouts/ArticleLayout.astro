@@ -3,7 +3,6 @@ import WikiLayout from '@layouts/WikiLayout.astro';
 import Breadcrumb from '@components/Breadcrumb.astro';
 import ArticleMeta from '@components/ArticleMeta.astro';
 import RelatedArticles from '@components/RelatedArticles.astro';
-import EvidenceSection from '@components/EvidenceSection.astro';
 import ChapterReferences from '@components/ChapterReferences.astro';
 import ReadingProgressBar from '@components/ReadingProgressBar.astro';
 import BackToTop from '@components/BackToTop.astro';
@@ -29,10 +28,6 @@ const relatedArticles = relatedArticleEntries.map((entry) => ({
   href: `/theorie/${entry.id}`,
   category: entry.data.category,
 }));
-
-// Fetch evidence related to this article
-const evidenceEntries = await getCollection('evidence');
-const articleEvidence = evidenceEntries.filter((e) => e.data.articles?.includes(currentSlug));
 
 // Fetch chapter references related to this article
 const chapterEntries = await getCollection('chapters');
@@ -149,13 +144,9 @@ const articleJsonLd = {
     <a href="/theorie" class="btn-read-nav">
       <span>← Sommaire de la théorie</span>
     </a>
-    <a href="/verifier" class="btn-read-nav btn-read-nav--highlight">
-      <span>🧩 Méthodes de vérification →</span>
-    </a>
   </nav>
 
   {relatedArticles.length > 0 && <RelatedArticles articles={relatedArticles} />}
-  {articleEvidence.length > 0 && <EvidenceSection items={articleEvidence} />}
   {articleChapters.length > 0 && <ChapterReferences items={articleChapters} />}
 
   <BackToTop />

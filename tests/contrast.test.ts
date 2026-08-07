@@ -106,6 +106,28 @@ describe.each(THEMES)('contraste — thème %s', (theme) => {
     expect(contrastRatio(color(theme, 'cyan'), tinted)).toBeGreaterThanOrEqual(TEXT_AA);
   });
 
+  it('le badge numéroté « Théorie complète » garde un texte lisible sur le dégradé', () => {
+    // Le numéro de chapitre (`.theory-section__n`) est posé sur `--gradient-border`
+    // (dégradé violet → cyan-dim). On teste ses deux extrémités avec le texte
+    // `--bg-main`, dans les deux thèmes.
+    const text = color(theme, 'bg-main');
+    for (const end of ['violet', 'cyan-dim']) {
+      const r = contrastRatio(text, color(theme, end));
+      expect(r, `${end} (extrémité du dégradé)`).toBeGreaterThanOrEqual(TEXT_AA);
+    }
+  });
+
+  it('les éléments posés sur --gradient-border gardent un texte lisible', () => {
+    // Motif partagé par `.btn-primary` (accueil, 404), le numéro de chapitre de
+    // la « Théorie complète » et le stepper de la chronologie : du texte `--bg-main`
+    // sur le dégradé `violet → cyan-dim`. On vérifie ses deux extrémités.
+    const text = color(theme, 'bg-main');
+    for (const end of ['violet', 'cyan-dim']) {
+      const r = contrastRatio(text, color(theme, end));
+      expect(r, `${end} (extrémité du dégradé)`).toBeGreaterThanOrEqual(TEXT_AA);
+    }
+  });
+
   it('l’indicateur de focus est perceptible (1.4.11)', () => {
     const r = contrastRatio(color(theme, 'cyan'), color(theme, 'bg-main'));
     expect(r).toBeGreaterThanOrEqual(UI_AA);

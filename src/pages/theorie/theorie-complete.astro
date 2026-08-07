@@ -4,8 +4,47 @@ import Footer from '@components/Footer.astro';
 import { READING_PATH } from '@utils/parcours';
 import { getCollection } from 'astro:content';
 
-// Parcours de lecture séquentiel, aligné sur la navigation « article suivant »
-// affichée en bas de chaque fiche : une seule source (src/utils/parcours.ts).
+// Données pour le JSON-LD Article (page maîtresse, longue forme) et BreadcrumbList.
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
+const canonicalPageUrl = `${siteUrl}/theorie/theorie-complete/`;
+const ogImageUrl = `${siteUrl}/og-default.png`;
+const pageTitle = 'La théorie complète';
+const pageSeoTitle =
+  'Théorie complète One Piece : le Siècle oublié est le présent — démonstration | Les Fous du Bus';
+const pageDescription =
+  'La théorie complète du Siècle oublié est le présent : 22 chapitres de Blue Star à Joy Boy, des Ponéglyphes du futur à la Grande Guerre — la démonstration.';
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: pageTitle,
+  description: pageDescription,
+  url: canonicalPageUrl,
+  image: ogImageUrl,
+  articleSection: 'La théorie',
+  inLanguage: 'fr-FR',
+  author: {
+    '@type': 'Organization',
+    name: 'Les Fous du Bus',
+    url: siteUrl,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Les Fous du Bus',
+    url: siteUrl,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${siteUrl}/logo.png`,
+    },
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': canonicalPageUrl,
+  },
+};
+
+// Petite carte de lecture « en un coup d’œil », reléguée tout en bas de la page.
+// Elle n’est plus dans le corps principal : la page se lit désormais comme un seul
+// grand article continu. On garde la même source unique (src/utils/parcours.ts).
 const allArticles = await getCollection('articles', ({ data }) => data.status === 'published');
 const parcours = READING_PATH.map((slug) => ({
   slug,
@@ -13,190 +52,855 @@ const parcours = READING_PATH.map((slug) => ({
   href: `/theorie/${slug}`,
 }));
 
-const sections = [
+// Simple aide à la mise en forme : **gras** dans les textes.
+const md = (text: string) => text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+type Block =
+  | { t: 'p'; text: string }
+  | { t: 'ul'; items: string[] }
+  | { t: 'quote'; text: string }
+  | { t: 'note'; text: string };
+
+interface Section {
+  id: string;
+  n: number;
+  question: string;
+  title: string;
+  blocks: Block[];
+  links: [string, string][];
+}
+
+const sections: Section[] = [
+  {
+    id: 'point-de-depart',
+    n: 1,
+    question: 'Pourquoi oser renverser la lecture du Siècle oublié ?',
+    title: 'Le point de départ',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Une bonne histoire se reconnaît à sa fin. John Truby, théoricien du récit, le résume ainsi : une grande fin ne ferme pas l’histoire, elle la **recontextualise**. Elle nous donne envie de tout revoir depuis le début, parce qu’elle rééclaire chaque scène que nous avions mal lue.',
+      },
+      {
+        t: 'p',
+        text: 'Les Fous du Bus ont fait ce pari : trouver la fin de *One Piece*. Et leur conviction tient en une phrase — **dans ce monde, c’est le début qui côtoie la fin**. Le Siècle oublié, que tout le monde situe il y a environ huit cents ans, et le présent que nous lisons depuis le chapitre 1.',
+      },
+      {
+        t: 'p',
+        text: 'Concrètement : les événements attribués au Siècle oublié — Joy Boy, la Grande Guerre, le Royaume antique, une partie de la véritable histoire du monde — n’auraient **pas encore eu lieu**. Ils appartiendraient à l’époque de Luffy.',
+      },
+      {
+        t: 'p',
+        text: 'Le monde croit se souvenir de son passé. Il posséderait en réalité, depuis huit cents ans, des informations venues de son **avenir**. Cette page construit cette démonstration pas à pas, d’un simple problème géographique jusqu’au retournement final — sans jamais poser une conclusion avant d’avoir montré d’où elle vient.',
+      },
+    ],
+    links: [
+      ['L’introduction complète', '/theorie/les-bases-du-siecle-oublie'],
+      ['Professeur Clover et Ohara', '/theorie/professeur-clover-et-ohara'],
+    ],
+  },
+  {
+    id: 'probleme-geographique',
+    n: 2,
+    question: 'Qu’y a-t-il d’anormal dans la géographie du monde ?',
+    title: 'Le problème géographique de Blue Star',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Avant d’apprendre la vérité sur ce monde, il faut le comprendre — et cela commence par sa géographie. Blue Star est une planète composée à **90 % d’eau**, divisée en deux par un continent unique : la **Red Line**.',
+      },
+      {
+        t: 'p',
+        text: 'Cette anomalie continentale a deux conséquences majeures. Elle crée d’abord un océan unique qui traverse le monde perpendiculairement au continent rouge : la **Grand Line**, avec le Paradis et le Nouveau Monde. Ensuite, coupée comme un gâteau, Blue Star est divisée en quatre mers qui ne peuvent ni se retrouver ni communiquer : West Blue, East Blue, North Blue et South Blue, séparées par la Calm Belt, cette ceinture de Grand Line où le vent fait défaut.',
+      },
+      {
+        t: 'p',
+        text: 'Il n’existe donc qu’un seul chemin pour faire le tour du monde, et c’est Grand Line. Pour y naviguer, les marins utilisent des **Log Pose**, seuls instruments fiables sur l’océan unique : ils n’indiquent pas le nord, mais la prochaine île, en réagissant au champ magnétique. Les **Eternal Pose**, eux, pointent toujours vers la même destination.',
+      },
+      {
+        t: 'p',
+        text: 'Seulement voilà : un problème que personne n’évoque jamais. À l’heure actuelle, **faire le tour du monde est tout simplement impossible**. Pour traverser le globe via Grand Line, on rencontre Red Line trois fois. Une fois pour emprunter Reverse Mountain, une seconde pour entrer dans le Nouveau Monde, et une troisième à la fin du voyage, au dos de Reverse Mountain — où **aucune issue n’existe**.',
+      },
+      {
+        t: 'p',
+        text: 'La dernière île de Grand Line, **Lodestar**, se trouve juste avant ce mur rouge haut de dix mille mètres. Après elle, une seule solution : faire demi-tour, comme le fit Gol D. Roger il y a trente-neuf ans.',
+      },
+    ],
+    links: [
+      ['Blue Star', '/theorie/blue-star'],
+      ['Grand Line', '/theorie/grand-line'],
+      ['Red Line', '/theorie/red-line'],
+      ['Lodestar', '/theorie/lodestar'],
+    ],
+  },
   {
     id: 'laugh-tale',
-    title: '1. Tout commence avec Laugh Tale',
-    text: 'Grand Line fait le tour du monde, mais Red Line empêche une vraie circumnavigation. À la fin de la route se trouve Lodestar, tandis que Laugh Tale reste introuvable. La théorie propose que le problème ne soit pas seulement où se trouve Laugh Tale, mais quand elle se trouve — liée à Lodestar et à une autre époque où Red Line et le Gouvernement mondial auront été bouleversés. C’est ce qui donne sens au “trop tôt” de Roger.',
+    n: 3,
+    question: 'Pourquoi Laugh Tale est-elle introuvable ?',
+    title: 'Lodestar et le mystère de Laugh Tale',
+    blocks: [
+      {
+        t: 'p',
+        text: 'On raconte pourtant qu’il existe une ultime île permettant de faire le tour du monde : **Laugh Tale**, là où se trouverait le trésor de Joy Boy, celui que le monde appelle le One Piece, découvert par le roi des pirates il y a vingt-cinq ans.',
+      },
+      {
+        t: 'p',
+        text: 'Rappelons une évidence : la Terre est ronde. Faire le tour du monde, comme l’expédition de Magellan, c’est **rentrer à la maison**, revenir au point de départ, là où tout a commencé. Alors, s’il existe une île après Lodestar, une île après le bout du monde, où peut-elle bien se trouver — sinon là où **la fin rencontre le début** ?',
+      },
+      {
+        t: 'p',
+        text: 'Et surtout : comment se fait-il que personne ne l’ait trouvée en **huit cents ans** ? Nous savons nous rendre dix mille mètres dans le ciel, dix mille mètres sous les océans, et même sur la Lune. Alors comment un simple « conte du rire » a-t-il pu rester introuvable pendant huit siècles ?',
+      },
+      {
+        t: 'p',
+        text: 'Pour garder une cohérence totale entre l’œuvre et sa géographie, il n’y a qu’une seule réponse possible : **Laugh Tale n’existe pas encore**. Comment Gol D. Roger a-t-il pu devenir le premier homme à faire le tour du monde alors que Red Line l’en empêche ? En se rendant à une époque où Red Line n’existe plus : l’époque de Joy Boy.',
+      },
+      {
+        t: 'p',
+        text: 'Pour faire le tour du monde, Roger n’aurait pas eu d’autre choix que de **voyager vers le futur** — là où All Blue existe, là où l’on peut naviguer librement, là où le Gouvernement mondial n’existe plus et où l’humanité entière ne forme plus qu’une seule pièce. C’est cette époque-là que se trouverait le One Piece.',
+      },
+      {
+        t: 'quote',
+        text: '« Nous sommes arrivés trop tôt. » — Gol D. Roger, sur Laugh Tale (ch. 968).',
+      },
+    ],
     links: [
       ['Laugh Tale', '/theorie/laugh-tale'],
       ['Lodestar', '/theorie/lodestar'],
-      ['Red Line', '/theorie/red-line'],
+      ['Gol D. Roger', '/theorie/gol-d-roger'],
+    ],
+  },
+  {
+    id: 'quatrieme-coordonnee',
+    n: 4,
+    question: 'Et si le problème n’était pas où, mais quand ?',
+    title: 'La quatrième coordonnée : le temps',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Le paradoxe géographique nous pousse à ajouter une dimension. Comme les humains, nous évoluons dans un cadre à **trois dimensions** : la hauteur, la largeur, la profondeur. La latitude, la longitude et l’altitude suffisent à situer n’importe quel point du globe. Il suffirait donc de trois Road Poneglyphes pour indiquer Laugh Tale dans l’espace.',
+      },
+      {
+        t: 'p',
+        text: 'À moins que le **quatrième** ne désigne pas une coordonnée spatiale, mais une coordonnée **temporelle**. Depuis Einstein — qui a inspiré Vegapunk —, on ajoute le temps comme quatrième dimension, ce qui forme le continuum espace-temps. Laugh Tale ne serait pas en trois dimensions, mais en **quatre**.',
+      },
+      {
+        t: 'p',
+        text: 'Il ne faut donc pas se demander *où* est le One Piece, mais **quand** il est. Les quatre Road Poneglyphes indiqueraient chacun une coordonnée, et c’est à leur intersection que se trouverait l’île de Joy Boy — une intersection située dans le temps.',
+      },
+      {
+        t: 'p',
+        text: 'Tout, dans le récit, prépare cette lecture. Les Log Pose, des boussoles censées indiquer un lieu, se portent au poignet **comme des montres** qui indiquent le temps. Les Eternal Pose, qui pointent une île, sont en réalité des **sabliers**, instruments également temporels. Ces deux objets qui mesurent le temps servent à voyager sur Grand Line — qui serait en réalité une **frise chronologique** que les pirates remontent à la recherche du One Piece.',
+      },
+      {
+        t: 'p',
+        text: 'Sur l’océan unique, on ne peut voyager que de manière linéaire : impossible de partir, à cause de la Calm Belt. Un seul chemin — aller en avant ou aller en arrière, comme le temps. Et voilà pourquoi Roger, l’homme le plus libre du monde, ne pouvait pas être libre dans le temps lui aussi : **il était arrivé trop tôt**.',
+      },
+    ],
+    links: [
+      ['Road Ponéglyphes', '/theorie/road-ponelyphes'],
+      ['Une communication à travers le temps', '/theorie/communication-temps'],
+      ['Laugh Tale', '/theorie/laugh-tale'],
     ],
   },
   {
     id: 'poneglyphes-avenir',
-    title: '2. Les Ponéglyphes raconteraient l’avenir',
-    text: 'C’est le mécanisme fondamental. Les Ponéglyphes existent bien depuis 800 ans, mais les événements qu’ils rapportent ne s’étaient pas nécessairement déjà produits. Ils auraient été créés à partir d’informations venues du futur, puis transmis 800 ans en arrière. Le Rio Ponéglyphe ne raconterait pas seulement une ancienne guerre : il raconterait l’histoire que nous lisons depuis le chapitre 1.',
+    n: 5,
+    question: 'Pourquoi les Ponéglyphes semblent-ils raconter le passé ?',
+    title: 'Les Ponéglyphes et la mémoire de l’avenir',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Si Laugh Tale et le One Piece touchent à une époque future, comment le passé a-t-il pu en avoir connaissance ? C’est ici qu’intervient le **mécanisme fondamental** de la théorie : les Ponéglyphes.',
+      },
+      {
+        t: 'p',
+        text: 'Les Ponéglyphes existent bien depuis huit cents ans. Mais les événements qu’ils rapportent ne se seraient pas nécessairement déjà produits au moment où ils sont apparus. Ils auraient été créés à partir d’informations **venues du futur**, puis transmises huit cents ans en arrière.',
+      },
+      {
+        t: 'p',
+        text: 'Le monde aurait pris ces textes pour les vestiges d’une civilisation disparue, alors qu’ils raconteraient en réalité une histoire **encore à venir**. Le Rio Ponéglyphe ne raconterait pas seulement une ancienne guerre : il raconterait l’histoire que nous sommes en train de lire depuis le chapitre 1.',
+      },
+      {
+        t: 'p',
+        text: 'Toute la force de cette idée est qu’elle ne vient pas d’une intuition, mais de la chaîne que nous venons de construire : si l’île finale est inaccessible parce qu’elle appartient à une autre époque, alors les seuls messages qui la relient à nous ne peuvent être que des messages adressés depuis cette époque. Les Ponéglyphes seraient la **mémoire de l’avenir**.',
+      },
+    ],
     links: [
-      ['Les Ponéglyphes et le futur', '/theorie/ponelyphes-futur'],
       ['Les Ponéglyphes', '/theorie/ponelyphes'],
-      ['Points encore à expliquer', '/verifier/questions'],
+      ['Les Ponéglyphes racontent le futur', '/theorie/ponelyphes-futur'],
+      ['Le Rio Ponéglyphe', '/theorie/rio-ponelyphe'],
     ],
   },
   {
-    id: 'joyboy-luffy',
-    title: '3. Joy Boy serait Monkey D. Luffy',
-    text: 'Dans cette lecture, Joy Boy n’est pas un ancien héros que Luffy répète. C’est l’inverse : Joy Boy est le nom sous lequel Luffy entrera dans l’Histoire. Pendant 800 ans, croyances, objets et promesses ont convergé vers lui. Joy Boy n’est pas l’origine de Luffy, il en est la conséquence — c’est pourquoi Luffy, qui agit librement sans chercher à incarner une légende, finit par la devenir.',
+    id: 'siecle-oublie-royaume-antique',
+    n: 6,
+    question: 'Pourquoi « l’antique » ressemble-t-il tant au futur ?',
+    title: 'Le Siècle oublié et le Royaume antique',
+    blocks: [
+      {
+        t: 'p',
+        text: 'C’est ici que se joue la réinterprétation globale du Siècle oublié. Vegapunk décrit une civilisation ancienne dont la technologie semble inexplicablement avancée. Comment une civilisation d’il y a huit cents ans aurait-elle pu être **plus avancée** que le présent ?',
+      },
+      {
+        t: 'p',
+        text: 'Pour les Fous du Bus, le paradoxe s’effondre d’un coup : **ce que le monde appelle « antique » viendrait en réalité du futur**. Ce n’est pas le passé qui dépassait le présent, c’est l’avenir qui se manifeste dans le présent.',
+      },
+      {
+        t: 'p',
+        text: 'Les Ponéglyphes illustrent parfaitement cette idée. Réputés indestructibles, ils ont résisté à tout pendant huit cents ans — même Vegapunk n’a jamais su les abîmer. S’ils sont impossibles à détruire, c’est peut-être qu’ils sont faits d’un matériau qui **n’existe pas encore**. Imaginez un soldat de l’antiquité face à un bloc d’acier trempé : il croirait à une matière indestructible, alors qu’il s’agit seulement d’un métal perfectionné dans le futur.',
+      },
+      {
+        t: 'p',
+        text: 'Le langage gravé sur les pierres suivrait la même logique. Une langue que personne ne peut lire pendant huit siècles, sauf une archéologue capable de déchiffrer sa **propre écriture future** : Nico Robin. Et les inventions de Vegapunk, la Mother Flame, Emeth, les technologies actuelles participeraient à créer le monde que le passé a ensuite cru disparu.',
+      },
+      {
+        t: 'p',
+        text: 'Le Royaume antique ne serait donc pas un vestige à exhumer, mais un monde **à construire**. Le Siècle oublié n’est pas un chapitre terminé : c’est l’époque que l’histoire de Luffy est en train d’écrire.',
+      },
+    ],
+    links: [
+      ['Le Siècle oublié', '/theorie/siecle-oublie'],
+      ['Royaume antique', '/theorie/royaume-antique'],
+      ['Les bases du Siècle oublié', '/theorie/les-bases-du-siecle-oublie'],
+    ],
+  },
+  {
+    id: 'joy-boy',
+    n: 7,
+    question: 'Qui est Joy Boy ?',
+    title: 'Joy Boy',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Maintenant que la mécanique est posée, donnons-lui son visage. Le nom de Joy Boy traverse tout le récit : la promesse au royaume Ryugu, les souvenirs d’Emeth, Zunesha qui se souvient du rythme de son cœur, le « trop tôt » de Roger. Mais qui est-il vraiment ?',
+      },
+      {
+        t: 'p',
+        text: 'La nuance centrale de cette théorie est là, et elle est souvent mal résumée : **Joy Boy n’est pas l’origine de Luffy, il en est la conséquence**. Pendant huit cents ans, des croyances, des objets, des promesses ont convergé vers un homme. C’est cette convergence qui crée Joy Boy — pas un ancêtre qui se réincarne.',
+      },
+      {
+        t: 'p',
+        text: 'Prenez Emeth. Convaincu d’avoir confondu Joy Boy avec Luffy, le robot ne s’est en réalité jamais trompé : Joy Boy n’existe pas encore, il a seulement devant lui Luffy, celui qui doit le devenir. Et quand Emeth dit qu’il n’a pas réussi à faire de lui un roi, c’est son propre geste qui fera de Luffy le roi des pirates.',
+      },
+      {
+        t: 'p',
+        text: 'Zunesha, lui, se souvient du rythme d’un cœur. S’il vient lui aussi du futur — comme nous le verrons —, alors c’est du cœur de **Monkey D. Luffy** qu’il se souvient. Joy Boy n’est pas un héros disparu que Luffy répète : c’est le nom sous lequel le monde retiendra Luffy.',
+      },
+    ],
     links: [
       ['Joy Boy', '/theorie/joy-boy'],
-      ['Monkey D. Luffy', '/theorie/luffy'],
-      ['Zunesha et les tambours', '/theorie/zunesha-fiche'],
+      ['Emeth, le robot du futur', '/theorie/emeth-robot-du-futur'],
+      ['Zunesha', '/theorie/zunesha-fiche'],
     ],
   },
   {
-    id: 'trois-noms',
-    title: '4. Luffy, Joy Boy et Nika : trois noms pour un même homme',
-    text: 'Luffy est son identité, Joy Boy le nom que le monde lui donnera, Nika la figure divine sous laquelle certains peuples l’interprètent. Trois manières de parler d’un même homme, pas trois personnes à trois époques. Cette distinction éclaire la promesse du Royaume Ryugu, l’Éveil et la foi des Boucaniers.',
+    id: 'nika',
+    n: 8,
+    question: 'Qu’est-ce que Nika a à voir avec tout cela ?',
+    title: 'Nika',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Il y a une troisième figure, et elle complique le tableau : **Nika**, le dieu du soleil. Sur presque trente ans de manga, son nom n’apparaît que dans les cinq dernières années — ce qui en dit long sur son rôle.',
+      },
+      {
+        t: 'p',
+        text: 'Nika est la figure divine sous laquelle certains peuples interprètent le libérateur. C’est la foi des Boucaniers, celle que Bartholomew Kuma a héritée. C’est le mythe derrière le Hito Hito no Mi, modèle Nika, et l’Éveil qui permet à Luffy de libérer les esclaves par le rire.',
+      },
+      {
+        t: 'p',
+        text: 'Mais Nika n’est pas nécessairement un dieu ancien qui existait avant les autres. Il serait plutôt **la traduction mythologique** du même homme que l’Histoire appellera Joy Boy. Là où l’Histoire retient « Joy Boy », la foi populaire vénère « Nika ».',
+      },
+      {
+        t: 'p',
+        text: 'Les trois noms se rejoignent donc : **Luffy** est son identité, **Joy Boy** le nom que le monde lui donnera, **Nika** la figure divine sous laquelle certains peuples l’interprètent. Trois manières de parler d’un même homme — pas trois personnes à trois époques.',
+      },
+    ],
     links: [
       ['Nika', '/theorie/nika'],
-      ['Le Hito Hito no Mi modèle Nika', '/theorie/hito-hito-no-mi-nika'],
+      ['Le Hito Hito no Mi, modèle Nika', '/theorie/hito-hito-no-mi-nika'],
+      ['Kuma et la foi en Nika', '/theorie/kuma-foi-nika'],
+    ],
+  },
+  {
+    id: 'luffy',
+    n: 9,
+    question: 'En quoi Luffy est-il ces figures sans le savoir ?',
+    title: 'Monkey D. Luffy',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Si Luffy doit devenir Joy Boy, alors tout doit se lire depuis son personnage. Et c’est précisément ce qui rend la théorie cohérente : Luffy **refuse** d’incarner une légende.',
+      },
+      {
+        t: 'p',
+        text: 'Luffy ne veut pas être un héros — il le dit lui-même, car un héros partage sa nourriture. Il ne veut pas être un roi : comme Roger, ce seront les citoyens du monde qui le désigneront roi des pirates, jamais lui ne le déclarera. Il ne se prétend ni Nika ni Joy Boy.',
+      },
+      {
+        t: 'p',
+        text: 'Or c’est exactement ce qui lui permet de devenir ces figures. Joy Boy étant la **conséquence** de huit siècles d’Histoire — et non leur origine —, ce n’est pas en cherchant à reproduire une légende que Luffy la rejoint, c’est en agissant librement. Toutes les volontés, toutes les promesses, toutes les croyances convergent vers lui parce qu’il ne se plie à aucune.',
+      },
+      {
+        t: 'p',
+        text: 'Ainsi, les trois noms ne désignent pas trois personnes : ils décrivent trois regards portés sur le même homme. C’est cette distinction qui éclaire la promesse du royaume Ryugu, l’Éveil et la foi des Boucaniers.',
+      },
+    ],
+    links: [
+      ['Monkey D. Luffy', '/theorie/luffy'],
       ['La volonté héritée', '/theorie/volonte-heritee'],
+      ['La signification du D.', '/theorie/signification-d'],
     ],
   },
   {
-    id: 'autres-figures',
-    title: '5. Les autres figures du Siècle oublié appartiendraient au présent',
-    text: 'La même logique s’applique à d’autres légendes : Shirahoshi / Poséidon, Vivi / Lili, Teach / Davy Jones, Zoro / Ryuma. Non pas de simples ressemblances, mais l’idée que leurs actions présentes ou futures, transmises vers le passé, sont devenues les légendes que le monde croit anciennes.',
+    id: 'roger-shanks',
+    n: 10,
+    question: 'Pourquoi Roger n’a-t-il rien fait ?',
+    title: 'Roger, Shanks et ceux qui attendent',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Revenons au roi des pirates, car il est la clé de voûte du calendrier. Roger a atteint Laugh Tale, il a ri, il a compris la vérité — et pourtant il n’a rien fait. Pourquoi ? Parce que ce n’était pas son époque.',
+      },
+      {
+        t: 'p',
+        text: '« Nous sommes arrivés trop tôt. » Roger a voyagé jusqu’à l’époque de Joy Boy, mais il n’a pas pu être Joy Boy. Il pouvait être libre dans l’espace, pas encore dans le temps. Il est arrivé **avant** l’heure du serment.',
+      },
+      {
+        t: 'p',
+        text: 'Alors Roger a fait la seule chose qui restait : il a **attendu**. « Un jour, quelqu’un naîtra et nous surpassera » (ch. 968). Cette personne, c’est celle que Roger attend, et elle a un nom : celui qui portera la volonté, qui accomplira le voyage au bon moment.',
+      },
+      {
+        t: 'p',
+        text: 'Ceux qui attendent, ce sont aussi Shanks, qui transmet le chapeau de paille ; Rayleigh, qui veille ; l’équipage qui a tout compris sans pouvoir agir. La théorie donne ainsi un sens précis au fameux « trop tôt » : Roger n’était pas en retard sur un passé, il était **en avance sur un avenir** qui devait encore se construire.',
+      },
+    ],
     links: [
-      ['Shirahoshi est Poséidon', '/theorie/poseidon'],
-      ['Vivi est Lili', '/theorie/lili-vivi-et-les-poneglyphes'],
-      ['Teach est Davy Jones', '/theorie/davy-jones'],
+      ['Gol D. Roger', '/theorie/gol-d-roger'],
+      ['Shanks', '/theorie/shanks'],
+      ['One Piece : l’histoire', '/theorie/one-piece-histoire'],
     ],
   },
   {
-    id: 'peuples-preparation',
-    title: '6. Chaque peuple aurait préparé une partie du monde pendant 800 ans',
-    text: 'Si les Ponéglyphes portent des informations du futur, ils portent aussi des instructions. Ryugu garde Noah en attendant Poséidon, Wa no Kuni doit ouvrir ses frontières, les Minks sont liés à Zunesha, les Shandias, les Boucaniers, Alabasta… Chaque histoire séparée serait une pièce d’une même préparation pour la guerre finale.',
+    id: 'poseidon-shirahoshi',
+    n: 11,
+    question: 'Pourquoi l’arme la plus redoutée est-elle une petite sirène ?',
+    title: 'Poséidon et Shirahoshi',
+    blocks: [
+      {
+        t: 'p',
+        text: 'La même logique s’applique aux grandes figures du Siècle oublié. Commençons par Poséidon, l’une des Armes antiques — celle qui commande les Rois des Mers. Et regardons qui la théorie y voit.',
+      },
+      {
+        t: 'p',
+        text: '**Shirahoshi est Poséidon.** La princesse du royaume Ryugu, ceinte d’un pouvoir que le monde redoute. Ce n’est pas une réincarnation : c’est la même histoire qui se joue, une histoire dont le passé n’a conservé que la légende.',
+      },
+      {
+        t: 'p',
+        text: 'Derrière elle, il y a **Noah**, le navire géant construit pour l’aider, la promesse du royaume Ryugu à Joy Boy. Cette promesse tenue pendant huit siècles n’a de sens que si elle prépare un événement encore à venir.',
+      },
+      {
+        t: 'p',
+        text: 'L’arme n’est donc pas une machine : c’est une personne. Et son rôle n’est pas de détruire dans le passé, mais d’agir dans la guerre finale — lorsque le monde aura besoin des Rois des Mers. La force de cette lecture est de transformer une arme mythique en un **personnage vivant** que nous suivons depuis des années.',
+      },
+    ],
     links: [
-      ['Peuples et royaumes', '/theorie/peuples-royaumes'],
-      ['Elbaf et le Harley', '/theorie/elbaf-halley'],
+      ['Poséidon', '/theorie/poseidon'],
+      ['Shirahoshi', '/theorie/shirahoshi'],
       ['Noah', '/theorie/noah'],
+      ['Royaume Ryugu', '/theorie/royaume-ryugu'],
     ],
   },
   {
-    id: 'royaume-antique',
-    title: '7. Le Royaume antique serait lié au monde qui reste à construire',
-    text: 'Vegapunk décrit une civilisation antique à la technologie inexplicablement avancée. Si “l’antique” venait en réalité du futur, le paradoxe disparaît : inventions de Vegapunk, Mother Flame, Emeth et technologies actuelles participeraient à créer le monde que le passé a cru disparu.',
+    id: 'davy-jones-teach',
+    n: 12,
+    question: 'Pourquoi Imu appelle-t-il Xebec « Davy Jones » ?',
+    title: 'Davy Jones et Teach',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Il est un autre nom que le passé a retenu comme une légende : **Davy Jones**, le démon des mers, celui des profondeurs. Et il est un personnage que le présent a mis au premier plan : **Marshall D. Teach**, dit Barbe Noire.',
+      },
+      {
+        t: 'p',
+        text: 'Le point d’appui est un détail frappant du récit. Sur God Valley, Imu a appelé Rocks D. Xebec « Davy Jones ». À quoi Xebec a répondu : « Il y a erreur sur la personne. Je ne suis pas cet homme. »',
+      },
+      {
+        t: 'p',
+        text: 'Pour la théorie, cette méprise n’est pas anodine : elle révèle qu’Imu **confond les générations**. Comme pour Emeth et Luffy, il prend un homme du présent pour une figure dont il croit connaître la légende. Davy Jones serait en réalité Teach — dont les actions futures, transmises vers le passé, sont devenues la légende que le monde croit ancienne.',
+      },
+      {
+        t: 'p',
+        text: 'La même confusion se répétera, et c’est toute la mécanique : Imu pense avoir tué Davy Jones sur God Valley, alors qu’il n’a tué que Xebec. Il se trompe parce qu’il cherche dans le passé des figures qui n’appartiennent qu’à l’avenir.',
+      },
+    ],
     links: [
-      ['Royaume antique', '/theorie/royaume-antique'],
-      ['Vegapunk', '/theorie/vegapunk'],
-      ['Emeth, le robot du futur', '/theorie/emeth-robot-du-futur'],
+      ['Teach', '/theorie/teach'],
+      ['Davy Jones', '/theorie/davy-jones-fiche'],
+      ['Barbe Noire et Davy Jones', '/theorie/barbe-noire-davy-jones'],
     ],
   },
   {
-    id: 'imu-avenir',
-    title: '8. Imu ne craindrait pas seulement son passé, mais son avenir',
-    text: 'Depuis 800 ans, Imu semble obsédé par Joy Boy, Nika et certaines familles. La théorie propose qu’il dispose d’informations incomplètes sur ce qui doit arriver et cherche à empêcher un avenir qu’il ne comprend pas. En voulant effacer l’Histoire et persécuter certains peuples, il aurait créé les conditions de l’apparition de Joy Boy.',
+    id: 'lili-vivi',
+    n: 13,
+    question: 'Pourquoi la reine qui a refusé Mary Geoise ressemble-t-elle à Vivi ?',
+    title: 'Lili et Vivi',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Il y a huit cents ans, quand les rois du monde plièrent le genou, une reine resta debout : **Nefertari D. Lili**, souveraine d’Alabasta, qui refusa de s’installer sur Mary Geoise et dispersa les Ponéglyphes à travers le monde, après avoir écrit une lettre transmise à sa descendance.',
+      },
+      {
+        t: 'p',
+        text: 'Or regardez ses représentations. Sa silhouette au chapitre 1085, son portrait dans la chambre Fleurie au chapitre 1116 : ce sont purement et simplement **ceux de Nefertari Vivi**, jusqu’aux cheveux bleus que la famille Nefertari n’a pourtant jamais eus avant Vivi.',
+      },
+      {
+        t: 'p',
+        text: 'Les parallèles s’accumulent. Comme Lili, Vivi a disparu après le conseil des rois, et ni le Gorosei ni personne ne sait où elle se trouve. Comme Lili, elle ne compte pas revenir s’asseoir sur le trône d’Alabasta : Vivi est une Mugiwara de cœur, elle a besoin de prendre la mer.',
+      },
+      {
+        t: 'p',
+        text: 'La théorie en tire une conclusion : **Lili serait Vivi**, et sa mission sera de disperser les Ponéglyphes dans le futur pour que le monde se prépare au jour du serment. C’est pourquoi sa lettre demande à Alabasta de protéger les pierres et de hisser le pavillon de l’aube nouvelle. Koza, son frère adoptif, deviendrait alors roi d’Alabasta — le « frère » de Lili que l’Histoire évoquait.',
+      },
+    ],
+    links: [
+      ['Lili', '/theorie/lili'],
+      ['Vivi', '/theorie/nefertari-vivi'],
+      ['Lili, Vivi et les Ponéglyphes', '/theorie/lili-vivi-et-les-poneglyphes'],
+    ],
+  },
+  {
+    id: 'ryuma-zoro',
+    n: 14,
+    question: 'Pourquoi l’épéiste du passé ressemble-t-il à Zoro ?',
+    title: 'Ryuma et Zoro',
+    blocks: [
+      {
+        t: 'p',
+        text: 'La dernière grande identification du même ordre concerne l’épéiste le plus vénéré de Wa no Kuni : **Shimotsuki Ryuma**, le sabreur qui aurait terrassé un dragon et que l’on surnomme « l’épéiste des mers ».',
+      },
+      {
+        t: 'p',
+        text: 'Ryuma est lié au clan Shimotsuki, dont descend la lignée de Zoro. Et la ressemblance est troublante — jusqu’à la geste : Zoro a lui aussi affronté un dragon, à l’ère de l’Éveil, sur une île flottante.',
+      },
+      {
+        t: 'p',
+        text: 'La même logique s’applique donc : **Ryuma serait Zoro**, ou plus exactement la légende que les exploits futurs de Zoro auront transmise vers le passé. Non pas une simple ressemblance, mais l’idée que ses actions présentes et futures sont devenues une histoire que le monde croit ancienne.',
+      },
+      {
+        t: 'note',
+        text: 'Cette identification fait partie des correspondances les plus discutées de la théorie. Elle repose sur des parallèles narratifs solides, mais reste plus spéculative que le noyau géographique ou la lecture des Ponéglyphes — nous y reviendrons au chapitre 21.',
+      },
+    ],
+    links: [
+      ['Ryuma', '/theorie/ryuma'],
+      ['Zoro', '/theorie/zoro'],
+      ['Zoro est Ryuma ?', '/theorie/zoro-est-ryuma'],
+    ],
+  },
+  {
+    id: 'emeth-zunesha-toki',
+    n: 15,
+    question: 'Pourquoi les alliés de Joy Boy semblent-ils venir du futur ?',
+    title: 'Emeth, Zunesha et Toki',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Il existe des figures qui ne racontent pas seulement une identité : elles portent physiquement le voyage entre les époques. Ce sont les **passeurs de mémoire**, et ils sont la preuve que le futur intervient dans le présent.',
+      },
+      {
+        t: 'p',
+        text: '**Emeth** d’abord. Ce robot, « créé il y a neuf cents ans », est apparu il y a deux cents ans pour attaquer Mary Geoise avant de manquer d’énergie. Réveillé par le pouvoir de Luffy, il s’exclame : « Je suis si content de te revoir » — lui qui, convaincu d’avoir confondu Joy Boy et Luffy, ne s’est jamais trompé. Ses souvenirs **viennent du futur**.',
+      },
+      {
+        t: 'p',
+        text: '**Zunesha** ensuite. L’éléphant condamné à errer sans fin, à ne marcher que sur ordre, se souvient du rythme du cœur de Joy Boy. Lui aussi pourrait venir du futur — et se souvenir, sans le savoir, du cœur de **Monkey D. Luffy**.',
+      },
+      {
+        t: 'p',
+        text: '**Toki** enfin, et avec elle le Toki Toki no Mi, le fruit du temps qui lui permit de voyager à travers les époques jusqu’à Wa no Kuni. L’existence même de ce fruit conforte l’idée que le temps est, dans ce monde, une dimension que l’on peut traverser — ou à tout le moins, avec laquelle on peut communiquer.',
+      },
+      {
+        t: 'p',
+        text: 'Ces trois figures rendent le voyage du futur tangible. Sans eux, la théorie resterait une abstraction ; avec eux, elle a des **vecteurs concrets** qui relient l’avenir au présent.',
+      },
+    ],
+    links: [
+      ['Emeth, le robot du futur', '/theorie/emeth-robot-du-futur'],
+      ['Zunesha', '/theorie/zunesha-fiche'],
+      ['Kozuki Toki', '/theorie/kozuki-toki'],
+    ],
+  },
+  {
+    id: 'peuples-missions',
+    n: 16,
+    question: 'Pourquoi tous ces peuples conservent-ils quelque chose depuis des siècles ?',
+    title: 'Les peuples et leurs missions',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Si les Ponéglyphes portent des informations venues du futur, ils peuvent aussi porter des **instructions**. Et c’est précisément ce qui donne un sens à l’incroyable constance des peuples de ce monde, qui conservent quelque chose depuis huit cents ans.',
+      },
+      {
+        t: 'ul',
+        items: [
+          'Le royaume Ryugu garde **Noah** en attendant Poséidon.',
+          'Wa no Kuni protège ses secrets et devra un jour **ouvrir ses frontières**.',
+          'Les Minks sont liés à **Zunesha**.',
+          'Les Shandias ont conservé leur **héritage**.',
+          'Les Boucaniers ont transmis la **foi en Nika**.',
+          'Alabasta est lié aux **Ponéglyphes** et à la famille Nefertari.',
+        ],
+      },
+      {
+        t: 'p',
+        text: 'Chacune de ces histoires séparées serait une pièce d’un même puzzle : une **préparation du monde** pour la guerre finale. Le Gouvernement mondial, qui craint l’avenir, persécute ces peuples — mais c’est précisément cette persécution qui tisse leurs liens et fabrique les alliés de Joy Boy.',
+      },
+      {
+        t: 'p',
+        text: 'La question n’est plus « pourquoi chaque peuple a-t-il une tradition ? », mais « pourquoi toutes ces traditions convergent-elles vers le même jour ? ». La théorie répond : parce qu’elles ont toutes été écrites depuis l’avenir, pour préparer la même échéance.',
+      },
+    ],
+    links: [
+      ['Peuples, royaumes et missions', '/theorie/peuples-royaumes'],
+      ['Noah', '/theorie/noah'],
+      ['Elbaf et le Harley', '/theorie/elbaf-halley'],
+    ],
+  },
+  {
+    id: 'armes-antiques',
+    n: 17,
+    question: 'Les Armes antiques sont-elles de simples armes ?',
+    title: 'Les Armes antiques et les technologies',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Une précision importante, souvent mal comprise : les **Armes antiques ne sont pas une extension spéculative** de la théorie. Elles font partie de son mécanisme central.',
+      },
+      {
+        t: 'p',
+        text: 'Les peuples les **protègent**. Elles interviennent dans la préparation de la guerre finale. Poséidon est Shirahoshi, qui commande les Rois des Mers ; Pluton est lié à l’histoire de Wa no Kuni et au plus grand des navires ; Uranus demeure le plus mystérieux. Ce sont des pièces actives du récit, pas de simples conjectures.',
+      },
+      {
+        t: 'p',
+        text: 'Ce qui est réellement spéculatif, ce sont certaines **interprétations précises** : la nature exacte d’Uranus, l’origine de la Mother Flame, ce que recouvre précisément « Omen ». Autant de pistes, présentées comme telles, distinctes du cœur historique de la théorie.',
+      },
+      {
+        t: 'p',
+        text: 'Les technologies complètent ce tableau. Vegapunk, la Mother Flame, Emeth, l’énergie antique : autant d’éléments qui, dans cette lecture, participent à créer le monde que le passé a cru voir disparaître.',
+      },
+    ],
+    links: [
+      ['Armes antiques', '/theorie/armes-antiques'],
+      ['Poséidon', '/theorie/poseidon'],
+      ['Pluton', '/theorie/pluton'],
+      ['La Mother Flame', '/theorie/mother-flame'],
+    ],
+  },
+  {
+    id: 'imu-gouvernement',
+    n: 18,
+    question: 'Pourquoi Imu semble-t-il connaître Joy Boy tout en se trompant à son sujet ?',
+    title: 'Imu et le Gouvernement mondial',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Il est une figure qui résiste à toute cette lecture, et c’est la plus importante : **Imu**, le souverain du monde. Depuis huit cents ans, il semble obsédé par Joy Boy, Nika et certaines familles. Mais ses paroles sont contradictoires — il connaît Joy Boy, et pourtant il se trompe sur lui.',
+      },
+      {
+        t: 'p',
+        text: 'La clé, c’est que **Imu ne craint pas son passé : il craint son avenir**. Il disposerait d’informations incomplètes sur ce qui doit arriver, et chercherait depuis des siècles à empêcher un avenir qu’il ne comprend pas.',
+      },
+      {
+        t: 'p',
+        text: 'C’est la **malédiction de la préscience**, celle que nous connaissons chez Madame Shirley : voir le futur, mais ignorer *quand* il se produira. Imu a vu la silhouette d’un homme détruire le monde. Il est absolument certain que cela arrivera — mais cela peut être demain comme dans cinq cents ans. Alors il ne meurt jamais, il attend, et il persécute tout ce qui ressemble à cette vision.',
+      },
+      {
+        t: 'p',
+        text: 'Et voilà le cœur de l’analyse récente. Quand Imu dit que Joy Boy est mort, il penserait en réalité à **Gol D. Roger**. Le seul homme à avoir atteint Laugh Tale en huit cents ans, celui qui, aux yeux d’Imu, est devenu Joy Boy — et qui est mort. Imu confondrait Roger avec Joy Boy, comme il a confondu Xebec avec Davy Jones, et comme il croit avoir tué des figures qui n’existaient pas encore.',
+      },
+      {
+        t: 'note',
+        text: 'Cette lecture précise — la confusion d’Imu entre Roger et Joy Boy, et la « communication à travers le temps » — est une évolution récente de la théorie, nourrie par les analyses des chapitres 1187 et 1188. Elle affine le mécanisme, mais la mécanique temporelle exacte reste en cours de construction.',
+      },
+    ],
     links: [
       ['Imu Nerona', '/theorie/imu-nerona-fiche'],
-      ['La prescience et Imu', '/theorie/la-prescience-et-imu'],
-      ['Madame Shirley', '/theorie/madame-shirley'],
+      ['La Prescience et la malédiction d’Imu', '/theorie/la-prescience-et-imu'],
+      ['Une communication à travers le temps', '/theorie/communication-temps'],
     ],
   },
   {
-    id: 'grande-guerre',
-    title: '9. La Grande Guerre serait encore devant nous',
-    text: 'La guerre du Siècle oublié ne serait pas terminée il y a 800 ans, mais celle vers laquelle One Piece se dirige. Luffy, ses alliés, les Armes antiques et les nations préparées se retrouveraient face au Gouvernement mondial. Red Line pourrait tomber, les mers se réunir, All Blue naître : le monde deviendrait littéralement une seule pièce.',
+    id: 'grande-guerre-deluge',
+    n: 19,
+    question: 'Pourquoi la Grande Guerre serait-elle encore devant nous ?',
+    title: 'La Grande Guerre et le Déluge',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Rassemblons les pièces. Si les Ponéglyphes préparent un jour depuis l’avenir, si les peuples conservent leurs missions, si Imu craint l’arrivée d’un homme, alors la guerre du Siècle oublié n’est pas un conflit achevé il y a huit cents ans.',
+      },
+      {
+        t: 'p',
+        text: 'Elle est **la guerre finale vers laquelle le manga se dirige**. Luffy, ses alliés, les peuples qu’il a libérés, les Armes antiques et les nations préparées depuis des siècles se retrouveraient face au Gouvernement mondial.',
+      },
+      {
+        t: 'p',
+        text: 'Vegapunk a raison quand il parle d’un conflit d’idéologies : le Gouvernement mondial n’a peut-être pas entièrement tort, il vit dans la peur — et c’est cette peur qui l’a rendu totalitaire. C’est en voulant contrôler l’avenir qu’Imu a fabriqué les conditions de l’apparition de Joy Boy.',
+      },
+      {
+        t: 'p',
+        text: 'La guerre s’accompagnerait d’un bouleversement majeur : le **Déluge**. Noah, l’arche de Ryugu, la promesse de sauver le monde — tout converge vers une échéance où les mers elles-mêmes se soulèveront.',
+      },
+    ],
     links: [
       ['Guerre finale', '/theorie/guerre-finale'],
       ['Le Déluge et All Blue', '/theorie/deluge-all-blue'],
-      ['All Blue', '/theorie/all-blue'],
+      ['Grande Guerre', '/theorie/grande-guerre'],
     ],
   },
   {
-    id: 'retournement',
-    title: '10. Le retournement final',
-    text: 'Nous pensions que Luffy héritait de Joy Boy ; la révélation serait que Joy Boy, c’est lui. Que les Ponéglyphes racontaient une civilisation disparue ; ils raconteraient le monde à créer. Que Roger avait vu le passé ; il avait vu l’histoire de ceux qui viennent après lui. Depuis le chapitre 1, nous ne revivons pas le Siècle oublié : nous le vivons.',
+    id: 'red-line-all-blue',
+    n: 20,
+    question: 'Que devient le monde après la guerre ?',
+    title: 'Red Line, All Blue et le One Piece',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Que reste-t-il une fois le continent rouge tombé ? Tout le problème géographique initial trouve ici sa résolution. Red Line détruite, les quatre mers se rejoignent, la Calm Belt disparaît, et les peuples séparés depuis huit cents ans peuvent enfin se retrouver.',
+      },
+      {
+        t: 'p',
+        text: 'C’est la naissance d’**All Blue**, le rêve de Sanji, la mer où toutes les mers se rencontrent. Le monde cesserait d’être découpé en quatre, pour devenir littéralement **une seule pièce**. Et c’est cette époque que Roger cherchait : le monde où la fin rencontre le début.',
+      },
+      {
+        t: 'p',
+        text: 'Le One Piece prend alors tout son sens. Il ne peut pas être un simple objet — trop vu, trop revu. Le One Piece serait l’histoire que nous lisons depuis le tome 1, complétée seulement à sa fin, lorsque la conclusion rencontrera l’introduction. Luffy, au terme du voyage, ne chercherait plus un trésor : il aurait cherché **sa propre légende**.',
+      },
+      {
+        t: 'p',
+        text: 'Voilà pourquoi une telle révélation donne envie de tout relire. Chaque île, chaque rencontre, chaque rire prendrait une nouvelle dimension à la lumière de la dernière.',
+      },
+    ],
+    links: [
+      ['All Blue', '/theorie/all-blue'],
+      ['Le Déluge et la création d’All Blue', '/theorie/deluge-all-blue'],
+      ['One Piece : l’histoire', '/theorie/one-piece-histoire'],
+    ],
+  },
+  {
+    id: 'certain-probable-speculatif',
+    n: 21,
+    question: 'Que faut-il croire, et que reste-t-il à prouver ?',
+    title: 'Ce qui est certain, probable ou encore spéculatif',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Une théorie n’est pas une certitude. Pour être honnête et utile, il faut distinguer clairement ce qui est solide de ce qui est en construction. Voici comment les Fous du Bus hiérarchisent leur propre démonstration.',
+      },
+      {
+        t: 'ul',
+        items: [
+          '**Le noyau le plus étayé** : l’impossibilité géographique de la circumnavigation ; les Ponéglyphes comme messages adressés depuis l’avenir ; Joy Boy comme conséquence de huit siècles d’Histoire ; la préparation des peuples ; la peur qu’Imu a de son avenir.',
+          '**Probable** : les identifications (Shirahoshi/Poséidon, Vivi/Lili, Teach/Davy Jones, Zoro/Ryuma) ; l’idée que « l’antique » vient du futur ; la fin de Red Line et la naissance d’All Blue.',
+          '**Spéculatif ou en évolution** : la mécanique temporelle exacte — notamment la « communication à travers le temps » des chapitres 1187–1188 ; la nature précise d’Uranus, de la Mother Flame, d’Omen ; la façon exacte dont les informations ont été transmises à huit cents ans.',
+        ],
+      },
+      {
+        t: 'p',
+        text: 'Cette distinction est essentielle. Le cœur de la théorie ne change pas ; ce sont les **mécanismes** qui s’affinent au fil des chapitres. Une correspondance narrative ou une prédiction ne vaut jamais confirmation canonique — mais accumuler les coïncidences qui fonctionnent finit par faire pencher la balance.',
+      },
+    ],
+    links: [
+      ['Le Siècle oublié est le présent', '/theorie/siecle-oublie-present'],
+    ],
+  },
+  {
+    id: 'retournement-final',
+    n: 22,
+    question: 'Comment la fin rééclaire-t-elle tout le début ?',
+    title: 'Le retournement final',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Et si tout cela était vrai ? Nous pensions que Luffy héritait d’un héros ayant vécu huit cents ans plus tôt. **La révélation serait que ce héros, c’est lui.**',
+      },
+      {
+        t: 'p',
+        text: 'Nous pensions que les Ponéglyphes racontaient une civilisation disparue. Ils raconteraient le monde que les protagonistes doivent encore créer. Nous pensions que Roger avait découvert l’histoire du passé. Il aurait découvert l’histoire de ceux qui allaient venir après lui.',
+      },
+      {
+        t: 'p',
+        text: 'Une bonne fin est une fin qui recontextualise tout ce qui précède. C’est exactement ce que cette lecture propose : depuis le chapitre 1, nous ne revivons pas le Siècle oublié. **Nous sommes en train de le vivre.**',
+      },
+      {
+        t: 'p',
+        text: 'Le début côtoie la fin, la conclusion rencontre l’introduction, et le plus grand des contes ne fait que se refermer sur lui-même. C’est ce retournement qui donnerait à *One Piece* cette envie irrésistible de tout relire — car pour comprendre la fin, il faudra tout revoir depuis le début.',
+      },
+    ],
     links: [
       ['Le Siècle oublié est le présent', '/theorie/siecle-oublie-present'],
       ['Résumé en 10 points', '/theorie/resume'],
-      ['Sources et méthode', '/verifier/sources'],
+      ['La boucle du présent', '/theorie/siecle-oublie-present'],
     ],
   },
 ];
+
+const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s.title}` }));
 ---
 
 <WikiLayout
-  title="Théorie complète"
-  seoTitle="Théorie complète One Piece : Siècle oublié, Joy Boy et guerre finale | Les Fous du Bus"
-  description="La théorie complète du Siècle oublié est le présent : 10 chapitres de Laugh Tale à Joy Boy, des Ponéglyphes du futur à la Grande Guerre — synthèse."
+  title={pageTitle}
+  seoTitle={pageSeoTitle}
+  description={pageDescription}
   currentPath="/theorie/theorie-complete"
+  type="article"
+  headings={headings}
 >
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${siteUrl}/` },
+        { '@type': 'ListItem', position: 2, name: 'La théorie', item: `${siteUrl}/theorie/` },
+        { '@type': 'ListItem', position: 3, name: pageTitle, item: canonicalPageUrl },
+      ],
+    })}
+  />
   <article class="complete-page">
-    <p class="eyebrow">Synthèse éditoriale</p>
+    <p class="eyebrow">La démonstration complète</p>
     <h1>La théorie complète</h1>
     <p class="intro">
-      Le Siècle oublié n’aurait pas eu lieu il y a 800 ans. Les Ponéglyphes raconteraient l’avenir,
-      Joy Boy serait Luffy à la fin de son aventure, et la Grande Guerre serait celle vers laquelle
-      le manga se dirige aujourd’hui. Cette page suit la même chaîne causale que le
-      <a href="/theorie/resume">Résumé en 10 points</a> et renvoie vers les fiches pour l’argumentation
-      détaillée. Les extensions les plus spéculatives (Armes antiques, Mother Flame, Fruits du Démon,
-      communication temporelle) sont signalées comme telles.
+      Le Siècle oublié n’aurait pas eu lieu il y a huit cents ans : les Ponéglyphes raconteraient
+      l’avenir, Joy Boy serait Luffy à la fin de son aventure, et la Grande Guerre serait celle vers
+      laquelle le manga se dirige aujourd’hui. Cette page est la <strong>page maîtresse</strong> du
+      site : une seule démonstration continue, qui se lit comme un livre, de Blue Star jusqu’au
+      retournement final.
     </p>
-    <nav class="parcours-list" aria-label="Parcours de lecture de la théorie">
-      <h2>Parcours de lecture ({parcours.length} étapes)</h2>
-      <p class="parcours-list__intro">
-        Suivez cet ordre pour lire la théorie comme un livre. Chaque fiche affiche en bas un lien «
-        article précédent / article suivant » qui reprend exactement ce parcours.
+
+    <!-- Les trois lectures : pour clarifier ce que cette page est, et n’est pas. -->
+    <div class="modes">
+      <a class="mode mode--other" href="/">
+        <span class="mode__label">Présentation</span>
+        <span class="mode__time">≈ 30 s</span>
+        <span class="mode__desc">De quoi parle le site ?</span>
+      </a>
+      <a class="mode mode--other" href="/theorie/resume">
+        <span class="mode__label">Résumé</span>
+        <span class="mode__time">5–10 min</span>
+        <span class="mode__desc">Comprendre le mécanisme général.</span>
+      </a>
+      <div class="mode mode--current">
+        <span class="mode__label">Théorie complète</span>
+        <span class="mode__time">30–60 min</span>
+        <span class="mode__desc">Suivre toute la démonstration, les indices, les personnages, les objections et les évolutions récentes.</span>
+      </div>
+    </div>
+
+    <div class="how-to">
+      <p>
+        <strong>Comment lire cette page.</strong> Les vingt-deux chapitres se construisent l’un sur
+        l’autre : lisez-les dans l’ordre, comme on lit un livre. Chaque chapitre répond à une question
+        et pose une brique du raisonnement avant de passer à la suivante. Les liens en bas de chapitre
+        sont des <em>approfondissements facultatifs</em> vers les fiches — vous n’avez pas besoin de
+        quitter la page pour suivre l’argument.
       </p>
-      <ol class="parcours-list__items">
+    </div>
+
+    <nav class="toc" aria-label="Sommaire de la théorie">
+      <h2>Sommaire — 22 chapitres</h2>
+      <ol>
+        {
+          sections.map((section) => (
+            <li>
+              <a href={`#${section.id}`}>
+                <span class="toc__n">{section.n}.</span> {section.title}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+
+    {
+      sections.map((section) => (
+        <section id={section.id} class="theory-section">
+          <div class="theory-section__head">
+            <span class="theory-section__n">{section.n}</span>
+            <h2>{section.title}</h2>
+          </div>
+          <p class="theory-section__question">{section.question}</p>
+          <div class="theory-section__body">
+            {
+              section.blocks.map((block) => {
+                if (block.t === 'p') return <p set:html={md(block.text)} />;
+                if (block.t === 'quote') return <blockquote>{block.text}</blockquote>;
+                if (block.t === 'note') {
+                  return (
+                    <aside class="theory-section__note">
+                      <span class="theory-section__note-tag">Évolution récente</span>
+                      <p>{block.text}</p>
+                    </aside>
+                  );
+                }
+                return (
+                  <ul>
+                    {block.items.map((item) => (
+                      <li set:html={md(item)} />
+                    ))}
+                  </ul>
+                );
+              })
+            }
+          </div>
+          <div class="links">
+            {section.links.map(([label, href]) => (
+              <a href={href}>Approfondir : {label} →</a>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    <aside class="method">
+      <h2>Et maintenant ?</h2>
+      <p>
+        Vous avez suivi toute la démonstration. Les personnages cités — Luffy, Joy Boy, Poséidon,
+        Laugh Tale — ont chacun une fiche dédiée, mais rien ne vous oblige à la lire pour comprendre
+        l’ensemble.
+      </p>
+    </aside>
+
+    <!-- Le parcours en 19 étapes, relégué tout en bas : une simple carte facultative. -->
+    <details class="parcours">
+      <summary>
+        <span class="parcours__title">Parcours de lecture en {parcours.length} étapes</span>
+        <span class="parcours__sub">La lecture « fiche par fiche », si vous préférez explorer chaque sujet séparément.</span>
+      </summary>
+      <ol class="parcours__items">
         {
           parcours.map((item, i) => (
             <li>
               <a href={item.href}>
-                <span class="parcours-list__num">{i + 1}</span>
+                <span class="parcours__num">{i + 1}</span>
                 {item.title}
               </a>
             </li>
           ))
         }
       </ol>
-      <a class="parcours-list__start" href={parcours[0].href}>Commencer par {parcours[0].title} →</a
-      >
-    </nav>
-
-    <nav class="toc" aria-label="Sommaire de la théorie">
-      <h2>Sommaire — 10 chapitres</h2><ol>
-        {
-          sections.map((section) => (
-            <li>
-              <a href={`#${section.id}`}>{section.title.replace(/^\d+\. /, '')}</a>
-            </li>
-          ))
-        }
-      </ol>
-    </nav>
-    {
-      sections.map((section) => (
-        <section id={section.id} class="theory-section">
-          <>
-            <h2>{section.title}</h2>
-            <p>{section.text}</p>
-            <div class="links">
-              {section.links.map(([label, href]) => (
-                <a href={href}>{label} →</a>
-              ))}
-            </div>
-          </>
-        </section>
-      ))
-    }
-    <aside class="method">
-      <h2>Comment lire cette synthèse</h2><p>
-        Les pages « Vérifier » regroupent preuves, objections et questions ouvertes. Une correspondance
-        narrative ou une prédiction ne vaut pas confirmation canonique. Les mécanismes les plus
-        spéculatifs — comme l’origine exacte de la Mother Flame ou la nature précise de la
-        communication entre époques (ch. 1188) — sont présentés comme des pistes, distinctes du cœur
-        historique de la théorie.
-      </p><a href="/verifier">Consulter la méthode de vérification →</a>
-    </aside>
+    </details>
   </article>
   <Footer />
 </WikiLayout>
+
 <style>
   .complete-page {
-    max-width: 760px;
+    max-width: 780px;
   }
   .eyebrow {
     color: var(--violet-light);
@@ -213,40 +917,288 @@ const sections = [
     font-size: 1.05rem;
     line-height: 1.65;
     color: var(--text-secondary);
-    margin-bottom: 36px;
+    margin-bottom: 30px;
   }
-  .intro a {
-    color: var(--cyan);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+  .intro strong {
+    color: var(--text-main);
   }
-  .parcours-list {
+
+  /* ===== Les trois lectures ===== */
+  .modes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .mode {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 16px;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+    background: var(--gradient-card);
+    color: var(--text-main);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .mode--other:hover {
+    border-color: var(--cyan-dim);
+    transform: translateY(-1px);
+  }
+  .mode--current {
+    border-left: 3px solid var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 6%, var(--bg-secondary));
+  }
+  .mode__label {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .mode__time {
+    font-size: 0.75rem;
+    color: var(--violet-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .mode__desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+
+  /* ===== Comment lire ===== */
+  .how-to {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--gradient-card);
+    padding: 16px 20px;
+    margin-bottom: 22px;
+    border-left: 3px solid var(--violet);
+  }
+  .how-to p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+  .how-to strong {
+    color: var(--text-main);
+  }
+
+  /* ===== Sommaire ===== */
+  .toc {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
     background: var(--gradient-card);
     padding: 22px;
-    margin-bottom: 18px;
-    border-left: 3px solid var(--cyan);
+    margin-bottom: 24px;
   }
-  .parcours-list h2 {
-    font-size: 1.2rem;
-    margin: 0 0 8px;
+  .toc h2 {
+    font-size: 1.15rem;
+    margin: 0 0 12px;
   }
-  .parcours-list__intro {
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin: 0 0 14px;
-    font-size: 0.95rem;
-  }
-  .parcours-list__items {
-    list-style: none;
+  .toc ol {
     margin: 0;
     padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 2px 18px;
+  }
+  .toc li {
+    margin: 0;
+  }
+  .toc a {
+    display: block;
+    padding: 5px 8px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  .toc a:hover {
+    background: color-mix(in srgb, var(--cyan) 8%, transparent);
+    color: var(--cyan);
+  }
+  .toc__n {
+    color: var(--violet-light);
+    font-weight: 700;
+  }
+
+  /* ===== Sections ===== */
+  .theory-section {
+    scroll-margin-top: calc(var(--nav-h) + 16px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--gradient-card);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .theory-section__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .theory-section__n {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: var(--gradient-border);
+    color: var(--bg-main); /* contraste AA >= 4.5:1 sur le dégradé, dans les deux thèmes */
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .theory-section__head h2 {
+    font-size: 1.35rem;
+    margin: 0;
+    line-height: 1.25;
+  }
+  .theory-section__question {
+    margin: 4px 0 16px;
+    font-style: italic;
+    color: var(--violet-light);
+    font-size: 0.98rem;
+  }
+  .theory-section__body p {
+    margin: 0 0 12px;
+    line-height: 1.75;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+  }
+  .theory-section__body p:last-child {
+    margin-bottom: 0;
+  }
+  .theory-section__body strong {
+    color: var(--text-main);
+  }
+  .theory-section__body em {
+    color: var(--text-main);
+  }
+  .theory-section__body ul {
+    margin: 0 0 12px 1.2rem;
+    padding: 0;
+    list-style: disc;
+  }
+  .theory-section__body li {
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin-bottom: 6px;
+    font-size: 0.97rem;
+  }
+  .theory-section__body li::marker {
+    color: var(--violet-light);
+  }
+  .theory-section__body blockquote {
+    margin: 14px 0;
+    padding: 12px 16px;
+    border-left: 3px solid var(--violet);
+    background: color-mix(in srgb, var(--violet) 6%, transparent);
+    border-radius: 0 8px 8px 0;
+    color: var(--text-main);
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .theory-section__note {
+    border: 1px dashed color-mix(in srgb, var(--cyan) 35%, var(--border-color));
+    background: color-mix(in srgb, var(--cyan) 5%, transparent);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 14px;
+  }
+  .theory-section__note-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--cyan);
+    margin-bottom: 6px;
+  }
+  .theory-section__note p {
+    margin: 0;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-color);
+  }
+  .links a,
+  .method a {
+    color: var(--cyan);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  .links a:hover,
+  .method a:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* ===== Méthode ===== */
+  .method {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--gradient-card);
+    padding: 22px;
+    margin-bottom: 20px;
+    border-left: 3px solid var(--violet);
+  }
+  .method h2 {
+    font-size: 1.2rem;
+    margin: 0 0 12px;
+  }
+  .method p {
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin: 0 0 14px;
+  }
+
+  /* ===== Parcours (en bas, facultatif) ===== */
+  .parcours {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--gradient-card);
+    margin-bottom: 0;
+  }
+  .parcours summary {
+    cursor: pointer;
+    padding: 16px 20px;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .parcours summary::-webkit-details-marker {
+    display: none;
+  }
+  .parcours__title {
+    font-weight: 700;
+    color: var(--text-main);
+  }
+  .parcours__sub {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .parcours__items {
+    list-style: none;
+    margin: 0;
+    padding: 4px 20px 18px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 4px;
+    gap: 2px 12px;
   }
-  .parcours-list__items a {
+  .parcours__items a {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -254,13 +1206,13 @@ const sections = [
     border-radius: 6px;
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
   }
-  .parcours-list__items a:hover {
+  .parcours__items a:hover {
     background: color-mix(in srgb, var(--cyan) 8%, transparent);
     color: var(--cyan);
   }
-  .parcours-list__num {
+  .parcours__num {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -273,64 +1225,45 @@ const sections = [
     font-weight: 700;
     flex-shrink: 0;
   }
-  .parcours-list__start {
-    display: inline-block;
-    margin-top: 14px;
-    color: var(--cyan);
-    text-decoration: none;
-    font-weight: 600;
+
+  @media (max-width: 768px) {
+    .complete-page h1 {
+      font-size: clamp(1.7rem, 6vw, 2.2rem);
+    }
+    .theory-section__head h2 {
+      font-size: 1.2rem;
+    }
+    .theory-section__n {
+      min-width: 28px;
+      height: 28px;
+      font-size: 0.8rem;
+    }
   }
-  .toc,
-  .theory-section,
-  .method {
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    background: var(--gradient-card);
-    padding: 22px;
-    margin-bottom: 18px;
+
+  @media (max-width: 640px) {
+    .theory-section {
+      padding: 18px;
+    }
+    .toc {
+      padding: 18px;
+    }
   }
-  .toc h2,
-  .theory-section h2,
-  .method h2 {
-    font-size: 1.2rem;
-    margin: 0 0 12px;
-  }
-  .toc ol {
-    margin: 0;
-    padding-left: 20px;
-    columns: 2;
-  }
-  .toc li {
-    margin: 7px 0;
-  }
-  .toc a,
-  .links a,
-  .method a {
-    color: var(--cyan);
-    text-decoration: none;
-  }
-  .theory-section {
-    scroll-margin-top: calc(var(--nav-h) + 16px);
-  }
-  .theory-section p,
-  .method p {
-    line-height: 1.7;
-    color: var(--text-secondary);
-    margin: 0;
-  }
-  .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 15px;
-    font-size: 0.93rem;
-  }
-  .method {
-    border-left: 3px solid var(--violet);
-  }
-  @media (max-width: 600px) {
-    .toc ol {
-      columns: 1;
+
+  @media (max-width: 480px) {
+    .theory-section {
+      padding: 16px 14px;
+    }
+    .theory-section__head {
+      align-items: flex-start;
+    }
+    .theory-section__head h2 {
+      font-size: 1.12rem;
+    }
+    .toc {
+      padding: 16px;
+    }
+    .intro {
+      font-size: 1rem;
     }
   }
 </style>
