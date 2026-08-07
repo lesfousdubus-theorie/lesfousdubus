@@ -8,6 +8,7 @@ export default defineConfig({
   site: 'https://lesfousdubus.sbs',
   output: 'static',
   prefetch: true,
+  server: { host: '0.0.0.0', allowedHosts: true },
   integrations: [
     react(),
     tailwind({ applyBaseStyles: false }),
