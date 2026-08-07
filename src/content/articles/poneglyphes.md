@@ -11,9 +11,9 @@ reviewedUntilChapter: 1188
 order: 3
 related:
   [
-    "rio-ponelyphe",
-    "road-ponelyphes",
-    "ponelyphes-futur",
+    "rio-poneglyphe",
+    "road-poneglyphes",
+    "poneglyphes-futur",
     "nico-robin",
     "royaume-antique",
     "kozuki-toki",

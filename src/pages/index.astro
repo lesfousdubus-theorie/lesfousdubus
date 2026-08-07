@@ -9,7 +9,7 @@ import { categoryLabel, effectLabel } from '@utils/labels';
 import { getRecentArticleUpdates } from '@utils/chapter-updates';
 
 const chapters = await getCollection('chapters');
-const articles = await getCollection('articles', ({ data }) => data.status === 'published');
+const articles = await getCollection('articles', ({ data }) => data.status === 'published' && !data.sidebarHidden);
 const latestChapter = chapters.sort((a, b) => b.data.chapter - a.data.chapter)[0];
 const recentArticleUpdates = getRecentArticleUpdates(articles, chapters, 4);
 

@@ -198,7 +198,7 @@ const sections: Section[] = [
       },
     ],
     links: [
-      ['Road Ponéglyphes', '/theorie/road-ponelyphes'],
+      ['Road Ponéglyphes', '/theorie/road-poneglyphes'],
       ['Une communication à travers le temps', '/theorie/communication-temps'],
       ['Laugh Tale', '/theorie/laugh-tale'],
     ],
@@ -229,7 +229,7 @@ const sections: Section[] = [
     links: [
       ['Les Ponéglyphes', '/theorie/poneglyphes'],
       ['Les Ponéglyphes racontent le futur', '/theorie/poneglyphes-futur'],
-      ['Le Rio Ponéglyphe', '/theorie/rio-ponelyphe'],
+      ['Le Rio Ponéglyphe', '/theorie/rio-poneglyphe'],
     ],
   },
   {
@@ -689,22 +689,30 @@ const sections: Section[] = [
     ],
   },
   {
-    id: 'certain-probable-speculatif',
+    id: 'niveaux-de-lecture',
     n: 21,
     question: 'Que faut-il croire, et que reste-t-il à prouver ?',
-    title: 'Ce qui est certain, probable ou encore spéculatif',
+    title: 'Les quatre niveaux de lecture',
     blocks: [
       {
         t: 'p',
-        text: 'Une théorie n’est pas une certitude. Pour être honnête et utile, il faut distinguer clairement ce qui est solide de ce qui est en construction. Voici comment les Fous du Bus hiérarchisent leur propre démonstration.',
+        text: 'Une théorie n’est pas une certitude. Pour être honnête et utile, il faut distinguer clairement ce qui est solide de ce qui est en construction. Voici comment les Fous du Bus hiérarchisent leur propre démonstration, en séparant rigoureusement les faits établis par le manga, le noyau de la théorie, ses conséquences et les mécanismes encore spéculatifs.',
       },
       {
-        t: 'ul',
-        items: [
-          '**Le noyau le plus étayé** : l’impossibilité géographique de la circumnavigation ; les Ponéglyphes comme messages adressés depuis l’avenir ; Joy Boy comme conséquence de huit siècles d’Histoire ; la préparation des peuples ; la peur qu’Imu a de son avenir.',
-          '**Probable** : les identifications (Shirahoshi/Poséidon, Vivi/Lili, Teach/Davy Jones, Zoro/Ryuma) ; l’idée que « l’antique » vient du futur ; la fin de Red Line et la naissance d’All Blue.',
-          '**Spéculatif ou en évolution** : la mécanique temporelle exacte — notamment la « communication à travers le temps » des chapitres 1187–1188 ; la nature précise d’Uranus, de la Mother Flame, d’Omen ; la façon exacte dont les informations ont été transmises à huit cents ans.',
-        ],
+        t: 'p',
+        text: '**Faits établis par le manga.** L’existence des Ponéglyphes, les quatre Road Ponéglyphes, Roger arrivé « trop tôt », Shirahoshi identifiée comme Poséidon, l’existence des Armes antiques, le Gouvernement mondial et la destruction de Lulusia — autant de points que le récit a confirmés sans ambiguïté.',
+      },
+      {
+        t: 'p',
+        text: '**Noyau de la théorie.** Laugh Tale possède une dimension temporelle ; les Ponéglyphes transmettent des informations du futur ; Joy Boy désigne Luffy à l’issue de son aventure ; le Siècle oublié est le présent que nous lisons depuis le chapitre 1. Ces propositions forment l’ossature de la démonstration : elles ne sont pas établies par le manga, mais elles constituent la lecture d’ensemble la plus cohérente du matériel disponible.',
+      },
+      {
+        t: 'p',
+        text: '**Conséquences de la théorie.** Le Royaume antique serait le monde à construire et non une civilisation perdue ; les identifications (Lili/Vivi, Davy Jones/Teach, Ryuma/Zoro) découlent du mécanisme central ; chaque peuple prépare une pièce de la guerre finale. Ces lectures sont la suite logique du noyau, sans être aussi centrales.',
+      },
+      {
+        t: 'p',
+        text: '**Mécanismes encore spéculatifs.** La préscience d’Imu, la « communication à travers le temps » des chapitres 1187–1188, la confusion d’Imu entre Roger et Joy Boy, la nature exacte d’Uranus, ce que recouvre précisément Omen ou la Mother Flame : autant de pistes prometteuses, mais dont la mécanique fine reste à construire ou à confirmer.',
       },
       {
         t: 'p',
@@ -777,8 +785,7 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
     <p class="intro">
       Et si le Siècle oublié n’avait pas eu lieu il y a huit cents ans ? Selon la lecture proposée
       ici, les Ponéglyphes raconteraient l’avenir, Joy Boy serait Luffy à la fin de son aventure, et
-      la Grande Guerre serait celle vers laquelle le manga se dirige aujourd’hui. Cette page est la
-      <strong>page maîtresse</strong> du site : une seule démonstration continue, qui se lit comme
+      la Grande Guerre serait celle vers laquelle le manga se dirige aujourd’hui. Cette page est la <strong>page maîtresse</strong> du site : une seule démonstration continue, qui se lit comme
       un livre, de Blue Star jusqu’au retournement final. Comme toute théorie, elle distingue ce qui
       est bien établi dans le manga, ce qui est une interprétation probable et ce qui reste
       spéculatif — ces niveaux sont explicités au fil des chapitres et rappelés au chapitre 21.

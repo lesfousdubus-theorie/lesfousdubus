@@ -5,7 +5,6 @@ category: "transmission-memoire"
 status: "published"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-parent: "joy-boy"
 sources: [576, 602]
 order: 52
 ---
