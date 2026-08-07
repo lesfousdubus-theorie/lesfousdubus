@@ -6,7 +6,7 @@ status: "published"
 sources: [1, 1044, 1046, 1114]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 75
 related: ["fruits-du-demon", "zoans", "nika", "luffy", "joy-boy"]
 ---

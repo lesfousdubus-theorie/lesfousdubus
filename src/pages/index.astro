@@ -4,6 +4,21 @@ import ChapterBanner from '@components/ChapterBanner.astro';
 import CategoryCard from '@components/CategoryCard.astro';
 import ArticleListItem from '@components/ArticleListItem.astro';
 import Footer from '@components/Footer.astro';
+import { getCollection } from 'astro:content';
+import { categoryLabel, effectLabel } from '@utils/labels';
+import { getRecentArticleUpdates } from '@utils/chapter-updates';
+
+const chapters = await getCollection('chapters');
+const articles = await getCollection('articles', ({ data }) => data.status === 'published');
+const latestChapter = chapters.sort((a, b) => b.data.chapter - a.data.chapter)[0];
+const recentArticleUpdates = getRecentArticleUpdates(articles, chapters, 4);
+
+const badgeColorByEffect = {
+  fondation: 'cyan',
+  approfondissement: 'gold',
+  'nouvelle-piste': 'violet',
+  modification: 'gold',
+} as const;
 ---
 
 <WikiLayout
@@ -70,7 +85,11 @@ import Footer from '@components/Footer.astro';
           stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg
         >
       </a>
-      <a href="/chapitres/1188" class="btn-secondary"> Dernier chapitre analysé </a>
+      {latestChapter && (
+        <a href={`/chapitres/${latestChapter.data.chapter}`} class="btn-secondary">
+          Dernier chapitre analysé
+        </a>
+      )}
     </div>
 
     <div
@@ -128,12 +147,14 @@ import Footer from '@components/Footer.astro';
     </script>
   </div>
 
-  <ChapterBanner
-    chapter="1188"
-    title="Une communication à travers le temps"
-    effect="Nouvelle piste"
-    href="/chapitres/1188"
-  />
+  {latestChapter && (
+    <ChapterBanner
+      chapter={String(latestChapter.data.chapter)}
+      title={latestChapter.data.title}
+      effect={effectLabel(latestChapter.data.effect)}
+      href={`/chapitres/${latestChapter.data.chapter}`}
+    />
+  )}
 
   <h2 class="section-title">
     <span class="section-title__accent"></span>
@@ -183,34 +204,21 @@ import Footer from '@components/Footer.astro';
     Articles récents
   </h2>
   <div class="article-list">
-    <ArticleListItem
-      badge="Approfondissement"
-      badgeColor="gold"
-      title="Le rôle du pont de Tequila Wolf"
-      category="Monde, peuples"
-      href="/theorie/tequila-wolf"
-    />
-    <ArticleListItem
-      badge="Nouvelle piste"
-      badgeColor="violet"
-      title="La véritable signification du D."
-      category="Figures et identités"
-      href="/theorie/signification-d"
-    />
-    <ArticleListItem
-      badge="Mise à jour"
-      badgeColor="gold"
-      title="L'énergie antique et la Flamme Mère"
-      category="Science et énergie"
-      href="/theorie/energie-antique"
-    />
-    <ArticleListItem
-      badge="Approfondissement"
-      badgeColor="gold"
-      title="Joy Boy : Luffy pourrait-il être Joy Boy ?"
-      category="Figures et identités"
-      href="/theorie/joy-boy"
-    />
+    {
+      recentArticleUpdates.map(({ article, chapter }) => {
+        const chapterEntry = chapters.find((entry) => entry.data.chapter === chapter);
+        const effect = chapterEntry?.data.effect ?? 'modification';
+        return (
+          <ArticleListItem
+            badge={effectLabel(effect)}
+            badgeColor={badgeColorByEffect[effect]}
+            title={article.data.title}
+            category={categoryLabel(article.data.category)}
+            href={`/theorie/${article.id}`}
+          />
+        );
+      })
+    }
   </div>
 
   <Footer />

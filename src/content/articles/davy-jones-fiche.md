@@ -6,7 +6,7 @@ status: "published"
 sources: [1164]
 editorialStatus: "hypothese-secondaire"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 44
 related: ["davy-jones", "teach"]
 ---

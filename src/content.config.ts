@@ -22,7 +22,8 @@ const articles = defineCollection({
     ]),
     status: z.enum(['draft', 'published']).default('draft'),
     certainty: z.enum(['central', 'elevee', 'moyenne', 'hypothese']).optional(),
-    lastUpdatedChapter: z.number().optional(),
+    /** Dernier chapitre pris en compte lors de la relecture éditoriale globale. */
+    reviewedUntilChapter: z.number().optional(),
     related: z.array(z.string()).default([]),
     /** Numéros de chapitres explicitement cités dans l'article. */
     sources: z.array(z.number()).default([]),

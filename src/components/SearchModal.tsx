@@ -1,11 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+interface PagefindResult {
+  url: string;
+  excerpt: string;
+  meta: {
+    title?: string;
+  };
+}
+
 export default function SearchModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<PagefindResult[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -38,25 +49,77 @@ export default function SearchModal() {
   }, [isOpen]);
 
   useEffect(() => {
-    const fetchResults = async () => {
-      if (!query.trim()) {
-        setResults([]);
-        setActiveIndex(-1);
-        return;
+    if (!isOpen) return;
+
+    const trapFocus = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !panelRef.current) return;
+
+      const focusable = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.offsetParent !== null);
+
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
+    };
+
+    window.addEventListener('keydown', trapFocus);
+    return () => window.removeEventListener('keydown', trapFocus);
+  }, [isOpen]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!query.trim()) {
+      setResults([]);
+      setActiveIndex(-1);
+      setIsLoading(false);
+      setHasSearched(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setHasSearched(false);
+
+    const timeout = window.setTimeout(async () => {
       try {
         const pagefindUrl = '/pagefind/pagefind.js';
         const pagefind = await import(/* @vite-ignore */ pagefindUrl);
         await pagefind.init();
         const search = await pagefind.search(query);
-        const fiveResults = await Promise.all(search.results.slice(0, 5).map((r: any) => r.data()));
-        setResults(fiveResults);
-        setActiveIndex(-1);
+        const fiveResults = await Promise.all(
+          search.results.slice(0, 5).map((r: { data: () => Promise<PagefindResult> }) => r.data()),
+        );
+        if (!cancelled) {
+          setResults(fiveResults);
+          setActiveIndex(-1);
+          setHasSearched(true);
+        }
       } catch (e) {
-        console.error("Pagefind n'est pas disponible (il faut build le site une fois).", e);
+        if (!cancelled) {
+          setResults([]);
+          setHasSearched(true);
+          console.error("Pagefind n'est pas disponible (il faut build le site une fois).", e);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
+    }, 180);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
     };
-    fetchResults();
   }, [query]);
 
   const navigateToResult = useCallback(
@@ -133,6 +196,7 @@ export default function SearchModal() {
         }
       `}</style>
       <div
+        ref={panelRef}
         className="w-full max-w-2xl mx-4 overflow-hidden flex flex-col search-modal-panel"
         role="dialog"
         aria-modal="true"
@@ -209,8 +273,15 @@ export default function SearchModal() {
           </div>
         )}
 
+        {/* Loading */}
+        {query && isLoading && (
+          <div className="px-6 py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
+            Recherche en cours…
+          </div>
+        )}
+
         {/* Results */}
-        {results.length > 0 && (
+        {!isLoading && results.length > 0 && (
           <div className="max-h-[50vh] overflow-y-auto">
             <ul
               ref={resultsRef}
@@ -273,7 +344,7 @@ export default function SearchModal() {
         )}
 
         {/* No results */}
-        {query && results.length === 0 && (
+        {query && !isLoading && hasSearched && results.length === 0 && (
           <div
             className="px-6 py-12 text-center"
             style={{ color: 'var(--text-secondary)', fontSize: '14px' }}

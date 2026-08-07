@@ -6,7 +6,7 @@ status: "published"
 sources: [818, 819, 963, 967, 972, 1023]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 83
 related: ["peuples-royaumes", "kozuki-toki", "ponelyphes", "shimotsuki-ryuma", "pluton-fiche", "guerre-finale"]
 ---

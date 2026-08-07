@@ -6,7 +6,7 @@ status: "published"
 sources: [287, 1138, 1182]
 editorialStatus: "nouvelle-piste"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 23
 related: ["divinites-shandias", "nika", "elbaf-halley", "dieux-one-piece", "guerre-finale"]
 ---

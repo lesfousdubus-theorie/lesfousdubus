@@ -4,7 +4,7 @@ summary: "La Flamme Mère et l'énergie antique ne seraient pas de simples armes
 category: 'technologies-pouvoirs'
 status: 'published'
 certainty: 'elevee'
-lastUpdatedChapter: 1187
+reviewedUntilChapter: 1187
 related: ['nika', 'communication-temps']
 sources: []
 order: 72

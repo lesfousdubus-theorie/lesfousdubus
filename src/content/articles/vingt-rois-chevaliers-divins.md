@@ -4,7 +4,7 @@ summary: "Article d'analyse rattaché à la fiche Vingt Rois : les vingt famille
 category: "gouvernement-mondial"
 status: "published"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: [906, 1170]
 order: 65
 parent: "vingt-rois"

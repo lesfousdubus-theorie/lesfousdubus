@@ -171,6 +171,12 @@ for (const file of files) {
   const { data, body } = parsed;
   const schema = SCHEMA[collection];
   if (schema) {
+    if (collection === 'articles' && data.lastUpdatedChapter !== undefined) {
+      errors.push(
+        `${rel} : champ obsolète "lastUpdatedChapter". Utiliser "reviewedUntilChapter" pour la relecture globale, ou "updatedArticles" dans une fiche chapitre pour une vraie mise à jour.`,
+      );
+    }
+
     for (const field of schema.required) {
       if (data[field] === undefined || data[field] === '') {
         errors.push(`${rel} : champ obligatoire manquant : "${field}".`);

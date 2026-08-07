@@ -4,7 +4,7 @@ summary: "Fiche d'identification des vingt familles royales fondatrices du Gouve
 category: "gouvernement-mondial"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: [906, 1170]
 order: 63
 related: ["vingt-rois-chevaliers-divins"]

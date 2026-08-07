@@ -4,7 +4,7 @@ summary: "Dans One Piece, les dieux n'existent pas littéralement. La divinité 
 category: "dieux-croyances"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: []
 order: 100
 ---

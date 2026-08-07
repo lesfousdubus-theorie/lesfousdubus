@@ -5,7 +5,7 @@ summary: "Comprendre en 5 points clés pourquoi nous lisons le Siècle Oublié e
 category: "histoire-temporalite"
 status: "published"
 certainty: "central"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related: ["joy-boy", "lili-vivi-et-les-poneglyphes"]
 ---
 

@@ -4,7 +4,7 @@ summary: 'Le « D. » ne serait pas une simple initiale mais un serment de liber
 category: 'figures-principales'
 status: 'published'
 certainty: 'elevee'
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related: ['joy-boy', 'communication-temps', 'tequila-wolf']
 sources: []
 order: 23

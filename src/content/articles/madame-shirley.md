@@ -6,7 +6,7 @@ status: "published"
 sources: [610, 611, 618]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 59
 related: ["communication-temps", "kozuki-toki", "royaume-ryugu", "imu-nerona-fiche", "joy-boy"]
 ---

@@ -25,7 +25,7 @@ Vous n’avez pas besoin de savoir coder pour modifier le site. **Le contenu est
    - **texte en gras** s’écrit `**texte en gras**`
    - *texte en italique* s’écrit `*texte en italique*`
    - une citation : `> « une phrase »`
-3. Si besoin, ajustez les réglages du frontmatter (ex. `lastUpdatedChapter` après un nouveau chapitre).
+3. Si besoin, ajustez les réglages du frontmatter (ex. `reviewedUntilChapter` après une relecture globale). Pour afficher qu’un chapitre a réellement modifié un article, utilisez plutôt `updatedArticles` dans la fiche du chapitre.
 4. Enregistrez, puis prévisualisez (voir [Aperçu local](#aperçu-local-sans-installer-rien) plus bas).
 
 ### 🆕 Ajouter un nouvel article
@@ -39,7 +39,7 @@ title: "Titre de l'article"
 summary: "Une phrase de résumé affichée sur les listes."
 category: "figures-principales"
 status: "published"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related:
   - luffy
   - joy-boy
@@ -377,13 +377,15 @@ summary: 'Joy Boy serait le nom légendaire donné au futur Luffy.'
 category: 'figures-principales'
 status: 'published'
 certainty: 'central'
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related:
   - luffy
   - nika
   - gol-d-roger
 ---
 ```
+
+`reviewedUntilChapter` signifie seulement que l'article a été relu en tenant compte de ce chapitre. Pour afficher une vraie mise à jour liée à un chapitre, ajoutez l'identifiant de l'article dans `updatedArticles` sur la fiche du chapitre concerné.
 
 ### Chapitre (`src/content/chapters/`)
 

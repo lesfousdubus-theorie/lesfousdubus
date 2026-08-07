@@ -6,7 +6,7 @@ status: "published"
 sources: [802, 820, 821, 1037]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 84
 related: ["peuples-royaumes", "zunesha-fiche", "ponelyphes", "guerre-finale", "joy-boy"]
 ---

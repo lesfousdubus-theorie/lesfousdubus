@@ -6,7 +6,7 @@ status: "published"
 sources: [391, 395, 398, 649, 818]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 26
 related: ["ponelyphes", "ponelyphes-futur", "rio-ponelyphe", "wa-no-kuni", "siecle-oublie"]
 ---

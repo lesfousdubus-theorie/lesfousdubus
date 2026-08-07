@@ -4,7 +4,7 @@ summary: "Fiche d'identification de Zunesha, l'éléphant géant portant le duch
 category: "peuples-royaumes"
 status: "published"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: [1050]
 order: 89
 related: ["zunesha", "emeth-futur"]

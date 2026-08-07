@@ -1,4 +1,6 @@
 ---
+import { getCollection } from 'astro:content';
+import { effectLabel } from '@utils/labels';
 import SearchModal from './SearchModal.tsx';
 
 interface SubLink {
@@ -14,6 +16,10 @@ interface NavItem {
   href: string;
   groups: SubGroup[];
 }
+
+const latestChapters = (await getCollection('chapters'))
+  .sort((a, b) => b.data.chapter - a.data.chapter)
+  .slice(0, 4);
 
 const nav: NavItem[] = [
   {
@@ -63,12 +69,10 @@ const nav: NavItem[] = [
     groups: [
       {
         title: 'Dernières analyses',
-        links: [
-          { label: 'Chapitre 1188', href: '/chapitres/1188' },
-          { label: 'Chapitre 1187', href: '/chapitres/1187' },
-          { label: 'Chapitre 1186', href: '/chapitres/1186' },
-          { label: 'Chapitre 1184', href: '/chapitres/1184' },
-        ],
+        links: latestChapters.map((chapter) => ({
+          label: `Chapitre ${chapter.data.chapter} · ${effectLabel(chapter.data.effect)}`,
+          href: `/chapitres/${chapter.data.chapter}`,
+        })),
       },
       {
         title: 'Tout voir',

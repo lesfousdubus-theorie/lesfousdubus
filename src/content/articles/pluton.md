@@ -6,7 +6,7 @@ status: "published"
 sources: [431]
 editorialStatus: "hypothese-secondaire"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 35
 parent: "pluton-fiche"
 related: ["pluton-fiche"]

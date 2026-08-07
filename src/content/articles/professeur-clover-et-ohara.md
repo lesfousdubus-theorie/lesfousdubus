@@ -5,7 +5,7 @@ summary: "Clover, Olvia et Vegapunk : comment les chercheurs d'Ohara ont été l
 category: "transmission-memoire"
 status: "published"
 certainty: "central"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related: ["les-bases-du-siecle-oublie", "lili-vivi-et-les-poneglyphes"]
 ---
 

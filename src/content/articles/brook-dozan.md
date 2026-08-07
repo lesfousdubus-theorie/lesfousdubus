@@ -4,7 +4,7 @@ summary: "Article d'analyse rattaché à la fiche Brook : le rapprochement propo
 category: "personnages-identites"
 status: "published"
 certainty: "hypothese"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: [1183, 1184]
 order: 54
 parent: "brook"

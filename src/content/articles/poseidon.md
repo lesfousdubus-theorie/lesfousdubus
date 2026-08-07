@@ -6,7 +6,7 @@ status: "published"
 sources: [610, 653, 967, 649, 873]
 editorialStatus: "fait-observe"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 36
 parent: "poseidon-fiche"
 related: ["poseidon-fiche", "shirahoshi", "noah", "madame-shirley", "hommes-poissons"]

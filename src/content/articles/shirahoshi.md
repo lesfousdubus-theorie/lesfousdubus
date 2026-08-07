@@ -5,7 +5,7 @@ category: "personnages-identites"
 status: "published"
 sources: []
 editorialStatus: "canon"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 31
 related: ["poseidon", "theorie-complete"]
 ---

@@ -29,13 +29,13 @@ const relatedArticles = relatedArticleEntries.map((entry) => ({
 }));
 
 // Fetch chapter references related to this article. These chapter entries are
-// the source of truth for visible "Chap." labels: `lastUpdatedChapter` is only
+// the source of truth for visible "Chap." labels: `reviewedUntilChapter` is only
 // an editorial/relecture marker and can be shared by many unrelated articles.
 const chapterEntries = await getCollection('chapters');
 const articleChapters = chapterEntries
   .filter((c) => c.data.updatedArticles?.includes(currentSlug))
   .sort((a, b) => b.data.chapter - a.data.chapter);
-const lastUpdatedChapter = articleChapters[0]?.data.chapter;
+const updateChapter = articleChapters[0]?.data.chapter;
 
 // Article d'analyse rattaché à une fiche neutre : on affiche explicitement le
 // rattachement pour que son titre affirmatif soit lu comme une lecture de la
@@ -116,7 +116,7 @@ const articleJsonLd = {
     <h1 class="article-title">{title}</h1>
     {description && <p class="article-lead">{description}</p>}
     <ArticleMeta
-      lastUpdatedChapter={lastUpdatedChapter}
+      updateChapter={updateChapter}
       editorialStatus={frontmatter.editorialStatus}
       certainty={frontmatter.certainty}
     />

@@ -4,7 +4,7 @@ summary: "Le niveau de la mer augmentera de 200m lors de la guerre finale, créa
 category: "guerre-finale"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: [1113, 1115, 1114]
 order: 2
 ---

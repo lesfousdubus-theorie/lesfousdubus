@@ -19,7 +19,7 @@ export interface ArticleUpdate<TArticle extends ArticleLike> {
  * dans `updatedArticles`.
  *
  * Les badges "Chap." doivent venir des fiches de chapitres, pas du champ
- * éditorial `lastUpdatedChapter`, qui indique seulement l'état de relecture
+ * éditorial `reviewedUntilChapter`, qui indique seulement l'état de relecture
  * d'un article et peut donc être identique pour beaucoup de pages.
  */
 export function getLatestArticleUpdateChapterMap(chapters: ChapterLike[]): Map<string, number> {

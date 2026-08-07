@@ -5,7 +5,7 @@ category: "personnages-identites"
 status: "published"
 sources: [1084, 1085, 1086, 1116]
 editorialStatus: "canon"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 49
 related: ["nefertari-vivi", "lili-vivi-et-les-poneglyphes", "ponelyphes"]
 ---

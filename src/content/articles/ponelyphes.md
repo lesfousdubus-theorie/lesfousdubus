@@ -6,7 +6,7 @@ status: "published"
 sources: [1, 818, 967]
 editorialStatus: "canon"
 certainty: "central"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 3
 ---
 

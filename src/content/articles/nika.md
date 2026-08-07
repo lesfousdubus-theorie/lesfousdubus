@@ -7,7 +7,7 @@ status: "published"
 sources: [1069, 1117, 1102]
 editorialStatus: "hypothese-centrale"
 certainty: "central"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 21
 ---
 

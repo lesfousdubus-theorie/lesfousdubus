@@ -6,7 +6,7 @@ category: "monde-destinations"
 status: "published"
 sources: []
 editorialStatus: "hypothese-centrale"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 5
 ---
 

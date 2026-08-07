@@ -4,7 +4,7 @@ summary: "Binks no Sake n'est pas une chanson ancienne mais un chant qui sera co
 category: "transmission-memoire"
 status: "published"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: []
 order: 53
 parent: "brook"

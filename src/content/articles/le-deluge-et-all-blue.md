@@ -5,7 +5,7 @@ summary: "Pourquoi la montée des eaux de 200 mètres n'a pas eu lieu il y a 800
 category: "peuples-royaumes"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related: ["coalition-des-20-rois", "les-bases-du-siecle-oublie"]
 ---
 

@@ -6,7 +6,7 @@ category: "figures-principales"
 status: "published"
 sources: []
 editorialStatus: "canon"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 19
 related: ["joy-boy", "nika", "theorie-complete"]
 ---

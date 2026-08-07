@@ -4,7 +4,7 @@ summary: "Mother Flame est l'énergie créée par Vegapunk en étudiant Emeth. E
 category: "technologies-pouvoirs"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: []
 order: 71
 ---
