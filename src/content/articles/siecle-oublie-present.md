@@ -1,6 +1,7 @@
 ---
 title: "Le Siècle oublié est le présent : pourquoi tout fonctionne"
 summary: "Le Siècle oublié n'a jamais eu lieu il y a 800 ans. C'est l'histoire que nous lisons depuis le chapitre 1. Les preuves s'accumulent et les parallèles sont trop nombreux pour être des coïncidences."
+seoTitle: "Le Siècle oublié est le présent dans One Piece : théorie complète | Les Fous du Bus"
 category: "histoire-temporalite"
 status: "published"
 certainty: "central"

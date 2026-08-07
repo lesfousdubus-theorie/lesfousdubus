@@ -1,6 +1,7 @@
 ---
 title: "Poséidon"
 summary: "Fiche d'identification de Poséidon, l'Arme antique capable de commander les Rois des Mers et matérialisée par la princesse Shirahoshi."
+seoTitle: "Poséidon dans One Piece : Shirahoshi, Rois des Mers et théorie | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
 sources: [610, 967, 653]

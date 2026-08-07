@@ -1,6 +1,7 @@
 ---
 title: "Siècle oublié"
 summary: "Fiche d'identification du Siècle Oublié, la période de 100 ans absente des registres officiels du Gouvernement Mondial, enjeu central de la théorie."
+seoTitle: "Siècle oublié dans One Piece : histoire effacée et théorie | Les Fous du Bus"
 category: "histoire-temporalite"
 status: "published"
 sources: []

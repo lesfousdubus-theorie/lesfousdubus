@@ -1,6 +1,7 @@
 ---
 title: "Imu Nerona"
-summary: "Fiche d'identification d'Imu Nerona, souverain caché du Gouvernement Mondial, qui dirige le monde depuis Mariejois depuis plus de 800 ans."
+summary: "Imu Nerona dans One Piece : souverain caché du Gouvernement mondial à Mariejois, pouvoirs, lien à Joy Boy, Ponéglyphes et théorie du Siècle oublié."
+seoTitle: "Imu dans One Piece : pouvoir, Joy Boy et théorie | Les Fous du Bus"
 category: "gouvernement-mondial"
 status: "published"
 certainty: "elevee"

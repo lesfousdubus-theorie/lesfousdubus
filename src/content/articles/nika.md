@@ -1,6 +1,7 @@
 ---
 title: "Nika"
 summary: "Fiche d'analyse sur Nika, le Dieu du Soleil, son rôle dans les croyances de la mer et les interprétations de la théorie."
+seoTitle: "Nika dans One Piece : Dieu du Soleil, Luffy et théorie | Les Fous du Bus"
 category: "dieux-croyances"
 status: "published"
 sources: [1069, 1117, 1102]

@@ -15,6 +15,8 @@ import { getCollection } from 'astro:content';
 const { title, description, currentPath, headings, frontmatter } = Astro.props;
 const lastUpdatedChapter = String(frontmatter.lastUpdatedChapter ?? '?');
 const socialImage = new URL('/og-default.png', Astro.site).toString();
+// SEO title riche (auditor) : si seoTitle fourni on l'utilise, sinon fallback historique via BaseLayout
+const seoTitle = frontmatter.seoTitle ?? undefined;
 
 // Fetch related articles from the articles collection
 const allArticles = await getCollection('articles', ({ data }) => data.status === 'published');
@@ -50,37 +52,42 @@ const breadcrumbItems = [
   { label: title },
 ];
 
-// JSON-LD for Article
+// JSON-LD for Article — enrichi (headline court = H1, description, section, publisher)
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
+const canonicalArticleUrl = new URL(currentPath.endsWith('/') ? currentPath : currentPath + '/', siteUrl).toString();
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: title,
   description: description,
-  url: new URL(currentPath, Astro.site).toString(),
+  url: canonicalArticleUrl,
   image: socialImage,
   articleSection: frontmatter.category,
   inLanguage: 'fr-FR',
   author: {
     '@type': 'Organization',
     name: 'Les Fous du Bus',
+    url: siteUrl,
   },
   publisher: {
     '@type': 'Organization',
     name: 'Les Fous du Bus',
+    url: siteUrl,
     logo: {
       '@type': 'ImageObject',
-      url: new URL('/favicon.svg', Astro.site).toString(),
+      url: new URL('/logo.png', siteUrl).toString(),
     },
   },
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': new URL(currentPath, Astro.site).toString(),
+    '@id': canonicalArticleUrl,
   },
 };
 ---
 
 <WikiLayout
   title={title}
+  seoTitle={seoTitle}
   description={description}
   image={socialImage}
   type="article"
@@ -99,7 +106,7 @@ const articleJsonLd = {
         '@type': 'ListItem',
         position: index + 1,
         name: item.label,
-        item: new URL(item.href ?? currentPath, Astro.site).toString(),
+        item: new URL(item.href ?? currentPath, siteUrl).toString(),
       })),
     })}
   />

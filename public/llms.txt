@@ -1,40 +1,87 @@
 # Les Fous du Bus
 
-> Wiki éditorial consacré à la théorie du Siècle oublié dans One Piece : le passé serait le présent.
+> Wiki consacré à la théorie One Piece selon laquelle le Siècle oublié serait le présent.
 
-## À propos
+## Commencer
 
-Les Fous du Bus est un site fan-made qui développe une théorie unique sur One Piece d'Eiichiro Oda. Selon cette lecture, les événements du Siècle oublié (Void Century) ne seraient pas du passé mais correspondraient aux événements actuels du manga. Les personnages légendaires comme Joy Boy, Ryuma, Poséidon ou Davy Jones seraient les noms que l'Histoire donnera aux protagonistes actuels.
+- [Présentation](https://lesfousdubus.sbs/) : accueil, pitch et vidéo d'introduction
+- [Résumé de la théorie](https://lesfousdubus.sbs/theorie/resume) : l'argument en 10 points
+- [Théorie complète](https://lesfousdubus.sbs/theorie/theorie-complete) : synthèse et parcours de lecture (19 étapes)
 
-## Structure du site
+## Fondations
 
-- **La théorie** : Plus de 90 articles d'analyse organisés par catégorie
-- **Explorer** : Outils de visualisation (carte mentale, chronologie, glossaire)
-- **Vérifier** : Méthodes de vérification (parallèles, sources, questions)
-- **Aide** : FAQ, à propos, glossaire
+- [Blue Star](https://lesfousdubus.sbs/theorie/blue-star) : la planète de One Piece
+- [Grand Line](https://lesfousdubus.sbs/theorie/grand-line) : la route maritime centrale
+- [Red Line](https://lesfousdubus.sbs/theorie/red-line) : le continent qui coupe le monde
+- [Lodestar](https://lesfousdubus.sbs/theorie/lodestar) : la dernière île "logique"
+- [Laugh Tale](https://lesfousdubus.sbs/theorie/laugh-tale) : la dernière île et son énigme temporelle
+- [One Piece](https://lesfousdubus.sbs/theorie/one-piece-histoire) : la nature du trésor de Joy Boy
+- [Le Siècle oublié](https://lesfousdubus.sbs/theorie/siecle-oublie) : la période effacée
+- [Le Siècle oublié est le présent](https://lesfousdubus.sbs/theorie/siecle-oublie-present) : l'hypothèse centrale
+- [Le Royaume antique](https://lesfousdubus.sbs/theorie/royaume-antique) : civilisation et grande guerre
+- [Les Ponéglyphes](https://lesfousdubus.sbs/theorie/ponelyphes-futur) : stèles et mémoire du futur
 
-## Articles principaux
+## Figures principales
 
-- [Théorie complète](/theorie/theorie-complete) : Vue d'ensemble de la théorie
-- [Les bases du Siècle oublié](/theorie/les-bases-du-siecle-oublie) : Fondations de la lecture
-- [Zoro est Ryuma](/theorie/zoro-est-ryuma) : 5 preuves que Zoro deviendra Ryuma
-- [Shirahoshi est Poséidon](/theorie/poseidon) : 5 preuves sur la promesse de Joy Boy
-- [Vivi est Lili](/theorie/lili-vivi-et-les-poneglyphes) : 5 preuves sur la dispersion des Ponéglyphes
-- [Teach est Davy Jones](/theorie/davy-jones) : 5 preuves sur le futur Roi du Monde
-- [Joy Boy](/theorie/joy-boy) : Analyse du personnage légendaire
-- [Imu Nerona](/theorie/imu-nerona) : Analyse du souverain du monde
-- [La guerre finale](/theorie/guerre-finale) : Analyse de l'affrontement à venir
+- [Monkey D. Luffy](https://lesfousdubus.sbs/theorie/luffy) : le capitaine au chapeau de paille
+- [Joy Boy](https://lesfousdubus.sbs/theorie/joy-boy) : figure légendaire et promesse au Royaume Ryūgū
+- [Nika, le Dieu du Soleil](https://lesfousdubus.sbs/theorie/nika) : le Guerrier de la Libération
+- [Gol D. Roger](https://lesfousdubus.sbs/theorie/gol-d-roger) : le Roi des Pirates et Laugh Tale
+- [Imu Nerona](https://lesfousdubus.sbs/theorie/imu-nerona-fiche) : souverain caché du Gouvernement mondial
 
-## Catégories
+## Personnages et identités
 
-- **Fondations** : Siècle oublié, Ponéglyphes, Volonté héritée, Royaume antique
-- **Personnages & Identités** : Joy Boy, Ryuma, Davy Jones, Lili, Poséidon
-- **Armes antiques** : Pluton, Poséidon, Uranus
-- **Science & Pouvoirs** : Fruits du Démon, Énergie antique, Zoans
-- **Monde & Peuples** : Hommes-Poissons, Lunariens, Shandias, Minks
-- **Gouvernement & Guerre finale** : Gorosei, Imu, Mary Geoise, Vingt Rois
+- [Zoro est Ryuma](https://lesfousdubus.sbs/theorie/zoro-est-ryuma) : les parallèles Zoro / Ryuma
+- [Shirahoshi est Poséidon](https://lesfousdubus.sbs/theorie/poseidon) : la promesse de Joy Boy
+- [Vivi est Lili](https://lesfousdubus.sbs/theorie/lili-vivi-et-les-poneglyphes) : la dispersion des Ponéglyphes
+- [Teach est Davy Jones](https://lesfousdubus.sbs/theorie/davy-jones) : le futur Roi du Monde
+- [Vivi Nefertari](https://lesfousdubus.sbs/theorie/nefertari-vivi) : princesse d'Alabasta
 
-## Contact
+## Armes antiques
 
-Projet indépendant fan-made. One Piece © Eiichiro Oda / Shueisha / Toei Animation.
-Site : https://lesfousdubus.sbs
+- [Armes antiques](https://lesfousdubus.sbs/theorie/armes-antiques) : Poséidon, Pluton et Uranus
+- [Poséidon](https://lesfousdubus.sbs/theorie/poseidon-fiche) : l'arme qui commande les Rois des Mers
+- [Pluton](https://lesfousdubus.sbs/theorie/pluton-fiche) : le navire de guerre de Water Seven
+- [Uranus](https://lesfousdubus.sbs/theorie/uranus) : l'arme du ciel et la Mother Flame
+
+## Peuples, royaumes et témoins
+
+- [Elbaf et le Harley](https://lesfousdubus.sbs/theorie/elbaf-halley) : les Géants et la fresque
+- [Hommes-Poissons](https://lesfousdubus.sbs/theorie/hommes-poissons) : le Royaume Ryūgū et Noah
+- [Peuples et royaumes](https://lesfousdubus.sbs/theorie/peuples-royaumes) : vue d'ensemble
+
+## Gouvernement et guerre finale
+
+- [Gouvernement mondial](https://lesfousdubus.sbs/theorie/gouvernement-mondial) : structure du pouvoir
+- [Guerre finale](https://lesfousdubus.sbs/theorie/guerre-finale) : affrontement à venir
+- [Le Déluge et All Blue](https://lesfousdubus.sbs/theorie/deluge-all-blue) : cataclysme et création d'All Blue
+
+## Science, énergie et pouvoirs
+
+- [Fruits du Démon](https://lesfousdubus.sbs/theorie/fruits-du-demon) : origine et transmission
+- [Énergie antique et Mother Flame](https://lesfousdubus.sbs/theorie/energie-antique) : le feu de Vegapunk
+
+## Vérification
+
+- [Méthodes et vérification](https://lesfousdubus.sbs/verifier) : vue d'ensemble
+- [Parallèles visuels](https://lesfousdubus.sbs/verifier/paralleles) : comparaisons canon / théorie
+- [Points encore à expliquer](https://lesfousdubus.sbs/verifier/questions) : objections ouvertes
+- [Sources et méthode](https://lesfousdubus.sbs/verifier/sources) : citations et démarche éditoriale
+
+## Analyses récentes
+
+- [Chapitre 1188 : La communication à travers le temps](https://lesfousdubus.sbs/chapitres/1188) — Nouvelle piste
+- [Chapitre 1187](https://lesfousdubus.sbs/chapitres/1187) — Approfondissement
+- [Chapitre 1186](https://lesfousdubus.sbs/chapitres/1186) — Nouvelle piste
+- [Chapitre 1184](https://lesfousdubus.sbs/chapitres/1184) — Approfondissement
+- [Tous les chapitres](https://lesfousdubus.sbs/chapitres) : index complet
+
+## Aide
+
+- [FAQ](https://lesfousdubus.sbs/aide/faq)
+- [Glossaire](https://lesfousdubus.sbs/aide/glossaire)
+- [À propos](https://lesfousdubus.sbs/aide/a-propos)
+- [Crédits](https://lesfousdubus.sbs/aide/credits)
+
+---
+Site : https://lesfousdubus.sbs — One Piece © Eiichiro Oda / Shueisha / Toei Animation. Projet fan-made.

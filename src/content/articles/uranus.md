@@ -1,6 +1,7 @@
 ---
 title: "Uranus : l'arme du ciel"
 summary: "Uranus n'est pas une arme antique mais la dernière création de Vegapunk. Mother Flame est l'énergie qui l'alimente, utilisée par Imu pour détruire Lulusia."
+seoTitle: "Uranus dans One Piece : Mother Flame, Imu et théorie | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
 certainty: "moyenne"

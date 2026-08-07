@@ -1,6 +1,7 @@
 ---
 title: "One Piece"
 summary: "Fiche d'analyse consacrée à la nature du One Piece, la promesse de Gol D. Roger et les hypothèses entourant le trésor."
+seoTitle: "One Piece dans One Piece : nature du trésor et théorie | Les Fous du Bus"
 category: "monde-destinations"
 status: "published"
 sources: [1]
