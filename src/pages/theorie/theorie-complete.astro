@@ -930,7 +930,7 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
   /* ===== Les trois lectures ===== */
   .modes {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 10px;
     margin-bottom: 18px;
   }
@@ -1007,7 +1007,7 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
     padding: 0;
     list-style: none;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
     gap: 2px 18px;
   }
   .toc li {
@@ -1074,6 +1074,7 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
     margin: 0 0 12px;
     line-height: 1.75;
     color: var(--text-secondary);
+    overflow-wrap: anywhere;
   }
   .theory-section__body p:last-child {
     margin-bottom: 0;
@@ -1229,15 +1230,44 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
     flex-shrink: 0;
   }
 
+  @media (max-width: 768px) {
+    .complete-page h1 {
+      font-size: clamp(1.7rem, 6vw, 2.2rem);
+    }
+    .theory-section__head h2 {
+      font-size: 1.2rem;
+    }
+    .theory-section__n {
+      min-width: 28px;
+      height: 28px;
+      font-size: 0.8rem;
+    }
+  }
+
   @media (max-width: 640px) {
-    .modes {
-      grid-template-columns: 1fr;
-    }
-    .toc ol {
-      grid-template-columns: 1fr;
-    }
     .theory-section {
       padding: 18px;
+    }
+    .toc {
+      padding: 18px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .theory-section {
+      padding: 16px 14px;
+    }
+    .theory-section__head {
+      align-items: flex-start;
+    }
+    .theory-section__head h2 {
+      font-size: 1.12rem;
+    }
+    .toc {
+      padding: 16px;
+    }
+    .intro {
+      font-size: 1rem;
     }
   }
 </style>
