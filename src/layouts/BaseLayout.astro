@@ -6,17 +6,19 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  type?: 'website' | 'article';
 }
 
 const {
   title,
   description = 'Wiki éditorial consacré à la théorie du Siècle oublié dans One Piece : le passé serait le présent.',
   image,
+  type = 'website',
 } = Astro.props;
 const fullTitle = `${title} | Les Fous du Bus`;
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
-const ogImage = image || `${siteUrl}/logo.png`;
+const ogImage = image ? new URL(image, siteUrl).toString() : `${siteUrl}/og-default.png`;
 ---
 
 <!doctype html>
@@ -29,11 +31,14 @@ const ogImage = image || `${siteUrl}/logo.png`;
     <link rel="canonical" href={canonicalUrl} />
 
     <!-- Open Graph -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Les Fous du Bus — Le Siècle oublié est le présent" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:site_name" content="Les Fous du Bus" />
 
@@ -42,6 +47,7 @@ const ogImage = image || `${siteUrl}/logo.png`;
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content="Les Fous du Bus — Le Siècle oublié est le présent" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -54,31 +60,33 @@ const ogImage = image || `${siteUrl}/logo.png`;
     <meta name="color-scheme" content="dark light" />
 
     <!-- SEO extras -->
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
     <meta name="author" content="Les Fous du Bus" />
     <meta name="generator" content={Astro.generator} />
-    <meta name="keywords" content="One Piece, théorie, Siècle oublié, Void Century, Joy Boy, Luffy, Eiichiro Oda, manga, analyse" />
+    <meta
+      name="keywords"
+      content="One Piece, théorie, Siècle oublié, Void Century, Joy Boy, Luffy, Eiichiro Oda, manga, analyse"
+    />
 
     <!-- AI discoverability -->
     <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-friendly site summary" />
 
     <!-- JSON-LD Structured Data -->
-    <script is:inline type="application/ld+json" set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      name: 'Les Fous du Bus',
-      url: siteUrl,
-      description: 'Wiki éditorial consacré à la théorie du Siècle oublié dans One Piece',
-      inLanguage: 'fr-FR',
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: {
-          '@type': 'EntryPoint',
-          urlTemplate: `${siteUrl}/search?q={search_term_string}`
-        },
-        'query-input': 'required name=search_term_string'
-      }
-    })} />
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'Les Fous du Bus',
+        url: siteUrl,
+        description: 'Wiki éditorial consacré à la théorie du Siècle oublié dans One Piece',
+        inLanguage: 'fr-FR',
+      })}
+    />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

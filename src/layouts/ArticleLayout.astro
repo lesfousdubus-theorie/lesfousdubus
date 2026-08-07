@@ -14,6 +14,7 @@ import { getCollection } from 'astro:content';
 
 const { title, description, currentPath, headings, frontmatter } = Astro.props;
 const lastUpdatedChapter = String(frontmatter.lastUpdatedChapter ?? '?');
+const socialImage = new URL('/og-default.png', Astro.site).toString();
 
 // Fetch related articles from the articles collection
 const allArticles = await getCollection('articles', ({ data }) => data.status === 'published');
@@ -56,6 +57,9 @@ const articleJsonLd = {
   headline: title,
   description: description,
   url: new URL(currentPath, Astro.site).toString(),
+  image: socialImage,
+  articleSection: frontmatter.category,
+  inLanguage: 'fr-FR',
   author: {
     '@type': 'Organization',
     name: 'Les Fous du Bus',
@@ -75,9 +79,30 @@ const articleJsonLd = {
 };
 ---
 
-<WikiLayout title={title} description={description} currentPath={currentPath} headings={headings}>
+<WikiLayout
+  title={title}
+  description={description}
+  image={socialImage}
+  type="article"
+  currentPath={currentPath}
+  headings={headings}
+>
   <ReadingProgressBar />
   <script is:inline type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbItems.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.label,
+        item: new URL(item.href ?? currentPath, Astro.site).toString(),
+      })),
+    })}
+  />
 
   <Breadcrumb items={breadcrumbItems} />
 
@@ -89,11 +114,7 @@ const articleJsonLd = {
       editorialStatus={frontmatter.editorialStatus}
     />
 
-    <RelationMap
-      title={title}
-      related={frontmatter.related ?? []}
-      currentSlug={currentSlug}
-    />
+    <RelationMap title={title} related={frontmatter.related ?? []} currentSlug={currentSlug} />
 
     {
       parentEntry && (
