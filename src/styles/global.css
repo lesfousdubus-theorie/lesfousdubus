@@ -127,7 +127,7 @@
   /* On mobile, fixed background can cause jank */
   @media (max-width: 768px) {
     body {
-      background-attachment: scroll, scroll, scroll;
+      background-attachment: scroll, fixed;
     }
   }
 }
@@ -414,6 +414,9 @@ iframe {
 .app {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* Scroll-reveal animation for content blocks */

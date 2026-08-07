@@ -307,11 +307,14 @@ const canonicalWikiUrl = new URL(
   }
 
   .main-content {
+    display: flex;
+    flex-direction: column;
     padding: 32px 40px;
     max-width: 860px;
     width: 100%;
     margin: 0 auto;
     min-width: 0;
+    flex-grow: 1;
   }
 
   /* Floating TOC button - hidden on desktop where sidebar-right is visible */
