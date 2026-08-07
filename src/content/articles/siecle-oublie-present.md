@@ -6,6 +6,7 @@ category: "histoire-temporalite"
 status: "published"
 certainty: "central"
 reviewedUntilChapter: 1188
+parent: "siecle-oublie"
 sources: [1]
 order: 4
 ---

@@ -7,6 +7,7 @@ sources: [819, 963, 973, 1037]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "wa-no-kuni"
 order: 27
 related: ["wa-no-kuni", "kozuki-toki", "ponelyphes", "zunesha-fiche", "nico-robin"]
 ---

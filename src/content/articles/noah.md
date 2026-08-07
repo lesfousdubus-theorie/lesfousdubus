@@ -7,6 +7,7 @@ sources: [649, 653, 967, 968]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "poseidon-fiche"
 order: 32
 related:
   [

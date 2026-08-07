@@ -5,6 +5,7 @@ category: "technologies-pouvoirs"
 status: "published"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "vegapunk"
 sources: []
 order: 71
 ---

@@ -5,6 +5,7 @@ category: "dieux-croyances"
 status: "published"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "nika"
 sources: []
 order: 100
 ---

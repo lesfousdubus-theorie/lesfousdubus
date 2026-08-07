@@ -7,6 +7,7 @@ sources: [1085, 1116]
 editorialStatus: "canon"
 reviewedUntilChapter: 1188
 order: 48
+parent: "lili"
 related: ["lili", "vivi", "theorie-complete"]
 ---
 

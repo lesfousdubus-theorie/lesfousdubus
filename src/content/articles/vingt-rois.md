@@ -5,6 +5,7 @@ category: "gouvernement-mondial"
 status: "published"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "gouvernement-mondial"
 sources: [906, 1170]
 order: 63
 related: ["vingt-rois-chevaliers-divins"]

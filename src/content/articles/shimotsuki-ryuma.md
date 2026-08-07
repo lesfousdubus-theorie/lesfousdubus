@@ -7,6 +7,7 @@ sources: [1023]
 editorialStatus: "hypothese-secondaire"
 certainty: "moyenne"
 reviewedUntilChapter: 1188
+parent: "zoro"
 order: 45
 related: ["ryuma", "zoro"]
 ---

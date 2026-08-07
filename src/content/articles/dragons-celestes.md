@@ -7,6 +7,7 @@ sources: [497, 498, 906, 1084]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "gouvernement-mondial"
 order: 68
 related: ["gouvernement-mondial", "vingt-rois", "mary-geoise", "chevaliers-divins", "alabasta"]
 ---

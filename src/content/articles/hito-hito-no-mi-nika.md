@@ -8,6 +8,7 @@ editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
 order: 75
+parent: "nika"
 related: ["fruits-du-demon", "zoans", "nika", "luffy", "joy-boy"]
 ---
 
