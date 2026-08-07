@@ -296,27 +296,29 @@ const isActive = (href: string) =>
   .navbar {
     height: var(--nav-h);
     min-height: var(--nav-h);
-    background-color: var(--bg-main);
+    background-color: color-mix(in srgb, var(--bg-main) 92%, transparent);
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 0 24px;
+    gap: 10px;
+    padding: 0 20px;
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 60;
     animation: nav-fade-in 0.4s ease-out;
     box-sizing: border-box;
     width: 100%;
-    max-width: 100vw;
+    max-width: 100%;
     overflow: visible;
   }
 
   .nav-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex: 0 1 auto;
     min-width: 0;
     justify-content: flex-start;
@@ -324,10 +326,10 @@ const isActive = (href: string) =>
 
   .logo {
     font-weight: 700;
-    font-size: 16px;
+    font-size: 15px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     text-decoration: none;
     color: var(--text-main);
     white-space: nowrap;
@@ -336,8 +338,8 @@ const isActive = (href: string) =>
   }
 
   .logo-img {
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
     object-fit: contain;
     border-radius: 6px;
     flex-shrink: 0;
@@ -355,6 +357,7 @@ const isActive = (href: string) =>
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+    letter-spacing: -0.01em;
   }
 
   .nav-center {
@@ -370,15 +373,16 @@ const isActive = (href: string) =>
     align-items: center;
     justify-content: flex-end;
     flex: 0 0 auto;
-    gap: 12px;
+    gap: 8px;
     min-width: 0;
   }
 
   /* Desktop nav links + dropdowns */
   .nav-links {
     display: none;
-    gap: 6px;
+    gap: 2px;
     align-items: center;
+    flex-wrap: nowrap;
   }
 
   @media (min-width: 1024px) {
@@ -392,15 +396,16 @@ const isActive = (href: string) =>
   }
 
   .nav-link {
-    font-size: 14.5px;
+    font-size: 13.5px;
     font-weight: 500;
     color: var(--text-secondary);
     text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 6px 10px;
+    border-radius: 7px;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
+    white-space: nowrap;
     transition:
       color 0.15s ease,
       background-color 0.15s ease;
@@ -419,6 +424,8 @@ const isActive = (href: string) =>
 
   .nav-caret {
     opacity: 0.5;
+    width: 11px;
+    height: 11px;
     transition:
       transform 0.2s ease,
       opacity 0.2s ease;
@@ -438,20 +445,21 @@ const isActive = (href: string) =>
     transform: translate(-50%, 6px);
     margin-top: 6px;
     min-width: 220px;
+    max-width: min(320px, calc(100vw - 32px));
     background-color: color-mix(in srgb, var(--bg-secondary) 95%, var(--surface));
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
     box-shadow: 0 16px 36px color-mix(in srgb, var(--bg-main) 60%, rgba(0, 0, 0, 0.4));
-    padding: 12px;
+    padding: 10px;
     opacity: 0;
     visibility: hidden;
     transition:
       opacity 0.2s ease,
       transform 0.2s ease,
       visibility 0.2s;
-    z-index: 60;
+    z-index: 70;
   }
 
   .nav-item:hover .nav-dropdown,
@@ -473,8 +481,8 @@ const isActive = (href: string) =>
 
   .nav-dropdown__link {
     display: block;
-    padding: 6px 10px;
-    font-size: 13.5px;
+    padding: 7px 10px;
+    font-size: 13px;
     color: var(--text-secondary);
     text-decoration: none;
     border-radius: 6px;
@@ -493,14 +501,15 @@ const isActive = (href: string) =>
   .nav-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   .search-trigger {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 12px;
+    height: 34px;
+    padding: 0 10px 0 12px;
     font-size: 13px;
     color: var(--text-secondary);
     background-color: color-mix(in srgb, var(--surface) 70%, transparent);
@@ -511,7 +520,9 @@ const isActive = (href: string) =>
     box-shadow: none !important;
     transition:
       color 0.2s ease,
-      background-color 0.2s ease;
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+    max-width: 220px;
   }
 
   .search-trigger:hover,
@@ -519,19 +530,33 @@ const isActive = (href: string) =>
   .search-trigger:focus-visible,
   .search-trigger:active {
     color: var(--text-main);
-    border-color: var(--border-color) !important;
+    border-color: color-mix(in srgb, var(--cyan) 40%, var(--border-color)) !important;
     background-color: var(--surface);
     outline: none !important;
     outline-offset: 0 !important;
     box-shadow: none !important;
   }
 
+  .search-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+  }
+
   .search-shortcut {
-    font-size: 11px;
-    padding: 2px 6px;
+    font-size: 10.5px;
+    padding: 2px 5px;
     border-radius: 4px;
-    background-color: var(--surface);
+    background-color: var(--bg-main);
     border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+    line-height: 1.2;
   }
 
   .navbar-sidebar-toggle {
@@ -582,6 +607,55 @@ const isActive = (href: string) =>
     display: none;
   }
 
+  /* Large desktop: roomier nav */
+  @media (min-width: 1280px) {
+    .navbar {
+      padding: 0 28px;
+      gap: 16px;
+    }
+    .nav-link {
+      font-size: 14px;
+      padding: 6px 12px;
+    }
+    .nav-links {
+      gap: 4px;
+    }
+    .search-trigger {
+      min-width: 180px;
+      max-width: 240px;
+    }
+    .logo {
+      font-size: 16px;
+      gap: 10px;
+    }
+    .logo-img {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  /* Mid desktop — tighten links so they don't collide with search */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .navbar {
+      padding: 0 16px;
+      gap: 8px;
+    }
+    .nav-link {
+      font-size: 13px;
+      padding: 5px 8px;
+    }
+    .search-trigger {
+      max-width: 160px;
+      padding: 0 8px 0 10px;
+    }
+    .search-label {
+      max-width: 72px;
+    }
+    .logo-text {
+      font-size: 14px;
+    }
+  }
+
   @media (max-width: 1023px) {
     /* The hamburger owns mobile navigation; the desktop sidebar toggle would be redundant. */
     .navbar-sidebar-toggle {
@@ -595,28 +669,42 @@ const isActive = (href: string) =>
     .nav-center {
       display: none;
     }
+
+    .navbar {
+      padding: 0 14px;
+      gap: 10px;
+    }
+
+    .nav-left {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .nav-right {
+      gap: 8px;
+    }
+
+    .search-trigger {
+      max-width: none;
+    }
   }
 
   /* Tablet adjustments */
   @media (min-width: 641px) and (max-width: 1023px) {
-    .navbar {
-      padding: 0 16px;
-      gap: 10px;
-    }
     .logo-img {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
     }
     .logo {
-      font-size: 15px;
+      font-size: 14.5px;
       gap: 8px;
     }
-    .nav-right {
-      gap: 10px;
+    .search-trigger {
+      min-width: 140px;
     }
   }
 
-  /* Mobile — compact navbar to prevent overflow */
+  /* Mobile — compact, balanced icon row, no overflow */
   @media (max-width: 640px) {
     .navbar {
       padding: 0 12px;
@@ -627,7 +715,7 @@ const isActive = (href: string) =>
     }
 
     .nav-left {
-      gap: 8px;
+      gap: 0;
       flex: 1 1 auto;
       min-width: 0;
     }
@@ -643,26 +731,29 @@ const isActive = (href: string) =>
     }
 
     .logo-text {
-      font-size: 14px;
-      max-width: 118px;
+      font-size: 13.5px;
+      max-width: min(42vw, 140px);
     }
 
     .nav-right {
-      gap: 8px;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     .nav-actions {
       gap: 6px;
     }
 
+    /* Icon-only search button on small screens */
     .search-trigger {
-      width: 34px;
-      height: 34px;
-      min-width: 34px;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      max-width: 36px;
       padding: 0;
       justify-content: center;
       gap: 0;
-      border-radius: 8px;
+      border-radius: 9px;
       font-size: 0;
     }
 
@@ -676,23 +767,39 @@ const isActive = (href: string) =>
       display: none !important;
     }
 
-    .theme-btn {
+    .theme-btn,
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      border-radius: 9px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .logo-text {
+      max-width: min(38vw, 110px);
+    }
+    .navbar {
+      padding: 0 10px;
+      gap: 6px;
+    }
+    .search-trigger,
+    .theme-btn,
+    .icon-btn {
       width: 34px;
       height: 34px;
       min-width: 34px;
     }
   }
 
-  @media (max-width: 380px) {
+  @media (max-width: 340px) {
     .logo-text {
       display: none;
     }
     .navbar {
-      padding: 0 10px;
+      padding: 0 8px;
     }
-  }
-
-  @media (max-width: 320px) {
     .logo-img {
       width: 26px;
       height: 26px;

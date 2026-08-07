@@ -18,6 +18,7 @@ export default function SearchModal() {
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLUListElement>(null);
+  const lockedScrollY = useRef(0);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -45,25 +46,33 @@ export default function SearchModal() {
     if (isOpen && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 50);
     }
+    if (!isOpen) {
+      // Reset query when closing so next open is clean
+      setQuery('');
+      setResults([]);
+      setHasSearched(false);
+      setIsLoading(false);
+    }
     setActiveIndex(-1);
   }, [isOpen]);
 
-  // Lock body scroll when modal open (prevents background scroll on mobile)
+  // Lock body scroll without layout shift (no paddingRight — scrollbar-gutter handles it)
   useEffect(() => {
     if (!isOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    const prevPaddingRight = document.body.style.paddingRight;
-    // compensate scrollbar to avoid layout shift on desktop
-    const sbWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.overflow = 'hidden';
-    if (sbWidth > 0) document.body.style.paddingRight = `${sbWidth}px`;
-    // also prevent html scroll
-    document.documentElement.style.overflow = 'hidden';
+
+    lockedScrollY.current = window.scrollY || window.pageYOffset || 0;
+    const html = document.documentElement;
+    const body = document.body;
+
+    html.classList.add('search-modal-open');
+    body.classList.add('search-modal-open');
+    body.style.top = `-${lockedScrollY.current}px`;
 
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPaddingRight;
-      document.documentElement.style.overflow = '';
+      html.classList.remove('search-modal-open');
+      body.classList.remove('search-modal-open');
+      body.style.top = '';
+      window.scrollTo(0, lockedScrollY.current);
     };
   }, [isOpen]);
 
@@ -117,11 +126,11 @@ export default function SearchModal() {
         await pagefind.init();
         const search = await pagefind.search(query);
         const fiveResults = await Promise.all(
-          search.results.slice(0, 5).map((r: { data: () => Promise<PagefindResult> }) => r.data()),
+          search.results.slice(0, 8).map((r: { data: () => Promise<PagefindResult> }) => r.data()),
         );
         if (!cancelled) {
           setResults(fiveResults);
-          setActiveIndex(-1);
+          setActiveIndex(fiveResults.length > 0 ? 0 : -1);
           setHasSearched(true);
         }
       } catch (e) {
@@ -154,13 +163,25 @@ export default function SearchModal() {
     (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setActiveIndex((prev) => Math.min(prev + 1, results.length - 1));
+        if (results.length === 0) return;
+        setActiveIndex((prev) => (prev + 1) % results.length);
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setActiveIndex((prev) => Math.max(prev - 1, -1));
-      } else if (e.key === 'Enter' && activeIndex >= 0) {
+        if (results.length === 0) return;
+        setActiveIndex((prev) => (prev <= 0 ? results.length - 1 : prev - 1));
+      } else if (e.key === 'Enter') {
         e.preventDefault();
-        navigateToResult(activeIndex);
+        if (activeIndex >= 0) {
+          navigateToResult(activeIndex);
+        } else if (results.length > 0) {
+          navigateToResult(0);
+        }
+      } else if (e.key === 'Home' && results.length > 0) {
+        e.preventDefault();
+        setActiveIndex(0);
+      } else if (e.key === 'End' && results.length > 0) {
+        e.preventDefault();
+        setActiveIndex(results.length - 1);
       }
     },
     [results, activeIndex, navigateToResult],
@@ -177,17 +198,15 @@ export default function SearchModal() {
 
   if (!isOpen) return null;
 
+  const showEmpty = !query;
+  const showLoading = !!query && isLoading;
+  const showResults = !isLoading && results.length > 0;
+  const showNoResults = !!query && !isLoading && hasSearched && results.length === 0;
+
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center search-modal-overlay"
+      className="search-modal-overlay"
       role="presentation"
-      style={{
-        background: 'rgba(7, 2, 10, 0.7)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        overflowY: 'auto',
-        overscrollBehavior: 'contain',
-      }}
       onClick={() => setIsOpen(false)}
     >
       <style>{`
@@ -196,46 +215,310 @@ export default function SearchModal() {
           to { opacity: 1; }
         }
         @keyframes search-panel-in {
-          from { opacity: 0; transform: translateY(-10px) scale(0.985); }
+          from { opacity: 0; transform: translateY(-12px) scale(0.98); }
           to { opacity: 1; transform: none; }
         }
-        .search-modal-overlay {
-          padding: 16px 12px 24px;
-          padding-top: clamp(16px, 10vh, 96px);
-          animation: search-overlay-in 0.18s ease-out;
+
+        html.search-modal-open,
+        body.search-modal-open {
+          overflow: hidden !important;
+          overscroll-behavior: none;
         }
+        body.search-modal-open {
+          position: fixed;
+          left: 0;
+          right: 0;
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .search-modal-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 100;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding: max(12px, env(safe-area-inset-top, 0px)) 12px max(16px, env(safe-area-inset-bottom, 0px));
+          padding-top: clamp(12px, 8vh, 80px);
+          background: rgba(7, 2, 10, 0.72);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          overflow-x: hidden;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+          animation: search-overlay-in 0.16s ease-out;
+          box-sizing: border-box;
+        }
+
         .search-modal-panel {
           animation: search-panel-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-          width: min(640px, calc(100vw - 24px));
-          max-height: min(640px, calc(100dvh - 32px));
-          max-height: min(640px, calc(100vh - 32px));
+          width: min(640px, 100%);
+          max-height: min(720px, calc(100dvh - 24px));
+          max-height: min(720px, calc(100vh - 24px));
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 14px;
+          box-shadow:
+            0 24px 64px rgba(0, 0, 0, 0.5),
+            0 0 40px var(--glow-violet);
+          flex-shrink: 0;
         }
+
         @media (min-width: 640px) {
           .search-modal-overlay {
             padding: 24px 16px;
-            padding-top: clamp(48px, 12vh, 120px);
+            padding-top: clamp(48px, 12vh, 110px);
+          }
+          .search-modal-panel {
+            max-height: min(640px, calc(100vh - 96px));
+            max-height: min(640px, calc(100dvh - 96px));
+          }
+        }
+
+        .search-modal-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 14px;
+          border-bottom: 1px solid var(--border-color);
+          background: var(--surface);
+          min-height: 56px;
+          flex-shrink: 0;
+        }
+
+        @media (min-width: 640px) {
+          .search-modal-header {
+            padding: 14px 18px;
+            gap: 12px;
+          }
+        }
+
+        .search-input {
+          flex: 1 1 auto;
+          min-width: 0;
+          background: transparent;
+          border: none;
+          outline: none;
+          color: var(--text-main);
+          font-size: 16px; /* prevent iOS zoom */
+          line-height: 1.4;
+          font-family: inherit;
+          padding: 0;
+          margin: 0;
+          -webkit-appearance: none;
+          appearance: none;
+        }
+        .search-input::placeholder {
+          color: var(--text-secondary);
+          opacity: 0.85;
+        }
+
+        .search-close-badge {
+          display: none;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-secondary);
+          padding: 4px 8px;
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          border: 1px solid var(--border-color);
+          border-radius: 6px;
+          background: var(--bg-main);
+          cursor: pointer;
+          flex-shrink: 0;
+          font-family: inherit;
+          line-height: 1.2;
+        }
+        .search-close-badge:hover {
+          color: var(--text-main);
+          border-color: var(--violet);
+        }
+
+        .search-close-icon,
+        .search-clear-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-secondary);
+          width: 36px;
+          height: 36px;
+          border-radius: 9px;
+          border: 1px solid var(--border-color);
+          background: var(--bg-main);
+          cursor: pointer;
+          flex-shrink: 0;
+          padding: 0;
+        }
+        .search-close-icon:hover,
+        .search-clear-btn:hover {
+          color: var(--text-main);
+          border-color: var(--violet);
+        }
+        .search-clear-btn {
+          width: 30px;
+          height: 30px;
+          border-radius: 999px;
+          border-color: transparent;
+          background: color-mix(in srgb, var(--surface) 80%, transparent);
+        }
+
+        @media (min-width: 640px) {
+          .search-close-badge { display: inline-flex; }
+          .search-close-icon { display: none; }
+        }
+
+        .search-body {
+          flex: 1 1 auto;
+          min-height: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .search-empty,
+        .search-status {
+          padding: 36px 20px;
+          text-align: center;
+          color: var(--text-secondary);
+          font-size: 14px;
+          line-height: 1.5;
+        }
+        .search-empty p {
+          margin: 0 0 6px;
+        }
+        .search-empty .hint {
+          font-size: 12.5px;
+          opacity: 0.85;
+        }
+
+        .search-results {
+          list-style: none;
+          margin: 0;
+          padding: 6px 0;
+        }
+
+        .search-result-link {
+          display: block;
+          padding: 12px 16px;
+          text-decoration: none;
+          border-bottom: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+          background: transparent;
+          transition: background 0.12s ease;
+          cursor: pointer;
+        }
+        .search-result-link:hover,
+        .search-result-link.is-active {
+          background: color-mix(in srgb, var(--violet) 14%, transparent);
+        }
+        .search-result-link.is-active {
+          box-shadow: inset 3px 0 0 var(--cyan);
+        }
+
+        .search-result-title {
+          color: var(--text-main);
+          font-weight: 600;
+          margin: 0 0 4px;
+          font-size: 14.5px;
+          line-height: 1.35;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .search-result-excerpt {
+          font-size: 13px;
+          color: var(--text-secondary);
+          line-height: 1.5;
+          margin: 0;
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+        }
+
+        .search-modal-panel mark {
+          background: color-mix(in srgb, var(--accent-gold) 30%, transparent);
+          color: var(--text-main);
+          border-radius: 3px;
+          padding: 0 2px;
+          font-weight: 600;
+        }
+
+        .search-footer {
+          display: none;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 8px 14px;
+          border-top: 1px solid var(--border-color);
+          background: color-mix(in srgb, var(--surface) 70%, transparent);
+          color: var(--text-secondary);
+          font-size: 11.5px;
+          flex-shrink: 0;
+        }
+        @media (min-width: 640px) {
+          .search-footer { display: flex; }
+        }
+        .search-footer kbd {
+          display: inline-block;
+          padding: 1px 5px;
+          border-radius: 4px;
+          border: 1px solid var(--border-color);
+          background: var(--bg-main);
+          font-size: 10.5px;
+          font-family: inherit;
+          font-weight: 600;
+          margin: 0 1px;
+        }
+        .search-footer-hints {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .search-footer-count {
+          opacity: 0.85;
+          white-space: nowrap;
+        }
+
+        @media (max-width: 480px) {
+          .search-modal-overlay {
+            padding: 0;
+            padding-top: 0;
+            align-items: stretch;
           }
           .search-modal-panel {
             width: 100%;
-            max-width: 672px;
-            max-height: min(640px, calc(100vh - 96px));
+            max-width: 100%;
+            max-height: 100dvh;
+            max-height: 100vh;
+            height: 100dvh;
+            height: 100vh;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+          }
+          .search-modal-header {
+            padding: 12px 14px;
+            padding-top: max(12px, env(safe-area-inset-top, 0px));
+            min-height: 56px;
+          }
+          .search-result-link {
+            padding: 14px 16px;
+            min-height: 56px;
+          }
+          .search-result-title {
+            font-size: 15px;
           }
         }
-        .search-modal-panel mark {
-          background: color-mix(in srgb, var(--accent-gold) 28%, transparent);
-          color: var(--text-main);
-          border-radius: 3px;
-          padding: 0 1px;
-        }
-        /* Ensure input does not trigger iOS zoom (16px minimum) */
-        .search-input {
-          font-size: 16px;
-        }
-        @media (min-width: 640px) {
-          .search-input {
-            font-size: 16px;
-          }
-        }
+
         @media (prefers-reduced-motion: reduce) {
           .search-modal-overlay,
           .search-modal-panel {
@@ -243,33 +526,19 @@ export default function SearchModal() {
           }
         }
       `}</style>
+
       <div
         ref={panelRef}
-        className="overflow-hidden flex flex-col search-modal-panel"
+        className="search-modal-panel"
         role="dialog"
         aria-modal="true"
         aria-label="Recherche dans le site"
-        style={{
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
-          borderRadius: '14px',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.5), 0 0 40px var(--glow-violet)',
-          flexShrink: 0,
-        }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Search input area — responsive */}
-        <div
-          className="flex items-center gap-2 px-3 sm:px-5 py-3 sm:py-4"
-          style={{
-            borderBottom: '1px solid var(--border-color)',
-            background: 'var(--surface)',
-            minHeight: '56px',
-          }}
-        >
+        <div className="search-modal-header">
           <svg
-            width="20"
-            height="20"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -285,9 +554,10 @@ export default function SearchModal() {
           <input
             ref={inputRef}
             type="text"
-            className="flex-1 bg-transparent border-none outline-none search-input min-w-0"
-            style={{ color: 'var(--text-main)' }}
-            placeholder="Rechercher dans la théorie..."
+            enterKeyHint="search"
+            inputMode="search"
+            className="search-input"
+            placeholder="Rechercher dans la théorie…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleInputKeyDown}
@@ -297,41 +567,38 @@ export default function SearchModal() {
             aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined}
             autoComplete="off"
             autoCorrect="off"
+            autoCapitalize="off"
             spellCheck={false}
           />
-          {/* Desktop : ECHAP badge / Mobile : X icon */}
+          {query ? (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('');
+                inputRef.current?.focus();
+              }}
+              className="search-clear-btn"
+              aria-label="Effacer la recherche"
+              title="Effacer"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          ) : null}
           <button
+            type="button"
             onClick={() => setIsOpen(false)}
-            className="hidden sm:inline-flex items-center justify-center"
-            style={{
-              color: 'var(--text-secondary)',
-              padding: '4px 8px',
-              fontSize: '11px',
-              fontWeight: 600,
-              letterSpacing: '0.5px',
-              border: '1px solid var(--border-color)',
-              borderRadius: '4px',
-              background: 'var(--bg-main)',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
+            className="search-close-badge"
             aria-label="Fermer la recherche (Échap)"
           >
-            ECHAP
+            Échap
           </button>
           <button
+            type="button"
             onClick={() => setIsOpen(false)}
-            className="sm:hidden inline-flex items-center justify-center"
-            style={{
-              color: 'var(--text-secondary)',
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-main)',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
+            className="search-close-icon"
             aria-label="Fermer la recherche"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -341,99 +608,79 @@ export default function SearchModal() {
           </button>
         </div>
 
-        {/* Initial state */}
-        {!query && (
-          <div className="px-4 sm:px-6 py-8 sm:py-10 text-center" style={{ color: 'var(--text-secondary)' }}>
-            <p className="mb-2" style={{ fontSize: '14px' }}>
-              Tapez pour rechercher dans la théorie…
-            </p>
-            <p style={{ fontSize: '12px' }} className="hidden sm:block">Naviguez avec ↑ ↓ et validez avec Entrée</p>
-            <p style={{ fontSize: '12px' }} className="sm:hidden">Appuyez sur un résultat pour ouvrir</p>
-          </div>
-        )}
+        <div className="search-body">
+          {showEmpty && (
+            <div className="search-empty">
+              <p>Tapez pour rechercher dans la théorie…</p>
+              <p className="hint">
+                <span className="hidden sm:inline">Naviguez avec ↑ ↓ · Entrée pour ouvrir · Échap pour fermer</span>
+                <span className="sm:hidden">Appuyez sur un résultat pour l’ouvrir</span>
+              </p>
+            </div>
+          )}
 
-        {/* Loading */}
-        {query && isLoading && (
-          <div className="px-6 py-8 text-center" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-            Recherche en cours…
-          </div>
-        )}
+          {showLoading && <div className="search-status">Recherche en cours…</div>}
 
-        {/* Results */}
-        {!isLoading && results.length > 0 && (
-          <div className="overflow-y-auto overscroll-contain" style={{ maxHeight: 'min(50vh, 360px)' }}>
+          {showResults && (
             <ul
               ref={resultsRef}
               id="search-results"
-              className="py-2"
+              className="search-results"
               role="listbox"
-              style={{ listStyle: 'none', margin: 0, padding: '8px 0' }}
+              aria-label="Résultats de recherche"
             >
               {results.map((result, idx) => (
                 <li
-                  key={idx}
+                  key={`${result.url}-${idx}`}
                   id={`search-result-${idx}`}
                   role="option"
                   aria-selected={idx === activeIndex}
                 >
                   <a
                     href={result.url}
-                    className="block"
-                    style={{
-                      display: 'block',
-                      padding: '12px 16px',
-                      borderBottom:
-                        '1px solid color-mix(in srgb, var(--border-color) 50%, transparent)',
-                      textDecoration: 'none',
-                      background:
-                        idx === activeIndex
-                          ? 'color-mix(in srgb, var(--violet) 15%, transparent)'
-                          : 'transparent',
-                      transition: 'background 0.15s ease',
-                    }}
+                    className={`search-result-link${idx === activeIndex ? ' is-active' : ''}`}
                     onMouseEnter={() => setActiveIndex(idx)}
                   >
-                    <h4
-                      style={{
-                        color: 'var(--text-main)',
-                        fontWeight: 600,
-                        marginBottom: '4px',
-                        fontSize: '15px',
-                        lineHeight: 1.3,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {result.meta.title || 'Page'}
-                    </h4>
+                    <h4 className="search-result-title">{result.meta.title || 'Page'}</h4>
                     <p
-                      style={{
-                        fontSize: '13px',
-                        color: 'var(--text-secondary)',
-                        lineHeight: 1.5,
-                        margin: 0,
-                        overflow: 'hidden',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                      }}
+                      className="search-result-excerpt"
                       dangerouslySetInnerHTML={{ __html: result.excerpt }}
-                    ></p>
+                    />
                   </a>
                 </li>
               ))}
             </ul>
-          </div>
-        )}
+          )}
 
-        {/* No results */}
-        {query && !isLoading && hasSearched && results.length === 0 && (
-          <div
-            className="px-6 py-10 sm:py-12 text-center"
-            style={{ color: 'var(--text-secondary)', fontSize: '14px' }}
-          >
-            Aucun résultat pour “{query}”
+          {showNoResults && (
+            <div className="search-status">
+              Aucun résultat pour «&nbsp;{query}&nbsp;»
+              <div style={{ marginTop: 8, fontSize: 12.5, opacity: 0.85 }}>
+                Essayez un autre mot-clé (personnage, lieu, chapitre…)
+              </div>
+            </div>
+          )}
+        </div>
+
+        {(showResults || showEmpty) && (
+          <div className="search-footer" aria-hidden="true">
+            <div className="search-footer-hints">
+              <span>
+                <kbd>↑</kbd>
+                <kbd>↓</kbd> naviguer
+              </span>
+              <span>
+                <kbd>↵</kbd> ouvrir
+              </span>
+              <span>
+                <kbd>esc</kbd> fermer
+              </span>
+            </div>
+            {showResults && (
+              <span className="search-footer-count">
+                {results.length} résultat{results.length > 1 ? 's' : ''}
+              </span>
+            )}
           </div>
         )}
       </div>
