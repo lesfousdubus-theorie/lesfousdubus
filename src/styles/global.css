@@ -85,11 +85,6 @@
     /* Anchors (TOC, glossaire, /dossiers#section) must not land hidden
        under the sticky navbar */
     scroll-padding-top: calc(var(--nav-h) + 16px);
-  }
-
-  body {
-    @apply text-textMain antialiased;
-    font-family: var(--font-sans);
     background-color: var(--bg-main);
     background-image:
       radial-gradient(
@@ -106,6 +101,12 @@
     background-size:
       auto,
       240px 84px;
+  }
+
+  body {
+    @apply text-textMain antialiased;
+    font-family: var(--font-sans);
+    background-color: transparent;
     box-sizing: border-box;
     margin: 0;
     min-height: 100vh;
@@ -125,8 +126,8 @@
 
   /* On mobile, fixed background can cause jank */
   @media (max-width: 768px) {
-    body {
-      background-attachment: scroll, scroll, scroll;
+    html {
+      background-attachment: scroll, fixed;
     }
   }
 }
@@ -413,6 +414,9 @@ iframe {
 .app {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* Scroll-reveal animation for content blocks */

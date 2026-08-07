@@ -97,7 +97,12 @@ const sections: DossierSection[] = [
   <div class="sections">
     {
       sections.map((section) => {
-        const sectionArticles = publishedArticles.filter((a) => a.data.category === section.id);
+        const sectionArticles = publishedArticles.filter((a) => {
+          if (a.id === 'nika') {
+            return section.id === 'figures-principales' || section.id === 'dieux-croyances';
+          }
+          return a.data.category === section.id;
+        });
         return (
           <div class="section-block" id={section.id}>
             <div class="section-header">

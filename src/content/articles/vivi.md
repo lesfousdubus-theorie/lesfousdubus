@@ -9,7 +9,6 @@ editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 reviewedUntilChapter: 1188
 order: 48
-parent: "lili"
 related: ['lili', 'lili-vivi-et-les-poneglyphes', 'nefertari-vivi']
 ---
 

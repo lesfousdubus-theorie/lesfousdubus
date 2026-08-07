@@ -4,7 +4,6 @@ summary: "Comment Marshall D. Teach incarne la figure mythique de Davy Jones et 
 category: "personnages-identites"
 status: "published"
 order: 42
-parent: "davy-jones-fiche"
 navigationType: "dossier"
 certainty: "elevee"
 reviewedUntilChapter: 1188
