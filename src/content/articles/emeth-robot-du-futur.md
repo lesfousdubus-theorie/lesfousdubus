@@ -6,7 +6,7 @@ category: "technologies-pouvoirs"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
-related: ["les-bases-du-siecle-oublie", "luffy-deviendra-joy-boy"]
+related: ["les-bases-du-siecle-oublie", "joy-boy"]
 ---
 
 **Résumé** : Le robot géant Emeth découvert à Egghead conserve le Haki de Joy Boy et utilise des technologies d'alimentation et de nœuds de vent (Wind Knot). Selon la théorie des Fous du Bus, Emeth est le dernier *Battle Franky* construit par Franky à la fin de l'aventure et envoyé dans le passé.

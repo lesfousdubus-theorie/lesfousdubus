@@ -312,8 +312,9 @@ Cette arborescence est désormais en place dans le dépôt : les dossiers `.gith
 lesfousdubus/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
-│   ├── workflows/
 │   └── PULL_REQUEST_TEMPLATE.md
+├── docs/
+│   └── sources/              # Transcriptions et notes éditoriales brutes
 ├── public/
 ├── scripts/
 ├── src/
@@ -347,7 +348,7 @@ lesfousdubus/
 
 ## Installation locale
 
-Les commandes ci-dessous seront utilisables dès que la structure Astro et les scripts correspondants auront été ajoutés au dépôt.
+Les commandes ci-dessous permettent de travailler sur le site localement.
 
 ### Prérequis
 
@@ -456,17 +457,13 @@ Les validations doivent détecter les slugs dupliqués, les références inexist
 
 ---
 
-## Images avec Cloudflare R2
+## Images et Cloudflare R2
 
-Les images lourdes ne sont pas stockées dans GitHub.
+Les images actuellement utilisées par le site sont versionnées dans `public/images/` et sont servies sous `/images/...`. Elles restent donc disponibles dans les prévisualisations et sans configuration externe.
 
-Domaine média prévu :
+Pour un volume de médias plus important, le dépôt fournit aussi un composant `R2Image` et le script `npm run r2:upload` pour publier des fichiers sur Cloudflare R2. Configurez alors `PUBLIC_MEDIA_URL` dans `.env` et utilisez une URL R2 dans les contenus MDX. Les médias déjà migrés vers R2 ne doivent plus être dupliqués dans Git.
 
-```text
-media.lesfousdubus.sbs
-```
-
-Organisation conseillée :
+Organisation recommandée du bucket :
 
 ```text
 one-piece-media/
@@ -478,18 +475,7 @@ one-piece-media/
 └── ui/
 ```
 
-Exemple dans un article MDX :
-
-```mdx
-<R2Image
-  src="articles/joy-boy/luffy-joy-boy-comparaison.webp"
-  alt="Comparaison visuelle entre Luffy et Joy Boy"
-  width={960}
-  caption="Les deux figures présentent plusieurs caractéristiques communes."
-/>
-```
-
-Le composant doit gérer les dimensions, le responsive, le chargement différé, les formats optimisés, le texte alternatif et les légendes.
+Les sources éditoriales brutes (transcriptions et notes) sont conservées séparément dans [`docs/sources/`](docs/sources/README.md) ; elles ne sont pas exposées par le site.
 
 ---
 

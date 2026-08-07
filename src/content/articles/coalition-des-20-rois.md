@@ -6,7 +6,7 @@ category: "gouvernement-mondial"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
-related: ["luffy-deviendra-joy-boy", "les-bases-du-siecle-oublie"]
+related: ["joy-boy", "les-bases-du-siecle-oublie"]
 ---
 
 **Résumé** : Le récit officiel transmis par Vegapunk et le Gouvernement Mondial parle d'une coalition de 20 rois ayant vaincu Joy Boy il y a 800 ans. Selon la théorie des Fous du Bus, cette alliance décrit en réalité la bataille finale à venir entre Luffy (Joy Boy) et l'élite du Gouvernement Mondial (Gorosei et Chevaliers Divins).

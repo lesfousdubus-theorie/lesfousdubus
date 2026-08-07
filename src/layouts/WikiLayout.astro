@@ -15,18 +15,20 @@ interface Props {
   description?: string;
   currentPath: string;
   headings?: Heading[];
+  image?: string;
+  type?: 'website' | 'article';
 }
 
-const { title, description, currentPath, headings } = Astro.props;
+const { title, description, currentPath, headings, image, type } = Astro.props;
 
 // Pages without headings must not reserve an empty 240px gutter
 // or show a "Sommaire" drawer with no entries.
 const hasToc = !!(headings && headings.length > 0);
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} image={image} type={type}>
   <script is:inline>
-    (function() {
+    (function () {
       const collapsed = localStorage.getItem('sidebar-left-collapsed') === 'true';
       if (collapsed) {
         document.documentElement.classList.add('sidebar-left-collapsed');
@@ -49,7 +51,13 @@ const hasToc = !!(headings && headings.length > 0);
       </aside>
 
       <!-- Vertical Resizer Handle for mouse drag width adjustment -->
-      <div id="sidebar-resizer" class="sidebar-resizer" title="Glisser pour redimensionner la barre latérale" aria-label="Redimensionner la barre latérale"></div>
+      <div
+        id="sidebar-resizer"
+        class="sidebar-resizer"
+        title="Glisser pour redimensionner la barre latérale"
+        aria-label="Redimensionner la barre latérale"
+      >
+      </div>
     </div>
 
     <main class="main-content" id="main-content">
@@ -237,7 +245,9 @@ const hasToc = !!(headings && headings.length > 0);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    transition:
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s ease;
     background-color: var(--bg-secondary);
   }
 

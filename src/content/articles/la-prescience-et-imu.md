@@ -6,7 +6,8 @@ category: "personnages-identites"
 status: "published"
 certainty: "elevee"
 lastUpdatedChapter: 1188
-related: ["luffy-deviendra-joy-boy", "coalition-des-20-rois"]
+order: 55
+related: ["joy-boy", "coalition-des-20-rois"]
 ---
 
 **Résumé** : Imu ne règne pas sur le monde par simple force brute, mais parce qu'il possède le don ultime de prescience. Ayant eu la vision d'un garçon au Chapeau de Paille détruisant son empire, Imu passe 800 ans à tout verrouiller pour tenter désespérément d'empêcher cette prédiction de s'accomplir.
