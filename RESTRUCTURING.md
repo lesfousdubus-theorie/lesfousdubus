@@ -120,34 +120,14 @@ src/
 
 ## Résultat
 
-- **170 pages** générées avec succès
+- **116 pages** générées avec succès (`npm run build`)
 - **Build** : ✅ Pas d'erreurs
-- **Tests** : ✅ Tous les tests passent
-- **TypeScript** : ✅ Pas d'erreurs (2 hints mineurs)
+- **Tests** : ✅ Tous les tests passent (63/63, 4 fichiers)
+- **TypeScript** : ✅ `astro check` — 0 erreur, 0 warning, 0 hint
+- **Validation** : ✅ `npm run validate` — 131 fichiers vérifiés, 0 erreur
 
 ## Ordre de lecture recommandé
 
-Affiché dans `/theorie` et `/theorie/theorie-complete` :
+La démonstration complète est structurée en **22 chapitres** sur `/theorie/theorie-complete`. Les 16 étapes de `/theorie` servent d'orientation rapide vers les articles-clés. Le parcours de lecture (READING_PATH, 19 fiches) alimente la navigation séquentielle entre fiches neutres.
 
-1. Blue Star et la géographie
-2. Lodestar et Laugh Tale
-3. One Piece
-4. Siècle oublié
-5. Royaume antique
-6. Ponéglyphes
-7. Joy Boy
-8. Nika
-9. Monkey D. Luffy
-10. Poséidon et les Armes antiques
-11. Les figures secondaires
-12. Emeth, Zunesha et Toki
-13. Vegapunk et Mother Flame
-14. Peuples, royaumes et missions
-15. Dieux, foi et volonté
-16. Imu et le Gouvernement mondial
-17. Déluge
-18. Guerre finale
-19. Red Line, All Blue et One Piece
-20. Preuves, objections et contradictions
-
-Cet ordre n'est pas chronologique dans l'univers, mais c'est l'ordre nécessaire pour **comprendre le raisonnement**.
+L'ordre n'est pas chronologique dans l'univers, mais c'est l'ordre nécessaire pour **comprendre le raisonnement**.

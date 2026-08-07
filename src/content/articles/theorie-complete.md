@@ -1,9 +1,9 @@
 ---
-title: 'La théorie complète : Le Siècle oublié est le présent'
+title: "La théorie complète : Le Siècle oublié est le présent"
 summary: "L'analyse complète de la théorie des Fous du Bus : Joy Boy est Luffy, le Siècle oublié n'a pas encore eu lieu, et les Ponéglyphes racontent le futur."
-category: 'histoire-temporalite'
-status: 'published'
-certainty: 'central'
+category: "histoire-temporalite"
+status: "published"
+certainty: "central"
 sources: [1]
 sidebarHidden: true
 order: 5

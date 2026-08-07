@@ -1,13 +1,13 @@
 ---
-title: 'Davy Jones'
+title: "Davy Jones"
 summary: "Fiche d'identification de Davy Jones, pirate légendaire fondateur du Davy Back Fight, dont le nom s'est transmis jusqu'à Marshall D. Teach."
-category: 'personnages-identites'
-status: 'published'
+category: "personnages-identites"
+status: "published"
 sources: [1164]
-editorialStatus: 'hypothese-secondaire'
-certainty: 'moyenne'
+editorialStatus: "hypothese-secondaire"
+certainty: "moyenne"
 reviewedUntilChapter: 1188
-order: 44
+order: 41
 related: ['davy-jones', 'teach']
 ---
 

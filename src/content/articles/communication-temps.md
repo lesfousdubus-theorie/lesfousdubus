@@ -1,9 +1,9 @@
 ---
-title: 'Une communication à travers le temps'
+title: "Une communication à travers le temps"
 summary: "Le Siècle oublié ne serait pas un passé clos mais un présent en train de se construire, et les époques communiqueraient par l'intermédiaire des Ponéglyphes."
-category: 'transmission-memoire'
-status: 'published'
-certainty: 'moyenne'
+category: "transmission-memoire"
+status: "published"
+certainty: "moyenne"
 reviewedUntilChapter: 1188
 related: ['signification-d', 'laugh-tale', 'nika']
 sources: [1188]

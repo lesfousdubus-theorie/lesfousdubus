@@ -6,67 +6,88 @@
 
 - [Présentation](https://lesfousdubus.sbs/) : accueil, pitch et vidéo d'introduction
 - [Résumé de la théorie](https://lesfousdubus.sbs/theorie/resume) : l'argument en 10 points
-- [Théorie complète](https://lesfousdubus.sbs/theorie/theorie-complete) : synthèse et parcours de lecture (19 étapes)
+- [Théorie complète](https://lesfousdubus.sbs/theorie/theorie-complete) : démonstration continue en 22 chapitres, de Blue Star au retournement final
 
-## Fondations
+## Monde et destinations
 
 - [Blue Star](https://lesfousdubus.sbs/theorie/blue-star) : la planète de One Piece
 - [Grand Line](https://lesfousdubus.sbs/theorie/grand-line) : la route maritime centrale
 - [Red Line](https://lesfousdubus.sbs/theorie/red-line) : le continent qui coupe le monde
-- [Lodestar](https://lesfousdubus.sbs/theorie/lodestar) : la dernière île "logique"
+- [Lodestar](https://lesfousdubus.sbs/theorie/lodestar) : la dernière île « logique »
 - [Laugh Tale](https://lesfousdubus.sbs/theorie/laugh-tale) : la dernière île et son énigme temporelle
 - [One Piece](https://lesfousdubus.sbs/theorie/one-piece-histoire) : la nature du trésor de Joy Boy
+- [All Blue](https://lesfousdubus.sbs/theorie/all-blue) : la mer unique promise par la légende
+
+## Histoire, temps et Ponéglyphes
+
 - [Le Siècle oublié](https://lesfousdubus.sbs/theorie/siecle-oublie) : la période effacée
 - [Le Siècle oublié est le présent](https://lesfousdubus.sbs/theorie/siecle-oublie-present) : l'hypothèse centrale
 - [Le Royaume antique](https://lesfousdubus.sbs/theorie/royaume-antique) : civilisation et grande guerre
-- [Les Ponéglyphes](https://lesfousdubus.sbs/theorie/ponelyphes-futur) : stèles et mémoire du futur
+- [Les Ponéglyphes](https://lesfousdubus.sbs/theorie/poneglyphes) : stèles indestructibles et mémoire
+- [Les Ponéglyphes racontent le futur](https://lesfousdubus.sbs/theorie/poneglyphes-futur) : l'hypothèse de transmission
+- [Le Rio Ponéglyphe](https://lesfousdubus.sbs/theorie/rio-poneglyphe) : la véritable histoire
+- [Communication à travers le temps](https://lesfousdubus.sbs/theorie/communication-temps) : la piste des chapitres 1187–1188
 
 ## Figures principales
 
 - [Monkey D. Luffy](https://lesfousdubus.sbs/theorie/luffy) : le capitaine au chapeau de paille
 - [Joy Boy](https://lesfousdubus.sbs/theorie/joy-boy) : figure légendaire et promesse au Royaume Ryūgū
-- [Nika, le Dieu du Soleil](https://lesfousdubus.sbs/theorie/nika) : le Guerrier de la Libération
+- [Nika](https://lesfousdubus.sbs/theorie/nika) : le Dieu du Soleil, le Guerrier de la Libération
 - [Gol D. Roger](https://lesfousdubus.sbs/theorie/gol-d-roger) : le Roi des Pirates et Laugh Tale
-- [Imu Nerona](https://lesfousdubus.sbs/theorie/imu-nerona-fiche) : souverain caché du Gouvernement mondial
+- [Imu Nerona](https://lesfousdubus.sbs/theorie/imu-nerona) : souverain caché du Gouvernement mondial
 
 ## Personnages et identités
 
-- [Zoro est Ryuma](https://lesfousdubus.sbs/theorie/zoro-est-ryuma) : les parallèles Zoro / Ryuma
-- [Shirahoshi est Poséidon](https://lesfousdubus.sbs/theorie/poseidon) : la promesse de Joy Boy
-- [Vivi est Lili](https://lesfousdubus.sbs/theorie/lili-vivi-et-les-poneglyphes) : la dispersion des Ponéglyphes
-- [Teach est Davy Jones](https://lesfousdubus.sbs/theorie/davy-jones) : le futur Roi du Monde
-- [Vivi Nefertari](https://lesfousdubus.sbs/theorie/nefertari-vivi) : princesse d'Alabasta
+- [Zoro](https://lesfousdubus.sbs/theorie/zoro) : le sabreur au bandana vert
+- [Ryuma](https://lesfousdubus.sbs/theorie/ryuma) : le dieu des lames, légende de Wa no Kuni
+- [Shirahoshi](https://lesfousdubus.sbs/theorie/shirahoshi) : la princesse sirène du royaume Ryugu
+- [Poséidon](https://lesfousdubus.sbs/theorie/poseidon) : l'arme antique des Rois des Mers
+- [Vivi](https://lesfousdubus.sbs/theorie/vivi) : princesse d'Alabasta
+- [Lili](https://lesfousdubus.sbs/theorie/lili) : la reine qui refusa Mary Geoise
+- [Teach](https://lesfousdubus.sbs/theorie/teach) : Marshall D. Teach, dit Barbe Noire
+- [Davy Jones](https://lesfousdubus.sbs/theorie/davy-jones-fiche) : le démon des mers, futur Roi du Monde
 
 ## Armes antiques
 
 - [Armes antiques](https://lesfousdubus.sbs/theorie/armes-antiques) : Poséidon, Pluton et Uranus
-- [Poséidon](https://lesfousdubus.sbs/theorie/poseidon-fiche) : l'arme qui commande les Rois des Mers
-- [Pluton](https://lesfousdubus.sbs/theorie/pluton-fiche) : le navire de guerre de Water Seven
+- [Poséidon (fiche)](https://lesfousdubus.sbs/theorie/poseidon-fiche) : l'arme qui commande les Rois des Mers
+- [Pluton (fiche)](https://lesfousdubus.sbs/theorie/pluton-fiche) : le navire de guerre de Water Seven
 - [Uranus](https://lesfousdubus.sbs/theorie/uranus) : l'arme du ciel et la Mother Flame
+- [Noah](https://lesfousdubus.sbs/theorie/noah) : l'arche du royaume Ryugu
+
+## Technologies et pouvoirs
+
+- [Vegapunk](https://lesfousdubus.sbs/theorie/vegapunk) : le scientifique de génie
+- [Fruits du Démon](https://lesfousdubus.sbs/theorie/fruits-du-demon) : origine et transmission
+- [Énergie antique et Mother Flame](https://lesfousdubus.sbs/theorie/energie-antique) : le feu de Vegapunk
+- [Emeth, le robot du futur](https://lesfousdubus.sbs/theorie/emeth-robot-du-futur) : l'allié de Joy Boy
 
 ## Peuples, royaumes et témoins
 
-- [Elbaf et le Harley](https://lesfousdubus.sbs/theorie/elbaf-halley) : les Géants et la fresque
-- [Hommes-Poissons](https://lesfousdubus.sbs/theorie/hommes-poissons) : le Royaume Ryūgū et Noah
 - [Peuples et royaumes](https://lesfousdubus.sbs/theorie/peuples-royaumes) : vue d'ensemble
+- [Elbaf et le Harley](https://lesfousdubus.sbs/theorie/elbaf-halley) : les Géants et la fresque
+- [Hommes-Poissons](https://lesfousdubus.sbs/theorie/hommes-poissons) : le Royaume Ryūgū
+- [Zunesha](https://lesfousdubus.sbs/theorie/zunesha-fiche) : l'éléphant millénaire
+- [Alabasta](https://lesfousdubus.sbs/theorie/alabasta) : le royaume du désert
 
-## Gouvernement et guerre finale
+## Gouvernement mondial et guerre finale
 
 - [Gouvernement mondial](https://lesfousdubus.sbs/theorie/gouvernement-mondial) : structure du pouvoir
+- [Imu Nerona](https://lesfousdubus.sbs/theorie/imu-nerona) : le trône vacant
+- [La Prescience et Imu](https://lesfousdubus.sbs/theorie/la-prescience-et-imu) : la malédiction de voir l'avenir
 - [Guerre finale](https://lesfousdubus.sbs/theorie/guerre-finale) : affrontement à venir
-- [Le Déluge et la création d'All Blue](https://lesfousdubus.sbs/theorie/deluge-all-blue) : cataclysme et création d'All Blue
-
-## Science, énergie et pouvoirs
-
-- [Fruits du Démon](https://lesfousdubus.sbs/theorie/fruits-du-demon) : origine et transmission
-- [Énergie antique et Mother Flame](https://lesfousdubus.sbs/theorie/energie-antique) : le feu de Vegapunk
+- [Le Déluge et la création d'All Blue](https://lesfousdubus.sbs/theorie/deluge-all-blue) : cataclysme et renaissance
 
 ## Analyses récentes
 
 - [Chapitre 1188 : La communication à travers le temps](https://lesfousdubus.sbs/chapitres/1188) — Nouvelle piste
-- [Chapitre 1187](https://lesfousdubus.sbs/chapitres/1187) — Approfondissement
-- [Chapitre 1186](https://lesfousdubus.sbs/chapitres/1186) — Nouvelle piste
-- [Chapitre 1184](https://lesfousdubus.sbs/chapitres/1184) — Approfondissement
+- [Chapitre 1187 : Pourquoi Imu appelle-t-il Luffy « Joy Boy » ?](https://lesfousdubus.sbs/chapitres/1187) — Approfondissement
+- [Chapitre 1186 : Les Fruits du Démon et l'histoire des géants](https://lesfousdubus.sbs/chapitres/1186) — Nouvelle piste
+- [Chapitre 1184 : Brook et Binks no Sake](https://lesfousdubus.sbs/chapitres/1184) — Nouvelle piste
+- [Chapitre 1183 : Brook pourrait être Dōzan](https://lesfousdubus.sbs/chapitres/1183) — Nouvelle piste
+- [Chapitre 1182 : Zaza, les dieux shandias et la volonté des Zoans](https://lesfousdubus.sbs/chapitres/1182) — Approfondissement
+- [Chapitre 1181 : Silhouette — Joy Boy et Imu face à face](https://lesfousdubus.sbs/chapitres/1181) — Nouvelle piste
+- [Chapitre 1180 : Imu sur la fresque d'Elbaf](https://lesfousdubus.sbs/chapitres/1180) — Nouvelle piste
 - [Tous les chapitres](https://lesfousdubus.sbs/chapitres) : index complet
 
 ## Aide

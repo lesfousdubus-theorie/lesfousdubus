@@ -2,14 +2,14 @@
 title: "Nika"
 summary: "Fiche consacrée à Nika, le dieu du soleil : ce que le manga établit sur le culte de Nika, le Hito Hito no Mi modèle Nika, et la lecture des Fous du Bus (Nika comme nom divin de Luffy)."
 seoTitle: "Nika dans One Piece : dieu du soleil, fruit Nika et Luffy | Les Fous du Bus"
-category: "dieux-croyances"
+category: "figures-principales"
 status: "published"
 sources: [1018, 1044, 1046, 1069, 1096, 1102, 1117]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-parent: "dieux-one-piece"
-order: 21
+
+order: 20
 related:
   [
     "luffy",

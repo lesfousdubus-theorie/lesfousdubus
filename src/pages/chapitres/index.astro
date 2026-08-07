@@ -68,6 +68,15 @@ const sortedChapters = chapters.sort((a, b) => b.data.chapter - a.data.chapter);
         </a>
       ))
     }
+    <!-- Chapitre 1185 : aucune analyse/source disponible -->
+    <div class="chapter-item chapter-item--empty">
+      <div class="chapter-item__badges">
+        <span class="badge-chapter badge-chapter--muted">Chap 1185</span>
+        <span class="badge-effect badge-effect--muted">—</span>
+      </div>
+      <h4>Aucune analyse disponible pour le chapitre 1185</h4>
+      <p class="chapter-item__desc">Il n'existe pas de transcription source correspondante pour ce chapitre. Ce n'est pas un oubli technique.</p>
+    </div>
   </div>
 
   <Footer />
@@ -220,5 +229,28 @@ const sortedChapters = chapters.sort((a, b) => b.data.chapter - a.data.chapter);
     color: var(--text-secondary);
     line-height: 1.5;
     margin: 0;
+  }
+
+  /* Chapitre sans analyse */
+  .chapter-item--empty {
+    cursor: default;
+    opacity: 0.55;
+    border-style: dashed;
+    pointer-events: none;
+  }
+
+  .chapter-item--empty:hover {
+    border-color: var(--border-color);
+    transform: none;
+  }
+
+  .badge-chapter--muted {
+    color: var(--text-muted);
+    background: color-mix(in srgb, var(--text-muted) 8%, transparent);
+  }
+
+  .badge-effect--muted {
+    background: transparent;
+    color: var(--text-muted);
   }
 </style>

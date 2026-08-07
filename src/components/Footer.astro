@@ -1,5 +1,13 @@
 ---
+import { getCollection } from 'astro:content';
+
 const currentYear = new Date().getFullYear();
+
+// Dernier chapitre analysé pour affichage dans le footer
+const chapters = await getCollection('chapters');
+const lastChapter = chapters
+  .slice()
+  .sort((a, b) => b.data.chapter - a.data.chapter)[0];
 ---
 
 <footer class="footer" data-pagefind-ignore>
@@ -18,6 +26,11 @@ const currentYear = new Date().getFullYear();
       <p class="footer__note">
         Projet fan-made non officiel. One Piece © Eiichiro Oda / Shueisha / Toei Animation.
       </p>
+      {lastChapter && (
+        <p class="footer__updated">
+          Dernière analyse : <a href={`/chapitres/${lastChapter.data.chapter}`}>chapitre {lastChapter.data.chapter}</a>
+        </p>
+      )}
     </div>
 
     <div class="footer__right">
@@ -128,6 +141,21 @@ const currentYear = new Date().getFullYear();
     color: var(--text-secondary);
     line-height: 1.5;
     margin: 0;
+  }
+
+  .footer__updated {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin: 2px 0 0;
+  }
+
+  .footer__updated a {
+    color: var(--cyan);
+    text-decoration: none;
+  }
+
+  .footer__updated a:hover {
+    text-decoration: underline;
   }
 
   .footer__right {

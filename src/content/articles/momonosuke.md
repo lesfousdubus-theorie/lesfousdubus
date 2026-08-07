@@ -8,7 +8,7 @@ editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "wa-no-kuni"
-order: 27
+order: 28
 related: ["wa-no-kuni", "kozuki-toki", "poneglyphes", "zunesha-fiche", "nico-robin"]
 ---
 

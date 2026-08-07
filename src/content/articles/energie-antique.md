@@ -1,12 +1,12 @@
 ---
 title: "L'énergie antique et la Flamme Mère"
 summary: "La Flamme Mère et l'énergie antique ne seraient pas de simples armes, mais le relais d'un savoir perdu réutilisé au présent, tissant un lien technique entre le Siècle oublié et One Piece."
-category: 'technologies-pouvoirs'
-status: 'published'
-navigationType: 'dossier'
-certainty: 'elevee'
+category: "technologies-pouvoirs"
+status: "published"
+navigationType: "dossier"
+certainty: "elevee"
 reviewedUntilChapter: 1187
-parent: 'vegapunk'
+parent: "vegapunk"
 related: ['nika', 'communication-temps']
 sources: []
 order: 72

@@ -13,7 +13,7 @@ order: 1
 
 ## Présentation canonique
 
-Blue Star est le nom de la planète sur laquelle se déroule l'intégralité du monde de *One Piece*. Elle est composée d'au moins deux grands continents (les Blue Seas et le Nouveau Monde), séparés par Red Line et parcourus par Grand Line.
+Blue Star est le nom de la planète sur laquelle se déroule l'intégralité du monde de *One Piece*. Elle est organisée autour de quatre grandes mers (East Blue, West Blue, North Blue, South Blue) et d'un océan unique (Grand Line, qui se divise en Paradise et Nouveau Monde), séparés par Red Line, le continent central qui coupe le monde en deux.
 
 Vegapunk fait explicitement référence à Blue Star au chapitre 1113 lorsqu'il évoque la submersion annoncée du monde.
 
