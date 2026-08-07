@@ -7,7 +7,6 @@ sources: [610, 611, 618]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-parent: "imu-nerona"
 order: 59
 related: ["communication-temps", "kozuki-toki", "royaume-ryugu", "imu-nerona", "joy-boy"]
 ---

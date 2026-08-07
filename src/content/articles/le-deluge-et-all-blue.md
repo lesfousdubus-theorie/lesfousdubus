@@ -4,6 +4,7 @@ title: "Le Déluge et la naissance de All Blue"
 summary: "Pourquoi la montée des eaux de 200 mètres n'a pas eu lieu il y a 800 ans mais constitue le climax de la bataille finale de One Piece."
 category: "peuples-royaumes"
 status: "published"
+sidebarHidden: true
 certainty: "elevee"
 reviewedUntilChapter: 1188
 related: ["coalition-des-20-rois", "les-bases-du-siecle-oublie"]

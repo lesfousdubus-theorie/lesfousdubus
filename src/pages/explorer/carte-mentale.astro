@@ -10,7 +10,8 @@ import Footer from '@components/Footer.astro';
     <p class="page-desc">
       Une lecture causale de la théorie, de la géographie de Blue Star jusqu'au One Piece.
       Chaque nœud renvoie vers la fiche correspondante. Les couleurs reprennent les quatre
-      niveaux de la <a href="/theorie/theorie-complete#niveaux-de-lecture">théorie complète</a>&nbsp;:
+      niveaux du <a href="/theorie/theorie-complete#niveaux-de-lecture">chapitre&nbsp;21</a>&nbsp;:
+      <span class="legend"><span class="dot dot--canon"></span> fait établi</span>
       <span class="legend"><span class="dot dot--central"></span> noyau de la théorie</span>
       <span class="legend"><span class="dot dot--elevee"></span> conséquence</span>
       <span class="legend"><span class="dot dot--hypothese"></span> mécanisme spéculatif</span>
@@ -92,29 +93,29 @@ import Footer from '@components/Footer.astro';
 
   // Sub-nodes branching off a main node
   const subs = [
-    { parent: 'laugh-tale',       slug: 'lodestar',         title: 'Lodestar',         x: 220, y: 510, level: 'central' },
+    { parent: 'laugh-tale',       slug: 'lodestar',         title: 'Lodestar',         x: 220, y: 510, level: 'canon' },
     { parent: 'laugh-tale',       slug: 'one-piece-histoire', title: 'One Piece',       x: 330, y: 510, level: 'hypothese' },
-    { parent: 'poneglyphes',       slug: 'rio-poneglyphe',     title: 'Rio Ponéglyphe',   x: 510, y: 510, level: 'elevee' },
+    { parent: 'poneglyphes',       slug: 'rio-poneglyphe',     title: 'Rio Ponéglyphe',   x: 510, y: 510, level: 'central' },
     { parent: 'poneglyphes',       slug: 'communication-temps', title: 'Communication\ntemporelle (1187–88)', x: 610, y: 520, level: 'hypothese' },
-    { parent: 'siecle-oublie',    slug: 'professeur-clover-et-ohara', title: 'Clover & Ohara', x: 650, y: 90, level: 'central' },
-    { parent: 'royaume-antique',  slug: 'vegapunk',          title: 'Vegapunk',         x: 790, y: 510, level: 'central' },
+    { parent: 'siecle-oublie',    slug: 'professeur-clover-et-ohara', title: 'Clover & Ohara', x: 650, y: 90, level: 'canon' },
+    { parent: 'royaume-antique',  slug: 'vegapunk',          title: 'Vegapunk',         x: 790, y: 510, level: 'canon' },
     { parent: 'royaume-antique',  slug: 'energie-antique',   title: 'Énergie antique',  x: 890, y: 520, level: 'elevee' },
-    { parent: 'joy-boy',          slug: 'nika',              title: 'Nika',             x: 1020, y: 90, level: 'central' },
-    { parent: 'joy-boy',          slug: 'luffy',             title: 'Luffy',            x: 930, y: 90,  level: 'central' },
+    { parent: 'joy-boy',          slug: 'nika',              title: 'Nika',             x: 1020, y: 90, level: 'canon' },
+    { parent: 'joy-boy',          slug: 'luffy',             title: 'Luffy',            x: 930, y: 90,  level: 'canon' },
     { parent: 'peuples-royaumes', slug: 'armes-antiques',    title: 'Armes antiques',   x: 1210, y: 510, level: 'elevee' },
-    { parent: 'peuples-royaumes', slug: 'poseidon-fiche',    title: 'Poséidon',         x: 1120, y: 520, level: 'elevee' },
+    { parent: 'peuples-royaumes', slug: 'poseidon-fiche',    title: 'Poséidon',         x: 1120, y: 520, level: 'canon' },
     { parent: 'peuples-royaumes', slug: 'pluton-fiche',      title: 'Pluton',           x: 1280, y: 400, level: 'elevee' },
     { parent: 'peuples-royaumes', slug: 'zunesha-fiche',     title: 'Zunesha',          x: 1280, y: 280, level: 'elevee' },
     { parent: 'peuples-royaumes', slug: 'wa-no-kuni',        title: 'Wa no Kuni',       x: 1280, y: 520, level: 'elevee' },
-    { parent: 'imu-nerona', slug: 'gouvernement-mondial', title: 'GM',           x: 870, y: 620, level: 'central' },
+    { parent: 'imu-nerona', slug: 'gouvernement-mondial', title: 'GM',           x: 870, y: 620, level: 'canon' },
     { parent: 'imu-nerona', slug: 'vingt-rois',        title: 'Vingt Rois',       x: 1080, y: 690, level: 'elevee' },
     { parent: 'imu-nerona', slug: 'la-prescience-et-imu', title: 'Malédiction\nde la préscience', x: 1050, y: 520, level: 'hypothese' },
     { parent: 'guerre-finale',    slug: 'deluge-all-blue',   title: 'Déluge',           x: 570, y: 780, level: 'elevee' },
     { parent: 'guerre-finale',    slug: 'red-line',          title: 'Chute de\nRed Line', x: 780, y: 790, level: 'hypothese' },
-    { parent: 'guerre-finale',    slug: 'noah',              title: 'Noah',             x: 840, y: 760, level: 'central' },
+    { parent: 'guerre-finale',    slug: 'noah',              title: 'Noah',             x: 840, y: 760, level: 'canon' },
     { parent: 'all-blue',         slug: 'binks-no-sake',     title: 'Binks no Sake',    x: 300, y: 720, level: 'elevee' },
-    { parent: 'blue-star',        slug: 'grand-line',        title: 'Grand Line',       x: 70,  y: 90,  level: 'central' },
-    { parent: 'blue-star',        slug: 'red-line',          title: 'Red Line',         x: 170, y: 90,  level: 'central' },
+    { parent: 'blue-star',        slug: 'grand-line',        title: 'Grand Line',       x: 70,  y: 90,  level: 'canon' },
+    { parent: 'blue-star',        slug: 'red-line',          title: 'Red Line',         x: 170, y: 90,  level: 'canon' },
   ];
 
   // Cross-links (semantic connections beyond the causal chain)
@@ -125,6 +126,7 @@ import Footer from '@components/Footer.astro';
   ];
 
   const levelColors = {
+    canon:     '#8899aa',
     central:  '#5fb9c2',
     elevee:   '#e0ab4e',
     hypothese:'#b07cc6',
@@ -313,6 +315,7 @@ import Footer from '@components/Footer.astro';
   .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 820px; line-height: 1.6; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
   .legend { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-secondary); }
   .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .dot--canon { background: #8899aa; }
   .dot--central { background: #5fb9c2; }
   .dot--elevee  { background: #e0ab4e; }
   .dot--hypothese { background: #b07cc6; }
