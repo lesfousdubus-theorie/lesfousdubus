@@ -25,3 +25,19 @@ Sanji voue sa carrière à la recherche de cette mer, dont l'existence n'a jamai
 ## La lecture des Fous du Bus
 
 All Blue n'existe pas encore : elle est le produit direct de la guerre finale. La destruction de Red Line, combinée à la submersion décrite par Vegapunk, permettra aux quatre mers de fusionner en un océan unique. C'est donc la coalition des Armes antiques qui matérialisera le rêve de Sanji au moment même où Luffy atteindra Laugh Tale.
+
+## Arguments et objections
+
+Le rêve de Sanji et l’organisation actuelle des mers rendent l’idée d’une mer réunifiée narrativement cohérente. La montée des eaux évoquée par Vegapunk fournit également un élément canonique important. Mais le manga ne dit pas que Red Line sera détruite, ni que cet événement créera All Blue : ce sont des conséquences proposées par la théorie.
+
+All Blue peut aussi rester une destination géographique déjà existante, encore inconnue des personnages. La fiche distingue donc le rêve établi de Sanji de la mécanique spéculative qui l’associe à la guerre finale.
+
+## Ce que les chapitres récents ont changé
+
+Les chapitres d’Egghead ont replacé la montée du niveau marin au centre du récit. Ils renforcent la question de l’avenir géographique du monde sans déterminer la forme que prendra All Blue.
+
+## Questions non résolues
+
+- All Blue existe-t-elle déjà quelque part, ou naîtra-t-elle à la fin du récit ?
+- Quelle part jouera la montée des eaux dans la séparation ou la réunion des mers ?
+- La destruction éventuelle de Red Line est-elle nécessaire à la réalisation du rêve de Sanji ?
