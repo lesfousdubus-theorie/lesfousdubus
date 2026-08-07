@@ -65,7 +65,6 @@ const chapterBreadcrumbLd = {
       ]}>{effectLabel(entry.data.effect)}</span>
     </div>
     <h1>{entry.data.title}</h1>
-    {entry.data.summary && <p class="chapter-summary">{entry.data.summary}</p>}
   </div>
 
   <div class="content">
@@ -139,12 +138,7 @@ const chapterBreadcrumbLd = {
     line-height: 1.2;
   }
 
-  .chapter-summary {
-    font-size: 15px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    max-width: 700px;
-  }
+  /* chapter-summary supprimé : reste uniquement en meta/SEO */
 
   .content {
     line-height: 1.7;

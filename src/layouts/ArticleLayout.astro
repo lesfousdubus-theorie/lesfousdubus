@@ -100,7 +100,6 @@ const articleJsonLd = {
 
   <article data-pagefind-body>
     <h1 class="article-title">{title}</h1>
-    {description && <p class="article-lead">{description}</p>}
 
     <div class="content">
       <slot />
@@ -187,13 +186,7 @@ const articleJsonLd = {
     -webkit-text-fill-color: transparent;
   }
 
-  .article-lead {
-    font-size: 16px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    max-width: 600px;
-    margin-bottom: 8px;
-  }
+  /* article-lead supprimé : les summaries restent uniquement en meta/SEO et listes */
 
   .article-reading-nav {
     display: flex;

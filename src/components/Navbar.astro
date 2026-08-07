@@ -200,7 +200,7 @@ const isActive = (href: string) =>
         >
           <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <span class="hidden sm:inline">Rechercher…</span>
+        <span class="search-label hidden sm:inline">Rechercher…</span>
         <span class="search-shortcut hidden sm:inline">Ctrl K</span>
       </button>
 
@@ -295,23 +295,30 @@ const isActive = (href: string) =>
 <style>
   .navbar {
     height: var(--nav-h);
+    min-height: var(--nav-h);
     background-color: var(--bg-main);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     padding: 0 24px;
     position: sticky;
     top: 0;
     z-index: 50;
     animation: nav-fade-in 0.4s ease-out;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+    overflow: visible;
   }
 
   .nav-left {
     display: flex;
     align-items: center;
-    gap: 16px;
-    flex: 1;
+    gap: 12px;
+    flex: 0 1 auto;
+    min-width: 0;
     justify-content: flex-start;
   }
 
@@ -324,6 +331,8 @@ const isActive = (href: string) =>
     text-decoration: none;
     color: var(--text-main);
     white-space: nowrap;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .logo-img {
@@ -331,6 +340,7 @@ const isActive = (href: string) =>
     height: 34px;
     object-fit: contain;
     border-radius: 6px;
+    flex-shrink: 0;
     transition:
       transform 0.25s ease,
       filter 0.25s ease;
@@ -341,18 +351,27 @@ const isActive = (href: string) =>
     filter: drop-shadow(0 0 10px var(--glow-cyan));
   }
 
+  .logo-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
   .nav-center {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .nav-right {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    flex: 1;
-    gap: 16px;
+    flex: 0 0 auto;
+    gap: 12px;
+    min-width: 0;
   }
 
   /* Desktop nav links + dropdowns */
@@ -515,6 +534,27 @@ const isActive = (href: string) =>
     border: 1px solid var(--border-color);
   }
 
+  .navbar-sidebar-toggle {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    background-color: color-mix(in srgb, var(--surface) 60%, transparent);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+
+  .navbar-sidebar-toggle:hover {
+    color: var(--text-main);
+    border-color: var(--violet);
+    background-color: var(--surface);
+  }
+
   .theme-btn,
   .icon-btn {
     width: 34px;
@@ -527,6 +567,7 @@ const isActive = (href: string) =>
     background-color: color-mix(in srgb, var(--surface) 60%, transparent);
     border: 1px solid var(--border-color);
     cursor: pointer;
+    flex-shrink: 0;
     transition: all 0.2s ease;
   }
 
@@ -544,11 +585,117 @@ const isActive = (href: string) =>
   @media (max-width: 1023px) {
     /* The hamburger owns mobile navigation; the desktop sidebar toggle would be redundant. */
     .navbar-sidebar-toggle {
-      display: none;
+      display: none !important;
     }
 
     #mobile-menu-toggle {
       display: flex;
+    }
+
+    .nav-center {
+      display: none;
+    }
+  }
+
+  /* Tablet adjustments */
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .navbar {
+      padding: 0 16px;
+      gap: 10px;
+    }
+    .logo-img {
+      width: 32px;
+      height: 32px;
+    }
+    .logo {
+      font-size: 15px;
+      gap: 8px;
+    }
+    .nav-right {
+      gap: 10px;
+    }
+  }
+
+  /* Mobile — compact navbar to prevent overflow */
+  @media (max-width: 640px) {
+    .navbar {
+      padding: 0 12px;
+      gap: 8px;
+      --nav-h: 52px;
+      height: var(--nav-h);
+      min-height: var(--nav-h);
+    }
+
+    .nav-left {
+      gap: 8px;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .logo {
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .logo-img {
+      width: 28px;
+      height: 28px;
+    }
+
+    .logo-text {
+      font-size: 14px;
+      max-width: 118px;
+    }
+
+    .nav-right {
+      gap: 8px;
+    }
+
+    .nav-actions {
+      gap: 6px;
+    }
+
+    .search-trigger {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      padding: 0;
+      justify-content: center;
+      gap: 0;
+      border-radius: 8px;
+      font-size: 0;
+    }
+
+    .search-trigger svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .search-label,
+    .search-shortcut {
+      display: none !important;
+    }
+
+    .theme-btn {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .logo-text {
+      display: none;
+    }
+    .navbar {
+      padding: 0 10px;
+    }
+  }
+
+  @media (max-width: 320px) {
+    .logo-img {
+      width: 26px;
+      height: 26px;
     }
   }
 </style>
