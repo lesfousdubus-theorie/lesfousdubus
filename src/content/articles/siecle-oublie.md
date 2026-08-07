@@ -14,7 +14,7 @@ related:
     "royaume-antique",
     "vingt-rois",
     "gouvernement-mondial",
-    "ponelyphes",
+    "poneglyphes",
     "professeur-clover-et-ohara",
     "nico-robin",
     "grande-guerre",

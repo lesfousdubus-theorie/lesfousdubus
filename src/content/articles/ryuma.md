@@ -3,6 +3,7 @@ title: "Shimotsuki Ryuma et Roronoa Zoro"
 summary: "Fiche d'analyse sur Shimotsuki Ryuma, le Dieu de la Lame de Wano, et ses parallèles avec Roronoa Zoro."
 category: "personnages-identites"
 status: "published"
+sidebarHidden: true
 sources: [1023]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"

@@ -3,6 +3,7 @@ title: "Shirahoshi est Poséidon : la promesse de Joy Boy"
 summary: "5 preuves expliquant pourquoi la rencontre entre Joy Boy et Poséidon décrite par les Ponéglyphes serait celle que Luffy et Shirahoshi sont actuellement en train de vivre."
 category: "armes-antiques"
 status: "published"
+sidebarHidden: true
 sources: [610, 653, 967, 649, 873]
 editorialStatus: "fait-observe"
 certainty: "elevee"

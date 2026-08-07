@@ -9,7 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "gouvernement-mondial"
 order: 66
-related: ["gouvernement-mondial", "imu-nerona-fiche", "chevaliers-divins", "mary-geoise", "emeth-futur"]
+related: ["gouvernement-mondial", "imu-nerona", "chevaliers-divins", "mary-geoise", "emeth-futur"]
 ---
 
 ## Présentation

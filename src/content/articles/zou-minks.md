@@ -9,7 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "peuples-royaumes"
 order: 84
-related: ["peuples-royaumes", "zunesha-fiche", "ponelyphes", "guerre-finale", "joy-boy"]
+related: ["peuples-royaumes", "zunesha-fiche", "poneglyphes", "guerre-finale", "joy-boy"]
 ---
 
 ## Présentation

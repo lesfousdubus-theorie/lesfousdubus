@@ -9,7 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "gouvernement-mondial"
 order: 69
-related: ["gouvernement-mondial", "imu-nerona-fiche", "vingt-rois", "red-line", "lunariens", "fruits-du-demon"]
+related: ["gouvernement-mondial", "imu-nerona", "vingt-rois", "red-line", "lunariens", "fruits-du-demon"]
 ---
 
 ## Présentation

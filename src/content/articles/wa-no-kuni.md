@@ -9,7 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "peuples-royaumes"
 order: 83
-related: ["peuples-royaumes", "kozuki-toki", "ponelyphes", "shimotsuki-ryuma", "pluton-fiche", "guerre-finale"]
+related: ["peuples-royaumes", "kozuki-toki", "poneglyphes", "shimotsuki-ryuma", "pluton-fiche", "guerre-finale"]
 ---
 
 ## Présentation

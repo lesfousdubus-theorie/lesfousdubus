@@ -9,7 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "wa-no-kuni"
 order: 27
-related: ["wa-no-kuni", "kozuki-toki", "ponelyphes", "zunesha-fiche", "nico-robin"]
+related: ["wa-no-kuni", "kozuki-toki", "poneglyphes", "zunesha-fiche", "nico-robin"]
 ---
 
 ## Présentation

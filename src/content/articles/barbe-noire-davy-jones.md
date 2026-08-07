@@ -4,6 +4,7 @@ title: "Barbe Noire, alias Davy Jones et futur Roi du Monde"
 summary: "Comment Marshall D. Teach incarne la figure mythique de Davy Jones et s'apprête à ravir le titre de Roi du Monde à Mary Geoise."
 category: "personnages-identites"
 status: "published"
+sidebarHidden: true
 certainty: "elevee"
 reviewedUntilChapter: 1188
 related: ["coalition-des-20-rois", "la-prescience-et-imu"]

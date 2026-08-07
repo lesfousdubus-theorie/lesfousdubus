@@ -5,7 +5,7 @@ category: 'transmission-memoire'
 status: 'published'
 certainty: 'moyenne'
 reviewedUntilChapter: 1188
-parent: "ponelyphes"
+parent: "poneglyphes"
 related: ['signification-d', 'laugh-tale', 'nika']
 sources: [1188]
 order: 57

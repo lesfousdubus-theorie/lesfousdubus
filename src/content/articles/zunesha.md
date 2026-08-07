@@ -3,6 +3,7 @@ title: "Zunesha : le témoin qui vient du futur"
 summary: "Zunesha est le seul être vivant à avoir connu Joy Boy. Mais il pourrait venir du futur et avoir été envoyé dans le passé, tout comme Emeth. Il se souviendrait de Luffy."
 category: "peuples-royaumes"
 status: "published"
+sidebarHidden: true
 certainty: "moyenne"
 reviewedUntilChapter: 1188
 sources: [1050]

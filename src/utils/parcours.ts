@@ -20,7 +20,7 @@ export const READING_PATH: readonly string[] = [
   'one-piece-histoire',
   'siecle-oublie',
   'royaume-antique',
-  'ponelyphes',
+  'poneglyphes',
   'joy-boy',
   'nika',
   'luffy',
@@ -28,7 +28,7 @@ export const READING_PATH: readonly string[] = [
   'noah',
   'peuples-royaumes',
   'gouvernement-mondial',
-  'imu-nerona-fiche',
+  'imu-nerona',
   'guerre-finale',
   'all-blue',
 ] as const;

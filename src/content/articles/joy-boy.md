@@ -15,7 +15,7 @@ related:
     "nika",
     "hito-hito-no-mi-nika",
     "gol-d-roger",
-    "imu-nerona-fiche",
+    "imu-nerona",
     "emeth-futur",
     "zunesha-fiche",
     "noah",

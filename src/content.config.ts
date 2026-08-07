@@ -36,6 +36,8 @@ const articles = defineCollection({
     seoTitle: z.string().optional(),
     /** Identifiant (slug) de la fiche canonique parente pour les articles de démonstration. */
     parent: z.string().optional(),
+    /** Masquer cet article de la sidebar (reste accessible via recherche et liens). */
+    sidebarHidden: z.boolean().default(false),
   }),
 });
 
