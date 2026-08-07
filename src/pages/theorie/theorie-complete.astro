@@ -15,74 +15,124 @@ const parcours = READING_PATH.map((slug) => ({
 
 const sections = [
   {
-    id: 'cadre',
-    title: '1. Le point de départ : le Siècle oublié comme présent',
-    text: 'La théorie propose de lire le Siècle oublié non comme un passé définitivement clos, mais comme l’histoire que le récit est encore en train de produire. Cette hypothèse inverse l’ordre habituel de lecture : les traces anciennes deviennent les échos d’événements à venir.',
+    id: 'laugh-tale',
+    title: '1. Tout commence avec Laugh Tale',
+    text: 'Grand Line fait le tour du monde, mais Red Line empêche une vraie circumnavigation. À la fin de la route se trouve Lodestar, tandis que Laugh Tale reste introuvable. La théorie propose que le problème ne soit pas seulement où se trouve Laugh Tale, mais quand elle se trouve — liée à Lodestar et à une autre époque où Red Line et le Gouvernement mondial auront été bouleversés. C’est ce qui donne sens au “trop tôt” de Roger.',
     links: [
-      ['Le Siècle oublié est le présent', '/theorie/siecle-oublie-present'],
-      ['Une communication à travers le temps', '/theorie/communication-temps'],
+      ['Laugh Tale', '/theorie/laugh-tale'],
+      ['Lodestar', '/theorie/lodestar'],
+      ['Red Line', '/theorie/red-line'],
     ],
   },
   {
-    id: 'temps',
-    title: '2. Ponéglyphes, mémoire et boucle temporelle',
-    text: 'Dans cette lecture, les Ponéglyphes ne sont pas seulement des archives. Ils participeraient à une transmission entre les époques. C’est le mécanisme le plus spéculatif de la théorie ; il doit donc être lu avec les objections et limites associées.',
+    id: 'poneglyphes-avenir',
+    title: '2. Les Ponéglyphes raconteraient l’avenir',
+    text: 'C’est le mécanisme fondamental. Les Ponéglyphes existent bien depuis 800 ans, mais les événements qu’ils rapportent ne s’étaient pas nécessairement déjà produits. Ils auraient été créés à partir d’informations venues du futur, puis transmis 800 ans en arrière. Le Rio Ponéglyphe ne raconterait pas seulement une ancienne guerre : il raconterait l’histoire que nous lisons depuis le chapitre 1.',
     links: [
       ['Les Ponéglyphes et le futur', '/theorie/ponelyphes-futur'],
+      ['Les Ponéglyphes', '/theorie/ponelyphes'],
       ['Points encore à expliquer', '/verifier/questions'],
     ],
   },
   {
-    id: 'figures',
-    title: '3. Luffy, Joy Boy et Nika',
-    text: 'Le cœur de l’hypothèse rapproche Luffy des noms de Joy Boy et Nika. Le site distingue les éléments observés dans le manga des interprétations qui en sont tirées, notamment autour de Zunesha, de l’Éveil et de la promesse de Joy Boy.',
+    id: 'joyboy-luffy',
+    title: '3. Joy Boy serait Monkey D. Luffy',
+    text: 'Dans cette lecture, Joy Boy n’est pas un ancien héros que Luffy répète. C’est l’inverse : Joy Boy est le nom sous lequel Luffy entrera dans l’Histoire. Pendant 800 ans, croyances, objets et promesses ont convergé vers lui. Joy Boy n’est pas l’origine de Luffy, il en est la conséquence — c’est pourquoi Luffy, qui agit librement sans chercher à incarner une légende, finit par la devenir.',
     links: [
       ['Joy Boy', '/theorie/joy-boy'],
-      ['Nika', '/theorie/nika'],
       ['Monkey D. Luffy', '/theorie/luffy'],
+      ['Zunesha et les tambours', '/theorie/zunesha-fiche'],
     ],
   },
   {
-    id: 'monde',
-    title: '4. Monde, destinations et One Piece',
-    text: 'La géographie — Grand Line, Laugh Tale, Red Line et les mers — structure le raisonnement. Les articles ci-dessous développent les hypothèses sur le trésor, la dernière île et l’évolution future du monde.',
+    id: 'trois-noms',
+    title: '4. Luffy, Joy Boy et Nika : trois noms pour un même homme',
+    text: 'Luffy est son identité, Joy Boy le nom que le monde lui donnera, Nika la figure divine sous laquelle certains peuples l’interprètent. Trois manières de parler d’un même homme, pas trois personnes à trois époques. Cette distinction éclaire la promesse du Royaume Ryugu, l’Éveil et la foi des Boucaniers.',
     links: [
-      ['Dossiers du monde', '/dossiers#monde-destinations'],
-      ['Laugh Tale', '/theorie/laugh-tale'],
-      ['One Piece', '/theorie/one-piece-histoire'],
-    ],
-  },
-  {
-    id: 'allies',
-    title: '5. Armes antiques, peuples et transmission',
-    text: 'Poséidon, Pluton, Uranus, Elbaf, Wano et l’Île des Hommes-Poissons sont lus comme des acteurs et des lieux appelés à converger. Ces rapprochements sont présentés comme des pistes de lecture, pas comme des faits confirmés.',
-    links: [
-      ['Armes antiques', '/dossiers#armes-antiques'],
-      ['Elbaf et le Harley', '/theorie/elbaf-halley'],
+      ['Nika', '/theorie/nika'],
+      ['Le Hito Hito no Mi modèle Nika', '/theorie/hito-hito-no-mi-nika'],
       ['La volonté héritée', '/theorie/volonte-heritee'],
     ],
   },
   {
-    id: 'final',
-    title: '6. Imu, le Déluge et la guerre finale',
-    text: 'La conclusion proposée associe la chute du Gouvernement mondial, le Déluge, la destruction de Red Line et la création d’All Blue. Elle rassemble plusieurs prédictions actuellement non confirmées : leur statut peut être suivi dans la section dédiée.',
+    id: 'autres-figures',
+    title: '5. Les autres figures du Siècle oublié appartiendraient au présent',
+    text: 'La même logique s’applique à d’autres légendes : Shirahoshi / Poséidon, Vivi / Lili, Teach / Davy Jones, Zoro / Ryuma. Non pas de simples ressemblances, mais l’idée que leurs actions présentes ou futures, transmises vers le passé, sont devenues les légendes que le monde croit anciennes.',
     links: [
-      ['Imu Nerona', '/theorie/imu-nerona'],
+      ['Shirahoshi est Poséidon', '/theorie/poseidon'],
+      ['Vivi est Lili', '/theorie/lili-vivi-et-les-poneglyphes'],
+      ['Teach est Davy Jones', '/theorie/davy-jones'],
+    ],
+  },
+  {
+    id: 'peuples-preparation',
+    title: '6. Chaque peuple aurait préparé une partie du monde pendant 800 ans',
+    text: 'Si les Ponéglyphes portent des informations du futur, ils portent aussi des instructions. Ryugu garde Noah en attendant Poséidon, Wa no Kuni doit ouvrir ses frontières, les Minks sont liés à Zunesha, les Shandias, les Boucaniers, Alabasta… Chaque histoire séparée serait une pièce d’une même préparation pour la guerre finale.',
+    links: [
+      ['Peuples et royaumes', '/theorie/peuples-royaumes'],
+      ['Elbaf et le Harley', '/theorie/elbaf-halley'],
+      ['Noah', '/theorie/noah'],
+    ],
+  },
+  {
+    id: 'royaume-antique',
+    title: '7. Le Royaume antique serait lié au monde qui reste à construire',
+    text: 'Vegapunk décrit une civilisation antique à la technologie inexplicablement avancée. Si “l’antique” venait en réalité du futur, le paradoxe disparaît : inventions de Vegapunk, Mother Flame, Emeth et technologies actuelles participeraient à créer le monde que le passé a cru disparu.',
+    links: [
+      ['Royaume antique', '/theorie/royaume-antique'],
+      ['Vegapunk', '/theorie/vegapunk'],
+      ['Emeth, le robot du futur', '/theorie/emeth-robot-du-futur'],
+    ],
+  },
+  {
+    id: 'imu-avenir',
+    title: '8. Imu ne craindrait pas seulement son passé, mais son avenir',
+    text: 'Depuis 800 ans, Imu semble obsédé par Joy Boy, Nika et certaines familles. La théorie propose qu’il dispose d’informations incomplètes sur ce qui doit arriver et cherche à empêcher un avenir qu’il ne comprend pas. En voulant effacer l’Histoire et persécuter certains peuples, il aurait créé les conditions de l’apparition de Joy Boy.',
+    links: [
+      ['Imu Nerona', '/theorie/imu-nerona-fiche'],
+      ['La prescience et Imu', '/theorie/la-prescience-et-imu'],
+      ['Madame Shirley', '/theorie/madame-shirley'],
+    ],
+  },
+  {
+    id: 'grande-guerre',
+    title: '9. La Grande Guerre serait encore devant nous',
+    text: 'La guerre du Siècle oublié ne serait pas terminée il y a 800 ans, mais celle vers laquelle One Piece se dirige. Luffy, ses alliés, les Armes antiques et les nations préparées se retrouveraient face au Gouvernement mondial. Red Line pourrait tomber, les mers se réunir, All Blue naître : le monde deviendrait littéralement une seule pièce.',
+    links: [
+      ['Guerre finale', '/theorie/guerre-finale'],
       ['Le Déluge et All Blue', '/theorie/deluge-all-blue'],
-      ['Prédictions', '/chapitres/predictions'],
+      ['All Blue', '/theorie/all-blue'],
+    ],
+  },
+  {
+    id: 'retournement',
+    title: '10. Le retournement final',
+    text: 'Nous pensions que Luffy héritait de Joy Boy ; la révélation serait que Joy Boy, c’est lui. Que les Ponéglyphes racontaient une civilisation disparue ; ils raconteraient le monde à créer. Que Roger avait vu le passé ; il avait vu l’histoire de ceux qui viennent après lui. Depuis le chapitre 1, nous ne revivons pas le Siècle oublié : nous le vivons.',
+    links: [
+      ['Le Siècle oublié est le présent', '/theorie/siecle-oublie-present'],
+      ['Résumé en 10 points', '/theorie/resume'],
+      ['Sources et méthode', '/verifier/sources'],
     ],
   },
 ];
 ---
 
-<WikiLayout title="Théorie complète" seoTitle="Théorie complète One Piece : Siècle oublié, Joy Boy et guerre finale | Les Fous du Bus" description="La théorie complète du Siècle oublié est le présent : fil directeur, 6 chapitres et parcours de lecture de 19 étapes avec fiches détaillées et sources." currentPath="/theorie/theorie-complete">
+<WikiLayout
+  title="Théorie complète"
+  seoTitle="Théorie complète One Piece : Siècle oublié, Joy Boy et guerre finale | Les Fous du Bus"
+  description="La théorie complète du Siècle oublié est le présent : 10 chapitres de Laugh Tale à Joy Boy, des Ponéglyphes du futur à la Grande Guerre — synthèse."
+  currentPath="/theorie/theorie-complete"
+>
   <article class="complete-page">
     <p class="eyebrow">Synthèse éditoriale</p>
     <h1>La théorie complète</h1>
     <p class="intro">
-      Cette page présente le fil directeur de la théorie et renvoie vers les articles disponibles
-      pour l’argumentation détaillée. Les éléments non confirmés restent des interprétations ou des
-      prédictions.
+      Le Siècle oublié n’aurait pas eu lieu il y a 800 ans. Les Ponéglyphes raconteraient l’avenir,
+      Joy Boy serait Luffy à la fin de son aventure, et la Grande Guerre serait celle vers laquelle
+      le manga se dirige aujourd’hui. Cette page suit la même chaîne causale que le
+      <a href="/theorie/resume">Résumé en 10 points</a> et renvoie vers les fiches pour l’argumentation
+      détaillée. Les extensions les plus spéculatives (Armes antiques, Mother Flame, Fruits du Démon,
+      communication temporelle) sont signalées comme telles.
     </p>
     <nav class="parcours-list" aria-label="Parcours de lecture de la théorie">
       <h2>Parcours de lecture ({parcours.length} étapes)</h2>
@@ -107,7 +157,7 @@ const sections = [
     </nav>
 
     <nav class="toc" aria-label="Sommaire de la théorie">
-      <h2>Sommaire</h2><ol>
+      <h2>Sommaire — 10 chapitres</h2><ol>
         {
           sections.map((section) => (
             <li>
@@ -134,9 +184,11 @@ const sections = [
     }
     <aside class="method">
       <h2>Comment lire cette synthèse</h2><p>
-        Les pages « Vérifier » regroupent les preuves, objections et questions ouvertes. Une
-        correspondance narrative ou une prédiction ne vaut pas confirmation canonique : les limites
-        sont affichées lorsqu’elles sont connues.
+        Les pages « Vérifier » regroupent preuves, objections et questions ouvertes. Une correspondance
+        narrative ou une prédiction ne vaut pas confirmation canonique. Les mécanismes les plus
+        spéculatifs — comme l’origine exacte de la Mother Flame ou la nature précise de la
+        communication entre époques (ch. 1188) — sont présentés comme des pistes, distinctes du cœur
+        historique de la théorie.
       </p><a href="/verifier">Consulter la méthode de vérification →</a>
     </aside>
   </article>
@@ -162,6 +214,11 @@ const sections = [
     line-height: 1.65;
     color: var(--text-secondary);
     margin-bottom: 36px;
+  }
+  .intro a {
+    color: var(--cyan);
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
   .parcours-list {
     border: 1px solid var(--border-color);
