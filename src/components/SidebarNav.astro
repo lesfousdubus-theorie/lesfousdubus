@@ -11,9 +11,9 @@ const { currentPath } = Astro.props;
 // Source unique de la navigation latérale : toutes les pages consomment ce même
 // composant, et la collection est triée ici de façon déterministe (order puis id)
 // pour que la sidebar soit strictement identique sur l'ensemble du site.
-const articles = (await getCollection('articles', ({ data }) => data.status === 'published' && !data.sidebarHidden)).sort(
-  (a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr'),
-);
+const articles = (
+  await getCollection('articles', ({ data }) => data.status === 'published' && !data.sidebarHidden)
+).sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr'));
 
 // Category mapping with French labels and icons
 const categoryConfig: Record<string, { label: string; icon: string; order: number }> = {
@@ -51,6 +51,7 @@ interface SidebarLink {
   label: string;
   href: string;
   level: 0 | 1;
+  type: 'fiche' | 'dossier';
 }
 
 interface NavSection {
@@ -88,6 +89,7 @@ const buildLinks = (catArticles: typeof articles): SidebarLink[] => {
       label: article.data.title,
       href: `/theorie/${article.id}`,
       level: 0,
+      type: article.data.navigationType,
     });
     const children = (childrenByParent.get(article.id) ?? []).slice().sort(byOrderThenId);
     for (const child of children) {
@@ -95,6 +97,7 @@ const buildLinks = (catArticles: typeof articles): SidebarLink[] => {
         label: child.data.title,
         href: `/theorie/${child.id}`,
         level: 1,
+        type: child.data.navigationType,
       });
     }
   }
@@ -107,11 +110,11 @@ const navSections: NavSection[] = [
     label: 'Commencer',
     icon: '🚀',
     links: [
-      { label: 'Présentation', href: '/', level: 0 },
-      { label: 'Résumé de la théorie', href: '/theorie/resume', level: 0 },
-      { label: 'Théorie complète', href: '/theorie/theorie-complete', level: 0 },
-      { label: 'Carte mentale', href: '/explorer/carte-mentale', level: 0 },
-      { label: 'Lexique essentiel', href: '/aide/glossaire', level: 0 },
+      { label: 'Présentation', href: '/', level: 0, type: 'fiche' },
+      { label: 'Résumé de la théorie', href: '/theorie/resume', level: 0, type: 'fiche' },
+      { label: 'Théorie complète', href: '/theorie/theorie-complete', level: 0, type: 'fiche' },
+      { label: 'Carte mentale', href: '/explorer/carte-mentale', level: 0, type: 'fiche' },
+      { label: 'Lexique essentiel', href: '/aide/glossaire', level: 0, type: 'fiche' },
     ],
   },
   ...sortedCategories.map(([catKey, catArticles]) => {
@@ -139,6 +142,7 @@ navSections.push({
       : `Chapitre ${chapter.data.chapter} — ${chapter.data.title}`,
     href: `/chapitres/${chapter.data.chapter}`,
     level: 0,
+    type: 'fiche',
   })),
 });
 
@@ -148,10 +152,10 @@ navSections.push({
   label: 'Aide & ressources',
   icon: '❓',
   links: [
-    { label: 'À propos', href: '/aide/a-propos', level: 0 },
-    { label: 'FAQ', href: '/aide/faq', level: 0 },
-    { label: 'Glossaire', href: '/aide/glossaire', level: 0 },
-    { label: 'Crédits', href: '/aide/credits', level: 0 },
+    { label: 'À propos', href: '/aide/a-propos', level: 0, type: 'fiche' },
+    { label: 'FAQ', href: '/aide/faq', level: 0, type: 'fiche' },
+    { label: 'Glossaire', href: '/aide/glossaire', level: 0, type: 'fiche' },
+    { label: 'Crédits', href: '/aide/credits', level: 0, type: 'fiche' },
   ],
 });
 ---
@@ -197,12 +201,15 @@ navSections.push({
                 <li>
                   <a
                     href={link.href}
-                    class={`sidebar-link ${link.level === 1 ? 'sidebar-link--child' : ''} ${isActive ? 'sidebar-link--active' : ''}`}
+                    class={`sidebar-link ${link.level === 1 ? 'sidebar-link--child' : ''} ${link.type === 'dossier' ? 'sidebar-link--dossier' : ''} ${isActive ? 'sidebar-link--active' : ''}`}
                   >
                     {link.level === 1 && (
                       <span class="sidebar-link__tree" aria-hidden="true">
                         └
                       </span>
+                    )}
+                    {link.type === 'dossier' && (
+                      <span class="sidebar-link__dossier-label">↳ Dossier :</span>
                     )}
                     {link.label}
                   </a>
@@ -271,6 +278,18 @@ navSections.push({
   .sidebar-section-links.expanded {
     max-height: 2000px;
     opacity: 1;
+  }
+
+  .sidebar-link--dossier {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  .sidebar-link__dossier-label {
+    color: var(--cyan);
+    font-style: normal;
+    white-space: nowrap;
   }
 
   .sidebar-link {

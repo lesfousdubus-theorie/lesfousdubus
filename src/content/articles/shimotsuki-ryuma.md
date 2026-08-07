@@ -1,15 +1,14 @@
 ---
-title: "Shimotsuki Ryuma"
+title: 'Shimotsuki Ryuma'
 summary: "Fiche d'identification de Shimotsuki Ryuma, samouraï légendaire de Wano surnommé le Dieu de la Lame, dont le corps fut exhumé par Moria à Thriller Bark."
-category: "personnages-identites"
-status: "published"
+category: 'personnages-identites'
+status: 'published'
 sources: [1023]
-editorialStatus: "hypothese-secondaire"
-certainty: "moyenne"
+editorialStatus: 'hypothese-secondaire'
+certainty: 'moyenne'
 reviewedUntilChapter: 1188
-parent: "zoro"
 order: 45
-related: ["ryuma", "zoro"]
+related: ['ryuma', 'zoro']
 ---
 
 ## Présentation canonique

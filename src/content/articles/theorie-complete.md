@@ -1,10 +1,11 @@
 ---
-title: "La théorie complète : Le Siècle oublié est le présent"
+title: 'La théorie complète : Le Siècle oublié est le présent'
 summary: "L'analyse complète de la théorie des Fous du Bus : Joy Boy est Luffy, le Siècle oublié n'a pas encore eu lieu, et les Ponéglyphes racontent le futur."
-category: "histoire-temporalite"
-status: "published"
-certainty: "central"
+category: 'histoire-temporalite'
+status: 'published'
+certainty: 'central'
 sources: [1]
+sidebarHidden: true
 order: 5
 ---
 
@@ -37,6 +38,7 @@ Les personnages actuels deviendront les légendes du passé :
 Il n'y a **pas de voyage dans le temps** au sens traditionnel. Les Ponéglyphes ont été créés dans le futur par les Mugiwara et envoyés dans le passé pour préparer le monde au Jour du Serment.
 
 C'est pourquoi :
+
 - Roger dit "Nous sommes arrivés trop tôt"
 - Imu confond les générations (Xebec/Teach, Titi/Vivi)
 - Les prophéties se réalisent avec une précision impossible
@@ -50,6 +52,7 @@ C'est pourquoi :
 ## Le Déluge à venir
 
 Le niveau de la mer augmentera de 200 mètres lors de la guerre finale, créant :
+
 - **All Blue** : la mer unique où se rejoignent les quatre océans
 - La destruction de Red Line et du Gouvernement Mondial
 - La réunification des peuples

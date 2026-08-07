@@ -428,7 +428,7 @@ const sections: Section[] = [
       },
       {
         t: 'p',
-        text: 'Pour la théorie, cette méprise n’est pas anodine : elle révèle qu’Imu **confond les générations**. Comme pour Emeth et Luffy, il prend un homme du présent pour une figure dont il croit connaître la légende. Davy Jones serait en réalité Teach — dont les actions futures, transmises vers le passé, sont devenues la légende que le monde croit ancienne.',
+        text: 'Pour la théorie, cette méprise n’est pas anodine : elle peut s’interpréter comme une **confusion entre les générations**. Comme pour Emeth et Luffy, il prend un homme du présent pour une figure dont il croit connaître la légende. Davy Jones serait en réalité Teach — dont les actions futures, transmises vers le passé, sont devenues la légende que le monde croit ancienne.',
       },
       {
         t: 'p',
@@ -453,7 +453,7 @@ const sections: Section[] = [
       },
       {
         t: 'p',
-        text: 'Or regardez ses représentations. Sa silhouette au chapitre 1085, son portrait dans la chambre Fleurie au chapitre 1116 : ce sont purement et simplement **ceux de Nefertari Vivi**, jusqu’aux cheveux bleus que la famille Nefertari n’a pourtant jamais eus avant Vivi.',
+        text: 'La théorie relève une ressemblance très forte dans les représentations : la silhouette au chapitre 1085 et le portrait de la chambre Fleurie au chapitre 1116 évoquent **Nefertari Vivi**, jusque dans les cheveux bleus. Cette ressemblance est un indice visuel discuté, pas une identification confirmée.',
       },
       {
         t: 'p',
@@ -721,9 +721,7 @@ const sections: Section[] = [
         text: 'Cette distinction est essentielle. Le cœur de la théorie ne change pas ; ce sont les **mécanismes** qui s’affinent au fil des chapitres. Une correspondance narrative ou une prédiction ne vaut jamais confirmation canonique — mais accumuler les coïncidences qui fonctionnent finit par faire pencher la balance.',
       },
     ],
-    links: [
-      ['Le Siècle oublié est le présent', '/theorie/siecle-oublie-present'],
-    ],
+    links: [['Le Siècle oublié est le présent', '/theorie/siecle-oublie-present']],
   },
   {
     id: 'retournement-final',
@@ -787,10 +785,12 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
     <p class="intro">
       Et si le Siècle oublié n’avait pas eu lieu il y a huit cents ans ? Selon la lecture proposée
       ici, les Ponéglyphes raconteraient l’avenir, Joy Boy serait Luffy à la fin de son aventure, et
-      la Grande Guerre serait celle vers laquelle le manga se dirige aujourd’hui. Cette page est la <strong>page maîtresse</strong> du site : une seule démonstration continue, qui se lit comme
-      un livre, de Blue Star jusqu’au retournement final. Comme toute théorie, elle distingue ce qui
-      est bien établi dans le manga, ce qui est une interprétation probable et ce qui reste
-      spéculatif — ces niveaux sont explicités au fil des chapitres et rappelés au chapitre 21.
+      la Grande Guerre serait celle vers laquelle le manga se dirige aujourd’hui. Cette page est la <strong
+        >page maîtresse</strong
+      > du site : une seule démonstration continue, qui se lit comme un livre, de Blue Star jusqu’au retournement
+      final. Comme toute théorie, elle distingue ce qui est bien établi dans le manga, ce qui est une
+      interprétation probable et ce qui reste spéculatif — ces niveaux sont explicités au fil des chapitres
+      et rappelés au chapitre 21.
     </p>
 
     <!-- Les trois lectures : pour clarifier ce que cette page est, et n’est pas. -->
@@ -808,17 +808,20 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
       <div class="mode mode--current">
         <span class="mode__label">Théorie complète</span>
         <span class="mode__time">30–60 min</span>
-        <span class="mode__desc">Suivre toute la démonstration, les indices, les personnages, les objections et les évolutions récentes.</span>
+        <span class="mode__desc"
+          >Suivre toute la démonstration, les indices, les personnages, les objections et les
+          évolutions récentes.</span
+        >
       </div>
     </div>
 
     <div class="how-to">
       <p>
-        <strong>Comment lire cette page.</strong> Les vingt-deux chapitres se construisent l’un sur
-        l’autre : lisez-les dans l’ordre, comme on lit un livre. Chaque chapitre répond à une question
-        et pose une brique du raisonnement avant de passer à la suivante. Les liens en bas de chapitre
-        sont des <em>approfondissements facultatifs</em> vers les fiches — vous n’avez pas besoin de
-        quitter la page pour suivre l’argument.
+        <strong>Comment lire cette page.</strong> Les vingt-deux chapitres se construisent l’un sur l’autre
+        : lisez-les dans l’ordre, comme on lit un livre. Chaque chapitre répond à une question et pose
+        une brique du raisonnement avant de passer à la suivante. Les liens en bas de chapitre sont des
+        <em>approfondissements facultatifs</em> vers les fiches — vous n’avez pas besoin de quitter la
+        page pour suivre l’argument.
       </p>
     </div>
 
@@ -846,27 +849,25 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
           </div>
           <p class="theory-section__question">{section.question}</p>
           <div class="theory-section__body">
-            {
-              section.blocks.map((block) => {
-                if (block.t === 'p') return <p set:html={md(block.text)} />;
-                if (block.t === 'quote') return <blockquote>{block.text}</blockquote>;
-                if (block.t === 'note') {
-                  return (
-                    <aside class="theory-section__note">
-                      <span class="theory-section__note-tag">Évolution récente</span>
-                      <p>{block.text}</p>
-                    </aside>
-                  );
-                }
+            {section.blocks.map((block) => {
+              if (block.t === 'p') return <p set:html={md(block.text)} />;
+              if (block.t === 'quote') return <blockquote>{block.text}</blockquote>;
+              if (block.t === 'note') {
                 return (
-                  <ul>
-                    {block.items.map((item) => (
-                      <li set:html={md(item)} />
-                    ))}
-                  </ul>
+                  <aside class="theory-section__note">
+                    <span class="theory-section__note-tag">Évolution récente</span>
+                    <p>{block.text}</p>
+                  </aside>
                 );
-              })
-            }
+              }
+              return (
+                <ul>
+                  {block.items.map((item) => (
+                    <li set:html={md(item)} />
+                  ))}
+                </ul>
+              );
+            })}
           </div>
           <div class="links">
             {section.links.map(([label, href]) => (
@@ -890,7 +891,9 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
     <details class="parcours">
       <summary>
         <span class="parcours__title">Parcours de lecture en {parcours.length} étapes</span>
-        <span class="parcours__sub">La lecture « fiche par fiche », si vous préférez explorer chaque sujet séparément.</span>
+        <span class="parcours__sub"
+          >La lecture « fiche par fiche », si vous préférez explorer chaque sujet séparément.</span
+        >
       </summary>
       <ol class="parcours__items">
         {

@@ -1,20 +1,19 @@
 ---
-title: "Davy Jones"
+title: 'Davy Jones'
 summary: "Fiche d'identification de Davy Jones, pirate légendaire fondateur du Davy Back Fight, dont le nom s'est transmis jusqu'à Marshall D. Teach."
-category: "personnages-identites"
-status: "published"
+category: 'personnages-identites'
+status: 'published'
 sources: [1164]
-editorialStatus: "hypothese-secondaire"
-certainty: "moyenne"
+editorialStatus: 'hypothese-secondaire'
+certainty: 'moyenne'
 reviewedUntilChapter: 1188
-parent: "teach"
 order: 44
-related: ["davy-jones", "teach"]
+related: ['davy-jones', 'teach']
 ---
 
 ## Présentation canonique
 
-Davy Jones est un pirate légendaire du monde de *One Piece*, dont le nom a donné naissance au Davy Back Fight, un jeu pratiqué par l'équipage de Foxy. Il aurait vécu il y a plusieurs siècles, à l'époque antérieure à la fondation du Gouvernement Mondial.
+Davy Jones est un pirate légendaire du monde de _One Piece_, dont le nom a donné naissance au Davy Back Fight, un jeu pratiqué par l'équipage de Foxy. Il aurait vécu il y a plusieurs siècles, à l'époque antérieure à la fondation du Gouvernement Mondial.
 
 Imu fait référence à Davy Jones au chapitre 1164, sans avoir jamais rencontré sa personne.
 
