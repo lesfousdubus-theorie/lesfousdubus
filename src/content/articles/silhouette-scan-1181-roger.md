@@ -4,6 +4,7 @@ title: "La Silhouette du Scan 1181 : Joy Boy ou Gol D. Roger ?"
 summary: "Analyse détaillée en 6 points expliquant pourquoi la mystérieuse silhouette dévoilée dans les récents chapitres pourrait être Gol D. Roger plutôt que Joy Boy."
 category: "personnages-identites"
 status: "published"
+sidebarHidden: true
 certainty: "hypothese"
 reviewedUntilChapter: 1188
 order: 57

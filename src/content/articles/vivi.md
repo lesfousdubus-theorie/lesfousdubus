@@ -1,16 +1,15 @@
 ---
-title: "Nefertari Vivi et Nefertari D. Lili"
+title: 'Nefertari Vivi et Nefertari D. Lili'
 summary: "Fiche d'analyse sur la reine Nefertari D. Lili, la princesse Vivi et leur rôle dans la dispersion des Ponéglyphes."
-category: "personnages-identites"
-status: "published"
-sidebarHidden: true
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'dossier'
 sources: [1085, 1116]
-editorialStatus: "hypothese-secondaire"
-certainty: "elevee"
+editorialStatus: 'hypothese-secondaire'
+certainty: 'elevee'
 reviewedUntilChapter: 1188
 order: 50
-parent: "lili"
-related: ["lili", "lili-vivi-et-les-poneglyphes", "nefertari-vivi"]
+related: ['lili', 'lili-vivi-et-les-poneglyphes', 'nefertari-vivi']
 ---
 
 ## Les preuves physiques
@@ -33,4 +32,4 @@ Lili a écrit une lettre à sa descendance et dispersé les Ponéglyphes à trav
 
 L'opening 28 montre Vivi avec les Ponéglyphes qui s'éparpillent derrière elle, suggérant son rôle futur.
 
-L'article de démonstration *Vivi est Lili : la reine qui dispersera les Ponéglyphes* détaille cette analyse en cinq preuves.
+L'article de démonstration _Vivi est Lili : la reine qui dispersera les Ponéglyphes_ détaille cette analyse en cinq preuves.

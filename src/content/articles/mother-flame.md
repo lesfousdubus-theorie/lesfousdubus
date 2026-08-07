@@ -1,5 +1,5 @@
 ---
-title: "Mother Flame : l'énergie du soleil infini"
+title: "Mother Flame"
 summary: "Mother Flame est l'énergie créée par Vegapunk en étudiant Emeth. Elle alimente les technologies futures et pourrait être utilisée par Imu pour devenir Uranus."
 category: "technologies-pouvoirs"
 status: "published"

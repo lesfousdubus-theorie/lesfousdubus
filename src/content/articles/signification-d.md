@@ -3,13 +3,13 @@ title: 'La véritable signification du D.'
 summary: 'Le « D. » ne serait pas une simple initiale mais un serment de liberté lié à Davy Jones, reliant les porteurs à la coalition originelle de Joy Boy.'
 category: 'figures-principales'
 status: 'published'
+navigationType: 'dossier'
 certainty: 'elevee'
 reviewedUntilChapter: 1188
-parent: "luffy"
+parent: 'luffy'
 related: ['joy-boy', 'communication-temps', 'tequila-wolf']
 sources: []
 order: 23
-
 ---
 
 ## Le D. comme serment

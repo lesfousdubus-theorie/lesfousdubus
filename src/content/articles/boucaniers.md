@@ -7,7 +7,7 @@ sources: [1096, 1097, 1102]
 editorialStatus: "canon"
 certainty: "moyenne"
 reviewedUntilChapter: 1188
-parent: "nika"
+parent: "peuples-royaumes"
 order: 86
 related: ["peuples-royaumes", "nika", "bartholomew-kuma", "dieux-one-piece", "guerre-finale"]
 ---

@@ -1,13 +1,14 @@
 ---
-title: "Kuma et la foi en Nika : la preuve par le miracle"
+title: 'Kuma et la foi en Nika : la preuve par le miracle'
 summary: "Bartholomew Kuma a parié sa vie entière sur l'existence de Nika. Sa foi inébranlable a fait exister le dieu du soleil. Luffy est Nika parce que Kuma y croyait."
-category: "figures-principales"
-status: "published"
-certainty: "elevee"
+category: 'figures-principales'
+status: 'published'
+navigationType: 'dossier'
+certainty: 'elevee'
 reviewedUntilChapter: 1188
 sources: [1094, 1102]
 order: 22
-parent: "bartholomew-kuma"
+parent: 'bartholomew-kuma'
 ---
 
 ## Le crime des boucaniers
@@ -37,4 +38,3 @@ Dire que Luffy n'est pas Nika revient à dire que Kuma avait tort. Et dans un ma
 ## Le Christ de One Piece
 
 Kuma est un homme d'église, figure christique. Il meurt rempli d'espoir mais d'incertitude. C'est dans le doute que se manifeste la foi. Sa résurrection protectrice sur Sabaody et les deux ans d'entraînement accordés aux Mugiwara permettront à Nika d'exister.
-

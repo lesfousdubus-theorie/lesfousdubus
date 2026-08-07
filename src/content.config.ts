@@ -28,16 +28,26 @@ const articles = defineCollection({
     /** Numéros de chapitres explicitement cités dans l'article. */
     sources: z.array(z.number()).default([]),
     order: z.number().default(0),
-    editorialStatus: z.enum([
-      'canon', 'fait-observe', 'interpretation', 'hypothese-centrale',
-      'hypothese-secondaire', 'nouvelle-piste', 'contredite', 'refutee',
-    ]).optional(),
+    editorialStatus: z
+      .enum([
+        'canon',
+        'fait-observe',
+        'interpretation',
+        'hypothese-centrale',
+        'hypothese-secondaire',
+        'nouvelle-piste',
+        'contredite',
+        'refutee',
+      ])
+      .optional(),
     /** Titre SEO riche pour <title> (H1 reste court). Ex: "Joy Boy dans One Piece : identité, indices et théorie" */
     seoTitle: z.string().optional(),
     /** Identifiant (slug) de la fiche canonique parente pour les articles de démonstration. */
     parent: z.string().optional(),
     /** Masquer cet article de la sidebar (reste accessible via recherche et liens). */
     sidebarHidden: z.boolean().default(false),
+    /** Présentation de navigation : fiche neutre ou dossier d’analyse. */
+    navigationType: z.enum(['fiche', 'dossier']).default('fiche'),
   }),
 });
 
@@ -46,12 +56,7 @@ const chapters = defineCollection({
   schema: z.object({
     chapter: z.number(),
     title: z.string(),
-    effect: z.enum([
-      'fondation',
-      'approfondissement',
-      'nouvelle-piste',
-      'modification',
-    ]),
+    effect: z.enum(['fondation', 'approfondissement', 'nouvelle-piste', 'modification']),
     themes: z.array(z.string()).default([]),
     updatedArticles: z.array(z.string()).default([]),
     summary: z.string().optional(),

@@ -3,7 +3,7 @@ parent: "emeth-futur"
 title: "Emeth, le Robot Géant venu du Futur"
 summary: "8 indices démontrant qu'Emeth n'est pas un vestige de l'Antiquité mais le chef-d'œuvre ultime de Franky conçu dans le futur."
 category: "technologies-pouvoirs"
-status: "published"
+status: "draft"
 sidebarHidden: true
 certainty: "elevee"
 reviewedUntilChapter: 1188

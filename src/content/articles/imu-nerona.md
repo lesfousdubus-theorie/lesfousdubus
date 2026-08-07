@@ -53,20 +53,20 @@ Elle n’est cependant pas confirmée.
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
 
-La thèse défendue ici est qu’**Imu ne craint pas son passé : il craint son avenir.**
+La lecture proposée ici est qu’**Imu ne craindrait pas son passé, mais son avenir.**
 
-Dans cette lecture, Imu disposerait d’une forme de **préscience** — une capacité à voir des fragments du futur, sans maîtriser le *moment* où ils se produiront. C’est la même « malédiction » que celle que l’on voit à l’œuvre chez Madame Shirley (qui voit l’avenir mais ne sait pas quand il se produit).
+Dans cette hypothèse, Imu aurait accès à une forme de **préscience** — des fragments d’un futur possible, sans en maîtriser le *moment*. Le rapprochement avec Madame Shirley est une piste de lecture, non une capacité confirmée chez Imu.
 
 Les grandes lignes de l’interprétation :
 
-- Imu a eu la vision d’un homme qui viendra détruire son monde (Joy Boy/Luffy). Il est absolument certain que cela arrivera — mais il ne sait **ni quand, ni qui**.
-- Pour cette raison, il reste en vie depuis huit cents ans, attendant et persécutant à tour de bras tous ceux qui pourraient correspondre à cette silhouette.
-- **Il confond les générations.** Il prend Xebec pour Davy Jones (chapitre 1164), il confond Titi et Vivi (chapitre 1085), il croit à chaque génération tenir le Joy Boy qu’il recherche.
-- La destruction de Lulusia et l’usage de la Mother Flame sont des manifestations de cette panique : il tente de **bloquer l’avenir** par la force.
+- Imu aurait aperçu la vision d’un homme qui bouleversera son monde (Joy Boy/Luffy), sans savoir **ni quand, ni qui**.
+- Cette piste expliquerait qu’il reste en vie depuis huit cents ans et persécute ceux qui pourraient correspondre à cette silhouette.
+- **Il pourrait confondre les générations.** Les lectures de Xebec/Davy Jones (chapitre 1164) et Titi/Vivi (chapitre 1085) sont des indices discutés, non des confirmations.
+- La destruction de Lulusia et l’usage de la Mother Flame pourraient alors se lire comme une tentative de **bloquer l’avenir** par la force.
 
 ### La confusion Roger / Joy Boy (chapitres 1187–1188) <span class="pill pill--hypothese">Évolution récente</span>
 
-Une évolution récente de la théorie, nourrie par les chapitres 1187 et 1188, précise cette lecture : quand Imu affirme que Joy Boy est mort, il penserait en réalité à **Gol D. Roger**. Le seul homme à avoir atteint Laugh Tale en huit cents ans, celui qui a ri et compris l’histoire, aurait été pris pour Joy Boy par Imu lui-même. Roger mort, Imu croit avoir gagné — mais comme Roger n’était que le « précurseur », le vrai Joy Boy (Luffy) se présente un quart de siècle plus tard.
+Une évolution récente de la théorie, nourrie par les chapitres 1187 et 1188, précise cette lecture : quand Imu affirme que Joy Boy est mort, il pourrait en réalité penser à **Gol D. Roger**. Le seul homme à avoir atteint Laugh Tale en huit cents ans, celui qui a ri et compris l’histoire, aurait été pris pour Joy Boy par Imu lui-même. Dans cette lecture, la mort de Roger pourrait faire croire à Imu qu’il a gagné ; Roger ne serait alors que le « précurseur », avant que Luffy ne devienne la figure appelée Joy Boy.
 
 Cette lecture rend compte de la confiance étrange d’Imu au moment même où Luffy s’éveille : il croit avoir déjà vaincu.
 

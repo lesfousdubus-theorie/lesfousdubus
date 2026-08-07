@@ -1,5 +1,5 @@
 ---
-title: "Elbaf et le Harley : la prophétie d'Usopp"
+title: "Elbaf et le Harley"
 summary: "Le Harley d'Elbaf ne raconte pas le passé mais le futur. Usopp, orateur des géants, serait l'auteur de ce texte sacré sous le nom de plume de Louis Arnot."
 category: "peuples-royaumes"
 status: "published"

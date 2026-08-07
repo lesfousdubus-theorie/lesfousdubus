@@ -7,7 +7,7 @@ sources: [287, 1138, 1182]
 editorialStatus: "nouvelle-piste"
 certainty: "moyenne"
 reviewedUntilChapter: 1188
-parent: "nika"
+parent: "dieux-one-piece"
 order: 23
 related: ["divinites-shandias", "nika", "elbaf-halley", "dieux-one-piece", "guerre-finale"]
 ---

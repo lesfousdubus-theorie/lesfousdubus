@@ -1,43 +1,40 @@
 ---
-title: "Les dieux de One Piece : constructions humaines"
-summary: "Dans One Piece, les dieux n'existent pas littéralement. La divinité est une construction humaine : un individu devient dieu par les croyances, la peur ou l'espoir des autres."
+title: "Les dieux de One Piece"
+summary: "Dossier central : dans One Piece, le divin naît de la foi, de la peur, du pouvoir politique et du regard porté sur les individus."
 category: "dieux-croyances"
 status: "published"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-parent: "nika"
-sources: []
-order: 100
+sources: [254, 287, 1018, 1044]
+order: 20
+related: ["nika", "divinites-shandias", "zaza", "boucaniers", "lunariens", "gorosei", "dragons-celestes"]
 ---
 
-## Le principe fondamental
+## Qu’est-ce qu’un dieu dans *One Piece* ?
 
-Les dieux de One Piece ne sont pas des êtres supérieurs naturellement divins. Ener se prétendait Dieu parce que les Shandias avaient peur. Les Dragons Célestes se croient dieux par leur position politique. Nika existe parce que les esclaves ont besoin d'un libérateur.
+Le récit ne présente pas le « dieu » comme une origine vérifiable, mais comme un **statut accordé par des humains**. Une communauté peut donner ce nom à celui qui la protège, à ce qu’elle redoute, ou à celui qui la domine. Cette distinction est essentielle : un titre divin peut décrire une croyance sans démontrer une nature surnaturelle.
 
-Le divin est toujours une construction humaine.
+## Les dieux issus de la foi et de la peur
 
-## Les Fruits du Démon transforment
+À Skypiea, les Shandias invoquent le dieu du soleil, de la pluie, de la forêt et de la terre. Ces noms organisent leur rapport au monde, à la maladie et aux catastrophes. Nika, espéré par les esclaves et transmis par les Boucaniers, relève de la même logique : une figure de libération née d’un besoin collectif.
 
-Ce sont les pouvoirs, les actions et le regard des peuples qui transforment les personnages en dieux ou en démons. Un même Fruit peut libérer ou asservir.
+- **Dieu du soleil** : Nika, figure de libération dans les croyances des esclaves.
+- **Déesse de la pluie** : Zaza, piste récente reliée au panthéon shandia.
+- **Dieux de la forêt et de la terre** : appellations attestées dans les croyances shandias, dont les incarnations éventuelles restent ouvertes.
+- **Ryuma, « dieu des lames »** : titre donné à un sabreur par la mémoire de Wa no Kuni, pas preuve d’une essence divine.
 
-## Les dieux identifiés
+## Les dieux politiques et autoproclamés
 
-- **Nika** (dieu du soleil) = Luffy, né de l'espoir des esclaves
-- **Nidhogg** (dieu de la guerre) = Loki, né de la fierté des géants
-- **Ryuma** (dieu des lames) = Zoro, né de l'honneur des samouraïs
-- **Poséidon** = Shirahoshi, née pour commander les rois des mers
-- **Les Gorosei** = dieux guerriers autoproclamés, pantins d'Imu
-- **Imu** = le dieu/diable suprême, nourri par la peur
+D’autres personnages utilisent le divin comme un langage de domination. Ener se fait appeler Dieu parce qu’il règne sur Skypiea ; Gan Forr occupe une fonction institutionnelle de « Dieu ». Les Dragons Célestes revendiquent une supériorité sacrée. Les Gorosei se présentent enfin comme des guerriers aux formes monstrueuses. Dans chaque cas, le titre révèle surtout un rapport de pouvoir.
 
-## Les dieux shandias
+Les Lunariens ajoutent une ambiguïté : leur proximité avec la Red Line et l’image du « pays des dieux » peuvent nourrir une mythologie, mais ne suffisent pas à établir qu’ils seraient divins.
 
-Quatre divinités sont vénérées à Skypiea et apparaissent dans le Harley :
-- Nika (dieu du soleil) = l'espoir
-- Zaza (dieu de la pluie) = la peur
-- Dieu de la forêt = lié aux Fruits du Démon
-- Dieu de la terre = la colère, lié au serpent de flammes
+## Incarnations actuelles et quatre dieux shandias
 
-## Si on ne croit plus en eux
+La théorie examine l’idée que des personnages contemporains puissent devenir les figures auxquelles les mythes donnent un nom. C’est une **lecture**, non un fait établi. Le dossier distingue donc toujours : le titre connu, la croyance qui le produit, les indices de correspondance, puis les objections.
 
-Qu'est-ce qu'un dieu que tout le monde a oublié ? Les Lunariens étaient vénérés comme des dieux à Red Line. Aujourd'hui, King est le dernier descendant. Les dieux se remplacent.
+Nika, Zaza et les divinités shandias servent de cas d’étude ; ils ne valident pas automatiquement l’existence d’un panthéon littéral ni l’identité de chaque dieu.
 
+## Conclusion
+
+Dans *One Piece*, les dieux sont surtout des constructions humaines : foi, peur, désir de liberté ou propagande politique. Cette grille permet de relier Skypiea, les Boucaniers, Wa no Kuni, les Lunariens et le Gouvernement mondial sans transformer une interprétation en certitude.

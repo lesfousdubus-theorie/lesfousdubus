@@ -1,16 +1,15 @@
 ---
-title: "Shimotsuki Ryuma et Roronoa Zoro"
+title: 'Shimotsuki Ryuma et Roronoa Zoro'
 summary: "Fiche d'analyse sur Shimotsuki Ryuma, le Dieu de la Lame de Wano, et ses parallèles avec Roronoa Zoro."
-category: "personnages-identites"
-status: "published"
-sidebarHidden: true
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'dossier'
 sources: [1023]
-editorialStatus: "hypothese-secondaire"
-certainty: "elevee"
+editorialStatus: 'hypothese-secondaire'
+certainty: 'elevee'
 reviewedUntilChapter: 1188
 order: 47
-parent: "zoro"
-related: ["shimotsuki-ryuma", "zoro"]
+related: ['shimotsuki-ryuma', 'zoro']
 ---
 
 ## Le samouraï borgne
@@ -36,4 +35,3 @@ Puis il partira à Wano, récupérera Shusui (trésor national), et deviendra Ry
 ## La boucle temporelle
 
 Le corps de Ryuma sera envoyé dans le passé et enterré à Ringo. 800 ans plus tard, Gekko Moria le récupérera, permettant à Zoro de se transmettre Shusui et de compléter la boucle.
-
