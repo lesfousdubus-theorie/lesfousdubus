@@ -27,7 +27,7 @@ const { title, description, currentPath, headings, image, type, seoTitle } = Ast
 const hasToc = !!(headings && headings.length > 0);
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
-const isCollectionPage = ['/theorie', '/dossiers', '/chapitres', '/verifier', '/explorer', '/aide'].some(
+const isCollectionPage = ['/theorie', '/dossiers', '/chapitres', '/explorer', '/aide'].some(
   (p) => currentPath === p || currentPath === p + '/',
 );
 const canonicalWikiUrl = new URL(

@@ -55,18 +55,6 @@ const chapters = defineCollection({
   }),
 });
 
-const evidence = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/evidence' }),
-  schema: z.object({
-    title: z.string(),
-    chapter: z.number(),
-    type: z.enum(['dialogue', 'visuel', 'narratif', 'structure']),
-    strength: z.enum(['majeure', 'secondaire']),
-    articles: z.array(z.string()).default([]),
-    quote: z.string().optional(),
-  }),
-});
-
 const glossary = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/glossary' }),
   schema: z.object({
@@ -99,17 +87,6 @@ const locations = defineCollection({
   }),
 });
 
-const objections = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/objections' }),
-  schema: z.object({
-    title: z.string(),
-    argument: z.string(),
-    response: z.string(),
-    strength: z.enum(['mineure', 'moderee', 'majeure']).default('moderee'),
-    articles: z.array(z.string()).default([]),
-  }),
-});
-
 const predictions = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/predictions' }),
   schema: z.object({
@@ -134,11 +111,9 @@ const timelines = defineCollection({
 export const collections = {
   articles,
   chapters,
-  evidence,
   glossary,
   characters,
   locations,
-  objections,
   predictions,
   timelines,
 };

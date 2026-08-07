@@ -153,14 +153,6 @@ Accueil
 │   ├── Historique des articles
 │   └── Hypothèses abandonnées
 │
-├── Vérifier
-│   ├── Pièces du puzzle
-│   ├── Citations et scènes
-│   ├── Parallèles visuels
-│   ├── Objections
-│   ├── Contradictions
-│   └── Sources et méthode
-│
 └── Aide
     ├── FAQ
     ├── Glossaire
