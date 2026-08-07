@@ -1,0 +1,40 @@
+# Les Fous du Bus
+
+> Wiki éditorial consacré à la théorie du Siècle oublié dans One Piece : le passé serait le présent.
+
+## À propos
+
+Les Fous du Bus est un site fan-made qui développe une théorie unique sur One Piece d'Eiichiro Oda. Selon cette lecture, les événements du Siècle oublié (Void Century) ne seraient pas du passé mais correspondraient aux événements actuels du manga. Les personnages légendaires comme Joy Boy, Ryuma, Poséidon ou Davy Jones seraient les noms que l'Histoire donnera aux protagonistes actuels.
+
+## Structure du site
+
+- **La théorie** : Plus de 90 articles d'analyse organisés par catégorie
+- **Explorer** : Outils de visualisation (carte mentale, chronologie, glossaire)
+- **Vérifier** : Méthodes de vérification (parallèles, sources, questions)
+- **Aide** : FAQ, à propos, glossaire
+
+## Articles principaux
+
+- [Théorie complète](/theorie/theorie-complete) : Vue d'ensemble de la théorie
+- [Les bases du Siècle oublié](/theorie/les-bases-du-siecle-oublie) : Fondations de la lecture
+- [Zoro est Ryuma](/theorie/zoro-est-ryuma) : 5 preuves que Zoro deviendra Ryuma
+- [Shirahoshi est Poséidon](/theorie/poseidon) : 5 preuves sur la promesse de Joy Boy
+- [Vivi est Lili](/theorie/lili-vivi-et-les-poneglyphes) : 5 preuves sur la dispersion des Ponéglyphes
+- [Teach est Davy Jones](/theorie/davy-jones) : 5 preuves sur le futur Roi du Monde
+- [Joy Boy](/theorie/joy-boy) : Analyse du personnage légendaire
+- [Imu Nerona](/theorie/imu-nerona) : Analyse du souverain du monde
+- [La guerre finale](/theorie/guerre-finale) : Analyse de l'affrontement à venir
+
+## Catégories
+
+- **Fondations** : Siècle oublié, Ponéglyphes, Volonté héritée, Royaume antique
+- **Personnages & Identités** : Joy Boy, Ryuma, Davy Jones, Lili, Poséidon
+- **Armes antiques** : Pluton, Poséidon, Uranus
+- **Science & Pouvoirs** : Fruits du Démon, Énergie antique, Zoans
+- **Monde & Peuples** : Hommes-Poissons, Lunariens, Shandias, Minks
+- **Gouvernement & Guerre finale** : Gorosei, Imu, Mary Geoise, Vingt Rois
+
+## Contact
+
+Projet indépendant fan-made. One Piece © Eiichiro Oda / Shueisha / Toei Animation.
+Site : https://lesfousdubus.sbs

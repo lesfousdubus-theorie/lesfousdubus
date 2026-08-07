@@ -48,6 +48,20 @@ const ogImage = image || `${siteUrl}/logo.png`;
     <link rel="shortcut icon" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
 
+    <!-- PWA & Theme -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0e1722" />
+    <meta name="color-scheme" content="dark light" />
+
+    <!-- SEO extras -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="author" content="Les Fous du Bus" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="keywords" content="One Piece, théorie, Siècle oublié, Void Century, Joy Boy, Luffy, Eiichiro Oda, manga, analyse" />
+
+    <!-- AI discoverability -->
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-friendly site summary" />
+
     <!-- JSON-LD Structured Data -->
     <script is:inline type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
