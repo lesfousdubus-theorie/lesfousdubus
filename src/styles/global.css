@@ -85,6 +85,7 @@
     /* Anchors (TOC, glossaire, /dossiers#section) must not land hidden
        under the sticky navbar */
     scroll-padding-top: calc(var(--nav-h) + 16px);
+    background-color: var(--bg-main);
   }
 
   body {
