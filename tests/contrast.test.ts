@@ -117,6 +117,17 @@ describe.each(THEMES)('contraste — thème %s', (theme) => {
     }
   });
 
+  it('les éléments posés sur --gradient-border gardent un texte lisible', () => {
+    // Motif partagé par `.btn-primary` (accueil, 404), le numéro de chapitre de
+    // la « Théorie complète » et le stepper de la chronologie : du texte `--bg-main`
+    // sur le dégradé `violet → cyan-dim`. On vérifie ses deux extrémités.
+    const text = color(theme, 'bg-main');
+    for (const end of ['violet', 'cyan-dim']) {
+      const r = contrastRatio(text, color(theme, end));
+      expect(r, `${end} (extrémité du dégradé)`).toBeGreaterThanOrEqual(TEXT_AA);
+    }
+  });
+
   it('l’indicateur de focus est perceptible (1.4.11)', () => {
     const r = contrastRatio(color(theme, 'cyan'), color(theme, 'bg-main'));
     expect(r).toBeGreaterThanOrEqual(UI_AA);

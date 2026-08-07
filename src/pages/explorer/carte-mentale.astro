@@ -165,7 +165,7 @@ for (const a of published) {
     {
       id: 'antagoniste',
       label: '🏛️ Antagoniste',
-      color: '#c25b4f',
+      color: '#e0685a', // rouge plus clair : contraste AA sur fond sombre (cf. audit WCAG)
       angle: 210,
       dist: 240,
     },
@@ -405,13 +405,15 @@ for (const a of published) {
     rect.setAttribute('width', String(w));
     rect.setAttribute('height', String(h));
     rect.setAttribute('rx', '10');
-    rect.setAttribute('fill', b.color + '18');
+    // Carte sombre avec bordure colorée (comme les nœuds d'articles) : le texte
+    // clair sur fond sombre reste lisible dans les deux thèmes (WCAG 4.5:1).
+    rect.setAttribute('fill', 'rgba(14,23,34,0.85)');
     rect.setAttribute('stroke', b.color);
     rect.setAttribute('stroke-width', '1.5');
-    rect.setAttribute('stroke-opacity', '0.6');
+    rect.setAttribute('stroke-opacity', '0.7');
     g.appendChild(rect);
 
-    const texts = createTextNode(b.label, bp.x, bp.y, 12.5, b.color, true);
+    const texts = createTextNode(b.label, bp.x, bp.y, 12.5, '#f3efe6', true);
     texts.forEach(t => g.appendChild(t));
 
     nodesGroup.appendChild(g);

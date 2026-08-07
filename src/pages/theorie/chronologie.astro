@@ -360,7 +360,7 @@ const loopSteps: LoopStep[] = [
   .stepper-node.is-active .stepper-num {
     background: var(--violet);
     border-color: var(--cyan);
-    color: white;
+    color: var(--bg-main); /* contraste AA >= 4.5:1 sur --violet, dans les deux thèmes */
     box-shadow: 0 0 14px var(--glow-violet);
     transform: scale(1.18);
   }
