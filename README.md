@@ -2,13 +2,84 @@
 
 ## Le Siècle oublié est le présent
 
-> Wiki éditorial et interactif consacré à une théorie sur _One Piece_ : le Siècle oublié ne serait pas un événement ancien qui se répète, mais l’histoire que Luffy et ses alliés sont en train de créer.
+> Wiki éditorial consacré à une théorie sur _One Piece_ : le Siècle oublié ne serait pas un événement ancien qui se répète, mais l’histoire que Luffy et ses alliés sont en train de créer.
 
 [Site](https://lesfousdubus.sbs) · [Dépôt GitHub](https://github.com/lesfousdubus-theorie/lesfousdubus) · [Vidéo originale](https://youtu.be/SgJ25zjMJyo) · [Compte X](https://x.com/FoudubusTV_)
 
-**Statut :** fondation V1 en place — site statique généré avec Astro, collections de contenu, recherche Pagefind, déploiement Cloudflare et outillage (CI, validation du contenu, tests) configurés.
+Le projet est ouvert : chacun peut consulter le site, proposer des changements ou réutiliser librement les créations originales du dépôt.
 
-Le projet est ouvert : chacun peut consulter le code, proposer des changements, créer sa propre version ou réutiliser librement les créations originales du dépôt.
+---
+
+## Guide de démarrage rapide (pour tout le monde)
+
+Vous n’avez pas besoin de savoir coder pour modifier le site. **Le contenu est écrit dans de simples fichiers texte.** Le site transforme automatiquement ces fichiers en pages web.
+
+> 💡 **L’idée à retenir :** un article = un fichier dans le dossier `src/content/articles/`. Chaque fichier commence par un petit bloc de réglages (le « frontmatter », entre deux lignes `---`), suivi du texte de l’article, écrit en Markdown (une écriture simple avec des `#` pour les titres, `-` pour les listes, etc.).
+
+### ✏️ Modifier un article existant
+
+1. Ouvrez le fichier `src/content/articles/<nom-de-l-article>.md` (ex. `luffy.md`).
+2. Modifiez le texte sous le frontmatter. Exemples de syntaxe Markdown :
+   - `## Un titre de section`
+   - `- un point de liste`
+   - **texte en gras** s’écrit `**texte en gras**`
+   - *texte en italique* s’écrit `*texte en italique*`
+   - une citation : `> « une phrase »`
+3. Si besoin, ajustez les réglages du frontmatter (ex. `lastUpdatedChapter` après un nouveau chapitre).
+4. Enregistrez, puis prévisualisez (voir [Aperçu local](#aperçu-local-sans-installer-rien) plus bas).
+
+### 🆕 Ajouter un nouvel article
+
+1. Créez un nouveau fichier dans `src/content/articles/`, par exemple `mon-sujet.md`.
+2. Copiez le modèle ci-dessous et remplissez les champs :
+
+```markdown
+---
+title: "Titre de l'article"
+summary: "Une phrase de résumé affichée sur les listes."
+category: "figures-principales"
+status: "published"
+lastUpdatedChapter: 1188
+related:
+  - luffy
+  - joy-boy
+---
+
+## Présentation
+
+Votre premier paragraphe…
+
+## Ce que le manga établit
+
+- premier fait
+- deuxième fait
+
+## La lecture des Fous du Bus
+
+Votre analyse…
+```
+
+3. **Champs obligatoires** : `title`, `summary`, `category`, `status: "published"`.
+4. **`category`** doit être l’une des valeurs autorisées (voir [Les catégories](#les-catégories)).
+5. **`related`** (facultatif) : listez les noms d’autres articles liés (leurs noms de fichier, sans le `.md`).
+6. Enregistrez le fichier. L’article apparaît automatiquement dans les listes et la recherche.
+
+### 🌐 Modifier la structure ou le design du site
+
+- **La navigation et les pages** sont des fichiers `.astro` dans `src/pages/` et `src/components/`. Modifier le site demande alors des compétences plus techniques (Astro, HTML/CSS).
+- Pour la plupart des besoins, **préférez un contenu simple** (un article) plutôt qu’une modification de code.
+
+### ✅ Avant de proposer un changement
+
+Le site vérifie automatiquement la validité du contenu (références, catégories, etc.). Une fois vos modifications enregistrées, lancez la validation :
+
+```bash
+npm run validate
+npm run check
+npm run build
+```
+
+Si tout passe sans erreur, votre modification est prête à être proposée (voir [Contribution](#contribution)).
 
 ---
 
@@ -17,19 +88,18 @@ Le projet est ouvert : chacun peut consulter le code, proposer des changements, 
 - [Identité du projet](#identité-du-projet)
 - [Origine de la théorie](#origine-de-la-théorie)
 - [Objectifs](#objectifs)
-- [Fonctionnalités prévues](#fonctionnalités-prévues)
 - [Architecture du site](#architecture-du-site)
 - [Interface](#interface)
-- [Direction artistique](#direction-artistique)
 - [Stack technique](#stack-technique)
-- [Structure cible du dépôt](#structure-cible-du-dépôt)
+- [Structure du dépôt](#structure-du-dépôt)
 - [Installation locale](#installation-locale)
+- [Aperçu local sans installer rien](#aperçu-local-sans-installer-rien)
 - [Organisation du contenu](#organisation-du-contenu)
-- [Images avec Cloudflare R2](#images-avec-cloudflare-r2)
+- [Les catégories](#les-catégories)
+- [Images et Cloudflare R2](#images-et-cloudflare-r2)
 - [Déploiement](#déploiement)
 - [Mise à jour de la théorie](#mise-à-jour-de-la-théorie)
 - [Contribution](#contribution)
-- [Feuille de route](#feuille-de-route)
 - [Attribution et licence](#attribution-et-licence)
 
 ---
@@ -72,55 +142,15 @@ Le site doit permettre de :
 - **comprendre** la version actuelle de la théorie ;
 - **explorer** les liens entre personnages, lieux, événements et époques ;
 - **suivre** l’apport de chaque nouveau chapitre ;
-- **vérifier** les preuves, citations, objections et contradictions.
+- **lire** la théorie de manière progressive, du résumé à la démonstration complète.
 
 ### Principes
 
 - **Une seule source de vérité :** une information n’est enregistrée qu’une fois, puis réutilisée partout où elle est nécessaire.
 - **Une page canonique :** un sujet peut être accessible depuis plusieurs catégories sans être dupliqué.
 - **Le contenu avant les effets :** les articles doivent rester lisibles sans animation ni rendu 3D.
-- **Transparence :** les contradictions, corrections et prédictions réfutées restent visibles.
 - **Progressivité :** le HTML statique constitue la base ; l’interactivité est chargée uniquement lorsqu’elle apporte une réelle valeur.
 - **Ouverture :** les Issues et Pull Requests servent à faire évoluer le projet.
-
----
-
-## Fonctionnalités prévues
-
-Les fonctionnalités ci-dessous représentent la cible du projet. Leur état d’avancement est indiqué dans la [feuille de route](#feuille-de-route).
-
-### Wiki éditorial
-
-- Articles Markdown et MDX reliés entre eux.
-- Navbar fixe avec recherche globale.
-- Sidebar gauche pour naviguer dans le site.
-- Sidebar droite pour parcourir le sommaire de l’article.
-- Fil d’Ariane, articles liés et chapitres liés.
-- Glossaire, FAQ, objections et contradictions.
-
-### Suivi de la théorie
-
-- Analyse chapitre par chapitre.
-- Historique des modifications.
-- Tableau des prédictions.
-- Base de preuves et de citations.
-- Statuts : renforcement, nouvelle piste, modification, contradiction, réfutation ou aucun apport majeur.
-
-### Exploration
-
-- Double frise chronologique.
-- Carte interactive du monde.
-- Graphe des personnages et des identités.
-- Schéma de la boucle temporelle des Ponéglyphes.
-- Exploration de la fresque d’Elbaf.
-- Globe 3D de Blue Star.
-
-### Confort de lecture
-
-- Recherche avec `Ctrl/⌘ + K`.
-- Filtres par chapitre, personnage, thème et niveau de certitude.
-- Mode clair et sombre.
-- Interface responsive.
 
 ---
 
@@ -130,38 +160,37 @@ Les fonctionnalités ci-dessous représentent la cible du projet. Leur état d�
 Accueil
 │
 ├── La théorie
-│   ├── Fondations
-│   ├── Figures et identités
+│   ├── Résumé de la théorie
+│   ├── Théorie complète
+│   ├── Chronologie
+│   ├── Carte mentale
+│   └── Lexique essentiel
+│
+├── Dossiers
+│   ├── Monde et destinations
+│   ├── Histoire et temporalité
+│   ├── Figures principales
 │   ├── Armes antiques
-│   ├── Science, énergie et pouvoirs
-│   ├── Monde, peuples et témoins
-│   ├── Transmission, voix et mémoire
-│   └── Gouvernement et guerre finale
+│   ├── Technologies et pouvoirs
+│   ├── Gouvernement et guerre finale
+│   ├── Peuples, royaumes et témoins
+│   ├── Dieux et croyances
+│   └── Transmission et mémoire
+│
+├── Chapitres
+│   ├── Dernières analyses (chapitre par chapitre)
+│   ├── Prédictions
+│   └── Toutes les analyses
 │
 ├── Explorer
-│   ├── Frises chronologiques
-│   ├── Carte du monde
-│   ├── Carte des personnages
-│   ├── Schémas temporels
-│   ├── Fresque d’Elbaf
-│   └── Globe 3D
-│
-├── Évolution
-│   ├── Chapitre par chapitre
-│   ├── Dernière mise à jour
-│   ├── Prédictions
-│   ├── Historique des articles
-│   └── Hypothèses abandonnées
+│   └── Carte mentale
 │
 └── Aide
+    ├── À propos
     ├── FAQ
     ├── Glossaire
-    ├── À propos
     ├── Crédits
-    └── Proposer une correction
 ```
-
-Exemple : **Shirahoshi est Poséidon** appartient principalement aux Armes antiques, mais sa page est également accessible depuis les personnages, l’île des Hommes-Poissons, Noah et Joy Boy.
 
 ---
 
@@ -181,11 +210,10 @@ Sur les grands écrans, le site utilise une grille à trois colonnes sous une na
 ### Navbar
 
 - logo et retour à l’accueil ;
-- ouverture de la navigation ;
+- accès aux grandes sections (La théorie, Dossiers, Chapitres, Explorer) ;
 - recherche globale ;
 - accès au dernier chapitre analysé ;
-- mode clair ou sombre ;
-- accès à la FAQ, au glossaire et aux sources.
+- mode clair ou sombre.
 
 ### Sidebar gauche
 
@@ -193,23 +221,19 @@ Sur les grands écrans, le site utilise une grille à trois colonnes sous une na
 - catégories dépliables ;
 - page active clairement indiquée ;
 - défilement indépendant ;
-- largeur cible : `260–290 px` ;
 - repliable ou masquable.
 
 ### Article
 
-- largeur de lecture cible : `720–820 px` ;
+- largeur de lecture confortable ;
 - images et visualisations autorisées à dépasser ponctuellement ;
-- fil d’Ariane, titre, résumé et métadonnées en haut ;
+- titre, résumé et métadonnées en haut ;
 - articles liés et poursuite de lecture en bas.
 
 ### Sidebar droite
 
 - sommaire généré depuis les titres de la page ;
-- section courante mise en évidence ;
 - position `sticky` sous la navbar ;
-- largeur cible : `210–250 px` ;
-- dernière mise à jour, temps de lecture et niveau de certitude ;
 - masquée pour les articles courts.
 
 ### Responsive
@@ -223,129 +247,68 @@ Mobile      : article, bouton menu et bouton sommaire
 
 ---
 
-## Direction artistique
-
-L’identité visuelle doit reprendre l’ambiance de la miniature de la vidéo originale :
-
-![Référence visuelle du thème](https://i.ytimg.com/vi/SgJ25zjMJyo/maxresdefault.jpg)
-
-La miniature sert de **référence artistique**, sans être reproduite littéralement.
-
-> Un wiki-théorie sombre, lumineux, où chaque page donne l’impression d’assembler les pièces d’un immense puzzle autour du Siècle oublié.
-
-### Principes visuels
-
-- motif du puzzle utilisé comme langage graphique ;
-- compositions organisées autour d’une idée centrale et de fragments périphériques ;
-
-### Palette de départ
-
-| Rôle                | Valeur    |
-| ------------------- | --------- |
-| Fond principal      | `#07020A` |
-| Fond secondaire     | `#160B27` |
-| Surface             | `#22124A` |
-| Violet électrique   | `#6E3BBC` |
-| Magenta énergétique | `#AD57A7` |
-| Bleu cyan           | `#4DE7FF` |
-| Texte principal     | `#FEFBF8` |
-| Texte secondaire    | `#DDE4EA` |
-| Accent doré         | `#F4B63F` |
-| Alerte              | `#9E3244` |
-
----
-
 ## Stack technique
 
-| Besoin                    | Technologie                           |
-| ------------------------- | ------------------------------------- |
-| Framework                 | [Astro](https://astro.build/)         |
-| Langage                   | TypeScript                            |
-| Contenu                   | Markdown et MDX                       |
-| Données                   | Astro Content Collections             |
-| Interactivité             | React Islands                         |
-| Styles                    | Tailwind CSS + CSS personnalisé       |
-| Recherche                 | [Pagefind](https://pagefind.app/)     |
-| Cartes 2D                 | SVG interactif                        |
-| 3D                        | Three.js + React Three Fiber          |
-| Tests                     | Vitest + Playwright                   |
-| Hébergement               | Cloudflare Workers avec Static Assets |
-| Images                    | Cloudflare R2                         |
-| Transformation des images | Cloudflare Images                     |
-| CI/CD                     | GitHub + Cloudflare Workers Builds    |
-| Analytics                 | Cloudflare Web Analytics              |
-| Base de données           | Aucune en V1                          |
+| Besoin        | Technologie                       |
+| ------------- | --------------------------------- |
+| Framework     | [Astro](https://astro.build/)     |
+| Langage       | TypeScript                        |
+| Contenu       | Markdown et MDX                   |
+| Données       | Astro Content Collections         |
+| Interactivité | React Islands                     |
+| Styles        | Tailwind CSS + CSS personnalisé   |
+| Recherche     | [Pagefind](https://pagefind.app/) |
+| Tests         | Vitest + Playwright               |
+| Hébergement   | Cloudflare                        |
+| CI/CD         | GitHub Actions                    |
 
-Le site est **statique par défaut**. Les pages principales doivent rester lisibles lorsque les composants interactifs ne se chargent pas.
-
-L’adaptateur `@astrojs/cloudflare` n’est nécessaire que si le projet ajoute plus tard du rendu à la demande ou des routes exécutées côté serveur. La version statique peut être servie directement depuis le dossier `dist/` avec Cloudflare Workers Static Assets.
+Le site est **statique par défaut** : chaque page est générée à l’avance et peut être servie depuis le dossier `dist/`. Les pages principales restent lisibles même sans interactivité.
 
 ### Recherche Pagefind
 
-Pagefind construit son index après le build Astro. Seul le contenu utile des pages doit être indexé : la navbar, les sidebars, le footer et les éléments répétés doivent être exclus afin d’éviter des résultats dupliqués.
-
-Le layout des articles doit donc identifier explicitement la zone principale :
-
-```html
-<main data-pagefind-body>
-  <!-- Contenu de l’article -->
-</main>
-```
-
-Les métadonnées Pagefind permettront ensuite de filtrer les résultats par type de page, chapitre, personnage, thème, certitude.
+Pagefind construit son index après le build Astro. Le contenu utile des pages est indexé dans la zone principale (`data-pagefind-body`) ; la navbar, les sidebars et le footer sont exclus pour éviter des résultats dupliqués.
 
 ---
 
-## Structure cible du dépôt
-
-Cette arborescence est désormais en place dans le dépôt : les dossiers `.github/`, `scripts/` et `src/utils/`, ainsi que les collections de contenu listées ci-dessous, existent.
+## Structure du dépôt
 
 ```text
 lesfousdubus/
-├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   └── PULL_REQUEST_TEMPLATE.md
-├── docs/
-│   └── sources/              # Transcriptions et notes éditoriales brutes
-├── public/
-├── scripts/
+├── .github/              # Modèles d'issues et de pull requests
+├── docs/sources/         # Transcriptions et notes éditoriales brutes
+├── public/               # Fichiers servis tels quels (images, favicon, llms.txt)
+├── scripts/              # Scripts de validation et utilitaires
 ├── src/
-│   ├── components/
-│   ├── content/
-│   │   ├── articles/
-│   │   ├── chapters/
-│   │   ├── characters/
-│   │   ├── evidence/
-│   │   ├── glossary/
-│   │   ├── locations/
-│   │   ├── objections/
-│   │   ├── predictions/
-│   │   └── timelines/
-│   ├── layouts/
-│   ├── pages/
-│   ├── styles/
-│   └── utils/
-├── .env.example
-├── .gitignore
-├── .nvmrc
+│   ├── components/       # Blocs d'interface réutilisables
+│   ├── content/          # TOUT le contenu textuel du site
+│   │   ├── articles/     #   ← les articles (97 actuellement)
+│   │   ├── chapters/     #   les fiches de chapitres analysés
+│   │   ├── characters/   #   les personnages
+│   │   ├── glossary/     #   le glossaire
+│   │   ├── locations/    #   les lieux
+│   │   ├── predictions/  #   les prédictions
+│   │   └── timelines/    #   les frises chronologiques
+│   ├── layouts/          # Les gabarits de page
+│   ├── pages/            # Les routes (.astro)
+│   ├── styles/           # Le CSS global
+│   └── utils/            # Fonctions partagées
 ├── astro.config.mjs
 ├── package.json
-├── package-lock.json
 ├── tsconfig.json
 ├── wrangler.jsonc
 └── README.md
 ```
 
+> 🔑 **Pour non-codeurs :** tout ce qui s’affiche comme texte sur le site vit dans `src/content/`. Vous n’avez presque jamais besoin de toucher aux dossiers `components`, `layouts` ou `pages`.
+
 ---
 
 ## Installation locale
 
-Les commandes ci-dessous permettent de travailler sur le site localement.
-
 ### Prérequis
 
 - Git ;
-- la version de Node.js indiquée dans `.nvmrc` (>= 22.12) ;
+- Node.js (version >= 22, voir `.nvmrc`) ;
 - npm (>= 10).
 
 ### Installation
@@ -355,44 +318,63 @@ git clone https://github.com/lesfousdubus-theorie/lesfousdubus.git
 cd lesfousdubus
 
 npm install
-cp .env.example .env
 npm run dev
 ```
 
-Le serveur local utilise généralement :
+Le serveur local est disponible sur :
 
 ```text
 http://localhost:4321
 ```
 
-### Commandes prévues
+### Commandes
 
 ```bash
-npm run dev          # Développement
+npm run dev          # Développement (serveur local + rechargement)
 npm run check        # Vérification Astro et TypeScript
 npm run validate     # Validation du contenu et des liens
-npm run build        # Build Astro et index Pagefind
+npm run build        # Build Astro + index Pagefind (dossier dist/)
 npm run preview      # Prévisualisation du build
-npm run format       # Formatage
+npm run format       # Formatage automatique
 npm run test         # Tests unitaires
 npm run test:e2e     # Tests de navigation dans un navigateur
-npm run r2:upload    # Envoi d’images vers R2
+npm run r2:upload    # Envoi d'images vers R2 (optionnel)
 ```
+
+---
+
+## Aperçu local sans installer rien
+
+> **Non-codeurs :** cette section est pour vous. Pas besoin de terminal, de Node ou de Docker.
+
+### Option A — via GitHub (recommandée)
+
+1. Créez gratuitement un compte sur [GitHub](https://github.com).
+2. Cliquez sur le fichier que vous voulez modifier dans le dépôt (ex. `src/content/articles/luffy.md`).
+3. Cliquez sur l’icône ✏️ **Modifier** (crayon) en haut à droite.
+4. Modifiez le texte directement dans l’éditeur en ligne.
+5. En bas de la page, écrivez une petite description de votre changement, puis cliquez sur **Propose changes**.
+6. GitHub vous propose de créer une **Pull Request** : validez. Votre modification est maintenant proposée, un aperçu est généré automatiquement, et elle peut être relue puis fusionnée.
+
+> Cette méthode ne modifie rien sur le site tant que la Pull Request n’est pas **fusionnée** — c’est le comportement voulu, pour relire avant de publier.
+
+### Option B — modifier un article sans écrire de code
+
+Même chose que l’option A, mais limitez-vous au fichier de l’article : changez le texte sous le frontmatter, laissez les réglages du haut tels quels sauf si vous savez ce que vous faites.
 
 ---
 
 ## Organisation du contenu
 
-Le contenu est stocké dans des collections structurées et validées.
+Le contenu est stocké dans des collections structurées et validées, dans `src/content/`.
 
-### Article
+### Article (`src/content/articles/`)
 
 ```yaml
 ---
 title: 'Luffy deviendra Joy Boy'
-slug: 'luffy-joy-boy'
 summary: 'Joy Boy serait le nom légendaire donné au futur Luffy.'
-category: 'figures-identites'
+category: 'figures-principales'
 status: 'published'
 certainty: 'central'
 lastUpdatedChapter: 1188
@@ -403,7 +385,7 @@ related:
 ---
 ```
 
-### Chapitre
+### Chapitre (`src/content/chapters/`)
 
 ```yaml
 ---
@@ -421,31 +403,33 @@ updatedArticles:
 ---
 ```
 
-### Preuve
+### Les catégories
 
-```yaml
----
-id: 'roger-trop-tot'
-title: 'Nous sommes arrivés trop tôt'
-chapter: 968
-type: 'dialogue'
-strength: 'majeure'
-articles:
-  - gol-d-roger
-  - laugh-tale
----
-```
+`category` doit être l’une des valeurs suivantes (elle détermine dans quel dossier thématique l’article apparaît) :
 
-Les validations doivent détecter les slugs dupliqués, les références inexistantes, les métadonnées manquantes et les catégories invalides.
+| Valeur                  | Dossier                           |
+| ----------------------- | --------------------------------- |
+| `monde-destinations`    | Monde et destinations             |
+| `histoire-temporalite`  | Histoire, temps et Ponéglyphes    |
+| `figures-principales`   | Figures principales               |
+| `personnages-identites` | Personnages et identités          |
+| `armes-antiques`        | Armes antiques                    |
+| `technologies-pouvoirs` | Technologies et pouvoirs          |
+| `peuples-royaumes`      | Peuples, royaumes et témoins      |
+| `dieux-croyances`       | Dieux et croyances                |
+| `transmission-memoire`  | Transmission et mémoire           |
+| `gouvernement-mondial`  | Gouvernement mondial              |
+| `guerre-finale`         | Guerre finale                     |
 
 ### Conventions
 
-- slugs en minuscules, séparés par des tirets ;
-- caractères ASCII dans les URL ;
+- noms de fichiers en minuscules, séparés par des tirets (`luffy-joy-boy.md`) ;
+- caractères ASCII dans les noms de fichiers ;
 - identifiants internes stables ;
-- aucune modification d’une URL publiée sans redirection ;
-- une affirmation liée au manga doit pouvoir être rattachée à un chapitre ou à une source identifiable ;
-- fait du manga, interprétation et hypothèse doivent être distingués.
+- ne pas modifier une URL publiée sans redirection ;
+- distinguer ce que le manga établit, ce qui est une interprétation et ce qui est une hypothèse.
+
+La validation (`npm run validate`) détecte les références inexistantes, les métadonnées manquantes et les catégories invalides.
 
 ---
 
@@ -453,19 +437,7 @@ Les validations doivent détecter les slugs dupliqués, les références inexist
 
 Les images actuellement utilisées par le site sont versionnées dans `public/images/` et sont servies sous `/images/...`. Elles restent donc disponibles dans les prévisualisations et sans configuration externe.
 
-Pour un volume de médias plus important, le dépôt fournit aussi un composant `R2Image` et le script `npm run r2:upload` pour publier des fichiers sur Cloudflare R2. Configurez alors `PUBLIC_MEDIA_URL` dans `.env` et utilisez une URL R2 dans les contenus MDX. Les médias déjà migrés vers R2 ne doivent plus être dupliqués dans Git.
-
-Organisation recommandée du bucket :
-
-```text
-one-piece-media/
-├── articles/
-├── chapters/
-├── characters/
-├── maps/
-├── timelines/
-└── ui/
-```
+Pour un volume de médias plus important, le dépôt fournit aussi un composant `R2Image` et le script `npm run r2:upload` pour publier des fichiers sur Cloudflare R2. Configurez alors les variables dans `.env` (voir `.env.example`) et utilisez une URL R2 dans les contenus MDX.
 
 Les sources éditoriales brutes (transcriptions et notes) sont conservées séparément dans [`docs/sources/`](docs/sources/README.md) ; elles ne sont pas exposées par le site.
 
@@ -473,24 +445,21 @@ Les sources éditoriales brutes (transcriptions et notes) sont conservées sépa
 
 ## Déploiement
 
-Le site sera déployé sur Cloudflare Workers avec Static Assets.
+Le site est généré statiquement puis déployé sur Cloudflare.
 
 ```text
 Modification locale
 → Commit Git
 → Push vers GitHub
-→ Build Cloudflare
-→ Preview ou production
+→ Build automatique
+→ Prévisualisation (Pull Request) ou production (main)
 ```
 
 - Production : **https://lesfousdubus.sbs**
 - Branche `main` : production.
 - Pull Requests et autres branches : prévisualisations.
-- Commande de build prévue : `pnpm build`.
-- Commande de déploiement prévue : `pnpm exec wrangler deploy`.
 - Dossier généré : `dist/`.
 - Configuration Cloudflare : `wrangler.jsonc`.
-- Images : Cloudflare R2 via `media.lesfousdubus.sbs`.
 
 Les secrets de production restent dans Cloudflare et ne doivent jamais être ajoutés au dépôt.
 
@@ -504,25 +473,24 @@ Pour chaque nouveau chapitre :
 2. déterminer son effet sur la théorie ;
 3. relier les articles concernés ;
 4. mettre à jour les articles principaux ;
-5. conserver l’historique des changements ;
-6. mettre à jour les prédictions.
+5. mettre à jour les prédictions si nécessaire.
 
-Les articles présentent la version actuelle de la théorie. Les anciennes formulations restent consultables dans l’historique.
+Les articles présentent la version actuelle de la théorie. Les anciennes formulations restent consultables dans l’historique de Git.
 
 ---
 
 ## Contribution
 
-Les contributions sont les bienvenues.
+Les contributions sont les bienvenues — y compris, et surtout, le contenu.
 
 - Ouvrez une **Issue** pour signaler un bug, proposer une amélioration, ajouter une source ou discuter d’un point de la théorie.
-- Ouvrez une **Pull Request** pour proposer une correction, une fonctionnalité, une modification du design ou une amélioration du code.
+- Ouvrez une **Pull Request** pour proposer une correction, un nouvel article ou une amélioration du code.
 - Pour un changement important, ouvrez d’abord une Issue afin de discuter de l’approche.
 
 ### Workflow
 
 ```text
-Issue → Branche → Modification → Vérifications → Pull Request → Preview → Fusion
+Issue → Modification → Vérifications → Pull Request → Preview → Fusion
 ```
 
 ### Avant une Pull Request
@@ -540,51 +508,9 @@ Une modification est prête à être fusionnée lorsque :
 - les liens et références sont valides ;
 - les faits, interprétations et hypothèses sont distingués ;
 - les images possèdent un texte alternatif pertinent ;
-- les interactions fonctionnent au clavier ;
-- aucune information sensible n’est ajoutée au dépôt ;
-- la prévisualisation Cloudflare a été vérifiée.
-
-Les changements visuels doivent inclure des captures avant/après.
+- la prévisualisation a été vérifiée.
 
 En proposant une contribution au dépôt, son auteur accepte que les éléments originaux de cette contribution soient publiés sous la même licence CC0 que le reste du projet.
-
----
-
-## Feuille de route
-
-### V1 — Fondation
-
-- [x] Initialisation Astro et TypeScript.
-- [x] Layout avec navbar et deux sidebars.
-- [x] Collections de contenu (articles, chapitres, preuves, glossaire, personnages, lieux, objections, prédictions, frises).
-- [x] Premiers articles.
-- [x] Recherche Pagefind.
-- [x] Chapitre par chapitre (fiches par chapitre).
-- [x] FAQ, objections et sources (pages et données).
-- [x] Métadonnées SEO, sitemap et aperçus de partage.
-- [x] Page 404 et gestion des liens cassés.
-- [x] Tests unitaires (Vitest) et tests de navigation (Playwright).
-- [x] Intégration R2 (composant `R2Image` et script `r2:upload`).
-- [x] Déploiement Cloudflare (wrangler + CI).
-- [x] Modèles GitHub (issues / PR) et workflow CI.
-- [x] Scripts de validation du contenu et utilitaires partagés (`src/utils`).
-
-### V2 — Exploration
-
-- [ ] Double frise chronologique.
-- [ ] Carte du monde.
-- [ ] Carte des personnages.
-- [ ] Tableau des prédictions.
-- [ ] Base des preuves.
-- [ ] Historique des modifications.
-
-### V3 — Expériences avancées
-
-- [ ] Globe 3D.
-- [ ] Fresque d’Elbaf interactive.
-- [ ] Animation temporelle des Ponéglyphes.
-- [ ] Comparateurs visuels.
-- [ ] Favoris et progression locale.
 
 ---
 
