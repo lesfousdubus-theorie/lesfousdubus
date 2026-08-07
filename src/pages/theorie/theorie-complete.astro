@@ -1054,7 +1054,7 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
     padding: 0 8px;
     border-radius: 8px;
     background: var(--gradient-border);
-    color: white;
+    color: var(--bg-main); /* contraste AA >= 4.5:1 sur le dégradé, dans les deux thèmes */
     font-weight: 700;
     font-size: 0.9rem;
     flex-shrink: 0;
