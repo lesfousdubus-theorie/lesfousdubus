@@ -1,6 +1,7 @@
 ---
 title: "Joy Boy"
-summary: "Fiche consacrée à la figure légendaire de Joy Boy, sa promesse au Royaume Ryūgū, son rôle dans le Siècle Oublié et les analyses de la théorie."
+summary: "Joy Boy dans One Piece : qui est Joy Boy, sa promesse au Royaume Ryūgū, ses liens avec Luffy et Nika, le Siècle oublié et la théorie complète."
+seoTitle: "Joy Boy dans One Piece : identité, indices et théorie | Les Fous du Bus"
 category: "figures-principales"
 status: "published"
 sources: [967, 968, 1115, 1122, 1049, 1052, 1]

@@ -1,6 +1,7 @@
 ---
 title: "Laugh Tale"
-summary: "Fiche d'analyse sur l'île finale de Laugh Tale, le trésor de Joy Boy et les hypothèses entourant sa nature."
+summary: "Laugh Tale dans One Piece : localisation après Lodestar, fou rire de Roger, Road Ponéglyphes, trésor de Joy Boy et boucle temporelle du Siècle oublié."
+seoTitle: "Laugh Tale dans One Piece : localisation, Roger et théorie | Les Fous du Bus"
 category: "monde-destinations"
 status: "published"
 sources: []

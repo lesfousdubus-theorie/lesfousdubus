@@ -1,6 +1,7 @@
 ---
 title: "Pluton"
 summary: "Fiche d'identification de Pluton, l'Arme antique conservée sous forme de plans à Water Seven et capable de détruire des îles entières."
+seoTitle: "Pluton dans One Piece : navire antique et théorie | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
 sources: [431]

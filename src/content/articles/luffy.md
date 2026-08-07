@@ -1,6 +1,7 @@
 ---
 title: "Monkey D. Luffy"
 summary: "Fiche d'analyse consacrée au capitaine des Chapeaux de Paille, à la Volonté du D., son fruit du démon et son rôle central dans la théorie."
+seoTitle: "Luffy dans One Piece : Joy Boy, Nika et théorie | Les Fous du Bus"
 category: "figures-principales"
 status: "published"
 sources: []

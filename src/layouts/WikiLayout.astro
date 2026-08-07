@@ -17,16 +17,26 @@ interface Props {
   headings?: Heading[];
   image?: string;
   type?: 'website' | 'article';
+  seoTitle?: string;
 }
 
-const { title, description, currentPath, headings, image, type } = Astro.props;
+const { title, description, currentPath, headings, image, type, seoTitle } = Astro.props;
 
 // Pages without headings must not reserve an empty 240px gutter
 // or show a "Sommaire" drawer with no entries.
 const hasToc = !!(headings && headings.length > 0);
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
+const isCollectionPage = ['/theorie', '/dossiers', '/chapitres', '/verifier', '/explorer', '/aide'].some(
+  (p) => currentPath === p || currentPath === p + '/',
+);
+const canonicalWikiUrl = new URL(
+  currentPath.endsWith('/') ? currentPath : currentPath + '/',
+  siteUrl,
+).toString();
 ---
 
-<BaseLayout title={title} description={description} image={image} type={type}>
+<BaseLayout title={title} description={description} image={image} type={type} seoTitle={seoTitle}>
   <script is:inline>
     (function () {
       const collapsed = localStorage.getItem('sidebar-left-collapsed') === 'true';
@@ -42,7 +52,42 @@ const hasToc = !!(headings && headings.length > 0);
     })();
   </script>
 
+  {
+    isCollectionPage && (
+      <>
+        <script
+          is:inline
+          type="application/ld+json"
+          set:html={JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: title,
+            description: description,
+            url: canonicalWikiUrl,
+            inLanguage: 'fr-FR',
+            isPartOf: { '@id': `${siteUrl}/#website` },
+          })}
+        />
+        <script
+          is:inline
+          type="application/ld+json"
+          set:html={JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${siteUrl}/` },
+              { '@type': 'ListItem', position: 2, name: title, item: canonicalWikiUrl },
+            ],
+          })}
+        />
+      </>
+    )
+  }
+
   <Navbar />
+
+  <!-- Mobile overlay — unique navigation DOM, affiché uniquement sur mobile quand le tiroir est ouvert -->
+  <div id="sidebar-mobile-overlay" class="sidebar-mobile-overlay" aria-hidden="true"></div>
 
   <div class:list={['layout', { 'layout--no-toc': !hasToc }]}>
     <div class="sidebar-left-container" id="sidebar-left-container">
@@ -283,11 +328,72 @@ const hasToc = !!(headings && headings.length > 0);
     }
   }
 
-  /* Mobile: hide left sidebar, single column */
+  /* Mobile overlay — single navigation DOM, rendered differently with CSS */
+  .sidebar-mobile-overlay {
+    display: none;
+    position: fixed;
+    inset: var(--nav-h) 0 0 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 35;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .sidebar-mobile-overlay.is-open {
+    opacity: 1;
+  }
+
+  /* Mobile: single navigation becomes drawer, no duplicate DOM */
   @media (max-width: 768px) {
     .sidebar-left-container {
-      display: none;
+      position: fixed;
+      top: var(--nav-h);
+      left: 0;
+      bottom: 0;
+      width: 84%;
+      max-width: 320px;
+      z-index: 40;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      /* Override desktop sticky/width vars */
+      display: block;
     }
+
+    .sidebar-left-container.is-mobile-open {
+      transform: translateX(0);
+      box-shadow: 8px 0 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .sidebar-left {
+      position: relative;
+      top: 0;
+      height: auto;
+      min-height: 100%;
+      width: 100% !important;
+      border-right: none;
+      transform: none !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .sidebar-resizer {
+      display: none !important;
+    }
+
+    .sidebar-mobile-overlay {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-mobile-overlay.is-open {
+      pointer-events: auto;
+    }
+
     .layout {
       grid-template-columns: 1fr;
     }
@@ -308,6 +414,10 @@ const hasToc = !!(headings && headings.length > 0);
   // Left sidebar collapse / expand logic controlled by the single navbar button
   const navbarSidebarToggle = document.getElementById('navbar-sidebar-toggle');
   const sidebarContainer = document.getElementById('sidebar-left-container');
+  const mobileToggle = document.getElementById('mobile-menu-toggle');
+  const mobileOverlay = document.getElementById('sidebar-mobile-overlay');
+  const hamburgerIcon = document.getElementById('hamburger-icon');
+  const closeIcon = document.getElementById('close-icon');
 
   const updateAriaState = () => {
     const isCollapsed = document.documentElement.classList.contains('sidebar-left-collapsed');
@@ -329,7 +439,53 @@ const hasToc = !!(headings && headings.length > 0);
     localStorage.setItem('sidebar-left-collapsed', String(isCollapsed));
   };
 
-  navbarSidebarToggle?.addEventListener('click', toggleSidebar);
+  navbarSidebarToggle?.addEventListener('click', () => {
+    // Sur mobile, le bouton desktop est masqué : on délègue au tiroir mobile
+    if (window.innerWidth <= 768) {
+      toggleMobile(true);
+      return;
+    }
+    toggleSidebar();
+  });
+
+  // --- Mobile drawer : single navigation DOM, pas de duplication ---
+  const isMobileOpen = () => sidebarContainer?.classList.contains('is-mobile-open');
+
+  const toggleMobile = (force?: boolean) => {
+    const willOpen = force !== undefined ? force : !isMobileOpen();
+    if (willOpen) {
+      sidebarContainer?.classList.add('is-mobile-open');
+      mobileOverlay?.classList.add('is-open');
+      mobileOverlay?.setAttribute('aria-hidden', 'false');
+      hamburgerIcon?.classList.add('hidden');
+      closeIcon?.classList.remove('hidden');
+      mobileToggle?.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    } else {
+      sidebarContainer?.classList.remove('is-mobile-open');
+      mobileOverlay?.classList.remove('is-open');
+      mobileOverlay?.setAttribute('aria-hidden', 'true');
+      hamburgerIcon?.classList.remove('hidden');
+      closeIcon?.classList.add('hidden');
+      mobileToggle?.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+  };
+
+  mobileToggle?.addEventListener('click', () => toggleMobile());
+  mobileOverlay?.addEventListener('click', () => toggleMobile(false));
+
+  // Fermer le tiroir lors d'une navigation (clic sur un lien de la sidebar)
+  sidebarContainer?.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('a') && window.innerWidth <= 768) {
+      toggleMobile(false);
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isMobileOpen()) toggleMobile(false);
+  });
 
   // Sidebar drag resizer logic
   const resizer = document.getElementById('sidebar-resizer');

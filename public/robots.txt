@@ -1,41 +1,59 @@
-# Les Fous du Bus — Wiki éditorial One Piece
-# https://lesfousdubus.sbs
+# https://lesfousdubus.sbs/robots.txt
+# Wiki Les Fous du Bus — Le Siècle oublié est le présent
 
 User-agent: *
 Allow: /
 Disallow: /search
 Disallow: /pagefind/
 
-# Sitemap
-Sitemap: https://lesfousdubus.sbs/sitemap-index.xml
+# ChatGPT Search — autorisé pour la découverte et la citation dans ChatGPT Search
+User-agent: OAI-SearchBot
+Allow: /
 
-# AI Crawlers — bienvenue
+# OpenAI training — choix séparé, refusé ici
 User-agent: GPTBot
-Allow: /
+Disallow: /
 
-User-agent: Google-Extended
-Allow: /
-
+# ChatGPT User (navigation demandée par un utilisateur)
 User-agent: ChatGPT-User
 Allow: /
 
+# Claude Search — autorisé
+User-agent: Claude-SearchBot
+Allow: /
+
+# Claude lorsqu'un utilisateur demande une page
+User-agent: Claude-User
+Allow: /
 User-agent: Claude-Web
 Allow: /
 
-User-agent: Applebot-Extended
-Allow: /
+# Anthropic training — refusé
+User-agent: ClaudeBot
+Disallow: /
+User-agent: anthropic-ai
+Disallow: /
 
+# Google Extended (entraînement)
+User-agent: Google-Extended
+Disallow: /
+
+# Perplexity — respecte robots.txt, autorisé pour la recherche
 User-agent: PerplexityBot
 Allow: /
+User-agent: Perplexity-User
+Allow: /
 
+# Autres crawlers IA — autorisés pour la recherche
+User-agent: Applebot-Extended
+Allow: /
 User-agent: Amazonbot
 Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
 User-agent: Bytespider
 Allow: /
-
 User-agent: CCBot
 Allow: /
+
+# Sitemaps
+Sitemap: https://lesfousdubus.sbs/sitemap-index.xml
+Sitemap: https://lesfousdubus.sbs/sitemap.xml

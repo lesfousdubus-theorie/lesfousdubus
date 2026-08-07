@@ -1,6 +1,5 @@
 ---
 import SearchModal from './SearchModal.tsx';
-import SidebarNav from './SidebarNav.astro';
 
 interface SubLink {
   label: string;
@@ -299,25 +298,7 @@ const isActive = (href: string) =>
 
 <!-- Search modal: MUST live outside <nav> -->
 <SearchModal client:idle />
-
-<!-- Mobile menu overlay -->
-<div
-  id="mobile-menu-overlay"
-  class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden lg:hidden"
-  style="top: var(--nav-h);"
->
-</div>
-
-<!-- Mobile menu drawer -->
-<div
-  id="mobile-menu-drawer"
-  class="fixed left-0 bottom-0 w-[84%] max-w-[320px] bg-[var(--bg-secondary)] border-r border-borderColor z-40 overflow-y-auto hidden lg:hidden transform -translate-x-full transition-transform duration-300 ease-in-out"
-  style="top: var(--nav-h);"
->
-  <div class="p-5">
-    <SidebarNav currentPath={Astro.url.pathname} />
-  </div>
-</div>
+<!-- Mobile drawer is now the single SidebarNav in WikiLayout (no duplicate DOM) -->
 
 <style>
   .navbar {
@@ -616,48 +597,5 @@ const isActive = (href: string) =>
     });
   });
 
-  // Mobile menu drawer toggle logic
-  const mobileToggle = document.getElementById('mobile-menu-toggle');
-  const mobileOverlay = document.getElementById('mobile-menu-overlay');
-  const mobileDrawer = document.getElementById('mobile-menu-drawer');
-  const hamburgerIcon = document.getElementById('hamburger-icon');
-  const closeIcon = document.getElementById('close-icon');
-
-  const isMobileMenuOpen = () => !mobileDrawer?.classList.contains('-translate-x-full');
-
-  const openMobileMenu = () => {
-    mobileOverlay?.classList.remove('hidden');
-    mobileDrawer?.classList.remove('hidden');
-    requestAnimationFrame(() => {
-      mobileDrawer?.classList.remove('-translate-x-full');
-    });
-    hamburgerIcon?.classList.add('hidden');
-    closeIcon?.classList.remove('hidden');
-    mobileToggle?.setAttribute('aria-expanded', 'true');
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeMobileMenu = () => {
-    mobileDrawer?.classList.add('-translate-x-full');
-    mobileOverlay?.classList.add('hidden');
-    hamburgerIcon?.classList.remove('hidden');
-    closeIcon?.classList.add('hidden');
-    mobileToggle?.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
-    setTimeout(() => {
-      if (!isMobileMenuOpen()) {
-        mobileDrawer?.classList.add('hidden');
-      }
-    }, 300);
-  };
-
-  mobileToggle?.addEventListener('click', () => {
-    if (isMobileMenuOpen()) {
-      closeMobileMenu();
-    } else {
-      openMobileMenu();
-    }
-  });
-
-  mobileOverlay?.addEventListener('click', closeMobileMenu);
+  // Mobile drawer is handled in WikiLayout (single navigation DOM) — no duplicate handling needed here
 </script>

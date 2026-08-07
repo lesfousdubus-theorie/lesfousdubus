@@ -1,6 +1,7 @@
 ---
 title: "Armes antiques"
-summary: "Fiche d'identification des Armes antiques, trois entités (Poséidon, Pluton, Uranus) dont la coalition peut modifier la géographie du monde."
+summary: "Armes antiques dans One Piece : Poséidon, Pluton et Uranus — origine, rôle dans la guerre finale, All Blue et théorie complète du Siècle oublié."
+seoTitle: "Armes antiques dans One Piece : Poséidon, Pluton et Uranus | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
 sources: [1113, 1115, 1114]
