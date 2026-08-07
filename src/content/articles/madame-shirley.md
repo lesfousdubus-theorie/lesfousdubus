@@ -7,9 +7,9 @@ sources: [610, 611, 618]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-parent: "imu-nerona-fiche"
+parent: "imu-nerona"
 order: 59
-related: ["communication-temps", "kozuki-toki", "royaume-ryugu", "imu-nerona-fiche", "joy-boy"]
+related: ["communication-temps", "kozuki-toki", "royaume-ryugu", "imu-nerona", "joy-boy"]
 ---
 
 **Résumé** : Imu ne règne pas sur le monde par simple force brute, mais parce qu'il possède le don ultime de prescience. Ayant eu la vision d'un garçon au Chapeau de Paille détruisant son empire, Imu passe 800 ans à tout verrouiller pour tenter désespérément d'empêcher cette prédiction de s'accomplir.

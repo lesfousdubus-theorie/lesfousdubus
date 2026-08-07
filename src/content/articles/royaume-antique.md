@@ -13,7 +13,7 @@ related:
   [
     "siecle-oublie",
     "vingt-rois",
-    "ponelyphes",
+    "poneglyphes",
     "gouvernement-mondial",
     "professeur-clover-et-ohara",
     "vegapunk",

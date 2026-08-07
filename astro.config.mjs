@@ -9,6 +9,12 @@ export default defineConfig({
   output: 'static',
   prefetch: true,
   server: { host: '0.0.0.0', allowedHosts: true },
+  redirects: {
+    '/theorie/ponelyphes': '/theorie/poneglyphes',
+    '/theorie/ponelyphes/': '/theorie/poneglyphes',
+    '/theorie/imu-nerona-fiche': '/theorie/imu-nerona',
+    '/theorie/imu-nerona-fiche/': '/theorie/imu-nerona',
+  },
   integrations: [
     react(),
     tailwind({ applyBaseStyles: false }),

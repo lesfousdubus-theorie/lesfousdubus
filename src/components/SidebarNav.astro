@@ -7,11 +7,11 @@ interface Props {
 
 const { currentPath } = Astro.props;
 
-// Fetch all published articles
+// Fetch all published articles (excluding those marked as hidden from sidebar)
 // Source unique de la navigation latérale : toutes les pages consomment ce même
 // composant, et la collection est triée ici de façon déterministe (order puis id)
 // pour que la sidebar soit strictement identique sur l'ensemble du site.
-const articles = (await getCollection('articles', ({ data }) => data.status === 'published')).sort(
+const articles = (await getCollection('articles', ({ data }) => data.status === 'published' && !data.sidebarHidden)).sort(
   (a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr'),
 );
 

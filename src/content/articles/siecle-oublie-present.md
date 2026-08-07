@@ -4,6 +4,7 @@ summary: "Le Siècle oublié n'a jamais eu lieu il y a 800 ans. C'est l'histoire
 seoTitle: "Le Siècle oublié est le présent dans One Piece : théorie complète | Les Fous du Bus"
 category: "histoire-temporalite"
 status: "published"
+sidebarHidden: true
 certainty: "central"
 reviewedUntilChapter: 1188
 parent: "siecle-oublie"

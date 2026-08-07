@@ -9,7 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "peuples-royaumes"
 order: 85
-related: ["peuples-royaumes", "ponelyphes", "poseidon-fiche", "dieux-one-piece", "guerre-finale"]
+related: ["peuples-royaumes", "poneglyphes", "poseidon-fiche", "dieux-one-piece", "guerre-finale"]
 ---
 
 ## Présentation

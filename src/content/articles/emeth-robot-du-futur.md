@@ -4,6 +4,7 @@ title: "Emeth, le Robot Géant venu du Futur"
 summary: "8 indices démontrant qu'Emeth n'est pas un vestige de l'Antiquité mais le chef-d'œuvre ultime de Franky conçu dans le futur."
 category: "technologies-pouvoirs"
 status: "published"
+sidebarHidden: true
 certainty: "elevee"
 reviewedUntilChapter: 1188
 related: ["les-bases-du-siecle-oublie", "joy-boy"]

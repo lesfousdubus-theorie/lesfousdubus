@@ -54,12 +54,12 @@ import Footer from '@components/Footer.astro';
       <li><a href="/theorie/blue-star"><strong>Blue Star</strong></a> — une planète à 90 % d'eau, coupée en deux par la Red Line. Le point de départ est <em>géographique</em>, pas temporel.</li>
       <li><a href="/theorie/laugh-tale"><strong>Laugh Tale</strong></a> — la dernière île, que personne n'a retrouvée en huit cents ans. L'impossibilité géographique de faire le tour du monde (trois Red Line sans issue) est le premier indice. Pourquoi reste-t-elle introuvable ?</li>
       <li><a href="/theorie/road-ponelyphes"><strong>La quatrième coordonnée : le temps</strong></a> — et si le problème n'était pas <em>où</em> est le One Piece, mais <em>quand</em> il est ? Les Road Ponéglyphes encoderaient une coordonnée temporelle.</li>
-      <li><a href="/theorie/ponelyphes"><strong>Les Ponéglyphes</strong></a> — stèles indestructibles gravées depuis huit cents ans… qui raconteraient en réalité l'avenir. C'est le mécanisme fondamental : la mémoire de l'avenir.</li>
+      <li><a href="/theorie/poneglyphes"><strong>Les Ponéglyphes</strong></a> — stèles indestructibles gravées depuis huit cents ans… qui raconteraient en réalité l'avenir. C'est le mécanisme fondamental : la mémoire de l'avenir.</li>
       <li><a href="/theorie/siecle-oublie"><strong>Le Siècle oublié</strong></a> — les cent ans effacés par le Gouvernement mondial ne seraient pas un passé disparu ; ils seraient en train de se produire maintenant, sous nos yeux.</li>
       <li><a href="/theorie/royaume-antique"><strong>Le Royaume antique</strong></a> — ce que le monde croit être une civilisation perdue serait en réalité le monde <em>à construire</em> par Luffy et ses alliés. Les technologies « antiques » (Emeth, Mother Flame) ne sont pas à exhumer, elles sont à inventer.</li>
       <li><a href="/theorie/joy-boy"><strong>Joy Boy</strong></a> / <a href="/theorie/nika">Nika</a> / <a href="/theorie/luffy">Luffy</a> — trois noms, un seul homme. Joy Boy n'est pas un ancêtre de Luffy, c'est le nom que l'Histoire donnera à Luffy à l'issue de son aventure. Les peuples ont attendu un libérateur : il agit librement depuis le chapitre 1.</li>
       <li><a href="/theorie/peuples-royaumes"><strong>Peuples & missions</strong></a> — Ryugu, Wa no Kuni, les Minks, les Shandias, les Boucaniers, les géants d'Elbaf : chacun conserve depuis huit siècles une mission qui prépare le Jour du Serment. Les <a href="/theorie/armes-antiques">Armes antiques</a> (Poséidon, Pluton, Uranus) en font partie.</li>
-      <li><a href="/theorie/imu-nerona-fiche"><strong>Imu</strong></a> — souverain caché du monde, il craint non pas son passé mais son avenir. La « malédiction de la préscience » explique pourquoi il confond les générations (Xebec/Davy Jones, Titi/Vivi, Roger/Joy Boy) et persécute tous ceux qui ressemblent à la silhouette qu'il a vue.</li>
+      <li><a href="/theorie/imu-nerona"><strong>Imu</strong></a> — souverain caché du monde, il craint non pas son passé mais son avenir. La « malédiction de la préscience » explique pourquoi il confond les générations (Xebec/Davy Jones, Titi/Vivi, Roger/Joy Boy) et persécute tous ceux qui ressemblent à la silhouette qu'il a vue.</li>
       <li><a href="/theorie/guerre-finale"><strong>Guerre finale</strong></a> — la coalition de Joy Boy contre le Gouvernement mondial. Red Line tombe, la mer monte (Déluge), Noah évacue les Hommes-Poissons.</li>
       <li><a href="/theorie/all-blue"><strong>All Blue</strong></a> & <a href="/theorie/one-piece-histoire"><strong>One Piece</strong></a> — les quatre mers se rejoignent en une seule pièce, et le trésor de Laugh Tale serait l'histoire elle-même, celle que nous lisons depuis le chapitre 1. Le début côtoie la fin.</li>
     </ol>
@@ -80,12 +80,12 @@ import Footer from '@components/Footer.astro';
     { slug: 'blue-star',           title: 'Blue Star',                  level: 'central',   x: 120,  y: 200 },
     { slug: 'laugh-tale',          title: 'Laugh Tale',                 level: 'central',   x: 270,  y: 380 },
     { slug: 'road-ponelyphes',     title: 'Quatrième\ncoordonnée : temps', level: 'elevee', x: 420,  y: 200 },
-    { slug: 'ponelyphes',          title: 'Ponéglyphes',                level: 'central',   x: 560,  y: 380 },
+    { slug: 'poneglyphes',          title: 'Ponéglyphes',                level: 'central',   x: 560,  y: 380 },
     { slug: 'siecle-oublie',       title: 'Siècle oublié',              level: 'central',   x: 700,  y: 200 },
     { slug: 'royaume-antique',     title: 'Royaume antique',            level: 'elevee',    x: 840,  y: 380 },
     { slug: 'joy-boy',             title: 'Joy Boy / Nika\n/ Luffy',    level: 'central',   x: 980,  y: 200 },
     { slug: 'peuples-royaumes',    title: 'Peuples, missions\n& Armes antiques', level: 'elevee', x: 1120, y: 380 },
-    { slug: 'imu-nerona-fiche',    title: 'Imu',                        level: 'central',   x: 980,  y: 600 },
+    { slug: 'imu-nerona',    title: 'Imu',                        level: 'central',   x: 980,  y: 600 },
     { slug: 'guerre-finale',       title: 'Guerre finale',              level: 'elevee',    x: 700,  y: 700 },
     { slug: 'all-blue',            title: 'All Blue &\nOne Piece',      level: 'hypothese', x: 420,  y: 600 },
   ];
@@ -94,8 +94,8 @@ import Footer from '@components/Footer.astro';
   const subs = [
     { parent: 'laugh-tale',       slug: 'lodestar',         title: 'Lodestar',         x: 220, y: 510, level: 'central' },
     { parent: 'laugh-tale',       slug: 'one-piece-histoire', title: 'One Piece',       x: 330, y: 510, level: 'hypothese' },
-    { parent: 'ponelyphes',       slug: 'rio-ponelyphe',     title: 'Rio Ponéglyphe',   x: 510, y: 510, level: 'elevee' },
-    { parent: 'ponelyphes',       slug: 'communication-temps', title: 'Communication\ntemporelle (1187–88)', x: 610, y: 520, level: 'hypothese' },
+    { parent: 'poneglyphes',       slug: 'rio-ponelyphe',     title: 'Rio Ponéglyphe',   x: 510, y: 510, level: 'elevee' },
+    { parent: 'poneglyphes',       slug: 'communication-temps', title: 'Communication\ntemporelle (1187–88)', x: 610, y: 520, level: 'hypothese' },
     { parent: 'siecle-oublie',    slug: 'professeur-clover-et-ohara', title: 'Clover & Ohara', x: 650, y: 90, level: 'central' },
     { parent: 'royaume-antique',  slug: 'vegapunk',          title: 'Vegapunk',         x: 790, y: 510, level: 'central' },
     { parent: 'royaume-antique',  slug: 'energie-antique',   title: 'Énergie antique',  x: 890, y: 520, level: 'elevee' },
@@ -106,9 +106,9 @@ import Footer from '@components/Footer.astro';
     { parent: 'peuples-royaumes', slug: 'pluton-fiche',      title: 'Pluton',           x: 1280, y: 400, level: 'elevee' },
     { parent: 'peuples-royaumes', slug: 'zunesha-fiche',     title: 'Zunesha',          x: 1280, y: 280, level: 'elevee' },
     { parent: 'peuples-royaumes', slug: 'wa-no-kuni',        title: 'Wa no Kuni',       x: 1280, y: 520, level: 'elevee' },
-    { parent: 'imu-nerona-fiche', slug: 'gouvernement-mondial', title: 'GM',           x: 870, y: 620, level: 'central' },
-    { parent: 'imu-nerona-fiche', slug: 'vingt-rois',        title: 'Vingt Rois',       x: 1080, y: 690, level: 'elevee' },
-    { parent: 'imu-nerona-fiche', slug: 'la-prescience-et-imu', title: 'Malédiction\nde la préscience', x: 1050, y: 520, level: 'hypothese' },
+    { parent: 'imu-nerona', slug: 'gouvernement-mondial', title: 'GM',           x: 870, y: 620, level: 'central' },
+    { parent: 'imu-nerona', slug: 'vingt-rois',        title: 'Vingt Rois',       x: 1080, y: 690, level: 'elevee' },
+    { parent: 'imu-nerona', slug: 'la-prescience-et-imu', title: 'Malédiction\nde la préscience', x: 1050, y: 520, level: 'hypothese' },
     { parent: 'guerre-finale',    slug: 'deluge-all-blue',   title: 'Déluge',           x: 570, y: 780, level: 'elevee' },
     { parent: 'guerre-finale',    slug: 'red-line',          title: 'Chute de\nRed Line', x: 780, y: 790, level: 'hypothese' },
     { parent: 'guerre-finale',    slug: 'noah',              title: 'Noah',             x: 840, y: 760, level: 'central' },
@@ -120,7 +120,7 @@ import Footer from '@components/Footer.astro';
   // Cross-links (semantic connections beyond the causal chain)
   const crossLinks = [
     { from: 'joy-boy', to: 'guerre-finale', label: 'libère' },
-    { from: 'ponelyphes', to: 'imu-nerona-fiche', label: 'lus par Imu' },
+    { from: 'poneglyphes', to: 'imu-nerona', label: 'lus par Imu' },
     { from: 'laugh-tale', to: 'one-piece-histoire', label: 'trésor' },
   ];
 
@@ -169,9 +169,34 @@ import Footer from '@components/Footer.astro';
   }
 
   // Draw main causal chain (connections between consecutive chain nodes)
+  const chainLabels = [
+    'problème géographique',
+    'quatrième coordonnée',
+    'mécanisme',
+    'racontent l\'avenir',
+    'vient du futur',
+    'conséquence',
+    'préparent',
+    'craint',
+    'provoque',
+    'crée',
+  ];
   for (let i = 0; i < chain.length - 1; i++) {
     const a = chain[i], b = chain[i+1];
     drawPath(a.x, a.y, b.x, b.y, levelColors[b.level] || '#8899aa', false, 0.55, true);
+    // Add label at midpoint
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', mx);
+    label.setAttribute('y', my - 8);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('fill', '#aeb7c2');
+    label.setAttribute('font-size', '11');
+    label.setAttribute('font-family', 'Inter, system-ui, sans-serif');
+    label.setAttribute('pointer-events', 'none');
+    label.textContent = chainLabels[i] || '';
+    connectionsGroup.appendChild(label);
   }
   // Close the loop back visually (11 → 1? Optional - keep subtle)
   drawPath(chain[chain.length-1].x, chain[chain.length-1].y, chain[0].x, chain[0].y, '#8899aa', true, 0.18);

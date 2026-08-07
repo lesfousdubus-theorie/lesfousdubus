@@ -3,11 +3,12 @@ title: "Les Ponéglyphes racontent le futur"
 summary: "Les Ponéglyphes ne racontent pas le passé mais l'histoire que nous lisons depuis le chapitre 1. Ils ont été créés par Robin, Momonosuke et les Mugiwara dans le futur."
 category: "transmission-memoire"
 status: "published"
+sidebarHidden: true
 certainty: "central"
 reviewedUntilChapter: 1188
 sources: [1]
 order: 54
-parent: "ponelyphes"
+parent: "poneglyphes"
 ---
 
 ## Le Rio Ponéglyphe

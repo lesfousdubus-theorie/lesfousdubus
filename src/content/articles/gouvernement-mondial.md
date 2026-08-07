@@ -10,7 +10,7 @@ reviewedUntilChapter: 1188
 order: 60
 related:
   [
-    "imu-nerona-fiche",
+    "imu-nerona",
     "vingt-rois",
     "mary-geoise",
     "chevaliers-divins",

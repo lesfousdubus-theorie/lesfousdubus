@@ -9,7 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "vingt-rois"
 order: 67
-related: ["gouvernement-mondial", "vingt-rois", "dragons-celestes", "imu-nerona-fiche", "guerre-finale"]
+related: ["gouvernement-mondial", "vingt-rois", "dragons-celestes", "imu-nerona", "guerre-finale"]
 ---
 
 ## Présentation

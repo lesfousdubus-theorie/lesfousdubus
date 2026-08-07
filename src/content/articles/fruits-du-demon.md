@@ -8,7 +8,7 @@ editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
 order: 73
-related: ["zoans", "hito-hito-no-mi-nika", "vegapunk", "kozuki-toki", "imu-nerona-fiche"]
+related: ["zoans", "hito-hito-no-mi-nika", "vegapunk", "kozuki-toki", "imu-nerona"]
 ---
 
 ## Présentation
