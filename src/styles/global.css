@@ -86,12 +86,6 @@
        under the sticky navbar */
     scroll-padding-top: calc(var(--nav-h) + 16px);
     background-color: var(--bg-main);
-  }
-
-  body {
-    @apply text-textMain antialiased;
-    font-family: var(--font-sans);
-    background-color: var(--bg-main);
     background-image:
       radial-gradient(
         60% 48% at 50% -12%,
@@ -107,6 +101,12 @@
     background-size:
       auto,
       240px 84px;
+  }
+
+  body {
+    @apply text-textMain antialiased;
+    font-family: var(--font-sans);
+    background-color: transparent;
     box-sizing: border-box;
     margin: 0;
     min-height: 100vh;
@@ -126,7 +126,7 @@
 
   /* On mobile, fixed background can cause jank */
   @media (max-width: 768px) {
-    body {
+    html {
       background-attachment: scroll, fixed;
     }
   }

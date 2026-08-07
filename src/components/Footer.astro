@@ -112,6 +112,15 @@ const lastChapter = chapters
     display: flex;
     flex-direction: column;
     gap: 8px;
+    align-items: center;
+    text-align: center;
+  }
+
+  @media (min-width: 768px) {
+    .footer__left {
+      align-items: flex-start;
+      text-align: left;
+    }
   }
 
   .footer__brand {
@@ -162,6 +171,7 @@ const lastChapter = chapters
     display: flex;
     flex-direction: column;
     gap: 12px;
+    align-items: center;
   }
 
   @media (min-width: 768px) {
@@ -174,6 +184,13 @@ const lastChapter = chapters
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
+    justify-content: center;
+  }
+
+  @media (min-width: 768px) {
+    .footer__links {
+      justify-content: flex-end;
+    }
   }
 
   .footer__links a {
