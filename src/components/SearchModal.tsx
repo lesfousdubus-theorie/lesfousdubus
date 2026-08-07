@@ -48,6 +48,25 @@ export default function SearchModal() {
     setActiveIndex(-1);
   }, [isOpen]);
 
+  // Lock body scroll when modal open (prevents background scroll on mobile)
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    const prevPaddingRight = document.body.style.paddingRight;
+    // compensate scrollbar to avoid layout shift on desktop
+    const sbWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (sbWidth > 0) document.body.style.paddingRight = `${sbWidth}px`;
+    // also prevent html scroll
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPaddingRight;
+      document.documentElement.style.overflow = '';
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -162,7 +181,13 @@ export default function SearchModal() {
     <div
       className="fixed inset-0 z-[100] flex items-start justify-center search-modal-overlay"
       role="presentation"
-      style={{ background: 'rgba(7, 2, 10, 0.7)', backdropFilter: 'blur(8px)' }}
+      style={{
+        background: 'rgba(7, 2, 10, 0.7)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        overflowY: 'auto',
+        overscrollBehavior: 'contain',
+      }}
       onClick={() => setIsOpen(false)}
     >
       <style>{`
@@ -175,18 +200,41 @@ export default function SearchModal() {
           to { opacity: 1; transform: none; }
         }
         .search-modal-overlay {
-          padding-top: clamp(64px, 12vh, 120px);
+          padding: 16px 12px 24px;
+          padding-top: clamp(16px, 10vh, 96px);
           animation: search-overlay-in 0.18s ease-out;
         }
         .search-modal-panel {
           animation: search-panel-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-          max-height: min(640px, calc(100vh - 96px));
+          width: min(640px, calc(100vw - 24px));
+          max-height: min(640px, calc(100dvh - 32px));
+          max-height: min(640px, calc(100vh - 32px));
+        }
+        @media (min-width: 640px) {
+          .search-modal-overlay {
+            padding: 24px 16px;
+            padding-top: clamp(48px, 12vh, 120px);
+          }
+          .search-modal-panel {
+            width: 100%;
+            max-width: 672px;
+            max-height: min(640px, calc(100vh - 96px));
+          }
         }
         .search-modal-panel mark {
           background: color-mix(in srgb, var(--accent-gold) 28%, transparent);
           color: var(--text-main);
           border-radius: 3px;
           padding: 0 1px;
+        }
+        /* Ensure input does not trigger iOS zoom (16px minimum) */
+        .search-input {
+          font-size: 16px;
+        }
+        @media (min-width: 640px) {
+          .search-input {
+            font-size: 16px;
+          }
         }
         @media (prefers-reduced-motion: reduce) {
           .search-modal-overlay,
@@ -197,7 +245,7 @@ export default function SearchModal() {
       `}</style>
       <div
         ref={panelRef}
-        className="w-full max-w-2xl mx-4 overflow-hidden flex flex-col search-modal-panel"
+        className="overflow-hidden flex flex-col search-modal-panel"
         role="dialog"
         aria-modal="true"
         aria-label="Recherche dans le site"
@@ -206,15 +254,17 @@ export default function SearchModal() {
           border: '1px solid var(--border-color)',
           borderRadius: '14px',
           boxShadow: '0 24px 64px rgba(0,0,0,0.5), 0 0 40px var(--glow-violet)',
+          flexShrink: 0,
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Search input area */}
+        {/* Search input area — responsive */}
         <div
-          className="flex items-center px-5 py-4"
+          className="flex items-center gap-2 px-3 sm:px-5 py-3 sm:py-4"
           style={{
             borderBottom: '1px solid var(--border-color)',
             background: 'var(--surface)',
+            minHeight: '56px',
           }}
         >
           <svg
@@ -226,7 +276,8 @@ export default function SearchModal() {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            style={{ color: 'var(--violet-light)', marginRight: '12px', flexShrink: 0 }}
+            style={{ color: 'var(--violet-light)', flexShrink: 0 }}
+            aria-hidden="true"
           >
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -234,7 +285,7 @@ export default function SearchModal() {
           <input
             ref={inputRef}
             type="text"
-            className="flex-1 bg-transparent border-none outline-none text-[17px]"
+            className="flex-1 bg-transparent border-none outline-none search-input min-w-0"
             style={{ color: 'var(--text-main)' }}
             placeholder="Rechercher dans la théorie..."
             value={query}
@@ -244,9 +295,14 @@ export default function SearchModal() {
             aria-autocomplete="list"
             aria-controls="search-results"
             aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined}
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
           />
+          {/* Desktop : ECHAP badge / Mobile : X icon */}
           <button
             onClick={() => setIsOpen(false)}
+            className="hidden sm:inline-flex items-center justify-center"
             style={{
               color: 'var(--text-secondary)',
               padding: '4px 8px',
@@ -257,32 +313,55 @@ export default function SearchModal() {
               borderRadius: '4px',
               background: 'var(--bg-main)',
               cursor: 'pointer',
+              flexShrink: 0,
             }}
+            aria-label="Fermer la recherche (Échap)"
           >
             ECHAP
+          </button>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="sm:hidden inline-flex items-center justify-center"
+            style={{
+              color: 'var(--text-secondary)',
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-main)',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+            aria-label="Fermer la recherche"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
 
         {/* Initial state */}
         {!query && (
-          <div className="px-6 py-10 text-center" style={{ color: 'var(--text-secondary)' }}>
+          <div className="px-4 sm:px-6 py-8 sm:py-10 text-center" style={{ color: 'var(--text-secondary)' }}>
             <p className="mb-2" style={{ fontSize: '14px' }}>
               Tapez pour rechercher dans la théorie…
             </p>
-            <p style={{ fontSize: '12px' }}>Naviguez avec ↑ ↓ et validez avec Entrée</p>
+            <p style={{ fontSize: '12px' }} className="hidden sm:block">Naviguez avec ↑ ↓ et validez avec Entrée</p>
+            <p style={{ fontSize: '12px' }} className="sm:hidden">Appuyez sur un résultat pour ouvrir</p>
           </div>
         )}
 
         {/* Loading */}
         {query && isLoading && (
-          <div className="px-6 py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
+          <div className="px-6 py-8 text-center" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
             Recherche en cours…
           </div>
         )}
 
         {/* Results */}
         {!isLoading && results.length > 0 && (
-          <div className="max-h-[50vh] overflow-y-auto">
+          <div className="overflow-y-auto overscroll-contain" style={{ maxHeight: 'min(50vh, 360px)' }}>
             <ul
               ref={resultsRef}
               id="search-results"
@@ -299,9 +378,10 @@ export default function SearchModal() {
                 >
                   <a
                     href={result.url}
+                    className="block"
                     style={{
                       display: 'block',
-                      padding: '14px 24px',
+                      padding: '12px 16px',
                       borderBottom:
                         '1px solid color-mix(in srgb, var(--border-color) 50%, transparent)',
                       textDecoration: 'none',
@@ -316,9 +396,13 @@ export default function SearchModal() {
                     <h4
                       style={{
                         color: 'var(--text-main)',
-                        fontWeight: 500,
+                        fontWeight: 600,
                         marginBottom: '4px',
                         fontSize: '15px',
+                        lineHeight: 1.3,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
                       }}
                     >
                       {result.meta.title || 'Page'}
@@ -346,10 +430,10 @@ export default function SearchModal() {
         {/* No results */}
         {query && !isLoading && hasSearched && results.length === 0 && (
           <div
-            className="px-6 py-12 text-center"
+            className="px-6 py-10 sm:py-12 text-center"
             style={{ color: 'var(--text-secondary)', fontSize: '14px' }}
           >
-            Aucun résultat pour "{query}"
+            Aucun résultat pour “{query}”
           </div>
         )}
       </div>
