@@ -12,7 +12,6 @@ import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
 
 const { title, description, currentPath, headings, frontmatter } = Astro.props;
-const lastUpdatedChapter = String(frontmatter.lastUpdatedChapter ?? '?');
 const socialImage = new URL('/og-default.png', Astro.site).toString();
 // SEO title riche (auditor) : si seoTitle fourni on l'utilise, sinon fallback historique via BaseLayout
 const seoTitle = frontmatter.seoTitle ?? undefined;
@@ -29,9 +28,14 @@ const relatedArticles = relatedArticleEntries.map((entry) => ({
   category: entry.data.category,
 }));
 
-// Fetch chapter references related to this article
+// Fetch chapter references related to this article. These chapter entries are
+// the source of truth for visible "Chap." labels: `lastUpdatedChapter` is only
+// an editorial/relecture marker and can be shared by many unrelated articles.
 const chapterEntries = await getCollection('chapters');
-const articleChapters = chapterEntries.filter((c) => c.data.updatedArticles?.includes(currentSlug));
+const articleChapters = chapterEntries
+  .filter((c) => c.data.updatedArticles?.includes(currentSlug))
+  .sort((a, b) => b.data.chapter - a.data.chapter);
+const lastUpdatedChapter = articleChapters[0]?.data.chapter;
 
 // Article d'analyse rattaché à une fiche neutre : on affiche explicitement le
 // rattachement pour que son titre affirmatif soit lu comme une lecture de la
@@ -114,6 +118,7 @@ const articleJsonLd = {
     <ArticleMeta
       lastUpdatedChapter={lastUpdatedChapter}
       editorialStatus={frontmatter.editorialStatus}
+      certainty={frontmatter.certainty}
     />
 
     <RelationMap title={title} related={frontmatter.related ?? []} currentSlug={currentSlug} />

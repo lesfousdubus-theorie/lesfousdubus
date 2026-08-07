@@ -2,11 +2,14 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 
 export type ArticleEntry = CollectionEntry<'articles'>;
 
-/** Tous les articles publiés, triés par chapitre de mise à jour décroissant. */
+/** Tous les articles publiés, triés de façon déterministe pour les listes générales. */
 export async function getPublishedArticles(): Promise<ArticleEntry[]> {
   const articles = await getCollection('articles', ({ data }) => data.status === 'published');
   return articles.sort(
-    (a, b) => (b.data.lastUpdatedChapter ?? 0) - (a.data.lastUpdatedChapter ?? 0),
+    (a, b) =>
+      a.data.category.localeCompare(b.data.category, 'fr') ||
+      (a.data.order ?? 0) - (b.data.order ?? 0) ||
+      a.id.localeCompare(b.id, 'fr'),
   );
 }
 
