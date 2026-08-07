@@ -2,7 +2,7 @@
 title: "Pluton et Water Seven"
 summary: "Fiche d'analyse sur le navire de guerre Pluton, scellé sous Wano Kuni, et ses plans conservés par les charpentiers de Water Seven."
 category: "armes-antiques"
-status: "published"
+status: "draft"
 sidebarHidden: true
 sources: [431]
 editorialStatus: "hypothese-secondaire"

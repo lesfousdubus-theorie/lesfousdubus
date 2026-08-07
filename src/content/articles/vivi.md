@@ -3,7 +3,6 @@ title: "Nefertari Vivi et Nefertari D. Lili"
 summary: "Fiche d'analyse sur la reine Nefertari D. Lili, la princesse Vivi et leur rôle dans la dispersion des Ponéglyphes."
 category: "personnages-identites"
 status: "published"
-sidebarHidden: true
 sources: [1085, 1116]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"

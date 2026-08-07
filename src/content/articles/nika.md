@@ -8,6 +8,7 @@ sources: [1018, 1044, 1046, 1069, 1096, 1102, 1117]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
 reviewedUntilChapter: 1188
+parent: "dieux-one-piece"
 order: 21
 related:
   [
