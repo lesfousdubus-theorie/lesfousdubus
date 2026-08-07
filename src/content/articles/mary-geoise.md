@@ -6,7 +6,7 @@ status: "published"
 sources: [906, 908, 1084, 1085, 1114]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 69
 related: ["gouvernement-mondial", "imu-nerona-fiche", "vingt-rois", "red-line", "lunariens", "fruits-du-demon"]
 ---

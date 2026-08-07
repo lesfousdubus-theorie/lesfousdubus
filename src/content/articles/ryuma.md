@@ -6,7 +6,7 @@ status: "published"
 sources: [1023]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 47
 parent: "shimotsuki-ryuma"
 related: ["shimotsuki-ryuma", "zoro"]

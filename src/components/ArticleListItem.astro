@@ -4,7 +4,7 @@ interface Props {
   badgeColor: 'cyan' | 'violet' | 'gold';
   title: string;
   category: string;
-  chapter: string;
+  chapter?: string;
   href: string;
 }
 
@@ -22,8 +22,8 @@ const { badge, badgeColor, title, category, chapter, href } = Astro.props;
     </div>
     <div class="article-item__meta">
       <span>{category}</span>
-      <span class="article-item__dot">•</span>
-      <span>Suite au chap. {chapter}</span>
+      {chapter && <span class="article-item__dot">•</span>}
+      {chapter && <span>Suite au chap. {chapter}</span>}
     </div>
   </div>
   <div class="article-item__arrow">

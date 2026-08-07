@@ -5,7 +5,7 @@ summary: "Pourquoi la véritable coalition opposée à Joy Boy ne serait pas une
 category: "gouvernement-mondial"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related: ["joy-boy", "les-bases-du-siecle-oublie"]
 ---
 

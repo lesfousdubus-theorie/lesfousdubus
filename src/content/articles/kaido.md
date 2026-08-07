@@ -6,7 +6,7 @@ status: "published"
 sources: [795, 1010, 1049, 1044]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 25
 related: ["joy-boy", "luffy", "lunariens", "nika", "wa-no-kuni"]
 ---

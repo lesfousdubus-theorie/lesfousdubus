@@ -5,7 +5,7 @@ category: "figures-principales"
 status: "published"
 sources: [967, 968, 1]
 editorialStatus: "canon"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 18
 related: ["luffy", "joy-boy", "laugh-tale"]
 ---

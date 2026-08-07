@@ -6,7 +6,7 @@ status: "published"
 sources: [611, 626, 649, 653, 967, 968]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 81
 related: ["peuples-royaumes", "noah", "poseidon-fiche", "shirahoshi", "hommes-poissons", "joy-boy"]
 ---

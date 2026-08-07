@@ -5,7 +5,7 @@ summary: "8 indices démontrant qu'Emeth n'est pas un vestige de l'Antiquité ma
 category: "technologies-pouvoirs"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related: ["les-bases-du-siecle-oublie", "joy-boy"]
 ---
 

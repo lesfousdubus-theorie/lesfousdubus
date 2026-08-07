@@ -6,7 +6,7 @@ status: "published"
 sources: [1066, 1069, 1110, 1113, 1114, 1115, 1125]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 69
 related: ["fruits-du-demon", "emeth-futur", "mother-flame", "energie-antique", "guerre-finale", "royaume-antique"]
 ---

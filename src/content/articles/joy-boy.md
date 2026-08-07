@@ -6,7 +6,7 @@ category: "figures-principales"
 status: "published"
 sources: [967, 968, 1115, 1122, 1049, 1052, 1]
 editorialStatus: "hypothese-centrale"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 20
 related: ["luffy", "nika", "gol-d-roger", "imu-nerona-fiche", "emeth-futur", "zunesha-fiche", "laugh-tale", "noah"]
 ---

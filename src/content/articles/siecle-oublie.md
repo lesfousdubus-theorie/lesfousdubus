@@ -7,7 +7,7 @@ status: "published"
 sources: []
 editorialStatus: "canon"
 certainty: "central"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 1
 ---
 

@@ -7,7 +7,7 @@ status: "published"
 sources: [610, 967, 653]
 editorialStatus: "canon"
 certainty: "central"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 34
 related: ["poseidon", "shirahoshi"]
 ---

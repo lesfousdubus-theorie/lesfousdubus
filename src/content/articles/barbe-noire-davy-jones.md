@@ -5,7 +5,7 @@ summary: "Comment Marshall D. Teach incarne la figure mythique de Davy Jones et 
 category: "personnages-identites"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related: ["coalition-des-20-rois", "la-prescience-et-imu"]
 ---
 

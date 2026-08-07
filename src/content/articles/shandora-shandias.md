@@ -6,7 +6,7 @@ status: "published"
 sources: [292, 293, 301, 429, 967]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 85
 related: ["peuples-royaumes", "ponelyphes", "poseidon-fiche", "dieux-one-piece", "guerre-finale"]
 ---

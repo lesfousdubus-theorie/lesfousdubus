@@ -4,7 +4,7 @@ summary: "Zunesha est le seul être vivant à avoir connu Joy Boy. Mais il pourr
 category: "peuples-royaumes"
 status: "published"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: [1050]
 order: 92
 parent: "zunesha-fiche"

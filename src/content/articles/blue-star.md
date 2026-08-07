@@ -7,7 +7,7 @@ status: "published"
 sources: [1113, 1115]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 1
 ---
 

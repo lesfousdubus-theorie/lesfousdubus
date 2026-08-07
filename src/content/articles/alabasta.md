@@ -6,7 +6,7 @@ status: "published"
 sources: [218, 628, 906, 1084]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 82
 related: ["peuples-royaumes", "nefertari-vivi", "lili", "vingt-rois", "gouvernement-mondial"]
 ---

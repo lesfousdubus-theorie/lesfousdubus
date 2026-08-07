@@ -4,7 +4,7 @@ summary: "Les Ponéglyphes ne racontent pas le passé mais l'histoire que nous l
 category: "transmission-memoire"
 status: "published"
 certainty: "central"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: [1]
 order: 54
 parent: "ponelyphes"

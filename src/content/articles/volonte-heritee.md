@@ -4,7 +4,7 @@ summary: "La Volonté du D. n'est pas un héritage génétique mais la convergen
 category: "transmission-memoire"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: [576, 602]
 order: 52
 ---

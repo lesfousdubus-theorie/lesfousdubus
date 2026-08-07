@@ -6,7 +6,7 @@ status: "published"
 sources: []
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 2
 ---
 

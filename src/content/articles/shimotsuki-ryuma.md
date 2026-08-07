@@ -6,7 +6,7 @@ status: "published"
 sources: [1023]
 editorialStatus: "hypothese-secondaire"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 45
 related: ["ryuma", "zoro"]
 ---

@@ -5,7 +5,7 @@ summary: "Analyse détaillée en 6 points expliquant pourquoi la mystérieuse si
 category: "personnages-identites"
 status: "published"
 certainty: "hypothese"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 57
 related: ["joy-boy", "la-prescience-et-imu"]
 ---

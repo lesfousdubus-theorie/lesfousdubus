@@ -6,7 +6,7 @@ status: "published"
 sources: [1086, 1087, 1096, 1170]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 67
 related: ["gouvernement-mondial", "vingt-rois", "dragons-celestes", "imu-nerona-fiche", "guerre-finale"]
 ---

@@ -6,7 +6,7 @@ status: "published"
 sources: [963, 971, 972, 973]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 58
 related: ["communication-temps", "wa-no-kuni", "ponelyphes-futur", "madame-shirley", "fruits-du-demon"]
 ---

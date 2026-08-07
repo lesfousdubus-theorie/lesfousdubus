@@ -4,7 +4,7 @@ summary: "Le Harley d'Elbaf ne raconte pas le passé mais le futur. Usopp, orate
 category: "peuples-royaumes"
 status: "published"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: [1174, 1175, 1132]
 order: 90
 ---

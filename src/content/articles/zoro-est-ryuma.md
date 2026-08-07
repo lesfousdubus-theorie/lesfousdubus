@@ -5,7 +5,7 @@ summary: "5 preuves expliquant pourquoi Roronoa Zoro deviendra le samouraï lég
 category: "personnages-identites"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 58
 related: ["joy-boy", "les-bases-du-siecle-oublie"]
 ---

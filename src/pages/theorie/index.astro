@@ -2,9 +2,11 @@
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
+import { getRecentArticleUpdates } from '@utils/chapter-updates';
 
 const articles = await getCollection('articles');
-const publishedArticles = articles.filter(a => a.data.status === 'published');
+const chapters = await getCollection('chapters');
+const publishedArticles = articles.filter((a) => a.data.status === 'published');
 
 // Recommended 16-step reading order
 const orderedSteps = [
@@ -26,9 +28,7 @@ const orderedSteps = [
   { step: 16, title: 'Déluge et guerre finale', href: '/theorie/deluge-all-blue', summary: 'Le cataclysme final, la destruction de Red Line et l\'avènement d\'All Blue.' },
 ];
 
-const recentUpdates = publishedArticles
-  .sort((a, b) => (b.data.lastUpdatedChapter || 0) - (a.data.lastUpdatedChapter || 0))
-  .slice(0, 6);
+const recentUpdates = getRecentArticleUpdates(publishedArticles, chapters, 6);
 ---
 
 <WikiLayout title="La théorie" seoTitle="Théorie One Piece : le Siècle oublié est le présent — guide complet | Les Fous du Bus" description="Parcours complet de la théorie One Piece : 16 étapes de Blue Star à All Blue, avec analyses, preuves, objections et mises à jour chapitre par chapitre." currentPath="/theorie">
@@ -55,11 +55,11 @@ const recentUpdates = publishedArticles
 
   <h2 class="section-title">Mises à jour récentes</h2>
   <div class="article-list">
-    {recentUpdates.map((article) => (
+    {recentUpdates.map(({ article, chapter }) => (
       <a href={`/theorie/${article.id}`} class="article-row">
         <div class="article-info">
           <span class="article-title">{article.data.title}</span>
-          <span class="article-chapter">Mis à jour au chapitre {article.data.lastUpdatedChapter || '?'}</span>
+          <span class="article-chapter">Mis à jour au chapitre {chapter}</span>
         </div>
       </a>
     ))}

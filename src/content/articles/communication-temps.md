@@ -4,7 +4,7 @@ summary: "Le Siècle oublié ne serait pas un passé clos mais un présent en tr
 category: 'transmission-memoire'
 status: 'published'
 certainty: 'moyenne'
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related: ['signification-d', 'laugh-tale', 'nika']
 sources: [1188]
 order: 57

@@ -5,7 +5,7 @@ seoTitle: "Uranus dans One Piece : Mother Flame, Imu et théorie | Les Fous du B
 category: "armes-antiques"
 status: "published"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: []
 order: 30
 ---

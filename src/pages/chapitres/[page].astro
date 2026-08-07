@@ -2,6 +2,7 @@
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
+import { getRecentArticleUpdates } from '@utils/chapter-updates';
 import { effectLabel, predictionStatusLabel } from '@utils/labels';
 
 export async function getStaticPaths() {
@@ -13,9 +14,7 @@ const chapters = (await getCollection('chapters')).sort((a, b) => b.data.chapter
 const articles = await getCollection('articles', ({ data }) => data.status === 'published');
 const predictions = await getCollection('predictions');
 const latest = chapters[0];
-const updated = articles
-  .filter((article) => (article.data.lastUpdatedChapter ?? 0) > 0)
-  .sort((a, b) => (b.data.lastUpdatedChapter ?? 0) - (a.data.lastUpdatedChapter ?? 0));
+const updated = getRecentArticleUpdates(articles, chapters);
 
 const config = {
   'derniere-analyse': { title: 'Dernière analyse', icon: '📖', description: "Le dernier chapitre analysé et les articles qu'il a fait évoluer." },
@@ -55,8 +54,8 @@ const config = {
     <article class="card"><span>Statut : {predictionStatusLabel(prediction.data.status)}</span><h2>{prediction.data.title}</h2><p>{prediction.data.statement}</p>{prediction.data.chapter && <small>Suivie jusqu’au chapitre {prediction.data.chapter}</small>}<div class="article-links">{prediction.data.articles.map((id) => { const article = articles.find((item) => item.id === id); return article && <a href={`/theorie/${id}`}>Lire l’article associé</a>; })}</div></article>
   ))}</section>}
 
-  {page === 'modifications' && <section class="cards">{updated.map((article) => (
-    <a class="card" href={`/theorie/${article.id}`}><span>Mis à jour au chapitre {article.data.lastUpdatedChapter}</span><h2>{article.data.title}</h2><p>{article.data.summary}</p></a>
+  {page === 'modifications' && <section class="cards">{updated.map(({ article, chapter }) => (
+    <a class="card" href={`/theorie/${article.id}`}><span>Mis à jour au chapitre {chapter}</span><h2>{article.data.title}</h2><p>{article.data.summary}</p></a>
   ))}</section>}
   <Footer />
 </WikiLayout>

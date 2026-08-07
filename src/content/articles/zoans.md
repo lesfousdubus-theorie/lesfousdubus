@@ -6,7 +6,7 @@ status: "published"
 sources: [1044, 1114, 1182]
 editorialStatus: "canon"
 certainty: "moyenne"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 74
 related: ["fruits-du-demon", "hito-hito-no-mi-nika", "nika", "dieux-one-piece", "vegapunk"]
 ---

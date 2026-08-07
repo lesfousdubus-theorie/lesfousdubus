@@ -3,21 +3,26 @@ import { editorialStatusToFrench } from '../utils/format';
 import { certaintyLabel } from '../utils/labels';
 
 interface Props {
-  lastUpdatedChapter: string;
+  updateChapter?: string | number;
   editorialStatus?: string;
   certainty?: 'central' | 'elevee' | 'moyenne' | 'hypothese';
 }
 
-const { lastUpdatedChapter, editorialStatus, certainty } = Astro.props;
+const { updateChapter, editorialStatus, certainty } = Astro.props;
 const status = editorialStatus ? editorialStatusToFrench(editorialStatus) : undefined;
 const certaintyText = certainty ? certaintyLabel(certainty) : undefined;
+const hasMeta = Boolean(updateChapter || certaintyText || status);
 ---
 
-<div class="meta-row" aria-label="Informations éditoriales">
-  <span>Mis à jour jusqu’au chapitre {lastUpdatedChapter}</span>
-  {certaintyText && <span class="meta-badge meta-badge--muted">Niveau : {certaintyText}</span>}
-  {status && <span class:list={['meta-badge', status.badgeClass]}>{status.label}</span>}
-</div>
+{
+  hasMeta && (
+    <div class="meta-row" aria-label="Informations éditoriales">
+      {updateChapter && <span>Mis à jour au chapitre {updateChapter}</span>}
+      {certaintyText && <span class="meta-badge meta-badge--muted">Niveau : {certaintyText}</span>}
+      {status && <span class:list={['meta-badge', status.badgeClass]}>{status.label}</span>}
+    </div>
+  )
+}
 
 <style>
   .meta-row { display:flex; align-items:center; flex-wrap:wrap; gap:.75rem; font-size:13.5px; color:var(--text-secondary); padding:.75rem 0; border-top:1px solid var(--border-color); border-bottom:1px solid var(--border-color); margin:1.5rem 0; }

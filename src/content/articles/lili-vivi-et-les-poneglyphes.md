@@ -7,7 +7,7 @@ status: "published"
 sources: [1084, 1085, 1086, 1116]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 56
 related: ["lili", "nefertari-vivi", "ponelyphes", "les-bases-du-siecle-oublie", "professeur-clover-et-ohara"]
 ---

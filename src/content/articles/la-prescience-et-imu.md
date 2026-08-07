@@ -5,7 +5,7 @@ summary: "Comment le don de prescience (aperçu chez Shirley) explique le règne
 category: "personnages-identites"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 55
 related: ["joy-boy", "coalition-des-20-rois"]
 ---

@@ -5,7 +5,7 @@ seoTitle: "Imu dans One Piece : pouvoir, Joy Boy et théorie | Les Fous du Bus"
 category: "gouvernement-mondial"
 status: "published"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 sources: [1164, 1188]
 order: 62
 related: ["imu-nerona", "vingt-rois-chevaliers-divins"]

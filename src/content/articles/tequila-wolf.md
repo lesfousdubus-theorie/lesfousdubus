@@ -4,7 +4,7 @@ summary: 'Le pont de Tequila Wolf, construit pendant des siècles sans jamais ê
 category: 'peuples-royaumes'
 status: 'published'
 certainty: 'moyenne'
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 related: ['signification-d', 'communication-temps']
 order: 91
 sources: []

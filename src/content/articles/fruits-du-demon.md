@@ -6,7 +6,7 @@ status: "published"
 sources: [1044, 1114, 1186]
 editorialStatus: "canon"
 certainty: "elevee"
-lastUpdatedChapter: 1188
+reviewedUntilChapter: 1188
 order: 73
 related: ["zoans", "hito-hito-no-mi-nika", "vegapunk", "kozuki-toki", "imu-nerona-fiche"]
 ---
