@@ -56,7 +56,13 @@ const chapters = defineCollection({
   schema: z.object({
     chapter: z.number(),
     title: z.string(),
-    effect: z.enum(['fondation', 'approfondissement', 'nouvelle-piste', 'modification']),
+    effect: z.enum([
+      'fondation',
+      'approfondissement',
+      'nouvelle-piste',
+      'modification',
+      'piste-abandonnee',
+    ]),
     themes: z.array(z.string()).default([]),
     updatedArticles: z.array(z.string()).default([]),
     summary: z.string().optional(),

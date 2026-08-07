@@ -20,9 +20,11 @@ Mary Geoise est la capitale du monde, bâtie au sommet de Red Line, à 10 000 m�
 
 - Le **Trône Vide** est officiellement le symbole d'un monde sans souverain unique. En réalité, Imu s'y assied.
 - L'**escalier infini** est bordé des statues des vingt rois fondateurs (chapitre 906).
-- La **Chambre Fleurie** est un espace secret situé sous le palais, où se trouve l'**Arbre d'Ève**.
 - Le site était autrefois le territoire des **Lunariens**, avant leur disparition.
+- La **Chambre Fleurie** est une salle secrète où Imu se rend pour trancher, entouré des Gorosei. Sa localisation précise par rapport au palais n'est pas précisément établie par les transcriptions.
 - Des chantiers colossaux sont menés depuis Mary Geoise dans le monde entier : les ponts Tequila Wolf, Bourbon, Vodka et Rum.
+
+> **À vérifier (non soutenu tel quel par les sources)** : l'affirmation selon laquelle la Chambre Fleurie se trouverait « sous le palais » et abriterait l'**Arbre d'Ève** n'est pas étayée par les transcriptions fournies. Ces éléments sont traités dans « La lecture des Fous du Bus » et « Points encore à expliquer ».
 
 ## La lecture des Fous du Bus
 
@@ -40,6 +42,7 @@ Ensuite, les **ponts titanesques**. Construire depuis 700 ans des ouvrages de pl
 
 ## Points encore à expliquer
 
-- La fonction exacte de l'Arbre d'Ève et de la Chambre Fleurie.
+- La localisation exacte de la **Chambre Fleurie** (l'affirmation « sous le palais » n'est pas confirmée par les sources).
+- La présence éventuelle de l'**Arbre d'Ève** dans ou sous Mary Geoise (raisonnement de la théorie, à appuyer sur une source précise).
 - Ce qu'il est advenu des Lunariens lors de la construction.
 - Ce que devient Mary Geoise si Red Line est détruite.

@@ -36,7 +36,7 @@ const ENUMS = {
   'articles.certainty': ['central', 'elevee', 'moyenne', 'hypothese'],
   'articles.status': ['draft', 'published'],
   // Doit rester aligné sur le schéma `chapters` de src/content.config.ts.
-  'chapters.effect': ['fondation', 'approfondissement', 'nouvelle-piste', 'modification'],
+  'chapters.effect': ['fondation', 'approfondissement', 'nouvelle-piste', 'modification', 'piste-abandonnee'],
   'characters.era': ['ancien', 'moderne', 'transversal'],
   'predictions.status': ['en-cours', 'confirmee', 'refutee', 'en-attente'],
   'timelines.period': ['siecle-oublie', 'present', 'futur', 'boucle'],

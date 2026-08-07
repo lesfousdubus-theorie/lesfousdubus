@@ -18,6 +18,7 @@ const badgeColorByEffect = {
   approfondissement: 'gold',
   'nouvelle-piste': 'violet',
   modification: 'gold',
+  'piste-abandonnee': 'textSecondary',
 } as const;
 ---
 
@@ -198,6 +199,38 @@ const badgeColorByEffect = {
       href="/dossiers#gouvernement-mondial"
     />
   </div>
+
+  <div class="dossiers-footer">
+    <a href="/dossiers" class="btn-see-all">Voir tous les dossiers →</a>
+  </div>
+
+  <h2 class="section-title">
+    <span class="section-title__accent"></span>
+    Comprendre la théorie
+  </h2>
+  <div class="understand-grid">
+    <a class="understand-card" href="/theorie/resume">
+      <span class="understand-time">30 secondes</span>
+      <h3>Le résumé en 10 points</h3>
+      <p>L'idée centrale et l'argument principal, en une lecture rapide.</p>
+    </a>
+    <a class="understand-card" href="/explorer/carte-mentale">
+      <span class="understand-time">5–10 minutes</span>
+      <h3>La carte mentale</h3>
+      <p>Les grandes connexions de la théorie, d'un seul coup d'œil.</p>
+    </a>
+    <a class="understand-card" href="/theorie/theorie-complete">
+      <span class="understand-time">30–60 minutes</span>
+      <h3>La théorie complète</h3>
+      <p>La démonstration continue en 22 chapitres, du début à la fin.</p>
+    </a>
+  </div>
+
+  {latestChapter && (
+    <p class="last-update">
+      Dernière mise à jour de la théorie : <strong>chapitre {latestChapter.data.chapter}</strong> — {latestChapter.data.title}.
+    </p>
+  )}
 
   <h2 class="section-title">
     <span class="section-title__accent"></span>
@@ -539,20 +572,103 @@ const badgeColorByEffect = {
     gap: 16px;
   }
 
-  .article-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  .dossiers-footer {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .btn-see-all {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    color: var(--cyan);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .btn-see-all:hover {
+    border-color: var(--cyan);
+    transform: translateY(-2px);
+  }
+
+  .understand-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .understand-card {
+    display: block;
+    padding: 22px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--gradient-card);
+    text-decoration: none;
+    color: var(--text-main);
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .understand-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--violet);
+  }
+
+  .understand-time {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--violet-light);
+    margin-bottom: 10px;
+  }
+
+  .understand-card h3 {
+    font-size: 16px;
+    margin: 0 0 8px;
+  }
+
+  .understand-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .last-update {
+    font-size: 13px;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--accent-gold);
+    border-radius: var(--border-radius);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+
+  .last-update strong {
+    color: var(--accent-gold);
   }
 
   @media (max-width: 1024px) {
     .grid {
       grid-template-columns: repeat(2, 1fr);
     }
+    .understand-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (max-width: 640px) {
     .grid {
+      grid-template-columns: 1fr;
+    }
+    .understand-grid {
       grid-template-columns: 1fr;
     }
     .hero {

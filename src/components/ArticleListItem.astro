@@ -1,7 +1,7 @@
 ---
 interface Props {
   badge: string;
-  badgeColor: 'cyan' | 'violet' | 'gold';
+  badgeColor: 'cyan' | 'violet' | 'gold' | 'textSecondary';
   title: string;
   category: string;
   chapter?: string;
@@ -105,6 +105,12 @@ const { badge, badgeColor, title, category, chapter, href } = Astro.props;
     background-color: color-mix(in srgb, var(--accent-gold) 12%, transparent);
     color: var(--accent-gold);
     border-color: color-mix(in srgb, var(--accent-gold) 25%, transparent);
+  }
+
+  .article-item__badge--textSecondary {
+    background-color: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+    color: var(--text-secondary);
+    border-color: color-mix(in srgb, var(--text-secondary) 25%, transparent);
   }
 
   .article-item__title {

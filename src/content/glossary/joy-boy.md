@@ -1,5 +1,5 @@
 ---
 term: "Joy Boy"
-definition: "Le nom que le monde donnera à Monkey D. Luffy après qu'il aura libéré le monde. C'est un nom de règne, comme Big Mom pour Charlotte Linlin. Joy Boy n'est pas une origine mais une conséquence de 800 ans d'histoire."
+definition: "Figure légendaire du Siècle oublié, associée à une promesse non tenue. Les sources récentes entretiennent l'ambiguïté sur la nature du nom (titre, identité ou appellation). La théorie le rapproche de Luffy sans le définir de façon trop rigide."
 relatedArticles: ["joy-boy", "theorie-complete"]
 ---

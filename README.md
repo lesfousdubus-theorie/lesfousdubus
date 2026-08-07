@@ -183,7 +183,12 @@ Accueil
 │   └── Toutes les analyses
 │
 ├── Explorer
-│   └── Carte mentale
+│   ├── Carte mentale
+│   ├── Carte de Blue Star
+│   ├── Graphe des correspondances
+│   ├── Schéma des Ponéglyphes
+│   ├── Peuples et missions
+│   └── Schéma de la guerre finale
 │
 └── Aide
     ├── À propos
@@ -281,7 +286,7 @@ lesfousdubus/
 ├── src/
 │   ├── components/       # Blocs d'interface réutilisables
 │   ├── content/          # TOUT le contenu textuel du site
-│   │   ├── articles/     #   ← les articles (97 actuellement)
+│   │   ├── articles/     #   ← les articles (98 publiés actuellement)
 │   │   ├── chapters/     #   les fiches de chapitres analysés
 │   │   ├── characters/   #   les personnages
 │   │   ├── glossary/     #   le glossaire
@@ -333,6 +338,7 @@ http://localhost:4321
 npm run dev          # Développement (serveur local + rechargement)
 npm run check        # Vérification Astro et TypeScript
 npm run validate     # Validation du contenu et des liens
+npm run llms         # Régénère public/llms.txt et public/llms-full.txt
 npm run build        # Build Astro + index Pagefind (dossier dist/)
 npm run preview      # Prévisualisation du build
 npm run format       # Formatage automatique
@@ -471,13 +477,23 @@ Les secrets de production restent dans Cloudflare et ne doivent jamais être ajo
 
 Pour chaque nouveau chapitre :
 
-1. créer une fiche dans `src/content/chapters/` ;
-2. déterminer son effet sur la théorie ;
-3. relier les articles concernés ;
-4. mettre à jour les articles principaux ;
+1. créer une fiche dans `src/content/chapters/` (c’est une **synthèse** de la transcription de l’analyse, pas une transcription brute) ;
+2. déterminer son **effet** (`fondation`, `approfondissement`, `nouvelle-piste`, `modification`, `piste-abandonnee`) ;
+3. relier les articles concernés via `updatedArticles` (ils s’affichent dans la section « Ce que ce chapitre change dans la théorie ») ;
+4. mettre à jour les articles principaux et conserver les anciennes interprétations lorsqu’une hypothèse évolue (l’historique vit dans Git) ;
 5. mettre à jour les prédictions si nécessaire.
 
-Les articles présentent la version actuelle de la théorie. Les anciennes formulations restent consultables dans l’historique de Git.
+**Principe éditorial :** une hypothèse apparue dans un chapitre récent reste identifiée comme un développement récent et n’est jamais présentée comme un acquis de la théorie originale. Une page « chapitre » est une synthèse (badge « Synthèse de l’analyse »), pas une transcription restructurée.
+
+### Régénérer les fichiers LLM
+
+Les fichiers `public/llms.txt` et `public/llms-full.txt` sont **générés automatiquement** depuis les collections (articles + chapitres), avec des balises de nature (`canon`, `core-theory`, `secondary-theory`, `speculative`). Régénérez-les après tout ajout d’article :
+
+```bash
+npm run llms
+```
+
+Le `npm run build` les régénère aussi automatiquement.
 
 ---
 

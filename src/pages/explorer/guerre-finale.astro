@@ -1,0 +1,99 @@
+---
+import WikiLayout from '@layouts/WikiLayout.astro';
+import Footer from '@components/Footer.astro';
+---
+
+<WikiLayout
+  title="Le schéma de la guerre finale"
+  seoTitle="Schéma de la guerre finale One Piece : coalition, Gouvernement mondial et All Blue | Les Fous du Bus"
+  description="Schéma de la guerre finale selon la théorie : la coalition de Luffy face au Gouvernement mondial, le rôle des Armes antiques, la destruction de Red Line, le déluge et la naissance d'All Blue."
+  currentPath="/explorer/guerre-finale"
+>
+  <div class="page-header">
+    <p class="eyebrow">⚔️ Schéma</p>
+    <h1>La guerre finale</h1>
+    <p class="page-desc">
+      La théorie lit la guerre finale comme la grande réunification : la coalition de Luffy et des peuples
+      contre le Gouvernement mondial d'Imu. Les Armes antiques, la destruction de Red Line, le déluge et
+      la naissance d'All Blue sont les pièces de ce schéma.
+    </p>
+  </div>
+
+  <div class="schema" role="img"
+    aria-label="Schéma de la guerre finale : coalition de Luffy face au Gouvernement mondial d'Imu, avec les Armes antiques, Red Line, le déluge et All Blue">
+    <div class="side side--coalition">
+      <h2>Coalition</h2>
+      <ul>
+        <li>Luffy / Joy Boy / Nika</li>
+        <li>Révolutionnaires (Dragon)</li>
+        <li>Géants d'Elbaf</li>
+        <li>Peuples et témoins</li>
+        <li>Défenseurs des Ponéglyphes</li>
+      </ul>
+    </div>
+
+    <div class="axis">
+      <div class="arrow">⇄</div>
+      <span class="axis-label">Affrontement</span>
+    </div>
+
+    <div class="side side--gouvernement">
+      <h2>Gouvernement mondial</h2>
+      <ul>
+        <li>Imu (Trône Vide)</li>
+        <li>Gorosei</li>
+        <li>Chevaliers Divins</li>
+        <li>Dragons Célestes</li>
+        <li>Armes de destruction</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="mechanism">
+    <h2>Les leviers de la fin</h2>
+    <div class="steps">
+      <div class="step"><span class="k">1</span><div><strong>Armes antiques</strong><p>Poséidon, Pluton et Uranus entrent en jeu. Le manga ne dit pas qu'elles détruiraient Red Line — c'est une lecture de la théorie.</p></div></div>
+      <div class="step"><span class="k">2</span><div><strong>Destruction de Red Line</strong><p>Le continent rouge tomberait, bouleversant les barrières géographiques du monde.</p></div></div>
+      <div class="step"><span class="k">3</span><div><strong>Le déluge</strong><p>Montée des eaux de 200 mètres annoncée par Vegapunk. Les ponts géants seraient des refuges préparés (théorie).</p></div></div>
+      <div class="step"><span class="k">4</span><div><strong>All Blue</strong><p>Les quatre mers enfin réunies en une seule : le monde devient littéralement une seule pièce.</p></div></div>
+    </div>
+  </div>
+
+  <Footer />
+</WikiLayout>
+
+<style>
+  .page-header { margin-bottom: 36px; }
+  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
+  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 780px; line-height: 1.65; }
+
+  .schema { display: flex; align-items: stretch; gap: 0; margin: 24px 0 36px; }
+  .side { flex: 1; padding: 22px; border: 1px solid var(--border-color); background: var(--bg-secondary); }
+  .side--coalition { border-radius: 16px 0 0 16px; border-left: 3px solid var(--cyan); }
+  .side--gouvernement { border-radius: 0 16px 16px 0; border-right: 3px solid var(--alert); text-align: right; }
+  .side h2 { font-size: 1.05rem; margin: 0 0 12px; }
+  .side--coalition h2 { color: var(--cyan); }
+  .side--gouvernement h2 { color: var(--alert); }
+  .side ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .side li { font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; }
+  .side--gouvernement li { text-align: right; }
+  .axis { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 14px; }
+  .arrow { font-size: 1.6rem; color: var(--violet-light); }
+  .axis-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
+
+  .mechanism h2 { font-size: 1.2rem; margin: 0 0 16px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .step { display: flex; gap: 12px; padding: 16px; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: var(--gradient-card); }
+  .step .k { width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: var(--violet); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .step strong { display: block; font-size: 14px; margin-bottom: 4px; }
+  .step p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+
+  @media (max-width: 680px) {
+    .schema { flex-direction: column; }
+    .side, .side--coalition, .side--gouvernement { border-radius: 12px; text-align: left; border-right: 1px solid var(--border-color); }
+    .side--gouvernement li { text-align: left; }
+    .axis { flex-direction: row; padding: 10px 0; }
+    .axis-label { margin: 0 0 0 8px; }
+  }
+</style>
