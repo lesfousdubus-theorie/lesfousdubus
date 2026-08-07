@@ -20,6 +20,8 @@ export default defineConfig({
     '/theorie/rio-ponelyphe/': '/theorie/rio-poneglyphe',
     '/theorie/road-ponelyphes': '/theorie/road-poneglyphes',
     '/theorie/road-ponelyphes/': '/theorie/road-poneglyphes',
+    '/theorie/le-deluge-et-all-blue': '/theorie/deluge-all-blue',
+    '/theorie/le-deluge-et-all-blue/': '/theorie/deluge-all-blue',
   },
   integrations: [
     react(),
