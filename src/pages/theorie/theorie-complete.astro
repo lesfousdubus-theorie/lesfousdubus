@@ -4,6 +4,44 @@ import Footer from '@components/Footer.astro';
 import { READING_PATH } from '@utils/parcours';
 import { getCollection } from 'astro:content';
 
+// Données pour le JSON-LD Article (page maîtresse, longue forme) et BreadcrumbList.
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
+const canonicalPageUrl = `${siteUrl}/theorie/theorie-complete/`;
+const ogImageUrl = `${siteUrl}/og-default.png`;
+const pageTitle = 'La théorie complète';
+const pageSeoTitle =
+  'Théorie complète One Piece : le Siècle oublié est le présent — démonstration | Les Fous du Bus';
+const pageDescription =
+  'La théorie complète du Siècle oublié est le présent : 22 chapitres de Blue Star à Joy Boy, des Ponéglyphes du futur à la Grande Guerre — la démonstration.';
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: pageTitle,
+  description: pageDescription,
+  url: canonicalPageUrl,
+  image: ogImageUrl,
+  articleSection: 'La théorie',
+  inLanguage: 'fr-FR',
+  author: {
+    '@type': 'Organization',
+    name: 'Les Fous du Bus',
+    url: siteUrl,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Les Fous du Bus',
+    url: siteUrl,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${siteUrl}/logo.png`,
+    },
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': canonicalPageUrl,
+  },
+};
+
 // Petite carte de lecture « en un coup d’œil », reléguée tout en bas de la page.
 // Elle n’est plus dans le corps principal : la page se lit désormais comme un seul
 // grand article continu. On garde la même source unique (src/utils/parcours.ts).
@@ -714,12 +752,27 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
 ---
 
 <WikiLayout
-  title="Théorie complète"
-  seoTitle="Théorie complète One Piece : le Siècle oublié est le présent — démonstration | Les Fous du Bus"
-  description="La théorie complète du Siècle oublié est le présent, racontée comme un livre : 22 chapitres de Blue Star à Joy Boy, des Ponéglyphes du futur à la Grande Guerre — la démonstration continue."
+  title={pageTitle}
+  seoTitle={pageSeoTitle}
+  description={pageDescription}
   currentPath="/theorie/theorie-complete"
+  type="article"
   headings={headings}
 >
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${siteUrl}/` },
+        { '@type': 'ListItem', position: 2, name: 'La théorie', item: `${siteUrl}/theorie/` },
+        { '@type': 'ListItem', position: 3, name: pageTitle, item: canonicalPageUrl },
+      ],
+    })}
+  />
   <article class="complete-page">
     <p class="eyebrow">La démonstration complète</p>
     <h1>La théorie complète</h1>
