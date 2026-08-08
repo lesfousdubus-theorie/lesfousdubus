@@ -46,6 +46,11 @@
     z-index: 0;
   }
 
+  /* Hide wallpaper in light mode — almost invisible with screen blend, wastes bandwidth */
+  :global(.light) .wallpaper-bg {
+    display: none;
+  }
+
   .scene {
     position: fixed;
     top: 0;
@@ -106,5 +111,24 @@
   @keyframes scene-tilt {
     from { transform: rotate(-5deg); }
     to { transform: rotate(5deg); }
+  }
+
+  /* Reduced motion — pause all decorative animations */
+  @media (prefers-reduced-motion: reduce) {
+    .wallpaper-bg,
+    .scene {
+      display: none !important;
+    }
+    .scene-obj,
+    .scene-obj svg {
+      animation: none !important;
+    }
+  }
+
+  /* Hide scene when page is hidden to save GPU */
+  @media (max-width: 768px) {
+    .scene {
+      opacity: 0.6;
+    }
   }
 </style>

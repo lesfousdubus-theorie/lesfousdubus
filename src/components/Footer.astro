@@ -40,6 +40,8 @@ const lastChapter = chapters
         <a href="/aide/faq">FAQ</a>
         <a href="/theorie/chronologie">Chronologie</a>
         <a href="/explorer/carte-mentale">Carte mentale</a>
+        <a href="/dossiers">Dossiers</a>
+        <a href="/explorer">Explorer</a>
       </div>
       <div class="footer__social">
         <a
@@ -234,11 +236,14 @@ const lastChapter = chapters
   }
 
   .footer__social-link:hover {
-    color: var(--text-main);
-    border-color: var(--violet);
-    background: color-mix(in srgb, var(--violet) 12%, transparent);
-    box-shadow: 0 0 10px var(--glow-violet);
-    transform: translateY(-2px);
+    color: var(--cyan);
+    border-color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 10%, transparent);
+    box-shadow: 0 0 12px var(--glow-cyan);
+  }
+  .footer__social-link:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
 
   .footer__social-link:active {

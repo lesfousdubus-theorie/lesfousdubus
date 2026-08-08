@@ -61,7 +61,7 @@ const next = position.next ? { ...position.next, title: titleOf(position.next.sl
   .parcours {
     margin: 40px 0 8px;
     padding-top: 20px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border-color);
   }
 
   .parcours__meta {
@@ -96,13 +96,18 @@ const next = position.next ? { ...position.next, title: titleOf(position.next.sl
     flex-direction: column;
     gap: 4px;
     padding: 14px 16px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
     text-decoration: none;
-    background: var(--bg-main);
+    background: var(--bg-secondary);
     transition:
       border-color 0.15s ease,
-      background-color 0.15s ease;
+      background-color 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .parcours__link:active {
+    transform: scale(0.98);
   }
 
   a.parcours__link:hover {

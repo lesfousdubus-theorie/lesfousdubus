@@ -207,7 +207,7 @@ const isActive = (href: string) =>
 
       <button data-theme-toggle class="theme-btn theme-btn--desktop" aria-label="Changer le thème">
         <svg
-          class="ico-sun hidden"
+          class="ico-sun"
           width="17"
           height="17"
           viewBox="0 0 24 24"
@@ -235,7 +235,7 @@ const isActive = (href: string) =>
             y2="4.22"></line></svg
         >
         <svg
-          class="ico-moon hidden"
+          class="ico-moon"
           width="16"
           height="16"
           viewBox="0 0 24 24"
@@ -443,7 +443,7 @@ const isActive = (href: string) =>
     transform: rotate(180deg);
   }
 
-  /* Dropdown menu */
+  /* Dropdown menu — flip logic to avoid viewport overflow on edges */
   .nav-dropdown {
     position: absolute;
     top: 100%;
@@ -466,6 +466,27 @@ const isActive = (href: string) =>
       transform 0.2s ease,
       visibility 0.2s;
     z-index: 70;
+  }
+
+  /* First nav item aligns left to prevent left overflow, last aligns right */
+  .nav-item:first-child .nav-dropdown {
+    left: 0;
+    transform: translate(0, 6px);
+  }
+  .nav-item:first-child:hover .nav-dropdown,
+  .nav-item:first-child:focus-within .nav-dropdown,
+  .nav-item:first-child.nav-item--open .nav-dropdown {
+    transform: translate(0, 0);
+  }
+  .nav-item:last-child .nav-dropdown {
+    left: auto;
+    right: 0;
+    transform: translate(0, 6px);
+  }
+  .nav-item:last-child:hover .nav-dropdown,
+  .nav-item:last-child:focus-within .nav-dropdown,
+  .nav-item:last-child.nav-item--open .nav-dropdown {
+    transform: translate(0, 0);
   }
 
   .nav-item:hover .nav-dropdown,
@@ -493,26 +514,33 @@ const isActive = (href: string) =>
 
   .nav-dropdown__link {
     display: block;
-    padding: 7px 10px;
+    padding: 10px 12px;
+    min-height: 44px;
     font-size: 13px;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
     color: var(--text-secondary);
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     transition:
       color 0.15s ease,
-      background-color 0.15s ease,
-      transform 0.15s ease;
+      background-color 0.15s ease;
   }
 
   .nav-dropdown__link:hover {
     color: var(--cyan);
     background-color: var(--surface);
-    transform: translateX(3px);
   }
 
   .nav-dropdown__link:active {
-    transform: translateX(3px) scale(0.98);
+    transform: scale(0.98);
     background-color: color-mix(in srgb, var(--cyan) 10%, transparent);
+  }
+
+  .nav-dropdown__link:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: -2px;
   }
 
   .nav-actions {
@@ -531,10 +559,8 @@ const isActive = (href: string) =>
     color: var(--text-secondary);
     background-color: color-mix(in srgb, var(--surface) 70%, transparent);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    outline: none !important;
-    box-shadow: none !important;
     transition:
       color 0.2s ease,
       background-color 0.2s ease,
@@ -542,16 +568,22 @@ const isActive = (href: string) =>
     max-width: 220px;
   }
 
-  .search-trigger:hover,
-  .search-trigger:focus,
-  .search-trigger:focus-visible,
-  .search-trigger:active {
+  .search-trigger:hover {
     color: var(--text-main);
-    border-color: color-mix(in srgb, var(--cyan) 40%, var(--border-color)) !important;
+    border-color: color-mix(in srgb, var(--cyan) 40%, var(--border-color));
     background-color: var(--surface);
-    outline: none !important;
-    outline-offset: 0 !important;
-    box-shadow: none !important;
+  }
+
+  .search-trigger:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+    color: var(--text-main);
+    border-color: var(--cyan);
+    background-color: var(--surface);
+  }
+
+  .search-trigger:active {
+    transform: scale(0.97);
   }
 
   .search-label {
@@ -619,6 +651,15 @@ const isActive = (href: string) =>
     border-color: var(--violet);
     background-color: var(--surface);
   }
+
+  /* Theme icons — pure CSS initial state, no FOUC */
+  .ico-sun, .ico-moon { display:flex; align-items:center; justify-content:center; }
+  html.dark .ico-sun { display:flex; }
+  html.dark .ico-moon { display:none; }
+  html.light .ico-sun { display:none; }
+  html.light .ico-moon { display:flex; }
+  /* JS fallback class .hidden still works */
+  .ico-sun.hidden, .ico-moon.hidden { display:none !important; }
 
   #mobile-menu-toggle {
     display: none;
@@ -726,7 +767,6 @@ const isActive = (href: string) =>
     .navbar {
       padding: 0 12px;
       gap: 8px;
-      --nav-h: 52px;
       height: var(--nav-h);
       min-height: var(--nav-h);
     }

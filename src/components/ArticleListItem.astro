@@ -43,6 +43,7 @@ const { badge, badgeColor, title, category, chapter, href, summary } = Astro.pro
     background-color: var(--bg-main);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
+    overflow: hidden;
     text-decoration: none;
     transition: all 0.25s ease;
     overflow: hidden;
@@ -52,7 +53,10 @@ const { badge, badgeColor, title, category, chapter, href, summary } = Astro.pro
     background-color: var(--bg-secondary);
     border-color: color-mix(in srgb, var(--violet) 30%, var(--border-color));
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    transform: translateX(2px);
+  }
+  .article-item:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
 
   .article-item__accent {
@@ -112,9 +116,9 @@ const { badge, badgeColor, title, category, chapter, href, summary } = Astro.pro
   }
 
   .article-item__badge--textSecondary {
-    background-color: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+    background-color: color-mix(in srgb, var(--text-secondary) 20%, transparent);
     color: var(--text-secondary);
-    border-color: color-mix(in srgb, var(--text-secondary) 25%, transparent);
+    border-color: color-mix(in srgb, var(--text-secondary) 38%, transparent);
   }
 
   .article-item__title {

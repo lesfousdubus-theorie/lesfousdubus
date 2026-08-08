@@ -11,22 +11,73 @@ interface Props {
 const { items } = Astro.props;
 ---
 
-<nav
-  aria-label="Breadcrumb"
-  class="flex items-center text-[13px] text-textSecondary space-x-2 mb-4"
->
-  {
-    items.map((item, index) => (
-      <>
-        {item.href ? (
-          <a href={item.href} class="hover:text-textMain transition-colors">
-            {item.label}
-          </a>
-        ) : (
-          <span class="text-textMain">{item.label}</span>
-        )}
-        {index < items.length - 1 && <span class="opacity-40">/</span>}
-      </>
-    ))
-  }
+<nav aria-label="Fil d'Ariane" class="breadcrumb-nav">
+  <ol class="breadcrumb-list">
+    {
+      items.map((item, index) => {
+        const isLast = index === items.length - 1;
+        return (
+          <li class="breadcrumb-item">
+            {item.href && !isLast ? (
+              <a href={item.href} class="breadcrumb-link">
+                {item.label}
+              </a>
+            ) : (
+              <span class="breadcrumb-current" aria-current={isLast ? 'page' : undefined}>
+                {item.label}
+              </span>
+            )}
+            {!isLast && (
+              <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
 </nav>
+
+<style>
+  .breadcrumb-nav {
+    margin-bottom: 16px;
+  }
+  .breadcrumb-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .breadcrumb-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .breadcrumb-link:hover {
+    color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 8%, transparent);
+  }
+  .breadcrumb-link:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+  .breadcrumb-current {
+    color: var(--text-main);
+    font-weight: 500;
+  }
+  .breadcrumb-sep {
+    opacity: 0.4;
+    color: var(--text-secondary);
+  }
+</style>

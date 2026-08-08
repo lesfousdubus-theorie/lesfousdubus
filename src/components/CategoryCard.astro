@@ -33,6 +33,7 @@ const { icon, title, description, href, count } = Astro.props;
     background: var(--gradient-card);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
+    overflow: hidden;
     text-decoration: none;
     transition: all 0.3s ease;
     overflow: hidden;
@@ -55,7 +56,8 @@ const { icon, title, description, href, count } = Astro.props;
 
   .card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22), 0 0 24px var(--glow-violet);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.20), 0 0 22px var(--glow-violet);
+    border-color: transparent;
   }
 
   .card:hover::before {

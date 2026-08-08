@@ -3,6 +3,7 @@ import BaseLayout from '@layouts/BaseLayout.astro';
 import SidebarNav from '@components/SidebarNav.astro';
 import SidebarToc from '@components/SidebarToc.astro';
 import Navbar from '@components/Navbar.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
 
 interface Heading {
   depth: number;
@@ -25,6 +26,39 @@ const { title, description, currentPath, headings, image, type, seoTitle } = Ast
 // Pages without headings must not reserve an empty 240px gutter
 // or show a "Sommaire" drawer with no entries.
 const hasToc = !!(headings && headings.length > 0);
+
+// Breadcrumb auto pour pages génériques (aide, explorer, dossiers, chapitres)
+const breadcrumbMap: Record<string,string> = {
+  '/dossiers': 'Dossiers',
+  '/explorer': 'Explorer',
+  '/chapitres': 'Chapitres',
+  '/aide': 'Aide',
+  '/theorie': 'La théorie',
+};
+const buildGenericBreadcrumb = () => {
+  if (currentPath === '/' || currentPath === '') return [];
+  const segs = currentPath.split('/').filter(Boolean);
+  if (segs.length === 0) return [];
+  const items: {label:string, href?:string}[] = [{label:'Accueil', href:'/' }];
+  let acc = '';
+  for (let i=0;i<segs.length;i++) {
+    acc += '/' + segs[i];
+    const isLast = i===segs.length-1;
+    // special labels
+    if (i===0 && breadcrumbMap['/'+segs[0]]) {
+      items.push({label: breadcrumbMap['/'+segs[0]], href: isLast ? undefined : '/'+segs[0] });
+    } else {
+      // pretty label
+      const pretty = segs[i].replace(/-/g,' ').replace(/\b\w/g, (m:string)=>m.toUpperCase());
+      // keep numeric chapter as is
+      const label = /^\d+$/.test(segs[i]) ? `Chapitre ${segs[i]}` : (i===segs.length-1 ? title : pretty);
+      items.push({label, href: isLast ? undefined : acc});
+    }
+  }
+  return items;
+};
+const genericBreadcrumb = buildGenericBreadcrumb();
+
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
 const isCollectionPage = ['/theorie', '/dossiers', '/chapitres', '/explorer', '/aide'].some(
@@ -126,6 +160,9 @@ const canonicalWikiUrl = new URL(
     </div>
 
     <main class="main-content" id="main-content">
+      {genericBreadcrumb.length > 1 && currentPath !== '/' && !currentPath.startsWith('/theorie/') && (
+        <Breadcrumb items={genericBreadcrumb} />
+      )}
       <slot />
     </main>
 
@@ -138,7 +175,31 @@ const canonicalWikiUrl = new URL(
     }
   </div>
 
-  {/* Floating TOC button for tablet/mobile (only when a TOC exists) */}
+  {/* Floating TOC button + drawer for tablet/mobile (when TOC exists) — fixes 1200px gap */}
+  {
+    hasToc && (
+      <>
+        <button id="toc-fab" class="toc-fab" aria-label="Sommaire de la page" aria-expanded="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="4" y1="6" x2="20" y2="6"></line>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <line x1="4" y1="18" x2="20" y2="18"></line>
+          </svg>
+          <span>Sommaire</span>
+        </button>
+        <div id="toc-overlay" class="toc-overlay" aria-hidden="true"></div>
+        <aside id="toc-drawer" class="toc-drawer" aria-label="Table des matières mobile">
+          <div class="toc-drawer__header">
+            <span class="toc-drawer__title">Sur cette page</span>
+            <button id="toc-drawer-close" class="toc-drawer__close" aria-label="Fermer le sommaire">✕</button>
+          </div>
+          <div class="toc-drawer__body">
+            <SidebarToc headings={headings} />
+          </div>
+        </aside>
+      </>
+    )
+  }
 </BaseLayout>
 
 <style>
@@ -610,6 +671,152 @@ const canonicalWikiUrl = new URL(
   :global([data-nav-open='mobile']) .navbar {
     border-bottom-color: color-mix(in srgb, var(--cyan) 25%, var(--border-color));
   }
+
+  /* ===== TOC FAB + Drawer for tablet/mobile ===== */
+  .toc-fab {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 40;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--border-radius-full);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .toc-fab:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 16px var(--glow-cyan);
+  }
+  .toc-fab:active {
+    transform: translateY(0) scale(0.97);
+  }
+  @media (max-width: 1200px) {
+    .toc-fab {
+      display: inline-flex;
+    }
+  }
+  @media (max-width: 640px) {
+    .toc-fab {
+      bottom: 84px;
+      right: 16px;
+      padding: 12px 18px;
+      min-height: 44px;
+    }
+  }
+
+  .toc-overlay {
+    display: none;
+    position: fixed;
+    inset: var(--nav-h) 0 0 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(3px);
+    z-index: 45;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.22s ease, visibility 0.22s;
+  }
+  .toc-overlay.is-open {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .toc-drawer {
+    position: fixed;
+    top: var(--nav-h);
+    right: 0;
+    bottom: 0;
+    width: min(88%, 340px);
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    z-index: 50;
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), visibility 0.28s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: -4px 0 24px rgba(0,0,0,0.25);
+  }
+  .toc-drawer.is-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  .toc-drawer__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+  .toc-drawer__title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-main);
+  }
+  .toc-drawer__close {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .toc-drawer__close:hover {
+    color: var(--text-main);
+    border-color: var(--violet);
+  }
+  .toc-drawer__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  /* Hide TOC FAB when other overlays are open */
+  :global([data-nav-open='mobile']) .toc-fab,
+  :global(html.mobile-nav-open) .toc-fab,
+  :global(html.search-modal-open) .toc-fab {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  /* Zen mode — hides sidebars for focused reading */
+  :global(html.zen-mode) .sidebar-left-container,
+  :global(html.zen-mode) .sidebar-right,
+  :global(html.zen-mode) #toc-fab {
+    display: none !important;
+  }
+  :global(html.zen-mode) .layout {
+    grid-template-columns: minmax(0,1fr) !important;
+    display: block !important;
+  }
+  :global(html.zen-mode) .main-content {
+    max-width: 780px !important;
+    margin: 0 auto !important;
+    padding: 32px 24px !important;
+  }
+
+
 </style>
 
 
@@ -833,6 +1040,48 @@ const canonicalWikiUrl = new URL(
       syncToggleButtons();
     }, 100);
   });
+
+  // TOC drawer for tablet/mobile
+  const tocFab = document.getElementById('toc-fab');
+  const tocDrawer = document.getElementById('toc-drawer');
+  const tocOverlay = document.getElementById('toc-overlay');
+  const tocClose = document.getElementById('toc-drawer-close');
+  const isTocOpen = () => tocDrawer?.classList.contains('is-open');
+
+  const toggleToc = (force) => {
+    const willOpen = force !== undefined ? force : !isTocOpen();
+    if (willOpen) {
+      tocDrawer?.classList.add('is-open');
+      tocOverlay?.classList.add('is-open');
+      tocOverlay?.setAttribute('aria-hidden','false');
+      tocFab?.setAttribute('aria-expanded','true');
+      document.documentElement.classList.add('toc-open');
+    } else {
+      tocDrawer?.classList.remove('is-open');
+      tocOverlay?.classList.remove('is-open');
+      tocOverlay?.setAttribute('aria-hidden','true');
+      tocFab?.setAttribute('aria-expanded','false');
+      document.documentElement.classList.remove('toc-open');
+    }
+  };
+
+  tocFab?.addEventListener('click', () => toggleToc());
+  tocClose?.addEventListener('click', () => toggleToc(false));
+  tocOverlay?.addEventListener('click', () => toggleToc(false));
+  window.addEventListener('keydown', (e) => { if (e.key==='Escape' && isTocOpen()) toggleToc(false); });
+  // Close TOC on link click
+  tocDrawer?.addEventListener('click', (e) => { if ((e.target as HTMLElement).closest('a')) toggleToc(false); });
+
+  // Zen mode toggle — exposed globally for ArticleLayout button
+  (window as any).toggleZenMode = () => {
+    const isZen = document.documentElement.classList.toggle('zen-mode');
+    localStorage.setItem('zen-mode', isZen ? 'true' : 'false');
+    return isZen;
+  };
+  // Restore zen preference
+  if (localStorage.getItem('zen-mode') === 'true') {
+    document.documentElement.classList.add('zen-mode');
+  }
 
   // Sidebar drag resizer logic
   const resizer = document.getElementById('sidebar-resizer');
