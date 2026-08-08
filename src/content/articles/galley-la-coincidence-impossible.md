@@ -27,8 +27,8 @@ Problème : on retrouve **exactement le même nom** 800 ans plus tôt dans les l
 
 Pour les Fous du Bus, non. **Icebarg n'a pas copié une ancienne Galley-La. Il a créé l'organisation qui va permettre à la légende de naître.**
 
-![Galley-La Company logo et création](/images/threads/galley-la-coincidence-impossible/img_1.jpg)
-![Icebarg et les 7 compagnies](/images/threads/galley-la-coincidence-impossible/img_2.jpg)
+![Galley-La Company logo et création](https://pbs.twimg.com/media/HPNlXrWXUAIZoLY.jpg?name=orig)
+![Icebarg et les 7 compagnies](https://pbs.twimg.com/media/HPNlXrfWwAAjwA1.jpg?name=orig)
 
 ## Le gel, les géants et le grand marteau
 
@@ -42,9 +42,9 @@ Après la mort de son père, Loki prend la mer pour venger son honneur, son équ
 
 Les équipages One Piece sont souvent nommés d'après leur capitaine/symbole : équipage du Roux (Shanks), Chapeau de paille (Luffy). L'équipage au grand marteau serait celui de Loki.
 
-![Géants congelés Punk Hazard - Galley-La](/images/threads/galley-la-coincidence-impossible/img_3.jpg)
-![Loki et son marteau - brigade au grand marteau](/images/threads/galley-la-coincidence-impossible/img_4.jpg)
-![Loki congèle son équipage pour les protéger](/images/threads/galley-la-coincidence-impossible/img_5.jpg)
+![Géants congelés Punk Hazard - Galley-La](https://pbs.twimg.com/media/HPNo_uoWAAAFZ7d.jpg?name=orig)
+![Loki et son marteau - brigade au grand marteau](https://pbs.twimg.com/media/HPNo_0eXAAAf91R.jpg?name=orig)
+![Loki congèle son équipage pour les protéger](https://pbs.twimg.com/media/HPNpAclWMAEil3-.jpg?name=orig)
 
 > D'un côté Icebarg crée dans le présent une compagnie qui porte le même nom que la légende. De l'autre, on retrouve dans le présent un équipage (Loki, marteau, gel) qui a disparu. Les gars, réveillez-vous...
 
@@ -54,8 +54,8 @@ Le manga insiste : Big Mom, malgré son réseau d'info mondial, **n'a jamais ret
 
 Explication Fous du Bus : **Ils n'avaient pas encore été congelés par Loki, et le nom Galley-La n'avait même pas encore été créé par Icebarg.**
 
-![Big Mom cherche les géants sans succès](/images/threads/galley-la-coincidence-impossible/img_6.jpg)
-![Explication temporelle : pas encore congelés](/images/threads/galley-la-coincidence-impossible/img_7.jpg)
+![Big Mom cherche les géants sans succès](https://pbs.twimg.com/media/HPNpAezXYAAvGX9.jpg?name=orig)
+![Explication temporelle : pas encore congelés](https://pbs.twimg.com/media/HPNpAe-XcAA2vfv.png?name=orig)
 
 ## Récap vision Fou avant Pluton
 
@@ -65,7 +65,7 @@ Pour les Fous du Bus, la légende des géants disparus il y a 800 ans appelés G
 - Nom vient de la **Galley-La Company d'Icebarg**
 - Lien : ces géants, charpentiers d'Elbaf (appétence des géants pour navires, Oars à Thriller Bark = île-navire), vont rejoindre le chantier d'Icebarg pour créer Pluton, l'île-navire Water 7
 
-![Récap : légende = présent](/images/threads/galley-la-coincidence-impossible/img_8.jpg)
+![Récap : légende = présent](https://pbs.twimg.com/media/HPNpAe7XsAA5Wav.jpg?name=orig)
 
 ## Pluton : Water Seven va devenir l'Arme
 
@@ -77,9 +77,9 @@ Quand Icebarg montre les plans à Franky, Franky dit qu'il faudrait **pas seulem
 
 Tout s'imbrique : les géants de Loki rejoignent Icebarg, transforment Water 7 en bateau-île lié à Pluton, pour protéger du déluge à venir.
 
-![Rêve Icebarg : Water 7 navire](/images/threads/galley-la-coincidence-impossible/img_9.jpg)
-![Franky : il faudrait pas que des hommes](/images/threads/galley-la-coincidence-impossible/img_10.jpg)
-![Water 7 devient Pluton - île-navire](/images/threads/galley-la-coincidence-impossible/img_11.jpg)
+![Rêve Icebarg : Water 7 navire](https://pbs.twimg.com/media/HPNpBU4XQAEy0ZB.png?name=orig)
+![Franky : il faudrait pas que des hommes](https://pbs.twimg.com/media/HPNmR4QXQAAJrvP.png?name=orig)
+![Water 7 devient Pluton - île-navire](https://pbs.twimg.com/media/HPNpCPQWIAAiY93.jpg?name=orig)
 
 ## Schéma final
 
@@ -88,7 +88,9 @@ Tout s'imbrique : les géants de Loki rejoignent Icebarg, transforment Water 7 e
 - Équipe considérée comme équipage au grand marteau à cause de son capitaine Loki (comme dans la légende)
 - Qui aurait été congelée (comme dans la légende)
 
-![Schéma final : Galley-La, Pluton, Loki, gel](/images/threads/galley-la-coincidence-impossible/img_12.jpg)
+![Schéma final : Galley-La, Pluton, Loki, gel](https://pbs.twimg.com/media/HPNpC1EWwAAfZPs.png?name=orig)
+![Détail Franky et géants](https://pbs.twimg.com/media/HPNpC1MWEAEyK0A.png?name=orig)
+![Résumé final](https://pbs.twimg.com/media/HPNpD2oWgAIzk3P.png?name=orig)
 
 ## Objection : Pluton est sous Wano Kuni ?
 
@@ -102,7 +104,7 @@ La lecture Fous du Bus :
 
 Voir dossier complet : [Pluton, Water Seven et Galley-La](/theorie/pluton-water-seven-galley-la) et vidéo : https://www.youtube.com/watch?v=SgJ25zjMJyo
 
-![Lien vidéo Mont Corvo Pluton](/images/threads/galley-la-coincidence-impossible/img_13.jpg)
+![Lien vidéo Mont Corvo Pluton](https://pbs.twimg.com/media/HPNpC1HW8AAYfHS.png?name=orig)
 
 ## Confirmation chapitre 1154
 
