@@ -60,9 +60,10 @@ const ogImage = image ? new URL(image, siteUrl).toString() : `${siteUrl}/og-defa
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content="Les Fous du Bus — Le Siècle oublié est le présent" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="shortcut icon" href="/favicon.png" />
+    <!-- Favicon — URL stable /favicon.png conservée pour Google, + .ico compatibilité -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.png" />
 
     <!-- PWA & Theme -->
