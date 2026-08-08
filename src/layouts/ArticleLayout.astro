@@ -8,7 +8,7 @@ import BackToTop from '@components/BackToTop.astro';
 import ParcoursNav from '@components/ParcoursNav.astro';
 import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
-import { effectLabel } from '@utils/labels';
+import { effectLabel, categoryLabel } from '@utils/labels';
 
 const { title, description, currentPath, headings, frontmatter } = Astro.props;
 // Image sociale de la page : on privilégie `ogImage` du frontmatter si fourni,
@@ -45,6 +45,11 @@ const generateBreadcrumb = (path: string): Array<{ label: string; href?: string 
   // Pages spéciales avec breadcrumb personnalisé
   if (path.startsWith('/theorie/')) {
     items.push({ label: 'La théorie', href: '/theorie' });
+    // Insert category between "La théorie" and the article title
+    if (path !== '/theorie' && path !== '/theorie/' && frontmatter.category) {
+      const catLabel = categoryLabel(frontmatter.category);
+      items.push({ label: catLabel, href: `/dossiers#${frontmatter.category}` });
+    }
     if (path !== '/theorie' && path !== '/theorie/') {
       items.push({ label: title });
     }
@@ -73,6 +78,20 @@ const generateBreadcrumb = (path: string): Array<{ label: string; href?: string 
 };
 
 const breadcrumbItems = generateBreadcrumb(currentPath);
+
+// Reading time estimate (≈ 200 words/min for French)
+const computeReadingTime = (headings: any[] | undefined): string | null => {
+  // We can't access raw Markdown from here, so we use the headings as a proxy
+  // Articles with 0-3 headings → <3 min, 4-8 → ~5 min, 9-15 → ~10 min, 16+ → ~15+ min
+  if (!headings || headings.length === 0) return null;
+  const h2Count = headings.filter((h: any) => h.depth === 2).length;
+  if (h2Count <= 2) return '2 min';
+  if (h2Count <= 5) return '5 min';
+  if (h2Count <= 10) return '10 min';
+  if (h2Count <= 16) return '15 min';
+  return '20+ min';
+};
+const readingTime = computeReadingTime(headings);
 
 // JSON-LD for Article — enrichi (headline court = H1, description, section, publisher)
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
@@ -138,6 +157,15 @@ const articleJsonLd = {
   <article data-pagefind-body>
     <h1 class="article-title">{title}</h1>
 
+    {readingTime && (
+      <p class="article-reading-time">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        Lecture : ~{readingTime}
+      </p>
+    )}
+
     {articleChapters.length > 0 && (
       <p class="article-updated-meta">
         Dernière mise à jour de la fiche : chapitre <strong>{articleChapters[0].data.chapter}</strong>
@@ -163,6 +191,27 @@ const articleJsonLd = {
 
   {relatedArticles.length > 0 && <RelatedArticles articles={relatedArticles} />}
   {articleChapters.length > 0 && <ChapterReferences items={articleChapters} />}
+
+  <!-- Social share buttons -->
+  <div class="article-share" aria-label="Partager cet article">
+    <span class="article-share__label">Partager</span>
+    <a
+      class="article-share__btn"
+      href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(canonicalArticleUrl)}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Partager sur X (Twitter)"
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </a>
+    <button
+      class="article-share__btn"
+      id="share-copy-btn"
+      aria-label="Copier le lien de l'article"
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+    </button>
+  </div>
 
   <BackToTop />
   <Footer />
@@ -221,6 +270,7 @@ const articleJsonLd = {
         const htmlImg = img as HTMLImageElement;
         htmlImg.style.cursor = 'zoom-in';
         htmlImg.title = 'Cliquer pour agrandir';
+        htmlImg.loading = 'lazy';
         htmlImg.addEventListener('click', () => {
           openLightbox(htmlImg.src, htmlImg.alt);
         });
@@ -234,6 +284,28 @@ const articleJsonLd = {
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !lightbox.classList.contains('hidden')) {
           closeLightbox();
+        }
+      });
+    }
+
+    // Copy link button
+    const copyBtn = document.getElementById('share-copy-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          const original = copyBtn.getAttribute('aria-label') ?? '';
+          copyBtn.setAttribute('aria-label', 'Lien copié !');
+          copyBtn.style.color = 'var(--cyan)';
+          copyBtn.style.borderColor = 'var(--cyan)';
+          setTimeout(() => {
+            copyBtn.setAttribute('aria-label', original);
+            copyBtn.style.color = '';
+            copyBtn.style.borderColor = '';
+          }, 2000);
+        } catch {
+          // Fallback: select URL in address bar
+          window.location.href = window.location.href;
         }
       });
     }
@@ -313,6 +385,19 @@ const articleJsonLd = {
   .article-updated-meta__effect {
     font-size: 12px;
     color: var(--text-muted);
+  }
+
+  .article-reading-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0 0 6px;
+  }
+
+  .article-reading-time svg {
+    opacity: 0.6;
   }
 
   .content {
@@ -546,5 +631,45 @@ const articleJsonLd = {
     background: var(--violet);
     color: white;
     transform: scale(1.1);
+  }
+
+  .article-share {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 24px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .article-share__label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin-right: 4px;
+  }
+
+  .article-share__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: color-mix(in srgb, var(--surface) 50%, transparent);
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    padding: 0;
+  }
+
+  .article-share__btn:hover {
+    color: var(--text-main);
+    border-color: var(--violet);
+    background: color-mix(in srgb, var(--violet) 10%, transparent);
   }
 </style>

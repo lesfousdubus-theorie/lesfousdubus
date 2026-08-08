@@ -145,6 +145,7 @@ const isActive = (href: string) =>
               href={item.href}
               class:list={['nav-link', { 'nav-link--active': isActive(item.href) }]}
               aria-haspopup="true"
+              aria-expanded="false"
               aria-current={isActive(item.href) ? 'true' : undefined}
             >
               {item.label}
@@ -468,10 +469,16 @@ const isActive = (href: string) =>
   }
 
   .nav-item:hover .nav-dropdown,
-  .nav-item:focus-within .nav-dropdown {
+  .nav-item:focus-within .nav-dropdown,
+  .nav-item.nav-item--open .nav-dropdown {
     opacity: 1;
     visibility: visible;
     transform: translate(-50%, 0);
+  }
+
+  .nav-item.nav-item--open .nav-caret {
+    opacity: 1;
+    transform: rotate(180deg);
   }
 
   .nav-dropdown__title {
@@ -854,4 +861,57 @@ const isActive = (href: string) =>
   });
 
   // Mobile drawer is handled in WikiLayout (single navigation DOM) — no duplicate handling needed here
+
+  // Dropdown click support for touch/tablet devices
+  // On touch devices, :hover doesn't work for dropdowns, so we toggle on click
+  const navItems = document.querySelectorAll<HTMLDivElement>('.nav-item');
+  let openDropdown: HTMLDivElement | null = null;
+
+  const closeAllDropdowns = () => {
+    navItems.forEach((item) => {
+      item.classList.remove('nav-item--open');
+      const link = item.querySelector('.nav-link');
+      if (link) link.setAttribute('aria-expanded', 'false');
+    });
+    openDropdown = null;
+  };
+
+  navItems.forEach((item) => {
+    const navLink = item.querySelector('.nav-link');
+    if (!navLink) return;
+
+    navLink.addEventListener('click', (e) => {
+      // Only intercept on touch/tablet (viewport <= 1024) or when no hover support
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      if (!isTouchDevice && window.innerWidth > 1024) return;
+
+      e.preventDefault();
+      const isOpen = item.classList.contains('nav-item--open');
+
+      if (isOpen) {
+        closeAllDropdowns();
+      } else {
+        closeAllDropdowns();
+        item.classList.add('nav-item--open');
+        navLink.setAttribute('aria-expanded', 'true');
+        openDropdown = item;
+      }
+    });
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    if (!openDropdown) return;
+    const target = e.target as Node;
+    if (!openDropdown.contains(target)) {
+      closeAllDropdowns();
+    }
+  });
+
+  // Close dropdown on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && openDropdown) {
+      closeAllDropdowns();
+    }
+  });
 </script>

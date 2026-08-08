@@ -50,12 +50,12 @@
     --cyan: #0b626b;
     --cyan-dim: #0a5e69;
     --text-main: #1f1d18;
-    --text-secondary: #555047;
+    --text-secondary: #4a453c;
     --accent-gold: #76520d;
     --alert: #a02f23;
-    --border-color: rgba(31, 29, 24, 0.24);
+    --border-color: rgba(31, 29, 24, 0.30);
     /* Contour porteur d'information (champs, contrôles, focus) : >= 3:1 sur --bg-main. */
-    --border-strong: rgba(31, 29, 24, 0.55);
+    --border-strong: rgba(31, 29, 24, 0.58);
     --glow-violet: rgba(63, 74, 122, 0.22);
     --glow-cyan: rgba(12, 110, 121, 0.2);
     --gradient-hero: linear-gradient(
