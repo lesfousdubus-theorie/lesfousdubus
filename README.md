@@ -1,565 +1,190 @@
 # Les Fous du Bus
 
-## Le Siècle oublié est le présent
+> **Le Siècle oublié est le présent**  
+> Wiki éditorial pour la théorie des Fous du Bus sur *One Piece*.
 
-> Wiki éditorial consacré à une théorie sur _One Piece_ : le Siècle oublié ne serait pas un événement ancien qui se répète, mais l’histoire que Luffy et ses alliés sont en train de créer.
-
-[Site](https://lesfousdubus.sbs) · [Dépôt GitHub](https://github.com/lesfousdubus-theorie/lesfousdubus) · [Vidéo originale](https://youtu.be/SgJ25zjMJyo) · [Compte X](https://x.com/FoudubusTV_)
-
-Le projet est ouvert : chacun peut consulter le site, proposer des changements ou réutiliser librement les créations originales du dépôt.
+**Statut : V1 publique en développement**  
+Site déployé et largement construit : https://lesfousdubus.sbs
 
 ---
 
-## Guide de démarrage rapide (pour tout le monde)
+## Navigation réelle du site
 
-Vous n’avez pas besoin de savoir coder pour modifier le site. **Le contenu est écrit dans de simples fichiers texte.** Le site transforme automatiquement ces fichiers en pages web.
+- **Commencer**
+  - Présentation
+  - Résumé de la théorie
+  - Théorie complète (22 chapitres)
+  - Carte mentale
+  - Lexique essentiel
 
-> 💡 **L’idée à retenir :** un article = un fichier dans le dossier `src/content/articles/`. Chaque fichier commence par un petit bloc de réglages (le « frontmatter », entre deux lignes `---`), suivi du texte de l’article, écrit en Markdown (une écriture simple avec des `#` pour les titres, `-` pour les listes, etc.).
+- **Monde et destinations**
+- **Histoire, temps et Ponéglyphes**
+- **Figures principales**
+- **Personnages et identités**
+- **Armes antiques**
+- **Technologies et pouvoirs**
+- **Peuples, royaumes et témoins**
+- **Dieux et croyances**
+- **Transmission et mémoire**
+- **Gouvernement mondial**
+- **Guerre finale**
 
-### ✏️ Modifier un article existant
+- **Chapitres récents**
+  - Analyses chapitre par chapitre
 
-1. Ouvrez le fichier `src/content/articles/<nom-de-l-article>.md` (ex. `luffy.md`).
-2. Modifiez le texte sous le frontmatter. Exemples de syntaxe Markdown :
-   - `## Un titre de section`
-   - `- un point de liste`
-   - **texte en gras** s’écrit `**texte en gras**`
-   - *texte en italique* s’écrit `*texte en italique*`
-   - une citation : `> « une phrase »`
-3. Si besoin, ajustez les réglages du frontmatter (ex. `reviewedUntilChapter` après une relecture globale). Pour afficher qu’un chapitre a réellement modifié un article, utilisez plutôt `updatedArticles` dans la fiche du chapitre.
-4. Enregistrez, puis prévisualisez (voir [Aperçu local](#aperçu-local-sans-installer-rien) plus bas).
+- **Explorer**
+  - Carte mentale, Chronologie, Graphe des correspondances, etc.
 
-### 🆕 Ajouter un nouvel article
+- **Aide**
+  - À propos, FAQ, Glossaire, Crédits
 
-1. Créez un nouveau fichier dans `src/content/articles/`, par exemple `mon-sujet.md`.
-2. Copiez le modèle ci-dessous et remplissez les champs :
-
-```markdown
----
-title: "Titre de l'article"
-summary: "Une phrase de résumé affichée sur les listes."
-category: "figures-principales"
-status: "published"
-reviewedUntilChapter: 1188
-related:
-  - luffy
-  - joy-boy
 ---
 
-## Présentation
+## Architecture actuelle de la sidebar (structure cible)
 
-Votre premier paragraphe…
+```
+Commencer
+├── Présentation
+├── Résumé de la théorie
+├── Théorie complète
+├── Carte mentale
+└── Lexique essentiel
 
-## Ce que le manga établit
+Monde et destinations
+Histoire, temps et Ponéglyphes
+Figures principales
+Personnages et identités
+├── ... 
+├── Princesse Shirahoshi
+└── Rocks D. Xebec
+Armes antiques
+Technologies et pouvoirs
+Peuples, royaumes et témoins
+Dieux et croyances
+├── ...
+└── ↳ Voir Nika   (lien contextuel)
+Transmission et mémoire
+Gouvernement mondial
+├── ...
+├── Chevaliers Divins
+└── ...
+Guerre finale
 
-- premier fait
-- deuxième fait
-
-## La lecture des Fous du Bus
-
-Votre analyse…
+Chapitres récents
+Aide
 ```
 
-3. **Champs obligatoires** : `title`, `summary`, `category`, `status: "published"`.
-4. **`category`** doit être l’une des valeurs autorisées (voir [Les catégories](#les-catégories)).
-5. **`related`** (facultatif) : listez les noms d’autres articles liés (leurs noms de fichier, sans le `.md`).
-6. Enregistrez le fichier. L’article apparaît automatiquement dans les listes et la recherche.
+**Ajustements seulement** (pas de refonte) :
+- + Princesse Shirahoshi
+- + Rocks D. Xebec
+- + Chevaliers Divins
+- (éventuellement + Gunko)
 
-### 🌐 Modifier la structure ou le design du site
-
-- **La navigation et les pages** sont des fichiers `.astro` dans `src/pages/` et `src/components/`. Modifier le site demande alors des compétences plus techniques (Astro, HTML/CSS).
-- Pour la plupart des besoins, **préférez un contenu simple** (un article) plutôt qu’une modification de code.
-
-### ✅ Avant de proposer un changement
-
-Le site vérifie automatiquement la validité du contenu (références, catégories, etc.). Une fois vos modifications enregistrées, lancez la validation :
-
-```bash
-npm run validate
-npm run check
-npm run build
-```
-
-Si tout passe sans erreur, votre modification est prête à être proposée (voir [Contribution](#contribution)).
+Nika n’apparaît qu’une fois en tant que fiche principale (Figures principales). Un lien « ↳ Voir Nika » est ajouté dans Dieux et croyances pour éviter le doublon visuel.
 
 ---
 
-## Sommaire
+## Principes éditoriaux
 
-- [Identité du projet](#identité-du-projet)
-- [Origine de la théorie](#origine-de-la-théorie)
-- [Objectifs](#objectifs)
-- [Architecture du site](#architecture-du-site)
-- [Interface](#interface)
-- [Stack technique](#stack-technique)
-- [Structure du dépôt](#structure-du-dépôt)
-- [Installation locale](#installation-locale)
-- [Aperçu local sans installer rien](#aperçu-local-sans-installer-rien)
-- [Organisation du contenu](#organisation-du-contenu)
-- [Les catégories](#les-catégories)
-- [Images et Cloudflare R2](#images-et-cloudflare-r2)
-- [Déploiement](#déploiement)
-- [Mise à jour de la théorie](#mise-à-jour-de-la-théorie)
-- [Contribution](#contribution)
-- [Attribution et licence](#attribution-et-licence)
+- **Une page canonique par sujet** : chaque sujet possède une fiche neutre (intitulé = nom propre). Les thèses de la théorie sont développées dans des dossiers d’analyse rattachés (`parent`).
+- **Système de niveau de certitude** : badges CANON / NOYAU DE LA THÉORIE / CONSÉQUENCE DE LA THÉORIE / HYPOTHÈSE / HYPOTHÈSE RÉCENTE / RÉFUTÉ.
+- **Distinction claire** : Ce que le manga établit ≠ Interprétation ≠ Hypothèse des Fous du Bus.
 
 ---
 
-## Identité du projet
+## 22 chapitres de la théorie complète
 
-| Élément         | Valeur                                                    |
-| --------------- | --------------------------------------------------------- |
-| Nom du site     | **Les Fous du Bus**                                       |
-| Titre principal | **Le Siècle oublié est le présent**                       |
-| Sous-titre      | **Une théorie sur la véritable chronologie de One Piece** |
-| Domaine         | **https://lesfousdubus.sbs**                              |
-| Dépôt           | **https://github.com/lesfousdubus-theorie/lesfousdubus**  |
+La page **Théorie complète** est la source éditoriale de vérité (22 chapitres).
 
-### Utilisation du nom
-
-- Navbar : **Les Fous du Bus**
-- Accueil : **Le Siècle oublié est le présent**
-- Onglet d’accueil : `Le Siècle oublié est le présent | Les Fous du Bus`
-- Onglet d’un article : `Joy Boy | Les Fous du Bus`
+Parcours alternatif : 19 dossiers (encyclopédique fiche par fiche).
 
 ---
 
-## Origine de la théorie
+## Analyses de chapitres disponibles
 
-La théorie est attribuée au **Mont Corvo** et provient de la vidéo :
+- 1180 → Imu / Omen / Mother Flame / Uranus
+- 1181 → Silhouette Joy Boy-Roger + idéologie d’Imu
+- 1182 → Zaza + volonté des Zoans + création des Fruits
+- 1183 → Brook / Dōzan + Chevaliers Divins / Rumbar
+- 1184 → Brook possible compositeur de Binks no Sake
+- 1186 → Fruits du Démon (apparition récente) + géants + Domi Reversi
+- 1187 → Imu appelle Luffy Joy Boy + Luffy refuse + Joy Boy = conséquence
+- 1188 → Préscience + communication entre époques + Roger / Joy Boy + Joy Boy n’est pas un titre
 
-- [Le Siècle oublié est le présent](https://youtu.be/SgJ25zjMJyo)
-
-Le compte [Fou du Bus TV](https://x.com/FoudubusTV_) permet de suivre les échanges et les actualités autour de la théorie.
-
-Le site a pour objectif de structurer, documenter, développer et faire évoluer cette théorie au fil des nouveaux chapitres de _One Piece_.
-
----
-
-## Objectifs
-
-Le site doit permettre de :
-
-- **comprendre** la version actuelle de la théorie ;
-- **explorer** les liens entre personnages, lieux, événements et époques ;
-- **suivre** l’apport de chaque nouveau chapitre ;
-- **lire** la théorie de manière progressive, du résumé à la démonstration complète.
-
-### Principes
-
-- **Une seule source de vérité :** une information n’est enregistrée qu’une fois, puis réutilisée partout où elle est nécessaire.
-- **Une page canonique :** un sujet peut être accessible depuis plusieurs catégories sans être dupliqué.
-- **Des intitulés neutres :** les fiches portent des noms propres (« Joy Boy », « Laugh Tale », « Pluton »), jamais des conclusions (« Luffy est Joy Boy »). Les relations défendues par la théorie sont développées dans des dossiers d’analyse séparés, rattachés à leur fiche.
-- **Le contenu avant les effets :** les articles doivent rester lisibles sans animation ni rendu 3D.
-- **Progressivité :** le HTML statique constitue la base ; l’interactivité est chargée uniquement lorsqu’elle apporte une réelle valeur.
-- **Ouverture :** les Issues et Pull Requests servent à faire évoluer le projet.
+**1185** : aucune transcription source disponible (géré explicitement).
 
 ---
 
-## Architecture du site
+## Explorer — outils déjà disponibles
 
-```text
-Accueil
-│
-├── La théorie
-│   ├── Résumé de la théorie
-│   ├── Théorie complète
-│   ├── Chronologie
-│   ├── Carte mentale
-│   └── Lexique essentiel
-│
-├── Dossiers
-│   ├── Monde et destinations
-│   ├── Histoire et temporalité
-│   ├── Figures principales
-│   ├── Personnages et identités
-│   ├── Armes antiques
-│   ├── Technologies et pouvoirs
-│   ├── Peuples, royaumes et témoins
-│   ├── Dieux et croyances
-│   ├── Transmission et mémoire
-│   ├── Gouvernement mondial
-│   └── Guerre finale
-│
-├── Chapitres
-│   ├── Dernière analyse
-│   ├── Toutes les analyses
-│   ├── Prédictions
-│   └── Modifications
-│
-├── Explorer
-│   ├── Carte mentale
-│   ├── Carte de Blue Star
-│   ├── Graphe des correspondances
-│   ├── Luffy · Joy Boy · Nika
-│   ├── Chronologie comparative
-│   ├── Schéma des Ponéglyphes
-│   ├── Road Ponéglyphes & temps
-│   ├── La mémoire de l'avenir
-│   ├── Fresque d'Elbaf annotée
-│   ├── Peuples et missions
-│   ├── Le chemin de Pluton
-│   ├── Schéma de la guerre finale
-│   ├── Déluge, Red Line & All Blue
-│   └── Omen, Mother Flame & Imu
-│
-└── Aide
-    ├── À propos
-    ├── FAQ
-    ├── Glossaire
-    ├── Crédits
-```
+- Carte mentale
+- Chronologie (La mémoire de l’avenir)
+- Graphe des correspondances (« Qui est qui ? »)
+- Comparaison Luffy / Joy Boy / Nika
+- Schéma des Ponéglyphes
+- Carte Blue Star
+- Peuples et missions
+- Guerre finale (schéma)
+- Fresque d’Elbaf
+- Double chronologie
+- Road Ponéglyphes / temps
+- Pluton
+- Déluge / Red Line / All Blue
+- Omen / Mother Flame / Imu
+
+**Améliorations prévues** (pas de nouvelles pages) :
+- nœuds cliquables
+- légende Canon / Théorie / Spéculation
+- meilleure version mobile
+- chemin sélectionné mis en surbrillance
+- explication inline
+- version HTML lisible sans JS
+- terminologie alignée sur la théorie complète
 
 ---
 
-## Interface
+## Fonctionnalités restantes (P2+)
 
-Sur les grands écrans, le site utilise une grille à trois colonnes sous une navbar fixe :
-
-```text
-┌──────────────────────────────────────────────────────────────┐
-│ Navbar                                                       │
-├───────────────┬──────────────────────────────┬───────────────┤
-│ Sidebar       │ Article                      │ Sommaire      │
-│ gauche        │                              │ de l’article  │
-└───────────────┴──────────────────────────────┴───────────────┘
-```
-
-### Navbar
-
-- logo et retour à l’accueil ;
-- accès aux grandes sections (La théorie, Dossiers, Chapitres, Explorer) ;
-- recherche globale ;
-- accès au dernier chapitre analysé ;
-- mode clair ou sombre.
-
-### Sidebar gauche
-
-- fixée sous la navbar et contre le bord gauche ;
-- catégories dépliables ;
-- page active clairement indiquée ;
-- défilement indépendant ;
-- repliable ou masquable.
-
-### Article
-
-- largeur de lecture confortable ;
-- images et visualisations autorisées à dépasser ponctuellement ;
-- titre, résumé et métadonnées en haut ;
-- articles liés et poursuite de lecture en bas.
-
-### Sidebar droite
-
-- sommaire généré depuis les titres de la page ;
-- position `sticky` sous la navbar ;
-- masquée pour les articles courts.
-
-### Responsive
-
-```text
-Grand écran : sidebar gauche + article + sidebar droite
-Écran moyen : sidebar gauche + article, sommaire escamotable
-Tablette    : article, navigation et sommaire en panneaux
-Mobile      : article, bouton menu et bouton sommaire
-```
+- Standardisation complète de toutes les fiches (même architecture)
+- Passe « CANON » exhaustive sur chaque section « Ce que le manga établit »
+- Provenance précise des sources dans chaque article
+- Amélioration des outils Explorer (sans en créer de nouveaux)
+- Refonte légère de la page Prédictions (formulaires + statut + indices)
+- Mise à jour systématique via les chapitres (théorie complète = source unique)
 
 ---
 
-## Stack technique
+## SEO / robots / llms
 
-| Besoin        | Technologie                       |
-| ------------- | --------------------------------- |
-| Framework     | [Astro](https://astro.build/)     |
-| Langage       | TypeScript                        |
-| Contenu       | Markdown et MDX                   |
-| Données       | Astro Content Collections         |
-| Interactivité | React Islands                     |
-| Styles        | Tailwind CSS + CSS personnalisé   |
-| Recherche     | [Pagefind](https://pagefind.app/) |
-| Tests         | Vitest + Playwright               |
-| Hébergement   | Cloudflare                        |
-| CI/CD         | GitHub Actions                    |
-
-Le site est **statique par défaut** : chaque page est générée à l’avance et peut être servie depuis le dossier `dist/`. Les pages principales restent lisibles même sans interactivité.
-
-### Recherche Pagefind
-
-Pagefind construit son index après le build Astro. Le contenu utile des pages est indexé dans la zone principale (`data-pagefind-body`) ; la navbar, les sidebars et le footer sont exclus pour éviter des résultats dupliqués.
+- `public/llms.txt` et `llms-full.txt` générés automatiquement (`npm run llms`)
+- Balises de nature (canon, core-theory, secondary-theory, speculative)
+- Open Graph images générées
+- Robots et sitemap gérés via Astro
 
 ---
 
-## Structure du dépôt
+## Processus de mise à jour après chaque chapitre
 
-```text
-lesfousdubus/
-├── .github/              # Modèles d'issues et de pull requests
-├── docs/sources/         # Transcriptions et notes éditoriales brutes
-├── public/               # Fichiers servis tels quels (images, favicon, llms.txt)
-├── scripts/              # Scripts de validation et utilitaires
-├── src/
-│   ├── components/       # Blocs d'interface réutilisables
-│   ├── content/          # TOUT le contenu textuel du site
-│   │   ├── articles/     #   ← les articles (99 publiés actuellement)
-│   │   ├── chapters/     #   les fiches de chapitres analysés
-│   │   ├── characters/   #   les personnages
-│   │   ├── glossary/     #   le glossaire
-│   │   ├── locations/    #   les lieux
-│   │   ├── predictions/  #   les prédictions
-│   │   └── timelines/    #   les frises chronologiques
-│   ├── layouts/          # Les gabarits de page
-│   ├── pages/            # Les routes (.astro)
-│   ├── styles/           # Le CSS global
-│   └── utils/            # Fonctions partagées
-├── astro.config.mjs
-├── package.json
-├── tsconfig.json
-├── wrangler.jsonc
-└── README.md
-```
+1. Créer / mettre à jour la fiche dans `src/content/chapters/XXXX.md`
+2. Renseigner `effect`, `themes`, `updatedArticles`
+3. Mettre à jour les articles concernés
+4. Ajuster la théorie complète si nécessaire
+5. Mettre à jour les prédictions
+6. Régénérer `llms.txt` + rebuild
 
-> 🔑 **Pour non-codeurs :** tout ce qui s’affiche comme texte sur le site vit dans `src/content/`. Vous n’avez presque jamais besoin de toucher aux dossiers `components`, `layouts` ou `pages`.
+**Règle** : quand une fiche contredit la théorie complète, c’est la fiche qu’il faut corriger.
 
 ---
 
-## Installation locale
+## Licence & attribution
 
-### Prérequis
+Projet de fans non officiel.  
+Théorie originale : Mont Corvo / Fous du Bus.  
+Contenus *One Piece* : droits réservés à Eiichiro Oda, Shueisha et ayants droit.
 
-- Git ;
-- Node.js (version >= 22, voir `.nvmrc`) ;
-- npm (>= 10).
-
-### Installation
-
-```bash
-git clone https://github.com/lesfousdubus-theorie/lesfousdubus.git
-cd lesfousdubus
-
-npm install
-npm run dev
-```
-
-Le serveur local est disponible sur :
-
-```text
-http://localhost:4321
-```
-
-### Commandes
-
-```bash
-npm run dev          # Développement (serveur local + rechargement)
-npm run check        # Vérification Astro et TypeScript
-npm run validate     # Validation du contenu et des liens
-npm run llms         # Régénère public/llms.txt et public/llms-full.txt
-npm run og           # Régénère les images Open Graph des grandes pages (public/og-*.png)
-npm run build        # Build Astro + llms + og + index Pagefind (dossier dist/)
-npm run preview      # Prévisualisation du build
-npm run format       # Formatage automatique
-npm run test         # Tests unitaires
-npm run test:e2e     # Tests de navigation dans un navigateur
-npm run r2:upload    # Envoi d'images vers R2 (optionnel)
-```
+Le code et les textes originaux du site sont sous licence CC0 (sauf éléments One Piece).
 
 ---
 
-## Aperçu local sans installer rien
-
-> **Non-codeurs :** cette section est pour vous. Pas besoin de terminal, de Node ou de Docker.
-
-### Option A — via GitHub (recommandée)
-
-1. Créez gratuitement un compte sur [GitHub](https://github.com).
-2. Cliquez sur le fichier que vous voulez modifier dans le dépôt (ex. `src/content/articles/luffy.md`).
-3. Cliquez sur l’icône ✏️ **Modifier** (crayon) en haut à droite.
-4. Modifiez le texte directement dans l’éditeur en ligne.
-5. En bas de la page, écrivez une petite description de votre changement, puis cliquez sur **Propose changes**.
-6. GitHub vous propose de créer une **Pull Request** : validez. Votre modification est maintenant proposée, un aperçu est généré automatiquement, et elle peut être relue puis fusionnée.
-
-> Cette méthode ne modifie rien sur le site tant que la Pull Request n’est pas **fusionnée** — c’est le comportement voulu, pour relire avant de publier.
-
-### Option B — modifier un article sans écrire de code
-
-Même chose que l’option A, mais limitez-vous au fichier de l’article : changez le texte sous le frontmatter, laissez les réglages du haut tels quels sauf si vous savez ce que vous faites.
-
----
-
-## Organisation du contenu
-
-Le contenu est stocké dans des collections structurées et validées, dans `src/content/`.
-
-### Article (`src/content/articles/`)
-
-```yaml
----
-title: 'Joy Boy'
-summary: 'Fiche consacrée à Joy Boy : ce que le manga établit sur la figure légendaire et la lecture des Fous du Bus.'
-category: 'figures-principales'
-status: 'published'
-certainty: 'elevee'
-reviewedUntilChapter: 1188
-related:
-  - luffy
-  - nika
-  - gol-d-roger
----
-```
-
-> 💡 **Intitulés neutres :** le titre d’une fiche reste un nom propre (`joy-boy.md`, `poseidon-fiche.md`, `luffy.md`). Les thèses de la théorie — « Luffy serait Joy Boy », « Shirahoshi est Poséidon » — sont développées dans des **dossiers d’analyse** séparés, rattachés à leur fiche par le champ `parent` et marqués `navigationType: 'dossier'`.
-
-`reviewedUntilChapter` signifie seulement que l'article a été relu en tenant compte de ce chapitre. Pour afficher une vraie mise à jour liée à un chapitre, ajoutez l'identifiant de l'article dans `updatedArticles` sur la fiche du chapitre concerné.
-
-### Chapitre (`src/content/chapters/`)
-
-```yaml
----
-chapter: 1188
-title: 'Une communication à travers le temps'
-effect: 'nouvelle-piste'
-themes:
-  - temporalite
-  - imu
-  - joy-boy
-updatedArticles:
-  - temporalite
-  - imu
-  - joy-boy
----
-```
-
-### Les catégories
-
-`category` doit être l’une des valeurs suivantes (elle détermine dans quel dossier thématique l’article apparaît) :
-
-| Valeur                  | Dossier                           |
-| ----------------------- | --------------------------------- |
-| `monde-destinations`    | Monde et destinations             |
-| `histoire-temporalite`  | Histoire, temps et Ponéglyphes    |
-| `figures-principales`   | Figures principales               |
-| `personnages-identites` | Personnages et identités          |
-| `armes-antiques`        | Armes antiques                    |
-| `technologies-pouvoirs` | Technologies et pouvoirs          |
-| `peuples-royaumes`      | Peuples, royaumes et témoins      |
-| `dieux-croyances`       | Dieux et croyances                |
-| `transmission-memoire`  | Transmission et mémoire           |
-| `gouvernement-mondial`  | Gouvernement mondial              |
-| `guerre-finale`         | Guerre finale                     |
-
-### Conventions
-
-- noms de fichiers en minuscules, séparés par des tirets (`luffy.md`, `pluton-water-seven-galley-la.md`) ;
-- caractères ASCII dans les noms de fichiers ;
-- identifiants internes stables ;
-- ne pas modifier une URL publiée sans redirection ;
-- intitulés neutres pour les fiches (noms propres) ; les conclusions de la théorie restent dans le texte et dans les dossiers d’analyse ;
-- distinguer ce que le manga établit, ce qui est une interprétation et ce qui est une hypothèse.
-
-La validation (`npm run validate`) détecte les références inexistantes, les métadonnées manquantes et les catégories invalides.
-
----
-
-## Images et Cloudflare R2
-
-Les images actuellement utilisées par le site sont versionnées dans `public/images/` et sont servies sous `/images/...`. Elles restent donc disponibles dans les prévisualisations et sans configuration externe.
-
-Pour un volume de médias plus important, le dépôt fournit aussi un composant `R2Image` et le script `npm run r2:upload` pour publier des fichiers sur Cloudflare R2. Configurez alors les variables dans `.env` (voir `.env.example`) et utilisez une URL R2 dans les contenus MDX.
-
-Les sources éditoriales brutes (transcriptions et notes) sont conservées séparément dans [`docs/sources/`](docs/sources/README.md) ; elles ne sont pas exposées par le site.
-
----
-
-## Déploiement
-
-Le site est généré statiquement puis déployé sur Cloudflare.
-
-```text
-Modification locale
-→ Commit Git
-→ Push vers GitHub
-→ Build automatique
-→ Prévisualisation (Pull Request) ou production (main)
-```
-
-- Production : **https://lesfousdubus.sbs**
-- Branche `main` : production.
-- Pull Requests et autres branches : prévisualisations.
-- Dossier généré : `dist/`.
-- Configuration Cloudflare : `wrangler.jsonc`.
-
-Les secrets de production restent dans Cloudflare et ne doivent jamais être ajoutés au dépôt.
-
----
-
-## Mise à jour de la théorie
-
-Pour chaque nouveau chapitre :
-
-1. créer une fiche dans `src/content/chapters/` (c’est une **synthèse** de la transcription de l’analyse, pas une transcription brute) ;
-2. déterminer son **effet** (`fondation`, `approfondissement`, `nouvelle-piste`, `modification`, `piste-abandonnee`) ;
-3. relier les articles concernés via `updatedArticles` (ils s’affichent dans la section « Ce que ce chapitre change dans la théorie ») ;
-4. mettre à jour les articles principaux et conserver les anciennes interprétations lorsqu’une hypothèse évolue (l’historique vit dans Git) ;
-5. mettre à jour les prédictions si nécessaire.
-
-**Principe éditorial :** une hypothèse apparue dans un chapitre récent reste identifiée comme un développement récent et n’est jamais présentée comme un acquis de la théorie originale. Une page « chapitre » est une synthèse (badge « Synthèse de l’analyse »), pas une transcription restructurée.
-
-### Régénérer les fichiers LLM
-
-Les fichiers `public/llms.txt` et `public/llms-full.txt` sont **générés automatiquement** depuis les collections (articles + chapitres), avec des balises de nature (`canon`, `core-theory`, `secondary-theory`, `speculative`). Régénérez-les après tout ajout d’article :
-
-```bash
-npm run llms
-```
-
-Le `npm run build` les régénère aussi automatiquement.
-
----
-
-## Contribution
-
-Les contributions sont les bienvenues — y compris, et surtout, le contenu.
-
-- Ouvrez une **Issue** pour signaler un bug, proposer une amélioration, ajouter une source ou discuter d’un point de la théorie.
-- Ouvrez une **Pull Request** pour proposer une correction, un nouvel article ou une amélioration du code.
-- Pour un changement important, ouvrez d’abord une Issue afin de discuter de l’approche.
-
-### Workflow
-
-```text
-Issue → Modification → Vérifications → Pull Request → Preview → Fusion
-```
-
-### Avant une Pull Request
-
-```bash
-npm run check
-npm run validate
-npm run test
-npm run build
-```
-
-Ces quatre vérifications doivent passer avant toute demande de fusion ; elles sont à lancer
-manuellement en local (il n'y a pas de workflow CI automatisé sur le dépôt).
-
-Une modification est prête à être fusionnée lorsque :
-
-- son objectif est expliqué ;
-- elle fonctionne sur ordinateur et mobile ;
-- les liens et références sont valides ;
-- les faits, interprétations et hypothèses sont distingués ;
-- les images possèdent un texte alternatif pertinent ;
-- la prévisualisation a été vérifiée.
-
-En proposant une contribution au dépôt, son auteur accepte que les éléments originaux de cette contribution soient publiés sous la même licence CC0 que le reste du projet.
-
----
-
-## Attribution et licence
-
-Ce projet est un site de fans non officiel consacré à l’analyse de _One Piece_.
-
-La théorie originale est attribuée au **Mont Corvo**, à travers [cette vidéo](https://youtu.be/SgJ25zjMJyo).
-
-_One Piece_, ses personnages, son univers, ses illustrations et ses autres éléments protégés appartiennent à leurs auteurs et ayants droit respectifs, notamment Eiichiro Oda, Shueisha et leurs partenaires.
-
-Le projet n’est ni affilié, ni approuvé, ni sponsorisé par les détenteurs de ces droits.
-
-Les contenus, images, extraits, marques et personnages issus de _One Piece_ ne sont pas placés sous la licence libre du projet. Ils restent soumis aux droits de leurs propriétaires respectifs.
+**Pour contribuer** : ouvrir une Issue ou Pull Request.  
+Le site est statique (Astro). Tout le contenu éditorial vit dans `src/content/`.

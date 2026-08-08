@@ -65,6 +65,18 @@ Poséidon (Shirahoshi et les rois des mers), Pluton (le navire de guerre) et Ura
 
 Dans la lecture des Fous du Bus, cette guerre n’est pas un écho d’un conflit passé : c’est **le même conflit**, lu par le monde comme appartenant au Siècle oublié parce que les Ponéglyphes qui le racontent ont été gravés après coup puis envoyés en arrière.
 
+### Pourquoi cette guerre existe-t-elle ? (chapitre 1181)
+
+Le chapitre 1181 développe une dimension idéologique fondamentale :
+
+**Imu**  
+→ domination pour empêcher l’humanité de se détruire (contrôle, pacte, souffrance comme nécessité).
+
+**Luffy / Joy Boy**  
+→ liberté et confiance envers les individus (même avec tous les risques).
+
+L’affrontement n’est pas seulement physique. Luffy ne doit pas seulement battre Imu : il doit lui prouver que sa conception du monde est fausse. La liberté, même chaotique, est préférable à une domination qui prétend protéger.
+
 L’enchaînement proposé est le suivant :
 
 1. Imu emploie la Mother Flame pour rayer des îles entières de la carte, faisant monter la mer mètre après mètre.

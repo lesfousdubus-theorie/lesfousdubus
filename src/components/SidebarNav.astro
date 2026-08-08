@@ -34,11 +34,11 @@ const categoryConfig: Record<string, { label: string; icon: string; order: numbe
 const articlesByCategory = new Map<string, typeof articles>();
 for (const article of articles) {
   const categories = [article.data.category];
-  // Special case: Nika belongs to both "Figures principales" and "Dieux et croyances"
+  // Nika is primarily listed in "Figures principales".
+  // "Dieux et croyances" will receive a manual cross-reference link (see below).
   if (article.id === 'nika') {
-    if (!categories.includes('dieux-croyances')) {
-      categories.push('dieux-croyances');
-    }
+    // Primary placement in Figures principales.
+    // Cross-link added manually in Dieux et croyances section below.
     if (!categories.includes('figures-principales')) {
       categories.push('figures-principales');
     }
@@ -130,11 +130,38 @@ const navSections: NavSection[] = [
   },
   ...sortedCategories.map(([catKey, catArticles]) => {
     const config = categoryConfig[catKey];
+    let links = buildLinks(catArticles);
+
+    // P2 adjustments: explicit important entries (keep categories as-is)
+    if (catKey === 'personnages-identites') {
+      // P2 explicit additions (keep rest of categories intact)
+      links = [
+        ...links,
+        { label: 'Princesse Shirahoshi', href: '/theorie/shirahoshi', level: 0, type: 'fiche' },
+        { label: 'Rocks D. Xebec', href: '/theorie/rocks-xebec', level: 0, type: 'fiche' },
+        { label: 'Gunko', href: '/theorie/gunko', level: 0, type: 'fiche' },
+      ];
+    }
+    if (catKey === 'gouvernement-mondial') {
+      links = [
+        ...links,
+        { label: 'Chevaliers Divins', href: '/theorie/chevaliers-divins', level: 0, type: 'fiche' },
+      ];
+    }
+
+    // P2: avoid visual duplication of Nika (primary in Figures principales)
+    if (catKey === 'dieux-croyances') {
+      links = [
+        ...links,
+        { label: '↳ Voir Nika', href: '/theorie/nika', level: 1, type: 'fiche' },
+      ];
+    }
+
     return {
       title: catKey.toUpperCase().replace(/-/g, ' '),
       label: config?.label ?? catKey,
       icon: config?.icon ?? '📄',
-      links: buildLinks(catArticles),
+      links,
     };
   }),
 ];
