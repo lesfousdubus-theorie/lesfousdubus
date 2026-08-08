@@ -25,6 +25,6 @@ Son corps momifié fut dérobé par Gekko Moria lors de l'arc Thriller Bark. Son
 
 ## La lecture des Fous du Bus
 
-Ryuma n'est pas seulement un ancêtre honoré : dans la théorie, sa légende s'écrit au présent. Zoro endosse progressivement ses attributs (borgnitude, défaite du dragon, épée unique), jusqu'à devenir lui-même le Dieu de la Lame. La boucle temporelle se referme par la transmission de Shusui.
+Ryuma n'est pas seulement un ancêtre honoré : dans la théorie, sa légende s'écrit au présent. Zoro endosse progressivement ses attributs (borgnitude, défaite du dragon, épée unique), jusqu'à devenir lui-même le Dieu de la Lame. Le mécanisme temporel se referme par la transmission de Shusui.
 
 L'article de démonstration Shimotsuki Ryuma et Roronoa Zoro détaille cette continuité.

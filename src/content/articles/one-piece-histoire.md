@@ -55,7 +55,7 @@ Le raisonnement s’appuie sur plusieurs piliers convergents :
 
 - **Le rire de Roger.** Pleurer de rire en découvrant un trésor s’explique mal si ce trésor est un objet ou une arme. Ça s’explique en revanche très bien si Roger découvre une histoire drôle, généreuse et folle — celle d’un garçon de East Blue qui rassemblera un équipage et vivra exactement le genre d’aventures qu’il aurait voulu vivre lui-même.
 - **Le titre du manga.** « One Piece » signifie « une seule pièce ». Dans la lecture du Déluge et d’All Blue, la fin du voyage verrait les quatre mers n’en former qu’**une seule pièce** (All Blue) et l’humanité réunie n’en former qu’une aussi. Le nom pourrait alors désigner à la fois le monde réunifié et l’histoire qui y mène.
-- **La boucle temporelle.** Si les Ponéglyphes racontent l’avenir (voir fiche **Ponéglyphes**), alors le message que lit Roger à Laugh Tale pourrait bien être l’histoire de Luffy, gravée à l’avenir par Robin et les Kozuki. Roger aurait donc ri en découvrant l’histoire d’un garçon qui viendra après lui, et en comprenant qu’il n’était lui-même qu’un passeur.
+- **Le mécanisme temporel.** Si les Ponéglyphes racontent l’avenir (voir fiche **Ponéglyphes**), alors le message que lit Roger à Laugh Tale pourrait bien être l’histoire de Luffy, transmise depuis le futur. Roger aurait donc ri en découvrant l’histoire d’un garçon qui viendra après lui, et en comprenant qu’il n’était lui-même qu’un passeur.
 
 Ce n’est qu’une **possibilité** parmi d’autres, pas une conclusion établie.
 

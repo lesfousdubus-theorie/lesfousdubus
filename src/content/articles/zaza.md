@@ -18,9 +18,16 @@ Zaza est présentée comme la **déesse de la pluie**. Sa révélation complète
 
 ## Ce que le manga établit
 
-- Zaza porte explicitement le titre de déesse de la pluie.
-- Ce titre correspond à l'une des quatre divinités invoquées par les Shandias au chapitre 287.
-- Depuis le chapitre 1138, de la **pluie est visible sur la fresque d'Elbaf**.
+Les Shandias mentionnent quatre divinités (chapitre 287) :
+
+- Dieu du soleil → **Nika** (identifié)
+- Dieu de la pluie → **Zaza** (identifiée)
+- Dieu de la forêt → mentionné
+- Dieu de la terre → mentionné
+
+Depuis le chapitre 1138, de la pluie est visible sur la fresque d'Elbaf.
+
+Imu = dieu de la forêt ou de la terre → hypothèse seulement.
 
 ## La lecture des Fous du Bus
 

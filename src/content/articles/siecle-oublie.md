@@ -90,8 +90,8 @@ C’est tout l’argument du site : dans ce monde, **le début côtoie la fin**.
 
 - **La lecture traditionnelle reste parfaitement cohérente.** On peut lire le Siècle oublié comme un passé à exhumer sans rencontrer de contradiction majeure avec le texte.
 - **Le Déluge à 200 mètres.** Au chapitre 1113, Vegapunk semble présenter la montée des eaux de 200 mètres comme un événement passé. La théorie doit expliquer comment un événement futur peut être déjà « constaté » à Egghead — c’est l’un des points que la « communication à travers le temps » des chapitres 1187–1188 cherche à résoudre.
-- **L’effacement organisé.** Si le Siècle oublié est le présent, pourquoi le GM croit-il depuis huit cents ans à un passé effacé ? C’est tout le nœud de la « boucle temporelle » que la théorie doit encore préciser.
-- **Le risque de « tout expliquer par le futur ».** La théorie doit rester vigilante à ne pas transformer chaque indice en preuve de la boucle temporelle. Les chapitres 21 de la **Théorie complète** distinguent à ce titre ce qui est noyau, probable et spéculatif.
+- **L’effacement organisé.** Si le Siècle oublié est le présent, pourquoi le GM croit-il depuis huit cents ans à un passé effacé ? C’est tout le nœud du mécanisme temporel (communication entre époques / transmission) que la théorie doit encore préciser.
+- **Le risque de « tout expliquer par le futur ».** La théorie doit rester vigilante à ne pas transformer chaque indice en preuve du mécanisme temporel. Les chapitres de la **Théorie complète** distinguent à ce titre ce qui est noyau, probable et spéculatif.
 
 ## Points encore à expliquer
 

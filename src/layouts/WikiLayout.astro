@@ -84,6 +84,26 @@ const canonicalWikiUrl = new URL(
     )
   }
 
+  {/* Article JSON-LD for theory pages */}
+  {
+    !isCollectionPage && currentPath.startsWith('/theorie/') && (
+      <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: title,
+          description: description,
+          url: canonicalWikiUrl,
+          author: { '@type': 'Organization', name: 'Les Fous du Bus' },
+          publisher: { '@id': `${siteUrl}/#organization` },
+          inLanguage: 'fr-FR',
+        })}
+      />
+    )
+  }
+
   <Navbar />
 
   <!-- Mobile overlay — unique navigation DOM, affiché uniquement sur mobile quand le tiroir est ouvert -->

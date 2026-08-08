@@ -59,7 +59,7 @@ Contrairement à la lecture la plus répandue (qui fait de Luffy la réincarnati
 
 Autrement dit :
 
-- **Joy Boy n’est pas son origine, c’est sa conséquence.** Les volontés, promesses, croyances qui convergent vers lui depuis huit siècles ne dessinent pas un ancêtre à retrouver : elles fabriquent la figure historique qu’il deviendra.
+- **Joy Boy n’est pas son origine, c’est sa conséquence** (chapitre 1187). Les volontés, promesses, croyances qui convergent vers lui depuis huit siècles ne dessinent pas un ancêtre à retrouver : elles fabriquent la figure historique qu’il deviendra. Luffy refuse aujourd’hui d’être Joy Boy ou Nika ; il pourrait l’être / être reconnu à l’issue de son aventure.
 - **Les trois noms.** Luffy (identité), Joy Boy (nom que l’Histoire retiendra), Nika (nom divin que lui donnent les croyants) : trois regards sur un seul homme (voir fiches **Joy Boy** et **Nika**).
 - **Luffy refuse d’incarner une légende**, et c’est précisément ce qui le rend capable de le devenir. Il ne suit aucun modèle : il agit librement, et c’est cette liberté qui, à la fin du récit, donnera son sens à tous les parallèles que le monde aura vus avant lui.
 
@@ -75,7 +75,7 @@ Kuma, au chapitre 1102, résume cette idée en pensant : « Si un héros devait 
 ## Limites et objections
 
 - **La théorie de la réincarnation reste ouverte.** Le manga n’a pas explicitement rejeté l’idée que Luffy soit la réincarnation d’un Joy Boy historique.
-- **Les parallèles avec Roger.** Roger avait le chapeau, il est arrivé à Laugh Tale, il a ri : on peut y voir la preuve d’un schéma de « volonté héritée » linéaire plutôt que d’une boucle temporelle.
+- **Les parallèles avec Roger.** Roger avait le chapeau, il est arrivé à Laugh Tale, il a ri : on peut y voir la preuve d’un schéma de « volonté héritée » linéaire plutôt qu’une boucle temporelle physique généralisée.
 - **La foi en Nika.** Le culte de Nika semble avoir existé bien avant Luffy (Boucaniers, Kuma, anciens esclaves), ce qui suggère qu’un Nika a déjà existé dans le passé — ou que ce culte a lui aussi été transmis depuis le futur.
 - **Luffy n’est pas dieu.** Le personnage de Luffy est résolument humain, faillible et gourmand : il faut veiller à ne pas le déifier au point de perdre de vue ce qui fait sa force narrative.
 

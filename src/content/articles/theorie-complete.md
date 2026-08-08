@@ -13,6 +13,8 @@ order: 5
 
 Cette théorie propose une relecture complète de One Piece : **le Siècle oublié n'a pas eu lieu il y a 800 ans, il est en train de se produire maintenant.**
 
+**Structure** : 22 chapitres (démonstration complète) / parcours encyclopédique en 19 dossiers.
+
 ## Le concept central
 
 Tout ce qui est décrit comme "antique" vient en réalité du futur :
@@ -26,7 +28,7 @@ Tout ce qui est décrit comme "antique" vient en réalité du futur :
 
 Les personnages actuels deviendront les légendes du passé :
 
-- **Luffy** = Joy Boy (nom de règne) = Nika (nom divin)
+- **Luffy** = Joy Boy (nom/surnom à l’issue de l’aventure) = Nika (nom divin)
 - **Shirahoshi** = Poséidon
 - **Vivi** = Nefertari D. Lili
 - **Teach** = Davy Jones
@@ -35,7 +37,7 @@ Les personnages actuels deviendront les légendes du passé :
 
 ## La mécanique temporelle
 
-Il n'y a **pas de voyage dans le temps** au sens traditionnel. Les Ponéglyphes ont été créés dans le futur par les Mugiwara et envoyés dans le passé pour préparer le monde au Jour du Serment.
+Il n'y a **pas de boucle temporelle physique généralisée**. Le mécanisme exact n'est pas fixé. La théorie reconnaît plusieurs possibilités (transmission d'informations, communication entre époques, préscience, déplacements ponctuels). Les Ponéglyphes sont le support principal de transmission vers le passé.
 
 C'est pourquoi :
 

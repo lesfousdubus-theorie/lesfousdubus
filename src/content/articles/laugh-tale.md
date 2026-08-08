@@ -136,9 +136,9 @@ Les chapitres 1187–1188 suggèrent une « communication à travers le temps »
 
 Roger aurait eu une **vision** du futur, une perception de ce qui allait arriver. Cette hypothèse est la plus proche de la préscience (comme celle de Madame Shirley), mais elle explique moins bien comment il a pu « atteindre » Laugh Tale.
 
-### 4. Boucle temporelle
+### 4. Communication / transmission temporelle
 
-Laugh Tale existerait dans une **boucle temporelle** où le passé et le futur se rencontrent. Roger aurait atteint non pas le futur, mais un point où toutes les époques coexistent — ce qui expliquerait pourquoi les Ponéglyphes peuvent contenir des informations venues du futur.
+Laugh Tale pourrait être accessible via un mécanisme de communication ou de transmission temporelle (pas une boucle physique généralisée). Roger aurait pu atteindre ou percevoir un point où les époques se rejoignent — ce qui expliquerait pourquoi les Ponéglyphes peuvent contenir des informations venues du futur.
 
 ## Arguments principaux
 

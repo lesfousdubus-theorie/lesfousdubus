@@ -36,7 +36,7 @@ Loki est souvent rapproché des figures de la [fresque d'Elbaf](/theorie/fresque
 
 - Le lien entre Loki et Nidhogg vient du pouvoir qu'il s'approprie, pas d'une révélation canonique sur ses origines.
 - L'identification de la Galley-La des géants comme équipage de Loki est une **hypothèse de la théorie**, non confirmée par le manga.
-- La prophétie du Harley décrit des événements qui « se réalisent » sous nos yeux ; elle peut être lue comme un simple écho et non comme une preuve de boucle temporelle.
+- La prophétie du Harley décrit des événements qui « se réalisent » sous nos yeux ; elle peut être lue comme un simple écho et non comme une preuve de mécanisme temporel ou de communication entre époques.
 
 ## Articles liés
 

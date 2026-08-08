@@ -17,7 +17,7 @@ La théorie du Siècle oublié repose sur un renversement simple : ce que l'on c
 
 ## La communication à travers le temps
 
-Le chapitre 1188 ouvre une piste nouvelle : les époques ne se contentent pas de se ressembler, elles _communiquent_. Les Ponéglyphes seraient le canal de cette transmission, portant un message du futur vers le passé.
+Le chapitre 1188 ouvre une piste nouvelle : les époques ne se contentent pas de se ressembler, elles _communiquent_. Le mécanisme exact reste ouvert (transmission d’informations, communication directe comparable à la boule de cristal de Shirley, préscience, ou déplacements ponctuels). Les Ponéglyphes sont une piste, mais le chapitre 1188 envisage aussi un dispositif inconnu.
 
 ## Conséquences
 

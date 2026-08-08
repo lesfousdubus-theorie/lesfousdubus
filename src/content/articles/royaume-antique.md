@@ -77,7 +77,7 @@ Les grandes lignes de cette lecture :
 
 ## Limites et objections
 
-- **La réponse classique reste ouverte.** Le manga peut parfaitement révéler un Royaume antique historique, avec son nom, son roi, sa chute — sans recourir à une boucle temporelle.
+- **La réponse classique reste ouverte.** Le manga peut parfaitement révéler un Royaume antique historique, avec son nom, son roi, sa chute — sans recourir à un mécanisme temporel.
 - **La technologie « perdue » est un schéma narratif courant.** Beaucoup d’œuvres de fantasy procèdent ainsi (Atlantide, Numénor, etc.) : l’hypothèse temporelle n’est donc pas la seule façon de rendre compte du paradoxe.
 - **Le nom du royaume.** Si Clover s’apprêtait à prononcer un nom qui n’existe pas encore, il faudra expliquer comment il a pu en avoir connaissance — ce qui renvoie à la mécanique temporelle d’ensemble, encore en construction.
 
