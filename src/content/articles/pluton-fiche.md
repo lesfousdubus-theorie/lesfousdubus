@@ -29,4 +29,11 @@ Aucun exemplaire opérationnel de Pluton n'a été observé à ce jour dans le r
 
 Pluton n'est pas un navire coulé dans un passé lointain : c'est Water Seven transformée en un gigantesque vaisseau grâce à l'intervention des géants charpentiers d'Elbaf. La fusion entre la cité, Zunesha et les plans hérités donnera naissance, au présent, à la véritable Arme antique.
 
-L'article de démonstration Pluton et Water Seven explore cette métamorphose.
+### Thread détaillé (août 2026)
+**« La Galley-La : une coïncidence impossible »** — Thread X complet avec les 13 images originales :
+
+→ [Lire le thread complet avec toutes les images](/theorie/galley-la-coincidence-impossible)
+
+Ce thread (inspiré de la vidéo Mont Corvo) explique pourquoi Iceberg n’a pas copié une légende ancienne mais a **créé** la Galley-La qui deviendra réalité avec l’équipage de Loki.
+
+L'article principal : [Pluton, Water Seven et Galley-La](/theorie/pluton-water-seven-galley-la)
