@@ -4,7 +4,7 @@ interface ChapterItem {
   data: {
     chapter: number;
     title: string;
-    effect: 'fondation' | 'approfondissement' | 'nouvelle-piste' | 'modification';
+    effect: 'fondation' | 'approfondissement' | 'nouvelle-piste' | 'modification' | 'piste-abandonnee';
     themes: string[];
     updatedArticles: string[];
     summary?: string;
@@ -22,6 +22,7 @@ const effectLabels: Record<string, { label: string; color: string }> = {
   'approfondissement': { label: 'Approfondissement', color: 'var(--accent-gold)' },
   'nouvelle-piste': { label: 'Nouvelle piste', color: 'var(--violet)' },
   'modification': { label: 'Mise à jour', color: 'var(--accent-gold)' },
+  'piste-abandonnee': { label: 'Piste abandonnée', color: 'var(--text-secondary)' },
 };
 ---
 

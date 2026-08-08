@@ -1,0 +1,95 @@
+---
+import WikiLayout from '@layouts/WikiLayout.astro';
+import Footer from '@components/Footer.astro';
+---
+
+<WikiLayout
+  title="Pluton, Water Seven, Wa no Kuni : le schéma de l'Arme"
+  seoTitle="Schéma Pluton One Piece : Water Seven, Galley-La, Zunesha et Wa no Kuni | Les Fous du Bus"
+  description="Schéma de la théorie sur Pluton : Water Seven transformée en navire par la Galley-La des géants, Zunesha, Wa no Kuni et la naissance de l'Arme antique."
+  currentPath="/explorer/schema-pluton"
+>
+  <div class="page-header">
+    <p class="eyebrow">⚓ Arme antique</p>
+    <h1>Le chemin de Pluton</h1>
+    <p class="page-desc">
+      La fiche canonique de <a href="/theorie/pluton-fiche">Pluton</a> décrit ce que le manga établit. Ce schéma
+      visualise la <strong>lecture des Fous du Bus</strong> : Water Seven transformée en navire, la Galley-La des
+      géants, Zunesha et Wa no Kuni — l’enchaînement qui donnerait naissance à l’Arme.
+    </p>
+  </div>
+
+  <div class="flow" role="img"
+    aria-label="Schéma du chemin de Pluton : Water Seven, Galley-La des géants, Zunesha, Wa no Kuni, puis l'arme Pluton">
+    <div class="step">
+      <span class="step__k">1</span>
+      <h2>Water Seven</h2>
+      <p>Iceberg rêve de la transformer en gigantesque navire pour la protéger d’Aqua Laguna (ch. 431).</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <span class="step__k">2</span>
+      <h2>Galley-La des géants</h2>
+      <p>La brigade au grand marteau, escouade de géants charpentiers d’Elbaf (rattachée à Loki), rejoindrait Water Seven pour la transformer.</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <span class="step__k">3</span>
+      <h2>Wa no Kuni</h2>
+      <p>Le Ponéglyphe d’Alabasta indique Pluton à Wa no Kuni. La théorie : Pluton n’y est pas encore, il y sera envoyé plus tard — comme Poséidon.</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <span class="step__k">4</span>
+      <h2>Zunesha</h2>
+      <p>L’éléphant viderait la cuvette de Wa no Kuni, ouvrant la voie et libérant la chambre magmatique.</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step step--result">
+      <span class="step__k">★</span>
+      <h2>PLUTON</h2>
+      <p>« Le plus terrible monstre de l’histoire de la construction navale » : l’Arme antique prend la mer.</p>
+    </div>
+  </div>
+
+  <p class="note">
+    Ce schéma est une <strong>visualisation de la théorie</strong>. Plusieurs maillons (l’équipage de Loki dans la
+    Galley-La, l’intervention de Zunesha à Wa no Kuni, le parallèle avec Poséidon) sont des hypothèses, pas des
+    faits établis par le manga. Voir <a href="/theorie/pluton-water-seven-galley-la">le dossier complet</a>.
+  </p>
+
+  <div class="linked">
+    <a href="/theorie/pluton-water-seven-galley-la">Dossier : Pluton, Water Seven et Galley-La →</a>
+    <a href="/theorie/pluton-fiche">Fiche canonique : Pluton →</a>
+    <a href="/theorie/loki">Loki →</a>
+    <a href="/theorie/zunesha-fiche">Zunesha →</a>
+    <a href="/theorie/wa-no-kuni">Wa no Kuni →</a>
+  </div>
+
+  <Footer />
+</WikiLayout>
+
+<style>
+  .page-header { margin-bottom: 28px; }
+  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
+  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 780px; line-height: 1.65; }
+  .page-desc a { color: var(--cyan); }
+  .page-desc strong { color: var(--text-main); }
+
+  .flow { display: flex; flex-direction: column; gap: 10px; margin: 24px 0 20px; }
+  .step { padding: 18px 20px; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: var(--gradient-card); display: flex; gap: 14px; align-items: flex-start; }
+  .step__k { width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; background: var(--violet); color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .step h2 { font-size: 16px; margin: 0 0 4px; }
+  .step p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+  .step--result { border-left: 3px solid var(--accent-gold); }
+  .step--result .step__k { background: var(--accent-gold); color: var(--bg-main); }
+  .step--result h2 { color: var(--accent-gold); }
+  .arrow { text-align: center; color: var(--violet-light); font-size: 1.3rem; line-height: 1; }
+
+  .note { font-size: 12.5px; color: var(--text-muted); font-style: italic; line-height: 1.55; padding: 12px 16px; border: 1px dashed var(--border-color); border-radius: var(--border-radius-lg); margin-bottom: 20px; }
+  .note a { color: var(--cyan); }
+  .linked { display: flex; flex-wrap: wrap; gap: 12px; }
+  .linked a { color: var(--cyan); text-decoration: none; font-size: 14px; font-weight: 500; }
+  .linked a:hover { text-decoration: underline; }
+</style>

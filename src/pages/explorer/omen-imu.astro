@@ -1,0 +1,95 @@
+---
+import WikiLayout from '@layouts/WikiLayout.astro';
+import Footer from '@components/Footer.astro';
+---
+
+<WikiLayout
+  title="Omen, Mother Flame et Imu : la branche spéculative"
+  seoTitle="Omen, Mother Flame et Imu One Piece : schéma spéculatif | Les Fous du Bus"
+  description="Schéma de la branche spéculative de la théorie : l'Omen d'Imu, amplifié par la Mother Flame, rapproché de l'arme d'Uranus. Hypothèses, pas des faits."
+  currentPath="/explorer/omen-imu"
+>
+  <div class="page-header">
+    <p class="eyebrow">⚠️ Branche spéculative</p>
+    <h1>Omen · Mother Flame · Imu</h1>
+    <p class="page-desc">
+      Cette branche de la théorie est la plus <strong>spéculative</strong> et la plus récente. Elle relie le pouvoir
+      d'Imu (l'« Omen »), l'énergie Mother Flame et l'hypothèse « Imu = Uranus ». Aucun de ces maillons n'est un fait
+      établi du manga.
+    </p>
+  </div>
+
+  <div class="notice">
+    <strong>Développements récents (chapitres 1180–1188).</strong> Ces rapprochements sont des pistes en cours de
+    construction, pas des acquis de la théorie originale.
+  </div>
+
+  <div class="flow" role="img"
+    aria-label="Schéma spéculatif : la Mother Flame, l'Omen d'Imu, l'arme contre Lulusia et l'hypothèse Uranus">
+    <div class="stage">
+      <h2>Mother Flame</h2>
+      <p>Énergie créée par Vegapunk en étudiant Emeth. Une partie a été volée et utilisée contre Lulusia (fait).</p>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="stage">
+      <h2>L'incident de Lulusia</h2>
+      <p>Le manga montre la destruction de l'île, mais n'identifie pas formellement l'arme employée (fait).</p>
+    </div>
+    <div class="arrow">↓ (hypothèse)</div>
+    <div class="stage stage--spec">
+      <h2>L'Omen d'Imu amplifié</h2>
+      <p>La théorie : l'« Omen » (pouvoir propre d'Imu), alimenté par la Mother Flame, pourrait atteindre une échelle apocalyptique — frapper depuis le ciel, faire disparaître des îles.</p>
+    </div>
+    <div class="arrow">↓ (hypothèse)</div>
+    <div class="stage stage--spec">
+      <h2>« Imu = Uranus »</h2>
+      <p>La chose noire crachant des flammes décrite par Sabo au-dessus de Lulusia serait Imu ainsi amplifié. La théorie rapproche ce pouvoir de l'Arme Antique Uranus.</p>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <p>
+      <strong>Statut :</strong> le chapitre 1180 envisage plusieurs possibilités autour d'Imu, de l'Omen et d'Uranus
+      sans trancher. Le rapprochement Mother Flame → arme de Lulusia → Uranus est une <strong>hypothèse de la théorie</strong>,
+      pas une identification canonique. Voir <a href="/theorie/omen">la fiche Omen</a>,
+      <a href="/theorie/mother-flame">Mother Flame</a> et <a href="/theorie/uranus">Uranus</a>.
+    </p>
+  </div>
+
+  <div class="linked">
+    <a href="/theorie/omen">Fiche : Omen →</a>
+    <a href="/theorie/mother-flame">Mother Flame →</a>
+    <a href="/theorie/uranus">Uranus →</a>
+    <a href="/theorie/imu-nerona">Imu Nerona →</a>
+    <a href="/theorie/domi-reversi">Domi Reversi →</a>
+  </div>
+
+  <Footer />
+</WikiLayout>
+
+<style>
+  .page-header { margin-bottom: 24px; }
+  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
+  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 780px; line-height: 1.65; }
+  .page-desc strong { color: var(--text-main); }
+
+  .notice { padding: 14px 16px; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-gold); border-radius: var(--border-radius-lg); background: color-mix(in srgb, var(--accent-gold) 6%, var(--bg-secondary)); font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 20px; }
+  .notice strong { color: var(--accent-gold); }
+
+  .flow { display: flex; flex-direction: column; gap: 8px; margin: 0 0 20px; }
+  .stage { padding: 16px 18px; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: var(--gradient-card); border-left: 3px solid var(--cyan); }
+  .stage--spec { border-left: 3px solid var(--accent-gold); }
+  .stage--spec h2 { color: var(--accent-gold); }
+  .stage h2 { font-size: 15px; margin: 0 0 4px; }
+  .stage p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+  .arrow { text-align: center; color: var(--text-muted); font-size: 1rem; line-height: 1; padding: 2px 0; }
+
+  .note-box { padding: 18px; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-gold); border-radius: var(--border-radius-lg); background: var(--bg-secondary); margin-bottom: 20px; }
+  .note-box p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+  .note-box strong { color: var(--text-main); }
+  .note-box a { color: var(--cyan); }
+  .linked { display: flex; flex-wrap: wrap; gap: 12px; }
+  .linked a { color: var(--cyan); text-decoration: none; font-size: 14px; font-weight: 500; }
+  .linked a:hover { text-decoration: underline; }
+</style>

@@ -1,0 +1,87 @@
+---
+import WikiLayout from '@layouts/WikiLayout.astro';
+import Footer from '@components/Footer.astro';
+
+interface Peuple {
+  nom: string;
+  href: string;
+  element: string;
+  mission: string;
+  final: string;
+}
+
+const peuples: Peuple[] = [
+  { nom: 'Hommes-Poissons', href: '/theorie/hommes-poissons', element: 'Poséidon', mission: 'Conserver Noah et attendre le navire', final: 'Noah porte les Hommes-Poissons vers le soleil' },
+  { nom: 'Wa no Kuni', href: '/theorie/wa-no-kuni', element: 'Pluton', mission: 'Graver et protéger les Ponéglyphes', final: 'Ouverture des frontières, Pluton' },
+  { nom: 'Minks (Zou)', href: '/theorie/zou-minks', element: 'Zunesha', mission: 'Garder le secret du siècle', final: 'Zunesha intervient dans la guerre' },
+  { nom: 'Alabasta / Nefertari', href: '/theorie/alabasta', element: 'Ponéglyphe', mission: 'Protéger le Ponéglyphe et la lignée', final: 'Vivi accomplit le rôle de Lili' },
+  { nom: 'Shandias', href: '/theorie/shandora-shandias', element: 'Foi / divinités', mission: 'Transmettre la croyance et le Ponéglyphe', final: 'Foi en Nika matérialisée' },
+  { nom: 'Boucaniers', href: '/theorie/boucaniers', element: 'Nika', mission: 'Transmettre la foi en Nika', final: 'Kuma, dernier témoin' },
+  { nom: 'Ryugu', href: '/theorie/royaume-ryugu', element: 'Poséidon / Noah', mission: 'Attendre la promesse de Joy Boy', final: 'Le serment accompli' },
+  { nom: 'Géants d\'Elbaf', href: '/theorie/elbaf-halley', element: 'Harley / fresque', mission: 'Conserver la prophétie et charpenter', final: 'Galley-La des géants, Pluton' },
+];
+---
+
+<WikiLayout
+  title="Les peuples et leurs missions"
+  seoTitle="Carte des peuples de One Piece et leurs missions : Poséidon, Pluton, Nika | Les Fous du Bus"
+  description="Carte des peuples de la théorie : chaque peuple protège un élément, reçoit une mission et joue un rôle dans l'événement final."
+  currentPath="/explorer/peuples-missions"
+>
+  <div class="page-header">
+    <p class="eyebrow">🏰 Peuples</p>
+    <h1>Peuples et missions</h1>
+    <p class="page-desc">
+      Dans la théorie, chaque peuple de Blue Star reçoit une mission de conservation pendant 800 ans : protéger
+      un élément (une arme, un savoir, une foi) jusqu'au retour de Joy Boy. Cette carte les met en regard.
+    </p>
+  </div>
+
+  <div class="table" role="table" aria-label="Peuples, éléments protégés, missions et événement final">
+    <div class="thead" role="row">
+      <span>Peuple</span><span>Élément protégé</span><span>Mission</span><span>Événement final</span>
+    </div>
+    {peuples.map((p) => (
+      <div class="trow" role="row">
+        <a class="cell cell--peuple" href={p.href}>{p.nom}</a>
+        <span class="cell cell--elem">{p.element}</span>
+        <span class="cell">{p.mission}</span>
+        <span class="cell">{p.final}</span>
+      </div>
+    ))}
+  </div>
+
+  <p class="note">
+    Cette carte est une visualisation de la théorie : la répartition précise des missions est une lecture
+    des Fous du Bus, pas un schéma canonique fourni par le manga.
+  </p>
+
+  <Footer />
+</WikiLayout>
+
+<style>
+  .page-header { margin-bottom: 32px; }
+  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
+  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 780px; line-height: 1.65; }
+
+  .table { border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); overflow: hidden; margin: 24px 0 16px; }
+  .thead, .trow { display: grid; grid-template-columns: 1.2fr 1fr 1.4fr 1.4fr; }
+  .thead { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); }
+  .thead span { padding: 12px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+  .trow { border-bottom: 1px solid var(--border-color); }
+  .trow:last-child { border-bottom: none; }
+  .trow:hover { background: var(--bg-secondary); }
+  .cell { padding: 14px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; display: flex; align-items: center; }
+  .cell--peuple { color: var(--cyan); font-weight: 600; text-decoration: none; }
+  .cell--peuple:hover { text-decoration: underline; }
+  .cell--elem { color: var(--violet-light); font-weight: 600; }
+  .note { font-size: 12.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
+
+  @media (max-width: 760px) {
+    .thead { display: none; }
+    .trow { grid-template-columns: 1fr; gap: 2px; padding: 12px; }
+    .cell { padding: 4px 0; }
+    .cell--peuple { font-size: 15px; }
+  }
+</style>

@@ -1,0 +1,246 @@
+---
+import WikiLayout from '@layouts/WikiLayout.astro';
+import Footer from '@components/Footer.astro';
+
+interface Zone {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  r: number;
+  interpretation: string;
+  status: 'canon' | 'interpretation' | 'hypothese';
+}
+
+// La fresque d'Elbaf n'étant pas montrée en intégralité dans le manga, ce schéma
+// est une ANNOTATION de la théorie, pas une reproduction canonique. Les zones sont
+// cliquables et leurs interprétations sont clairement étiquetées.
+const zones: Zone[] = [
+  {
+    id: 'geant',
+    label: 'Le géant',
+    x: 230,
+    y: 300,
+    r: 54,
+    interpretation:
+      'Géant combattant aux côtés de l’humanité. La théorie y lit l’alliance d’Elbaf avec le reste du monde, un événement que les géants (selon Rip) disent ne jamais avoir eu lieu — donc un événement à venir.',
+    status: 'interpretation',
+  },
+  {
+    id: 'soleil',
+    label: 'Le soleil',
+    x: 430,
+    y: 170,
+    r: 40,
+    interpretation:
+      'La figure solaire est rapprochée de Nika / Joy Boy : le dieu du soleil, incarnation de Luffy dans la bataille finale.',
+    status: 'interpretation',
+  },
+  {
+    id: 'pluie',
+    label: 'La pluie',
+    x: 600,
+    y: 220,
+    r: 36,
+    interpretation:
+      'La pluie visible sur la fresque est rapprochée de Zaza, déesse de la pluie récemment révélée. Peut n’être qu’un élément d’atmosphère.',
+    status: 'hypothese',
+  },
+  {
+    id: 'imu',
+    label: 'La silhouette géante (Imu ?)',
+    x: 640,
+    y: 470,
+    r: 48,
+    interpretation:
+      'Depuis le chapitre 1180, une silhouette est rapprochée d’Imu sous forme gigantesque, éventuellement amplifiée par la Mother Flame (hypothèse Imu = Uranus). Spéculatif.',
+    status: 'hypothese',
+  },
+  {
+    id: 'harley',
+    label: 'Le Harley',
+    x: 160,
+    y: 480,
+    r: 44,
+    interpretation:
+      'Texte sacré d’Elbaf en trois parties et trois mondes qui accompagne la fresque. La théorie le lit comme une prophétie du futur (voir Elbaf et le Harley).',
+    status: 'canon',
+  },
+];
+
+const statusLabels: Record<string, string> = {
+  canon: 'Établi par le manga',
+  interpretation: 'Lecture de la théorie',
+  hypothese: 'Hypothèse / spéculatif',
+};
+
+const statusColors: Record<string, string> = {
+  canon: 'var(--cyan)',
+  interpretation: 'var(--violet-light)',
+  hypothese: 'var(--accent-gold)',
+};
+---
+
+<WikiLayout
+  title="La fresque d'Elbaf annotée"
+  seoTitle="Fresque d'Elbaf annotée One Piece : zones cliquables et interprétations | Les Fous du Bus"
+  description="Schéma annoté de la fresque d'Elbaf : géants, soleil, pluie, Imu et le Harley. Zones cliquables avec leurs interprétations, clairement distinguées du canon."
+  currentPath="/explorer/fresque-elbaf"
+>
+  <div class="page-header">
+    <p class="eyebrow">🎨 Annotation</p>
+    <h1>La fresque d'Elbaf, annotée</h1>
+    <p class="page-desc">
+      La fresque gravée sur l'Arbre d'Adam n'est montrée que partiellement dans le manga. Ce schéma est une
+      <strong>annotation de la théorie</strong> : chaque zone cliquable porte une interprétation, clairement étiquetée
+      selon son degré de certitude. Ce n'est pas une reproduction canonique.
+    </p>
+  </div>
+
+  <div class="fresco">
+    <svg viewBox="0 0 800 600" class="fresco-svg" role="img"
+      aria-label="Schéma annoté de la fresque d'Elbaf avec cinq zones : géant, soleil, pluie, silhouette d'Imu et le Harley">
+      <defs>
+        <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2a2630" />
+          <stop offset="100%" stop-color="#16131c" />
+        </linearGradient>
+        <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#f5d78e" />
+          <stop offset="100%" stop-color="#e0ab4e" />
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width="800" height="600" rx="16" fill="url(#stone)" />
+      <!-- decorative glyphs -->
+      <circle cx="430" cy="170" r="34" fill="url(#sun)" opacity="0.9" />
+      <circle cx="430" cy="170" r="44" fill="none" stroke="#e0ab4e" stroke-width="2" opacity="0.6" />
+      <path d="M230 250 q30 30 0 70 q-40 20 -20 -30 z" fill="#3b3442" />
+      <path d="M220 340 l20 30 l0 40 l-40 0 l0 -40 z" fill="#3b3442" />
+      <circle cx="230" cy="255" r="12" fill="#2a2630" stroke="#4a4350" stroke-width="1.5" />
+      <path d="M600 205 q18 -14 40 0" fill="none" stroke="#5b8aa8" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+      <path d="M596 216 q18 -12 38 0" fill="none" stroke="#5b8aa8" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+      <!-- Imu-like silhouette -->
+      <path d="M640 420 l0 60 M610 470 l30 0 l0 40 l-60 0 l0 -40 l30 0 l0 -60" fill="none" stroke="#2b2038" stroke-width="6" />
+      <!-- Harley block -->
+      <rect x="128" y="440" width="66" height="84" rx="4" fill="#1d1a24" stroke="#4a4350" stroke-width="2" />
+      <rect x="136" y="452" width="50" height="6" fill="#4a4350" />
+      <rect x="136" y="466" width="50" height="6" fill="#4a4350" />
+      <rect x="136" y="480" width="34" height="6" fill="#4a4350" />
+
+      <!-- Interactive zones -->
+      {zones.map((z) => (
+        <>
+          <circle cx={z.x} cy={z.y} r={z.r} fill="none" stroke={statusColors[z.status]}
+            stroke-width="2" stroke-dasharray="6,4" class="zone-hit" data-zone={z.id}
+            data-label={z.label} data-interp={z.interpretation} data-status={z.status} tabindex="0" />
+          <text x={z.x} y={z.y + z.r + 16} text-anchor="middle" fill={statusColors[z.status]}
+            font-size="12" font-weight="700" font-family="Inter,system-ui,sans-serif" class="zone-tag">{z.label}</text>
+        </>
+      ))}
+    </svg>
+    <p class="fresco-caption">Les cinq zones cliquables : le géant, le soleil, la pluie, la silhouette d'Imu et le Harley.</p>
+  </div>
+
+  <!-- Panel for selected zone -->
+  <section class="panel" aria-live="polite" id="panel">
+    <span class="panel__status" id="panel-status">Cliquez sur une zone de la fresque</span>
+    <h2 class="panel__title" id="panel-title">—</h2>
+    <p class="panel__text" id="panel-text">Sélectionnez un élément de l'image pour afficher son interprétation.</p>
+  </section>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--cyan)"></i> Établi par le manga</span>
+    <span><i class="dot" style="background:var(--violet-light)"></i> Lecture de la théorie</span>
+    <span><i class="dot" style="background:var(--accent-gold)"></i> Hypothèse / spéculatif</span>
+  </div>
+
+  <div class="linked">
+    <a href="/theorie/fresque-elbaf">Fiche : La fresque d'Elbaf →</a>
+    <a href="/theorie/elbaf-halley">Elbaf et le Harley →</a>
+    <a href="/theorie/divinites-shandias">Divinités shandias →</a>
+    <a href="/theorie/imu-nerona">Imu Nerona →</a>
+  </div>
+
+  <Footer />
+</WikiLayout>
+
+<script>
+  const zoneEls = document.querySelectorAll<HTMLElement>('.zone-hit');
+  const statusLabel: Record<string, string> = {
+    canon: 'Établi par le manga',
+    interpretation: 'Lecture de la théorie',
+    hypothese: 'Hypothèse / spéculatif',
+  };
+  const statusColor: Record<string, string> = {
+    canon: 'var(--cyan)',
+    interpretation: 'var(--violet-light)',
+    hypothese: 'var(--accent-gold)',
+  };
+  const statusEl = document.getElementById('panel-status');
+  const titleEl = document.getElementById('panel-title');
+  const textEl = document.getElementById('panel-text');
+
+  const showZone = (zone: HTMLElement) => {
+    const label = zone.dataset.label ?? '';
+    const interp = zone.dataset.interp ?? '';
+    const status = zone.dataset.status ?? 'hypothese';
+    if (statusEl) {
+      statusEl.textContent = statusLabel[status];
+      statusEl.style.color = statusColor[status];
+    }
+    if (titleEl) titleEl.textContent = label;
+    if (textEl) textEl.textContent = interp;
+    zoneEls.forEach((z) => z.classList.remove('zone-active'));
+    zone.classList.add('zone-active');
+  };
+
+  zoneEls.forEach((zone) => {
+    zone.addEventListener('click', () => showZone(zone));
+    zone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        showZone(zone);
+      }
+    });
+  });
+</script>
+
+<style>
+  .page-header { margin-bottom: 32px; }
+  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
+  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 780px; line-height: 1.65; }
+  .page-desc strong { color: var(--text-main); }
+
+  .fresco { margin: 24px 0 8px; }
+  .fresco-svg { width: 100%; height: auto; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); }
+  .zone-hit { cursor: pointer; transition: stroke-width 0.15s ease, opacity 0.15s ease; }
+  .zone-hit:hover, .zone-hit:focus, .zone-hit.zone-active {
+    stroke-width: 3.5;
+    opacity: 1;
+    outline: none;
+  }
+  .zone-tag { pointer-events: none; }
+  .fresco-caption { font-size: 12.5px; color: var(--text-muted); margin-top: 10px; }
+
+  .panel {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--violet);
+    border-radius: var(--border-radius-lg);
+    background: var(--bg-secondary);
+    min-height: 96px;
+  }
+  .panel__status { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px; }
+  .panel__title { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
+  .panel__text { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; padding: 12px 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+  .linked { display: flex; flex-wrap: wrap; gap: 12px; }
+  .linked a { color: var(--cyan); text-decoration: none; font-size: 14px; font-weight: 500; }
+  .linked a:hover { text-decoration: underline; }
+</style>

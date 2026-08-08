@@ -19,6 +19,7 @@ export const effectLabels: Record<string, string> = {
   approfondissement: 'Approfondissement',
   'nouvelle-piste': 'Nouvelle piste',
   modification: 'Mise à jour',
+  'piste-abandonnee': 'Piste abandonnée',
 };
 
 export const categoryLabels: Record<string, string> = {

@@ -14,6 +14,14 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+const allChapters = (await getCollection('chapters')).sort((a, b) => a.data.chapter - b.data.chapter);
+const articles = await getCollection('articles', ({ data }) => data.status === 'published');
+const affectedArticles = entry.data.updatedArticles
+  .map((id) => articles.find((a) => a.id === id))
+  .filter((a): a is NonNullable<typeof a> => Boolean(a));
+const chapterIndex = allChapters.findIndex((c) => c.data.chapter === entry.data.chapter);
+const prevChapter = chapterIndex > 0 ? allChapters[chapterIndex - 1] : null;
+const nextChapter = chapterIndex >= 0 && chapterIndex < allChapters.length - 1 ? allChapters[chapterIndex + 1] : null;
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
 const chapterSeoTitle = `Chapitre ${entry.data.chapter} de One Piece — ${entry.data.title} : analyse et théorie | Les Fous du Bus`;
 const chapterDescription = entry.data.summary ?? `Analyse du chapitre ${entry.data.chapter} de One Piece : ${entry.data.title} et son apport à la théorie du Siècle oublié.`;
@@ -59,23 +67,62 @@ const chapterBreadcrumbLd = {
   <div class="chapter-header">
     <div class="chapter-badges">
       <span class="badge-chapter">Chapitre {entry.data.chapter}</span>
+      <span class="badge-designation">Synthèse de l'analyse</span>
       <span class="badge-effect" class:list={[
         { 'badge-effect--violet': entry.data.effect === 'nouvelle-piste' },
         { 'badge-effect--gold': entry.data.effect === 'approfondissement' || entry.data.effect === 'modification' },
+        { 'badge-effect--alert': entry.data.effect === 'piste-abandonnee' },
       ]}>{effectLabel(entry.data.effect)}</span>
     </div>
     <h1>{entry.data.title}</h1>
+    <p class="chapter-designation">
+      Cette page est une <strong>synthèse</strong> de la transcription de l'analyse du chapitre. Elle conserve
+      les grands arguments du fichier source, reformulés pour la lecture en ligne.
+    </p>
   </div>
 
   <div class="content">
     <Content />
   </div>
 
+  {affectedArticles.length > 0 && (
+    <section class="impact-box" aria-labelledby="impact-title">
+      <h3 id="impact-title">Ce que ce chapitre change dans la théorie</h3>
+      <p class="impact-intro">
+        Effet : <strong>{effectLabel(entry.data.effect)}</strong>. Les fiches suivantes sont directement concernées :
+      </p>
+      <ul class="impact-list">
+        {affectedArticles.map((article) => (
+          <li>
+            <a href={`/theorie/${article.id}`}>{article.data.title}</a>
+          </li>
+        ))}
+      </ul>
+      <p class="impact-note">
+        Une hypothèse apparue dans ce chapitre est traitée comme un <strong>développement récent</strong> et
+        n'est jamais présentée comme un acquis de la théorie originale.
+      </p>
+    </section>
+  )}
 
-
-  <div class="nav-links">
-    <a href="/chapitres" class="nav-link">← Tous les chapitres</a>
-  </div>
+  <nav class="chapter-pager" aria-label="Chapitres précédent et suivant">
+    {prevChapter && (
+      <a class="chapter-pager__link chapter-pager__link--prev" href={`/chapitres/${prevChapter.data.chapter}`}>
+        <span class="chapter-pager__dir">← Chapitre {prevChapter.data.chapter}</span>
+        <span class="chapter-pager__title">{prevChapter.data.title}</span>
+      </a>
+    )}
+    <a class="chapter-pager__link chapter-pager__link--all" href="/chapitres">
+      <span class="chapter-pager__dir">Tous</span>
+      <span class="chapter-pager__title">Les analyses</span>
+    </a>
+    {nextChapter && (
+      <a class="chapter-pager__link chapter-pager__link--next" href={`/chapitres/${nextChapter.data.chapter}`}>
+        <span class="chapter-pager__dir">Chapitre {nextChapter.data.chapter} →</span>
+        <span class="chapter-pager__title">{nextChapter.data.title}</span>
+      </a>
+    )}
+  </nav>
 
   <Footer />
 </WikiLayout>
@@ -111,6 +158,67 @@ const chapterBreadcrumbLd = {
     border-radius: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+  }
+
+  .badge-designation {
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 4px 9px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: color-mix(in srgb, var(--accent-gold) 12%, transparent);
+    color: var(--accent-gold);
+    border: 1px solid color-mix(in srgb, var(--accent-gold) 25%, transparent);
+  }
+
+  .chapter-designation {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 700px;
+    margin-bottom: 8px;
+  }
+
+  .impact-box {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--cyan);
+    border-radius: var(--border-radius-lg);
+    padding: 20px;
+    margin: 32px 0 40px;
+  }
+
+  .impact-box h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 10px;
+  }
+
+  .impact-intro {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    margin: 0 0 10px;
+  }
+
+  .impact-list {
+    margin: 0 0 12px !important;
+    padding-left: 1.2rem !important;
+  }
+
+  .impact-list a {
+    color: var(--cyan);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .impact-note {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin: 0;
+    border-top: 1px solid var(--border-color);
+    padding-top: 10px;
   }
 
   .badge-effect--violet {
@@ -211,6 +319,58 @@ const chapterBreadcrumbLd = {
     background-color: var(--surface);
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
+  }
+
+  .chapter-pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 32px 0 40px;
+  }
+  .chapter-pager__link {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--bg-main);
+    text-decoration: none;
+    color: var(--text-main);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  a.chapter-pager__link:hover {
+    border-color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 6%, transparent);
+  }
+  .chapter-pager__link--next {
+    text-align: right;
+  }
+  .chapter-pager__link--all {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-style: dashed;
+  }
+  .chapter-pager__dir {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+  }
+  .chapter-pager__title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+  a.chapter-pager__link:hover .chapter-pager__title {
+    color: var(--cyan);
+  }
+  @media (max-width: 680px) {
+    .chapter-pager {
+      grid-template-columns: 1fr 1fr;
+    }
+    .chapter-pager__link--all {
+      display: none;
+    }
   }
 
   .nav-links {

@@ -42,6 +42,8 @@ const articles = defineCollection({
       .optional(),
     /** Titre SEO riche pour <title> (H1 reste court). Ex: "Joy Boy dans One Piece : identité, indices et théorie" */
     seoTitle: z.string().optional(),
+    /** Image Open Graph spécifique à la page (chemin, ex: "/og-foo.png"). Sinon og-default.png. */
+    ogImage: z.string().optional(),
     /** Identifiant (slug) de la fiche canonique parente pour les articles de démonstration. */
     parent: z.string().optional(),
     /** Masquer cet article de la sidebar (reste accessible via recherche et liens). */
@@ -56,7 +58,13 @@ const chapters = defineCollection({
   schema: z.object({
     chapter: z.number(),
     title: z.string(),
-    effect: z.enum(['fondation', 'approfondissement', 'nouvelle-piste', 'modification']),
+    effect: z.enum([
+      'fondation',
+      'approfondissement',
+      'nouvelle-piste',
+      'modification',
+      'piste-abandonnee',
+    ]),
     themes: z.array(z.string()).default([]),
     updatedArticles: z.array(z.string()).default([]),
     summary: z.string().optional(),

@@ -8,6 +8,32 @@ interface PagefindResult {
   };
 }
 
+// Normalisation des requêtes fréquentes / fautes de frappe et alias (Priorité 8).
+// Pagefind cherche par similarité de chaînes : on réécrit les variantes connues vers
+// le terme canonique pour améliorer le taux de pertinence.
+const SEARCH_ALIASES: Array<{ match: RegExp; replace: string }> = [
+  // Ponéglyphe / Poneglyphe / Ponegliph…
+  { match: /poneglyph|ponégliph|ponégliphe|poneglyphes/gi, replace: 'Ponéglyphe' },
+  { match: /poneglyphe/gi, replace: 'Ponéglyphe' },
+  // Laugh Tale / Raftel / LaughTale
+  { match: /raftel|rafutel|rafuteru/gi, replace: 'Laugh Tale' },
+  { match: /laugh ?tale/gi, replace: 'Laugh Tale' },
+  // Fruits du démon / fruit du demon
+  { match: /fruit du demon|fruits du demon|fruti/gi, replace: 'Fruit du Démon' },
+  // Mary Geoise / Mariejois / Marie Geoise
+  { match: /marie ?jois|marie ?geoise|marijoa/gi, replace: 'Mary Geoise' },
+  // Barbe Noire / Teach / Barbenoire
+  { match: /barbenoire|barbe noire/gi, replace: 'Barbe Noire' },
+];
+
+function normalizeQuery(raw: string): string {
+  let q = raw.trim();
+  for (const { match, replace } of SEARCH_ALIASES) {
+    q = q.replace(match, replace);
+  }
+  return q;
+}
+
 export default function SearchModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -124,6 +150,8 @@ export default function SearchModal() {
       return;
     }
 
+    const normalized = normalizeQuery(query);
+
     setIsLoading(true);
     setHasSearched(false);
 
@@ -132,7 +160,7 @@ export default function SearchModal() {
         const pagefindUrl = '/pagefind/pagefind.js';
         const pagefind = await import(/* @vite-ignore */ pagefindUrl);
         await pagefind.init();
-        const search = await pagefind.search(query);
+        const search = await pagefind.search(normalized);
         const fiveResults = await Promise.all(
           search.results.slice(0, 8).map((r: { data: () => Promise<PagefindResult> }) => r.data()),
         );
@@ -206,10 +234,13 @@ export default function SearchModal() {
 
   if (!isOpen) return null;
 
+  const normalizedQuery = query ? normalizeQuery(query) : '';
   const showEmpty = !query;
   const showLoading = !!query && isLoading;
   const showResults = !isLoading && results.length > 0;
   const showNoResults = !!query && !isLoading && hasSearched && results.length === 0;
+  // Affiche un indice si la requête a été réécrite (faute de frappe / alias).
+  const showNormalizedHint = !!query && normalizedQuery.toLowerCase() !== query.trim().toLowerCase();
 
   return (
     <div
@@ -391,6 +422,14 @@ export default function SearchModal() {
           color: var(--text-secondary);
           font-size: 14px;
           line-height: 1.5;
+        }
+        .search-normalized-hint {
+          padding: 8px 16px;
+          text-align: center;
+          color: var(--violet-light);
+          font-size: 12.5px;
+          border-bottom: 1px solid var(--border-color);
+          background: color-mix(in srgb, var(--violet) 6%, transparent);
         }
         .search-empty p {
           margin: 0 0 6px;
@@ -622,6 +661,11 @@ export default function SearchModal() {
           )}
 
           {showLoading && <div className="search-status">Recherche en cours…</div>}
+          {showNormalizedHint && !showLoading && (
+            <div className="search-normalized-hint">
+              Recherche aussi «&nbsp;{normalizedQuery}&nbsp;»
+            </div>
+          )}
 
           {showResults && (
             <ul

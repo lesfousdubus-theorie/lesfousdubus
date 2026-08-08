@@ -1,6 +1,6 @@
 ---
 title: "Uranus : l'arme du ciel"
-summary: "Uranus n'est pas une arme antique mais la dernière création de Vegapunk. Mother Flame est l'énergie qui l'alimente, utilisée par Imu pour détruire Lulusia."
+summary: "Uranus est la troisième Arme antique, dont la nature précise n'est pas révélée par le manga. La théorie rapproche l'arme utilisée contre Lulusia d'Uranus et du pouvoir d'Imu amplifié par la Mother Flame (hypothèse)."
 seoTitle: "Uranus dans One Piece : Mother Flame, Imu et théorie | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
@@ -11,23 +11,44 @@ sources: []
 order: 30
 ---
 
-## Ce qu'on sait
+## Ce que le manga établit
 
-On ne connaît qu'une chose : Uranus date du Siècle oublié et peut détruire des îles. Les armes portent le nom de dieux : Poséidon (mer), Pluton (enfers), Uranus (ciel).
+- **Uranus** est l'une des trois Armes antiques du Siècle oublié, aux côtés de Poséidon (mer) et Pluton (enfers). Son nom évoque le ciel.
+- Sa nature exacte et son apparence **ne sont pas révélées** par le manga.
+- L'île de **Lulusia** a été détruite par une arme venant du ciel : Sabo décrit « quelque chose de très noir qui volait au-dessus des nuages ».
+- Le manga **n'identifie pas formellement** l'arme utilisée contre Lulusia avec Uranus.
 
-## Mother Flame = Uranus
+> Ce que le manga établit se limite à peu de choses : un nom, un domaine (le ciel), et une destruction d'île depuis les airs. Tout le reste est de l'interprétation.
 
-L'incident de Lulusia a détruit une île entière avec quelque chose venant du ciel. Sabo décrit « quelque chose de très noir qui volait au-dessus des nuages ».
+## La lecture des Fous du Bus
 
-Mother Flame, créée par Vegapunk en étudiant Emeth, est l'énergie utilisée par Imu pour cette destruction. Vegapunk a créé Uranus malgré lui, comme Oppenheimer avec la bombe atomique.
+### Mother Flame et l'incident de Lulusia
 
-## Imu EST Uranus
+La théorie relie l'arme de Lulusia à la **Mother Flame**, l'énergie créée par Vegapunk en étudiant Emeth. Une partie de cette énergie aurait été volée et utilisée par Imu pour détruire l'île.
 
-Imu pourrait utiliser Mother Flame pour amplifier son pouvoir et attaquer depuis le ciel. La fresque d'Elbaf montre Imu avec un soleil entre les mains : Mother Flame.
+> ⚠️ Ce rapprochement est une **hypothèse de la théorie**. Le chapitre 1180 envisage plusieurs possibilités autour d'Imu, de l'Omen et d'Uranus sans trancher. Vegapunk n'a pas « créé Uranus » au sens canonique : c'est une lecture.
 
-L'arme qui détruit depuis le ciel serait Imu elle-même, boostée par l'énergie du soleil infini.
+### Imu et la forme « Uranus »
 
-## Pourquoi maintenant ?
+La théorie propose qu'**Imu lui-même** puisse être la forme que le monde appellera Uranus : son pouvoir (l'Omen), amplifié par la Mother Flame, pourrait frapper depuis le ciel et détruire des îles. La fresque d'Elbaf montrerait Imu avec un soleil entre les mains, évoquant la Mother Flame.
 
-Dragon se demande pourquoi le gouvernement n'a pas utilisé cette arme avant. Réponse : ils ne la possédaient pas. Vegapunk vient de la créer. Le Siècle oublié est le présent.
+Ces identifications restent **spéculatives** (voir [Omen, Mother Flame et Imu](/explorer/omen-imu)).
 
+### Pourquoi maintenant ?
+
+La théorie répond à la question de Dragon — pourquoi le gouvernement n'a pas utilisé cette arme plus tôt — par : ils ne la possédaient pas. Vegapunk vient de la créer. C'est cohérent avec la lecture « le Siècle oublié est le présent », mais ce raisonnement relève de l'interprétation.
+
+## Limites et nuances
+
+- La nature d'Uranus reste **inconnue** du manga.
+- L'identification de l'arme de Lulusia à Uranus n'est pas confirmée.
+- « Imu = Uranus » et « Mother Flame = Uranus » sont des **hypothèses récentes**, pas des faits.
+- Le nom « Uranus » (le ciel) est cohérent avec la destruction depuis les airs, mais ce n'est qu'un indice de nom.
+
+## Articles liés
+
+- [Mother Flame](/theorie/mother-flame)
+- [Omen : le pouvoir d'Imu](/theorie/omen)
+- [Imu Nerona](/theorie/imu-nerona)
+- [Armes antiques](/theorie/armes-antiques)
+- [Le schéma Omen, Mother Flame et Imu](/explorer/omen-imu)
