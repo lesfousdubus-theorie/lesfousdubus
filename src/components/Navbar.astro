@@ -289,8 +289,10 @@ const isActive = (href: string) =>
   </div>
 </nav>
 
-<!-- Search modal: MUST live outside <nav> -->
-<SearchModal client:idle />
+<!-- Search modal: MUST live outside <nav>.
+     `client:load` démarre l'hydratation immédiatement (évite le "bouton qui ne répond pas"
+     sur 3G). Le composant est petit et le singleton Pagefind amortit le coût. -->
+<SearchModal client:load />
 <!-- Mobile drawer is now the single SidebarNav in WikiLayout (no duplicate DOM) -->
 
 <style>
@@ -342,7 +344,7 @@ const isActive = (href: string) =>
     width: 30px;
     height: 30px;
     object-fit: contain;
-    border-radius: 6px;
+    border-radius: var(--border-radius-sm);
     flex-shrink: 0;
     transition:
       transform 0.25s ease,
@@ -402,7 +404,7 @@ const isActive = (href: string) =>
     color: var(--text-secondary);
     text-decoration: none;
     padding: 6px 10px;
-    border-radius: 7px;
+    border-radius: var(--border-radius-sm);
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -810,7 +812,7 @@ const isActive = (href: string) =>
       padding: 0;
       justify-content: center;
       gap: 0;
-      border-radius: 9px;
+      border-radius: var(--border-radius-sm);
       font-size: 0;
     }
 
@@ -829,7 +831,7 @@ const isActive = (href: string) =>
       width: 36px;
       height: 36px;
       min-width: 36px;
-      border-radius: 9px;
+      border-radius: var(--border-radius-sm);
     }
   }
 
@@ -948,10 +950,72 @@ const isActive = (href: string) =>
     }
   });
 
-  // Close dropdown on Escape
+  // Keyboard navigation for dropdowns: ArrowDown opens from trigger,
+  // ArrowUp/ArrowDown cycle between menuitems, Home/End jump, Escape closes,
+  // Tab closes and moves on.
+  const focusItem = (item: HTMLAnchorElement | null) => {
+    if (item) item.focus();
+  };
+
+  const getVisibleItems = (): HTMLAnchorElement[] => {
+    if (!openDropdown) return [];
+    return Array.from(openDropdown.querySelectorAll<HTMLAnchorElement>('.nav-dropdown__link'));
+  };
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && openDropdown) {
-      closeAllDropdowns();
+    const target = e.target as HTMLElement;
+    if (e.key === 'Escape') {
+      if (openDropdown) {
+        // Return focus to its trigger
+        const trigger = openDropdown.querySelector<HTMLAnchorElement>('.nav-link');
+        closeAllDropdowns();
+        trigger?.focus();
+      }
+      return;
+    }
+
+    // ArrowDown on a trigger opens that dropdown and focuses first item
+    if (e.key === 'ArrowDown' && target.classList.contains('nav-link') && target.getAttribute('aria-haspopup') === 'true') {
+      const item = target.closest<HTMLDivElement>('.nav-item');
+      if (!item) return;
+      e.preventDefault();
+      if (item !== openDropdown) {
+        closeAllDropdowns();
+        item.classList.add('nav-item--open');
+        target.setAttribute('aria-expanded', 'true');
+        openDropdown = item;
+      }
+      // Focus first item on next frame (so DOM is visible)
+      requestAnimationFrame(() => focusItem(getVisibleItems()[0] ?? null));
+      return;
+    }
+
+    // ArrowUp/ArrowDown/Home/End within a dropdown
+    if (openDropdown && openDropdown.contains(target)) {
+      const items = getVisibleItems();
+      if (items.length === 0) return;
+      const idx = items.indexOf(target as HTMLAnchorElement);
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        focusItem(items[(idx + 1) % items.length] ?? items[0]);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (idx <= 0) {
+          // Return to trigger
+          const trigger = openDropdown.querySelector<HTMLAnchorElement>('.nav-link');
+          closeAllDropdowns();
+          trigger?.focus();
+        } else {
+          focusItem(items[idx - 1]);
+        }
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        focusItem(items[0]);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        focusItem(items[items.length - 1]);
+      }
     }
   });
 </script>

@@ -222,13 +222,17 @@ navSections.push({
       enterkeyhint="search"
       autocomplete="off"
       aria-label="Filtrer la navigation"
+      aria-controls="sidebar-filter-results"
+      aria-describedby="sidebar-filter-status"
     />
     <button id="sidebar-filter-clear" class="sidebar-filter__clear" aria-label="Effacer le filtre" style="display:none">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
         <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
       </svg>
     </button>
   </div>
+  <div id="sidebar-filter-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="sidebar-filter-results"></div>
   {
     navSections.map((section, index) => {
       const isExpanded = section.links.some(
@@ -242,9 +246,10 @@ navSections.push({
       
       return (
         <div class={index > 0 ? 'mt-5' : ''} data-sidebar-section>
-          <button 
-            class={`sidebar-section-toggle ${isChaptersActive ? 'sidebar-section-toggle--chapters-active' : ''}`} 
+          <button
+            class={`sidebar-section-toggle ${isChaptersActive ? 'sidebar-section-toggle--chapters-active' : ''}`}
             aria-expanded={isExpanded ? 'true' : 'false'}
+            aria-label={section.label}
           >
             <span class="flex items-center gap-2">
               <span class="text-base" aria-hidden="true">{section.icon}</span>
@@ -298,6 +303,19 @@ navSections.push({
 </nav>
 
 <style>
+  /* Visually hidden but accessible to screen readers (live region) */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   /* Ensure sidebar never causes horizontal scroll */
   nav {
     width: 100%;
@@ -339,7 +357,6 @@ navSections.push({
     min-width: 0;
     background: transparent;
     border: none;
-    outline: none;
     color: var(--text-main);
     font-size: 14px;
     font-family: inherit;
@@ -347,6 +364,12 @@ navSections.push({
     padding: 0;
     -webkit-appearance: none;
     appearance: none;
+    border-radius: 4px;
+  }
+
+  .sidebar-filter__input:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
 
   .sidebar-filter__input::placeholder {
@@ -538,12 +561,12 @@ navSections.push({
     .sidebar-link {
       padding: 10px 10px;
       font-size: 13.5px;
-      min-height: 40px;
+      min-height: 44px;
     }
     .sidebar-section-toggle {
       font-size: 11px;
       padding: 10px 2px;
-      min-height: 40px;
+      min-height: 44px;
     }
     .sidebar-link--child {
       padding-left: 18px;
@@ -587,6 +610,7 @@ navSections.push({
 
   if (filterInput && sidebarNav) {
     const allSections = sidebarNav.querySelectorAll<HTMLDivElement>('[data-sidebar-section]');
+    const liveRegion = document.getElementById('sidebar-filter-status');
     // Save initial expanded state to restore after clear
     const initialState = new Map<string, boolean>();
     allSections.forEach((section, idx) => {
@@ -597,6 +621,7 @@ navSections.push({
     const applyFilter = (query: string) => {
       const q = query.trim().toLowerCase();
       const hasFilter = q.length > 0;
+      let visibleCount = 0;
 
       if (filterClear) filterClear.style.display = hasFilter ? 'inline-flex' : 'none';
 
@@ -611,7 +636,10 @@ navSections.push({
           const text = link.textContent?.toLowerCase() ?? '';
           const matches = !hasFilter || text.includes(q);
           (link.closest('li') as HTMLElement | null)?.style.setProperty('display', matches ? '' : 'none');
-          if (matches) hasVisible = true;
+          if (matches) {
+            hasVisible = true;
+            visibleCount++;
+          }
         });
 
         section.style.display = hasVisible || !hasFilter ? '' : 'none';
@@ -633,6 +661,13 @@ navSections.push({
           });
         }
       });
+
+      // Announce to screen readers
+      if (liveRegion) {
+        if (!hasFilter) liveRegion.textContent = '';
+        else if (visibleCount === 0) liveRegion.textContent = 'Aucun article trouvé';
+        else liveRegion.textContent = `${visibleCount} article${visibleCount > 1 ? 's' : ''} trouvé${visibleCount > 1 ? 's' : ''}`;
+      }
     };
 
     filterInput.addEventListener('input', () => applyFilter(filterInput.value));

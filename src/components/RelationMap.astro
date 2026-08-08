@@ -43,8 +43,8 @@ const links = related
 <style>
   .relation-map {
     margin: 24px 0 32px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
     overflow: hidden;
     background: var(--bg-main);
   }
@@ -57,7 +57,7 @@ const links = related
     text-transform: uppercase;
     color: var(--cyan);
     background: color-mix(in srgb, var(--cyan) 8%, transparent);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-color);
   }
 
   .relation-map__body {
@@ -85,8 +85,8 @@ const links = related
   .relation-map__list a {
     display: inline-block;
     padding: 3px 10px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-full);
     font-size: 12.5px;
     text-decoration: none;
     color: var(--text-secondary);
@@ -98,5 +98,10 @@ const links = related
   .relation-map__list a:hover {
     color: var(--cyan);
     border-color: var(--cyan);
+  }
+
+  .relation-map__list a:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
 </style>

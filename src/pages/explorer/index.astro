@@ -70,6 +70,7 @@ import Footer from '@components/Footer.astro';
 .explorer-card{display:flex;gap:14px;padding:20px;border:1px solid var(--border-color);border-radius:var(--border-radius-lg);background:var(--gradient-card);text-decoration:none;color:var(--text-main);transition:transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease}
 .explorer-card:hover{transform:translateY(-3px);border-color:var(--violet);box-shadow:0 12px 32px rgba(0,0,0,0.18), 0 0 20px var(--glow-violet)}
 .explorer-card:active{transform:translateY(-1px) scale(0.98)}
+.explorer-card:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 .explorer-card--highlight{border-color: color-mix(in srgb, var(--cyan) 30%, var(--border-color)); background: color-mix(in srgb, var(--cyan) 6%, var(--bg-secondary))}
 .explorer-card>span{font-size:26px;flex-shrink:0;line-height:1}
 .explorer-card h3{font-size:16px;margin:0 0 6px;font-weight:600}

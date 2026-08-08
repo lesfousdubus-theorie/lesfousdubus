@@ -129,7 +129,7 @@ const dossierBreadcrumbLd = {
         return (
           <div class="section-block" id={section.id}>
             <div class="section-header">
-              <span class="section-icon">{section.icon}</span>
+              <span class="section-icon" aria-hidden="true">{section.icon}</span>
               <div>
                 <h2>{section.title}</h2>
                 <p>{section.description}</p>
@@ -244,7 +244,7 @@ const dossierBreadcrumbLd = {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 11px 15px;
+    padding: 12px 16px;
     background-color: var(--bg-main);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -259,6 +259,11 @@ const dossierBreadcrumbLd = {
     border-color: var(--violet);
     background-color: var(--surface);
     transform: translateX(3px);
+  }
+
+  .article-link:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
 
   .section-meta {

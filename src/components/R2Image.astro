@@ -4,11 +4,12 @@ interface Props {
   alt: string;
   class?: string;
   caption?: string;
-  width?: number;
-  height?: number;
+  width: number;
+  height: number;
+  loading?: 'lazy' | 'eager';
 }
 
-const { src, alt, class: className = '', caption, width, height } = Astro.props;
+const { src, alt, class: className = '', caption, width, height, loading = 'lazy' } = Astro.props;
 
 // Public media origin; configurable in `.env` via `PUBLIC_MEDIA_URL`.
 const R2_BASE_URL = import.meta.env.PUBLIC_MEDIA_URL || 'https://media.lesfousdubus.sbs';
@@ -18,15 +19,17 @@ const imagePath = src.startsWith('/') ? src : `/${src}`;
 const fullUrl = `${R2_BASE_URL}${imagePath}`;
 ---
 
-<figure class="my-6">
+<figure class="r2-figure my-6">
   <img
     src={fullUrl}
     alt={alt}
     class={`rounded-lg border border-borderColor shadow-lg object-cover w-full ${className}`}
     width={width}
     height={height}
-    loading="lazy"
-    style={width && height ? `aspect-ratio: ${width}/${height}` : undefined}
+    loading={loading}
+    decoding="async"
+    fetchpriority={loading === 'eager' ? 'high' : 'auto'}
+    style={`aspect-ratio: ${width}/${height}`}
   />
   {
     caption && (
@@ -36,3 +39,11 @@ const fullUrl = `${R2_BASE_URL}${imagePath}`;
     )
   }
 </figure>
+
+<style>
+  .r2-figure img {
+    height: auto;
+    max-width: 100%;
+    display: block;
+  }
+</style>

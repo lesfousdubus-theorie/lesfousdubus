@@ -1,8 +1,9 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
+import Footer from '@components/Footer.astro';
 ---
 
-<WikiLayout title="Erreur serveur" currentPath="/500">
+<WikiLayout title="Erreur serveur" description="Une erreur inattendue s'est produite." currentPath="/500" noBreadcrumb noSidebar>
   <div class="error-page">
     <h1>500</h1>
     <p>Erreur serveur</p>
@@ -12,6 +13,7 @@ import WikiLayout from '@layouts/WikiLayout.astro';
       <a href="/theorie/resume" class="btn btn-secondary">Lire le résumé</a>
     </div>
   </div>
+  <Footer />
 </WikiLayout>
 
 <style>
@@ -26,7 +28,7 @@ import WikiLayout from '@layouts/WikiLayout.astro';
   }
 
   h1 {
-    font-size: 6rem;
+    font-size: clamp(4rem, 12vw, 6rem);
     font-weight: 700;
     color: var(--alert);
     margin-bottom: 16px;
@@ -35,7 +37,7 @@ import WikiLayout from '@layouts/WikiLayout.astro';
 
   p {
     font-size: 1.5rem;
-    color: var(--text-secondary);
+    color: var(--text-main);
     margin-bottom: 8px;
   }
 
@@ -57,7 +59,7 @@ import WikiLayout from '@layouts/WikiLayout.astro';
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     font-weight: 500;
     transition: all 0.2s ease;
     text-decoration: none;
@@ -74,6 +76,10 @@ import WikiLayout from '@layouts/WikiLayout.astro';
     box-shadow: 0 4px 24px var(--glow-violet);
   }
 
+  .btn-primary:active {
+    transform: translateY(0) scale(0.97);
+  }
+
   .btn-secondary {
     background-color: transparent;
     color: var(--text-main);
@@ -86,10 +92,11 @@ import WikiLayout from '@layouts/WikiLayout.astro';
     box-shadow: 0 0 16px var(--glow-cyan);
   }
 
+  .btn-secondary:active {
+    transform: scale(0.97);
+  }
+
   @media (max-width: 480px) {
-    h1 {
-      font-size: 4rem;
-    }
     .error-page__actions {
       flex-direction: column;
       width: 100%;
