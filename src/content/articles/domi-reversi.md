@@ -1,43 +1,47 @@
 ---
 title: "Domi Reversi"
-summary: "Le Domi Reversi est un mécanisme récent de la théorie lié aux interrogations d'Imu sur le pouvoir d'Éveil et à la mécanique de retournement des événements."
+summary: "Le Domi Reversi est le pouvoir par lequel Imu prend le contrôle d'un individu et en altère le comportement, tel qu'il est analysé dans la lecture du chapitre 1186. Dossier récent, encore partiellement documenté."
 category: "technologies-pouvoirs"
 status: "published"
-certainty: "hypothese"
+certainty: "moyenne"
 reviewedUntilChapter: 1188
 parent: "imu-nerona"
 navigationType: "dossier"
 editorialStatus: "nouvelle-piste"
-related: ["imu-nerona", "fruits-du-demon", "energie-antique", "omen"]
+related: ["imu-nerona", "brook", "omen", "fruits-du-demon"]
 sources: [1186]
 order: 77
 ---
 
-> **Développement récent** : le Domi Reversi est une notion issue des analyses des chapitres récents (notamment 1186), liée aux interrogations d'Imu et à la branche des Fruits du Démon. Elle reste **récente et spéculative**.
+> **Développement récent** : le Domi Reversi est un pouvoir apparu dans les chapitres récents et analysé dans la lecture du chapitre 1186. Il ne fait pas partie des fondations de la théorie originale et reste **partiellement documenté**.
 
 ## Ce que le manga établit
 
-- Le chapitre 1186 évoque les **hésitations d'Imu** quant aux manifestations du pouvoir d'**Éveil**.
-- Le terme **Domi Reversi** est utilisé dans l'analyse pour désigner un mécanisme de retournement associé à ces interrogations.
-- Le manga ne développe pas formellement ce mécanisme ; sa dénomination relève de la lecture des Fous du Bus.
+- Imu utilise le **Domi Reversi** pour **prendre le contrôle de Brook** : le corps et les actes de Brook ne lui appartiennent plus.
+- Ce contrôle ne se limite pas à la manipulation physique : Imu s'en sert pour tenir à sa victime des **propos extrêmement cruels et blessants**.
+- Le même type de manipulation avait déjà frappé **Dorry et Brogy** : sous contrôle, les deux géants étaient devenus absolument exécrables avec leurs propres compagnons.
+- Le manga n'a pas encore détaillé les règles du mécanisme (conditions d'application, portée, durée, moyens d'y échapper).
 
 ## La lecture des Fous du Bus
 
-Le **Domi Reversi** décrit, dans la théorie, un mécanisme où l'**Éveil** et les événements se **retournent** : ce qui était une défaite devient une victoire, ce qui était une fin devient un commencement. Il s'inscrit dans la logique générale du Siècle oublié comme « présent en train de se construire ».
+L'analyse du chapitre 1186 qualifie le Domi Reversi de **« profondément diabolique »** et de **« terriblement immoral »**. Deux traits ressortent :
 
-Il est étroitement lié à Imu, qui observe et redoute les manifestations de l'Éveil, et à la réflexion récente sur les **Fruits du Démon** comme phénomène récent (voir [Fruits du Démon](/theorie/fruits-du-demon)).
+- **Un pouvoir de contrôle** : Imu ne se contente pas de vaincre un adversaire, il s'en empare et le retourne contre les siens.
+- **Une arme psychologique** : la victime contrôlée blesse ceux qu'elle aime, ce qui en fait un instrument de division autant que de force.
 
-> ⚠️ Ce mécanisme est encore mal cartographié. Il est rangé ici comme piste récente, à distance des fondations de la théorie.
+Ce mécanisme éclaire la ligne historique de la théorie. Le récit d'Imu prétend que le Gouvernement mondial a déjà manipulé les géants par le passé (« Si nous nous emparons des enfants, nous pourrons manipuler les géants à notre guise ») ; l'analyse relève que ce récit **se contredit**, puisque les géants ont dominé le Nouveau Monde durant les sept cents années suivantes sans jamais être contrôlés. Le Domi Reversi fait ainsi écho, dans la lecture des Fous du Bus, au récit d'Imu concernant la manipulation des géants il y a huit cents ans.
+
+> ⚠️ Pouvoir récent dans le récit : sa portée exacte n'est pas établie. Ce dossier se limite à ce que le manga montre et à ce que l'analyse du chapitre 1186 en tire.
 
 ## Limites et nuances
 
-- Le Domi Reversi n'est pas un concept canonique ; c'est une **catégorie d'analyse**.
-- Son lien précis avec les chapitres passés reste à consolider.
-- À ne pas confondre avec un voyage dans le temps physique : la théorie insiste sur l'absence de boucle physique générale.
+- Le Domi Reversi relève des chapitres récents : il n'appartient pas à la théorie originale et doit être lu comme une **piste en cours d'observation**.
+- Ses règles précises ne sont pas données par le manga ; toute extrapolation (qui peut y résister, comment le briser) serait spéculative.
+- Le rapprochement avec d'éventuelles manipulations passées est une **interprétation** de l'analyse, pas une confirmation du manga.
 
 ## Articles liés
 
 - [Imu Nerona](/theorie/imu-nerona)
-- [Fruits du Démon](/theorie/fruits-du-demon)
+- [Brook](/theorie/brook)
 - [Omen : le pouvoir d'Imu](/theorie/omen)
-- [Énergie antique](/theorie/energie-antique)
+- [Fruits du Démon](/theorie/fruits-du-demon)

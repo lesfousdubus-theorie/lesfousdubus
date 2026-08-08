@@ -148,6 +148,7 @@ Le site doit permettre de :
 
 - **Une seule source de vérité :** une information n’est enregistrée qu’une fois, puis réutilisée partout où elle est nécessaire.
 - **Une page canonique :** un sujet peut être accessible depuis plusieurs catégories sans être dupliqué.
+- **Des intitulés neutres :** les fiches portent des noms propres (« Joy Boy », « Laugh Tale », « Pluton »), jamais des conclusions (« Luffy est Joy Boy »). Les relations défendues par la théorie sont développées dans des dossiers d’analyse séparés, rattachés à leur fiche.
 - **Le contenu avant les effets :** les articles doivent rester lisibles sans animation ni rendu 3D.
 - **Progressivité :** le HTML statique constitue la base ; l’interactivité est chargée uniquement lorsqu’elle apporte une réelle valeur.
 - **Ouverture :** les Issues et Pull Requests servent à faire évoluer le projet.
@@ -170,17 +171,20 @@ Accueil
 │   ├── Monde et destinations
 │   ├── Histoire et temporalité
 │   ├── Figures principales
+│   ├── Personnages et identités
 │   ├── Armes antiques
 │   ├── Technologies et pouvoirs
-│   ├── Gouvernement et guerre finale
 │   ├── Peuples, royaumes et témoins
 │   ├── Dieux et croyances
-│   └── Transmission et mémoire
+│   ├── Transmission et mémoire
+│   ├── Gouvernement mondial
+│   └── Guerre finale
 │
 ├── Chapitres
-│   ├── Dernières analyses (chapitre par chapitre)
+│   ├── Dernière analyse
+│   ├── Toutes les analyses
 │   ├── Prédictions
-│   └── Toutes les analyses
+│   └── Modifications
 │
 ├── Explorer
 │   ├── Carte mentale
@@ -294,7 +298,7 @@ lesfousdubus/
 ├── src/
 │   ├── components/       # Blocs d'interface réutilisables
 │   ├── content/          # TOUT le contenu textuel du site
-│   │   ├── articles/     #   ← les articles (98 publiés actuellement)
+│   │   ├── articles/     #   ← les articles (99 publiés actuellement)
 │   │   ├── chapters/     #   les fiches de chapitres analysés
 │   │   ├── characters/   #   les personnages
 │   │   ├── glossary/     #   le glossaire
@@ -387,11 +391,11 @@ Le contenu est stocké dans des collections structurées et validées, dans `src
 
 ```yaml
 ---
-title: 'Luffy deviendra Joy Boy'
-summary: 'Joy Boy serait le nom légendaire donné au futur Luffy.'
+title: 'Joy Boy'
+summary: 'Fiche consacrée à Joy Boy : ce que le manga établit sur la figure légendaire et la lecture des Fous du Bus.'
 category: 'figures-principales'
 status: 'published'
-certainty: 'central'
+certainty: 'elevee'
 reviewedUntilChapter: 1188
 related:
   - luffy
@@ -399,6 +403,8 @@ related:
   - gol-d-roger
 ---
 ```
+
+> 💡 **Intitulés neutres :** le titre d’une fiche reste un nom propre (`joy-boy.md`, `poseidon-fiche.md`, `luffy.md`). Les thèses de la théorie — « Luffy serait Joy Boy », « Shirahoshi est Poséidon » — sont développées dans des **dossiers d’analyse** séparés, rattachés à leur fiche par le champ `parent` et marqués `navigationType: 'dossier'`.
 
 `reviewedUntilChapter` signifie seulement que l'article a été relu en tenant compte de ce chapitre. Pour afficher une vraie mise à jour liée à un chapitre, ajoutez l'identifiant de l'article dans `updatedArticles` sur la fiche du chapitre concerné.
 
@@ -440,10 +446,11 @@ updatedArticles:
 
 ### Conventions
 
-- noms de fichiers en minuscules, séparés par des tirets (`luffy-joy-boy.md`) ;
+- noms de fichiers en minuscules, séparés par des tirets (`luffy.md`, `pluton-water-seven-galley-la.md`) ;
 - caractères ASCII dans les noms de fichiers ;
 - identifiants internes stables ;
 - ne pas modifier une URL publiée sans redirection ;
+- intitulés neutres pour les fiches (noms propres) ; les conclusions de la théorie restent dans le texte et dans les dossiers d’analyse ;
 - distinguer ce que le manga établit, ce qui est une interprétation et ce qui est une hypothèse.
 
 La validation (`npm run validate`) détecte les références inexistantes, les métadonnées manquantes et les catégories invalides.
