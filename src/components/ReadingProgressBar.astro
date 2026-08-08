@@ -30,8 +30,17 @@
     width: 100%;
     height: 3px;
     background: transparent;
-    z-index: 100;
+    /* Au-dessus de la navbar (60) et du tiroir mobile (50) pour rester lisible,
+       mais sous les modales (recherche ~200, lightbox 9999). */
+    z-index: 80;
     pointer-events: none;
+  }
+
+  /* La barre de progression n'a pas de sens pendant qu'un tiroir/overlay est
+     ouvert (le défilement est verrouillé) ; on la masque pour ne pas trouer
+     visuellement la navbar sur mobile. */
+  :global([data-nav-open='mobile']) #reading-progress {
+    opacity: 0;
   }
 
   .reading-progress__bar {

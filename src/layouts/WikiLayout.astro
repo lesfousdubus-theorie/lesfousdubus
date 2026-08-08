@@ -448,6 +448,8 @@ const canonicalWikiUrl = new URL(
       max-width: 300px;
       height: calc(100vh - var(--nav-h));
       height: calc(100dvh - var(--nav-h));
+      /* Évite que le contenu du tiroir ne passe sous la barre d'accueil iOS */
+      padding-bottom: env(safe-area-inset-bottom, 0);
       margin: 0;
       z-index: 50;
       background: var(--bg-secondary);
@@ -592,6 +594,22 @@ const canonicalWikiUrl = new URL(
     pointer-events: auto;
     user-select: auto;
   }
+
+  /* Tant que le tiroir mobile est ouvert, les actions de la navbar (recherche,
+     thème) sont neutralisées visuellement pour éviter qu'un second overlay ne
+     vienne se superposer au tiroir. Le bouton hamburger de fermeture reste actif. */
+  :global([data-nav-open='mobile']) .navbar .nav-actions {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  :global([data-nav-open='mobile']) #mobile-menu-toggle {
+    color: var(--cyan);
+    border-color: color-mix(in srgb, var(--cyan) 45%, var(--border-color));
+    background-color: color-mix(in srgb, var(--cyan) 12%, var(--surface));
+  }
+  :global([data-nav-open='mobile']) .navbar {
+    border-bottom-color: color-mix(in srgb, var(--cyan) 25%, var(--border-color));
+  }
 </style>
 
 
@@ -606,9 +624,31 @@ const canonicalWikiUrl = new URL(
   const closeIcon = document.getElementById('close-icon');
   const mainContent = document.getElementById('main-content');
 
+  // --- État du tiroir mobile (déclaré tôt : utilisé à l'initialisation) ---
+  const isMobileOpen = () => sidebarContainer?.classList.contains('is-mobile-open');
+
+  const syncToggleButtons = () => {
+    const mobile = window.innerWidth <= 768;
+    const mobileOpen = isMobileOpen();
+    const desktopCollapsed =
+      document.documentElement.classList.contains('sidebar-left-collapsed');
+
+    if (mobileToggle) {
+      hamburgerIcon?.classList.toggle('hidden', mobileOpen);
+      closeIcon?.classList.toggle('hidden', !mobileOpen);
+      mobileToggle.setAttribute('aria-expanded', String(mobileOpen));
+      mobileToggle.setAttribute('aria-pressed', String(mobileOpen));
+    }
+    if (navbarSidebarToggle) {
+      navbarSidebarToggle.setAttribute(
+        'aria-expanded',
+        mobile ? String(mobileOpen) : String(!desktopCollapsed),
+      );
+    }
+  };
+
   const updateAriaState = () => {
-    const isCollapsed = document.documentElement.classList.contains('sidebar-left-collapsed');
-    navbarSidebarToggle?.setAttribute('aria-expanded', String(!isCollapsed));
+    syncToggleButtons();
   };
 
   updateAriaState();
@@ -622,8 +662,8 @@ const canonicalWikiUrl = new URL(
       document.documentElement.classList.remove('sidebar-left-collapsed');
       sidebarContainer?.classList.remove('collapsed');
     }
-    updateAriaState();
     localStorage.setItem('sidebar-left-collapsed', String(isCollapsed));
+    syncToggleButtons();
   };
 
   navbarSidebarToggle?.addEventListener('click', () => {
@@ -636,8 +676,6 @@ const canonicalWikiUrl = new URL(
   });
 
   // --- Mobile drawer : single navigation DOM, pas de duplication ---
-  const isMobileOpen = () => sidebarContainer?.classList.contains('is-mobile-open');
-
   let scrollLocked = false;
   let touchMoveHandler = null;
 
@@ -690,24 +728,57 @@ const canonicalWikiUrl = new URL(
         sidebarContainer?.classList.add('is-mobile-open');
         mobileOverlay?.classList.add('is-open');
         mobileOverlay?.setAttribute('aria-hidden', 'false');
-        hamburgerIcon?.classList.add('hidden');
-        closeIcon?.classList.remove('hidden');
-        mobileToggle?.setAttribute('aria-expanded', 'true');
+        document.documentElement.setAttribute('data-nav-open', 'mobile');
+        document.body.setAttribute('data-nav-open', 'mobile');
+        syncToggleButtons();
       });
     } else {
       sidebarContainer?.classList.remove('is-mobile-open');
       mobileOverlay?.classList.remove('is-open');
       mobileOverlay?.setAttribute('aria-hidden', 'true');
-      hamburgerIcon?.classList.remove('hidden');
-      closeIcon?.classList.add('hidden');
-      mobileToggle?.setAttribute('aria-expanded', 'false');
+      document.documentElement.removeAttribute('data-nav-open');
+      document.body.removeAttribute('data-nav-open');
       // Unlock after the close transition starts (layout stays put either way)
       unlockScroll();
+      syncToggleButtons();
     }
   };
 
   mobileToggle?.addEventListener('click', () => toggleMobile());
   mobileOverlay?.addEventListener('click', () => toggleMobile(false));
+
+  // Quand le tiroir mobile est ouvert, tout déclenchement de la recherche
+  // (bouton loupe de la navbar ou raccourci Ctrl/Cmd+K) doit d'abord fermer
+  // le tiroir pour éviter la superposition de deux overlays.
+  const closeMobileForOverlay = () => {
+    if (window.innerWidth <= 768 && isMobileOpen()) {
+      toggleMobile(false);
+    }
+  };
+  document.addEventListener('openSearch', closeMobileForOverlay, true);
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      closeMobileForOverlay();
+    }
+  });
+
+  // Focus trap minimal dans le tiroir pour les utilisateurs clavier.
+  sidebarContainer?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab' || !isMobileOpen()) return;
+    const focusable = sidebarContainer.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled])',
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
 
   // Fermer le tiroir lors d'une navigation (clic sur un lien de la sidebar)
   sidebarContainer?.addEventListener('click', (e) => {
@@ -721,7 +792,9 @@ const canonicalWikiUrl = new URL(
     if (e.key === 'Escape' && isMobileOpen()) toggleMobile(false);
   });
 
-  // Fermer automatiquement le drawer si on repasse en desktop (resize)
+  // Fermer automatiquement le drawer si on repasse en desktop (resize).
+  // On réinitialise aussi l'état replié desktop pour éviter qu'un tiroir
+  // mobile laissé ouvert ne se transforme en sidebar repliée (icône ↔ incohérente).
   let resizeTimeout;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
@@ -729,6 +802,14 @@ const canonicalWikiUrl = new URL(
       if (window.innerWidth > 768 && isMobileOpen()) {
         toggleMobile(false);
       }
+      // Sur desktop, la sidebar de contenu doit rester visible par défaut,
+      // même si elle a été manipulée pendant une session mobile.
+      if (window.innerWidth > 768) {
+        document.documentElement.classList.remove('sidebar-left-collapsed');
+        sidebarContainer?.classList.remove('collapsed');
+        localStorage.setItem('sidebar-left-collapsed', 'false');
+      }
+      syncToggleButtons();
     }, 100);
   });
 
