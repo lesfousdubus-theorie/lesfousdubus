@@ -47,4 +47,4 @@ Communication entre époques (dispositif inconnu)
 Imu pourrait avoir pris Roger pour Joy Boy  
 Joy Boy ne serait pas un titre
 
-**Note importante** : la page Modifications reflète désormais les évolutions récentes sans affirmer de boucle temporelle généralisée ni d'envoi de Binks no Sake dans le passé.
+**Note importante** : la page Modifications reflète désormais les évolutions récentes sans affirmer de boucle temporelle physique généralisée ni d'envoi de Binks no Sake dans le passé.

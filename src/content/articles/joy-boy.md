@@ -1,6 +1,6 @@
 ---
 title: "Joy Boy"
-summary: "Fiche consacrée à Joy Boy : ce que le manga établit sur la figure légendaire, la lecture des Fous du Bus qui en fait le nom futur de Luffy, les arguments, les indices récents et les limites."
+summary: "Fiche consacrée à Joy Boy : ce que le manga établit sur la figure légendaire, la lecture des Fous du Bus (nom/surnom sous lequel Luffy serait identifié à l’aboutissement de son aventure), les arguments, les indices récents et les limites."
 seoTitle: "Joy Boy dans One Piece : identité, promesse, Luffy et théorie | Les Fous du Bus"
 category: "figures-principales"
 status: "published"

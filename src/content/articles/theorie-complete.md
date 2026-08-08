@@ -37,7 +37,7 @@ Les personnages actuels deviendront les légendes du passé :
 
 ## La mécanique temporelle
 
-Il n'y a **pas de voyage dans le temps** au sens traditionnel. Les Ponéglyphes ont été créés dans le futur par les Mugiwara et envoyés dans le passé pour préparer le monde au Jour du Serment.
+Il n'y a **pas de boucle temporelle physique généralisée**. Le mécanisme exact n'est pas fixé. La théorie reconnaît plusieurs possibilités (transmission d'informations, communication entre époques, préscience, déplacements ponctuels). Les Ponéglyphes sont le support principal de transmission vers le passé.
 
 C'est pourquoi :
 

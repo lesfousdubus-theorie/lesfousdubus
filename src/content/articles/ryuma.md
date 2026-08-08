@@ -32,6 +32,6 @@ Zoro manie actuellement trois katanas. Mais pour devenir Ryuma, il ne doit en ga
 
 Puis il partira à Wano, récupérera Shusui (trésor national), et deviendra Ryuma le dieu des lames, réalisant son rêve impossible : devenir le plus grand sabreur pour que Kuina puisse l'entendre.
 
-## La boucle temporelle
+## Transmission temporelle (hypothèse)
 
-Le corps de Ryuma sera envoyé dans le passé et enterré à Ringo. 800 ans plus tard, Gekko Moria le récupérera, permettant à Zoro de se transmettre Shusui et de compléter la boucle.
+Dans la lecture temporelle, le corps de Ryuma aurait été transmis vers le passé et enterré à Ringo. 800 ans plus tard, Gekko Moria le récupérerait, permettant à Zoro de recevoir Shusui et de boucler la transmission.

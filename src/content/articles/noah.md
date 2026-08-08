@@ -33,7 +33,7 @@ Noah est un navire d'une taille démesurée, immobilisé dans le quartier des Ho
 
 ## La lecture des Fous du Bus
 
-Dans la lecture des Fous du Bus, la chronologie du Ponéglyphe s'inverse. Le message de Joy Boy ne serait pas une lettre d'excuses écrite il y a 800 ans, mais **une demande écrite à la fin du manga** par Luffy — gravée par Momonosuke et Robin, puis envoyée dans le passé.
+Dans la lecture des Fous du Bus, la chronologie du Ponéglyphe s'inverse. Le message de Joy Boy ne serait pas une lettre d'excuses écrite il y a 800 ans, mais **une demande écrite à la fin du manga** par Luffy — gravée par Momonosuke et Robin, puis transmise vers le passé via le mécanisme de communication temporelle.
 
 Le raisonnement est le suivant : le seul moyen de sauver l'île des Hommes-Poissons est de disposer de Noah. Mais pour que Noah existe le jour venu, il faut avoir demandé au royaume Ryugu de le construire et de le préserver — huit siècles à l'avance. La signature « Joy Boy » permettrait de rester anonyme et d'éviter d'être repéré par Imu.
 

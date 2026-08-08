@@ -18,7 +18,7 @@ La Flamme Mère (Mother Flame) est présentée comme la source d'énergie origin
 
 ## Une science qui se répète
 
-Les technologies du Siècle oublié (énergie, robots, communication) réapparaissent à l'identique dans le présent. Ce n'est pas une coïncidence : la boucle temporelle transporterait aussi les savoirs.
+Les technologies du Siècle oublié (énergie, robots, communication) réapparaissent à l'identique dans le présent. Ce n'est pas une coïncidence : le mécanisme de transmission/communication temporelle permettrait aussi la circulation des savoirs.
 
 ## Lien avec Joy Boy
 

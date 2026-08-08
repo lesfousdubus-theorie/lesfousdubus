@@ -75,7 +75,7 @@ Kuma, au chapitre 1102, résume cette idée en pensant : « Si un héros devait 
 ## Limites et objections
 
 - **La théorie de la réincarnation reste ouverte.** Le manga n’a pas explicitement rejeté l’idée que Luffy soit la réincarnation d’un Joy Boy historique.
-- **Les parallèles avec Roger.** Roger avait le chapeau, il est arrivé à Laugh Tale, il a ri : on peut y voir la preuve d’un schéma de « volonté héritée » linéaire plutôt que d’une boucle temporelle.
+- **Les parallèles avec Roger.** Roger avait le chapeau, il est arrivé à Laugh Tale, il a ri : on peut y voir la preuve d’un schéma de « volonté héritée » linéaire plutôt qu’une boucle temporelle physique généralisée.
 - **La foi en Nika.** Le culte de Nika semble avoir existé bien avant Luffy (Boucaniers, Kuma, anciens esclaves), ce qui suggère qu’un Nika a déjà existé dans le passé — ou que ce culte a lui aussi été transmis depuis le futur.
 - **Luffy n’est pas dieu.** Le personnage de Luffy est résolument humain, faillible et gourmand : il faut veiller à ne pas le déifier au point de perdre de vue ce qui fait sa force narrative.
 

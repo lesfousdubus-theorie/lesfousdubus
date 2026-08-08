@@ -25,6 +25,6 @@ Il a reconnu le retour de Joy Boy au chapitre 1043 en entendant les Tambours de 
 
 ## La lecture des Fous du Bus
 
-Zunesha est envoyé depuis le futur tout comme Emeth. Sa longévité et sa reconnaissance du rythme de Luffy/Joy Boy s'expliquent par la boucle temporelle : il a connu Joy Boy lors d'un précédent cycle, et son dos est conçu pour survivre au déluge qui accompagnera la destruction de Red Line.
+Zunesha est lié au futur tout comme Emeth. Sa longévité et sa reconnaissance du rythme de Luffy/Joy Boy s'expliquent par le mécanisme temporel : il a connu Joy Boy via transmission ou communication, et son dos est conçu pour survivre au déluge qui accompagnera la destruction de Red Line.
 
 L'article de démonstration Zunesha : le témoin qui vient du futur développe cette hypothèse.
