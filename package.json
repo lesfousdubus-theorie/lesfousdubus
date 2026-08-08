@@ -7,11 +7,12 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/generate-llms.mjs && astro build && node scripts/copy-sitemap.mjs",
+    "build": "node scripts/generate-llms.mjs && node scripts/generate-og.mjs && astro build && node scripts/copy-sitemap.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
     "llms": "node scripts/generate-llms.mjs",
+    "og": "node scripts/generate-og.mjs",
     "validate": "node scripts/validate.mjs",
     "format": "prettier --write \"**/*.{astro,js,jsx,ts,tsx,md,mdx,json,css}\"",
     "test": "vitest run",

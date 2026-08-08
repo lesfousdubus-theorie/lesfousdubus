@@ -11,7 +11,10 @@ import { getCollection } from 'astro:content';
 import { effectLabel } from '@utils/labels';
 
 const { title, description, currentPath, headings, frontmatter } = Astro.props;
-const socialImage = new URL('/og-default.png', Astro.site).toString();
+// Image sociale de la page : on privilégie `ogImage` du frontmatter si fourni,
+// sinon l'image par défaut.
+const socialImagePath = frontmatter.ogImage ?? '/og-default.png';
+const socialImage = new URL(socialImagePath, Astro.site).toString();
 const seoTitle = frontmatter.seoTitle ?? undefined;
 
 // Fetch related articles from the articles collection
