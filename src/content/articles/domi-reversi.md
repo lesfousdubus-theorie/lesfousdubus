@@ -29,7 +29,7 @@ L'analyse du chapitre 1186 qualifie le Domi Reversi de **« profondément diabol
 - **Un pouvoir de contrôle** : Imu ne se contente pas de vaincre un adversaire, il s'en empare et le retourne contre les siens.
 - **Une arme psychologique** : la victime contrôlée blesse ceux qu'elle aime, ce qui en fait un instrument de division autant que de force.
 
-Ce mécanisme éclaire la ligne historique de la théorie. Le récit d'Imu prétend que le Gouvernement mondial a déjà manipulé les géants par le passé (« Si nous nous emparons des enfants, nous pourrons manipuler les géants à notre guise ») ; l'analyse relève que ce récit **se contredit**, puisque les géants ont dominé le Nouveau Monde durant les sept cents années suivantes sans jamais être contrôlés. Le Domi Reversi, montré pour la première fois à l'œuvre au présent, **fait ainsi écho au récit d'Imu concernant la manipulation des géants il y a huit cents ans**.
+Ce mécanisme éclaire la ligne historique de la théorie. Le récit d'Imu prétend que le Gouvernement mondial a déjà manipulé les géants par le passé (« Si nous nous emparons des enfants, nous pourrons manipuler les géants à notre guise ») ; l'analyse relève que ce récit **se contredit**, puisque les géants ont dominé le Nouveau Monde durant les sept cents années suivantes sans jamais être contrôlés. Le Domi Reversi fait ainsi écho, dans la lecture des Fous du Bus, au récit d'Imu concernant la manipulation des géants il y a huit cents ans.
 
 > ⚠️ Pouvoir récent dans le récit : sa portée exacte n'est pas établie. Ce dossier se limite à ce que le manga montre et à ce que l'analyse du chapitre 1186 en tire.
 
