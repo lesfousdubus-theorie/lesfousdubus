@@ -105,6 +105,7 @@ const badgeColorByEffect = {
         alt="Vidéo de présentation de la théorie"
         class="video-facade__img"
         loading="lazy"
+        onerror="this.onerror=null; this.src='https://img.youtube.com/vi/SgJ25zjMJyo/hqdefault.jpg';"
       />
       <div class="video-facade__overlay">
         <div class="video-facade__play">
@@ -362,6 +363,16 @@ const badgeColorByEffect = {
     }
   }
 
+  /* Respect reduced motion for custom animations */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-badge__dot {
+      animation: none !important;
+    }
+    .hero > * {
+      animation: none !important;
+    }
+  }
+
   .hero-title {
     font-size: clamp(2rem, 5vw, 3rem);
     font-weight: 800;
@@ -420,7 +431,8 @@ const badgeColorByEffect = {
   }
 
   .btn-primary:active {
-    transform: translateY(0) scale(0.98);
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 2px 8px var(--glow-violet);
   }
 
   .btn-secondary {
@@ -453,7 +465,8 @@ const badgeColorByEffect = {
   }
 
   .btn-secondary:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
+    box-shadow: 0 0 8px var(--glow-cyan);
   }
 
   /* ===== VIDEO FACADE ===== */
@@ -595,6 +608,10 @@ const badgeColorByEffect = {
     transform: translateY(-2px);
   }
 
+  .btn-see-all:active {
+    transform: translateY(0) scale(0.98);
+  }
+
   .understand-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -616,6 +633,10 @@ const badgeColorByEffect = {
   .understand-card:hover {
     transform: translateY(-3px);
     border-color: var(--violet);
+  }
+
+  .understand-card:active {
+    transform: translateY(-1px) scale(0.98);
   }
 
   .understand-time {

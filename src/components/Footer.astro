@@ -68,7 +68,8 @@ const lastChapter = chapters
             ></path>
           </svg>
         </a>
-        <a href="#main-content" class="footer__social-link" aria-label="Retour en haut">
+        <span class="footer__social-separator" aria-hidden="true"></span>
+        <a href="#main-content" class="footer__social-link footer__back-to-top" aria-label="Retour en haut">
           <svg
             width="16"
             height="16"
@@ -81,6 +82,7 @@ const lastChapter = chapters
           >
             <polyline points="18 15 12 9 6 15"></polyline>
           </svg>
+          <span class="footer__back-to-top-label">Haut</span>
         </a>
       </div>
     </div>
@@ -206,7 +208,15 @@ const lastChapter = chapters
 
   .footer__social {
     display: flex;
+    align-items: center;
     gap: 8px;
+  }
+
+  .footer__social-separator {
+    width: 1px;
+    height: 20px;
+    background: var(--border-color);
+    margin: 0 4px;
   }
 
   .footer__social-link {
@@ -229,5 +239,21 @@ const lastChapter = chapters
     background: color-mix(in srgb, var(--violet) 12%, transparent);
     box-shadow: 0 0 10px var(--glow-violet);
     transform: translateY(-2px);
+  }
+
+  .footer__social-link:active {
+    transform: translateY(0) scale(0.95);
+  }
+
+  .footer__back-to-top {
+    width: auto;
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  .footer__back-to-top-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
 </style>

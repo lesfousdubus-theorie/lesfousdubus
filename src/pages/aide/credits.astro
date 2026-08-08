@@ -1,9 +1,17 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
+
+const breadcrumbItems = [
+  { label: 'Accueil', href: '/' },
+  { label: 'Aide', href: '/aide' },
+  { label: 'Crédits' },
+];
 ---
 
 <WikiLayout title="Crédits" seoTitle="Crédits — Les Fous du Bus : sources One Piece | Les Fous du Bus" description="Crédits et sources du site : théorie du Mont Corvo, One Piece d’Eiichiro Oda, remerciements et mentions légales du wiki Les Fous du Bus." currentPath="/aide/credits">
+  <Breadcrumb items={breadcrumbItems} />
   <div class="page-header">
     <h1>Crédits</h1>
   </div>

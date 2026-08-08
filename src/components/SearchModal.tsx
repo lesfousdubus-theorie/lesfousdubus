@@ -423,6 +423,42 @@ export default function SearchModal() {
           font-size: 14px;
           line-height: 1.5;
         }
+
+        .search-no-results {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding: 48px 24px;
+        }
+
+        .search-no-results__icon {
+          color: var(--text-secondary);
+          opacity: 0.5;
+          margin-bottom: 8px;
+        }
+
+        .search-no-results__title {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--text-main);
+          margin: 0;
+        }
+
+        .search-no-results__query {
+          font-size: 14px;
+          color: var(--text-secondary);
+          margin: 0;
+          word-break: break-word;
+          max-width: 100%;
+        }
+
+        .search-no-results__hint {
+          font-size: 13px;
+          color: var(--text-secondary);
+          opacity: 0.8;
+          margin: 8px 0 0;
+        }
         .search-normalized-hint {
           padding: 8px 16px;
           text-align: center;
@@ -699,11 +735,22 @@ export default function SearchModal() {
           )}
 
           {showNoResults && (
-            <div className="search-status">
-              Aucun résultat pour «&nbsp;{query}&nbsp;»
-              <div style={{ marginTop: 8, fontSize: 12.5, opacity: 0.85 }}>
-                Essayez un autre mot-clé (personnage, lieu, chapitre…)
+            <div className="search-status search-no-results">
+              <div className="search-no-results__icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  <line x1="8" y1="8" x2="14" y2="14"></line>
+                  <line x1="14" y1="8" x2="8" y2="14"></line>
+                </svg>
               </div>
+              <p className="search-no-results__title">Aucun résultat</p>
+              <p className="search-no-results__query">
+                pour «&nbsp;{query}&nbsp;»
+              </p>
+              <p className="search-no-results__hint">
+                Essayez un autre mot-clé (personnage, lieu, chapitre…)
+              </p>
             </div>
           )}
         </div>

@@ -8,7 +8,7 @@ sources: [1085, 1116]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-order: 48
+order: 50
 related: ['lili', 'lili-vivi-et-les-poneglyphes', 'nefertari-vivi']
 ---
 

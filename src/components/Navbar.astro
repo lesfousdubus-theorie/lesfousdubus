@@ -417,6 +417,11 @@ const isActive = (href: string) =>
     background-color: var(--surface);
   }
 
+  .nav-link:active {
+    transform: scale(0.96);
+    background-color: color-mix(in srgb, var(--cyan) 10%, transparent);
+  }
+
   .nav-link--active {
     color: var(--cyan);
     font-weight: 600;
@@ -496,6 +501,11 @@ const isActive = (href: string) =>
     color: var(--cyan);
     background-color: var(--surface);
     transform: translateX(3px);
+  }
+
+  .nav-dropdown__link:active {
+    transform: translateX(3px) scale(0.98);
+    background-color: color-mix(in srgb, var(--cyan) 10%, transparent);
   }
 
   .nav-actions {

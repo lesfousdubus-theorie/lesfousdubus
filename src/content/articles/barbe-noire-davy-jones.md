@@ -3,7 +3,7 @@ title: "Marshall D. Teach et Davy Jones"
 summary: "Comment Marshall D. Teach incarne la figure mythique de Davy Jones et s'apprête à ravir le titre de Roi du Monde à Mary Geoise."
 category: "personnages-identites"
 status: "published"
-order: 42
+order: 43
 navigationType: "dossier"
 certainty: "elevee"
 reviewedUntilChapter: 1188

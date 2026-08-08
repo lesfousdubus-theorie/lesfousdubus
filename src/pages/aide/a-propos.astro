@@ -1,9 +1,18 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
+
+const breadcrumbItems = [
+  { label: 'Accueil', href: '/' },
+  { label: 'Aide', href: '/aide' },
+  { label: 'À propos' },
+];
+
 ---
 
 <WikiLayout title="À propos" seoTitle="À propos — Les Fous du Bus : projet et méthode | Les Fous du Bus" description="À propos du wiki Les Fous du Bus : projet fan-made, théorie du Siècle oublié est le présent, méthode, sources et démarche éditoriale." currentPath="/aide/a-propos">
+  <Breadcrumb items={breadcrumbItems} />
   <div class="page-header">
     <h1>À propos</h1>
   </div>
