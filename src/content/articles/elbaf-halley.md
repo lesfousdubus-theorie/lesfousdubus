@@ -30,7 +30,9 @@ Le Harley est prophétique. Certains lecteurs proposent qu’Usopp, grand affabu
 
 Cette hypothèse n’est **pas explicitement formulée** comme noyau de la théorie des Fous du Bus dans les transcriptions fournies. Elle est conservée ici comme piste spéculative et doit être marquée comme telle.
 
-## Le plus grand accomplissement
+## Le plus grand accomplissement (spéculatif)
 
 Celui qui souhaite devenir un grand et fier guerrier des mers aurait inspiré tous les plus grands et fiers guerriers des mers. Usopp, le plus faible de l'équipage, deviendrait la référence pour la jeunesse géante.
+
+**Statut** : Extension éditoriale / hypothèse secondaire. Non centrale dans la théorie principale.
 
