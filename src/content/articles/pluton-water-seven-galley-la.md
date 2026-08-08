@@ -67,7 +67,7 @@ Zunesha ──► ouverture de Wa no Kuni
 ## Articles liés
 
 - [Pluton (fiche canonique)](/theorie/pluton-fiche)
-- [Zunesha](/theorie/zunesha)
+- [Zunesha](/theorie/zunesha-fiche)
 - [Wa no Kuni](/theorie/wa-no-kuni)
 - [Loki](/theorie/loki)
 - [Poséidon](/theorie/poseidon-fiche)
