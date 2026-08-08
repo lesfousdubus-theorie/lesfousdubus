@@ -71,7 +71,8 @@ Les spoilers 1154 révèlent officiellement l'existence d'une **Galley-La de gé
 
 Cela renforce l'hypothèse **Loki congèle son propre équipage pour le protéger**, plutôt que défaite par le Gouvernement.
 
-> Voir la version complète vulgarisée X : [Galley-La : la coïncidence impossible](/theorie/galley-la-coincidence-impossible)
+> **Lire le thread complet avec toutes les images originales** : [Galley-La : la coïncidence impossible](/theorie/galley-la-coincidence-impossible)  
+> (13 images du thread X du 08/08/2026 incluses en haute qualité sur le site)
 
 ## Limites et nuances
 
