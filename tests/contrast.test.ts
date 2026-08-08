@@ -47,6 +47,18 @@ describe.each(THEMES)('contraste — thème %s', (theme) => {
     expect(r).toBeGreaterThanOrEqual(TEXT_AA);
   });
 
+  it.each(SURFACES)('text-muted (métatexte) est lisible sur %s', (surface) => {
+    // `--text-muted` est un `color-mix(...)` translucide de `--text-secondary`.
+    // On extrait le pourcentage d'opacité, puis on composite la couleur de base
+    // sur chaque surface pour vérifier le contraste effectif (>= 4.5:1 AA).
+    const raw = token(theme, 'text-muted');
+    const m = raw.match(/var\(--text-secondary\)\s*(\d+(?:\.\d+)?)%/);
+    expect(m, `format inattendu : ${raw}`).toBeTruthy();
+    const alpha = Number(m![1]) / 100;
+    const composed = compositeOver(color(theme, 'text-secondary'), alpha, color(theme, surface));
+    expect(contrastRatio(composed, color(theme, surface))).toBeGreaterThanOrEqual(TEXT_AA);
+  });
+
   it.each(['cyan', 'violet-light', 'accent-gold', 'alert'])(
     '%s reste lisible comme couleur de texte sur toutes les surfaces',
     (accent) => {

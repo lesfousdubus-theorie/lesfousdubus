@@ -979,7 +979,11 @@ const canonicalWikiUrl = new URL(
   };
 
   mobileToggle?.addEventListener('click', () => toggleMobile());
-  mobileOverlay?.addEventListener('click', () => toggleMobile(false));
+  mobileOverlay?.addEventListener('click', () => {
+    toggleMobile(false);
+    // Rend le focus au déclencheur (bonne pratique a11y : ne pas perdre la position clavier)
+    mobileToggle?.focus();
+  });
 
   // Quand le tiroir mobile est ouvert, tout déclenchement de la recherche
   // (bouton loupe de la navbar ou raccourci Ctrl/Cmd+K) doit d'abord fermer
@@ -1044,7 +1048,10 @@ const canonicalWikiUrl = new URL(
   }, { passive: true });
 
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isMobileOpen()) toggleMobile(false);
+    if (e.key === 'Escape' && isMobileOpen()) {
+      toggleMobile(false);
+      mobileToggle?.focus();
+    }
   });
 
   // Fermer automatiquement le drawer si on repasse en desktop (resize).
@@ -1093,9 +1100,20 @@ const canonicalWikiUrl = new URL(
   };
 
   tocFab?.addEventListener('click', () => toggleToc());
-  tocClose?.addEventListener('click', () => toggleToc(false));
-  tocOverlay?.addEventListener('click', () => toggleToc(false));
-  window.addEventListener('keydown', (e) => { if (e.key==='Escape' && isTocOpen()) toggleToc(false); });
+  tocClose?.addEventListener('click', () => {
+    toggleToc(false);
+    tocFab?.focus();
+  });
+  tocOverlay?.addEventListener('click', () => {
+    toggleToc(false);
+    tocFab?.focus();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isTocOpen()) {
+      toggleToc(false);
+      tocFab?.focus();
+    }
+  });
   // Close TOC on link click
   tocDrawer?.addEventListener('click', (e) => { if ((e.target as HTMLElement).closest('a')) toggleToc(false); });
 

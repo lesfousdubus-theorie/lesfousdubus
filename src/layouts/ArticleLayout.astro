@@ -39,9 +39,9 @@ const articleChapters = chapterEntries
 const generateBreadcrumb = (path: string): Array<{ label: string; href?: string }> => {
   const segments = path.split('/').filter(Boolean);
   const items: Array<{ label: string; href?: string }> = [{ label: 'Accueil', href: '/' }];
-  
+
   if (segments.length === 0) return items;
-  
+
   // Pages spéciales avec breadcrumb personnalisé
   if (path.startsWith('/theorie/')) {
     items.push({ label: 'La théorie', href: '/theorie' });
@@ -73,7 +73,7 @@ const generateBreadcrumb = (path: string): Array<{ label: string; href?: string 
   } else {
     items.push({ label: title });
   }
-  
+
   return items;
 };
 
@@ -89,22 +89,21 @@ const computeReadingTime = (headings: any[] | undefined, desc?: string): string 
     }
     return null;
   }
-  const h2 = headings.filter((h:any)=>h.depth===2).length;
-  const h3 = headings.filter((h:any)=>h.depth===3).length;
+  const h2 = headings.filter((h: any) => h.depth === 2).length;
+  const h3 = headings.filter((h: any) => h.depth === 3).length;
   const baseWords = desc ? desc.trim().split(/\s+/).length : 80;
-  const estWords = 150 + baseWords + h2*260 + h3*120;
-  const mins = Math.max(1, Math.ceil(estWords / 220));
-  if (mins <= 2) return '2 min';
-  if (mins <= 5) return `${mins} min`;
-  if (mins <= 10) return `${mins} min`;
-  if (mins <= 16) return `${mins} min`;
+  const estWords = 150 + baseWords + h2 * 260 + h3 * 120;
+  const mins = Math.max(2, Math.ceil(estWords / 220));
   return `${mins} min`;
 };
 const readingTime = computeReadingTime(headings, description);
 
 // JSON-LD for Article — enrichi (headline court = H1, description, section, publisher)
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
-const canonicalArticleUrl = new URL(currentPath.endsWith('/') ? currentPath : currentPath + '/', siteUrl).toString();
+const canonicalArticleUrl = new URL(
+  currentPath.endsWith('/') ? currentPath : currentPath + '/',
+  siteUrl,
+).toString();
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
@@ -167,25 +166,48 @@ const articleJsonLd = {
     <h1 class="article-title">{title}</h1>
 
     <div class="article-top-meta">
-      {readingTime && (
-        <p class="article-reading-time">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          Lecture : ~{readingTime}
-        </p>
-      )}
-      <button id="zen-toggle" class="zen-toggle" aria-label="Activer le mode lecture zen" aria-pressed="false">Mode zen</button>
+      {
+        readingTime && (
+          <p class="article-reading-time">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <>
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </>
+            </svg>
+            Lecture : ~{readingTime}
+          </p>
+        )
+      }
+      <button
+        id="zen-toggle"
+        class="zen-toggle"
+        aria-label="Activer le mode lecture zen"
+        aria-pressed="false">Mode zen</button
+      >
     </div>
 
-    {articleChapters.length > 0 && (
-      <p class="article-updated-meta">
-        Dernière mise à jour de la fiche : chapitre <strong>{articleChapters[0].data.chapter}</strong>
-        <span class="article-updated-meta__effect">
-          · {effectLabel(articleChapters[0].data.effect)}
-        </span>
-      </p>
-    )}
+    {
+      articleChapters.length > 0 && (
+        <p class="article-updated-meta">
+          Dernière mise à jour de la fiche : chapitre{' '}
+          <strong>{articleChapters[0].data.chapter}</strong>
+          <span class="article-updated-meta__effect">
+            · {effectLabel(articleChapters[0].data.effect)}
+          </span>
+        </p>
+      )
+    }
 
     <div class="content">
       <slot />
@@ -213,7 +235,25 @@ const articleJsonLd = {
       aria-label="Partager cet article"
       title="Partager"
     >
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        ><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle
+          cx="18"
+          cy="19"
+          r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line
+          x1="15.41"
+          y1="6.51"
+          x2="8.59"
+          y2="10.49"></line></svg
+      >
     </button>
     <a
       class="article-share__btn"
@@ -222,7 +262,11 @@ const articleJsonLd = {
       rel="noopener noreferrer"
       aria-label="Partager sur X (Twitter)"
     >
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+        ><path
+          d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+        ></path></svg
+      >
     </a>
     <button
       class="article-share__btn"
@@ -230,7 +274,19 @@ const articleJsonLd = {
       aria-label="Copier le lien de l'article"
       title="Copier le lien"
     >
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        ><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path
+          d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg
+      >
     </button>
   </div>
 
@@ -238,17 +294,56 @@ const articleJsonLd = {
   <Footer />
 
   <!-- Image Lightbox Modal -->
-  <div id="image-lightbox" class="lightbox-overlay hidden" role="dialog" aria-modal="true" aria-label="Vue agrandie de l'image" aria-hidden="true">
+  <div
+    id="image-lightbox"
+    class="lightbox-overlay hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Vue agrandie de l'image"
+    aria-hidden="true"
+  >
     <div class="lightbox-container">
       <img id="lightbox-img" src="" alt="" />
       <button id="lightbox-close" aria-label="Fermer (Échap)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          ><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"
+          ></line></svg
+        >
       </button>
       <button id="lightbox-prev" class="lightbox-nav lightbox-prev" aria-label="Image précédente">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg
+        >
       </button>
       <button id="lightbox-next" class="lightbox-nav lightbox-next" aria-label="Image suivante">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg
+        >
       </button>
       <div id="lightbox-caption" class="lightbox-caption"></div>
     </div>
@@ -270,9 +365,7 @@ const articleJsonLd = {
         const drawer = document.getElementById('sidebar-left-container');
         if (drawer?.classList.contains('is-mobile-open')) {
           drawer.classList.remove('is-mobile-open');
-          document
-            .getElementById('sidebar-mobile-overlay')
-            ?.classList.remove('is-open');
+          document.getElementById('sidebar-mobile-overlay')?.classList.remove('is-open');
           document.documentElement.classList.remove('mobile-nav-open');
           document.body.classList.remove('mobile-nav-open');
           document.documentElement.removeAttribute('data-nav-open');
@@ -283,9 +376,7 @@ const articleJsonLd = {
         document.getElementById('toc-overlay')?.classList.remove('is-open');
       };
 
-      const galleryImgs = Array.from(
-        document.querySelectorAll<HTMLImageElement>('.content img')
-      );
+      const galleryImgs = Array.from(document.querySelectorAll<HTMLImageElement>('.content img'));
       let currentIndex = -1;
 
       const setLightboxImage = (index: number) => {
@@ -344,7 +435,10 @@ const articleJsonLd = {
         // Make image keyboard-focusable for a11y
         htmlImg.tabIndex = 0;
         htmlImg.setAttribute('role', 'button');
-        htmlImg.setAttribute('aria-label', `Agrandir l'image : ${htmlImg.alt || 'sans description'}`);
+        htmlImg.setAttribute(
+          'aria-label',
+          `Agrandir l'image : ${htmlImg.alt || 'sans description'}`,
+        );
         htmlImg.addEventListener('click', () => openLightbox(idx));
         htmlImg.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -376,8 +470,8 @@ const articleJsonLd = {
         if (!lightbox.classList.contains('hidden')) {
           const focusable = Array.from(
             lightbox.querySelectorAll<HTMLElement>(
-              'button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            )
+              'button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
           ).filter((el) => el.offsetParent !== null);
           if (focusable.length === 0) return;
           const first = focusable[0];
@@ -425,9 +519,9 @@ const articleJsonLd = {
         try {
           const ta = document.createElement('textarea');
           ta.value = window.location.href;
-          ta.setAttribute('readonly','');
-          ta.style.position='fixed';
-          ta.style.opacity='0';
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
           document.body.appendChild(ta);
           ta.select();
           document.execCommand('copy');
@@ -447,7 +541,9 @@ const articleJsonLd = {
           try {
             await navigator.share({
               title: document.title,
-              text: (document.querySelector('meta[name="description"]') as HTMLMetaElement | null)?.content || '',
+              text:
+                (document.querySelector('meta[name="description"]') as HTMLMetaElement | null)
+                  ?.content || '',
               url: window.location.href,
             });
           } catch {
@@ -857,11 +953,23 @@ const articleJsonLd = {
   }
 
   @media (max-width: 768px) {
-    .lightbox-prev { left: 8px; }
-    .lightbox-next { right: 8px; }
-    #lightbox-close { top: -44px; right: 0; }
-    .lightbox-caption { font-size: 12px; bottom: -32px; }
-    .lightbox-container img { max-height: 75vh; }
+    .lightbox-prev {
+      left: 8px;
+    }
+    .lightbox-next {
+      right: 8px;
+    }
+    #lightbox-close {
+      top: -44px;
+      right: 0;
+    }
+    .lightbox-caption {
+      font-size: 12px;
+      bottom: -32px;
+    }
+    .lightbox-container img {
+      max-height: 75vh;
+    }
   }
 
   .article-share {
@@ -936,7 +1044,7 @@ const articleJsonLd = {
     border-color: var(--cyan);
     background: color-mix(in srgb, var(--cyan) 10%, transparent);
   }
-  .zen-toggle[aria-pressed="true"] {
+  .zen-toggle[aria-pressed='true'] {
     color: var(--cyan);
     border-color: var(--cyan);
     background: color-mix(in srgb, var(--cyan) 14%, transparent);
@@ -952,5 +1060,4 @@ const articleJsonLd = {
     overflow: hidden !important;
     overscroll-behavior: none;
   }
-
 </style>

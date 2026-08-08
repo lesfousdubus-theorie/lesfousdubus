@@ -280,6 +280,7 @@ navSections.push({
                 <li>
                   <a
                     href={link.href}
+                    aria-current={isActive ? 'page' : undefined}
                     class={`sidebar-link ${link.level === 1 ? 'sidebar-link--child' : ''} ${link.type === 'dossier' ? 'sidebar-link--dossier' : ''} ${isActive ? 'sidebar-link--active' : ''}`}
                   >
                     {link.level === 1 && (

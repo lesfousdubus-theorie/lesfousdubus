@@ -44,7 +44,16 @@ async function getPagefind() {
 }
 
 const RECENT_KEY = 'fousdu-recent-searches';
-const POPULAR = ['Joy Boy', 'Imu', 'Ponéglyphe', 'Nika', 'Poséidon', 'Laugh Tale', 'All Blue', 'Mother Flame'];
+const POPULAR = [
+  'Joy Boy',
+  'Imu',
+  'Ponéglyphe',
+  'Nika',
+  'Poséidon',
+  'Laugh Tale',
+  'All Blue',
+  'Mother Flame',
+];
 
 function loadRecents(): string[] {
   try {
@@ -52,7 +61,9 @@ function loadRecents(): string[] {
     if (!raw) return [];
     const arr = JSON.parse(raw);
     return Array.isArray(arr) ? arr.slice(0, 6) : [];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 function saveRecent(q: string) {
   if (!q.trim() || q.trim().length < 2) return;
@@ -132,13 +143,20 @@ export default function SearchModal() {
     const trapFocus = (e: KeyboardEvent) => {
       if (e.key !== 'Tab' || !panelRef.current) return;
       const focusable = Array.from(
-        panelRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])')
+        panelRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
       ).filter((el) => el.offsetParent !== null);
       if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener('keydown', trapFocus);
     return () => window.removeEventListener('keydown', trapFocus);
@@ -160,7 +178,9 @@ export default function SearchModal() {
       try {
         const pf = await getPagefind();
         const search = await pf.search(normalized);
-        const data = await Promise.all(search.results.slice(0, 8).map((r: { data: () => Promise<PagefindResult> }) => r.data()));
+        const data = await Promise.all(
+          search.results.slice(0, 8).map((r: { data: () => Promise<PagefindResult> }) => r.data()),
+        );
         if (!cancelled) {
           setResults(data);
           setActiveIndex(data.length > 0 ? 0 : -1);
@@ -170,40 +190,56 @@ export default function SearchModal() {
         if (!cancelled) {
           setResults([]);
           setHasSearched(true);
-          console.error("Pagefind indisponible", e);
+          console.error('Pagefind indisponible', e);
         }
       } finally {
         if (!cancelled) setIsLoading(false);
       }
     }, 180);
-    return () => { cancelled = true; window.clearTimeout(timeout); };
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
   }, [query]);
 
-  const navigateToResult = useCallback((index: number) => {
-    const url = results[index]?.url;
-    if (url) {
-      saveRecent(query || results[index]?.meta?.title || '');
-      window.location.href = url;
-    }
-  }, [results, query]);
+  const navigateToResult = useCallback(
+    (index: number) => {
+      const url = results[index]?.url;
+      if (url) {
+        saveRecent(query || results[index]?.meta?.title || '');
+        window.location.href = url;
+      }
+    },
+    [results, query],
+  );
 
-  const handleInputKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (results.length === 0) return;
-      setActiveIndex((prev) => (prev + 1) % results.length);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (results.length === 0) return;
-      setActiveIndex((prev) => (prev <= 0 ? results.length - 1 : prev - 1));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (activeIndex >= 0) navigateToResult(activeIndex);
-      else if (results.length > 0) navigateToResult(0);
-      else if (query.trim()) { saveRecent(query); }
-    } else if (e.key === 'Home' && results.length > 0) { e.preventDefault(); setActiveIndex(0); }
-    else if (e.key === 'End' && results.length > 0) { e.preventDefault(); setActiveIndex(results.length - 1); }
-  }, [results, activeIndex, navigateToResult, query]);
+  const handleInputKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (results.length === 0) return;
+        setActiveIndex((prev) => (prev + 1) % results.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (results.length === 0) return;
+        setActiveIndex((prev) => (prev <= 0 ? results.length - 1 : prev - 1));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (activeIndex >= 0) navigateToResult(activeIndex);
+        else if (results.length > 0) navigateToResult(0);
+        else if (query.trim()) {
+          saveRecent(query);
+        }
+      } else if (e.key === 'Home' && results.length > 0) {
+        e.preventDefault();
+        setActiveIndex(0);
+      } else if (e.key === 'End' && results.length > 0) {
+        e.preventDefault();
+        setActiveIndex(results.length - 1);
+      }
+    },
+    [results, activeIndex, navigateToResult, query],
+  );
 
   useEffect(() => {
     if (activeIndex >= 0 && resultsRef.current) {
@@ -219,7 +255,8 @@ export default function SearchModal() {
   const showLoading = !!query && isLoading;
   const showResults = !isLoading && results.length > 0;
   const showNoResults = !!query && !isLoading && hasSearched && results.length === 0;
-  const showNormalizedHint = !!query && normalizedQuery.toLowerCase() !== query.trim().toLowerCase();
+  const showNormalizedHint =
+    !!query && normalizedQuery.toLowerCase() !== query.trim().toLowerCase();
 
   return (
     <div className="search-modal-overlay" role="presentation" onClick={() => setIsOpen(false)}>
@@ -273,20 +310,103 @@ export default function SearchModal() {
         @media (max-width:480px){ .search-modal-overlay{ padding:0; align-items:stretch; } .search-modal-panel{ width:100%; max-width:100%; max-height:100dvh; height:100dvh; border-radius:0; border:none; box-shadow:none; } .search-modal-header{ padding:12px 14px; padding-top:max(12px, env(safe-area-inset-top,0px)); min-height:56px; } .search-result-link{ padding:14px 16px; min-height:56px; } .search-result-title{ font-size:15px; } }
         @media (prefers-reduced-motion:reduce){ .search-modal-overlay,.search-modal-panel{ animation:none !important; } }
       `}</style>
-      <div ref={panelRef} className="search-modal-panel" role="dialog" aria-modal="true" aria-label="Recherche dans le site" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={panelRef}
+        className="search-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Recherche dans le site"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="search-modal-header">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--violet-light)', flexShrink: 0 }} aria-hidden="true">
-            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ color: 'var(--violet-light)', flexShrink: 0 }}
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input ref={inputRef} type="text" enterKeyHint="search" inputMode="search" className="search-input" placeholder="Rechercher dans la théorie…" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleInputKeyDown} aria-label="Rechercher" aria-autocomplete="list" aria-controls="search-results" aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} />
+          <input
+            ref={inputRef}
+            type="text"
+            enterKeyHint="search"
+            inputMode="search"
+            className="search-input"
+            placeholder="Rechercher dans la théorie…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleInputKeyDown}
+            role="combobox"
+            aria-label="Rechercher"
+            aria-expanded={showResults || showNoResults}
+            aria-autocomplete="list"
+            aria-controls="search-results"
+            aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+          />
           {query ? (
-            <button type="button" onClick={() => { setQuery(''); inputRef.current?.focus(); }} className="search-clear-btn" aria-label="Effacer la recherche" title="Effacer">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('');
+                inputRef.current?.focus();
+              }}
+              className="search-clear-btn"
+              aria-label="Effacer la recherche"
+              title="Effacer"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           ) : null}
-          <button type="button" onClick={() => setIsOpen(false)} className="search-close-badge" aria-label="Fermer la recherche (Échap)">Échap</button>
-          <button type="button" onClick={() => setIsOpen(false)} className="search-close-icon" aria-label="Fermer la recherche">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="search-close-badge"
+            aria-label="Fermer la recherche (Échap)"
+          >
+            Échap
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="search-close-icon"
+            aria-label="Fermer la recherche"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
         <div className="search-body">
@@ -294,14 +414,21 @@ export default function SearchModal() {
             <div>
               <div className="search-empty">
                 <p>Tapez pour rechercher dans la théorie…</p>
-                <p className="hint"><span className="hidden sm:inline">Naviguez avec ↑ ↓ · Entrée pour ouvrir · Échap pour fermer</span><span className="sm:hidden">Appuyez sur un résultat pour l’ouvrir</span></p>
+                <p className="hint">
+                  <span className="hidden sm:inline">
+                    Naviguez avec ↑ ↓ · Entrée pour ouvrir · Échap pour fermer
+                  </span>
+                  <span className="sm:hidden">Appuyez sur un résultat pour l’ouvrir</span>
+                </p>
               </div>
               {recents.length > 0 && (
                 <div className="search-empty-recents">
                   <p className="search-empty-title">Récentes</p>
                   <div className="search-chip-list">
                     {recents.map((r) => (
-                      <button key={r} className="search-chip" onClick={() => setQuery(r)}>{r}</button>
+                      <button key={r} className="search-chip" onClick={() => setQuery(r)}>
+                        {r}
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -310,7 +437,9 @@ export default function SearchModal() {
                 <p className="search-empty-title">Sujets populaires</p>
                 <div className="search-chip-list">
                   {POPULAR.map((p) => (
-                    <button key={p} className="search-chip" onClick={() => setQuery(p)}>{p}</button>
+                    <button key={p} className="search-chip" onClick={() => setQuery(p)}>
+                      {p}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -318,15 +447,34 @@ export default function SearchModal() {
           )}
           {showLoading && <div className="search-status">Recherche en cours…</div>}
           {showNormalizedHint && !showLoading && (
-            <div className="search-normalized-hint">💡 Nous cherchons aussi : <strong>{normalizedQuery}</strong></div>
+            <div className="search-normalized-hint">
+              💡 Nous cherchons aussi : <strong>{normalizedQuery}</strong>
+            </div>
           )}
           {showResults && (
-            <ul ref={resultsRef} id="search-results" className="search-results" role="listbox" aria-label="Résultats de recherche">
+            <ul
+              ref={resultsRef}
+              id="search-results"
+              className="search-results"
+              role="listbox"
+              aria-label="Résultats de recherche"
+            >
               {results.map((result, idx) => (
                 <li key={`${result.url}-${idx}`} role="none">
-                  <a href={result.url} id={`search-result-${idx}`} role="option" aria-selected={idx === activeIndex} className={`search-result-link${idx === activeIndex ? ' is-active' : ''}`} onMouseEnter={() => setActiveIndex(idx)} onClick={() => saveRecent(query)}>
-                    <h4 className="search-result-title">{result.meta.title || 'Page'}</h4>
-                    <p className="search-result-excerpt" dangerouslySetInnerHTML={{ __html: result.excerpt }} />
+                  <a
+                    href={result.url}
+                    id={`search-result-${idx}`}
+                    role="option"
+                    aria-selected={idx === activeIndex}
+                    className={`search-result-link${idx === activeIndex ? ' is-active' : ''}`}
+                    onMouseEnter={() => setActiveIndex(idx)}
+                    onClick={() => saveRecent(query)}
+                  >
+                    <div className="search-result-title">{result.meta.title || 'Page'}</div>
+                    <p
+                      className="search-result-excerpt"
+                      dangerouslySetInnerHTML={{ __html: result.excerpt }}
+                    />
                   </a>
                 </li>
               ))}
@@ -335,23 +483,52 @@ export default function SearchModal() {
           {showNoResults && (
             <div className="search-status search-no-results">
               <div className="search-no-results__icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="8" x2="14" y2="14"></line><line x1="14" y1="8" x2="8" y2="14"></line></svg>
+                <svg
+                  width="48"
+                  height="48"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  <line x1="8" y1="8" x2="14" y2="14"></line>
+                  <line x1="14" y1="8" x2="8" y2="14"></line>
+                </svg>
               </div>
               <p className="search-no-results__title">Aucun résultat</p>
               <p className="search-no-results__query">pour «&nbsp;{query}&nbsp;»</p>
-              <p className="search-no-results__hint">Essayez un autre mot-clé (personnage, lieu, chapitre…)</p>
-              <a href="/dossiers" className="search-cta">Parcourir les dossiers →</a>
+              <p className="search-no-results__hint">
+                Essayez un autre mot-clé (personnage, lieu, chapitre…)
+              </p>
+              <a href="/dossiers" className="search-cta">
+                Parcourir les dossiers →
+              </a>
             </div>
           )}
         </div>
         {(showResults || showEmpty) && (
           <div className="search-footer" aria-hidden="true">
             <div className="search-footer-hints">
-              <span><kbd>↑</kbd><kbd>↓</kbd> naviguer</span>
-              <span><kbd>↵</kbd> ouvrir</span>
-              <span><kbd>esc</kbd> fermer</span>
+              <span>
+                <kbd>↑</kbd>
+                <kbd>↓</kbd> naviguer
+              </span>
+              <span>
+                <kbd>↵</kbd> ouvrir
+              </span>
+              <span>
+                <kbd>esc</kbd> fermer
+              </span>
             </div>
-            {showResults && <span className="search-footer-count">{results.length} résultat{results.length > 1 ? 's' : ''}</span>}
+            {showResults && (
+              <span className="search-footer-count">
+                {results.length} résultat{results.length > 1 ? 's' : ''}
+              </span>
+            )}
           </div>
         )}
       </div>
