@@ -61,6 +61,7 @@ Les balises entre crochets indiquent la nature : canon, fait-observe, interpreta
 - [Pluton](https://lesfousdubus.sbs/theorie/pluton-fiche) : Fiche d'identification de Pluton, l'Arme antique conservée sous forme de plans à Water Seven et capable de détruire des îles entières. [canon]
 - [Poséidon](https://lesfousdubus.sbs/theorie/poseidon-fiche) : Fiche d'identification de Poséidon, l'Arme antique capable de commander les Rois des Mers et matérialisée par la princesse Shirahoshi. [canon]
 - [Pluton, Water Seven et Galley-La](https://lesfousdubus.sbs/theorie/pluton-water-seven-galley-la) : Dossier : comment Water Seven, la Galley-La des géants, Zunesha et Wa no Kuni s'articulent dans la théorie pour révéler Pluton, l'Arme antique transformée en navire. [core-theory]
+- [Galley-La : la coïncidence impossible](https://lesfousdubus.sbs/theorie/galley-la-coincidence-impossible) : Pourquoi la Galley-La Company d'Icebarg et la brigade au grand marteau des géants d'Elbaf portent le même nom — et comment le thread du 08/08 révèle que Water Seven va devenir Pluton avec l'armée de Loki congelée à Punk Hazard. [core-theory]
 
 ## Technologies et pouvoirs
 
