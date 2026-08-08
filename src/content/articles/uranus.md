@@ -1,5 +1,5 @@
 ---
-title: "Uranus : l'arme du ciel"
+title: "Uranus"
 summary: "Uranus est la troisième Arme antique, dont la nature précise n'est pas révélée par le manga. La théorie rapproche l'arme utilisée contre Lulusia d'Uranus et du pouvoir d'Imu amplifié par la Mother Flame (hypothèse)."
 seoTitle: "Uranus dans One Piece : Mother Flame, Imu et théorie | Les Fous du Bus"
 category: "armes-antiques"
