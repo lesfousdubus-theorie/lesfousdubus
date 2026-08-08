@@ -516,8 +516,13 @@ Issue → Modification → Vérifications → Pull Request → Preview → Fusio
 ```bash
 npm run check
 npm run validate
+npm run test
 npm run build
 ```
+
+> Un workflow CI (`.github/workflows/ci.yml`) exécute automatiquement ces quatre vérifications
+> sur chaque push et chaque Pull Request (Node 22, `npm ci`, validate, check, test, build,
+> contrôle des `llms.txt`/`llms-full.txt` et du sitemap).
 
 Une modification est prête à être fusionnée lorsque :
 

@@ -14,10 +14,14 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+const allChapters = (await getCollection('chapters')).sort((a, b) => a.data.chapter - b.data.chapter);
 const articles = await getCollection('articles', ({ data }) => data.status === 'published');
 const affectedArticles = entry.data.updatedArticles
   .map((id) => articles.find((a) => a.id === id))
   .filter((a): a is NonNullable<typeof a> => Boolean(a));
+const chapterIndex = allChapters.findIndex((c) => c.data.chapter === entry.data.chapter);
+const prevChapter = chapterIndex > 0 ? allChapters[chapterIndex - 1] : null;
+const nextChapter = chapterIndex >= 0 && chapterIndex < allChapters.length - 1 ? allChapters[chapterIndex + 1] : null;
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
 const chapterSeoTitle = `Chapitre ${entry.data.chapter} de One Piece — ${entry.data.title} : analyse et théorie | Les Fous du Bus`;
 const chapterDescription = entry.data.summary ?? `Analyse du chapitre ${entry.data.chapter} de One Piece : ${entry.data.title} et son apport à la théorie du Siècle oublié.`;
@@ -101,9 +105,24 @@ const chapterBreadcrumbLd = {
     </section>
   )}
 
-  <div class="nav-links">
-    <a href="/chapitres" class="nav-link">← Tous les chapitres</a>
-  </div>
+  <nav class="chapter-pager" aria-label="Chapitres précédent et suivant">
+    {prevChapter && (
+      <a class="chapter-pager__link chapter-pager__link--prev" href={`/chapitres/${prevChapter.data.chapter}`}>
+        <span class="chapter-pager__dir">← Chapitre {prevChapter.data.chapter}</span>
+        <span class="chapter-pager__title">{prevChapter.data.title}</span>
+      </a>
+    )}
+    <a class="chapter-pager__link chapter-pager__link--all" href="/chapitres">
+      <span class="chapter-pager__dir">Tous</span>
+      <span class="chapter-pager__title">Les analyses</span>
+    </a>
+    {nextChapter && (
+      <a class="chapter-pager__link chapter-pager__link--next" href={`/chapitres/${nextChapter.data.chapter}`}>
+        <span class="chapter-pager__dir">Chapitre {nextChapter.data.chapter} →</span>
+        <span class="chapter-pager__title">{nextChapter.data.title}</span>
+      </a>
+    )}
+  </nav>
 
   <Footer />
 </WikiLayout>
@@ -300,6 +319,58 @@ const chapterBreadcrumbLd = {
     background-color: var(--surface);
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
+  }
+
+  .chapter-pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 32px 0 40px;
+  }
+  .chapter-pager__link {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--bg-main);
+    text-decoration: none;
+    color: var(--text-main);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  a.chapter-pager__link:hover {
+    border-color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 6%, transparent);
+  }
+  .chapter-pager__link--next {
+    text-align: right;
+  }
+  .chapter-pager__link--all {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-style: dashed;
+  }
+  .chapter-pager__dir {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+  }
+  .chapter-pager__title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+  a.chapter-pager__link:hover .chapter-pager__title {
+    color: var(--cyan);
+  }
+  @media (max-width: 680px) {
+    .chapter-pager {
+      grid-template-columns: 1fr 1fr;
+    }
+    .chapter-pager__link--all {
+      display: none;
+    }
   }
 
   .nav-links {

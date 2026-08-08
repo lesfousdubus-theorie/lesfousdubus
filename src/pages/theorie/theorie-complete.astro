@@ -1,6 +1,7 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import ReadingProgressBar from '@components/ReadingProgressBar.astro';
 import { READING_PATH } from '@utils/parcours';
 import { getCollection } from 'astro:content';
 
@@ -766,6 +767,7 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
   headings={headings}
 >
   <script is:inline type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
+  <ReadingProgressBar />
   <script
     is:inline
     type="application/ld+json"
@@ -841,7 +843,7 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
     </nav>
 
     {
-      sections.map((section) => (
+      sections.map((section, index) => (
         <section id={section.id} class="theory-section">
           <div class="theory-section__head">
             <span class="theory-section__n">{section.n}</span>
@@ -874,6 +876,28 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
               <a href={href}>Approfondir : {label} →</a>
             ))}
           </div>
+
+          <nav class="chapter-nav" aria-label={`Chapitre ${section.n} sur ${sections.length}`}>
+            <span class="chapter-nav__progress">Chapitre {section.n} / {sections.length}</span>
+            <div class="chapter-nav__links">
+              {index > 0 ? (
+                <a class="chapter-nav__link chapter-nav__link--prev" href={`#${sections[index - 1].id}`}>
+                  <span class="chapter-nav__dir">← Chapitre précédent</span>
+                  <span class="chapter-nav__title">{sections[index - 1].n}. {sections[index - 1].title}</span>
+                </a>
+              ) : (
+                <span class="chapter-nav__link chapter-nav__link--empty">Début de la démonstration</span>
+              )}
+              {index < sections.length - 1 ? (
+                <a class="chapter-nav__link chapter-nav__link--next" href={`#${sections[index + 1].id}`}>
+                  <span class="chapter-nav__dir">Chapitre suivant →</span>
+                  <span class="chapter-nav__title">{sections[index + 1].n}. {sections[index + 1].title}</span>
+                </a>
+              ) : (
+                <span class="chapter-nav__link chapter-nav__link--empty">Fin de la démonstration</span>
+              )}
+            </div>
+          </nav>
         </section>
       ))
     }
@@ -1157,6 +1181,71 @@ const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: `${s.n}. ${s
   .method a:hover {
     text-decoration: underline;
     text-underline-offset: 2px;
+  }
+
+  /* ===== Navigation chapitre par chapitre ===== */
+  .chapter-nav {
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+  }
+  .chapter-nav__progress {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--violet-light);
+    margin-bottom: 12px;
+  }
+  .chapter-nav__links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .chapter-nav__link {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-main);
+    text-decoration: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  a.chapter-nav__link:hover {
+    border-color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 6%, transparent);
+  }
+  .chapter-nav__link--next {
+    text-align: right;
+  }
+  .chapter-nav__link--empty {
+    border-style: dashed;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  .chapter-nav__dir {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+  }
+  .chapter-nav__title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+  a.chapter-nav__link:hover .chapter-nav__title {
+    color: var(--cyan);
+  }
+  @media (max-width: 640px) {
+    .chapter-nav__links {
+      grid-template-columns: 1fr;
+    }
+    .chapter-nav__link--next {
+      text-align: left;
+    }
   }
 
   /* ===== Méthode ===== */

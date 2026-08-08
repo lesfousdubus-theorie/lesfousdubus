@@ -8,6 +8,7 @@ import BackToTop from '@components/BackToTop.astro';
 import ParcoursNav from '@components/ParcoursNav.astro';
 import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
+import { effectLabel } from '@utils/labels';
 
 const { title, description, currentPath, headings, frontmatter } = Astro.props;
 const socialImage = new URL('/og-default.png', Astro.site).toString();
@@ -100,6 +101,15 @@ const articleJsonLd = {
 
   <article data-pagefind-body>
     <h1 class="article-title">{title}</h1>
+
+    {articleChapters.length > 0 && (
+      <p class="article-updated-meta">
+        Dernière mise à jour de la fiche : chapitre <strong>{articleChapters[0].data.chapter}</strong>
+        <span class="article-updated-meta__effect">
+          · {effectLabel(articleChapters[0].data.effect)}
+        </span>
+      </p>
+    )}
 
     <div class="content">
       <slot />
@@ -228,6 +238,24 @@ const articleJsonLd = {
     color: var(--text-secondary);
     font-size: 13px;
     margin: -0.8rem 0 1.5rem;
+  }
+
+  .article-updated-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--accent-gold);
+    border-radius: var(--border-radius);
+    padding: 10px 14px;
+    margin: -6px 0 0;
+  }
+  .article-updated-meta strong {
+    color: var(--accent-gold);
+  }
+  .article-updated-meta__effect {
+    font-size: 12px;
+    color: var(--text-muted);
   }
 
   .content {
