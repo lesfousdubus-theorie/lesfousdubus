@@ -59,11 +59,24 @@
   /* Masquer le bouton tant que le tiroir de navigation mobile est ouvert :
      il est figé (overflow hidden) et le bouton ferait double emploi avec la
      fermeture du tiroir, tout en risquant de chevaucher ses liens. */
-  :global([data-nav-open='mobile']) #back-to-top {
+  :global([data-nav-open='mobile']) #back-to-top,
+  :global(html.search-modal-open) #back-to-top {
     opacity: 0 !important;
     visibility: hidden !important;
     transform: translateY(12px) !important;
     pointer-events: none !important;
+  }
+
+  /* When TOC fab is visible on tablet/desktop (<1200px), shift BackToTop up so it doesn't overlap */
+  @media (max-width: 1200px) {
+    #back-to-top {
+      bottom: 76px;
+    }
+  }
+  @media (max-width: 640px) {
+    #back-to-top {
+      bottom: 148px;
+    }
   }
 
   .back-to-top:hover {

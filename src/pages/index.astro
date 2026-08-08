@@ -132,7 +132,7 @@ const badgeColorByEffect = {
           facade.innerHTML = `<iframe
             class="absolute top-0 left-0 w-full h-full"
             src="https://www.youtube.com/embed/SgJ25zjMJyo?si=pXYc71i2i7G5tG5h&autoplay=1"
-            title="YouTube video player"
+            title="Présentation vidéo de la théorie (YouTube)"
             style="border: none;"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerpolicy="strict-origin-when-cross-origin"
@@ -201,10 +201,17 @@ const badgeColorByEffect = {
     />
     <CategoryCard
       icon="⚖️"
-      title="Gouvernement et guerre finale"
-      description="Imu, Gorosei, Déluge, destruction de Red Line et création d'All Blue."
+      title="Gouvernement mondial"
+      description="Imu, Gorosei, Dragons Célestes et la structure du pouvoir mondial."
       href="/dossiers#gouvernement-mondial"
       count={countByCategory("gouvernement-mondial")}
+    />
+    <CategoryCard
+      icon="⚔️"
+      title="Guerre finale"
+      description="La Grande Guerre, le Déluge, la destruction de Red Line et la coalition finale."
+      href="/dossiers#guerre-finale"
+      count={countByCategory("guerre-finale")}
     />
   </div>
 
@@ -213,9 +220,9 @@ const badgeColorByEffect = {
   </div>
 
   <div class="reading-guide">
-    <span class="reading-guide__icon">💡</span>
+    <span class="reading-guide__icon" aria-hidden="true">💡</span>
     <span class="reading-guide__text">
-      Les articles utilisent des badges de certitude (<a href="/aide/glossaire" class="reading-guide__link">Canon</a>, Interprétation, Hypothèse) pour distinguer les faits établis des suppositions.
+      Les articles utilisent des badges de certitude (Canon, Interprétation, Hypothèse) pour distinguer les faits établis des suppositions.
       <a href="/aide/glossaire" class="reading-guide__link">Consultez le glossaire →</a>
     </span>
   </div>
@@ -436,7 +443,7 @@ const badgeColorByEffect = {
     padding: 12px 22px;
     background: var(--gradient-border);
     color: var(--bg-main); /* contraste AA >= 4.5:1 sur le dégradé, dans les deux thèmes */
-    border-radius: 10px;
+    border-radius: var(--border-radius-md);
     font-size: 15px;
     font-weight: 600;
     text-decoration: none;
@@ -462,7 +469,7 @@ const badgeColorByEffect = {
     background-color: transparent;
     color: var(--text-main);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: var(--border-radius-md);
     font-size: 15px;
     font-weight: 500;
     text-decoration: none;
@@ -600,8 +607,20 @@ const badgeColorByEffect = {
   /* ===== GRID & LIST ===== */
   .grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
+  }
+
+  @media (min-width: 1024px) {
+    .grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   .dossiers-footer {
@@ -741,10 +760,7 @@ const badgeColorByEffect = {
     color: var(--accent-gold);
   }
 
-  @media (max-width: 1024px) {
-    .grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
+  @media (max-width: 640px) {
     .understand-grid {
       grid-template-columns: 1fr;
     }

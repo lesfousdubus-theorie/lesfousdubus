@@ -215,10 +215,16 @@ const statusColors: Record<string, string> = {
   .fresco { margin: 24px 0 8px; }
   .fresco-svg { width: 100%; height: auto; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); }
   .zone-hit { cursor: pointer; transition: stroke-width 0.15s ease, opacity 0.15s ease; }
-  .zone-hit:hover, .zone-hit:focus, .zone-hit.zone-active {
+  .zone-hit:hover, .zone-hit.zone-active {
     stroke-width: 3.5;
     opacity: 1;
-    outline: none;
+  }
+  .zone-hit:focus-visible {
+    stroke-width: 3.5;
+    opacity: 1;
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+    border-radius: 50%;
   }
   .zone-tag { pointer-events: none; }
   .fresco-caption { font-size: 12.5px; color: var(--text-muted); margin-top: 10px; }

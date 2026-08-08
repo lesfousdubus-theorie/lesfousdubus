@@ -1,0 +1,37 @@
+# Images originales du thread X "La Galley-La : une coïncidence impossible"
+# Auteur : @FoudubusTV_ — 08/08/2026
+# URL du thread : https://x.com/FoudubusTV_/status/2086126492228964579
+#
+# Pour télécharger les images (pbs.twimg.com est bloqué depuis le sandbox) :
+#   1. Sur votre machine locale, exécutez :
+#        bash scripts/fetch-thread-images.sh
+#      ou bien copiez-collez les URLs ci-dessous dans votre navigateur
+#   2. Enregistrez-les dans public/images/threads/galley-la-coincidence-impossible/
+#      en respectant les noms img_1.jpg, img_2.jpg ...
+#
+# Mapping ordre du thread -> nom local :
+#   Tweet 1 (point de départ)      : img_1.jpg + img_2.jpg
+#   Tweet 2 (gel, géants, marteau): img_3.jpg + img_4.jpg + img_5.jpg
+#   Tweet 3 (Big Mom)             : img_6.jpg
+#   Tweet 4 (récap avant Pluton)  : img_7.png   (capture d'écran tweet)
+#   Tweet 5 (Pluton)              : img_8.png + img_9.png + img_10.jpg
+#   Tweet 6 (schéma final)        : img_11.png + img_12.png + img_13.png (résumé)
+#   Tweet 7 (objection Wano + vidéo) : img_14.png
+#
+# Format : nom_local|url
+
+img_1.jpg|https://pbs.twimg.com/media/HPNlXrWXUAIZoLY?format=jpg&name=orig
+img_2.jpg|https://pbs.twimg.com/media/HPNlXrfWwAAjwA1?format=jpg&name=orig
+img_3.jpg|https://pbs.twimg.com/media/HPNo_uoWAAAFZ7d?format=jpg&name=orig
+img_4.jpg|https://pbs.twimg.com/media/HPNo_0eXAAAf91R?format=jpg&name=orig
+img_5.jpg|https://pbs.twimg.com/media/HPNpAclWMAEil3-?format=jpg&name=orig
+img_6.jpg|https://pbs.twimg.com/media/HPNpAezXYAAvGX9?format=jpg&name=orig
+img_7.png|https://pbs.twimg.com/media/HPNpAe-XcAA2vfv?format=png&name=orig
+img_8.png|https://pbs.twimg.com/media/HPNpAe7XsAA5Wav?format=jpg&name=orig
+img_9.png|https://pbs.twimg.com/media/HPNpBU4XQAEy0ZB?format=png&name=orig
+img_10.png|https://pbs.twimg.com/media/HPNmR4QXQAAJrvP?format=png&name=orig
+img_11.jpg|https://pbs.twimg.com/media/HPNpCPQWIAAiY93?format=jpg&name=orig
+img_12.png|https://pbs.twimg.com/media/HPNpC1EWwAAfZPs?format=png&name=orig
+img_13.png|https://pbs.twimg.com/media/HPNpC1MWEAEyK0A?format=png&name=orig
+img_14.png|https://pbs.twimg.com/media/HPNpD2oWgAIzk3P?format=png&name=orig
+img_15.png|https://pbs.twimg.com/media/HPNpC1HW8AAYfHS?format=png&name=orig

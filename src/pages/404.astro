@@ -1,8 +1,9 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
+import Footer from '@components/Footer.astro';
 ---
 
-<WikiLayout title="Page non trouvée" currentPath="/404">
+<WikiLayout title="Page non trouvée" description="Cette page n'existe pas ou a été déplacée." currentPath="/404" noBreadcrumb noSidebar>
   <div class="not-found">
     <h1>404</h1>
     <p>Page non trouvée</p>
@@ -10,8 +11,10 @@ import WikiLayout from '@layouts/WikiLayout.astro';
     <div class="not-found__actions">
       <a href="/" class="btn btn-primary">Retour à l'accueil</a>
       <a href="/theorie/resume" class="btn btn-secondary">Lire le résumé</a>
+      <a href="/dossiers" class="btn btn-secondary">Parcourir les dossiers</a>
     </div>
   </div>
+  <Footer />
 </WikiLayout>
 
 <style>
@@ -26,16 +29,20 @@ import WikiLayout from '@layouts/WikiLayout.astro';
   }
 
   h1 {
-    font-size: 6rem;
+    font-size: clamp(4rem, 12vw, 6rem);
     font-weight: 700;
     color: var(--cyan);
     margin-bottom: 16px;
     line-height: 1;
+    background: var(--gradient-hero);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   p {
     font-size: 1.5rem;
-    color: var(--text-secondary);
+    color: var(--text-main);
     margin-bottom: 8px;
   }
 
@@ -57,7 +64,7 @@ import WikiLayout from '@layouts/WikiLayout.astro';
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     font-weight: 500;
     transition: all 0.2s ease;
     text-decoration: none;
@@ -65,13 +72,17 @@ import WikiLayout from '@layouts/WikiLayout.astro';
 
   .btn-primary {
     background: var(--gradient-border);
-    color: var(--bg-main); /* contraste AA >= 4.5:1 sur le dégradé, dans les deux thèmes */
+    color: var(--bg-main);
     box-shadow: 0 2px 12px var(--glow-violet);
   }
 
   .btn-primary:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 24px var(--glow-violet);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0) scale(0.97);
   }
 
   .btn-secondary {
@@ -86,10 +97,11 @@ import WikiLayout from '@layouts/WikiLayout.astro';
     box-shadow: 0 0 16px var(--glow-cyan);
   }
 
+  .btn-secondary:active {
+    transform: scale(0.97);
+  }
+
   @media (max-width: 480px) {
-    h1 {
-      font-size: 4rem;
-    }
     .not-found__actions {
       flex-direction: column;
       width: 100%;

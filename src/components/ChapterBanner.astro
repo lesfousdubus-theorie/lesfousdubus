@@ -33,6 +33,7 @@ const { chapter, title, effect, href } = Astro.props;
     position: relative;
     display: block;
     overflow: hidden;
+    isolation: isolate;
     background: linear-gradient(
       135deg,
       color-mix(in srgb, var(--bg-secondary) 95%, var(--violet) 5%),

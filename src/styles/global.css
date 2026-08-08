@@ -31,6 +31,10 @@
     --cyan-dim: #3f939c;
     --text-main: #f3efe6; /* moonlit paper      */
     --text-secondary: #aeb7c2;
+    /* Métatexte : horodatages, figcaptions, notes de second ordre.
+       Strictement en-dessous de --text-secondary ; reste >= 4.5:1 AA
+       sur --bg-main et --bg-secondary dans les deux thèmes. */
+    --text-muted: color-mix(in srgb, var(--text-secondary) 72%, transparent);
     --accent-gold: #e0ab4e; /* straw / sun        */
     --alert: #d48d84;
     --border-color: rgba(243, 239, 230, 0.16);
@@ -60,6 +64,7 @@
     --cyan-dim: #0a5e69;
     --text-main: #1f1d18;
     --text-secondary: #4a453c;
+    --text-muted: color-mix(in srgb, var(--text-secondary) 75%, transparent);
     --accent-gold: #76520d;
     --alert: #a02f23;
     --border-color: rgba(31, 29, 24, 0.30);
@@ -371,6 +376,11 @@ pre, code {
 /* Selection colour — warm and on-theme */
 ::selection {
   background: color-mix(in srgb, var(--accent-gold) 30%, transparent);
+  color: var(--text-main);
+}
+
+.light ::selection {
+  background: color-mix(in srgb, var(--accent-gold) 45%, var(--bg-secondary));
   color: var(--text-main);
 }
 

@@ -33,11 +33,12 @@ export default {
         display: ['Fraunces', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
       },
       borderRadius: {
-        DEFAULT: '8px',
-        sm: '5px',
-        md: '10px',
-        lg: '14px',
-        xl: '20px',
+        DEFAULT: 'var(--border-radius)',
+        sm: 'var(--border-radius-sm)',
+        md: 'var(--border-radius-md)',
+        lg: 'var(--border-radius-lg)',
+        xl: 'var(--border-radius-xl)',
+        full: 'var(--border-radius-full)',
       },
       boxShadow: {
         glowViolet: '0 0 18px var(--glow-violet)',

@@ -19,9 +19,11 @@ interface Props {
   image?: string;
   type?: 'website' | 'article';
   seoTitle?: string;
+  noBreadcrumb?: boolean;
+  noSidebar?: boolean;
 }
 
-const { title, description, currentPath, headings, image, type, seoTitle } = Astro.props;
+const { title, description, currentPath, headings, image, type, seoTitle, noBreadcrumb = false, noSidebar = false } = Astro.props;
 
 // Pages without headings must not reserve an empty 240px gutter
 // or show a "Sommaire" drawer with no entries.
@@ -143,24 +145,26 @@ const canonicalWikiUrl = new URL(
   <!-- Mobile overlay — unique navigation DOM, affiché uniquement sur mobile quand le tiroir est ouvert -->
   <div id="sidebar-mobile-overlay" class="sidebar-mobile-overlay" aria-hidden="true"></div>
 
-  <div class:list={['layout', { 'layout--no-toc': !hasToc }]}>
-    <div class="sidebar-left-container" id="sidebar-left-container">
-      <aside class="sidebar sidebar-left" id="sidebar-left" aria-label="Navigation des articles">
-        <SidebarNav currentPath={currentPath} />
-      </aside>
+  <div class:list={['layout', { 'layout--no-toc': !hasToc }, { 'layout--no-sidebar': noSidebar }]}>
+    {!noSidebar && (
+      <div class="sidebar-left-container" id="sidebar-left-container">
+        <aside class="sidebar sidebar-left" id="sidebar-left" aria-label="Navigation des articles">
+          <SidebarNav currentPath={currentPath} />
+        </aside>
 
-      <!-- Vertical Resizer Handle for mouse drag width adjustment -->
-      <div
-        id="sidebar-resizer"
-        class="sidebar-resizer"
-        title="Glisser pour redimensionner la barre latérale"
-        aria-label="Redimensionner la barre latérale"
-      >
+        <!-- Vertical Resizer Handle for mouse drag width adjustment -->
+        <div
+          id="sidebar-resizer"
+          class="sidebar-resizer"
+          title="Glisser pour redimensionner la barre latérale"
+          aria-label="Redimensionner la barre latérale"
+        >
+        </div>
       </div>
-    </div>
+    )}
 
-    <main class="main-content" id="main-content">
-      {genericBreadcrumb.length > 1 && currentPath !== '/' && !currentPath.startsWith('/theorie/') && (
+    <main class:list={['main-content', { 'main-content--centered': noSidebar }]} id="main-content">
+      {!noBreadcrumb && genericBreadcrumb.length > 1 && currentPath !== '/' && !currentPath.startsWith('/theorie/') && (
         <Breadcrumb items={genericBreadcrumb} />
       )}
       <slot />
@@ -229,6 +233,16 @@ const canonicalWikiUrl = new URL(
     grid-template-columns: var(--sidebar-left-width, 260px) minmax(0, 1fr);
   }
 
+  /* Pages without sidebar (404/500 errors, etc.) — full width centered column */
+  .layout--no-sidebar {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .main-content--centered {
+    margin: 0 auto !important;
+    max-width: 860px !important;
+  }
+
   .sidebar-left-container {
     position: relative;
     width: var(--sidebar-left-width, 260px);
@@ -269,7 +283,7 @@ const canonicalWikiUrl = new URL(
   .sidebar-collapse-btn {
     width: 28px;
     height: 28px;
-    border-radius: 6px;
+    border-radius: var(--border-radius-sm);
     background: color-mix(in srgb, var(--surface) 60%, transparent);
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
@@ -551,17 +565,23 @@ const canonicalWikiUrl = new URL(
       transform: none !important;
       opacity: 1 !important;
       pointer-events: auto !important;
-      overflow: visible !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
       padding: 16px 12px 28px;
-      scrollbar-width: none;
+      scrollbar-width: thin;
+      /* Masque le bas pour indiquer qu'il y a du contenu à faire défiler */
+      -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
+      mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
       /* Kill desktop slide/opacity transitions that could fight the drawer */
       transition: none !important;
     }
 
     .sidebar-left::-webkit-scrollbar {
-      display: none;
-      width: 0;
-      height: 0;
+      width: 3px;
+    }
+    .sidebar-left::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--violet) 40%, transparent);
+      border-radius: 3px;
     }
 
     .sidebar-resizer {
@@ -814,6 +834,13 @@ const canonicalWikiUrl = new URL(
     max-width: 780px !important;
     margin: 0 auto !important;
     padding: 32px 24px !important;
+  }
+
+  /* Mobile: no-sidebar pages still use block layout */
+  @media (max-width: 768px) {
+    .layout--no-sidebar {
+      display: block !important;
+    }
   }
 
 

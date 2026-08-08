@@ -207,6 +207,14 @@ const articleJsonLd = {
   <!-- Social share buttons -->
   <div class="article-share" aria-label="Partager cet article">
     <span class="article-share__label">Partager</span>
+    <button
+      class="article-share__btn"
+      id="share-native-btn"
+      aria-label="Partager cet article"
+      title="Partager"
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+    </button>
     <a
       class="article-share__btn"
       href={`https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(canonicalArticleUrl)}`}
@@ -214,14 +222,15 @@ const articleJsonLd = {
       rel="noopener noreferrer"
       aria-label="Partager sur X (Twitter)"
     >
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
     </a>
     <button
       class="article-share__btn"
       id="share-copy-btn"
       aria-label="Copier le lien de l'article"
+      title="Copier le lien"
     >
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
     </button>
   </div>
 
@@ -229,17 +238,30 @@ const articleJsonLd = {
   <Footer />
 
   <!-- Image Lightbox Modal -->
-  <div id="image-lightbox" class="lightbox-overlay hidden" aria-hidden="true">
+  <div id="image-lightbox" class="lightbox-overlay hidden" role="dialog" aria-modal="true" aria-label="Vue agrandie de l'image" aria-hidden="true">
     <div class="lightbox-container">
       <img id="lightbox-img" src="" alt="" />
-      <button id="lightbox-close" aria-label="Fermer (Échap)">✕</button>
+      <button id="lightbox-close" aria-label="Fermer (Échap)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <button id="lightbox-prev" class="lightbox-nav lightbox-prev" aria-label="Image précédente">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <button id="lightbox-next" class="lightbox-nav lightbox-next" aria-label="Image suivante">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+      <div id="lightbox-caption" class="lightbox-caption"></div>
     </div>
   </div>
 
   <script>
     const lightbox = document.getElementById('image-lightbox');
-    const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
+    const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
+    const lightboxCaption = document.getElementById('lightbox-caption');
     const closeBtn = document.getElementById('lightbox-close');
+    const prevBtn = document.getElementById('lightbox-prev');
+    const nextBtn = document.getElementById('lightbox-next');
+    const mainContent = document.getElementById('main-content');
 
     if (lightbox && lightboxImg) {
       // Ferme le tiroir de navigation mobile s'il était ouvert, afin d'éviter
@@ -256,19 +278,38 @@ const articleJsonLd = {
           document.documentElement.removeAttribute('data-nav-open');
           document.body.removeAttribute('data-nav-open');
         }
-      };
-
-      const openLightbox = (src: string, alt: string) => {
-        closeMobileNavIfOpen();
         // Also close TOC drawer if open
         (document.getElementById('toc-drawer') as any)?.classList.remove('is-open');
         document.getElementById('toc-overlay')?.classList.remove('is-open');
-        lightboxImg.src = src;
-        lightboxImg.alt = alt;
+      };
+
+      const galleryImgs = Array.from(
+        document.querySelectorAll<HTMLImageElement>('.content img')
+      );
+      let currentIndex = -1;
+
+      const setLightboxImage = (index: number) => {
+        if (index < 0 || index >= galleryImgs.length) return;
+        currentIndex = index;
+        const img = galleryImgs[index];
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt || '';
+        if (lightboxCaption) {
+          lightboxCaption.textContent = img.alt || '';
+        }
+      };
+
+      const openLightbox = (index: number) => {
+        closeMobileNavIfOpen();
+        setLightboxImage(index);
         lightbox.classList.remove('hidden');
         lightbox.setAttribute('aria-hidden', 'false');
         document.documentElement.classList.add('lightbox-open');
         document.body.classList.add('lightbox-open');
+        mainContent?.setAttribute('inert', '');
+        mainContent?.setAttribute('aria-hidden', 'true');
+        // Focus close button after the frame paints
+        requestAnimationFrame(() => closeBtn?.focus());
       };
 
       const closeLightbox = () => {
@@ -276,69 +317,155 @@ const articleJsonLd = {
         lightbox.setAttribute('aria-hidden', 'true');
         document.documentElement.classList.remove('lightbox-open');
         document.body.classList.remove('lightbox-open');
+        mainContent?.removeAttribute('inert');
+        mainContent?.removeAttribute('aria-hidden');
         lightboxImg.src = '';
+        // Return focus to previously focused thumbnail if possible
+        if (currentIndex >= 0) {
+          const previouslyFocused = galleryImgs[currentIndex];
+          previouslyFocused?.focus();
+        }
+        currentIndex = -1;
       };
 
-      document.querySelectorAll('.content img').forEach((img) => {
-        const htmlImg = img as HTMLImageElement;
+      const prev = () => {
+        if (currentIndex < 0) return;
+        setLightboxImage((currentIndex - 1 + galleryImgs.length) % galleryImgs.length);
+      };
+      const next = () => {
+        if (currentIndex < 0) return;
+        setLightboxImage((currentIndex + 1) % galleryImgs.length);
+      };
+
+      galleryImgs.forEach((htmlImg, idx) => {
         htmlImg.style.cursor = 'zoom-in';
         htmlImg.title = 'Cliquer pour agrandir';
         htmlImg.loading = 'lazy';
-        htmlImg.addEventListener('click', () => {
-          openLightbox(htmlImg.src, htmlImg.alt);
+        // Make image keyboard-focusable for a11y
+        htmlImg.tabIndex = 0;
+        htmlImg.setAttribute('role', 'button');
+        htmlImg.setAttribute('aria-label', `Agrandir l'image : ${htmlImg.alt || 'sans description'}`);
+        htmlImg.addEventListener('click', () => openLightbox(idx));
+        htmlImg.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openLightbox(idx);
+          }
         });
       });
 
       closeBtn?.addEventListener('click', closeLightbox);
+      prevBtn?.addEventListener('click', prev);
+      nextBtn?.addEventListener('click', next);
+      // Click on image advances to next (common pattern)
+      lightboxImg.addEventListener('click', (e) => {
+        e.stopPropagation();
+        next();
+      });
       lightbox.addEventListener('click', (e) => {
         if (e.target === lightbox) closeLightbox();
       });
 
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !lightbox.classList.contains('hidden')) {
+      // Focus trap within dialog
+      lightbox.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
           closeLightbox();
+          return;
         }
-      });
-    }
-
-    // Copy link button — robust fallback without reload
-    const copyBtn = document.getElementById('share-copy-btn');
-    if (copyBtn) {
-      copyBtn.addEventListener('click', async () => {
-        const doCopiedFeedback = () => {
-          const original = copyBtn.getAttribute('aria-label') ?? '';
-          copyBtn.setAttribute('aria-label', 'Lien copié !');
-          copyBtn.style.color = 'var(--cyan)';
-          copyBtn.style.borderColor = 'var(--cyan)';
-          setTimeout(() => {
-            copyBtn.setAttribute('aria-label', original);
-            copyBtn.style.color = '';
-            copyBtn.style.borderColor = '';
-          }, 2000);
-        };
-        try {
-          await navigator.clipboard.writeText(window.location.href);
-          doCopiedFeedback();
-        } catch {
-          // Fallback textarea
-          try {
-            const ta = document.createElement('textarea');
-            ta.value = window.location.href;
-            ta.setAttribute('readonly','');
-            ta.style.position='fixed';
-            ta.style.opacity='0';
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            ta.remove();
-            doCopiedFeedback();
-          } catch {
-            // Last resort: prompt
-            window.prompt('Copiez ce lien :', window.location.href);
+        if (!lightbox.classList.contains('hidden')) {
+          const focusable = Array.from(
+            lightbox.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )
+          ).filter((el) => el.offsetParent !== null);
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (e.key === 'Tab') {
+            if (e.shiftKey && document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            prev();
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            next();
           }
         }
       });
     }
+
+    // Share buttons — use native Web Share when available, fallback to copy
+    const nativeShareBtn = document.getElementById('share-native-btn');
+    const copyBtn = document.getElementById('share-copy-btn');
+
+    const doCopiedFeedback = (btn: HTMLElement) => {
+      const originalLabel = btn.getAttribute('aria-label') ?? '';
+      btn.setAttribute('aria-label', 'Lien copié !');
+      btn.style.color = 'var(--cyan)';
+      btn.style.borderColor = 'var(--cyan)';
+      setTimeout(() => {
+        btn.setAttribute('aria-label', originalLabel);
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2000);
+    };
+
+    const copyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        return true;
+      } catch {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = window.location.href;
+          ta.setAttribute('readonly','');
+          ta.style.position='fixed';
+          ta.style.opacity='0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+          return true;
+        } catch {
+          window.prompt('Copiez ce lien :', window.location.href);
+          return false;
+        }
+      }
+    };
+
+    // Native share (mobile-first)
+    if (nativeShareBtn) {
+      if (navigator.share) {
+        nativeShareBtn.addEventListener('click', async () => {
+          try {
+            await navigator.share({
+              title: document.title,
+              text: (document.querySelector('meta[name="description"]') as HTMLMetaElement | null)?.content || '',
+              url: window.location.href,
+            });
+          } catch {
+            // User cancelled or failed
+          }
+        });
+      } else {
+        // Not supported — hide native share button
+        nativeShareBtn.style.display = 'none';
+      }
+    }
+
+    copyBtn?.addEventListener('click', async () => {
+      const ok = await copyLink();
+      if (ok && copyBtn) doCopiedFeedback(copyBtn);
+    });
+
+    // Zen button wiring is handled by the inline script below
 
     // Zen mode button (if present in article header later)
     const zenBtn = document.getElementById('zen-toggle');
@@ -534,7 +661,7 @@ const articleJsonLd = {
   }
 
   .content :global(img) {
-    border-radius: 10px;
+    border-radius: var(--border-radius-md);
     margin: 1.5rem auto;
     border: 1px solid var(--border-color);
     max-height: 450px;
@@ -646,25 +773,25 @@ const articleJsonLd = {
   }
 
   .lightbox-container img {
-    max-width: 90vw;
-    max-height: 88vh;
+    max-width: min(90vw, 1400px);
+    max-height: 82vh;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
     border: 1px solid var(--border-color);
+    cursor: pointer;
   }
 
   #lightbox-close {
     position: absolute;
-    top: -16px;
-    right: -16px;
-    width: 36px;
-    height: 36px;
+    top: -48px;
+    right: 0;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: var(--surface);
     border: 1px solid var(--border-color);
     color: var(--text-main);
-    font-size: 18px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -675,7 +802,66 @@ const articleJsonLd = {
   #lightbox-close:hover {
     background: var(--violet);
     color: white;
-    transform: scale(1.1);
+    transform: scale(1.08);
+  }
+
+  #lightbox-close:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+
+  .lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .lightbox-nav:hover {
+    background: var(--violet);
+    color: white;
+  }
+
+  .lightbox-nav:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+
+  .lightbox-prev {
+    left: -60px;
+  }
+
+  .lightbox-next {
+    right: -60px;
+  }
+
+  .lightbox-caption {
+    position: absolute;
+    bottom: -40px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  @media (max-width: 768px) {
+    .lightbox-prev { left: 8px; }
+    .lightbox-next { right: 8px; }
+    #lightbox-close { top: -44px; right: 0; }
+    .lightbox-caption { font-size: 12px; bottom: -32px; }
+    .lightbox-container img { max-height: 75vh; }
   }
 
   .article-share {
@@ -702,7 +888,7 @@ const articleJsonLd = {
     justify-content: center;
     width: 34px;
     height: 34px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
     background: color-mix(in srgb, var(--surface) 50%, transparent);
     color: var(--text-secondary);
@@ -710,6 +896,11 @@ const articleJsonLd = {
     text-decoration: none;
     transition: all 0.2s ease;
     padding: 0;
+  }
+
+  .article-share__btn:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
 
   .article-share__btn:hover {

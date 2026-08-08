@@ -232,7 +232,8 @@ export default function SearchModal() {
         @media (min-width:640px){ .search-modal-overlay{ padding:24px 16px; padding-top: clamp(48px,12vh,110px);} .search-modal-panel{ max-height: min(640px,calc(100vh - 96px)); } }
         .search-modal-header { display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid var(--border-color); background: var(--surface); min-height:56px; flex-shrink:0; }
         @media (min-width:640px){ .search-modal-header{ padding:14px 18px; gap:12px; } }
-        .search-input { flex:1 1 auto; min-width:0; background:transparent; border:none; outline:none; color:var(--text-main); font-size:16px; line-height:1.4; font-family:inherit; padding:0; margin:0; -webkit-appearance:none; appearance:none; }
+        .search-input { flex:1 1 auto; min-width:0; background:transparent; border:none; outline:none; color:var(--text-main); font-size:16px; line-height:1.4; font-family:inherit; padding:0; margin:0; -webkit-appearance:none; appearance:none; border-radius:4px; }
+        .search-input:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
         .search-input::placeholder{ color:var(--text-secondary); opacity:0.85; }
         .search-close-badge{ display:none; align-items:center; justify-content:center; color:var(--text-secondary); padding:4px 8px; font-size:11px; font-weight:600; letter-spacing:0.04em; border:1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-main); cursor:pointer; flex-shrink:0; font-family:inherit; line-height:1.2; }
         .search-close-badge:hover{ color:var(--text-main); border-color:var(--violet); }
@@ -322,8 +323,8 @@ export default function SearchModal() {
           {showResults && (
             <ul ref={resultsRef} id="search-results" className="search-results" role="listbox" aria-label="Résultats de recherche">
               {results.map((result, idx) => (
-                <li key={`${result.url}-${idx}`} id={`search-result-${idx}`} role="option" aria-selected={idx === activeIndex}>
-                  <a href={result.url} className={`search-result-link${idx === activeIndex ? ' is-active' : ''}`} onMouseEnter={() => setActiveIndex(idx)} onClick={() => saveRecent(query)}>
+                <li key={`${result.url}-${idx}`} role="none">
+                  <a href={result.url} id={`search-result-${idx}`} role="option" aria-selected={idx === activeIndex} className={`search-result-link${idx === activeIndex ? ' is-active' : ''}`} onMouseEnter={() => setActiveIndex(idx)} onClick={() => saveRecent(query)}>
                     <h4 className="search-result-title">{result.meta.title || 'Page'}</h4>
                     <p className="search-result-excerpt" dangerouslySetInnerHTML={{ __html: result.excerpt }} />
                   </a>
