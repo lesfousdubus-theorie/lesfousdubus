@@ -57,12 +57,29 @@ Zunesha ──► ouverture de Wa no Kuni
                      PLUTON (Arme antique)
 ```
 
+## Mise à jour août 2026 — la coïncidence impossible
+
+Le thread du 08/08/2026 ([@FoudubusTV_](https://x.com/FoudubusTV_/status/2086126492228964579)) apporte deux arguments supplémentaires à cette branche :
+
+### 1. Pourquoi Big Mom n'a jamais retrouvé ces géants ?
+
+Le manga insiste (Big Mom, réseau d'info mondial) : elle n'a jamais retrouvé les géants congelés de la légende Galley-La. Lecture Fous du Bus : **ils n'avaient pas encore été congelés par Loki**, et le nom Galley-La Company n'avait pas encore été créé par Icebarg. L'échec de Big Mom devient un indice temporel, pas une incohérence.
+
+### 2. Confirmation chapitre 1154
+
+Les spoilers 1154 révèlent officiellement l'existence d'une **Galley-La de géants et géants antiques charpentiers**, disparue mystérieusement, et confirment que les corps congelés de Punk Hazard sont bien ces charpentiers. Le lien Ice-Ice Fruit (ancien utilisateur avant Aokiji) est évoqué comme responsable de leur congélation.
+
+Cela renforce l'hypothèse **Loki congèle son propre équipage pour le protéger**, plutôt que défaite par le Gouvernement.
+
+> Voir la version complète vulgarisée X : [Galley-La : la coïncidence impossible](/theorie/galley-la-coincidence-impossible)
+
 ## Limites et nuances
 
 - Le « rêve d'Iceberg » peut être une simple préoccupation d'ingénieur, sans portée prophétique.
 - L'identification des géants congelés à l'équipage de Loki est une **hypothèse non confirmée**.
 - Le manga ne dit pas que Pluton « sera envoyé » à Wa no Kuni : ce parallèle avec Poséidon est une **déduction de la théorie**.
 - L'intervention de Zunesha à Wa no Kuni n'est pas établie par une source explicite.
+- La piste Big Mom = preuve temporelle est une interprétation, pas une confirmation canonique : Elbaf est une île isolée, difficile d'accès même avec un réseau.
 
 ## Articles liés
 

@@ -79,19 +79,28 @@ const generateBreadcrumb = (path: string): Array<{ label: string; href?: string 
 
 const breadcrumbItems = generateBreadcrumb(currentPath);
 
-// Reading time estimate (≈ 200 words/min for French)
-const computeReadingTime = (headings: any[] | undefined): string | null => {
-  // We can't access raw Markdown from here, so we use the headings as a proxy
-  // Articles with 0-3 headings → <3 min, 4-8 → ~5 min, 9-15 → ~10 min, 16+ → ~15+ min
-  if (!headings || headings.length === 0) return null;
-  const h2Count = headings.filter((h: any) => h.depth === 2).length;
-  if (h2Count <= 2) return '2 min';
-  if (h2Count <= 5) return '5 min';
-  if (h2Count <= 10) return '10 min';
-  if (h2Count <= 16) return '15 min';
-  return '20+ min';
+// Reading time — improved heuristic: base 150w + 260w per H2 + 120w per H3, /220 wpm
+const computeReadingTime = (headings: any[] | undefined, desc?: string): string | null => {
+  if (!headings || headings.length === 0) {
+    if (desc) {
+      const words = desc.trim().split(/\s+/).length;
+      const mins = Math.max(1, Math.ceil(words / 220));
+      return `${mins} min`;
+    }
+    return null;
+  }
+  const h2 = headings.filter((h:any)=>h.depth===2).length;
+  const h3 = headings.filter((h:any)=>h.depth===3).length;
+  const baseWords = desc ? desc.trim().split(/\s+/).length : 80;
+  const estWords = 150 + baseWords + h2*260 + h3*120;
+  const mins = Math.max(1, Math.ceil(estWords / 220));
+  if (mins <= 2) return '2 min';
+  if (mins <= 5) return `${mins} min`;
+  if (mins <= 10) return `${mins} min`;
+  if (mins <= 16) return `${mins} min`;
+  return `${mins} min`;
 };
-const readingTime = computeReadingTime(headings);
+const readingTime = computeReadingTime(headings, description);
 
 // JSON-LD for Article — enrichi (headline court = H1, description, section, publisher)
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
@@ -157,14 +166,17 @@ const articleJsonLd = {
   <article data-pagefind-body>
     <h1 class="article-title">{title}</h1>
 
-    {readingTime && (
-      <p class="article-reading-time">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        Lecture : ~{readingTime}
-      </p>
-    )}
+    <div class="article-top-meta">
+      {readingTime && (
+        <p class="article-reading-time">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          Lecture : ~{readingTime}
+        </p>
+      )}
+      <button id="zen-toggle" class="zen-toggle" aria-label="Activer le mode lecture zen" aria-pressed="false">Mode zen</button>
+    </div>
 
     {articleChapters.length > 0 && (
       <p class="article-updated-meta">
@@ -248,21 +260,22 @@ const articleJsonLd = {
 
       const openLightbox = (src: string, alt: string) => {
         closeMobileNavIfOpen();
+        // Also close TOC drawer if open
+        (document.getElementById('toc-drawer') as any)?.classList.remove('is-open');
+        document.getElementById('toc-overlay')?.classList.remove('is-open');
         lightboxImg.src = src;
         lightboxImg.alt = alt;
         lightbox.classList.remove('hidden');
         lightbox.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('lightbox-open');
+        document.body.classList.add('lightbox-open');
       };
 
       const closeLightbox = () => {
         lightbox.classList.add('hidden');
         lightbox.setAttribute('aria-hidden', 'true');
-        // Ne réactive le défilement que si aucun autre overlay (tiroir mobile)
-        // ne maintient le verrou.
-        if (!document.body.classList.contains('mobile-nav-open')) {
-          document.body.style.overflow = '';
-        }
+        document.documentElement.classList.remove('lightbox-open');
+        document.body.classList.remove('lightbox-open');
         lightboxImg.src = '';
       };
 
@@ -288,12 +301,11 @@ const articleJsonLd = {
       });
     }
 
-    // Copy link button
+    // Copy link button — robust fallback without reload
     const copyBtn = document.getElementById('share-copy-btn');
     if (copyBtn) {
       copyBtn.addEventListener('click', async () => {
-        try {
-          await navigator.clipboard.writeText(window.location.href);
+        const doCopiedFeedback = () => {
           const original = copyBtn.getAttribute('aria-label') ?? '';
           copyBtn.setAttribute('aria-label', 'Lien copié !');
           copyBtn.style.color = 'var(--cyan)';
@@ -303,11 +315,44 @@ const articleJsonLd = {
             copyBtn.style.color = '';
             copyBtn.style.borderColor = '';
           }, 2000);
+        };
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          doCopiedFeedback();
         } catch {
-          // Fallback: select URL in address bar
-          window.location.href = window.location.href;
+          // Fallback textarea
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = window.location.href;
+            ta.setAttribute('readonly','');
+            ta.style.position='fixed';
+            ta.style.opacity='0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            doCopiedFeedback();
+          } catch {
+            // Last resort: prompt
+            window.prompt('Copiez ce lien :', window.location.href);
+          }
         }
       });
+    }
+
+    // Zen mode button (if present in article header later)
+    const zenBtn = document.getElementById('zen-toggle');
+    if (zenBtn) {
+      const updateZenLabel = () => {
+        const isZen = document.documentElement.classList.contains('zen-mode');
+        zenBtn.textContent = isZen ? 'Quitter zen' : 'Mode zen';
+        zenBtn.setAttribute('aria-pressed', String(isZen));
+      };
+      zenBtn.addEventListener('click', () => {
+        (window as any).toggleZenMode?.();
+        updateZenLabel();
+      });
+      updateZenLabel();
     }
   </script>
 </WikiLayout>
@@ -672,4 +717,49 @@ const articleJsonLd = {
     border-color: var(--violet);
     background: color-mix(in srgb, var(--violet) 10%, transparent);
   }
+
+  .article-top-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 0 0 8px;
+  }
+
+  .zen-toggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: var(--border-radius-full);
+    border: 1px solid var(--border-color);
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .zen-toggle:hover {
+    color: var(--cyan);
+    border-color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 10%, transparent);
+  }
+  .zen-toggle[aria-pressed="true"] {
+    color: var(--cyan);
+    border-color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 14%, transparent);
+  }
+  .zen-toggle:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+
+  /* Lightbox lock — class based, no inline overflow */
+  :global(html.lightbox-open),
+  :global(body.lightbox-open) {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+
 </style>

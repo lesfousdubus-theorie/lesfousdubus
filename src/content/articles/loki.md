@@ -28,6 +28,8 @@ Le chapitre 1182 développe l'idée que **Nidhogg n'existait pas 800 ans plus t�
 
 La théorie associe l'**équipage de Loki** à la **Galley-La légendaire** : la brigade au grand marteau, escouade de géants charpentiers d'Elbaf, qui serait l'équipage de Loki cryogénisé pour être protégé. Ces géants rejoindraient Water Seven pour la transformer en Pluton (voir [Pluton, Water Seven et Galley-La](/theorie/pluton-water-seven-galley-la)).
 
+Mise à jour août 2026 : le thread [Galley-La : la coïncidence impossible](/theorie/galley-la-coincidence-impossible) souligne que **Big Mom, malgré son réseau**, n'a jamais retrouvé ces géants frozen de Punk Hazard — indice que la congélation n'a pas encore eu lieu dans la chronologie où la légende est déjà racontée. Loki les aurait congelés **volontairement pour les protéger** après la mort de son père, pas suite à une défaite.
+
 ### Loki et la fresque
 
 Loki est souvent rapproché des figures de la [fresque d'Elbaf](/theorie/fresque-elbaf) : sa forme dragon évoque le géant ou la « bête colossale » du Harley. Ce rapprochement reste interprétatif.

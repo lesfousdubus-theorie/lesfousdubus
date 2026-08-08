@@ -1,0 +1,115 @@
+---
+import WikiLayout from '@layouts/WikiLayout.astro';
+import Footer from '@components/Footer.astro';
+import { getCollection } from 'astro:content';
+
+const articles = await getCollection('articles', ({ data }) => data.status === 'published');
+const chapters = (await getCollection('chapters')).sort((a,b)=>b.data.chapter-a.data.chapter);
+
+const byCat = new Map<string, typeof articles>();
+for (const a of articles) {
+  const cat = a.data.category;
+  if (!byCat.has(cat)) byCat.set(cat, []);
+  byCat.get(cat)!.push(a);
+}
+const catLabels: Record<string,string> = {
+  'monde-destinations': 'Monde et destinations',
+  'histoire-temporalite': 'Histoire et temporalité',
+  'figures-principales': 'Figures principales',
+  'personnages-identites': 'Personnages et identités',
+  'armes-antiques': 'Armes antiques',
+  'technologies-pouvoirs': 'Technologies et pouvoirs',
+  'peuples-royaumes': 'Peuples, royaumes et témoins',
+  'dieux-croyances': 'Dieux et croyances',
+  'transmission-memoire': 'Transmission et mémoire',
+  'gouvernement-mondial': 'Gouvernement mondial',
+  'guerre-finale': 'Guerre finale',
+};
+---
+
+<WikiLayout title="Plan du site" seoTitle="Plan du site One Piece — Les Fous du Bus" description="Plan du site HTML : théorie, dossiers, explorer, chapitres et aide." currentPath="/aide/plan-du-site">
+  <h1>Plan du site</h1>
+  <p style="color:var(--text-secondary);margin:12px 0 24px;line-height:1.6">Vue d'ensemble HTML de toutes les pages publiées. Pour les moteurs, le sitemap XML reste à <code>/sitemap-index.xml</code>.</p>
+
+  <section class="sitemap-section">
+    <h2>Commencer</h2>
+    <ul>
+      <li><a href="/">Accueil</a></li>
+      <li><a href="/theorie/resume">Résumé de la théorie</a></li>
+      <li><a href="/theorie/theorie-complete">Théorie complète</a></li>
+      <li><a href="/theorie/chronologie">Chronologie</a></li>
+      <li><a href="/explorer/carte-mentale">Carte mentale</a></li>
+      <li><a href="/aide/glossaire">Glossaire</a></li>
+    </ul>
+  </section>
+
+  <section class="sitemap-section">
+    <h2>Dossiers thématiques</h2>
+    {Array.from(byCat.entries()).sort().map(([cat, list])=>(
+      <div class="sitemap-cat">
+        <h3>{catLabels[cat] ?? cat} — {list.length}</h3>
+        <ul>
+          {list.sort((a,b)=>a.data.order-b.data.order).map((a)=>(
+            <li><a href={`/theorie/${a.id}`}>{a.data.title}</a> <span class="muted">— {a.data.summary.slice(0,80)}…</span></li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+
+  <section class="sitemap-section">
+    <h2>Chapitres analysés</h2>
+    <ul>
+      {chapters.map((ch)=>(
+        <li><a href={`/chapitres/${ch.data.chapter}`}>Chapitre {ch.data.chapter} — {ch.data.title}</a></li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="sitemap-section">
+    <h2>Explorer</h2>
+    <ul>
+      <li><a href="/explorer">Vue d'ensemble</a></li>
+      <li><a href="/explorer/carte-mentale">Carte mentale</a></li>
+      <li><a href="/explorer/correspondances">Correspondances</a></li>
+      <li><a href="/explorer/luffy-joy-boy-nika">Luffy · Joy Boy · Nika</a></li>
+      <li><a href="/explorer/poneglyphes">Ponéglyphes</a></li>
+      <li><a href="/explorer/carte-blue-star">Carte Blue Star</a></li>
+      <li><a href="/explorer/peuples-missions">Peuples & missions</a></li>
+      <li><a href="/explorer/guerre-finale">Guerre finale</a></li>
+      <li><a href="/explorer/fresque-elbaf">Fresque Elbaf</a></li>
+      <li><a href="/explorer/chronologie-comparative">Double chronologie</a></li>
+      <li><a href="/explorer/road-poneglyphes-temps">Road Ponéglyphes</a></li>
+      <li><a href="/explorer/schema-pluton">Chemin de Pluton</a></li>
+      <li><a href="/explorer/memoire-avenir">Mémoire de l'avenir</a></li>
+      <li><a href="/explorer/deluge-all-blue">Déluge & All Blue</a></li>
+      <li><a href="/explorer/omen-imu">Omen & Imu</a></li>
+    </ul>
+  </section>
+
+  <section class="sitemap-section">
+    <h2>Aide</h2>
+    <ul>
+      <li><a href="/aide/a-propos">À propos</a></li>
+      <li><a href="/aide/faq">FAQ</a></li>
+      <li><a href="/aide/glossaire">Glossaire</a></li>
+      <li><a href="/aide/credits">Crédits</a></li>
+      <li><a href="/aide/plan-du-site">Plan du site (cette page)</a></li>
+    </ul>
+  </section>
+
+  <Footer />
+</WikiLayout>
+
+<style>
+h1{font-size:clamp(1.8rem,4vw,2.4rem);margin-bottom:8px}
+.sitemap-section{margin:32px 0;padding:24px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--border-radius-lg)}
+.sitemap-section h2{font-size:18px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border-color)}
+.sitemap-cat{margin-bottom:20px}
+.sitemap-cat h3{font-size:15px;font-weight:600;margin-bottom:8px;color:var(--text-main)}
+.sitemap-section ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.sitemap-section li{font-size:14px;line-height:1.5;color:var(--text-secondary)}
+.sitemap-section a{color:var(--cyan);text-decoration:none}
+.sitemap-section a:hover{text-decoration:underline}
+.muted{font-size:12.5px;color:var(--text-secondary);opacity:0.85}
+</style>

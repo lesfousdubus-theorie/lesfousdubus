@@ -2,32 +2,79 @@
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
 ---
+
 <WikiLayout title="Explorer" seoTitle="Explorer One Piece : carte mentale et chronologie | Les Fous du Bus" description="Explorez visuellement la théorie One Piece : carte mentale des connexions, frise chronologique et dossiers thématiques interactifs." image="/og-explorer.png" currentPath="/explorer">
   <header class="page-header">
     <p class="eyebrow">Visualisation</p>
     <h1>Explorer la théorie</h1>
-    <p>Trois portes d'entrée visuelles pour relier les personnages, les événements et la chronologie de la théorie.</p>
+    <p>Trois portes d'entrée visuelles pour relier les personnages, les événements et la chronologie. Les outils sont groupés par usage pour éviter la surcharge.</p>
   </header>
-  <div class="explorer-grid">
-    <a href="/explorer/carte-mentale" class="explorer-card"><span>🧠</span><div><h2>Carte mentale</h2><p>Une vue d'ensemble des connexions principales de la théorie.</p><strong>Ouvrir la carte →</strong></div></a>
-    <a href="/theorie/chronologie" class="explorer-card"><span>📅</span><div><h2>Chronologie</h2><p>La frise comparative entre les faits connus et leur lecture dans la théorie.</p><strong>Lire la chronologie →</strong></div></a>
-    <a href="/explorer/correspondances" class="explorer-card"><span>🔗</span><div><h2>Graphe des correspondances</h2><p>Qui est qui ? Luffy → Joy Boy → Nika, Vivi → Lili, Teach → Davy Jones.</p><strong>Explorer les identités →</strong></div></a>
-    <a href="/explorer/luffy-joy-boy-nika" class="explorer-card"><span>🎭</span><div><h2>Luffy · Joy Boy · Nika</h2><p>Trois noms pour un même homme : l'homme, le nom de l'histoire, le nom de la foi.</p><strong>Comparer →</strong></div></a>
-    <a href="/explorer/poneglyphes" class="explorer-card"><span>📜</span><div><h2>Schéma des Ponéglyphes</h2><p>Le mécanisme central de transmission : comment l'histoire du futur devient la mémoire du passé, sans boucle physique générale.</p><strong>Voir le schéma →</strong></div></a>
-    <a href="/explorer/carte-blue-star" class="explorer-card"><span>🗺️</span><div><h2>Carte de Blue Star</h2><p>Red Line, les quatre mers, Grand Line, Reverse Mountain, Lodestar et l'hypothèse Laugh Tale.</p><strong>Voir la carte →</strong></div></a>
-    <a href="/explorer/peuples-missions" class="explorer-card"><span>🏰</span><div><h2>Peuples et missions</h2><p>Quel peuple protège quoi ? Chaque nation, son élément, sa mission et son rôle final.</p><strong>Ouvrir la carte →</strong></div></a>
-    <a href="/explorer/guerre-finale" class="explorer-card"><span>⚔️</span><div><h2>Schéma de la guerre finale</h2><p>Coalition contre Gouvernement mondial, Armes antiques, déluge, Red Line et All Blue.</p><strong>Voir le schéma →</strong></div></a>
-    <a href="/explorer/fresque-elbaf" class="explorer-card"><span>🎨</span><div><h2>Fresque d'Elbaf annotée</h2><p>Zones cliquables de la fresque et leurs interprétations, distinguées du canon.</p><strong>Explorer la fresque →</strong></div></a>
-    <a href="/explorer/chronologie-comparative" class="explorer-card"><span>🕰️</span><div><h2>Double chronologie</h2><p>Lecture traditionnelle face à la lecture des Fous du Bus, point par point.</p><strong>Comparer →</strong></div></a>
-    <a href="/explorer/road-poneglyphes-temps" class="explorer-card"><span>🧭</span><div><h2>Road Ponéglyphes & temps</h2><p>Les quatre coordonnées, leur intersection et la lecture temporelle de la théorie.</p><strong>Voir le schéma →</strong></div></a>
-    <a href="/explorer/schema-pluton" class="explorer-card"><span>⚓</span><div><h2>Le chemin de Pluton</h2><p>Water Seven, Galley-La des géants, Zunesha, Wa no Kuni : la naissance de l'Arme.</p><strong>Voir le schéma →</strong></div></a>
-    <a href="/explorer/memoire-avenir" class="explorer-card"><span>⏳</span><div><h2>La mémoire de l'avenir</h2><p>Comment l'histoire du futur devient la mémoire du passé, sans boucle physique.</p><strong>Voir le schéma →</strong></div></a>
-    <a href="/explorer/deluge-all-blue" class="explorer-card"><span>🌊</span><div><h2>Déluge, Red Line & All Blue</h2><p>De la montée des eaux à la réunification des mers, en distinguant faits et théorie.</p><strong>Voir le schéma →</strong></div></a>
-    <a href="/explorer/omen-imu" class="explorer-card"><span>⚠️</span><div><h2>Omen, Mother Flame & Imu</h2><p>La branche spéculative : l'Omen amplifié, Lulusia et l'hypothèse Uranus.</p><strong>Explorer →</strong></div></a>
-    <a href="/dossiers" class="explorer-card"><span>🗂️</span><div><h2>Dossiers thématiques</h2><p>Explorer les articles disponibles par sujet, sans renvoyer vers des pages inachevées.</p><strong>Parcourir les dossiers →</strong></div></a>
-  </div>
+
+  <section class="explorer-section">
+    <h2 class="explorer-section__title"><span aria-hidden="true">🗺️</span> Cartes & vues d'ensemble</h2>
+    <div class="explorer-grid">
+      <a href="/explorer/carte-mentale" class="explorer-card"><span aria-hidden="true">🧠</span><div><h3>Carte mentale</h3><p>Connexions principales d'un coup d'œil.</p><strong>Ouvrir →</strong></div></a>
+      <a href="/explorer/carte-blue-star" class="explorer-card"><span aria-hidden="true">🗺️</span><div><h3>Carte de Blue Star</h3><p>Red Line, mers, Grand Line, Lodestar, Laugh Tale.</p><strong>Voir la carte →</strong></div></a>
+      <a href="/explorer/fresque-elbaf" class="explorer-card"><span aria-hidden="true">🎨</span><div><h3>Fresque d'Elbaf</h3><p>Zones cliquables et interprétations.</p><strong>Explorer →</strong></div></a>
+      <a href="/explorer/peuples-missions" class="explorer-card"><span aria-hidden="true">🏰</span><div><h3>Peuples et missions</h3><p>Chaque peuple, sa mission, son rôle final.</p><strong>Ouvrir →</strong></div></a>
+    </div>
+  </section>
+
+  <section class="explorer-section">
+    <h2 class="explorer-section__title"><span aria-hidden="true">🕰️</span> Temps & chronologie</h2>
+    <div class="explorer-grid">
+      <a href="/theorie/chronologie" class="explorer-card"><span aria-hidden="true">📅</span><div><h3>Chronologie</h3><p>Faits connus vs lecture Fous du Bus.</p><strong>Lire →</strong></div></a>
+      <a href="/explorer/chronologie-comparative" class="explorer-card"><span aria-hidden="true">🕰️</span><div><h3>Double chronologie</h3><p>Lecture traditionnelle face à la nôtre.</p><strong>Comparer →</strong></div></a>
+      <a href="/explorer/memoire-avenir" class="explorer-card"><span aria-hidden="true">⏳</span><div><h3>Mémoire de l'avenir</h3><p>Comment le futur devient mémoire du passé.</p><strong>Voir →</strong></div></a>
+      <a href="/explorer/road-poneglyphes-temps" class="explorer-card"><span aria-hidden="true">🧭</span><div><h3>Road Ponéglyphes & temps</h3><p>Coordonnées et lecture temporelle.</p><strong>Voir →</strong></div></a>
+    </div>
+  </section>
+
+  <section class="explorer-section">
+    <h2 class="explorer-section__title"><span aria-hidden="true">🎭</span> Identités & correspondances</h2>
+    <div class="explorer-grid">
+      <a href="/explorer/correspondances" class="explorer-card"><span aria-hidden="true">🔗</span><div><h3>Graphe des correspondances</h3><p>Luffy → Joy Boy → Nika, Vivi → Lili, Teach → Davy Jones.</p><strong>Explorer →</strong></div></a>
+      <a href="/explorer/luffy-joy-boy-nika" class="explorer-card"><span aria-hidden="true">🎭</span><div><h3>Luffy · Joy Boy · Nika</h3><p>Trois noms, un même homme.</p><strong>Comparer →</strong></div></a>
+      <a href="/explorer/poneglyphes" class="explorer-card"><span aria-hidden="true">📜</span><div><h3>Schéma des Ponéglyphes</h3><p>Mécanisme de transmission sans boucle.</p><strong>Voir →</strong></div></a>
+    </div>
+  </section>
+
+  <section class="explorer-section">
+    <h2 class="explorer-section__title"><span aria-hidden="true">⚔️</span> Guerre finale & armes</h2>
+    <div class="explorer-grid">
+      <a href="/explorer/guerre-finale" class="explorer-card"><span aria-hidden="true">⚔️</span><div><h3>Guerre finale</h3><p>Coalition vs Gouvernement, Armes, déluge.</p><strong>Voir →</strong></div></a>
+      <a href="/explorer/schema-pluton" class="explorer-card"><span aria-hidden="true">⚓</span><div><h3>Chemin de Pluton</h3><p>Water Seven, Zunesha, Wa no Kuni.</p><strong>Voir →</strong></div></a>
+      <a href="/explorer/deluge-all-blue" class="explorer-card"><span aria-hidden="true">🌊</span><div><h3>Déluge & All Blue</h3><p>Montée des eaux et réunification.</p><strong>Voir →</strong></div></a>
+      <a href="/explorer/omen-imu" class="explorer-card"><span aria-hidden="true">⚠️</span><div><h3>Omen, Mother Flame & Imu</h3><p>Branche spéculative : hypothèse Uranus.</p><strong>Explorer →</strong></div></a>
+    </div>
+  </section>
+
+  <section class="explorer-section">
+    <h2 class="explorer-section__title"><span aria-hidden="true">🗂️</span> Parcourir autrement</h2>
+    <div class="explorer-grid">
+      <a href="/dossiers" class="explorer-card explorer-card--highlight"><span aria-hidden="true">🗂️</span><div><h3>Dossiers thématiques</h3><p>Articles par sujet, sans pages inachevées.</p><strong>Parcourir →</strong></div></a>
+    </div>
+  </section>
+
   <Footer />
 </WikiLayout>
+
 <style>
-.page-header{max-width:680px;margin-bottom:40px}.eyebrow{color:var(--violet-light);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.page-header h1{font-size:clamp(2rem,4vw,2.6rem);margin:.5rem 0 1rem}.page-header p{color:var(--text-secondary);line-height:1.65}.explorer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.explorer-card{display:flex;gap:16px;padding:24px;border:1px solid var(--border-color);border-radius:var(--border-radius-lg);background:var(--gradient-card);text-decoration:none;color:var(--text-main);transition:transform .2s,border-color .2s,box-shadow .2s}.explorer-card:hover{transform:translateY(-3px);border-color:var(--violet);box-shadow:0 10px 28px var(--glow-violet)}.explorer-card>span{font-size:28px}.explorer-card h2{font-size:18px;margin:0 0 8px}.explorer-card p{color:var(--text-secondary);line-height:1.55;margin:0 0 16px}.explorer-card strong{color:var(--cyan);font-size:14px}
+.page-header{max-width:680px;margin-bottom:40px}
+.eyebrow{color:var(--violet-light);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.page-header h1{font-size:clamp(2rem,4vw,2.6rem);margin:.5rem 0 1rem}
+.page-header p{color:var(--text-secondary);line-height:1.65}
+.explorer-section{margin-bottom:36px}
+.explorer-section__title{font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--border-color)}
+.explorer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.explorer-card{display:flex;gap:14px;padding:20px;border:1px solid var(--border-color);border-radius:var(--border-radius-lg);background:var(--gradient-card);text-decoration:none;color:var(--text-main);transition:transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease}
+.explorer-card:hover{transform:translateY(-3px);border-color:var(--violet);box-shadow:0 12px 32px rgba(0,0,0,0.18), 0 0 20px var(--glow-violet)}
+.explorer-card:active{transform:translateY(-1px) scale(0.98)}
+.explorer-card--highlight{border-color: color-mix(in srgb, var(--cyan) 30%, var(--border-color)); background: color-mix(in srgb, var(--cyan) 6%, var(--bg-secondary))}
+.explorer-card>span{font-size:26px;flex-shrink:0;line-height:1}
+.explorer-card h3{font-size:16px;margin:0 0 6px;font-weight:600}
+.explorer-card p{color:var(--text-secondary);line-height:1.5;margin:0 0 12px;font-size:13.5px}
+.explorer-card strong{color:var(--cyan);font-size:13px;font-weight:600;transition: transform 0.2s ease;display:inline-flex;align-items:center;gap:4px}
+.explorer-card:hover strong{transform:translateX(3px)}
+@media (max-width:640px){.explorer-grid{grid-template-columns:1fr}.explorer-card{padding:16px}.page-header{margin-bottom:28px}}
 </style>

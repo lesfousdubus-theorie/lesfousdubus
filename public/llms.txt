@@ -41,10 +41,10 @@ Le contenu distingue ce que le manga établit (canon) des hypothèses de la thé
 - [Princesse Shirahoshi](https://lesfousdubus.sbs/theorie/shirahoshi) : Fiche d'analyse sur la princesse Sirène du Royaume Ryūgū et l'incarnation de l'Arme Antique Poséidon. [canon]
 - [Marshall D. Teach](https://lesfousdubus.sbs/theorie/teach) : Fiche d'analyse consacrée à Marshall D. Teach, son double pouvoir et sa place dans la théorie. [canon]
 - [Davy Jones](https://lesfousdubus.sbs/theorie/davy-jones-fiche) : Fiche d'identification de Davy Jones, pirate légendaire fondateur du Davy Back Fight, dont le nom s'est transmis jusqu'à Marshall D. Teach. [secondary-theory]
-- [Marshall D. Teach et Davy Jones](https://lesfousdubus.sbs/theorie/barbe-noire-davy-jones) : Comment Marshall D. Teach incarne la figure mythique de Davy Jones et s'apprête à ravir le titre de Roi du Monde à Mary Geoise.
 - [Rocks D. Xebec](https://lesfousdubus.sbs/theorie/rocks-xebec) : Fiche canonique neutre sur Rocks D. Xebec, capitaine des Rocks Pirates, figure centrale de God Valley et de l'histoire récente du monde.
-- [Roronoa Zoro](https://lesfousdubus.sbs/theorie/zoro) : Fiche d'analyse consacrée au sabreur des Chapeaux de Paille, à la lignée Shimotsuki et à son lien avec Ryuma. [canon]
+- [Marshall D. Teach et Davy Jones](https://lesfousdubus.sbs/theorie/barbe-noire-davy-jones) : Comment Marshall D. Teach incarne la figure mythique de Davy Jones et s'apprête à ravir le titre de Roi du Monde à Mary Geoise.
 - [Shimotsuki Ryuma](https://lesfousdubus.sbs/theorie/shimotsuki-ryuma) : Fiche d'identification de Shimotsuki Ryuma, samouraï légendaire de Wano surnommé le Dieu de la Lame, dont le corps fut exhumé par Moria à Thriller Bark. [secondary-theory]
+- [Roronoa Zoro](https://lesfousdubus.sbs/theorie/zoro) : Fiche d'analyse consacrée au sabreur des Chapeaux de Paille, à la lignée Shimotsuki et à son lien avec Ryuma. [canon]
 - [Shimotsuki Ryuma et Roronoa Zoro](https://lesfousdubus.sbs/theorie/ryuma) : Fiche d'analyse sur Shimotsuki Ryuma, le Dieu de la Lame de Wano, et ses parallèles avec Roronoa Zoro. [secondary-theory]
 - [Nefertari Vivi](https://lesfousdubus.sbs/theorie/nefertari-vivi) : Fiche d'identification de Nefertari Vivi, princesse d'Alabasta, membre honoraire des Chapeaux de Paille et héritière de la volonté de Nefertari D. Lili. [canon]
 - [Nefertari D. Lili](https://lesfousdubus.sbs/theorie/lili) : Fiche d'identification de Nefertari D. Lili, reine d'Alabasta qui refusa de vivre à Mary Geoise et disparut après la fondation du Gouvernement Mondial. [canon]
@@ -63,6 +63,7 @@ Le contenu distingue ce que le manga établit (canon) des hypothèses de la thé
 - [Pluton](https://lesfousdubus.sbs/theorie/pluton-fiche) : Fiche d'identification de Pluton, l'Arme antique conservée sous forme de plans à Water Seven et capable de détruire des îles entières. [canon]
 - [Poséidon](https://lesfousdubus.sbs/theorie/poseidon-fiche) : Fiche d'identification de Poséidon, l'Arme antique capable de commander les Rois des Mers et matérialisée par la princesse Shirahoshi. [canon]
 - [Pluton, Water Seven et Galley-La](https://lesfousdubus.sbs/theorie/pluton-water-seven-galley-la) : Dossier : comment Water Seven, la Galley-La des géants, Zunesha et Wa no Kuni s'articulent dans la théorie pour révéler Pluton, l'Arme antique transformée en navire. [core-theory]
+- [Galley-La : la coïncidence impossible](https://lesfousdubus.sbs/theorie/galley-la-coincidence-impossible) : Pourquoi la Galley-La Company d'Icebarg et la brigade au grand marteau des géants d'Elbaf portent le même nom — et comment le thread du 08/08 révèle que Water Seven va devenir Pluton avec l'armée de Loki congelée à Punk Hazard. [core-theory]
 
 ## Technologies et pouvoirs
 

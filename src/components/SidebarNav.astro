@@ -247,7 +247,7 @@ navSections.push({
             aria-expanded={isExpanded ? 'true' : 'false'}
           >
             <span class="flex items-center gap-2">
-              <span class="text-base">{section.icon}</span>
+              <span class="text-base" aria-hidden="true">{section.icon}</span>
               <span>{section.label}</span>
             </span>
             <svg
@@ -306,21 +306,25 @@ navSections.push({
     box-sizing: border-box;
   }
 
-  /* Mobile filter */
+  /* Filter — visible on all breakpoints, sticky top */
   .sidebar-filter {
-    display: none;
+    display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px 10px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 2;
   }
 
   @media (max-width: 768px) {
     .sidebar-filter {
-      display: flex;
+      position: relative;
+      top: auto;
     }
   }
 
@@ -576,14 +580,19 @@ navSections.push({
     });
   });
 
-  // Mobile sidebar filter
+  // Sidebar filter — desktop + mobile, with state restore + recent
   const filterInput = document.getElementById('sidebar-filter-input') as HTMLInputElement | null;
   const filterClear = document.getElementById('sidebar-filter-clear');
   const sidebarNav = document.querySelector('[data-pagefind-ignore]');
 
   if (filterInput && sidebarNav) {
-    const allLinks = sidebarNav.querySelectorAll<HTMLAnchorElement>('.sidebar-link');
     const allSections = sidebarNav.querySelectorAll<HTMLDivElement>('[data-sidebar-section]');
+    // Save initial expanded state to restore after clear
+    const initialState = new Map<string, boolean>();
+    allSections.forEach((section, idx) => {
+      const toggle = section.querySelector('.sidebar-section-toggle');
+      if (toggle) initialState.set(String(idx), toggle.getAttribute('aria-expanded') === 'true');
+    });
 
     const applyFilter = (query: string) => {
       const q = query.trim().toLowerCase();
@@ -591,8 +600,7 @@ navSections.push({
 
       if (filterClear) filterClear.style.display = hasFilter ? 'inline-flex' : 'none';
 
-      // Expand/collapse sections based on whether they have matching links
-      allSections.forEach((section) => {
+      allSections.forEach((section, idx) => {
         const links = section.querySelectorAll<HTMLAnchorElement>('.sidebar-link');
         const toggle = section.querySelector('.sidebar-section-toggle');
         const linksList = section.querySelector('.sidebar-section-links');
@@ -606,15 +614,23 @@ navSections.push({
           if (matches) hasVisible = true;
         });
 
-        // Hide entire section if no matches
-        section.style.display = hasVisible ? '' : 'none';
+        section.style.display = hasVisible || !hasFilter ? '' : 'none';
 
-        // Auto-expand sections with matches when filtering
         if (hasFilter && hasVisible && toggle && linksList && chevron) {
           toggle.setAttribute('aria-expanded', 'true');
           chevron.classList.add('rotate-90');
           linksList.classList.add('expanded');
           linksList.classList.remove('collapsed');
+        } else if (!hasFilter && toggle && linksList && chevron) {
+          const wasExpanded = initialState.get(String(idx));
+          toggle.setAttribute('aria-expanded', wasExpanded ? 'true' : 'false');
+          chevron.classList.toggle('rotate-90', !!wasExpanded);
+          linksList.classList.toggle('expanded', !!wasExpanded);
+          linksList.classList.toggle('collapsed', !wasExpanded);
+          // Ensure all items visible again
+          links.forEach((link) => {
+            (link.closest('li') as HTMLElement | null)?.style.setProperty('display', '');
+          });
         }
       });
     };
@@ -626,6 +642,17 @@ navSections.push({
       applyFilter('');
       filterInput.focus();
     });
+
+    // Auto-focus filter when drawer opens (a11y)
+    const sidebarContainer = document.getElementById('sidebar-left-container');
+    if (sidebarContainer) {
+      const observerFilter = new MutationObserver(() => {
+        if (sidebarContainer.classList.contains('is-mobile-open')) {
+          setTimeout(() => filterInput.focus(), 100);
+        }
+      });
+      observerFilter.observe(sidebarContainer, { attributes: true, attributeFilter: ['class'] });
+    }
   }
 
   // Auto-scroll to the active link when the mobile drawer opens

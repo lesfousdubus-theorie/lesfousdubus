@@ -12,6 +12,7 @@ const chapters = await getCollection('chapters');
 const articles = await getCollection('articles', ({ data }) => data.status === 'published' && !data.sidebarHidden);
 const latestChapter = chapters.sort((a, b) => b.data.chapter - a.data.chapter)[0];
 const recentArticleUpdates = getRecentArticleUpdates(articles, chapters, 4);
+const countByCategory = (cat: string) => articles.filter((a:any)=>a.data.category===cat).length;
 
 const badgeColorByEffect = {
   fondation: 'cyan',
@@ -105,7 +106,7 @@ const badgeColorByEffect = {
         alt="Vidéo de présentation de la théorie"
         class="video-facade__img"
         loading="lazy"
-        onerror="this.onerror=null; this.src='https://img.youtube.com/vi/SgJ25zjMJyo/hqdefault.jpg';"
+        onerror="const s=this.src; this.onerror=null; if(s.includes('maxresdefault')) this.src='https://img.youtube.com/vi/SgJ25zjMJyo/hqdefault.jpg'; else if(s.includes('hqdefault')) this.src='/og-default.png';"
       />
       <div class="video-facade__overlay">
         <div class="video-facade__play">
@@ -168,36 +169,42 @@ const badgeColorByEffect = {
       title="Monde et destinations"
       description="Blue Star, Grand Line, Laugh Tale, Lodestar : la géographie comme point de départ du raisonnement."
       href="/dossiers#monde-destinations"
+      count={countByCategory("monde-destinations")}
     />
     <CategoryCard
       icon="📜"
       title="Histoire et temporalité"
       description="Siècle oublié, Ponéglyphes, voyage temporel et communication à travers les époques."
       href="/dossiers#histoire-temporalite"
+      count={countByCategory("histoire-temporalite")}
     />
     <CategoryCard
       icon="🎭"
       title="Figures principales"
       description="Luffy, Joy Boy, Nika, Roger : les acteurs centraux de la théorie."
       href="/dossiers#figures-principales"
+      count={countByCategory("figures-principales")}
     />
     <CategoryCard
       icon="🔱"
       title="Armes antiques"
       description="Poséidon, Pluton, Uranus, Noah : leur véritable fonction et leur rôle dans la guerre finale."
       href="/dossiers#armes-antiques"
+      count={countByCategory("armes-antiques")}
     />
     <CategoryCard
       icon="⚡"
       title="Technologies et pouvoirs"
       description="Vegapunk, Mother Flame, Fruits du Démon, Emeth et les connaissances perdues."
       href="/dossiers#technologies-pouvoirs"
+      count={countByCategory("technologies-pouvoirs")}
     />
     <CategoryCard
       icon="⚖️"
       title="Gouvernement et guerre finale"
       description="Imu, Gorosei, Déluge, destruction de Red Line et création d'All Blue."
       href="/dossiers#gouvernement-mondial"
+      count={countByCategory("gouvernement-mondial")}
     />
   </div>
 
@@ -652,7 +659,7 @@ const badgeColorByEffect = {
   }
 
   .reading-guide__link:hover {
-    text-decoration:E underline;
+    text-decoration: underline;
   }
 
   .understand-grid {
@@ -753,6 +760,14 @@ const badgeColorByEffect = {
     .hero {
       margin-bottom: 32px;
       padding: 28px 20px 24px;
+    }
+    .hero-cta {
+      flex-direction: column;
+    }
+    .hero-cta .btn-primary,
+    .hero-cta .btn-secondary {
+      width: 100%;
+      justify-content: center;
     }
     .section-title {
       margin-top: 40px;

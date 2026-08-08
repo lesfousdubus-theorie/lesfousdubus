@@ -26,6 +26,7 @@ const fullUrl = `${R2_BASE_URL}${imagePath}`;
     width={width}
     height={height}
     loading="lazy"
+    style={width && height ? `aspect-ratio: ${width}/${height}` : undefined}
   />
   {
     caption && (

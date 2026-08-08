@@ -71,7 +71,13 @@
     border-color: var(--cyan);
     background: color-mix(in srgb, var(--surface) 90%, var(--cyan) 10%);
     box-shadow: 0 0 16px var(--glow-cyan);
-    transform: translateY(-2px);
+  }
+  .back-to-top:active {
+    transform: scale(0.92);
+  }
+  .back-to-top:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
   }
 
   .back-to-top--visible {

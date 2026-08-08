@@ -135,15 +135,25 @@ const dossierBreadcrumbLd = {
                 <p>{section.description}</p>
               </div>
             </div>
+            <div class="section-meta">
+              <span class="section-count">{sectionArticles.length} article{sectionArticles.length !== 1 ? 's' : ''}</span>
+            </div>
             {sectionArticles.length > 0 ? (
               <div class="article-list">
                 {sectionArticles
                   .sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr'))
-                  .map((article) => (
-                    <a href={`/theorie/${article.id}`} class="article-link">
-                      <span class="article-title">{article.data.title}</span>
-                    </a>
-                  ))}
+                  .map((article) => {
+                    const isChild = !!article.data.parent;
+                    return (
+                      <a href={`/theorie/${article.id}`} class={`article-link ${isChild ? 'article-link--child' : ''}`}>
+                        <div class="article-link__main">
+                          <span class="article-title">{isChild ? `↳ ${article.data.title}` : article.data.title}</span>
+                          {article.data.summary && <span class="article-summary">{article.data.summary.slice(0,120)}{article.data.summary.length>120?'…':''}</span>}
+                        </div>
+                        {article.data.navigationType === 'dossier' && <span class="article-badge">Dossier</span>}
+                      </a>
+                    );
+                  })}
               </div>
             ) : (
               <p class="no-articles">Dossier en cours de rédaction</p>
@@ -251,10 +261,70 @@ const dossierBreadcrumbLd = {
     transform: translateX(3px);
   }
 
+  .section-meta {
+    margin-bottom: 14px;
+  }
+  .section-count {
+    display: inline-flex;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--violet-light);
+    background: color-mix(in srgb, var(--violet) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--violet) 20%, transparent);
+    padding: 4px 10px;
+    border-radius: var(--border-radius-full);
+  }
+
   .article-title {
     font-size: 14px;
     color: var(--text-main);
     font-weight: 500;
+    line-height: 1.35;
+  }
+  .article-link__main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+  }
+  .article-summary {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 65ch;
+  }
+  .article-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cyan) 25%, transparent);
+    padding: 3px 8px;
+    border-radius: var(--border-radius-full);
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .article-link--child {
+    margin-left: 12px;
+    border-left: 2px solid color-mix(in srgb, var(--violet) 22%, transparent);
+    padding-left: 13px;
+    background-color: color-mix(in srgb, var(--bg-main) 80%, var(--surface) 20%);
+  }
+  .article-link--child .article-title {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+  }
+  .article-link--child:hover .article-title {
+    color: var(--cyan);
   }
 
   .article-link:hover .article-title {

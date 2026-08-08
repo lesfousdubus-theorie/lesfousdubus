@@ -154,11 +154,20 @@ const { headings = [] } = Astro.props;
 
   .toc__link--active {
     color: var(--cyan) !important;
-    font-weight: 600;
-    border-bottom-color: var(--cyan) !important;
+    font-weight: 500;
+    border-left: 2px solid var(--cyan);
+    padding-left: 6px;
+    margin-left: -8px;
+    border-bottom-color: transparent !important;
   }
 
   .toc__link:active {
     transform: scale(0.98);
+  }
+
+  .toc__link:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+    border-radius: 3px;
   }
 </style>
