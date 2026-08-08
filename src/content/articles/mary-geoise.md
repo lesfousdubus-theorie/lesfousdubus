@@ -1,6 +1,6 @@
 ---
 title: "Mary Geoise"
-summary: "Fiche de Mary Geoise : la capitale du monde au sommet de Red Line, le Trône Vide, l'escalier des vingt rois, la Chambre Fleurie et l'Arbre d'Ève."
+summary: "Fiche de Mary Geoise : la capitale du monde au sommet de Red Line, le Trône Vide, l'escalier des vingt rois et la Chambre Fleurie."
 category: "gouvernement-mondial"
 status: "published"
 sources: [906, 908, 1084, 1085, 1114]
@@ -23,8 +23,6 @@ Mary Geoise est la capitale du monde, bâtie au sommet de Red Line, à 10 000 m�
 - Le site était autrefois le territoire des **Lunariens**, avant leur disparition.
 - La **Chambre Fleurie** est une salle secrète où Imu se rend pour trancher, entouré des Gorosei. Sa localisation précise par rapport au palais n'est pas précisément établie par les transcriptions.
 - Des chantiers colossaux sont menés depuis Mary Geoise dans le monde entier : les ponts Tequila Wolf, Bourbon, Vodka et Rum.
-
-> **À vérifier (non soutenu tel quel par les sources)** : l'affirmation selon laquelle la Chambre Fleurie se trouverait « sous le palais » et abriterait l'**Arbre d'Ève** n'est pas étayée par les transcriptions fournies. Ces éléments sont traités dans « La lecture des Fous du Bus » et « Points encore à expliquer ».
 
 ## La lecture des Fous du Bus
 

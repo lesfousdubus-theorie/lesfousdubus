@@ -71,7 +71,7 @@ Le contenu distingue ce que le manga établit (canon) des hypothèses de la thé
 - [Zoans](https://lesfousdubus.sbs/theorie/zoans) : Fiche des Fruits du Démon de type Zoan : leur volonté propre, les Zoans mythiques et la question de la conscience des fruits. [canon]
 - [Hito Hito no Mi, modèle Nika](https://lesfousdubus.sbs/theorie/hito-hito-no-mi-nika) : Fiche du fruit de Luffy : Zoan mythique de type humain, longtemps désigné comme Gomu Gomu no Mi, révélé par le Gorosei au chapitre 1044. [canon]
 - [Omen : le pouvoir d'Imu](https://lesfousdubus.sbs/theorie/omen) : L'Omen est le pouvoir d'Imu évoqué par les analyses récentes. Mécanisme encore spéculatif, il serait amplifié par la Mother Flame pour atteindre une échelle apocalyptique. [speculative]
-- [Domi Reversi](https://lesfousdubus.sbs/theorie/domi-reversi) : Le Domi Reversi est un mécanisme récent de la théorie lié aux interrogations d'Imu sur le pouvoir d'Éveil et à la mécanique de retournement des événements. [speculative]
+- [Domi Reversi](https://lesfousdubus.sbs/theorie/domi-reversi) : Le Domi Reversi est le pouvoir par lequel Imu prend le contrôle d'un individu et en altère le comportement, tel qu'il est analysé dans la lecture du chapitre 1186. Dossier récent, encore partiellement documenté. [speculative]
 
 ## Peuples, royaumes et témoins
 
@@ -106,7 +106,7 @@ Le contenu distingue ce que le manga établit (canon) des hypothèses de la thé
 
 - [La Coalition des 20 Rois et les Chevaliers Divins](https://lesfousdubus.sbs/theorie/coalition-des-20-rois) : Pourquoi la véritable coalition opposée à Joy Boy ne serait pas une alliance passée, mais l'affrontement présent entre Luffy et le Gorosei/Chevaliers Divins.
 - [Guerre finale](https://lesfousdubus.sbs/theorie/guerre-finale) : Fiche centrale de la guerre finale : les forces en présence, le rôle des Armes antiques, la destruction annoncée de Red Line, le Déluge, la naissance d'All Blue et le Jour du Serment. [core-theory]
-- [Grande Guerre](https://lesfousdubus.sbs/theorie/grande-guerre) : Fiche d'identification de la Grande Guerre évoquée par Vegapunk, affrontement final entre la coalition de Joy Boy et l'Alliance mondiale autour de la destruction de Red Line. [canon]
+- [Grande Guerre](https://lesfousdubus.sbs/theorie/grande-guerre) : Fiche d'identification de la Grande Guerre évoquée par Vegapunk : le conflit du Siècle oublié, présenté comme « toujours d'actualité », et la lecture des Fous du Bus qui attend son dénouement — et son déluge — au présent. [canon]
 - [Le Déluge et la création d'All Blue](https://lesfousdubus.sbs/theorie/deluge-all-blue) : Le niveau de la mer augmentera de 200m lors de la guerre finale, créant All Blue et permettant à Luffy de devenir le premier pirate à naviguer sur cette mer unique.
 - [Gouvernement mondial](https://lesfousdubus.sbs/theorie/gouvernement-mondial) : Fiche centrale du Gouvernement mondial : sa fondation par les Vingt Rois, sa structure de pouvoir d'Imu au Gorosei, les Chevaliers Divins, les Dragons Célestes et Mary Geoise. [canon]
 - [Imu Nerona](https://lesfousdubus.sbs/theorie/imu-nerona) : Fiche consacrée à Imu : ce que le manga établit sur le souverain caché du monde, son immortalité supposée, la lecture des Fous du Bus (préscience, confusion des générations), les arguments et les limites. [core-theory]
@@ -115,7 +115,7 @@ Le contenu distingue ce que le manga établit (canon) des hypothèses de la thé
 - [Gorosei](https://lesfousdubus.sbs/theorie/gorosei) : Fiche des Cinq Doyens : la direction visible du Gouvernement mondial, leur agenouillement devant Imu, leurs pouvoirs et les limites de leur savoir. [canon]
 - [Chevaliers Divins](https://lesfousdubus.sbs/theorie/chevaliers-divins) : Fiche des Chevaliers Divins : le bras armé direct d'Imu, commandé par Figarland Garling, et la question de leur ancienneté. [canon]
 - [Dragons Célestes](https://lesfousdubus.sbs/theorie/dragons-celestes) : Fiche des Dragons Célestes : les descendants des dix-neuf familles fondatrices installées à Mary Geoise, leur statut et le cas des Nefertari. [canon]
-- [Mary Geoise](https://lesfousdubus.sbs/theorie/mary-geoise) : Fiche de Mary Geoise : la capitale du monde au sommet de Red Line, le Trône Vide, l'escalier des vingt rois, la Chambre Fleurie et l'Arbre d'Ève. [canon]
+- [Mary Geoise](https://lesfousdubus.sbs/theorie/mary-geoise) : Fiche de Mary Geoise : la capitale du monde au sommet de Red Line, le Trône Vide, l'escalier des vingt rois et la Chambre Fleurie. [canon]
 - [La Chambre Fleurie](https://lesfousdubus.sbs/theorie/chambre-fleurie) : La Chambre Fleurie, salle secrète où Imu tranche aux côtés des Gorosei. Dossier séparé de Mary Geoise, centré sur Imu et la branche des Fruits du Démon.
 
 ## Dernières analyses

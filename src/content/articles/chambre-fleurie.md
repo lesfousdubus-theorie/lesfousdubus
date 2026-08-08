@@ -24,7 +24,7 @@ order: 70
 
 La Chambre Fleurie est, dans la théorie, le **centre de décision occulte du monde** : l'endroit d'où Imu, hors de toute légitimité, commande au Gorosei et pilote la destruction des îles (Lulusia) et la persécution des peuples.
 
-Elle est également reliée à la **branche des Fruits du Démon** : les interrogations récentes d'Imu sur l'Éveil (voir [Fruits du Démon](/theorie/fruits-du-demon) et [Domi Reversi](/theorie/domi-reversi)) s'inscrivent dans ce lieu de réflexion où Imu pèse les menaces à venir.
+Elle est également reliée à la **branche des Fruits du Démon** : les analyses récentes sur l'origine possible des fruits (voir [Fruits du Démon](/theorie/fruits-du-demon)) et sur le pouvoir de contrôle d'Imu, le [Domi Reversi](/theorie/domi-reversi), s'inscrivent dans ce lieu de réflexion où Imu pèse les menaces à venir.
 
 Certaines lectures de la théorie associent la Chambre Fleurie à l'**Arbre d'Ève** ; ce rapprochement n'est pas soutenu tel quel par les sources et reste spéculatif (voir [Mary Geoise](/theorie/mary-geoise)).
 
