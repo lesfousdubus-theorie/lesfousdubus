@@ -6,9 +6,10 @@ interface Props {
   category: string;
   chapter?: string;
   href: string;
+  summary?: string;
 }
 
-const { badge, badgeColor, title, category, chapter, href } = Astro.props;
+const { badge, badgeColor, title, category, chapter, href, summary } = Astro.props;
 ---
 
 <a href={href} class="article-item">
@@ -20,6 +21,9 @@ const { badge, badgeColor, title, category, chapter, href } = Astro.props;
       </span>
       <span class="article-item__title">{title}</span>
     </div>
+    {summary && (
+      <p class="article-item__summary">{summary}</p>
+    )}
     <div class="article-item__meta">
       <span>{category}</span>
       {chapter && <span class="article-item__dot">•</span>}
@@ -130,6 +134,17 @@ const { badge, badgeColor, title, category, chapter, href } = Astro.props;
     display: flex;
     gap: 8px;
     align-items: center;
+  }
+
+  .article-item__summary {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .article-item__dot {

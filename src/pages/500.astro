@@ -1,0 +1,103 @@
+---
+import WikiLayout from '@layouts/WikiLayout.astro';
+---
+
+<WikiLayout title="Erreur serveur" currentPath="/500">
+  <div class="error-page">
+    <h1>500</h1>
+    <p>Erreur serveur</p>
+    <p class="error-page__hint">Une erreur inattendue s'est produite. Veuillez réessayer dans quelques instants.</p>
+    <div class="error-page__actions">
+      <a href="/" class="btn btn-primary">Retour à l'accueil</a>
+      <a href="/theorie/resume" class="btn btn-secondary">Lire le résumé</a>
+    </div>
+  </div>
+</WikiLayout>
+
+<style>
+  .error-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    padding: 24px;
+  }
+
+  h1 {
+    font-size: 6rem;
+    font-weight: 700;
+    color: var(--alert);
+    margin-bottom: 16px;
+    line-height: 1;
+  }
+
+  p {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+
+  .error-page__hint {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+  }
+
+  .error-page__actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--gradient-border);
+    color: var(--bg-main);
+    box-shadow: 0 2px 12px var(--glow-violet);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 24px var(--glow-violet);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--cyan-dim);
+    color: var(--cyan);
+    box-shadow: 0 0 16px var(--glow-cyan);
+  }
+
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 4rem;
+    }
+    .error-page__actions {
+      flex-direction: column;
+      width: 100%;
+      max-width: 280px;
+    }
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

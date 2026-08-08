@@ -111,7 +111,7 @@ const canonicalWikiUrl = new URL(
 
   <div class:list={['layout', { 'layout--no-toc': !hasToc }]}>
     <div class="sidebar-left-container" id="sidebar-left-container">
-      <aside class="sidebar sidebar-left" id="sidebar-left">
+      <aside class="sidebar sidebar-left" id="sidebar-left" aria-label="Navigation des articles">
         <SidebarNav currentPath={currentPath} />
       </aside>
 
@@ -131,7 +131,7 @@ const canonicalWikiUrl = new URL(
 
     {
       hasToc && (
-        <aside class="sidebar sidebar-right">
+        <aside class="sidebar sidebar-right" aria-label="Table des matières">
           <SidebarToc headings={headings} />
         </aside>
       )
@@ -787,6 +787,27 @@ const canonicalWikiUrl = new URL(
       toggleMobile(false);
     }
   });
+
+  // Swipe left to close the mobile drawer
+  let swipeStartX = 0;
+  let swipeStartY = 0;
+  const SWIPE_THRESHOLD = 60;
+
+  sidebarContainer?.addEventListener('touchstart', (e) => {
+    if (window.innerWidth > 768 || !isMobileOpen()) return;
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  sidebarContainer?.addEventListener('touchend', (e) => {
+    if (window.innerWidth > 768 || !isMobileOpen()) return;
+    const deltaX = e.changedTouches[0].clientX - swipeStartX;
+    const deltaY = Math.abs(e.changedTouches[0].clientY - swipeStartY);
+    // Only trigger on horizontal swipe (left) with minimal vertical movement
+    if (deltaX < -SWIPE_THRESHOLD && deltaY < 40) {
+      toggleMobile(false);
+    }
+  }, { passive: true });
 
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && isMobileOpen()) toggleMobile(false);

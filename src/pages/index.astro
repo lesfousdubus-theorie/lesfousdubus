@@ -205,22 +205,33 @@ const badgeColorByEffect = {
     <a href="/dossiers" class="btn-see-all">Voir tous les dossiers →</a>
   </div>
 
+  <div class="reading-guide">
+    <span class="reading-guide__icon">💡</span>
+    <span class="reading-guide__text">
+      Les articles utilisent des badges de certitude (<a href="/aide/glossaire" class="reading-guide__link">Canon</a>, Interprétation, Hypothèse) pour distinguer les faits établis des suppositions.
+      <a href="/aide/glossaire" class="reading-guide__link">Consultez le glossaire →</a>
+    </span>
+  </div>
+
   <h2 class="section-title">
     <span class="section-title__accent"></span>
     Comprendre la théorie
   </h2>
   <div class="understand-grid">
     <a class="understand-card" href="/theorie/resume">
+      <span class="understand-step">1</span>
       <span class="understand-time">30 secondes</span>
       <h3>Le résumé en 10 points</h3>
       <p>L'idée centrale et l'argument principal, en une lecture rapide.</p>
     </a>
     <a class="understand-card" href="/explorer/carte-mentale">
+      <span class="understand-step">2</span>
       <span class="understand-time">5–10 minutes</span>
       <h3>La carte mentale</h3>
       <p>Les grandes connexions de la théorie, d'un seul coup d'œil.</p>
     </a>
     <a class="understand-card" href="/theorie/theorie-complete">
+      <span class="understand-step">3</span>
       <span class="understand-time">30–60 minutes</span>
       <h3>La théorie complète</h3>
       <p>La démonstration continue en 22 chapitres, du début à la fin.</p>
@@ -249,6 +260,7 @@ const badgeColorByEffect = {
             title={article.data.title}
             category={categoryLabel(article.data.category)}
             href={`/theorie/${article.id}`}
+            summary={article.data.summary}
           />
         );
       })
@@ -426,8 +438,8 @@ const badgeColorByEffect = {
   }
 
   .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 26px var(--glow-violet);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px var(--glow-violet);
   }
 
   .btn-primary:active {
@@ -612,6 +624,37 @@ const badgeColorByEffect = {
     transform: translateY(0) scale(0.98);
   }
 
+  .reading-guide {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 18px;
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--violet);
+    border-radius: var(--border-radius);
+    background: color-mix(in srgb, var(--violet) 5%, transparent);
+    margin-bottom: 8px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  .reading-guide__icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .reading-guide__link {
+    color: var(--cyan);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .reading-guide__link:hover {
+    text-decoration:E underline;
+  }
+
   .understand-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -633,6 +676,7 @@ const badgeColorByEffect = {
   .understand-card:hover {
     transform: translateY(-3px);
     border-color: var(--violet);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.15), 0 0 16px var(--glow-violet);
   }
 
   .understand-card:active {
@@ -646,6 +690,20 @@ const badgeColorByEffect = {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--violet-light);
+    margin-bottom: 10px;
+  }
+
+  .understand-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--bg-main);
+    background: var(--gradient-border);
     margin-bottom: 10px;
   }
 

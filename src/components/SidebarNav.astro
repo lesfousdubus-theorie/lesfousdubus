@@ -209,6 +209,26 @@ navSections.push({
 ---
 
 <nav data-pagefind-ignore>
+  <!-- Mobile filter — only visible in the drawer -->
+  <div class="sidebar-filter" id="sidebar-filter">
+    <svg class="sidebar-filter__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <input
+      type="search"
+      id="sidebar-filter-input"
+      class="sidebar-filter__input"
+      placeholder="Filtrer les articles…"
+      enterkeyhint="search"
+      autocomplete="off"
+      aria-label="Filtrer la navigation"
+    />
+    <button id="sidebar-filter-clear" class="sidebar-filter__clear" aria-label="Effacer le filtre" style="display:none">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
   {
     navSections.map((section, index) => {
       const isExpanded = section.links.some(
@@ -284,6 +304,70 @@ navSections.push({
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
+  }
+
+  /* Mobile filter */
+  .sidebar-filter {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  @media (max-width: 768px) {
+    .sidebar-filter {
+      display: flex;
+    }
+  }
+
+  .sidebar-filter__icon {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    opacity: 0.85;
+  }
+
+  .sidebar-filter__input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1.4;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .sidebar-filter__input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.85;
+  }
+
+  .sidebar-filter__clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: color-mix(in srgb, var(--surface) 80%, transparent);
+    color: var(--text-secondary);
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: color 0.15s ease;
+  }
+
+  .sidebar-filter__clear:hover {
+    color: var(--text-main);
   }
 
   /* Séparateur visuel entre les sections */
@@ -491,4 +575,80 @@ navSections.push({
       setExpanded(!isExpanded);
     });
   });
+
+  // Mobile sidebar filter
+  const filterInput = document.getElementById('sidebar-filter-input') as HTMLInputElement | null;
+  const filterClear = document.getElementById('sidebar-filter-clear');
+  const sidebarNav = document.querySelector('[data-pagefind-ignore]');
+
+  if (filterInput && sidebarNav) {
+    const allLinks = sidebarNav.querySelectorAll<HTMLAnchorElement>('.sidebar-link');
+    const allSections = sidebarNav.querySelectorAll<HTMLDivElement>('[data-sidebar-section]');
+
+    const applyFilter = (query: string) => {
+      const q = query.trim().toLowerCase();
+      const hasFilter = q.length > 0;
+
+      if (filterClear) filterClear.style.display = hasFilter ? 'inline-flex' : 'none';
+
+      // Expand/collapse sections based on whether they have matching links
+      allSections.forEach((section) => {
+        const links = section.querySelectorAll<HTMLAnchorElement>('.sidebar-link');
+        const toggle = section.querySelector('.sidebar-section-toggle');
+        const linksList = section.querySelector('.sidebar-section-links');
+        const chevron = section.querySelector('.sidebar-chevron');
+        let hasVisible = false;
+
+        links.forEach((link) => {
+          const text = link.textContent?.toLowerCase() ?? '';
+          const matches = !hasFilter || text.includes(q);
+          (link.closest('li') as HTMLElement | null)?.style.setProperty('display', matches ? '' : 'none');
+          if (matches) hasVisible = true;
+        });
+
+        // Hide entire section if no matches
+        section.style.display = hasVisible ? '' : 'none';
+
+        // Auto-expand sections with matches when filtering
+        if (hasFilter && hasVisible && toggle && linksList && chevron) {
+          toggle.setAttribute('aria-expanded', 'true');
+          chevron.classList.add('rotate-90');
+          linksList.classList.add('expanded');
+          linksList.classList.remove('collapsed');
+        }
+      });
+    };
+
+    filterInput.addEventListener('input', () => applyFilter(filterInput.value));
+
+    filterClear?.addEventListener('click', () => {
+      filterInput.value = '';
+      applyFilter('');
+      filterInput.focus();
+    });
+  }
+
+  // Auto-scroll to the active link when the mobile drawer opens
+  const sidebarContainer = document.getElementById('sidebar-left-container');
+  if (sidebarContainer) {
+    const scrollToActive = () => {
+      const activeLink = sidebarContainer.querySelector<HTMLAnchorElement>('.sidebar-link--active');
+      if (activeLink) {
+        // Small delay to let the drawer animation finish
+        setTimeout(() => {
+          activeLink.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }, 300);
+      }
+    };
+
+    // Observe the drawer opening
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.type === 'attributes' && (m.target as HTMLElement).classList.contains('is-mobile-open')) {
+          scrollToActive();
+        }
+      }
+    });
+    observer.observe(sidebarContainer, { attributes: true, attributeFilter: ['class'] });
+  }
 </script>
