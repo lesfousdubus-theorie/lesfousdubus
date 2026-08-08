@@ -7,17 +7,55 @@ import Footer from '@components/Footer.astro';
   <div class="not-found">
     <h1>404</h1>
     <p>Page non trouvée</p>
-    <p class="not-found__hint">Cette page n'existe pas ou a été déplacée.</p>
+    <p class="not-found__hint">
+      Cette page n'existe pas ou a été déplacée. Vous pouvez rechercher un mot-clé,
+      retourner à l'accueil ou parcourir les dossiers.
+    </p>
+
+    <form class="not-found__search" id="not-found-search-form" role="search">
+      <label for="not-found-q" class="sr-only">Rechercher dans le site</label>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input id="not-found-q" type="search" name="q" placeholder="Rechercher un personnage, un lieu, un concept…" enterkeyhint="search" autocomplete="off" />
+      <button type="submit" class="not-found__search-btn" aria-label="Lancer la recherche">Rechercher</button>
+    </form>
+
+    <script is:inline>
+      document.getElementById('not-found-search-form')?.addEventListener('submit', function (e) {
+        var input = /** @type {HTMLInputElement|null} */ (document.getElementById('not-found-q'));
+        var value = input ? (input.value || '').trim() : '';
+        if (value) {
+          e.preventDefault();
+          try { sessionStorage.setItem('fousdu-pending-search', value); } catch (err) { /* ignore */ }
+          window.dispatchEvent(new Event('openSearch'));
+        }
+      });
+    </script>
+
     <div class="not-found__actions">
       <a href="/" class="btn btn-primary">Retour à l'accueil</a>
       <a href="/theorie/resume" class="btn btn-secondary">Lire le résumé</a>
       <a href="/dossiers" class="btn btn-secondary">Parcourir les dossiers</a>
+      <a href="/aide/plan-du-site" class="btn btn-secondary">Plan du site</a>
     </div>
   </div>
   <Footer />
 </WikiLayout>
 
 <style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .not-found {
     display: flex;
     flex-direction: column;
@@ -41,7 +79,7 @@ import Footer from '@components/Footer.astro';
   }
 
   p {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     color: var(--text-main);
     margin-bottom: 8px;
   }
@@ -49,8 +87,54 @@ import Footer from '@components/Footer.astro';
   .not-found__hint {
     font-size: 1rem;
     color: var(--text-secondary);
-    margin-bottom: 32px;
+    margin-bottom: 24px;
+    max-width: 520px;
   }
+
+  .not-found__search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 520px;
+    padding: 10px 14px;
+    margin-bottom: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    color: var(--text-secondary);
+  }
+  .not-found__search:focus-within {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 15%, transparent);
+  }
+  .not-found__search input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-size: 15px;
+    font-family: inherit;
+    padding: 4px 0;
+  }
+  .not-found__search input::placeholder {
+    color: color-mix(in srgb, var(--text-secondary) 80%, var(--surface));
+    opacity: 1;
+  }
+  .not-found__search-btn {
+    border: none;
+    background: var(--gradient-border);
+    color: var(--bg-main);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    min-height: 36px;
+  }
+  .not-found__search-btn:hover { filter: brightness(1.1); }
 
   .not-found__actions {
     display: flex;

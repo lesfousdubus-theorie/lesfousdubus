@@ -69,7 +69,8 @@ const badgeColorByEffect = {
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          ><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path
+          aria-hidden="true"
+        ><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path
             d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg
         >
         Lire le résumé (10 points)
@@ -84,32 +85,28 @@ const badgeColorByEffect = {
           stroke="currentColor"
           stroke-width="2.5"
           stroke-linecap="round"
-          stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg
+          stroke-linejoin="round"
+          aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg
         >
       </a>
-      {latestChapter && (
-        <a href={`/chapitres/${latestChapter.data.chapter}`} class="btn-secondary">
-          Dernier chapitre analysé
-        </a>
-      )}
     </div>
 
-    <div
+    <button
+      type="button"
       class="video-facade"
       id="video-facade"
-      role="button"
-      aria-label="Lire la vidéo de présentation"
-      tabindex="0"
+      aria-label="Lire la vidéo de présentation de la théorie (s’ouvre dans ce cadre, contenu YouTube)"
     >
       <img
-        src="https://img.youtube.com/vi/SgJ25zjMJyo/maxresdefault.jpg"
-        alt="Vidéo de présentation de la théorie"
+        src="/video-poster.svg"
+        alt=""
         class="video-facade__img"
         loading="lazy"
-        onerror="const s=this.src; this.onerror=null; if(s.includes('maxresdefault')) this.src='https://img.youtube.com/vi/SgJ25zjMJyo/hqdefault.jpg'; else if(s.includes('hqdefault')) this.src='/og-default.png';"
+        decoding="async"
+        aria-hidden="true"
       />
       <div class="video-facade__overlay">
-        <div class="video-facade__play">
+        <div class="video-facade__play" aria-hidden="true">
           <svg
             width="24"
             height="24"
@@ -121,32 +118,42 @@ const badgeColorByEffect = {
           </svg>
         </div>
         <span class="video-facade__label">Regarder la présentation</span>
+        <span class="video-facade__sub">YouTube · durée 14 min</span>
       </div>
-    </div>
+    </button>
 
-    <script>
+    <p class="video-external-note">
+      La lecture charge un lecteur YouTube hébergé par Google.
+      <a
+        href="https://www.youtube.com/watch?v=SgJ25zjMJyo"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Ouvrir la vidéo sur YouTube (nouvel onglet)"
+      >Ouvrir sur YouTube</a>
+    </p>
+
+    <script is:inline>
       const facade = document.getElementById('video-facade');
       const loadVideo = () => {
         if (facade && !facade.dataset.loaded) {
           facade.dataset.loaded = 'true';
-          facade.innerHTML = `<iframe
-            class="absolute top-0 left-0 w-full h-full"
-            src="https://www.youtube.com/embed/SgJ25zjMJyo?si=pXYc71i2i7G5tG5h&autoplay=1"
+          // Replace the button with a neutral container so the iframe is focusable but isn't nested inside a button (invalid HTML).
+          const wrap = document.createElement('div');
+          wrap.className = 'video-facade video-facade--loaded';
+          wrap.innerHTML = `<iframe
+            class="video-facade__iframe"
+            src="https://www.youtube.com/embed/SgJ25zjMJyo?cc_lang_pref=fr&cc_load_policy=1&iv_load_policy=3&rel=0"
             title="Présentation vidéo de la théorie (YouTube)"
             style="border: none;"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerpolicy="strict-origin-when-cross-origin"
             allowfullscreen
+            loading="lazy"
           ></iframe>`;
+          facade.replaceWith(wrap);
         }
       };
       facade?.addEventListener('click', loadVideo);
-      facade?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          loadVideo();
-        }
-      });
     </script>
   </div>
 
@@ -506,9 +513,18 @@ const badgeColorByEffect = {
     margin-top: 32px;
     cursor: pointer;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 0;
     transition:
       border-color 0.3s ease,
       box-shadow 0.3s ease;
+    font: inherit;
+    color: inherit;
+    background: var(--bg-secondary);
+  }
+
+  .video-facade:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
   }
 
   .video-facade:hover {
@@ -516,6 +532,18 @@ const badgeColorByEffect = {
     box-shadow:
       0 12px 40px rgba(0, 0, 0, 0.4),
       0 0 20px var(--glow-violet);
+  }
+
+  .video-facade--loaded {
+    padding: 0;
+  }
+
+  .video-facade__iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
   }
 
   .video-facade__img {
@@ -532,24 +560,24 @@ const badgeColorByEffect = {
     inset: 0;
     background: linear-gradient(
       to top,
-      rgba(7, 2, 10, 0.7) 0%,
-      rgba(7, 2, 10, 0.3) 50%,
-      rgba(7, 2, 10, 0.1) 100%
+      rgba(7, 2, 10, 0.65) 0%,
+      rgba(7, 2, 10, 0.25) 50%,
+      rgba(7, 2, 10, 0.08) 100%
     );
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 8px;
     transition: background 0.3s ease;
   }
 
   .video-facade:hover .video-facade__overlay {
     background: linear-gradient(
       to top,
-      rgba(7, 2, 10, 0.8) 0%,
-      rgba(7, 2, 10, 0.4) 50%,
-      rgba(7, 2, 10, 0.15) 100%
+      rgba(7, 2, 10, 0.75) 0%,
+      rgba(7, 2, 10, 0.35) 50%,
+      rgba(7, 2, 10, 0.12) 100%
     );
   }
 
@@ -574,8 +602,27 @@ const badgeColorByEffect = {
 
   .video-facade__label {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.85);
-    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+  }
+
+  .video-facade__sub {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .video-external-note {
+    margin: 10px 4px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .video-external-note a {
+    color: var(--cyan);
+    text-decoration: none;
+    margin-left: 6px;
+  }
+  .video-external-note a:hover {
+    text-decoration: underline;
   }
 
   /* ===== SECTION TITLES ===== */
@@ -696,7 +743,13 @@ const badgeColorByEffect = {
     background: var(--gradient-card);
     text-decoration: none;
     color: var(--text-main);
-    transition: transform 0.2s, border-color 0.2s;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    isolation: isolate;
+  }
+
+  .understand-card:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
   }
 
   .understand-card:hover {

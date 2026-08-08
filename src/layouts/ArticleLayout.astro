@@ -4,7 +4,6 @@ import Breadcrumb from '@components/Breadcrumb.astro';
 import RelatedArticles from '@components/RelatedArticles.astro';
 import ChapterReferences from '@components/ChapterReferences.astro';
 import ReadingProgressBar from '@components/ReadingProgressBar.astro';
-import BackToTop from '@components/BackToTop.astro';
 import ParcoursNav from '@components/ParcoursNav.astro';
 import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
@@ -204,8 +203,7 @@ const articleJsonLd = {
   {relatedArticles.length > 0 && <RelatedArticles articles={relatedArticles} />}
   {articleChapters.length > 0 && <ChapterReferences items={articleChapters} />}
 
-  <!-- Social share buttons -->
-  <div class="article-share" aria-label="Partager cet article">
+  <!-- Social share buttons -->  <div class="article-share" aria-label="Partager cet article">
     <span class="article-share__label">Partager</span>
     <button
       class="article-share__btn"
@@ -234,7 +232,6 @@ const articleJsonLd = {
     </button>
   </div>
 
-  <BackToTop />
   <Footer />
 
   <!-- Image Lightbox Modal -->

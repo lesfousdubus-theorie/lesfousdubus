@@ -55,6 +55,8 @@ const ogImage = image ? new URL(image, siteUrl).toString() : `${siteUrl}/og-defa
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@FoudubusTV_" />
+    <meta name="twitter:creator" content="@FoudubusTV_" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={metaDescription} />
     <meta name="twitter:image" content={ogImage} />
@@ -77,10 +79,6 @@ const ogImage = image ? new URL(image, siteUrl).toString() : `${siteUrl}/og-defa
     />
     <meta name="author" content="Les Fous du Bus" />
     <meta name="generator" content={Astro.generator} />
-    <meta
-      name="keywords"
-      content="One Piece, théorie, Siècle oublié, Void Century, Joy Boy, Luffy, Eiichiro Oda, manga, analyse"
-    />
 
     <!-- AI discoverability -->
     <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-friendly site summary" />
@@ -121,6 +119,15 @@ const ogImage = image ? new URL(image, siteUrl).toString() : `${siteUrl}/og-defa
 
     <!-- Fonts — self-hosted via @fontsource for perf + privacy (no Google roundtrip) -->
 
+    <!-- Noscript fallback: when JS is disabled the inline theme script can't run.
+         We default to the dark theme (matching <html class="dark">) and the site remains usable. -->
+    <noscript>
+      <style>
+        html.light .reveal { opacity: 1 !important; transform: none !important; }
+        .no-js-hidden { display: none !important; }
+      </style>
+    </noscript>
+
     <!-- Theme initialization (inline to prevent flash) -->
     <script is:inline>
       const theme = (() => {
@@ -147,6 +154,11 @@ const ogImage = image ? new URL(image, siteUrl).toString() : `${siteUrl}/og-defa
     <!-- Listen to OS theme changes in real-time (only when no explicit user preference) -->
     <script is:inline>
       if (typeof window !== 'undefined' && window.matchMedia) {
+        const THEME_COLORS = { dark: '#0e1722', light: '#f8f5ed' };
+        const applyThemeMeta = (theme) => {
+          const meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.content = THEME_COLORS[theme] || THEME_COLORS.dark;
+        };
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
           // Only auto-switch if user hasn't set an explicit preference
           if (!localStorage.getItem('theme')) {
@@ -163,6 +175,7 @@ const ogImage = image ? new URL(image, siteUrl).toString() : `${siteUrl}/og-defa
               if (newTheme === 'light') el.classList.remove('hidden');
               else el.classList.add('hidden');
             });
+            applyThemeMeta(newTheme);
           }
         });
       }

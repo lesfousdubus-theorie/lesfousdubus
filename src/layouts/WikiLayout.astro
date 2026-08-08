@@ -448,8 +448,8 @@ const canonicalWikiUrl = new URL(
     word-wrap: break-word;
   }
 
-  /* Tablet: hide right sidebar */
-  @media (max-width: 1200px) {
+  /* Tablet: hide right sidebar (TOC becomes accessible via the floating FAB) */
+  @media (max-width: 1024px) {
     .sidebar-right {
       display: none;
     }
@@ -696,12 +696,13 @@ const canonicalWikiUrl = new URL(
   .toc-fab {
     display: none;
     position: fixed;
-    bottom: 24px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
     right: 24px;
     z-index: 40;
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
+    min-height: 44px;
     border-radius: var(--border-radius-full);
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -721,14 +722,14 @@ const canonicalWikiUrl = new URL(
   .toc-fab:active {
     transform: translateY(0) scale(0.97);
   }
-  @media (max-width: 1200px) {
+  @media (max-width: 1024px) {
     .toc-fab {
       display: inline-flex;
     }
   }
   @media (max-width: 640px) {
     .toc-fab {
-      bottom: 84px;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
       right: 16px;
       padding: 12px 18px;
       min-height: 44px;

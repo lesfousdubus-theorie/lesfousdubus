@@ -104,15 +104,16 @@ const isActive = (href: string) =>
   href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/');
 ---
 
-<nav class="navbar" data-pagefind-ignore>
+<nav class="navbar" data-pagefind-ignore aria-label="Navigation principale">
   <!-- Left: Sidebar toggle button + Brand Logo -->
   <div class="nav-left">
     <button
       id="navbar-sidebar-toggle"
       class="navbar-sidebar-toggle"
-      aria-label="Basculer la barre latérale"
-      aria-expanded="false"
-      title="Réduire / Ouvrir la barre latérale"
+      aria-label="Réduire la navigation latérale"
+      aria-expanded="true"
+      aria-controls="sidebar-left"
+      title="Réduire / Ouvrir la navigation latérale"
     >
       <svg
         width="17"
@@ -130,7 +131,7 @@ const isActive = (href: string) =>
     </button>
 
     <a href="/" class="logo">
-      <img src="/logo.png" alt="Les Fous du Bus" class="logo-img" width="34" height="34" />
+      <img src="/logo.png" alt="" class="logo-img" width="34" height="34" aria-hidden="true" />
       <span class="logo-text font-bold">Les Fous du Bus</span>
     </a>
   </div>
@@ -202,7 +203,7 @@ const isActive = (href: string) =>
           <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
         <span class="search-label hidden sm:inline">Rechercher…</span>
-        <span class="search-shortcut hidden sm:inline">Ctrl K</span>
+        <span class="search-shortcut hidden sm:inline" data-kbd-shortcut>Ctrl K</span>
       </button>
 
       <button data-theme-toggle class="theme-btn theme-btn--desktop" aria-label="Changer le thème">
@@ -253,7 +254,8 @@ const isActive = (href: string) =>
     <button
       id="mobile-menu-toggle"
       class="icon-btn lg:hidden"
-      aria-label="Menu"
+      aria-label="Ouvrir le menu de navigation"
+      aria-controls="sidebar-left"
       aria-expanded="false"
     >
       <svg
@@ -611,8 +613,10 @@ const isActive = (href: string) =>
   }
 
   .navbar-sidebar-toggle {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -633,8 +637,10 @@ const isActive = (href: string) =>
 
   .theme-btn,
   .icon-btn {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -764,7 +770,7 @@ const isActive = (href: string) =>
     }
   }
 
-  /* Mobile — compact, balanced icon row, no overflow */
+  /* Mobile — balanced icon row, 44px touch targets (WCAG 2.5.5) */
   @media (max-width: 640px) {
     .navbar {
       padding: 0 12px;
@@ -774,7 +780,7 @@ const isActive = (href: string) =>
     }
 
     .nav-left {
-      gap: 0;
+      gap: 6px;
       flex: 1 1 auto;
       min-width: 0;
     }
@@ -795,20 +801,20 @@ const isActive = (href: string) =>
     }
 
     .nav-right {
-      gap: 6px;
+      gap: 8px;
       flex-shrink: 0;
     }
 
     .nav-actions {
-      gap: 6px;
+      gap: 8px;
     }
 
     /* Icon-only search button on small screens */
     .search-trigger {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      max-width: 36px;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      max-width: 44px;
       padding: 0;
       justify-content: center;
       gap: 0;
@@ -817,8 +823,8 @@ const isActive = (href: string) =>
     }
 
     .search-trigger svg {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
     }
 
     .search-label,
@@ -828,16 +834,17 @@ const isActive = (href: string) =>
 
     .theme-btn,
     .icon-btn {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
       border-radius: var(--border-radius-sm);
     }
   }
 
   @media (max-width: 400px) {
     .logo-text {
-      max-width: min(38vw, 110px);
+      max-width: min(36vw, 100px);
     }
     .navbar {
       padding: 0 10px;
@@ -846,9 +853,10 @@ const isActive = (href: string) =>
     .search-trigger,
     .theme-btn,
     .icon-btn {
-      width: 34px;
-      height: 34px;
-      min-width: 34px;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
     }
   }
 
@@ -869,8 +877,10 @@ const isActive = (href: string) =>
 <script>
   // Theme toggle logic
   const themeBtns = document.querySelectorAll('[data-theme-toggle]');
+  const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  const THEME_COLORS = { dark: '#0e1722', light: '#f8f5ed' };
 
-  const updateIcons = (theme: string) => {
+  const applyTheme = (theme: string) => {
     document.querySelectorAll('.ico-sun').forEach((el) => {
       if (theme === 'dark') el.classList.remove('hidden');
       else el.classList.add('hidden');
@@ -879,10 +889,20 @@ const isActive = (href: string) =>
       if (theme === 'light') el.classList.remove('hidden');
       else el.classList.add('hidden');
     });
+    if (themeColorMeta) themeColorMeta.content = THEME_COLORS[theme as 'dark' | 'light'] ?? THEME_COLORS.dark;
   };
 
+  const updateIcons = applyTheme;
+
   const currentTheme = document.documentElement.classList.contains('light') ? 'light' : 'dark';
-  updateIcons(currentTheme);
+  applyTheme(currentTheme);
+
+  // Adapt keyboard shortcut hint to the platform (⌘K on Apple, Ctrl K elsewhere)
+  // `navigator.platform` is deprecated, so prefer userAgent sniffing (simple heuristic).
+  const isMac = /Mac|iPhone|iPad/i.test(navigator.userAgent);
+  document.querySelectorAll<HTMLElement>('[data-kbd-shortcut]').forEach((el) => {
+    el.textContent = isMac ? '⌘K' : 'Ctrl K';
+  });
 
   themeBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -898,46 +918,71 @@ const isActive = (href: string) =>
       }
 
       localStorage.setItem('theme', nextTheme);
-      updateIcons(nextTheme);
+      applyTheme(nextTheme);
     });
   });
 
   // Mobile drawer is handled in WikiLayout (single navigation DOM) — no duplicate handling needed here
 
-  // Dropdown click support for touch/tablet devices
-  // On touch devices, :hover doesn't work for dropdowns, so we toggle on click
+  // Dropdown support: hover/focus on desktop, click on touch/tablet.
+  // aria-expanded is kept in sync with the actual visible state for AT users.
   const navItems = document.querySelectorAll<HTMLDivElement>('.nav-item');
   let openDropdown: HTMLDivElement | null = null;
 
-  const closeAllDropdowns = () => {
-    navItems.forEach((item) => {
+  const setDropdownOpen = (item: HTMLDivElement, open: boolean) => {
+    const link = item.querySelector<HTMLAnchorElement>('.nav-link');
+    if (!link) return;
+    if (open) {
+      item.classList.add('nav-item--open');
+      link.setAttribute('aria-expanded', 'true');
+      openDropdown = item;
+    } else {
       item.classList.remove('nav-item--open');
-      const link = item.querySelector('.nav-link');
-      if (link) link.setAttribute('aria-expanded', 'false');
-    });
-    openDropdown = null;
+      link.setAttribute('aria-expanded', 'false');
+      if (openDropdown === item) openDropdown = null;
+    }
+  };
+
+  const closeAllDropdowns = () => {
+    navItems.forEach((item) => setDropdownOpen(item, false));
   };
 
   navItems.forEach((item) => {
-    const navLink = item.querySelector('.nav-link');
+    const navLink = item.querySelector<HTMLAnchorElement>('.nav-link');
     if (!navLink) return;
 
+    // Desktop :hover / :focus-within already shows the dropdown via CSS; keep aria-expanded in sync
+    navLink.addEventListener('focus', () => {
+      if (window.innerWidth < 1024) return;
+      navItems.forEach((other) => { if (other !== item) setDropdownOpen(other, false); });
+      setDropdownOpen(item, true);
+    });
+    navLink.addEventListener('blur', () => {
+      // Delay to allow focus to move to a menuitem inside the same dropdown
+      setTimeout(() => {
+        if (item.contains(document.activeElement)) return;
+        setDropdownOpen(item, false);
+      }, 0);
+    });
+    item.addEventListener('mouseenter', () => {
+      if (window.innerWidth < 1024) return;
+      navItems.forEach((other) => { if (other !== item) setDropdownOpen(other, false); });
+      setDropdownOpen(item, true);
+    });
+    item.addEventListener('mouseleave', () => {
+      if (window.innerWidth < 1024) return;
+      setDropdownOpen(item, false);
+    });
+
     navLink.addEventListener('click', (e) => {
-      // Only intercept on touch/tablet (viewport <= 1024) or when no hover support
+      // On touch/tablet, :hover doesn't stick; intercept to toggle the dropdown
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       if (!isTouchDevice && window.innerWidth > 1024) return;
 
       e.preventDefault();
       const isOpen = item.classList.contains('nav-item--open');
-
-      if (isOpen) {
-        closeAllDropdowns();
-      } else {
-        closeAllDropdowns();
-        item.classList.add('nav-item--open');
-        navLink.setAttribute('aria-expanded', 'true');
-        openDropdown = item;
-      }
+      closeAllDropdowns();
+      if (!isOpen) setDropdownOpen(item, true);
     });
   });
 
