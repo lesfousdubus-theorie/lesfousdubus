@@ -624,6 +624,9 @@ const canonicalWikiUrl = new URL(
   const closeIcon = document.getElementById('close-icon');
   const mainContent = document.getElementById('main-content');
 
+  // --- État du tiroir mobile (déclaré tôt : utilisé à l'initialisation) ---
+  const isMobileOpen = () => sidebarContainer?.classList.contains('is-mobile-open');
+
   const syncToggleButtons = () => {
     const mobile = window.innerWidth <= 768;
     const mobileOpen = isMobileOpen();
@@ -673,8 +676,6 @@ const canonicalWikiUrl = new URL(
   });
 
   // --- Mobile drawer : single navigation DOM, pas de duplication ---
-  const isMobileOpen = () => sidebarContainer?.classList.contains('is-mobile-open');
-
   let scrollLocked = false;
   let touchMoveHandler = null;
 
