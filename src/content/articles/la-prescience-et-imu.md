@@ -11,7 +11,7 @@ order: 55
 related: ["joy-boy", "coalition-des-20-rois"]
 ---
 
-**Résumé** : Imu ne règne pas sur le monde par simple force brute, mais parce qu'il possède le don ultime de prescience. Ayant eu la vision d'un garçon au Chapeau de Paille détruisant son empire, Imu passe 800 ans à tout verrouiller pour tenter désespérément d'empêcher cette prédiction de s'accomplir.
+**Résumé** : Selon une extension récente des Fous du Bus (chapitre 1188), Imu pourrait posséder une forme de préscience comparable à celle de Madame Shirley. Cette hypothèse reste une piste récente et est marquée comme telle.
 
 ![Prescience et Imu](/images/threads/la-prescience-et-imu/img_1.jpg)
 ![Vision d'Imu](/images/threads/la-prescience-et-imu/img_2.png)

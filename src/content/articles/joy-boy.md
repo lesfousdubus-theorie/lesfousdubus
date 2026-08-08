@@ -43,11 +43,11 @@ Mais qui est Joy Boy, exactement ? Un homme du passé ? Un titre ? Un dieu ? Cet
 
 Ce sont là des **faits** ; l’interprétation commence quand on se demande *qui* est ce Joy Boy.
 
-## La lecture des Fous du Bus : Joy Boy est le nom futur de Luffy
+## La lecture des Fous du Bus : Joy Boy est le nom/surnom sous lequel Luffy serait identifié à l’aboutissement de son aventure
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>
 
-La thèse centrale défendue ici est la suivante : **Joy Boy n’est pas un homme du passé dont Luffy serait la réincarnation. Joy Boy est le nom que l’Histoire donnera à Luffy lui-même, à l’issue de son aventure.**
+La thèse centrale défendue ici est la suivante : **Joy Boy n’est pas un titre.** C’est un nom ou surnom unique sous lequel Luffy serait identifié à l’aboutissement de son aventure. Luffy aujourd’hui refuse explicitement d’être appelé Joy Boy ou Nika. Il pourrait seulement être reconnu (ou se présenter) comme Joy Boy à l’issue de son aventure (chapitres 1187–1188).
 
 Autrement dit, pendant huit cents ans, le monde croit attendre le retour d’un héros ancien — mais ce héros, c’est Luffy que nous suivons en train d’agir. La légende de Joy Boy se fabrique sous nos yeux.
 

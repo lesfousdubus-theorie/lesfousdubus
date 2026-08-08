@@ -41,6 +41,7 @@ Le contenu distingue ce que le manga établit (canon) des hypothèses de la thé
 - [Marshall D. Teach](https://lesfousdubus.sbs/theorie/teach) : Fiche d'analyse consacrée à Marshall D. Teach, son double pouvoir et sa place dans la théorie. [canon]
 - [Davy Jones](https://lesfousdubus.sbs/theorie/davy-jones-fiche) : Fiche d'identification de Davy Jones, pirate légendaire fondateur du Davy Back Fight, dont le nom s'est transmis jusqu'à Marshall D. Teach. [secondary-theory]
 - [Marshall D. Teach et Davy Jones](https://lesfousdubus.sbs/theorie/barbe-noire-davy-jones) : Comment Marshall D. Teach incarne la figure mythique de Davy Jones et s'apprête à ravir le titre de Roi du Monde à Mary Geoise.
+- [Rocks D. Xebec](https://lesfousdubus.sbs/theorie/rocks-xebec) : Fiche canonique neutre sur Rocks D. Xebec, capitaine des Rocks Pirates, figure centrale de God Valley et de l'histoire récente du monde.
 - [Roronoa Zoro](https://lesfousdubus.sbs/theorie/zoro) : Fiche d'analyse consacrée au sabreur des Chapeaux de Paille, à la lignée Shimotsuki et à son lien avec Ryuma. [canon]
 - [Shimotsuki Ryuma](https://lesfousdubus.sbs/theorie/shimotsuki-ryuma) : Fiche d'identification de Shimotsuki Ryuma, samouraï légendaire de Wano surnommé le Dieu de la Lame, dont le corps fut exhumé par Moria à Thriller Bark. [secondary-theory]
 - [Shimotsuki Ryuma et Roronoa Zoro](https://lesfousdubus.sbs/theorie/ryuma) : Fiche d'analyse sur Shimotsuki Ryuma, le Dieu de la Lame de Wano, et ses parallèles avec Roronoa Zoro. [secondary-theory]
@@ -82,7 +83,7 @@ Le contenu distingue ce que le manga établit (canon) des hypothèses de la thé
 - [Nidhogg et Ratatoskr](https://lesfousdubus.sbs/theorie/nidhogg-ratatoskr) : Nidhogg, pouvoir de Loki et dragon du Harley ; Ratatoskr, créature du folklore scandinave de One Piece. Fiches liées depuis Loki et les dieux et croyances.
 - [Road Ponéglyphes](https://lesfousdubus.sbs/theorie/road-poneglyphes) : Fiche d'identification des quatre Road Ponéglyphes, stèles dispersées dans le monde dont la réunion indique l'emplacement de Laugh Tale. [canon]
 - [La Volonté héritée : le fil rouge du siècle](https://lesfousdubus.sbs/theorie/volonte-heritee) : La Volonté du D. n'est pas un héritage génétique mais la convergence de huit siècles de résistance. Chaque génération transmet sa flamme jusqu'à ce qu'un homme porte le fardeau de toutes.
-- [Binks no Sake : le chant qui traverse les âges](https://lesfousdubus.sbs/theorie/binks-no-sake) : Binks no Sake n'est pas une chanson ancienne mais un chant qui sera composé par Brook à la fin du manga et envoyé dans le passé. Il traverse les générations comme la volonté.
+- [Binks no Sake : le chant qui traverse les âges](https://lesfousdubus.sbs/theorie/binks-no-sake) : Binks no Sake est une chanson populaire dont l'origine reste incertaine. Les chapitres 1183-1184 suggèrent que Brook pourrait en être le compositeur (ou en avoir créé un prototype) et que Dōzan pourrait être un nom d'artiste lié à Brook.
 - [Rio Ponéglyphe](https://lesfousdubus.sbs/theorie/rio-poneglyphe) : Fiche d'identification du Rio Ponéglyphe, message complet formé par la réunion de tous les Ponéglyphes, conservé sur Laugh Tale. [core-theory]
 - [Une communication à travers le temps](https://lesfousdubus.sbs/theorie/communication-temps) : Le Siècle oublié ne serait pas un passé clos mais un présent en train de se construire, et les époques communiqueraient par l'intermédiaire des Ponéglyphes.
 - [Kozuki Toki](https://lesfousdubus.sbs/theorie/kozuki-toki) : Fiche de Kozuki Toki : porteuse du Toki Toki no Mi, seule utilisatrice attestée d'un pouvoir temporel, autrice d'une prophétie et anomalie centrale de la théorie. [canon]
@@ -125,9 +126,9 @@ Le contenu distingue ce que le manga établit (canon) des hypothèses de la thé
 - [Chapitre 1186 : Chapitre 1186 — Les Fruits du Démon et l'histoire des géants](https://lesfousdubus.sbs/chapitres/1186) — nouvelle piste
 - [Chapitre 1184 : Chapitre 1184 — Brook et Binks no Sake](https://lesfousdubus.sbs/chapitres/1184) — nouvelle piste
 - [Chapitre 1183 : Brook pourrait être Dōzan](https://lesfousdubus.sbs/chapitres/1183) — nouvelle piste
-- [Chapitre 1182 : Chapitre 1182 — Zaza, les dieux shandias et la volonté des Zoans](https://lesfousdubus.sbs/chapitres/1182) — approfondissement
-- [Chapitre 1181 : Silhouette Piece : Joy Boy et Imu face à face](https://lesfousdubus.sbs/chapitres/1181) — nouvelle piste
-- [Chapitre 1180 : Imu sur la fresque d'Elbaf](https://lesfousdubus.sbs/chapitres/1180) — nouvelle piste
+- [Chapitre 1182 : Zaza, volonté des Zoans et création des Fruits](https://lesfousdubus.sbs/chapitres/1182) — nouvelle piste
+- [Chapitre 1181 : Silhouette Joy Boy-Roger et idéologie d'Imu](https://lesfousdubus.sbs/chapitres/1181) — approfondissement
+- [Chapitre 1180 : Imu, Omen, Mother Flame et Uranus](https://lesfousdubus.sbs/chapitres/1180) — nouvelle piste
 - [Tous les chapitres](https://lesfousdubus.sbs/chapitres) : index complet
 
 ---

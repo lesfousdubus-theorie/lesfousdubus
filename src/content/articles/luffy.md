@@ -59,7 +59,7 @@ Contrairement à la lecture la plus répandue (qui fait de Luffy la réincarnati
 
 Autrement dit :
 
-- **Joy Boy n’est pas son origine, c’est sa conséquence.** Les volontés, promesses, croyances qui convergent vers lui depuis huit siècles ne dessinent pas un ancêtre à retrouver : elles fabriquent la figure historique qu’il deviendra.
+- **Joy Boy n’est pas son origine, c’est sa conséquence** (chapitre 1187). Les volontés, promesses, croyances qui convergent vers lui depuis huit siècles ne dessinent pas un ancêtre à retrouver : elles fabriquent la figure historique qu’il deviendra. Luffy refuse aujourd’hui d’être Joy Boy ou Nika ; il pourrait l’être / être reconnu à l’issue de son aventure.
 - **Les trois noms.** Luffy (identité), Joy Boy (nom que l’Histoire retiendra), Nika (nom divin que lui donnent les croyants) : trois regards sur un seul homme (voir fiches **Joy Boy** et **Nika**).
 - **Luffy refuse d’incarner une légende**, et c’est précisément ce qui le rend capable de le devenir. Il ne suit aucun modèle : il agit librement, et c’est cette liberté qui, à la fin du récit, donnera son sens à tous les parallèles que le monde aura vus avant lui.
 

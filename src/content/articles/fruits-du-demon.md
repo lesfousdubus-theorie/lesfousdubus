@@ -24,7 +24,7 @@ Les Fruits du Démon confèrent un pouvoir à celui qui les consomme, au prix de
 
 ## Une répartition chronologique remarquable
 
-L'analyse du chapitre 1186 relève un fait vérifiable : l'écrasante majorité des Fruits du Démon connus se manifeste durant les cent dernières années du récit. Cinq seulement échappent à ce cadre, et aucun n'a été montré en action à une époque antérieure :
+L'analyse du chapitre 1186 propose un relevé statistique selon lequel plus de 96 % des Fruits recensés apparaissent durant les 62 dernières années. Ce relevé repose sur un catalogue non officiel et doit être considéré comme un argument analytique, non comme une donnée canonique. Cinq seulement échappent à ce cadre, et aucun n'a été montré en action à une époque antérieure :
 
 - le Hito Hito no Mi, modèle Nika ;
 - le pouvoir d'Imu, dont la nature reste inconnue ;

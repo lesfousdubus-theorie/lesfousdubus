@@ -13,6 +13,8 @@ order: 5
 
 Cette théorie propose une relecture complète de One Piece : **le Siècle oublié n'a pas eu lieu il y a 800 ans, il est en train de se produire maintenant.**
 
+**Structure** : 22 chapitres (démonstration complète) / parcours encyclopédique en 19 dossiers.
+
 ## Le concept central
 
 Tout ce qui est décrit comme "antique" vient en réalité du futur :
@@ -26,7 +28,7 @@ Tout ce qui est décrit comme "antique" vient en réalité du futur :
 
 Les personnages actuels deviendront les légendes du passé :
 
-- **Luffy** = Joy Boy (nom de règne) = Nika (nom divin)
+- **Luffy** = Joy Boy (nom/surnom à l’issue de l’aventure) = Nika (nom divin)
 - **Shirahoshi** = Poséidon
 - **Vivi** = Nefertari D. Lili
 - **Teach** = Davy Jones

@@ -26,7 +26,7 @@ related:
 
 Imu Nerona est la figure invisible qui siège au sommet du Gouvernement mondial. Officiellement, le Trône Vide de Marie Geoise n’appartient à personne ; en réalité, Imu y siège depuis huit cents ans et donne ses ordres aux Gorosei, qui règnent à sa place. Son existence n’est connue que d’un très petit nombre de personnages au sein du pouvoir.
 
-C’est l’antagoniste final de *One Piece*, et l’une des figures les plus mystérieuses du manga. Cette fiche distingue les faits établis de l’interprétation qu’en proposent les Fous du Bus.
+Imu est l’une des principales figures antagonistes de la fin de *One Piece* et pourrait constituer son antagoniste final. Cette fiche distingue les faits établis de l’interprétation qu’en proposent les Fous du Bus.
 
 ## Ce que le manga établit
 
@@ -36,7 +36,7 @@ C’est l’antagoniste final de *One Piece*, et l’une des figures les plus my
 - Le nom « Nerona Imu » est prononcé au chapitre 1084, lors du conseil des rois.
 - Imu semble exister depuis au moins la fondation du Gouvernement mondial, soit huit cents ans, et entretient un rapport privilégié avec Nefertari D. Lili (chapitres 1084–1085).
 - Au chapitre 1164, Imu s’adresse directement à Rocks D. Xebec sur God Valley et l’appelle notamment « Davy Jones », ce à quoi Xebec répond qu’il y a erreur sur la personne.
-- Aux chapitres 1186 et 1188, Imu apparaît doté d’un pouvoir personnel redoutable, capable de détruire une île en un instant (Lulusia a été rayée de la carte par une technologie dont Imu dispose).
+- Aux chapitres 1186 et 1188, Imu apparaît doté d’un pouvoir personnel redoutable. La destruction de Lulusia et l’usage de la Mother Flame sont traités comme hypothèses dans les analyses récentes (voir section Lecture des Fous du Bus).
 - Les Gorosei, pourtant tout-puissants, obéissent à Imu comme à un supérieur absolu.
 - Imu semble obsédé par trois choses : Joy Boy, Nika, et la lignée du D.
 - Il garde dans une chambre de Marie Geoise un chapeau de paille géant congelé (chapitre 906).

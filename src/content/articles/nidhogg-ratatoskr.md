@@ -17,8 +17,17 @@ order: 25
 ### Nidhogg
 
 - **Nidhogg** est le nom du modèle du **Ryu Ryu no Mi** (fruit Zoan mythique) que Loki s'approprie à Elbaf.
-- Nidhogg évoque le **dragon des racines du monde** du folklore nordique, transposé dans l'univers de One Piece.
-- Le terme apparaît dans le contexte de l'orage de neige et de la bête colossale décrite par le Harley.
+- Nidhogg évoque le **dragon des racines du monde** du folklore nordique.
+
+**Ce que montre le chapitre 1182 :**
+- Imu reconnaît Nika, Nidhogg et Ratatoskr.
+- La possibilité qu’il parle aux Fruits eux-mêmes.
+- Les Zoans possèdent une volonté.
+- Certains Fruits auraient pu « trahir » leur créateur.
+- Imu pourrait être à l’origine des Fruits du Démon.
+
+**Interprétation :** Imu parle directement aux Fruits (hypothèse).
+**Hypothèse forte :** Imu les a créés.
 
 ### Ratatoskr
 
