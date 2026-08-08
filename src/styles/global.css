@@ -34,7 +34,7 @@
     /* Métatexte : horodatages, figcaptions, notes de second ordre.
        Strictement en-dessous de --text-secondary ; reste >= 4.5:1 AA
        sur --bg-main et --bg-secondary dans les deux thèmes. */
-    --text-muted: color-mix(in srgb, var(--text-secondary) 72%, transparent);
+    --text-muted: color-mix(in srgb, var(--text-secondary) 74%, transparent);
     --accent-gold: #e0ab4e; /* straw / sun        */
     --alert: #d48d84;
     --border-color: rgba(243, 239, 230, 0.16);
@@ -64,10 +64,12 @@
     --cyan-dim: #0a5e69;
     --text-main: #1f1d18;
     --text-secondary: #4a453c;
-    --text-muted: color-mix(in srgb, var(--text-secondary) 75%, transparent);
+    /* Métatexte en mode clair : foncé à 82% pour rester sous --text-secondary
+       tout en garantissant >= 4.5:1 AA sur --bg-main ET --bg-secondary. */
+    --text-muted: color-mix(in srgb, var(--text-secondary) 82%, transparent);
     --accent-gold: #76520d;
     --alert: #a02f23;
-    --border-color: rgba(31, 29, 24, 0.30);
+    --border-color: rgba(31, 29, 24, 0.3);
     /* Contour porteur d'information (champs, contrôles, focus) : >= 3:1 sur --bg-main. */
     --border-strong: rgba(31, 29, 24, 0.58);
     --glow-violet: rgba(63, 74, 122, 0.22);
@@ -88,11 +90,13 @@
     --font-display: 'Fraunces', Georgia, Cambria, 'Times New Roman', serif;
     --nav-h: 56px;
     --nav-h-mobile: 52px;
+    /* Échelle de rayons avec vraie progression visuelle
+       (sm < base < md < lg < xl). */
     --border-radius: 8px;
-    --border-radius-sm: 8px;
-    --border-radius-md: 12px;
-    --border-radius-lg: 12px;
-    --border-radius-xl: 16px;
+    --border-radius-sm: 6px;
+    --border-radius-md: 10px;
+    --border-radius-lg: 14px;
+    --border-radius-xl: 20px;
     --border-radius-full: 9999px;
     --icon-xs: 12px;
     --icon-sm: 16px;
@@ -275,14 +279,18 @@
     pointer-events: none;
   }
 
-
   /* Differentiated hover effects */
   .hover-lift {
-    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    transition:
+      transform 0.22s ease,
+      box-shadow 0.22s ease,
+      border-color 0.22s ease;
   }
   .hover-lift:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.18), 0 0 20px var(--glow-violet);
+    box-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.18),
+      0 0 20px var(--glow-violet);
     border-color: var(--violet);
   }
   .hover-glow:hover {
@@ -340,10 +348,13 @@ input,
 /* Prevent horizontal overflow globally — critical for mobile slide fix.
    Prefer 100% over 100vw: 100vw includes the classic scrollbar width and
    often creates a 1-axis phantom horizontal slide bar on phones. */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
-html, body {
+html,
+body {
   width: 100%;
   max-width: 100%;
   overflow-x: clip;
@@ -368,7 +379,8 @@ video,
 iframe {
   height: auto;
 }
-pre, code {
+pre,
+code {
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -402,7 +414,6 @@ pre, code {
     scroll-behavior: auto !important;
   }
 }
-
 
 /* Animated gradient shimmer for decorative elements */
 @keyframes gradient-shift {
@@ -446,7 +457,7 @@ pre, code {
   text-decoration: none;
   z-index: 100;
   transition: top 0.2s ease;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .skip-link:focus {

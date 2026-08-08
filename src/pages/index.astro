@@ -9,10 +9,14 @@ import { categoryLabel, effectLabel } from '@utils/labels';
 import { getRecentArticleUpdates } from '@utils/chapter-updates';
 
 const chapters = await getCollection('chapters');
-const articles = await getCollection('articles', ({ data }) => data.status === 'published' && !data.sidebarHidden);
+const articles = await getCollection(
+  'articles',
+  ({ data }) => data.status === 'published' && !data.sidebarHidden,
+);
 const latestChapter = chapters.sort((a, b) => b.data.chapter - a.data.chapter)[0];
 const recentArticleUpdates = getRecentArticleUpdates(articles, chapters, 4);
-const countByCategory = (cat: string) => articles.filter((a:any)=>a.data.category===cat).length;
+const countByCategory = (cat: string) =>
+  articles.filter((a: any) => a.data.category === cat).length;
 
 const badgeColorByEffect = {
   fondation: 'cyan',
@@ -35,7 +39,7 @@ const badgeColorByEffect = {
       <span>La théorie</span>
     </div>
     <h1 class="hero-title">
-      Le Siècle oublié<br /><span class="text-gradient">est le présent</span>
+      Le Siècle oublié<span class="text-gradient">est le présent</span>
     </h1>
     <svg
       class="wave-rule hero-wave"
@@ -52,9 +56,9 @@ const badgeColorByEffect = {
 
     <div class="hero-text">
       <p>
-        Et si le Siècle oublié n’avait pas eu lieu il y a 800 ans ? Selon la théorie des Fous du Bus,
-        les Ponéglyphes raconteraient l’avenir, Joy Boy serait Luffy à la fin de son aventure, et la
-        Grande Guerre serait celle vers laquelle le manga se dirige aujourd’hui.
+        Et si le Siècle oublié n’avait pas eu lieu il y a 800 ans ? Selon la théorie des Fous du
+        Bus, les Ponéglyphes raconteraient l’avenir, Joy Boy serait Luffy à la fin de son aventure,
+        et la Grande Guerre serait celle vers laquelle le manga se dirige aujourd’hui.
       </p>
     </div>
 
@@ -87,11 +91,13 @@ const badgeColorByEffect = {
           stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg
         >
       </a>
-      {latestChapter && (
-        <a href={`/chapitres/${latestChapter.data.chapter}`} class="btn-secondary">
-          Dernier chapitre analysé
-        </a>
-      )}
+      {
+        latestChapter && (
+          <a href={`/chapitres/${latestChapter.data.chapter}`} class="btn-secondary">
+            Dernier chapitre analysé
+          </a>
+        )
+      }
     </div>
 
     <div
@@ -102,11 +108,11 @@ const badgeColorByEffect = {
       tabindex="0"
     >
       <img
+        id="video-facade__img"
         src="https://img.youtube.com/vi/SgJ25zjMJyo/maxresdefault.jpg"
         alt="Vidéo de présentation de la théorie"
         class="video-facade__img"
         loading="lazy"
-        onerror="const s=this.src; this.onerror=null; if(s.includes('maxresdefault')) this.src='https://img.youtube.com/vi/SgJ25zjMJyo/hqdefault.jpg'; else if(s.includes('hqdefault')) this.src='/og-default.png';"
       />
       <div class="video-facade__overlay">
         <div class="video-facade__play">
@@ -125,6 +131,19 @@ const badgeColorByEffect = {
     </div>
 
     <script>
+      // Fallback de la miniature (hors inline, CSP-friendly) :
+      // maxresdefault → hqdefault → image locale.
+      const facadeImg = document.getElementById('video-facade__img') as HTMLImageElement | null;
+      if (facadeImg) {
+        facadeImg.addEventListener('error', () => {
+          if (facadeImg.src.includes('maxresdefault')) {
+            facadeImg.src = 'https://img.youtube.com/vi/SgJ25zjMJyo/hqdefault.jpg';
+          } else if (facadeImg.src.includes('hqdefault')) {
+            facadeImg.src = '/og-default.png';
+          }
+        });
+      }
+
       const facade = document.getElementById('video-facade');
       const loadVideo = () => {
         if (facade && !facade.dataset.loaded) {
@@ -150,14 +169,16 @@ const badgeColorByEffect = {
     </script>
   </div>
 
-  {latestChapter && (
-    <ChapterBanner
-      chapter={String(latestChapter.data.chapter)}
-      title={latestChapter.data.title}
-      effect={effectLabel(latestChapter.data.effect)}
-      href={`/chapitres/${latestChapter.data.chapter}`}
-    />
-  )}
+  {
+    latestChapter && (
+      <ChapterBanner
+        chapter={String(latestChapter.data.chapter)}
+        title={latestChapter.data.title}
+        effect={effectLabel(latestChapter.data.effect)}
+        href={`/chapitres/${latestChapter.data.chapter}`}
+      />
+    )
+  }
 
   <h2 class="section-title">
     <span class="section-title__accent"></span>
@@ -169,49 +190,49 @@ const badgeColorByEffect = {
       title="Monde et destinations"
       description="Blue Star, Grand Line, Laugh Tale, Lodestar : la géographie comme point de départ du raisonnement."
       href="/dossiers#monde-destinations"
-      count={countByCategory("monde-destinations")}
+      count={countByCategory('monde-destinations')}
     />
     <CategoryCard
       icon="📜"
       title="Histoire et temporalité"
       description="Siècle oublié, Ponéglyphes, voyage temporel et communication à travers les époques."
       href="/dossiers#histoire-temporalite"
-      count={countByCategory("histoire-temporalite")}
+      count={countByCategory('histoire-temporalite')}
     />
     <CategoryCard
       icon="🎭"
       title="Figures principales"
       description="Luffy, Joy Boy, Nika, Roger : les acteurs centraux de la théorie."
       href="/dossiers#figures-principales"
-      count={countByCategory("figures-principales")}
+      count={countByCategory('figures-principales')}
     />
     <CategoryCard
       icon="🔱"
       title="Armes antiques"
       description="Poséidon, Pluton, Uranus, Noah : leur véritable fonction et leur rôle dans la guerre finale."
       href="/dossiers#armes-antiques"
-      count={countByCategory("armes-antiques")}
+      count={countByCategory('armes-antiques')}
     />
     <CategoryCard
       icon="⚡"
       title="Technologies et pouvoirs"
       description="Vegapunk, Mother Flame, Fruits du Démon, Emeth et les connaissances perdues."
       href="/dossiers#technologies-pouvoirs"
-      count={countByCategory("technologies-pouvoirs")}
+      count={countByCategory('technologies-pouvoirs')}
     />
     <CategoryCard
       icon="⚖️"
       title="Gouvernement mondial"
       description="Imu, Gorosei, Dragons Célestes et la structure du pouvoir mondial."
       href="/dossiers#gouvernement-mondial"
-      count={countByCategory("gouvernement-mondial")}
+      count={countByCategory('gouvernement-mondial')}
     />
     <CategoryCard
       icon="⚔️"
       title="Guerre finale"
       description="La Grande Guerre, le Déluge, la destruction de Red Line et la coalition finale."
       href="/dossiers#guerre-finale"
-      count={countByCategory("guerre-finale")}
+      count={countByCategory('guerre-finale')}
     />
   </div>
 
@@ -222,7 +243,8 @@ const badgeColorByEffect = {
   <div class="reading-guide">
     <span class="reading-guide__icon" aria-hidden="true">💡</span>
     <span class="reading-guide__text">
-      Les articles utilisent des badges de certitude (Canon, Interprétation, Hypothèse) pour distinguer les faits établis des suppositions.
+      Les articles utilisent des badges de certitude (Canon, Interprétation, Hypothèse) pour
+      distinguer les faits établis des suppositions.
       <a href="/aide/glossaire" class="reading-guide__link">Consultez le glossaire →</a>
     </span>
   </div>
@@ -252,11 +274,14 @@ const badgeColorByEffect = {
     </a>
   </div>
 
-  {latestChapter && (
-    <p class="last-update">
-      Dernière mise à jour de la théorie : <strong>chapitre {latestChapter.data.chapter}</strong> — {latestChapter.data.title}.
-    </p>
-  )}
+  {
+    latestChapter && (
+      <p class="last-update">
+        Dernière mise à jour de la théorie : <strong>chapitre {latestChapter.data.chapter}</strong>{' '}
+        — {latestChapter.data.title}.
+      </p>
+    )
+  }
 
   <h2 class="section-title">
     <span class="section-title__accent"></span>
@@ -405,6 +430,12 @@ const badgeColorByEffect = {
     margin-bottom: 20px;
     line-height: 1.15;
     letter-spacing: -0.03em;
+  }
+
+  /* « est le présent » passe sur sa propre ligne sans <br> codé en dur :
+     le retour à la ligne est géré par le CSS et reste équilibré. */
+  .hero-title .text-gradient {
+    display: block;
   }
 
   .hero-text {
@@ -696,13 +727,17 @@ const badgeColorByEffect = {
     background: var(--gradient-card);
     text-decoration: none;
     color: var(--text-main);
-    transition: transform 0.2s, border-color 0.2s;
+    transition:
+      transform 0.2s,
+      border-color 0.2s;
   }
 
   .understand-card:hover {
     transform: translateY(-3px);
     border-color: var(--violet);
-    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.15), 0 0 16px var(--glow-violet);
+    box-shadow:
+      0 10px 32px rgba(0, 0, 0, 0.15),
+      0 0 16px var(--glow-violet);
   }
 
   .understand-card:active {

@@ -163,12 +163,12 @@ const isActive = (href: string) =>
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </a>
-            <div class="nav-dropdown" role="menu">
+            <div class="nav-dropdown" role="group" aria-label={item.label}>
               {item.groups.map((group) => (
                 <div class="nav-dropdown__group">
                   <div class="nav-dropdown__title">{group.title}</div>
                   {group.links.map((link) => (
-                    <a href={link.href} class="nav-dropdown__link" role="menuitem">
+                    <a href={link.href} class="nav-dropdown__link">
                       {link.label}
                     </a>
                   ))}
@@ -655,13 +655,29 @@ const isActive = (href: string) =>
   }
 
   /* Theme icons — pure CSS initial state, no FOUC */
-  .ico-sun, .ico-moon { display:flex; align-items:center; justify-content:center; }
-  html.dark .ico-sun { display:flex; }
-  html.dark .ico-moon { display:none; }
-  html.light .ico-sun { display:none; }
-  html.light .ico-moon { display:flex; }
+  .ico-sun,
+  .ico-moon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  html.dark .ico-sun {
+    display: flex;
+  }
+  html.dark .ico-moon {
+    display: none;
+  }
+  html.light .ico-sun {
+    display: none;
+  }
+  html.light .ico-moon {
+    display: flex;
+  }
   /* JS fallback class .hidden still works */
-  .ico-sun.hidden, .ico-moon.hidden { display:none !important; }
+  .ico-sun.hidden,
+  .ico-moon.hidden {
+    display: none !important;
+  }
 
   #mobile-menu-toggle {
     display: none;
@@ -897,7 +913,10 @@ const isActive = (href: string) =>
         document.documentElement.classList.add('dark');
       }
 
+      // Choix explicite de l'utilisateur : on « épingle » le thème pour qu'il
+      // ne soit plus écrasé par les changements du système.
       localStorage.setItem('theme', nextTheme);
+      document.documentElement.setAttribute('data-theme-pinned', 'true');
       updateIcons(nextTheme);
     });
   });
@@ -975,7 +994,11 @@ const isActive = (href: string) =>
     }
 
     // ArrowDown on a trigger opens that dropdown and focuses first item
-    if (e.key === 'ArrowDown' && target.classList.contains('nav-link') && target.getAttribute('aria-haspopup') === 'true') {
+    if (
+      e.key === 'ArrowDown' &&
+      target.classList.contains('nav-link') &&
+      target.getAttribute('aria-haspopup') === 'true'
+    ) {
       const item = target.closest<HTMLDivElement>('.nav-item');
       if (!item) return;
       e.preventDefault();
