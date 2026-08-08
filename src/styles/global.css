@@ -144,27 +144,29 @@
 
 @layer components {
   .badge {
-    @apply inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium border;
+    @apply inline-flex items-center px-2.5 py-1 rounded-full font-medium border;
+    font-size: 12px;
+    line-height: 1.4;
   }
   .badge-cyan {
-    background-color: color-mix(in srgb, var(--cyan) 12%, transparent);
+    background-color: color-mix(in srgb, var(--cyan) 18%, transparent);
     color: var(--cyan);
-    border-color: color-mix(in srgb, var(--cyan) 25%, transparent);
+    border-color: color-mix(in srgb, var(--cyan) 35%, transparent);
   }
   .badge-violet {
-    background-color: color-mix(in srgb, var(--violet) 12%, transparent);
+    background-color: color-mix(in srgb, var(--violet) 18%, transparent);
     color: var(--violet-light);
-    border-color: color-mix(in srgb, var(--violet) 25%, transparent);
+    border-color: color-mix(in srgb, var(--violet) 35%, transparent);
   }
   .badge-gold {
-    background-color: color-mix(in srgb, var(--accent-gold) 12%, transparent);
+    background-color: color-mix(in srgb, var(--accent-gold) 18%, transparent);
     color: var(--accent-gold);
-    border-color: color-mix(in srgb, var(--accent-gold) 25%, transparent);
+    border-color: color-mix(in srgb, var(--accent-gold) 35%, transparent);
   }
   .badge-alert {
-    background-color: color-mix(in srgb, var(--alert) 12%, transparent);
+    background-color: color-mix(in srgb, var(--alert) 18%, transparent);
     color: var(--alert);
-    border-color: color-mix(in srgb, var(--alert) 25%, transparent);
+    border-color: color-mix(in srgb, var(--alert) 35%, transparent);
   }
 
   /* Card utility with consistent border-radius */

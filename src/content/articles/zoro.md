@@ -6,7 +6,7 @@ status: "published"
 sources: []
 editorialStatus: "canon"
 reviewedUntilChapter: 1188
-order: 43
+order: 45
 related: ["ryuma", "theorie-complete"]
 ---
 

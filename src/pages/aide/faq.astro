@@ -1,6 +1,13 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
+
+const breadcrumbItems = [
+  { label: 'Accueil', href: '/' },
+  { label: 'Aide', href: '/aide' },
+  { label: 'FAQ' },
+];
 
 const faqs = [
   {
@@ -39,6 +46,7 @@ const faqs = [
 ---
 
 <WikiLayout title="FAQ" seoTitle="FAQ One Piece : questions sur le Siècle oublié | Les Fous du Bus" description="FAQ de la théorie One Piece : Siècle oublié, Joy Boy, Nika, Ponéglyphes, Imu et réponses claires sur la lecture du Siècle oublié est le présent." currentPath="/aide/faq">
+  <Breadcrumb items={breadcrumbItems} />
   <div class="page-header">
     <h1>Foire aux questions</h1>
     <p class="page-desc">

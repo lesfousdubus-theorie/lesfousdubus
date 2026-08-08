@@ -8,7 +8,7 @@ sources: [1164, 1107, 957]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-order: 46
+order: 47
 parent: "davy-jones-fiche"
 related: ["davy-jones-fiche", "teach", "guerre-finale", "gouvernement-mondial", "gorosei"]
 ---

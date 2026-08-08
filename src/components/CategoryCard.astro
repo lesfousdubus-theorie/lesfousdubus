@@ -62,6 +62,11 @@ const { icon, title, description, href, count } = Astro.props;
     opacity: 1;
   }
 
+  .card:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 0 10px var(--glow-violet);
+  }
+
   .card__header {
     display: flex;
     justify-content: space-between;

@@ -26,6 +26,8 @@ const { headings = [] } = Astro.props;
             <a
               href={`#${heading.slug}`}
               class="toc__link"
+              data-toc-link
+              data-slug={heading.slug}
             >
               {heading.text}
             </a>
@@ -34,6 +36,65 @@ const { headings = [] } = Astro.props;
     }
   </ul>
 </nav>
+
+<script>
+  // Highlight active TOC section on scroll
+  (function initTocHighlight() {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    const tocLinks = document.querySelectorAll('[data-toc-link]');
+    if (tocLinks.length === 0) return;
+
+    const headingIds = Array.from(tocLinks)
+      .map((link) => link.getAttribute('data-slug'))
+      .filter((id): id is string => id !== null);
+    const headings = headingIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[];
+
+    if (headings.length === 0) return;
+
+    let activeId: string | null = null;
+
+    const setActive = (id: string | null) => {
+      if (id === activeId) return;
+      activeId = id;
+      tocLinks.forEach((link) => {
+        link.classList.toggle('toc__link--active', link.getAttribute('data-slug') === id);
+      });
+    };
+
+    if (reduce || !('IntersectionObserver' in window)) {
+      // Fallback: highlight based on scroll position
+      const onScroll = () => {
+        let current: string | null = null;
+        for (const heading of headings) {
+          const rect = heading.getBoundingClientRect();
+          if (rect.top <= 100) {
+            current = heading.id;
+          }
+        }
+        setActive(current);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    } else {
+      // IntersectionObserver for smooth highlighting
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top);
+          if (visible.length > 0) {
+            setActive(visible[0].target.id);
+          }
+        },
+        { rootMargin: '-10% 0px -60% 0px', threshold: 0 }
+      );
+      headings.forEach((h) => observer.observe(h));
+    }
+  })();
+</script>
 
 <style>
   .toc__title {
@@ -89,5 +150,15 @@ const { headings = [] } = Astro.props;
   .toc__link:hover {
     color: var(--text-main);
     border-bottom-color: color-mix(in srgb, var(--cyan) 40%, transparent);
+  }
+
+  .toc__link--active {
+    color: var(--cyan) !important;
+    font-weight: 600;
+    border-bottom-color: var(--cyan) !important;
+  }
+
+  .toc__link:active {
+    transform: scale(0.98);
   }
 </style>

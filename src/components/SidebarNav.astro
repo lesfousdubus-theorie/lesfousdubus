@@ -70,6 +70,7 @@ interface NavSection {
   label: string;
   icon: string;
   links: SidebarLink[];
+  isChaptersSection?: boolean;
 }
 
 // Build navigation sections with hierarchical structure:
@@ -189,6 +190,8 @@ navSections.push({
     level: 0,
     type: 'fiche',
   })),
+  // Marqueur pour identifier la section chapitres
+  isChaptersSection: true,
 });
 
 // Add help section
@@ -214,9 +217,15 @@ navSections.push({
           currentPath === link.href + '/' ||
           (link.href !== '/' && currentPath.startsWith(link.href)),
       );
+      // Vérifier si on est sur une page chapitre pour mettre en évidence la section
+      const isChaptersActive = section.isChaptersSection && currentPath.startsWith('/chapitres/');
+      
       return (
         <div class={index > 0 ? 'mt-5' : ''} data-sidebar-section>
-          <button class="sidebar-section-toggle" aria-expanded={isExpanded ? 'true' : 'false'}>
+          <button 
+            class={`sidebar-section-toggle ${isChaptersActive ? 'sidebar-section-toggle--chapters-active' : ''}`} 
+            aria-expanded={isExpanded ? 'true' : 'false'}
+          >
             <span class="flex items-center gap-2">
               <span class="text-base">{section.icon}</span>
               <span>{section.label}</span>
@@ -275,6 +284,22 @@ navSections.push({
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
+  }
+
+  /* Séparateur visuel entre les sections */
+  [data-sidebar-section] + [data-sidebar-section] {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+  }
+
+  /* Section Chapitres active - indicateur visuel */
+  .sidebar-section-toggle--chapters-active {
+    color: var(--accent-gold) !important;
+  }
+
+  .sidebar-section-toggle--chapters-active .sidebar-chevron {
+    color: var(--accent-gold);
   }
 
   .sidebar-section-toggle {
@@ -386,6 +411,11 @@ navSections.push({
   .sidebar-link:hover {
     background-color: var(--surface);
     color: var(--text-main);
+  }
+
+  .sidebar-link:active {
+    transform: scale(0.98);
+    background-color: color-mix(in srgb, var(--cyan) 10%, transparent);
   }
 
   .sidebar-link--active {

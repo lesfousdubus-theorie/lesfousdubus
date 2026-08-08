@@ -35,11 +35,44 @@ const articleChapters = chapterEntries
   .filter((c) => c.data.updatedArticles?.includes(currentSlug))
   .sort((a, b) => b.data.chapter - a.data.chapter);
 
-const breadcrumbItems = [
-  { label: 'Accueil', href: '/' },
-  { label: 'La théorie', href: '/theorie' },
-  { label: title },
-];
+// Breadcrumb dynamique basé sur le chemin de la page
+const generateBreadcrumb = (path: string): Array<{ label: string; href?: string }> => {
+  const segments = path.split('/').filter(Boolean);
+  const items: Array<{ label: string; href?: string }> = [{ label: 'Accueil', href: '/' }];
+  
+  if (segments.length === 0) return items;
+  
+  // Pages spéciales avec breadcrumb personnalisé
+  if (path.startsWith('/theorie/')) {
+    items.push({ label: 'La théorie', href: '/theorie' });
+    if (path !== '/theorie' && path !== '/theorie/') {
+      items.push({ label: title });
+    }
+  } else if (path.startsWith('/dossiers')) {
+    items.push({ label: 'Dossiers', href: '/dossiers' });
+  } else if (path.startsWith('/chapitres')) {
+    items.push({ label: 'Chapitres', href: '/chapitres' });
+    if (path !== '/chapitres' && path !== '/chapitres/') {
+      items.push({ label: title });
+    }
+  } else if (path.startsWith('/explorer')) {
+    items.push({ label: 'Explorer', href: '/explorer' });
+    if (path !== '/explorer' && path !== '/explorer/') {
+      items.push({ label: title });
+    }
+  } else if (path.startsWith('/aide')) {
+    items.push({ label: 'Aide', href: '/aide' });
+    if (path !== '/aide' && path !== '/aide/') {
+      items.push({ label: title });
+    }
+  } else {
+    items.push({ label: title });
+  }
+  
+  return items;
+};
+
+const breadcrumbItems = generateBreadcrumb(currentPath);
 
 // JSON-LD for Article — enrichi (headline court = H1, description, section, publisher)
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
