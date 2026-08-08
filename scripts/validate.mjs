@@ -89,6 +89,37 @@ const KNOWN_PAGES = new Set([
   '/404',
 ]);
 
+// Découvre automatiquement les pages .astro de src/pages (routes statiques) pour
+// éviter de maintenir à la main la liste des pages d'Explorer et autres pages.
+function discoverStaticPages(dir) {
+  const out = [];
+  let entries;
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return out;
+  }
+  for (const entry of entries) {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) {
+      out.push(...discoverStaticPages(full));
+    } else if (/\.astro$/.test(entry)) {
+      const rel = relative(join(process.cwd(), 'src', 'pages'), full).replace(/\\/g, '/');
+      // Ignore les routes dynamiques ([...] et [param]) : elles sont validées autrement.
+      if (/\[/.test(rel)) continue;
+      let route = '/' + rel.replace(/\.astro$/, '');
+      if (route === '/index') route = '/';
+      out.push(route);
+    }
+  }
+  return out;
+}
+
+// Ajoute toutes les pages statiques découvertes aux pages connues.
+for (const route of discoverStaticPages(join(process.cwd(), 'src', 'pages'))) {
+  KNOWN_PAGES.add(route);
+}
+
 const errors = [];
 const articleIds = [];
 

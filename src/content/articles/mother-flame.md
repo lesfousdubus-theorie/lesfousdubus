@@ -1,6 +1,6 @@
 ---
 title: "Mother Flame"
-summary: "Mother Flame est l'énergie créée par Vegapunk en étudiant Emeth. Elle alimente les technologies futures et pourrait être utilisée par Imu pour devenir Uranus."
+summary: "Mother Flame est l'énergie créée par Vegapunk en étudiant Emeth. Une partie a servi à détruire Lulusia ; le manga n'identifie pas l'arme employée. La théorie rapproche cette arme d'Uranus et imagine l'Omen d'Imu amplifié par cette énergie (hypothèse)."
 category: "technologies-pouvoirs"
 status: "published"
 certainty: "elevee"

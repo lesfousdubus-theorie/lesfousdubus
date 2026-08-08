@@ -54,7 +54,7 @@ Les balises entre crochets indiquent la nature : canon, fait-observe, interpreta
 ## Armes antiques
 
 - [Armes antiques](https://lesfousdubus.sbs/theorie/armes-antiques) : Fiche consacrée aux Armes antiques (Poséidon, Pluton, Uranus) : ce que le manga établit, leurs liens respectifs aux peuples, la lecture des Fous du Bus sur leur rôle dans la guerre finale et les limites. [core-theory]
-- [Uranus : l'arme du ciel](https://lesfousdubus.sbs/theorie/uranus) : Uranus n'est pas une arme antique mais la dernière création de Vegapunk. Mother Flame est l'énergie qui l'alimente, utilisée par Imu pour détruire Lulusia.
+- [Uranus : l'arme du ciel](https://lesfousdubus.sbs/theorie/uranus) : Uranus est la troisième Arme antique, dont la nature précise n'est pas révélée par le manga. La théorie rapproche l'arme utilisée contre Lulusia d'Uranus et du pouvoir d'Imu amplifié par la Mother Flame (hypothèse).
 - [Noah](https://lesfousdubus.sbs/theorie/noah) : Fiche consacrée à l'arche Noah : le navire géant conservé par le royaume Ryugu depuis 800 ans, sa liaison au Ponéglyphe de Joy Boy, à Poséidon et au jour du serment. [canon]
 - [Pluton](https://lesfousdubus.sbs/theorie/pluton-fiche) : Fiche d'identification de Pluton, l'Arme antique conservée sous forme de plans à Water Seven et capable de détruire des îles entières. [canon]
 - [Poséidon](https://lesfousdubus.sbs/theorie/poseidon-fiche) : Fiche d'identification de Poséidon, l'Arme antique capable de commander les Rois des Mers et matérialisée par la princesse Shirahoshi. [canon]
@@ -64,7 +64,7 @@ Les balises entre crochets indiquent la nature : canon, fait-observe, interpreta
 
 - [Vegapunk](https://lesfousdubus.sbs/theorie/vegapunk) : Fiche du docteur Vegapunk : le plus grand scientifique du monde, son message à l'humanité, ses six satellites et son annonce de la submersion du monde. [canon]
 - [Emeth](https://lesfousdubus.sbs/theorie/emeth-futur) : Fiche d'analyse consacrée au robot géant Emeth de l'Ancien Royaume, son rôle sur Egghead et ses liens avec Joy Boy. [secondary-theory]
-- [Mother Flame](https://lesfousdubus.sbs/theorie/mother-flame) : Mother Flame est l'énergie créée par Vegapunk en étudiant Emeth. Elle alimente les technologies futures et pourrait être utilisée par Imu pour devenir Uranus.
+- [Mother Flame](https://lesfousdubus.sbs/theorie/mother-flame) : Mother Flame est l'énergie créée par Vegapunk en étudiant Emeth. Une partie a servi à détruire Lulusia ; le manga n'identifie pas l'arme employée. La théorie rapproche cette arme d'Uranus et imagine l'Omen d'Imu amplifié par cette énergie (hypothèse).
 - [L'énergie antique et la Flamme Mère](https://lesfousdubus.sbs/theorie/energie-antique) : La Flamme Mère et l'énergie antique ne seraient pas de simples armes, mais le relais d'un savoir perdu réutilisé au présent, tissant un lien technique entre le Siècle oublié et One Piece.
 - [Fruits du Démon](https://lesfousdubus.sbs/theorie/fruits-du-demon) : Fiche des Fruits du Démon : leur fonctionnement, leur répartition chronologique dans le récit et la question de leur existence avant le siècle en cours. [canon]
 - [Zoans](https://lesfousdubus.sbs/theorie/zoans) : Fiche des Fruits du Démon de type Zoan : leur volonté propre, les Zoans mythiques et la question de la conscience des fruits. [canon]
