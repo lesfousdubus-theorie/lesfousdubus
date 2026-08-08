@@ -41,7 +41,6 @@ Les balises entre crochets indiquent la nature : canon, fait-observe, interpreta
 - [Davy Jones](https://lesfousdubus.sbs/theorie/davy-jones-fiche) : Fiche d'identification de Davy Jones, pirate légendaire fondateur du Davy Back Fight, dont le nom s'est transmis jusqu'à Marshall D. Teach. [secondary-theory]
 - [Marshall D. Teach et Davy Jones](https://lesfousdubus.sbs/theorie/barbe-noire-davy-jones) : Comment Marshall D. Teach incarne la figure mythique de Davy Jones et s'apprête à ravir le titre de Roi du Monde à Mary Geoise.
 - [Rocks D. Xebec](https://lesfousdubus.sbs/theorie/rocks-xebec) : Fiche canonique neutre sur Rocks D. Xebec, capitaine des Rocks Pirates, figure centrale de God Valley et de l'histoire récente du monde.
-- [Roronoa Zoro](https://lesfousdubus.sbs/theorie/zoro) : Fiche d'analyse consacrée au sabreur des Chapeaux de Paille, à la lignée Shimotsuki et à son lien avec Ryuma. [canon]
 - [Shimotsuki Ryuma](https://lesfousdubus.sbs/theorie/shimotsuki-ryuma) : Fiche d'identification de Shimotsuki Ryuma, samouraï légendaire de Wano surnommé le Dieu de la Lame, dont le corps fut exhumé par Moria à Thriller Bark. [secondary-theory]
 - [Shimotsuki Ryuma et Roronoa Zoro](https://lesfousdubus.sbs/theorie/ryuma) : Fiche d'analyse sur Shimotsuki Ryuma, le Dieu de la Lame de Wano, et ses parallèles avec Roronoa Zoro. [secondary-theory]
 - [Nefertari Vivi](https://lesfousdubus.sbs/theorie/nefertari-vivi) : Fiche d'identification de Nefertari Vivi, princesse d'Alabasta, membre honoraire des Chapeaux de Paille et héritière de la volonté de Nefertari D. Lili. [canon]
@@ -50,6 +49,7 @@ Les balises entre crochets indiquent la nature : canon, fait-observe, interpreta
 - [Brook](https://lesfousdubus.sbs/theorie/brook) : Fiche neutre de Brook : musicien de l'équipage Rumbar puis des Mugiwara, mort et revenu grâce au Yomi Yomi no Mi, témoin vivant de plus de quatre-vingts ans d'histoire. [canon]
 - [Équipage Rumbar](https://lesfousdubus.sbs/theorie/equipage-rumbar) : Fiche de l'équipage Rumbar : les pirates musiciens qui escortèrent Laboon, leur disparition dans le Triangle Florian et l'enregistrement de Binks no Sake. [canon]
 - [Dōzan](https://lesfousdubus.sbs/theorie/dozan) : Fiche de Dōzan : figure évoquée dans les chapitres récents, associée à Wa no Kuni et à l'origine de Binks no Sake. [speculative]
+- [Roronoa Zoro](https://lesfousdubus.sbs/theorie/zoro) : Fiche d'analyse consacrée au sabreur des Chapeaux de Paille, à la lignée Shimotsuki et à son lien avec Ryuma. [canon]
 - [Gunko](https://lesfousdubus.sbs/theorie/gunko) : Fiche canonique neutre sur Gunko, membre des Chevaliers Divins, et son rôle dans les analyses récentes autour de Brook.
 - [Loki](https://lesfousdubus.sbs/theorie/loki) : Loki, le géant d'Elbaf, s'approprie le pouvoir du Ryu Ryu no Mi modèle Nidhogg. La théorie le relie au dieu de la guerre, aux géants charpentiers de Galley-La et à la branche Pluton.
 
