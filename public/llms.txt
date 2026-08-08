@@ -8,6 +8,7 @@ Le contenu distingue ce que le manga établit (canon) des hypothèses de la thé
 - [Accueil](https://lesfousdubus.sbs/) : pitch et vidéo d'introduction
 - [Résumé de la théorie](https://lesfousdubus.sbs/theorie/resume) : l'argument en 10 points
 - [Théorie complète](https://lesfousdubus.sbs/theorie/theorie-complete) : démonstration continue en 22 chapitres
+- [Carte mentale](https://lesfousdubus.sbs/explorer/carte-mentale)
 - [Glossaire](https://lesfousdubus.sbs/aide/glossaire) : définitions « Dans le manga / Selon la théorie »
 
 ## Fondations et géographie
@@ -51,6 +52,7 @@ Le contenu distingue ce que le manga établit (canon) des hypothèses de la thé
 - [Brook](https://lesfousdubus.sbs/theorie/brook) : Fiche neutre de Brook : musicien de l'équipage Rumbar puis des Mugiwara, mort et revenu grâce au Yomi Yomi no Mi, témoin vivant de plus de quatre-vingts ans d'histoire. [canon]
 - [Équipage Rumbar](https://lesfousdubus.sbs/theorie/equipage-rumbar) : Fiche de l'équipage Rumbar : les pirates musiciens qui escortèrent Laboon, leur disparition dans le Triangle Florian et l'enregistrement de Binks no Sake. [canon]
 - [Dōzan](https://lesfousdubus.sbs/theorie/dozan) : Fiche de Dōzan : figure évoquée dans les chapitres récents, associée à Wa no Kuni et à l'origine de Binks no Sake. [speculative]
+- [Gunko](https://lesfousdubus.sbs/theorie/gunko) : Fiche canonique neutre sur Gunko, membre des Chevaliers Divins, et son rôle dans les analyses récentes autour de Brook.
 - [Loki](https://lesfousdubus.sbs/theorie/loki) : Loki, le géant d'Elbaf, s'approprie le pouvoir du Ryu Ryu no Mi modèle Nidhogg. La théorie le relie au dieu de la guerre, aux géants charpentiers de Galley-La et à la branche Pluton.
 
 ## Armes antiques

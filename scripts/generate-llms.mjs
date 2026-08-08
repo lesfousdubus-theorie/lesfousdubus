@@ -149,6 +149,7 @@ out.push('## Commencer\n');
 out.push(`- [Accueil](${SITE}/) : pitch et vidéo d'introduction`);
 out.push(`- [Résumé de la théorie](${SITE}/theorie/resume) : l'argument en 10 points`);
 out.push(`- [Théorie complète](${SITE}/theorie/theorie-complete) : démonstration continue en 22 chapitres`);
+out.push(`- [Carte mentale](${SITE}/explorer/carte-mentale)`);
 out.push(`- [Glossaire](${SITE}/aide/glossaire) : définitions « Dans le manga / Selon la théorie »`);
 out.push('');
 
