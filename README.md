@@ -186,9 +186,17 @@ Accueil
 │   ├── Carte mentale
 │   ├── Carte de Blue Star
 │   ├── Graphe des correspondances
+│   ├── Luffy · Joy Boy · Nika
+│   ├── Chronologie comparative
 │   ├── Schéma des Ponéglyphes
+│   ├── Road Ponéglyphes & temps
+│   ├── La mémoire de l'avenir
+│   ├── Fresque d'Elbaf annotée
 │   ├── Peuples et missions
-│   └── Schéma de la guerre finale
+│   ├── Le chemin de Pluton
+│   ├── Schéma de la guerre finale
+│   ├── Déluge, Red Line & All Blue
+│   └── Omen, Mother Flame & Imu
 │
 └── Aide
     ├── À propos
@@ -339,7 +347,8 @@ npm run dev          # Développement (serveur local + rechargement)
 npm run check        # Vérification Astro et TypeScript
 npm run validate     # Validation du contenu et des liens
 npm run llms         # Régénère public/llms.txt et public/llms-full.txt
-npm run build        # Build Astro + index Pagefind (dossier dist/)
+npm run og           # Régénère les images Open Graph des grandes pages (public/og-*.png)
+npm run build        # Build Astro + llms + og + index Pagefind (dossier dist/)
 npm run preview      # Prévisualisation du build
 npm run format       # Formatage automatique
 npm run test         # Tests unitaires
@@ -520,9 +529,8 @@ npm run test
 npm run build
 ```
 
-> Un workflow CI (`.github/workflows/ci.yml`) exécute automatiquement ces quatre vérifications
-> sur chaque push et chaque Pull Request (Node 22, `npm ci`, validate, check, test, build,
-> contrôle des `llms.txt`/`llms-full.txt` et du sitemap).
+Ces quatre vérifications doivent passer avant toute demande de fusion ; elles sont à lancer
+manuellement en local (il n'y a pas de workflow CI automatisé sur le dépôt).
 
 Une modification est prête à être fusionnée lorsque :
 
