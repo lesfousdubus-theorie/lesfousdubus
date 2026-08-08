@@ -82,9 +82,32 @@ const sections: DossierSection[] = [
     description: 'La Grande Guerre, le Déluge, la destruction de Red Line et la coalition finale.',
   },
 ];
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
+const dossierJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Dossiers de la théorie',
+  itemListElement: sections.map((s, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: s.title,
+    url: `${siteUrl}/dossiers#${s.id}`,
+  })),
+};
+const dossierBreadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${siteUrl}/` },
+    { '@type': 'ListItem', position: 2, name: 'Dossiers', item: `${siteUrl}/dossiers/` },
+  ],
+};
 ---
 
 <WikiLayout title="Dossiers" seoTitle="Dossiers One Piece : monde, personnages, Armes antiques et guerre finale | Les Fous du Bus" description="Tous les dossiers thématiques One Piece : monde, Ponéglyphes, Joy Boy, Nika, Armes antiques, peuples, Gouvernement mondial et guerre finale." currentPath="/dossiers">
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(dossierJsonLd)} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(dossierBreadcrumbLd)} />
   <div class="hero">
     <div class="text-violet font-semibold tracking-widest uppercase text-sm mb-3">Dossiers</div>
     <h1>Dossiers</h1>
