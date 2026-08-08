@@ -148,7 +148,24 @@ const articleJsonLd = {
     const closeBtn = document.getElementById('lightbox-close');
 
     if (lightbox && lightboxImg) {
+      // Ferme le tiroir de navigation mobile s'il était ouvert, afin d'éviter
+      // la superposition de deux overlays (tiroir + lightbox).
+      const closeMobileNavIfOpen = () => {
+        const drawer = document.getElementById('sidebar-left-container');
+        if (drawer?.classList.contains('is-mobile-open')) {
+          drawer.classList.remove('is-mobile-open');
+          document
+            .getElementById('sidebar-mobile-overlay')
+            ?.classList.remove('is-open');
+          document.documentElement.classList.remove('mobile-nav-open');
+          document.body.classList.remove('mobile-nav-open');
+          document.documentElement.removeAttribute('data-nav-open');
+          document.body.removeAttribute('data-nav-open');
+        }
+      };
+
       const openLightbox = (src: string, alt: string) => {
+        closeMobileNavIfOpen();
         lightboxImg.src = src;
         lightboxImg.alt = alt;
         lightbox.classList.remove('hidden');
@@ -159,7 +176,11 @@ const articleJsonLd = {
       const closeLightbox = () => {
         lightbox.classList.add('hidden');
         lightbox.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        // Ne réactive le défilement que si aucun autre overlay (tiroir mobile)
+        // ne maintient le verrou.
+        if (!document.body.classList.contains('mobile-nav-open')) {
+          document.body.style.overflow = '';
+        }
         lightboxImg.src = '';
       };
 

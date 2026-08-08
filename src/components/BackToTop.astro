@@ -51,7 +51,19 @@
     visibility: hidden;
     transform: translateY(12px);
     transition: all 0.25s ease;
-    z-index: 90;
+    /* En dessous du tiroir mobile (50), de l'overlay (45) et de la navbar (60),
+       mais au-dessus du contenu. Le bouton ne doit jamais chevaucher le drawer. */
+    z-index: 35;
+  }
+
+  /* Masquer le bouton tant que le tiroir de navigation mobile est ouvert :
+     il est figé (overflow hidden) et le bouton ferait double emploi avec la
+     fermeture du tiroir, tout en risquant de chevaucher ses liens. */
+  :global([data-nav-open='mobile']) #back-to-top {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(12px) !important;
+    pointer-events: none !important;
   }
 
   .back-to-top:hover {
