@@ -1,0 +1,111 @@
+---
+import WikiLayout from '@layouts/WikiLayout.astro';
+import Footer from '@components/Footer.astro';
+
+interface Facet {
+  nom: string;
+  href: string;
+  qui: string;
+  usage: string;
+  tonalite: string;
+}
+
+const facets: Facet[] = [
+  {
+    nom: 'Luffy',
+    href: '/theorie/luffy',
+    qui: 'Monkey D. Luffy, le capitaine des Mugiwara au présent du manga.',
+    usage: 'Le nom intime, celui que l’équipage et les proches utilisent.',
+    tonalite: 'Le garçon de Fusha, sans titre divin.',
+  },
+  {
+    nom: 'Joy Boy',
+    href: '/theorie/joy-boy',
+    qui: 'Figure légendaire citée par le Ponéglyphe de Ryūgū et par Imu.',
+    usage: 'Le nom sous lequel l’Histoire retiendra Luffy après la libération des peuples.',
+    tonalite: 'Le nom du « héros », celui du monde qui regarde.',
+  },
+  {
+    nom: 'Nika',
+    href: '/theorie/nika',
+    qui: 'Le « Guerrier de la Libération », dieu du soleil du folklore ancien.',
+    usage: 'Le nom de la foi : celui que les peuples opprimés vénèrent.',
+    tonalite: 'Le nom du dieu, celui des croyants.',
+  },
+];
+
+const tonalityColors: Record<string, string> = {
+  Luffy: 'var(--cyan)',
+  'Joy Boy': 'var(--violet-light)',
+  Nika: 'var(--accent-gold)',
+};
+---
+
+<WikiLayout
+  title="Luffy, Joy Boy, Nika : trois noms pour un même homme"
+  seoTitle="Luffy, Joy Boy et Nika : trois noms pour un même homme | Les Fous du Bus"
+  description="Comparaison des trois noms de la théorie : Luffy (l'homme), Joy Boy (le nom de l'histoire) et Nika (le nom de la foi), avec leurs usages et tonalités."
+  currentPath="/explorer/luffy-joy-boy-nika"
+>
+  <div class="page-header">
+    <p class="eyebrow">🎭 Identités</p>
+    <h1>Luffy · Joy Boy · Nika</h1>
+    <p class="page-desc">
+      La théorie lit ces trois noms comme <strong>trois facettes d’une même personne</strong> : l’homme (Luffy),
+      le nom que l’Histoire lui donnera (Joy Boy) et le nom de la foi des peuples (Nika). Ce schéma les compare.
+    </p>
+  </div>
+
+  <div class="cards">
+    {facets.map((f) => (
+      <div class="card" style={`border-top: 3px solid ${tonalityColors[f.nom]}`}>
+        <h2 class="card__nom" style={`color:${tonalityColors[f.nom]}`}>{f.nom}</h2>
+        <div class="card__row">
+          <span class="card__label">Qui ?</span>
+          <p>{f.qui}</p>
+        </div>
+        <div class="card__row">
+          <span class="card__label">Usage</span>
+          <p>{f.usage}</p>
+        </div>
+        <div class="card__row">
+          <span class="card__label">Tonalité</span>
+          <p>{f.tonalite}</p>
+        </div>
+        <a class="card__link" href={f.href}>Fiche {f.nom} →</a>
+      </div>
+    ))}
+  </div>
+
+  <div class="note-box">
+    <p>
+      <strong>Point clé :</strong> Luffy ne « devient » pas Joy Boy ni Nika au sens strict. Dans la lecture des
+      Fous du Bus, ce sont les noms que le monde et la foi donneront à la même personne après coup. La relation
+      entre les trois est une <strong>interprétation de la théorie</strong> ; le manga laisse l’ambiguïté ouverte
+      sur la nature exacte du nom de Joy Boy.
+    </p>
+  </div>
+
+  <Footer />
+</WikiLayout>
+
+<style>
+  .page-header { margin-bottom: 28px; }
+  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
+  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 780px; line-height: 1.65; }
+  .page-desc strong { color: var(--text-main); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 24px 0 20px; }
+  .card { padding: 20px; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: var(--gradient-card); display: flex; flex-direction: column; gap: 14px; }
+  .card__nom { font-size: 22px; font-weight: 800; margin: 0; }
+  .card__row { display: flex; flex-direction: column; gap: 3px; }
+  .card__label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+  .card__row p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+  .card__link { margin-top: auto; color: var(--cyan); text-decoration: none; font-size: 13.5px; font-weight: 600; }
+  .card__link:hover { text-decoration: underline; }
+
+  .note-box { padding: 18px; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-gold); border-radius: var(--border-radius-lg); background: var(--bg-secondary); }
+  .note-box p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+  .note-box strong { color: var(--text-main); }
+</style>
