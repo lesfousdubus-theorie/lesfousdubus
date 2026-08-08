@@ -18,7 +18,7 @@ Brook la connaît depuis son enfance. Il l'a chantée avec l'équipage Rumbar, q
 
 ## Brook et Dōzan
 
-Les chapitres 1183 et 1184 suggèrent que **Brook pourrait être Dōzan**, un samouraï de Wano. Dōzan pourrait être un nom d'artiste.
+Les chapitres 1183 et 1184 suggèrent que Brook pourrait être Dōzan. Dōzan pourrait être un nom d'artiste.
 
 Brook révèle avoir composé une première version des paroles lorsqu'il était enfant (il y a environ 79 ans selon le chapitre 1184). Cela renforce l'hypothèse qu'il pourrait être à l'origine (ou à l'origine d'un prototype) de la chanson.
 

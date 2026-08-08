@@ -72,6 +72,18 @@ Cette lecture rend compte de la confiance étrange d’Imu au moment même où L
 
 Ce point reste **en cours de stabilisation** : il s’appuie sur une interprétation fine de planches très récentes.
 
+### L'idéologie d'Imu (chapitre 1181)
+
+Le chapitre 1181 développe une dimension idéologique fondamentale :
+
+**Imu**  
+→ domination pour empêcher l’humanité de se détruire (pouvoir → corruption → pacte → domination).
+
+**Luffy / Joy Boy**  
+→ liberté et confiance envers les individus (même avec tous les risques).
+
+Dans cette lecture, l’affrontement n’est pas seulement physique : Luffy doit prouver à Imu que sa conception pessimiste du monde est fausse.
+
 ## La peur qui a fabriqué l’ennemi
 
 <div class="section-pill section-pill--interpretation">Interprétation</div>

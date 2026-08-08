@@ -134,12 +134,11 @@ const navSections: NavSection[] = [
 
     // P2 adjustments: explicit important entries (keep categories as-is)
     if (catKey === 'personnages-identites') {
-      // P2 explicit additions (keep rest of categories intact)
+      // Only manually surface Shirahoshi (child of poseidon-fiche).
+      // Rocks D. Xebec and Gunko are top-level published articles → they appear naturally via buildLinks.
       links = [
         ...links,
         { label: 'Princesse Shirahoshi', href: '/theorie/shirahoshi', level: 0, type: 'fiche' },
-        { label: 'Rocks D. Xebec', href: '/theorie/rocks-xebec', level: 0, type: 'fiche' },
-        { label: 'Gunko', href: '/theorie/gunko', level: 0, type: 'fiche' },
       ];
     }
     if (catKey === 'gouvernement-mondial') {
@@ -156,6 +155,14 @@ const navSections: NavSection[] = [
         { label: '↳ Voir Nika', href: '/theorie/nika', level: 1, type: 'fiche' },
       ];
     }
+
+    // Deduplicate links by href to avoid any duplicate entries (Rocks, Gunko, etc.)
+    const seen = new Set();
+    links = links.filter((link) => {
+      if (seen.has(link.href)) return false;
+      seen.add(link.href);
+      return true;
+    });
 
     return {
       title: catKey.toUpperCase().replace(/-/g, ' '),

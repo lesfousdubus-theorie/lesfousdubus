@@ -6,7 +6,7 @@ status: "published"
 sources: [1044, 1114, 1186]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1186
 order: 73
 related: ["zoans", "hito-hito-no-mi-nika", "vegapunk", "kozuki-toki", "imu-nerona"]
 ---
@@ -17,7 +17,6 @@ Les Fruits du Démon confèrent un pouvoir à celui qui les consomme, au prix de
 
 ## Ce que le manga établit
 
-- Vegapunk a percé une partie de leur fonctionnement et sait en produire des versions artificielles (les SMILE).
 - Chaque fruit est unique : sa réapparition ailleurs dans le monde suit la mort de son utilisateur.
 - Le Gorosei nomme le véritable nom du Gomu Gomu no Mi au chapitre 1044 : le **Hito Hito no Mi, modèle Nika**.
 - Vegapunk avance que les Fruits du Démon incarnent des « souhaits d'humanité », des formes de vie idéalisées.
@@ -45,6 +44,11 @@ Cette lecture s'appuie aussi sur les paroles de Brook, qui semblent indiquer que
 - L'absence de représentation n'est pas une absence d'existence : Oda ne dessine pas systématiquement les utilisateurs des époques anciennes.
 - Le manga présente les Fruits du Démon comme un phénomène naturel ancien, jamais comme une création.
 - L'argument repose sur un décompte de ce qui est montré, c'est-à-dire sur un choix de mise en scène.
+
+## Chapitres clés
+
+- 1186 (analyse statistique et apparition récente des Fruits)
+- 1044 (révélation du nom véritable)
 
 ## Points encore à expliquer
 
