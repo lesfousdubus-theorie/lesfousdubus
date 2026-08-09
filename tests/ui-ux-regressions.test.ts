@@ -10,8 +10,11 @@ describe('régressions UI, UX et accessibilité', () => {
     const layout = read('src/layouts/WikiLayout.astro');
     expect(layout).toContain('class="sidebar-scroll"');
     expect(layout).toContain('min-height: 0');
-    expect(layout).toContain('overflow-y: auto');
+    expect(layout).toContain('height: calc(100dvh - var(--nav-h))');
+    expect(layout).toContain('height: 0');
+    expect(layout).toContain('overflow-y: scroll');
     expect(layout).toContain('-webkit-overflow-scrolling: touch');
+    expect(layout).toContain('aria-label="Liste des articles"');
     expect(layout).toContain("window.matchMedia('(max-width: 1023px)')");
     expect(layout).not.toContain('sidebar-resizer');
     expect(layout).not.toContain('sidebar-left-width');
