@@ -135,12 +135,10 @@
   const getPagefind = () => {
     if (!pagefindPromise) {
       const pagefindUrl = '/pagefind/pagefind.js';
-      pagefindPromise = import(/* @vite-ignore */ pagefindUrl).then(
-        async (pagefind) => {
-          await pagefind.init();
-          return pagefind;
-        },
-      );
+      pagefindPromise = import(/* @vite-ignore */ pagefindUrl).then(async (pagefind) => {
+        await pagefind.init();
+        return pagefind;
+      });
     }
     return pagefindPromise;
   };
@@ -181,6 +179,9 @@
     const count = document.getElementById('search-count');
     const recentGroup = document.getElementById('search-recents');
     const recentList = recentGroup?.querySelector<HTMLElement>('[data-recent-list]');
+    const background = document.querySelectorAll<HTMLElement>(
+      '.navbar, .wiki-layout, #toc-fab, #back-to-top',
+    );
     let activeIndex = -1;
     let requestId = 0;
     let debounce: number | undefined;
@@ -195,10 +196,9 @@
         link.classList.toggle('is-active', active);
         link.setAttribute('aria-selected', String(active));
       });
-      input?.setAttribute(
-        'aria-activedescendant',
-        activeIndex >= 0 ? `search-result-${activeIndex}` : '',
-      );
+      if (activeIndex >= 0)
+        input?.setAttribute('aria-activedescendant', `search-result-${activeIndex}`);
+      else input?.removeAttribute('aria-activedescendant');
       links[activeIndex]?.scrollIntoView({ block: 'nearest' });
     };
 
@@ -220,21 +220,47 @@
 
     const setOpen = (open: boolean) => {
       if (open) {
+        if (!modal.hidden) {
+          input?.focus();
+          return;
+        }
         previousFocus = document.activeElement as HTMLElement | null;
         modal.hidden = false;
         document.documentElement.classList.add('search-modal-open');
+        background.forEach((element) => element.setAttribute('inert', ''));
         renderRecents();
-        requestAnimationFrame(() => input?.focus());
+        input?.focus({ preventScroll: true });
+        requestAnimationFrame(() => input?.focus({ preventScroll: true }));
       } else {
+        if (modal.hidden) return;
+        window.clearTimeout(debounce);
+        requestId += 1;
         modal.hidden = true;
         document.documentElement.classList.remove('search-modal-open');
-        if (input) input.value = '';
+        background.forEach((element) => element.removeAttribute('inert'));
+        if (input) {
+          input.value = '';
+          input.setAttribute('aria-expanded', 'false');
+          input.removeAttribute('aria-activedescendant');
+        }
+        activeIndex = -1;
         clear?.setAttribute('hidden', '');
+        loading?.setAttribute('hidden', '');
         suggestions?.removeAttribute('hidden');
         results?.setAttribute('hidden', '');
         empty?.setAttribute('hidden', '');
         normalizedHint?.setAttribute('hidden', '');
-        previousFocus?.focus();
+        if (count) count.textContent = '';
+        if (live) live.textContent = '';
+
+        const focusWasHidden =
+          previousFocus?.closest('[inert], [aria-hidden="true"]') ||
+          (previousFocus && getComputedStyle(previousFocus).visibility === 'hidden');
+        const fallback = document.querySelector<HTMLElement>(
+          '.search-trigger, #mobile-menu-toggle',
+        );
+        (!previousFocus || focusWasHidden ? fallback : previousFocus)?.focus();
+        previousFocus = null;
       }
     };
 
@@ -254,7 +280,14 @@
       );
       if (normalizedHint && !normalizedHint.hidden)
         normalizedHint.textContent = `Recherche élargie à « ${normalized} »`;
-      if (!raw) return;
+      if (!raw) {
+        loading?.setAttribute('hidden', '');
+        input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-activedescendant');
+        if (count) count.textContent = '';
+        if (live) live.textContent = '';
+        return;
+      }
       loading?.removeAttribute('hidden');
       if (live) live.textContent = 'Recherche en cours…';
 

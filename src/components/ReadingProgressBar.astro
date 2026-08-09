@@ -1,5 +1,3 @@
----
----
 <div class="reading-progress" id="reading-progress" aria-hidden="true">
   <div class="reading-progress__bar" id="reading-progress-bar"></div>
 </div>
@@ -36,10 +34,12 @@
     pointer-events: none;
   }
 
-  /* La barre de progression n'a pas de sens pendant qu'un tiroir/overlay est
-     ouvert (le défilement est verrouillé) ; on la masque pour ne pas trouer
-     visuellement la navbar sur mobile. */
-  :global([data-nav-open='mobile']) #reading-progress {
+  /* La progression du document n'a pas de sens pendant qu'une superposition
+     verrouille son défilement. */
+  :global(html.nav-drawer-open) #reading-progress,
+  :global(html.toc-drawer-open) #reading-progress,
+  :global(html.search-modal-open) #reading-progress,
+  :global(html.timeline-dialog-open) #reading-progress {
     opacity: 0;
   }
 

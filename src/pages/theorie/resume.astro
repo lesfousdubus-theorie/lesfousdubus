@@ -1,19 +1,38 @@
 ---
-import WikiLayout from '@layouts/WikiLayout.astro';
-import Footer from '@components/Footer.astro';
+import ArticleLayout from '@layouts/ArticleLayout.astro';
 import TheoryMechanism from '@components/TheoryMechanism.astro';
+
+const headings = [
+  { depth: 2, slug: 'laugh-tale', text: '1. Tout commence avec Laugh Tale' },
+  { depth: 2, slug: 'poneglyphes-avenir', text: '2. Les Ponéglyphes raconteraient l’avenir' },
+  { depth: 2, slug: 'joy-boy-luffy', text: '3. Joy Boy serait Monkey D. Luffy' },
+  { depth: 2, slug: 'trois-noms', text: '4. Luffy, Joy Boy et Nika : trois noms' },
+  { depth: 2, slug: 'figures-presentes', text: '5. Les autres figures du Siècle oublié' },
+  { depth: 2, slug: 'missions-peuples', text: '6. Les missions des peuples' },
+  { depth: 2, slug: 'royaume-antique', text: '7. Le Royaume antique' },
+  { depth: 2, slug: 'imu-avenir', text: '8. Imu face à son avenir' },
+  { depth: 2, slug: 'guerre-finale', text: '9. La Grande Guerre' },
+  { depth: 2, slug: 'retournement-final', text: '10. Le retournement final' },
+];
+
+const summary =
+  'Le Siècle oublié serait le présent : Laugh Tale dans le futur, Ponéglyphes transmis au passé, Luffy devenu Joy Boy et One Piece comme récit de son aventure.';
 ---
 
-<WikiLayout
+<ArticleLayout
   title="Résumé de la théorie"
-  seoTitle="Résumé de la théorie One Piece : le Siècle oublié en 10 points | Les Fous du Bus"
-  description="Le Siècle oublié serait le présent : Laugh Tale dans le futur, Ponéglyphes transmis au passé, Luffy devenu Joy Boy et One Piece comme récit de son aventure."
+  description={summary}
   currentPath="/theorie/resume"
-  image="/og-resume.png"
+  headings={headings}
+  frontmatter={{
+    category: 'histoire-temporalite',
+    ogImage: '/og-resume.png',
+    seoTitle: 'Résumé de la théorie One Piece : le Siècle oublié en 10 points | Les Fous du Bus',
+    related: ['les-bases-du-siecle-oublie', 'joy-boy', 'poneglyphes-futur'],
+    searchHidden: false,
+  }}
 >
   <div class="resume-page">
-    <div class="text-violet font-semibold tracking-widest uppercase text-sm mb-3">La théorie</div>
-    <h1>Résumé de la théorie</h1>
     <p class="subtitle">Le Siècle oublié est le présent</p>
 
     <div class="content">
@@ -46,7 +65,7 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       <hr />
 
       <section class="resume-section">
-        <h2>1. Tout commence avec Laugh Tale</h2>
+        <h2 id="laugh-tale">1. Tout commence avec Laugh Tale</h2>
         <p>La théorie part d’un problème géographique.</p>
         <p>
           Grand Line fait le tour du monde, mais Red Line empêche aujourd’hui d’accomplir librement
@@ -69,7 +88,7 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       </section>
 
       <section class="resume-section">
-        <h2>2. Les Ponéglyphes raconteraient l’avenir</h2>
+        <h2 id="poneglyphes-avenir">2. Les Ponéglyphes raconteraient l’avenir</h2>
         <p>C’est le mécanisme fondamental de la théorie.</p>
         <p>Les Ponéglyphes existent bien depuis huit cents ans.</p>
         <p>
@@ -92,7 +111,7 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       </section>
 
       <section class="resume-section">
-        <h2>3. Joy Boy serait Monkey D. Luffy</h2>
+        <h2 id="joy-boy-luffy">3. Joy Boy serait Monkey D. Luffy</h2>
         <p>
           Dans cette lecture, Joy Boy ne serait pas un ancien héros dont Luffy répète l’existence
           huit cents ans plus tard.
@@ -114,7 +133,9 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       </section>
 
       <section class="resume-section">
-        <h2>4. Luffy, Joy Boy et Nika seraient trois noms autour d’un même homme</h2>
+        <h2 id="trois-noms">
+          4. Luffy, Joy Boy et Nika seraient trois noms autour d’un même homme
+        </h2>
         <p>Monkey D. Luffy serait son identité.</p>
         <p>Joy Boy serait le nom sous lequel le monde retiendra le grand libérateur.</p>
         <p>
@@ -129,7 +150,9 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       </section>
 
       <section class="resume-section">
-        <h2>5. Les autres figures du Siècle oublié pourraient elles aussi appartenir au présent</h2>
+        <h2 id="figures-presentes">
+          5. Les autres figures du Siècle oublié pourraient elles aussi appartenir au présent
+        </h2>
         <p>La même logique est appliquée à plusieurs grandes figures de l’Histoire.</p>
         <p>La théorie rapproche notamment :</p>
         <ul>
@@ -155,7 +178,9 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       </section>
 
       <section class="resume-section">
-        <h2>6. Chaque peuple aurait préparé une partie du monde pendant huit cents ans</h2>
+        <h2 id="missions-peuples">
+          6. Chaque peuple aurait préparé une partie du monde pendant huit cents ans
+        </h2>
         <p>
           Si les Ponéglyphes contiennent des informations venues du futur, ils peuvent également
           servir d’instructions.
@@ -179,7 +204,9 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       </section>
 
       <section class="resume-section">
-        <h2>7. Le Royaume antique serait lié au monde qui reste à construire</h2>
+        <h2 id="royaume-antique">
+          7. Le Royaume antique serait lié au monde qui reste à construire
+        </h2>
         <p>
           Vegapunk décrit une civilisation ancienne dont la technologie semble extraordinairement
           avancée.
@@ -195,7 +222,7 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       </section>
 
       <section class="resume-section">
-        <h2>8. Imu ne craindrait pas seulement son passé, mais son avenir</h2>
+        <h2 id="imu-avenir">8. Imu ne craindrait pas seulement son passé, mais son avenir</h2>
         <p>Imu représente l’autre moitié du mystère.</p>
         <p>
           Depuis huit cents ans, le souverain du monde semble obsédé par Joy Boy, Nika, certaines
@@ -217,7 +244,7 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       </section>
 
       <section class="resume-section">
-        <h2>9. La Grande Guerre serait encore devant nous</h2>
+        <h2 id="guerre-finale">9. La Grande Guerre serait encore devant nous</h2>
         <p>
           La guerre associée au Siècle oublié ne serait pas nécessairement une guerre terminée huit
           cents ans auparavant.
@@ -241,7 +268,7 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       </section>
 
       <section class="resume-section">
-        <h2>10. Le retournement final</h2>
+        <h2 id="retournement-final">10. Le retournement final</h2>
         <p>Voilà le cœur de la théorie des Fous du Bus.</p>
         <p>
           Nous pensions lire l’histoire d’un garçon qui héritait d’un héros ayant vécu huit cents
@@ -287,20 +314,11 @@ import TheoryMechanism from '@components/TheoryMechanism.astro';
       </div>
     </div>
   </div>
-
-  <Footer />
-</WikiLayout>
+</ArticleLayout>
 
 <style>
   .resume-page {
     max-width: 720px;
-  }
-
-  .resume-page h1 {
-    font-size: clamp(1.8rem, 4vw, 2.5rem);
-    font-weight: 700;
-    margin-bottom: 8px;
-    line-height: 1.2;
   }
 
   .subtitle {

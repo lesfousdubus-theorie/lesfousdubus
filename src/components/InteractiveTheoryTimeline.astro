@@ -1,0 +1,1925 @@
+---
+import {
+  theoryTimeline,
+  timelineEras,
+  timelineStatus,
+  timelineThreads,
+  type TimelineStatus,
+  type TimelineThread,
+} from '../data/theoryTimeline';
+
+const statusOrder: Array<'all' | TimelineStatus> = [
+  'all',
+  'canon',
+  'central',
+  'hypothese',
+  'projection',
+];
+
+const eraFirstEvent = new Map(
+  timelineEras.map((era) => [era.id, theoryTimeline.find((event) => event.era === era.id)?.id]),
+);
+
+const seenEras = new Set<string>();
+---
+
+<section class="chronoscope" data-timeline-root data-zoom="normal">
+  <div class="chronoscope__topline">
+    <div>
+      <p class="chronoscope__eyebrow">Chronoscope des Fous du Bus</p>
+      <h2>Du passé apparent au futur qui l’a créé</h2>
+    </div>
+    <button class="story-button" type="button" data-story-toggle aria-pressed="false">
+      <span class="story-button__icon" aria-hidden="true">▶</span>
+      <span data-story-label>Lire la théorie</span>
+    </button>
+  </div>
+
+  <nav class="era-strip" aria-label="Aller à une période de la chronologie">
+    {
+      timelineEras.map((era, index) => (
+        <button
+          type="button"
+          class="era-tab"
+          data-era-target={eraFirstEvent.get(era.id)}
+          data-era-button={era.id}
+          aria-current={index === 0 ? 'step' : undefined}
+          title={era.description}
+        >
+          <span>{era.label}</span>
+          <small>{era.range}</small>
+        </button>
+      ))
+    }
+  </nav>
+
+  <label class="mobile-era-select">
+    <span>Époque</span>
+    <select data-era-select aria-label="Aller à une époque de la chronologie">
+      {
+        timelineEras.map((era) => (
+          <option value={era.id}>
+            {era.label} · {era.range}
+          </option>
+        ))
+      }
+    </select>
+  </label>
+
+  <div class="control-deck">
+    <div class="status-filters" role="group" aria-label="Filtrer par niveau de certitude">
+      {
+        statusOrder.map((status) => (
+          <button
+            type="button"
+            class:list={['filter-chip', { 'is-active': status === 'all' }]}
+            data-status-filter={status}
+            aria-pressed={status === 'all' ? 'true' : 'false'}
+          >
+            {status === 'all' ? 'Toute la frise' : timelineStatus[status].shortLabel}
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="control-deck__right">
+      <label class="thread-select">
+        <span>Fil narratif</span>
+        <select data-thread-filter aria-label="Filtrer par fil narratif">
+          <option value="all">Tous les fils</option>
+          {
+            (
+              Object.entries(timelineThreads) as Array<
+                [TimelineThread, (typeof timelineThreads)[TimelineThread]]
+              >
+            ).map(([thread, meta]) => <option value={thread}>{meta.label}</option>)
+          }
+        </select>
+      </label>
+
+      <div class="timeline-actions" aria-label="Contrôles de la frise">
+        <button type="button" data-jump-prev aria-label="Événement précédent" title="Précédent">
+          ←
+        </button>
+        <button type="button" data-jump-next aria-label="Événement suivant" title="Suivant">
+          →
+        </button>
+        <span class="timeline-actions__separator" aria-hidden="true"></span>
+        <button type="button" data-zoom-out aria-label="Réduire les cartes" title="Réduire">
+          −
+        </button>
+        <button type="button" data-zoom-in aria-label="Agrandir les cartes" title="Agrandir">
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="timeline-stage">
+    <div class="timeline-stage__atmosphere" aria-hidden="true">
+      <span class="time-orb time-orb--past"></span>
+      <span class="time-orb time-orb--future"></span>
+      <span class="time-star time-star--one"></span>
+      <span class="time-star time-star--two"></span>
+      <span class="time-star time-star--three"></span>
+    </div>
+
+    <div
+      class="timeline-viewport"
+      data-timeline-viewport
+      tabindex="0"
+      role="region"
+      aria-label="Frise chronologique interactive. Faites défiler horizontalement, glissez ou utilisez les flèches du clavier."
+    >
+      <div class="timeline-track" data-timeline-track>
+        <div class="timeline-rail" aria-hidden="true">
+          <span></span>
+        </div>
+
+        {
+          theoryTimeline.map((event, index) => {
+            const isEraStart = !seenEras.has(event.era);
+            seenEras.add(event.era);
+            const era = timelineEras.find((item) => item.id === event.era);
+
+            return (
+              <article
+                id={`event-${event.id}`}
+                class:list={[
+                  'timeline-event',
+                  `timeline-event--${index % 2 === 0 ? 'above' : 'below'}`,
+                  { 'timeline-event--era-start': isEraStart },
+                ]}
+                data-event={event.id}
+                data-era={event.era}
+                data-status={event.status}
+                data-thread={event.thread}
+              >
+                {isEraStart && (
+                  <span class="era-flag" aria-hidden="true">
+                    <strong>{era?.label}</strong>
+                    <small>{era?.range}</small>
+                  </span>
+                )}
+
+                <span class="event-connector" aria-hidden="true" />
+                <span class="event-node" aria-hidden="true">
+                  <i>{event.icon}</i>
+                </span>
+                <time class="event-date">{event.date}</time>
+
+                <button
+                  class="event-card"
+                  type="button"
+                  data-event-open={event.id}
+                  aria-label={`${event.date} — ${event.title}. Ouvrir les détails.`}
+                >
+                  {event.image ? (
+                    <span class="event-card__visual">
+                      <img
+                        src={event.image}
+                        alt={event.imageAlt ?? ''}
+                        loading="lazy"
+                        decoding="async"
+                        width="640"
+                        height="360"
+                      />
+                      <span class="event-card__image-shade" />
+                    </span>
+                  ) : (
+                    <span class="event-card__visual event-card__visual--symbol" aria-hidden="true">
+                      {event.icon}
+                    </span>
+                  )}
+
+                  <span class="event-card__body">
+                    <span class="event-card__meta">
+                      <span class:list={['status-pill', `status-pill--${event.status}`]}>
+                        {timelineStatus[event.status].shortLabel}
+                      </span>
+                      <span>{timelineThreads[event.thread].shortLabel}</span>
+                    </span>
+                    <strong>{event.title}</strong>
+                    <span class="event-card__summary">{event.summary}</span>
+                    <span class="event-card__footer">
+                      <small>{event.chapter ?? 'Source : transcription de la théorie'}</small>
+                      <span aria-hidden="true">↗</span>
+                    </span>
+                  </span>
+                </button>
+              </article>
+            );
+          })
+        }
+
+        <aside class="time-loop" aria-label="La boucle temporelle rejoint le début de la frise">
+          <span class="time-loop__rings" aria-hidden="true">↺</span>
+          <p>La mémoire de l’avenir</p>
+          <strong>La fin recrée le début</strong>
+          <button type="button" data-loop-start>Revenir à −900 ans</button>
+        </aside>
+      </div>
+    </div>
+
+    <div class="edge-fade edge-fade--left" aria-hidden="true"></div>
+    <div class="edge-fade edge-fade--right" aria-hidden="true"></div>
+    <p class="drag-instruction">
+      <span aria-hidden="true">↔</span>
+      Glissez la frise ou utilisez les flèches
+    </p>
+  </div>
+
+  <div class="timeline-console">
+    <div class="timeline-console__current">
+      <span data-current-index>01</span>
+      <div>
+        <small data-current-date>{theoryTimeline[0].date}</small>
+        <strong data-current-title>{theoryTimeline[0].title}</strong>
+      </div>
+    </div>
+
+    <label class="timeline-scrubber">
+      <span class="sr-only">Position dans la chronologie</span>
+      <input
+        type="range"
+        min="0"
+        max="1000"
+        value="0"
+        step="1"
+        data-timeline-range
+        aria-label="Position dans la frise chronologique"
+      />
+      <span class="timeline-scrubber__ticks" aria-hidden="true"></span>
+    </label>
+
+    <div class="timeline-console__count">
+      <strong data-visible-count>{theoryTimeline.length}</strong>
+      <span>événements visibles</span>
+    </div>
+  </div>
+
+  <div class="timeline-legend" aria-label="Légende des niveaux de lecture">
+    {
+      (
+        Object.entries(timelineStatus) as Array<
+          [TimelineStatus, (typeof timelineStatus)[TimelineStatus]]
+        >
+      ).map(([status, meta]) => (
+        <span>
+          <i class={`legend-dot legend-dot--${status}`} aria-hidden="true" />
+          {meta.label}
+        </span>
+      ))
+    }
+  </div>
+
+  <p class="sr-only" data-timeline-live aria-live="polite"></p>
+</section>
+
+<dialog class="event-dialog" data-event-dialog aria-label="Détail de la chronologie">
+  <div class="event-dialog__surface">
+    <button
+      class="event-dialog__close"
+      type="button"
+      data-dialog-close
+      aria-label="Fermer les détails"
+    >
+      ×
+    </button>
+    <div data-dialog-content></div>
+  </div>
+</dialog>
+
+{
+  theoryTimeline.map((event) => (
+    <template id={`timeline-detail-${event.id}`}>
+      <article class="event-detail">
+        {event.image && (
+          <figure class="event-detail__visual">
+            <img src={event.image} alt={event.imageAlt ?? ''} width="960" height="540" />
+          </figure>
+        )}
+        <div class="event-detail__meta">
+          <span class={`status-pill status-pill--${event.status}`}>
+            {timelineStatus[event.status].label}
+          </span>
+          <span>{timelineThreads[event.thread].label}</span>
+          {event.chapter && <span>{event.chapter}</span>}
+        </div>
+        <p class="event-detail__date">{event.date}</p>
+        <div class="event-detail__title-row">
+          <span aria-hidden="true">{event.icon}</span>
+          <h3 id={`event-detail-title-${event.id}`}>{event.title}</h3>
+        </div>
+        <p class="event-detail__lead">{event.summary}</p>
+        <p class="event-detail__body">{event.detail}</p>
+        <div class="event-detail__links">
+          {event.links.map((link) => (
+            <a href={link.href}>
+              {link.label}
+              <span aria-hidden="true">→</span>
+            </a>
+          ))}
+        </div>
+      </article>
+    </template>
+  ))
+}
+
+<style>
+  .chronoscope {
+    --card-width: 304px;
+    --event-gap: 22px;
+    --rail-y: 315px;
+    position: relative;
+    width: 100%;
+    margin: 30px 0 46px;
+  }
+
+  .chronoscope[data-zoom='compact'] {
+    --card-width: 258px;
+    --event-gap: 14px;
+  }
+
+  .chronoscope[data-zoom='large'] {
+    --card-width: 360px;
+    --event-gap: 30px;
+  }
+
+  .chronoscope__topline,
+  .control-deck,
+  .control-deck__right,
+  .timeline-actions,
+  .timeline-console,
+  .timeline-console__current,
+  .event-card__meta,
+  .event-card__footer,
+  .event-detail__meta,
+  .event-detail__title-row,
+  .event-detail__links,
+  .timeline-legend {
+    display: flex;
+    align-items: center;
+  }
+
+  .chronoscope__topline {
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .chronoscope__eyebrow {
+    margin: 0 0 4px;
+    color: var(--cyan);
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .chronoscope__topline h2 {
+    margin: 0;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    letter-spacing: -0.025em;
+  }
+
+  .story-button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 9px 14px;
+    border: 1px solid color-mix(in srgb, var(--cyan) 45%, var(--border-color));
+    border-radius: var(--border-radius-full);
+    background: color-mix(in srgb, var(--cyan) 9%, var(--bg-secondary));
+    color: var(--text-main);
+    font: 750 12px/1 var(--font-sans);
+    cursor: pointer;
+  }
+
+  .story-button__icon {
+    color: var(--cyan);
+  }
+
+  .story-button[aria-pressed='true'] {
+    border-color: var(--accent-gold);
+    background: color-mix(in srgb, var(--accent-gold) 12%, var(--bg-secondary));
+  }
+
+  .era-strip {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(126px, 1fr));
+    gap: 7px;
+    margin-bottom: 10px;
+    padding-bottom: 2px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  .era-tab {
+    min-height: 58px;
+    padding: 9px 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
+    color: var(--text-secondary);
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .era-tab span,
+  .era-tab small {
+    display: block;
+  }
+
+  .era-tab span {
+    color: var(--text-main);
+    font-size: 11px;
+    font-weight: 780;
+  }
+
+  .era-tab small {
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+
+  .mobile-era-select {
+    display: none;
+  }
+
+  .era-tab:hover,
+  .era-tab:focus-visible,
+  .era-tab[aria-current='step'] {
+    border-color: color-mix(in srgb, var(--violet-light) 65%, var(--border-color));
+    background: color-mix(in srgb, var(--violet) 15%, var(--bg-secondary));
+  }
+
+  .control-deck {
+    position: sticky;
+    z-index: 12;
+    top: calc(var(--nav-h) + 8px);
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 13px;
+    background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--shadow-color) 55%, transparent);
+  }
+
+  .status-filters {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .status-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-chip {
+    min-height: 44px;
+    padding: 7px 11px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-full);
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    font: 700 12px/1 var(--font-sans);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .filter-chip:hover,
+  .filter-chip:focus-visible,
+  .filter-chip.is-active {
+    border-color: var(--cyan);
+    color: var(--text-main);
+  }
+
+  .filter-chip.is-active {
+    background: color-mix(in srgb, var(--cyan) 12%, var(--bg-main));
+  }
+
+  .control-deck__right {
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+
+  .thread-select {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .thread-select select {
+    min-height: 44px;
+    max-width: 178px;
+    padding: 6px 30px 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--bg-main);
+    color: var(--text-main);
+    font: 650 12px/1 var(--font-sans);
+  }
+
+  .timeline-actions {
+    gap: 5px;
+  }
+
+  .timeline-actions button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--bg-main);
+    color: var(--text-main);
+    font: 800 17px/1 var(--font-sans);
+    cursor: pointer;
+  }
+
+  .timeline-actions button:hover,
+  .timeline-actions button:focus-visible {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .timeline-actions__separator {
+    width: 1px;
+    height: 22px;
+    margin: 0 2px;
+    background: var(--border-color);
+  }
+
+  .timeline-stage {
+    position: relative;
+    min-height: 664px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--violet-light) 26%, var(--border-color));
+    border-radius: 20px;
+    background:
+      radial-gradient(
+        circle at 10% 16%,
+        color-mix(in srgb, var(--cyan) 10%, transparent),
+        transparent 28%
+      ),
+      radial-gradient(
+        circle at 92% 80%,
+        color-mix(in srgb, var(--violet) 20%, transparent),
+        transparent 30%
+      ),
+      linear-gradient(180deg, color-mix(in srgb, var(--bg-main) 97%, #09142b), var(--bg-secondary));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 4%, transparent),
+      0 16px 46px color-mix(in srgb, var(--shadow-color) 58%, transparent);
+  }
+
+  .timeline-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.24;
+    background-image: radial-gradient(circle, var(--text-muted) 0.7px, transparent 0.8px);
+    background-size: 24px 24px;
+    mask-image: linear-gradient(to bottom, black, transparent 90%);
+    pointer-events: none;
+  }
+
+  .timeline-stage__atmosphere,
+  .time-orb,
+  .time-star {
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .timeline-stage__atmosphere {
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .time-orb {
+    border-radius: 50%;
+    filter: blur(1px);
+  }
+
+  .time-orb--past {
+    top: 88px;
+    left: 7%;
+    width: 92px;
+    height: 92px;
+    border: 1px solid color-mix(in srgb, var(--cyan) 30%, transparent);
+    box-shadow:
+      0 0 46px color-mix(in srgb, var(--cyan) 18%, transparent),
+      inset 0 0 34px color-mix(in srgb, var(--cyan) 11%, transparent);
+  }
+
+  .time-orb--future {
+    right: 8%;
+    bottom: 80px;
+    width: 138px;
+    height: 138px;
+    border: 1px solid color-mix(in srgb, var(--violet-light) 27%, transparent);
+    box-shadow: 0 0 58px color-mix(in srgb, var(--violet) 22%, transparent);
+  }
+
+  .time-star {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
+    animation: twinkle 3s ease-in-out infinite;
+  }
+
+  .time-star--one {
+    top: 12%;
+    left: 34%;
+  }
+  .time-star--two {
+    top: 28%;
+    right: 22%;
+    animation-delay: -1.2s;
+  }
+  .time-star--three {
+    bottom: 17%;
+    left: 24%;
+    animation-delay: -2s;
+  }
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.25;
+      transform: scale(0.8);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.6);
+    }
+  }
+
+  .timeline-viewport {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 620px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+    scroll-snap-type: x proximity;
+    scrollbar-color: color-mix(in srgb, var(--cyan) 46%, var(--border-color)) transparent;
+    scrollbar-width: thin;
+    touch-action: pan-x pan-y;
+    cursor: grab;
+  }
+
+  .timeline-viewport:active {
+    cursor: grabbing;
+  }
+
+  .timeline-viewport:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: -4px;
+  }
+
+  .timeline-track {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    gap: var(--event-gap);
+    width: max-content;
+    min-width: 100%;
+    height: 620px;
+    padding: 0 72px;
+  }
+
+  .timeline-rail {
+    position: absolute;
+    z-index: 0;
+    top: var(--rail-y);
+    left: 38px;
+    right: 38px;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--border-color) 82%, transparent);
+    box-shadow: 0 0 18px color-mix(in srgb, var(--violet) 24%, transparent);
+  }
+
+  .timeline-rail span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      var(--cyan),
+      var(--violet-light) 44%,
+      var(--accent-gold) 72%,
+      #f58ac8
+    );
+    opacity: 0.7;
+  }
+
+  .timeline-event {
+    --thread-color: var(--cyan);
+    position: relative;
+    flex: 0 0 var(--card-width);
+    width: var(--card-width);
+    height: 620px;
+    scroll-snap-align: center;
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+  .timeline-event[data-thread='joyboy'] {
+    --thread-color: #f5c35f;
+  }
+  .timeline-event[data-thread='figures'] {
+    --thread-color: #ed86bd;
+  }
+  .timeline-event[data-thread='armes'] {
+    --thread-color: #82b8ff;
+  }
+  .timeline-event[data-thread='memoire'] {
+    --thread-color: var(--violet-light);
+  }
+
+  .timeline-event[hidden] {
+    display: none;
+  }
+
+  .timeline-event.is-current {
+    z-index: 2;
+  }
+
+  .era-flag {
+    position: absolute;
+    z-index: 3;
+    top: 8px;
+    left: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 8px;
+    border-left: 2px solid var(--thread-color);
+    color: var(--text-main);
+    background: color-mix(in srgb, var(--bg-main) 76%, transparent);
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .era-flag small {
+    color: var(--text-muted);
+  }
+
+  .event-connector {
+    position: absolute;
+    z-index: 0;
+    left: 50%;
+    width: 1px;
+    height: 58px;
+    background: linear-gradient(var(--thread-color), transparent);
+    opacity: 0.75;
+  }
+
+  .timeline-event--above .event-connector {
+    top: 258px;
+    transform: rotate(180deg);
+  }
+
+  .timeline-event--below .event-connector {
+    top: 318px;
+  }
+
+  .event-node {
+    position: absolute;
+    z-index: 3;
+    top: calc(var(--rail-y) - 18px);
+    left: calc(50% - 18px);
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--thread-color);
+    border-radius: 50%;
+    background: var(--bg-main);
+    color: var(--thread-color);
+    box-shadow:
+      0 0 0 6px color-mix(in srgb, var(--bg-main) 78%, transparent),
+      0 0 22px color-mix(in srgb, var(--thread-color) 34%, transparent);
+    transition: transform 180ms ease;
+  }
+
+  .event-node i {
+    font: 800 12px/1 var(--font-sans);
+    font-style: normal;
+  }
+
+  .timeline-event.is-current .event-node {
+    transform: scale(1.17);
+    background: color-mix(in srgb, var(--thread-color) 14%, var(--bg-main));
+  }
+
+  .event-date {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    color: var(--thread-color);
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .timeline-event--above .event-date {
+    top: 344px;
+    transform: translateX(-50%);
+  }
+
+  .timeline-event--below .event-date {
+    top: 286px;
+    transform: translate(-50%, -100%);
+  }
+
+  .event-card {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    min-height: 238px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--thread-color) 34%, var(--border-color));
+    border-radius: 15px;
+    background: color-mix(in srgb, var(--bg-secondary) 96%, transparent);
+    color: var(--text-main);
+    text-align: left;
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--shadow-color) 56%, transparent);
+    cursor: pointer;
+    transition:
+      transform 190ms ease,
+      border-color 190ms ease,
+      box-shadow 190ms ease;
+  }
+
+  .timeline-event--above .event-card {
+    bottom: 362px;
+  }
+  .timeline-event--below .event-card {
+    top: 362px;
+  }
+
+  .event-card:hover,
+  .event-card:focus-visible,
+  .timeline-event.is-current .event-card {
+    border-color: var(--thread-color);
+    box-shadow:
+      0 16px 36px color-mix(in srgb, var(--shadow-color) 72%, transparent),
+      0 0 24px color-mix(in srgb, var(--thread-color) 16%, transparent);
+    transform: translateY(-4px);
+  }
+
+  .event-card:focus-visible {
+    outline: 2px solid var(--thread-color);
+    outline-offset: 3px;
+  }
+
+  .event-card__visual {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 112px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--thread-color) 10%, var(--bg-main));
+  }
+
+  .event-card__visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.82) contrast(1.04);
+    transition:
+      transform 300ms ease,
+      filter 300ms ease;
+  }
+
+  .event-card:hover .event-card__visual img,
+  .event-card:focus-visible .event-card__visual img {
+    transform: scale(1.045);
+    filter: saturate(1) contrast(1.05);
+  }
+
+  .event-card__image-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, var(--bg-secondary), transparent 58%);
+  }
+
+  .event-card__visual--symbol {
+    display: grid;
+    place-items: center;
+    color: color-mix(in srgb, var(--thread-color) 75%, white);
+    font: 850 44px/1 var(--font-sans);
+    background:
+      radial-gradient(
+        circle,
+        color-mix(in srgb, var(--thread-color) 22%, transparent),
+        transparent 56%
+      ),
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--thread-color) 9%, var(--bg-main)),
+        var(--bg-main)
+      );
+  }
+
+  .event-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 13px 14px 14px;
+  }
+
+  .event-card__meta {
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 8px;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 3px 7px;
+    border: 1px solid currentColor;
+    border-radius: var(--border-radius-full);
+    font-size: 8px;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .status-pill--canon {
+    color: var(--cyan);
+  }
+  .status-pill--central {
+    color: var(--violet-light);
+  }
+  .status-pill--hypothese {
+    color: var(--accent-gold);
+  }
+  .status-pill--projection {
+    color: #ef86bd;
+  }
+
+  .event-card__body > strong {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.27;
+    letter-spacing: -0.012em;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .event-card__summary {
+    display: -webkit-box;
+    min-height: 39px;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: 10px;
+    line-height: 1.42;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .event-card__footer {
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 7px;
+    border-top: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
+    color: var(--text-muted);
+  }
+
+  .event-card__footer small {
+    overflow: hidden;
+    font-size: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .event-card__footer > span {
+    color: var(--thread-color);
+    font-size: 14px;
+  }
+
+  .time-loop {
+    position: relative;
+    flex: 0 0 286px;
+    align-self: center;
+    margin: 0 40px 0 24px;
+    padding: 28px 22px;
+    overflow: hidden;
+    border: 1px dashed color-mix(in srgb, #f58ac8 58%, var(--border-color));
+    border-radius: 24px;
+    background:
+      radial-gradient(
+        circle at 80% 18%,
+        color-mix(in srgb, #f58ac8 18%, transparent),
+        transparent 35%
+      ),
+      color-mix(in srgb, var(--bg-secondary) 94%, transparent);
+    text-align: center;
+    scroll-snap-align: center;
+  }
+
+  .time-loop__rings {
+    display: block;
+    margin-bottom: 12px;
+    color: #f58ac8;
+    font-size: 58px;
+    line-height: 1;
+    text-shadow: 0 0 28px color-mix(in srgb, #f58ac8 40%, transparent);
+  }
+
+  .time-loop p {
+    margin: 0 0 4px;
+    color: #f58ac8;
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .time-loop strong {
+    display: block;
+    margin-bottom: 16px;
+    font-size: 17px;
+  }
+
+  .time-loop button {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid color-mix(in srgb, #f58ac8 45%, var(--border-color));
+    border-radius: var(--border-radius-full);
+    background: var(--bg-main);
+    color: var(--text-main);
+    font: 750 10px/1 var(--font-sans);
+    cursor: pointer;
+  }
+
+  .edge-fade {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    bottom: 25px;
+    width: 44px;
+    pointer-events: none;
+  }
+
+  .edge-fade--left {
+    left: 0;
+    background: linear-gradient(90deg, var(--bg-secondary), transparent);
+  }
+
+  .edge-fade--right {
+    right: 0;
+    background: linear-gradient(-90deg, var(--bg-secondary), transparent);
+  }
+
+  .drag-instruction {
+    position: absolute;
+    z-index: 3;
+    right: 16px;
+    bottom: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 5px 8px;
+    border-radius: var(--border-radius-full);
+    background: color-mix(in srgb, var(--bg-main) 82%, transparent);
+    color: var(--text-muted);
+    font-size: 8px;
+    pointer-events: none;
+  }
+
+  .timeline-console {
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 13px;
+    background: var(--bg-secondary);
+  }
+
+  .timeline-console__current {
+    flex: 0 1 260px;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .timeline-console__current > span {
+    display: grid;
+    flex: 0 0 38px;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid color-mix(in srgb, var(--cyan) 40%, var(--border-color));
+    border-radius: 10px;
+    color: var(--cyan);
+    font: 850 11px/1 var(--font-sans);
+  }
+
+  .timeline-console__current div {
+    min-width: 0;
+  }
+
+  .timeline-console__current small,
+  .timeline-console__current strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .timeline-console__current small {
+    margin-bottom: 2px;
+    color: var(--cyan);
+    font-size: 8px;
+    font-weight: 750;
+  }
+
+  .timeline-console__current strong {
+    font-size: 10px;
+  }
+
+  .timeline-scrubber {
+    position: relative;
+    flex: 1 1 260px;
+  }
+
+  .timeline-scrubber input {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 24px;
+    margin: 0;
+    accent-color: var(--cyan);
+    cursor: ew-resize;
+  }
+
+  .timeline-scrubber__ticks {
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    right: 5px;
+    left: 5px;
+    height: 7px;
+    transform: translateY(-50%);
+    opacity: 0.32;
+    background: repeating-linear-gradient(90deg, var(--text-muted) 0 1px, transparent 1px 8%);
+    pointer-events: none;
+  }
+
+  .timeline-console__count {
+    flex: 0 0 auto;
+    text-align: right;
+  }
+
+  .timeline-console__count strong,
+  .timeline-console__count span {
+    display: block;
+  }
+
+  .timeline-console__count strong {
+    color: var(--text-main);
+    font-size: 16px;
+  }
+
+  .timeline-console__count span {
+    color: var(--text-muted);
+    font-size: 8px;
+  }
+
+  .timeline-legend {
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 8.5px;
+  }
+
+  .timeline-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .legend-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 7px currentColor;
+  }
+
+  .legend-dot--canon {
+    color: var(--cyan);
+  }
+  .legend-dot--central {
+    color: var(--violet-light);
+  }
+  .legend-dot--hypothese {
+    color: var(--accent-gold);
+  }
+  .legend-dot--projection {
+    color: #ef86bd;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .event-dialog {
+    width: min(720px, calc(100vw - 24px));
+    max-height: min(820px, calc(100dvh - 24px));
+    padding: 0;
+    overflow: visible;
+    border: 1px solid color-mix(in srgb, var(--violet-light) 35%, var(--border-color));
+    border-radius: 20px;
+    background: var(--bg-secondary);
+    color: var(--text-main);
+    box-shadow: 0 32px 90px rgba(0, 0, 0, 0.58);
+  }
+
+  .event-dialog::backdrop {
+    background: rgba(3, 7, 16, 0.78);
+    backdrop-filter: blur(7px);
+  }
+
+  :global(html.timeline-dialog-open),
+  :global(html.timeline-dialog-open body) {
+    overflow: hidden;
+  }
+
+  .event-dialog__surface {
+    position: relative;
+    max-height: min(820px, calc(100dvh - 24px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: inherit;
+  }
+
+  .event-dialog__close {
+    position: sticky;
+    z-index: 4;
+    top: 12px;
+    float: right;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin: 12px 12px -56px 0;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--bg-main) 88%, transparent);
+    color: var(--text-main);
+    font-size: 24px;
+    box-shadow: 0 6px 18px var(--shadow-color);
+    cursor: pointer;
+  }
+
+  .event-dialog__close:hover,
+  .event-dialog__close:focus-visible {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .event-detail__visual {
+    width: 100%;
+    height: clamp(190px, 38vw, 310px);
+    margin: 0;
+    overflow: hidden;
+    background: var(--bg-main);
+  }
+
+  .event-detail__visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .event-detail {
+    padding: 28px;
+  }
+
+  .event-detail:has(.event-detail__visual) {
+    padding-top: 0;
+  }
+
+  .event-detail__visual + .event-detail__meta {
+    margin-top: 22px;
+  }
+
+  .event-detail__meta {
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 18px;
+    color: var(--text-muted);
+    font-size: 9px;
+  }
+
+  .event-detail__meta > span:not(.status-pill) {
+    padding: 4px 7px;
+    border-radius: var(--border-radius-full);
+    background: var(--surface);
+  }
+
+  .event-detail__date {
+    margin: 0 0 8px;
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 850;
+  }
+
+  .event-detail__title-row {
+    align-items: flex-start;
+    gap: 11px;
+  }
+
+  .event-detail__title-row > span {
+    display: grid;
+    flex: 0 0 42px;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid color-mix(in srgb, var(--cyan) 40%, var(--border-color));
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--cyan) 8%, var(--bg-main));
+    color: var(--cyan);
+    font-weight: 850;
+  }
+
+  .event-detail h3 {
+    margin: 0;
+    padding-right: 48px;
+    font-size: clamp(1.55rem, 5vw, 2.2rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .event-detail__lead {
+    margin: 20px 0 12px;
+    color: var(--text-main);
+    font-size: 15px;
+    font-weight: 690;
+    line-height: 1.55;
+  }
+
+  .event-detail__body {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.72;
+  }
+
+  .event-detail__links {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .event-detail__links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-main);
+    font-size: 10px;
+    font-weight: 750;
+    text-decoration: none;
+  }
+
+  .event-detail__links a:hover,
+  .event-detail__links a:focus-visible {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  @media (max-width: 900px) {
+    .control-deck {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .control-deck__right {
+      justify-content: space-between;
+    }
+
+    .status-filters {
+      padding-bottom: 2px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .chronoscope {
+      --card-width: min(84vw, 306px);
+      --event-gap: 14px;
+      margin-top: 22px;
+    }
+
+    .chronoscope[data-zoom='compact'] {
+      --card-width: min(70vw, 250px);
+    }
+    .chronoscope[data-zoom='large'] {
+      --card-width: min(86vw, 318px);
+    }
+
+    .chronoscope__topline {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .story-button {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .era-strip {
+      display: none;
+    }
+
+    .mobile-era-select {
+      display: grid;
+      gap: 5px;
+      margin-bottom: 10px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .mobile-era-select select {
+      width: 100%;
+      min-height: 48px;
+      padding: 8px 38px 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 11px;
+      background: var(--bg-secondary);
+      color: var(--text-main);
+      font: 650 14px/1.2 var(--font-sans);
+    }
+
+    .control-deck {
+      margin-right: -4px;
+      margin-left: -4px;
+      padding: 8px;
+    }
+
+    .control-deck__right {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .thread-select {
+      justify-content: space-between;
+    }
+
+    .thread-select select {
+      flex: 1;
+      max-width: none;
+    }
+
+    .timeline-actions {
+      justify-content: flex-end;
+    }
+
+    .timeline-actions button {
+      flex: 1;
+      width: auto;
+      min-height: 44px;
+    }
+
+    .timeline-stage {
+      min-height: 664px;
+      margin-right: -8px;
+      margin-left: -8px;
+      border-radius: 16px;
+    }
+
+    .timeline-track {
+      padding-right: 34px;
+      padding-left: 34px;
+    }
+
+    .event-card__visual {
+      height: 102px;
+    }
+
+    .edge-fade {
+      width: 22px;
+    }
+
+    .drag-instruction {
+      right: 10px;
+      bottom: 9px;
+    }
+
+    .timeline-console {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .timeline-console__current {
+      flex-basis: auto;
+    }
+
+    .timeline-scrubber {
+      flex-basis: auto;
+    }
+
+    .timeline-console__count {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .event-detail {
+      padding: 22px 18px;
+    }
+
+    .event-detail h3 {
+      padding-right: 0;
+    }
+
+    .event-dialog__close {
+      top: 8px;
+      margin-top: 8px;
+      margin-right: 8px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .timeline-viewport {
+      scroll-behavior: auto;
+    }
+
+    .time-star,
+    .event-card,
+    .event-node,
+    .event-card__visual img {
+      animation: none;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const initialiseTimeline = () => {
+    const root = document.querySelector<HTMLElement>('[data-timeline-root]');
+    if (!root || root.dataset.enhanced === 'true') return;
+    root.dataset.enhanced = 'true';
+
+    const viewport = root.querySelector<HTMLElement>('[data-timeline-viewport]');
+    const track = root.querySelector<HTMLElement>('[data-timeline-track]');
+    const range = root.querySelector<HTMLInputElement>('[data-timeline-range]');
+    const threadFilter = root.querySelector<HTMLSelectElement>('[data-thread-filter]');
+    const eraSelect = root.querySelector<HTMLSelectElement>('[data-era-select]');
+    const dialog = document.querySelector<HTMLDialogElement>('[data-event-dialog]');
+    const dialogContent = dialog?.querySelector<HTMLElement>('[data-dialog-content]');
+    if (!viewport || !track || !range) return;
+
+    const events = Array.from(root.querySelectorAll<HTMLElement>('[data-event]'));
+    const statusButtons = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('[data-status-filter]'),
+    );
+    const eraButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-era-button]'));
+    const storyButton = root.querySelector<HTMLButtonElement>('[data-story-toggle]');
+    const storyLabel = root.querySelector<HTMLElement>('[data-story-label]');
+    const storyIcon = root.querySelector<HTMLElement>('.story-button__icon');
+    const currentIndex = root.querySelector<HTMLElement>('[data-current-index]');
+    const currentDate = root.querySelector<HTMLElement>('[data-current-date]');
+    const currentTitle = root.querySelector<HTMLElement>('[data-current-title]');
+    const visibleCount = root.querySelector<HTMLElement>('[data-visible-count]');
+    const live = root.querySelector<HTMLElement>('[data-timeline-live]');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let activeStatus = 'all';
+    let activeThread = 'all';
+    let zoomIndex = 1;
+    let dragging = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+    let activeOpener: HTMLElement | null = null;
+    let storyTimer: number | undefined;
+    let updateFrame = 0;
+
+    const visibleEvents = () => events.filter((event) => !event.hidden);
+    const maxScroll = () => Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+    const eventCenter = (event: HTMLElement) => event.offsetLeft + event.offsetWidth / 2;
+    const viewportCenter = () => viewport.scrollLeft + viewport.clientWidth / 2;
+
+    const closestVisibleIndex = () => {
+      const visible = visibleEvents();
+      if (!visible.length) return -1;
+      const center = viewportCenter();
+      let closest = 0;
+      let distance = Number.POSITIVE_INFINITY;
+      visible.forEach((event, index) => {
+        const nextDistance = Math.abs(eventCenter(event) - center);
+        if (nextDistance < distance) {
+          distance = nextDistance;
+          closest = index;
+        }
+      });
+      return closest;
+    };
+
+    const stopStory = () => {
+      window.clearInterval(storyTimer);
+      storyTimer = undefined;
+      storyButton?.setAttribute('aria-pressed', 'false');
+      if (storyLabel) storyLabel.textContent = 'Lire la théorie';
+      if (storyIcon) storyIcon.textContent = '▶';
+    };
+
+    const scrollToEvent = (event: HTMLElement, announce = true) => {
+      const left = Math.max(0, eventCenter(event) - viewport.clientWidth / 2);
+      viewport.scrollTo({ left, behavior: reducedMotion ? 'auto' : 'smooth' });
+      if (announce && live) {
+        const button = event.querySelector<HTMLButtonElement>('[data-event-open]');
+        live.textContent =
+          button?.getAttribute('aria-label')?.replace(' Ouvrir les détails.', '') ?? '';
+      }
+    };
+
+    const updatePosition = () => {
+      updateFrame = 0;
+      const maximum = maxScroll();
+      range.value = maximum ? String(Math.round((viewport.scrollLeft / maximum) * 1000)) : '0';
+
+      const visible = visibleEvents();
+      const index = closestVisibleIndex();
+      const selected = visible[index];
+      events.forEach((event) => event.classList.toggle('is-current', event === selected));
+      if (!selected) return;
+
+      const selectedDate =
+        selected.querySelector<HTMLElement>('.event-date')?.textContent?.trim() ?? '';
+      const selectedTitle =
+        selected.querySelector<HTMLElement>('.event-card__body > strong')?.textContent?.trim() ??
+        '';
+      if (currentIndex) currentIndex.textContent = String(index + 1).padStart(2, '0');
+      if (currentDate) currentDate.textContent = selectedDate;
+      if (currentTitle) currentTitle.textContent = selectedTitle;
+
+      eraButtons.forEach((button) => {
+        button.toggleAttribute('aria-current', button.dataset.eraButton === selected.dataset.era);
+      });
+      if (eraSelect && selected.dataset.era) eraSelect.value = selected.dataset.era;
+    };
+
+    const requestPositionUpdate = () => {
+      if (updateFrame) return;
+      updateFrame = requestAnimationFrame(updatePosition);
+    };
+
+    const applyFilters = () => {
+      stopStory();
+      events.forEach((event) => {
+        const statusMatches = activeStatus === 'all' || event.dataset.status === activeStatus;
+        const threadMatches = activeThread === 'all' || event.dataset.thread === activeThread;
+        event.hidden = !(statusMatches && threadMatches);
+      });
+
+      const visible = visibleEvents();
+      if (visibleCount) visibleCount.textContent = String(visible.length);
+      eraButtons.forEach((button) => {
+        const hasVisibleEvent = visible.some(
+          (event) => event.dataset.era === button.dataset.eraButton,
+        );
+        button.disabled = !hasVisibleEvent;
+      });
+      if (eraSelect) {
+        Array.from(eraSelect.options).forEach((option) => {
+          option.disabled = !visible.some((event) => event.dataset.era === option.value);
+        });
+      }
+
+      requestAnimationFrame(() => {
+        viewport.scrollLeft = 0;
+        if (visible[0]) scrollToEvent(visible[0], false);
+        updatePosition();
+      });
+
+      if (live) live.textContent = `${visible.length} événements affichés.`;
+    };
+
+    statusButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeStatus = button.dataset.statusFilter ?? 'all';
+        statusButtons.forEach((item) => {
+          const active = item === button;
+          item.classList.toggle('is-active', active);
+          item.setAttribute('aria-pressed', String(active));
+        });
+        applyFilters();
+      });
+    });
+
+    threadFilter?.addEventListener('change', () => {
+      activeThread = threadFilter.value;
+      applyFilters();
+    });
+
+    eraButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        stopStory();
+        const event = visibleEvents().find((item) => item.dataset.era === button.dataset.eraButton);
+        if (event) scrollToEvent(event);
+      });
+    });
+
+    eraSelect?.addEventListener('change', () => {
+      stopStory();
+      const event = visibleEvents().find((item) => item.dataset.era === eraSelect.value);
+      if (event) scrollToEvent(event);
+    });
+
+    const jump = (direction: number) => {
+      const visible = visibleEvents();
+      if (!visible.length) return;
+      const current = closestVisibleIndex();
+      const next = Math.max(0, Math.min(visible.length - 1, current + direction));
+      scrollToEvent(visible[next]);
+    };
+
+    root.querySelector('[data-jump-prev]')?.addEventListener('click', () => {
+      stopStory();
+      jump(-1);
+    });
+    root.querySelector('[data-jump-next]')?.addEventListener('click', () => {
+      stopStory();
+      jump(1);
+    });
+    root.querySelector('[data-loop-start]')?.addEventListener('click', () => {
+      stopStory();
+      viewport.scrollTo({ left: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+    });
+
+    const setZoom = (index: number) => {
+      const zooms = ['compact', 'normal', 'large'];
+      zoomIndex = Math.max(0, Math.min(zooms.length - 1, index));
+      const current = visibleEvents()[closestVisibleIndex()];
+      root.dataset.zoom = zooms[zoomIndex];
+      requestAnimationFrame(() => {
+        if (current) scrollToEvent(current, false);
+        updatePosition();
+      });
+    };
+
+    root.querySelector('[data-zoom-out]')?.addEventListener('click', () => setZoom(zoomIndex - 1));
+    root.querySelector('[data-zoom-in]')?.addEventListener('click', () => setZoom(zoomIndex + 1));
+
+    storyButton?.addEventListener('click', () => {
+      if (storyTimer) {
+        stopStory();
+        return;
+      }
+      const visible = visibleEvents();
+      if (!visible.length) return;
+      storyButton.setAttribute('aria-pressed', 'true');
+      if (storyLabel) storyLabel.textContent = 'Mettre en pause';
+      if (storyIcon) storyIcon.textContent = 'Ⅱ';
+      let index = closestVisibleIndex();
+      if (index >= visible.length - 1) index = -1;
+      scrollToEvent(visible[index + 1]);
+      storyTimer = window.setInterval(() => {
+        index += 1;
+        if (index >= visible.length - 1) {
+          stopStory();
+          return;
+        }
+        scrollToEvent(visible[index + 1]);
+      }, 4200);
+    });
+
+    range.addEventListener('input', () => {
+      stopStory();
+      viewport.scrollLeft = (Number(range.value) / 1000) * maxScroll();
+    });
+
+    viewport.addEventListener('scroll', requestPositionUpdate, { passive: true });
+    viewport.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'mouse' || (event.target as Element).closest('button, a, input'))
+        return;
+      dragging = true;
+      dragStartX = event.clientX;
+      dragStartScroll = viewport.scrollLeft;
+      viewport.setPointerCapture(event.pointerId);
+      stopStory();
+    });
+    viewport.addEventListener('pointermove', (event) => {
+      if (!dragging) return;
+      viewport.scrollLeft = dragStartScroll - (event.clientX - dragStartX);
+    });
+    const stopDragging = () => {
+      dragging = false;
+    };
+    viewport.addEventListener('pointerup', stopDragging);
+    viewport.addEventListener('pointercancel', stopDragging);
+
+    viewport.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') jump(1);
+      else if (event.key === 'ArrowLeft') jump(-1);
+      else if (event.key === 'Home')
+        viewport.scrollTo({ left: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+      else if (event.key === 'End')
+        viewport.scrollTo({ left: maxScroll(), behavior: reducedMotion ? 'auto' : 'smooth' });
+      else return;
+      event.preventDefault();
+      stopStory();
+    });
+
+    root.querySelectorAll<HTMLElement>('[data-event-open]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const eventId = button.dataset.eventOpen;
+        const template = document.getElementById(
+          `timeline-detail-${eventId}`,
+        ) as HTMLTemplateElement | null;
+        if (!template || !dialog || !dialogContent || !eventId) return;
+        stopStory();
+        dialogContent.replaceChildren(template.content.cloneNode(true));
+        dialog.removeAttribute('aria-label');
+        dialog.setAttribute('aria-labelledby', `event-detail-title-${eventId}`);
+        activeOpener = button;
+        dialog.showModal();
+        document.documentElement.classList.add('timeline-dialog-open');
+        requestAnimationFrame(() =>
+          dialog.querySelector<HTMLElement>('[data-dialog-close]')?.focus(),
+        );
+      });
+    });
+
+    dialog?.querySelector('[data-dialog-close]')?.addEventListener('click', () => dialog.close());
+    dialog?.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+    dialog?.addEventListener('close', () => {
+      document.documentElement.classList.remove('timeline-dialog-open');
+      dialog.removeAttribute('aria-labelledby');
+      dialog.setAttribute('aria-label', 'Détail de la chronologie');
+      activeOpener?.focus();
+      activeOpener = null;
+    });
+
+    window.addEventListener('resize', requestPositionUpdate, { passive: true });
+    updatePosition();
+  };
+
+  initialiseTimeline();
+  document.addEventListener('astro:page-load', initialiseTimeline);
+</script>

@@ -32,9 +32,10 @@ const {
   type,
   seoTitle,
   noBreadcrumb = false,
-  noSidebar = false,
+  noSidebar: requestedNoSidebar = false,
 } = Astro.props;
 
+const noSidebar = requestedNoSidebar;
 const hasToc = Boolean(headings?.length);
 const breadcrumbLabels: Record<string, string> = {
   '/dossiers': 'Dossiers',
@@ -127,7 +128,7 @@ const canonicalWikiUrl = new URL(
     )
   }
 
-  <Navbar hideMobileToggle={noSidebar} />
+  <Navbar useGlobalMobileMenu={noSidebar} />
 
   {!noSidebar && <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true" />}
 
@@ -163,7 +164,13 @@ const canonicalWikiUrl = new URL(
               </svg>
             </button>
           </div>
-          <div class="sidebar-scroll" data-sidebar-scroll>
+          <div
+            class="sidebar-scroll"
+            data-sidebar-scroll
+            role="region"
+            aria-label="Liste des articles"
+            tabindex="0"
+          >
             <SidebarNav currentPath={currentPath} />
           </div>
         </aside>
@@ -239,7 +246,7 @@ const canonicalWikiUrl = new URL(
   :global(html),
   :global(body) {
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .wiki-layout {
@@ -277,12 +284,15 @@ const canonicalWikiUrl = new URL(
   }
 
   .sidebar-scroll {
-    flex: 1 1 auto;
+    position: relative;
+    flex: 1 1 0;
+    height: 100%;
     min-width: 0;
     min-height: 0;
+    max-height: 100%;
     padding: 20px 14px 32px;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: scroll;
     overscroll-behavior-y: contain;
     scrollbar-gutter: stable;
     scrollbar-width: thin;
@@ -379,9 +389,13 @@ const canonicalWikiUrl = new URL(
       z-index: 60;
       top: var(--nav-h);
       left: 0;
-      bottom: 0;
+      bottom: auto;
       width: min(88vw, 320px);
-      height: auto;
+      height: calc(100vh - var(--nav-h));
+      height: calc(100dvh - var(--nav-h));
+      max-height: calc(100vh - var(--nav-h));
+      max-height: calc(100dvh - var(--nav-h));
+      contain: layout paint;
       border-right: 1px solid var(--border-color);
       transform: translateX(-100%);
       visibility: hidden;
@@ -392,7 +406,12 @@ const canonicalWikiUrl = new URL(
     }
 
     .sidebar-scroll {
+      flex: 1 1 0;
+      height: 0;
+      min-height: 0;
+      max-height: none;
       padding: 0 14px max(28px, env(safe-area-inset-bottom));
+      overflow-y: scroll;
     }
 
     .sidebar-left.is-open {
@@ -403,10 +422,10 @@ const canonicalWikiUrl = new URL(
     }
 
     .sidebar-mobile-header {
-      position: sticky;
-      top: 0;
+      position: relative;
       z-index: 2;
       display: flex;
+      flex: 0 0 56px;
       align-items: center;
       justify-content: space-between;
       min-height: 56px;
@@ -449,11 +468,14 @@ const canonicalWikiUrl = new URL(
     }
   }
 
-  :global(html.nav-drawer-open),
   :global(html.nav-drawer-open body),
-  :global(html.toc-drawer-open),
   :global(html.toc-drawer-open body) {
     overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  :global(html.nav-drawer-open),
+  :global(html.toc-drawer-open) {
     overscroll-behavior: none;
   }
 
@@ -635,7 +657,10 @@ const canonicalWikiUrl = new URL(
     if (mobileMedia.matches && event.target.closest('a')) setNavOpen(false);
   });
   mobileMedia.addEventListener('change', syncNavViewport);
-  window.addEventListener('openSearch', () => setNavOpen(false));
+  window.addEventListener('openSearch', () => {
+    setNavOpen(false);
+    setTocOpen(false);
+  });
 
   navDrawer?.addEventListener('keydown', (event) => {
     if (event.key !== 'Tab' || !isNavOpen()) return;

@@ -4,10 +4,10 @@ import { effectLabel } from '@utils/labels';
 import SearchModal from './SearchModal.astro';
 
 interface Props {
-  /** Pages sans sidebar (404/500) : le hamburger n'a rien à ouvrir → masqué. */
-  hideMobileToggle?: boolean;
+  /** Les pages sans sidebar ouvrent une navigation globale dans un dialogue mobile. */
+  useGlobalMobileMenu?: boolean;
 }
-const { hideMobileToggle = false } = Astro.props;
+const { useGlobalMobileMenu = false } = Astro.props;
 
 interface SubLink {
   label: string;
@@ -108,9 +108,10 @@ const nav: NavItem[] = [
 const pathname = Astro.url.pathname;
 const isActive = (href: string) =>
   href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/');
+const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(/\/+$/, '');
 ---
 
-<nav class="navbar" data-pagefind-ignore>
+<nav class="navbar" data-pagefind-ignore aria-label="Navigation principale">
   <!-- Left: Brand Logo -->
   <div class="nav-left">
     <a href="/" class="logo">
@@ -123,15 +124,22 @@ const isActive = (href: string) =>
   <div class="nav-center">
     <div class="nav-links">
       {
-        nav.map((item) => (
+        nav.map((item, index) => (
           <div class="nav-item">
             <a
               href={item.href}
               class:list={['nav-link', { 'nav-link--active': isActive(item.href) }]}
-              aria-expanded="false"
-              aria-current={isActive(item.href) ? 'page' : undefined}
+              aria-current={isExact(item.href) ? 'page' : undefined}
             >
               {item.label}
+            </a>
+            <button
+              class="nav-menu-trigger"
+              type="button"
+              aria-label={`Ouvrir le menu ${item.label}`}
+              aria-expanded="false"
+              aria-controls={`nav-dropdown-${index}`}
+            >
               <svg
                 class="nav-caret"
                 width="12"
@@ -145,8 +153,13 @@ const isActive = (href: string) =>
               >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
-            </a>
-            <div class="nav-dropdown" role="group" aria-label={item.label}>
+            </button>
+            <div
+              id={`nav-dropdown-${index}`}
+              class="nav-dropdown"
+              role="group"
+              aria-label={item.label}
+            >
               {item.groups.map((group) => (
                 <div class="nav-dropdown__group">
                   <div class="nav-dropdown__title">{group.title}</div>
@@ -232,14 +245,14 @@ const isActive = (href: string) =>
       </button>
     </div>
 
-    <!-- Mobile: hamburger (masqué sur les pages sans sidebar : rien à ouvrir) -->
+    <!-- Sur les hubs, ce bouton ouvre le menu global ; dans un article, la navigation contextuelle. -->
     <button
       id="mobile-menu-toggle"
-      class:list={['icon-btn', { 'mobile-toggle--disabled': hideMobileToggle }]}
+      class="icon-btn"
       aria-label="Menu"
       aria-expanded="false"
-      aria-controls="sidebar-left"
-      disabled={hideMobileToggle || undefined}
+      aria-controls={useGlobalMobileMenu ? 'global-mobile-nav' : 'sidebar-left'}
+      data-global-menu-trigger={useGlobalMobileMenu ? true : undefined}
     >
       <svg
         id="hamburger-icon"
@@ -273,6 +286,44 @@ const isActive = (href: string) =>
     </button>
   </div>
 </nav>
+
+{
+  useGlobalMobileMenu && (
+    <dialog id="global-mobile-nav" class="global-mobile-nav" aria-labelledby="global-nav-title">
+      <div class="global-mobile-nav__surface">
+        <div class="global-mobile-nav__header">
+          <div>
+            <small>Les Fous du Bus</small>
+            <strong id="global-nav-title">Où voulez-vous aller ?</strong>
+          </div>
+          <button type="button" data-global-menu-close aria-label="Fermer le menu">
+            ×
+          </button>
+        </div>
+        <div class="global-mobile-nav__body">
+          {nav.map((item) => (
+            <section>
+              <a class="global-mobile-nav__section" href={item.href}>
+                {item.label}
+              </a>
+              <div>
+                {item.groups
+                  .flatMap((group) => group.links)
+                  .slice(0, 6)
+                  .map((link) => (
+                    <a href={link.href}>{link.label}</a>
+                  ))}
+              </div>
+            </section>
+          ))}
+          <a class="global-mobile-nav__help" href="/aide/glossaire">
+            Glossaire essentiel
+          </a>
+        </div>
+      </div>
+    </dialog>
+  )
+}
 
 <!-- La recherche vit hors de <nav> et charge Pagefind uniquement à la première requête. -->
 <SearchModal />
@@ -379,6 +430,8 @@ const isActive = (href: string) =>
 
   .nav-item {
     position: relative;
+    display: flex;
+    align-items: center;
   }
 
   .nav-link {
@@ -386,7 +439,8 @@ const isActive = (href: string) =>
     font-weight: 500;
     color: var(--text-secondary);
     text-decoration: none;
-    padding: 6px 10px;
+    min-height: 40px;
+    padding: 6px 32px 6px 10px;
     border-radius: var(--border-radius-sm);
     display: inline-flex;
     align-items: center;
@@ -411,6 +465,28 @@ const isActive = (href: string) =>
   .nav-link--active {
     color: var(--cyan);
     font-weight: 600;
+  }
+
+  .nav-menu-trigger {
+    position: absolute;
+    right: 2px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    min-width: 28px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--border-radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .nav-menu-trigger:hover,
+  .nav-menu-trigger:focus-visible {
+    background: var(--surface);
+    color: var(--text-main);
   }
 
   .nav-caret {
@@ -528,6 +604,106 @@ const isActive = (href: string) =>
     outline-offset: -2px;
   }
 
+  .global-mobile-nav {
+    width: min(92vw, 430px);
+    max-height: calc(100dvh - 28px);
+    margin: auto;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: var(--bg-secondary);
+    color: var(--text-main);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+  }
+
+  .global-mobile-nav::backdrop {
+    background: rgba(3, 8, 15, 0.68);
+  }
+  .global-mobile-nav__surface {
+    max-height: calc(100dvh - 28px);
+    overflow-y: auto;
+  }
+  .global-mobile-nav__header {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+  }
+  .global-mobile-nav__header small,
+  .global-mobile-nav__header strong {
+    display: block;
+  }
+  .global-mobile-nav__header small {
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .global-mobile-nav__header strong {
+    margin-top: 2px;
+    font-size: 18px;
+  }
+  .global-mobile-nav__header button {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-main);
+    font-size: 25px;
+    cursor: pointer;
+  }
+  .global-mobile-nav__body {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+  }
+  .global-mobile-nav__body section {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-main);
+  }
+  .global-mobile-nav__section {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    color: var(--text-main);
+    font-weight: 800;
+    text-decoration: none;
+  }
+  .global-mobile-nav__body section div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 12px;
+  }
+  .global-mobile-nav__body section div a,
+  .global-mobile-nav__help {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.35;
+    text-decoration: none;
+  }
+  .global-mobile-nav__body section div a:hover,
+  .global-mobile-nav__help:hover {
+    color: var(--cyan);
+  }
+  .global-mobile-nav__help {
+    padding: 0 12px;
+  }
+
   .nav-actions {
     display: flex;
     align-items: center;
@@ -539,6 +715,7 @@ const isActive = (href: string) =>
     align-items: center;
     gap: 8px;
     height: 34px;
+    min-height: 34px;
     padding: 0 10px 0 12px;
     font-size: 13px;
     color: var(--text-secondary);
@@ -658,7 +835,7 @@ const isActive = (href: string) =>
     }
     .nav-link {
       font-size: 14px;
-      padding: 6px 12px;
+      padding: 6px 34px 6px 12px;
     }
     .nav-links {
       gap: 4px;
@@ -685,7 +862,7 @@ const isActive = (href: string) =>
     }
     .nav-link {
       font-size: 13px;
-      padding: 5px 8px;
+      padding: 5px 30px 5px 8px;
     }
     .search-trigger {
       max-width: 160px;
@@ -783,10 +960,10 @@ const isActive = (href: string) =>
 
     /* Icon-only search button on small screens */
     .search-trigger {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      max-width: 36px;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      max-width: 44px;
       padding: 0;
       justify-content: center;
       gap: 0;
@@ -806,9 +983,9 @@ const isActive = (href: string) =>
 
     .theme-btn,
     .icon-btn {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
       border-radius: var(--border-radius-sm);
     }
   }
@@ -821,12 +998,8 @@ const isActive = (href: string) =>
       padding: 0 10px;
       gap: 6px;
     }
-    .search-trigger,
-    .theme-btn,
-    .icon-btn {
-      width: 34px;
-      height: 34px;
-      min-width: 34px;
+    .logo-text {
+      display: none;
     }
   }
 
@@ -903,36 +1076,25 @@ const isActive = (href: string) =>
   const closeAllDropdowns = () => {
     navItems.forEach((item) => {
       item.classList.remove('nav-item--open');
-      const link = item.querySelector('.nav-link');
-      if (link) link.setAttribute('aria-expanded', 'false');
+      const trigger = item.querySelector('.nav-menu-trigger');
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
     });
     openDropdown = null;
   };
 
   navItems.forEach((item) => {
-    const navLink = item.querySelector('.nav-link');
-    if (!navLink) return;
+    const navTrigger = item.querySelector<HTMLButtonElement>('.nav-menu-trigger');
+    if (!navTrigger) return;
 
-    navLink.addEventListener('click', (e) => {
-      // Only intercept on touch/tablet (viewport <= 1024) or when no hover support
-      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      if (!isTouchDevice && window.innerWidth > 1024) return;
-
+    navTrigger.addEventListener('click', () => {
       const isOpen = item.classList.contains('nav-item--open');
-
       if (isOpen) {
-        // 2ᵉ tap : le dropdown est déjà ouvert → on LAISSE la navigation se faire
-        // vers la page de rubrique (sinon les liens top-level seraient inatteignables
-        // sur tablette tactile).
         closeAllDropdowns();
         return;
       }
-
-      // 1ᵉʳ tap : ouvrir le dropdown sans naviguer.
-      e.preventDefault();
       closeAllDropdowns();
       item.classList.add('nav-item--open');
-      navLink.setAttribute('aria-expanded', 'true');
+      navTrigger.setAttribute('aria-expanded', 'true');
       openDropdown = item;
     });
 
@@ -941,7 +1103,7 @@ const isActive = (href: string) =>
     const hoverCapable = window.matchMedia('(hover: hover)').matches;
     const syncHover = (on: boolean) => {
       if (item.classList.contains('nav-item--open')) return; // l'état clic gagne
-      navLink.setAttribute('aria-expanded', on ? 'true' : 'false');
+      navTrigger.setAttribute('aria-expanded', on ? 'true' : 'false');
     };
     if (hoverCapable) {
       item.addEventListener('pointerenter', () => syncHover(true));
@@ -979,7 +1141,7 @@ const isActive = (href: string) =>
     if (e.key === 'Escape') {
       if (openDropdown) {
         // Return focus to its trigger
-        const trigger = openDropdown.querySelector<HTMLAnchorElement>('.nav-link');
+        const trigger = openDropdown.querySelector<HTMLButtonElement>('.nav-menu-trigger');
         closeAllDropdowns();
         trigger?.focus();
       }
@@ -989,7 +1151,7 @@ const isActive = (href: string) =>
     // ArrowDown on a trigger opens that dropdown and focuses first item
     if (
       e.key === 'ArrowDown' &&
-      target.classList.contains('nav-link') &&
+      target.classList.contains('nav-menu-trigger') &&
       target.getAttribute('aria-expanded') !== null
     ) {
       const item = target.closest<HTMLDivElement>('.nav-item');
@@ -1019,7 +1181,7 @@ const isActive = (href: string) =>
         e.preventDefault();
         if (idx <= 0) {
           // Return to trigger
-          const trigger = openDropdown.querySelector<HTMLAnchorElement>('.nav-link');
+          const trigger = openDropdown.querySelector<HTMLButtonElement>('.nav-menu-trigger');
           closeAllDropdowns();
           trigger?.focus();
         } else {
@@ -1033,5 +1195,26 @@ const isActive = (href: string) =>
         focusItem(items[items.length - 1]);
       }
     }
+  });
+
+  const globalMenu = document.getElementById('global-mobile-nav') as HTMLDialogElement | null;
+  const globalMenuTrigger = document.querySelector<HTMLButtonElement>('[data-global-menu-trigger]');
+  const globalMenuClose = globalMenu?.querySelector<HTMLButtonElement>('[data-global-menu-close]');
+
+  globalMenuTrigger?.addEventListener('click', () => {
+    globalMenu?.showModal();
+    globalMenuTrigger.setAttribute('aria-expanded', 'true');
+    document.documentElement.classList.add('global-nav-open');
+    requestAnimationFrame(() => globalMenuClose?.focus());
+  });
+
+  globalMenuClose?.addEventListener('click', () => globalMenu?.close());
+  globalMenu?.addEventListener('click', (event) => {
+    if (event.target === globalMenu) globalMenu.close();
+  });
+  globalMenu?.addEventListener('close', () => {
+    document.documentElement.classList.remove('global-nav-open');
+    globalMenuTrigger?.setAttribute('aria-expanded', 'false');
+    globalMenuTrigger?.focus();
   });
 </script>

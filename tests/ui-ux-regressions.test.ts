@@ -10,8 +10,11 @@ describe('régressions UI, UX et accessibilité', () => {
     const layout = read('src/layouts/WikiLayout.astro');
     expect(layout).toContain('class="sidebar-scroll"');
     expect(layout).toContain('min-height: 0');
-    expect(layout).toContain('overflow-y: auto');
+    expect(layout).toContain('height: calc(100dvh - var(--nav-h))');
+    expect(layout).toContain('height: 0');
+    expect(layout).toContain('overflow-y: scroll');
     expect(layout).toContain('-webkit-overflow-scrolling: touch');
+    expect(layout).toContain('aria-label="Liste des articles"');
     expect(layout).toContain("window.matchMedia('(max-width: 1023px)')");
     expect(layout).not.toContain('sidebar-resizer');
     expect(layout).not.toContain('sidebar-left-width');
@@ -26,8 +29,31 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(layout).toContain("window.matchMedia('(max-width: 1023px)')");
     expect(layout).toContain('@media (max-width: 1023px)');
     expect(navbar).toContain('@media (max-width: 1023px)');
-    expect(navbar).toContain('aria-controls="sidebar-left"');
+    expect(navbar).toContain(
+      "aria-controls={useGlobalMobileMenu ? 'global-mobile-nav' : 'sidebar-left'}",
+    );
     expect(layout).not.toMatch(/window\.innerWidth\s*[<>]=?\s*768/);
+  });
+
+  it('synchronise les composants fixes avec les états réels des superpositions', () => {
+    const backToTop = read('src/components/BackToTop.astro');
+    const progress = read('src/components/ReadingProgressBar.astro');
+
+    for (const source of [backToTop, progress]) {
+      expect(source).toContain('html.nav-drawer-open');
+      expect(source).toContain('html.toc-drawer-open');
+      expect(source).toContain('html.search-modal-open');
+      expect(source).not.toContain("data-nav-open='mobile'");
+    }
+  });
+
+  it('donne un nom accessible propre à chaque détail de la chronologie', () => {
+    const timeline = read('src/components/InteractiveTheoryTimeline.astro');
+    expect(timeline).toContain('id={`event-detail-title-${event.id}`}');
+    expect(timeline).toContain(
+      "dialog.setAttribute('aria-labelledby', `event-detail-title-${eventId}`)",
+    );
+    expect(timeline).not.toContain('id="event-dialog-title"');
   });
 
   it('utilise les éléments details natifs pour les sections de navigation', () => {
@@ -35,6 +61,13 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(sidebar).toContain('<details');
     expect(sidebar).toContain('<summary');
     expect(sidebar).not.toContain('<script>');
+  });
+
+  it('conserve le scroll vertical natif autour de la frise', () => {
+    const timeline = read('src/components/InteractiveTheoryTimeline.astro');
+    expect(timeline).not.toContain("viewport.addEventListener(\n      'wheel'");
+    expect(timeline).toContain('data-era-select');
+    expect(timeline).toContain('min-height: 44px');
   });
 
   it('ne rend plus de barre de recherche dans la navigation latérale', () => {
@@ -95,6 +128,14 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(navbar).toContain('<SearchModal />');
     expect(navbar).not.toContain('client:idle');
     expect(pkg).not.toContain('"react"');
+  });
+
+  it('neutralise l’arrière-plan de la recherche et annule les résultats périmés', () => {
+    const search = read('src/components/SearchModal.astro');
+    expect(search).toContain("'.navbar, .wiki-layout, #toc-fab, #back-to-top'");
+    expect(search).toContain("element.setAttribute('inert', '')");
+    expect(search).toContain('requestId += 1');
+    expect(search).toContain("input.removeAttribute('aria-activedescendant')");
   });
 
   it('exclut le chrome de lecture et les pages internes des extraits Pagefind', () => {
