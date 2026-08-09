@@ -886,10 +886,10 @@ const canonicalWikiUrl = new URL(
     if (willOpen) {
       window.setTimeout(() => {
         if (!isMobileOpen()) return;
-        document.getElementById('sidebar-filter-input')?.focus({ preventScroll: true });
-        sidebarContainer
-          .querySelector('.sidebar-link--active')
-          ?.scrollIntoView({ block: 'center', behavior: 'auto' });
+        const activeLink = sidebarContainer.querySelector('.sidebar-link--active');
+        const firstControl = sidebarContainer.querySelector('.sidebar-section-toggle');
+        (activeLink ?? firstControl)?.focus({ preventScroll: true });
+        activeLink?.scrollIntoView({ block: 'center', behavior: 'auto' });
       }, 280);
     }
   };

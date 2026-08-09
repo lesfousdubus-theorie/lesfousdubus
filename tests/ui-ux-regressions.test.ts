@@ -23,6 +23,13 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(layout).not.toMatch(/window\.innerWidth\s*[<>]=?\s*768/);
   });
 
+  it('ne rend plus de barre de recherche dans la navigation latérale', () => {
+    const sidebar = read('src/components/SidebarNav.astro');
+    expect(sidebar).not.toContain('sidebar-filter');
+    expect(sidebar).not.toContain('Filtrer la navigation');
+    expect(sidebar).not.toContain('applyFilter');
+  });
+
   it('publie les 15 médias locaux du thread Galley-La', () => {
     const article = read('src/content/articles/galley-la-coincidence-impossible.md');
     for (let index = 1; index <= 15; index++) {
