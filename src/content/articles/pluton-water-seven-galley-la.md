@@ -8,7 +8,7 @@ reviewedUntilChapter: 1188
 parent: "armes-antiques"
 navigationType: "dossier"
 editorialStatus: "hypothese-centrale"
-related: ["pluton-fiche", "zunesha", "wa-no-kuni", "loki", "poseidon-fiche"]
+related: ["pluton-fiche", "zunesha-fiche", "wa-no-kuni", "loki", "poseidon-fiche"]
 sources: [431]
 order: 37
 ---

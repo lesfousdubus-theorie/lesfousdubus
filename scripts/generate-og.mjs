@@ -14,7 +14,7 @@
  * Python/Pillow.
  */
 import { existsSync, mkdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const PUBLIC = join(process.cwd(), 'public');
@@ -98,7 +98,17 @@ print('OK', ${JSON.stringify(outPath)})
 
 mkdirSync(PUBLIC, { recursive: true });
 let ok = 0;
+let skipped = 0;
 for (const [slug, title] of Object.entries(PAGES)) {
+  const outPath = join(PUBLIC, `og-${slug}.png`);
+  // Ne régénère jamais une image existante : les visuels committed font foi,
+  // et ça évite les erreurs dans les environnements sans Pillow.
+  if (existsSync(outPath)) {
+    skipped++;
+    continue;
+  }
   if (renderPng(slug, title)) ok++;
 }
-console.log(`[og] ${ok}/${Object.keys(PAGES).length} images générées dans public/`);
+console.log(
+  `[og] ${ok} générée(s), ${skipped} déjà présente(s) sur ${Object.keys(PAGES).length}`,
+);

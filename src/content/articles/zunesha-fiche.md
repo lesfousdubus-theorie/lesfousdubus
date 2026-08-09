@@ -8,7 +8,7 @@ reviewedUntilChapter: 1188
 parent: "peuples-royaumes"
 sources: [1050]
 order: 89
-related: ["zunesha", "emeth-futur"]
+related: ["emeth-futur"]
 ---
 
 ## Présentation canonique

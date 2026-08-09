@@ -103,6 +103,22 @@ export default function SearchModal() {
     };
   }, []);
 
+  // Hydratation : signale au script inline de la Navbar que la modale est prête,
+  // et honore une éventuelle demande de recherche déclenchée AVANT l'hydratation
+  // (clic loupe ou Ctrl/Cmd+K sur une page pas encore interactive).
+  useEffect(() => {
+    const w = window as unknown as {
+      __searchHydrated?: boolean;
+      __searchPending?: boolean;
+    };
+    w.__searchHydrated = true;
+    document.querySelector('.search-trigger')?.removeAttribute('aria-busy');
+    if (w.__searchPending) {
+      w.__searchPending = false;
+      setIsOpen(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       setRecents(loadRecents());
@@ -174,6 +190,9 @@ export default function SearchModal() {
     const normalized = normalizeQuery(query);
     setIsLoading(true);
     setHasSearched(false);
+    // Debounce court ; la toute première frappe part immédiatement pour une
+    // sensation de recherche instantanée.
+    const delay = hasSearched || results.length > 0 ? 120 : 0;
     const timeout = window.setTimeout(async () => {
       try {
         const pf = await getPagefind();
@@ -195,7 +214,7 @@ export default function SearchModal() {
       } finally {
         if (!cancelled) setIsLoading(false);
       }
-    }, 180);
+    }, delay);
     return () => {
       cancelled = true;
       window.clearTimeout(timeout);
@@ -258,6 +277,15 @@ export default function SearchModal() {
   const showNormalizedHint =
     !!query && normalizedQuery.toLowerCase() !== query.trim().toLowerCase();
 
+  // Annonce d'état pour les lecteurs d'écran (recherche en cours / résultats).
+  const liveStatus = isLoading
+    ? 'Recherche en cours…'
+    : showResults
+      ? `${results.length} résultat${results.length > 1 ? 's' : ''} disponible${results.length > 1 ? 's' : ''}`
+      : showNoResults
+        ? 'Aucun résultat'
+        : '';
+
   return (
     <div className="search-modal-overlay" role="presentation" onClick={() => setIsOpen(false)}>
       <style>{`
@@ -304,6 +332,7 @@ export default function SearchModal() {
         @media (min-width:640px){ .search-footer{ display:flex; } }
         .search-footer kbd{ display:inline-block; padding:1px 5px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-main); font-size:10.5px; font-family:inherit; font-weight:600; margin:0 1px; }
         .search-footer-hints{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
         .search-footer-count{ opacity:0.85; white-space:nowrap; }
         .search-cta{ display:inline-flex; margin-top:12px; padding:8px 14px; border:1px solid var(--border-color); border-radius: var(--border-radius); color:var(--cyan); text-decoration:none; font-size:13px; font-weight:600; transition: all 0.18s ease; }
         .search-cta:hover{ border-color:var(--cyan); background: color-mix(in srgb, var(--cyan) 10%, transparent); }
@@ -318,6 +347,9 @@ export default function SearchModal() {
         aria-label="Recherche dans le site"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {liveStatus}
+        </div>
         <div className="search-modal-header">
           <svg
             width="18"
@@ -346,7 +378,7 @@ export default function SearchModal() {
             onKeyDown={handleInputKeyDown}
             role="combobox"
             aria-label="Rechercher"
-            aria-expanded={showResults || showNoResults}
+            aria-expanded={showResults}
             aria-autocomplete="list"
             aria-controls="search-results"
             aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined}

@@ -44,13 +44,12 @@ const { chapter, title, effect, href } = Astro.props;
     padding: 16px 20px;
     margin-bottom: 48px;
     text-decoration: none;
-    overflow: hidden;
     transition: all 0.3s ease;
   }
 
   .chapter-banner:hover {
     border-color: color-mix(in srgb, var(--cyan-dim) 40%, var(--border-color));
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2), 0 0 16px var(--glow-cyan);
+    box-shadow: 0 4px 24px var(--shadow-color), 0 0 16px var(--glow-cyan);
   }
 
   .chapter-banner__glow {

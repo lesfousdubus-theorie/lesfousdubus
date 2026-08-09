@@ -7,6 +7,14 @@ import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
 import { categoryLabel, effectLabel } from '@utils/labels';
 import { getRecentArticleUpdates } from '@utils/chapter-updates';
+import { existsSync } from 'node:fs';
+
+// Vignette vidéo : auto-hébergée si présente (aucune requête tierce avant clic),
+// sinon récupérée chez YouTube avec chaîne de repli (voir `scripts/fetch-video-cover.sh`).
+const hasLocalVideoCover = existsSync('./public/images/video-cover.webp');
+const videoCoverSrc = hasLocalVideoCover
+  ? '/images/video-cover.webp'
+  : 'https://img.youtube.com/vi/SgJ25zjMJyo/maxresdefault.jpg';
 
 const chapters = await getCollection('chapters');
 const articles = await getCollection(
@@ -109,7 +117,7 @@ const badgeColorByEffect = {
     >
       <img
         id="video-facade__img"
-        src="https://img.youtube.com/vi/SgJ25zjMJyo/maxresdefault.jpg"
+        src={videoCoverSrc}
         alt="Vidéo de présentation de la théorie"
         class="video-facade__img"
         loading="lazy"
@@ -132,13 +140,14 @@ const badgeColorByEffect = {
 
     <script>
       // Fallback de la miniature (hors inline, CSP-friendly) :
-      // maxresdefault → hqdefault → image locale.
+      // maxresdefault → hqdefault → image locale. Si la vignette auto-hébergée
+      // est déjà en place, le seul repli utile est l'image par défaut.
       const facadeImg = document.getElementById('video-facade__img') as HTMLImageElement | null;
       if (facadeImg) {
         facadeImg.addEventListener('error', () => {
           if (facadeImg.src.includes('maxresdefault')) {
             facadeImg.src = 'https://img.youtube.com/vi/SgJ25zjMJyo/hqdefault.jpg';
-          } else if (facadeImg.src.includes('hqdefault')) {
+          } else if (facadeImg.src.includes('hqdefault') || facadeImg.src.includes('video-cover')) {
             facadeImg.src = '/og-default.png';
           }
         });
@@ -207,6 +216,13 @@ const badgeColorByEffect = {
       count={countByCategory('figures-principales')}
     />
     <CategoryCard
+      icon="👥"
+      title="Personnages et identités"
+      description="Les parallèles et les liens entre personnages anciens et modernes."
+      href="/dossiers#personnages-identites"
+      count={countByCategory('personnages-identites')}
+    />
+    <CategoryCard
       icon="🔱"
       title="Armes antiques"
       description="Poséidon, Pluton, Uranus, Noah : leur véritable fonction et leur rôle dans la guerre finale."
@@ -219,6 +235,27 @@ const badgeColorByEffect = {
       description="Vegapunk, Mother Flame, Fruits du Démon, Emeth et les connaissances perdues."
       href="/dossiers#technologies-pouvoirs"
       count={countByCategory('technologies-pouvoirs')}
+    />
+    <CategoryCard
+      icon="🏰"
+      title="Peuples, royaumes et témoins"
+      description="Chaque peuple, sa mission et son rôle dans le dénouement."
+      href="/dossiers#peuples-royaumes"
+      count={countByCategory('peuples-royaumes')}
+    />
+    <CategoryCard
+      icon="🙏"
+      title="Dieux et croyances"
+      description="Nika, le soleil, les divinités et ce que les peuples transmettent."
+      href="/dossiers#dieux-croyances"
+      count={countByCategory('dieux-croyances')}
+    />
+    <CategoryCard
+      icon="🎵"
+      title="Transmission et mémoire"
+      description="Chansons, récits et héritages : comment la mémoire traverse le temps."
+      href="/dossiers#transmission-memoire"
+      count={countByCategory('transmission-memoire')}
     />
     <CategoryCard
       icon="⚖️"

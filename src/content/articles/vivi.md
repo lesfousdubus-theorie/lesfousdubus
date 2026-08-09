@@ -9,7 +9,7 @@ editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 reviewedUntilChapter: 1188
 order: 50
-related: ['lili', 'lili-vivi-et-les-poneglyphes', 'nefertari-vivi']
+related: ['lili', 'nefertari-vivi']
 ---
 
 ## Les preuves physiques

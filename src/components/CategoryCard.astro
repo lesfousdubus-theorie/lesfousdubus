@@ -36,7 +36,6 @@ const { icon, title, description, href, count } = Astro.props;
     overflow: hidden;
     text-decoration: none;
     transition: all 0.3s ease;
-    overflow: hidden;
   }
 
   .card::before {
@@ -56,7 +55,7 @@ const { icon, title, description, href, count } = Astro.props;
 
   .card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 36px rgba(0,0,0,0.20), 0 0 22px var(--glow-violet);
+    box-shadow: 0 12px 36px var(--shadow-color), 0 0 22px var(--glow-violet);
     border-color: transparent;
   }
 
@@ -66,7 +65,7 @@ const { icon, title, description, href, count } = Astro.props;
 
   .card:active {
     transform: translateY(0) scale(0.98);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 0 10px var(--glow-violet);
+    box-shadow: 0 4px 16px var(--shadow-color), 0 0 10px var(--glow-violet);
   }
 
   .card__header {

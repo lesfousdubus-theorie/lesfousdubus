@@ -241,6 +241,11 @@ import Footer from '@components/Footer.astro';
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.style.cursor = 'pointer';
     g.setAttribute('class', 'mindmap-node');
+    // Accessible au clavier : le <g> devient un lien focusable (la version
+    // textuelle en bas de page reste le secours sémantique).
+    g.setAttribute('tabindex', '0');
+    g.setAttribute('role', 'link');
+    g.setAttribute('aria-label', n.title.replace(/\n/g, ' '));
 
     const color = levelColors[n.level] || '#8899aa';
     const lines = n.title.split('\n');
@@ -271,7 +276,23 @@ import Footer from '@components/Footer.astro';
       rect.setAttribute('stroke-opacity', '0.85');
       rect.setAttribute('stroke-width', isMain ? '2' : '1.3');
     });
-    g.addEventListener('click', () => { window.location.href = `/theorie/${n.slug}`; });
+    // Indicateur de focus clavier (même effet visuel que le survol)
+    g.addEventListener('focus', () => {
+      rect.setAttribute('stroke-opacity', '1');
+      rect.setAttribute('stroke-width', isMain ? '2.8' : '2');
+    });
+    g.addEventListener('blur', () => {
+      rect.setAttribute('stroke-opacity', '0.85');
+      rect.setAttribute('stroke-width', isMain ? '2' : '1.3');
+    });
+    const navigate = () => { window.location.href = `/theorie/${n.slug}`; };
+    g.addEventListener('click', navigate);
+    g.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        navigate();
+      }
+    });
 
     nodesGroup.appendChild(g);
   }

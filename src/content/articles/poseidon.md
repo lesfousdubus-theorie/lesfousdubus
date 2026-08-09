@@ -15,11 +15,11 @@ related: ["poseidon-fiche", "shirahoshi", "noah", "madame-shirley", "hommes-pois
 
 **Résumé** : Poséidon n'est pas seulement une Arme antique : elle est une princesse sirène née tous les mille ans avec le pouvoir de commander aux Rois des Mers. Shirahoshi possède aujourd'hui ce pouvoir. Selon la théorie des Fous du Bus, la célèbre promesse entre Joy Boy et Poséidon ne remonterait pas à huit cents ans : elle correspondrait à la promesse faite par Luffy et son équipage à Shirahoshi.
 
-![Shirahoshi est Poséidon](/images/threads/poseidon/img_1.jpg)
+![Shirahoshi est Poséidon](/images/threads/poseidon/img_1.webp)
 
 ## 1. Roger est arrivé avant la naissance de Poséidon
 
-![Roger sur l'île des Hommes-Poissons](/images/threads/poseidon/img_2.jpg)
+![Roger sur l'île des Hommes-Poissons](/images/threads/poseidon/img_2.webp)
 
 Au chapitre 967, Gol D. Roger découvre le Ponéglyphe de l'île des Hommes-Poissons. La pierre lui indique clairement que Poséidon se trouve ici, dans ce royaume sous-marin. Pourtant, lorsque Roger observe les lieux, la princesse attendue n'existe pas encore. Il est perplexe : comment une pierre gravée il y a des siècles peut-elle mentionner quelqu'un qui n'est pas là ?
 
@@ -29,7 +29,7 @@ Roger lui-même reconnaît son retard lorsqu'il murmure qu'il aurait aimé vivre
 
 ## 2. Les deux souverains de la prophétie
 
-![Les Rois des Mers parlent des souverains](/images/threads/poseidon/img_3.jpg)
+![Les Rois des Mers parlent des souverains](/images/threads/poseidon/img_3.webp)
 
 Au chapitre 610, dame Shirley prononce sa prédiction sur la naissance de Shirahoshi. Mais la prophétie la plus révélatrice provient des Rois des Mers eux-mêmes. Dans plusieurs passages, ces créatures colossales évoquent la future rencontre de « deux souverains » dont la naissance a été annoncée. L'un naîtra dans les profondeurs de l'océan, l'autre à la surface.
 
@@ -39,7 +39,7 @@ Les Rois des Mers ajoutent que cette rencontre déclenchera un changement pour l
 
 ## 3. La promesse de Luffy à Shirahoshi
 
-![Luffy promet à Shirahoshi](/images/threads/poseidon/img_4.jpg)
+![Luffy promet à Shirahoshi](/images/threads/poseidon/img_4.webp)
 
 Au chapitre 653, Luffy fait à Shirahoshi une promesse solennelle : il reviendra la chercher pour lui montrer la surface, le soleil et une véritable forêt. La scène est célèbre : l'ensemble de l'équipage des Chapeaux de Paille tend le petit doigt à la princesse géante, scellant leur engagement par un « pinky promise » collectif.
 
@@ -49,7 +49,7 @@ Le parallèle est structurellement exact. Joy Boy promet à Poséidon de la lib�
 
 ## 4. Noah attend le jour du serment
 
-![L'arche Noah](/images/threads/poseidon/img_5.jpg)
+![L'arche Noah](/images/threads/poseidon/img_5.webp)
 
 L'arche Noah repose au fond de l'océan depuis des siècles, protégée par la famille royale du Royaume Ryūgū de génération en génération. L'ordre transmis est formel : Noah ne doit pas être utilisée, ni déplacée, ni détruite, jusqu'au « jour promis ». Personne ne sait exactement ce que désigne ce jour, mais tout le monde obéit à la consigne.
 
@@ -59,7 +59,7 @@ Le rêve de la reine Otohime prend alors une dimension nouvelle. Otohime ne dema
 
 ## 5. La destruction de l'île des Hommes-Poissons
 
-![La vision de Shirley](/images/threads/poseidon/img_6.jpg)
+![La vision de Shirley](/images/threads/poseidon/img_6.webp)
 
 Madame Shirley, voyante du Royaume Ryūgū, prononce une prédiction terrifiante : l'homme au chapeau de paille détruira l'île des Hommes-Poissons. Cette vision a terrifié le royaume entier. Et pourtant, Luffy est devenu l'allié le plus fidèle des hommes-poissons. Comment concilier les deux ?
 

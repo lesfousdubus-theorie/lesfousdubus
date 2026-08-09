@@ -10,7 +10,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1188
 parent: "armes-antiques"
 order: 33
-related: ["pluton"]
+related: ["pluton-water-seven-galley-la"]
 ---
 
 ## Présentation canonique

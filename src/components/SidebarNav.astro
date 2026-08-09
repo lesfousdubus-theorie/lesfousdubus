@@ -7,15 +7,15 @@ interface Props {
 
 const { currentPath } = Astro.props;
 
-// Fetch all published articles (excluding those marked as hidden from sidebar)
 // Source unique de la navigation latérale : toutes les pages consomment ce même
-// composant, et la collection est triée ici de façon déterministe (order puis id)
-// pour que la sidebar soit strictement identique sur l'ensemble du site.
+// composant, trié de façon déterministe (order puis id) pour que la sidebar soit
+// strictement identique sur l'ensemble du site.
 const articles = (
   await getCollection('articles', ({ data }) => data.status === 'published' && !data.sidebarHidden)
 ).sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr'));
 
-// Category mapping with French labels and icons
+const byId = new Map(articles.map((a) => [a.id, a]));
+
 const categoryConfig: Record<string, { label: string; icon: string; order: number }> = {
   'monde-destinations': { label: 'Monde et destinations', icon: '🌍', order: 1 },
   'histoire-temporalite': { label: 'Histoire, temps et Ponéglyphes', icon: '📜', order: 2 },
@@ -30,33 +30,14 @@ const categoryConfig: Record<string, { label: string; icon: string; order: numbe
   'guerre-finale': { label: 'Guerre finale', icon: '⚔️', order: 11 },
 };
 
-// Group articles by category
-const articlesByCategory = new Map<string, typeof articles>();
+// Enfants directs par parent (toutes catégories confondues).
+const childrenByParent = new Map<string, typeof articles>();
 for (const article of articles) {
-  const categories = [article.data.category];
-  // Nika is primarily listed in "Figures principales".
-  // "Dieux et croyances" will receive a manual cross-reference link (see below).
-  if (article.id === 'nika') {
-    // Primary placement in Figures principales.
-    // Cross-link added manually in Dieux et croyances section below.
-    if (!categories.includes('figures-principales')) {
-      categories.push('figures-principales');
-    }
-  }
-  for (const cat of categories) {
-    if (!articlesByCategory.has(cat)) {
-      articlesByCategory.set(cat, []);
-    }
-    articlesByCategory.get(cat)!.push(article);
-  }
+  if (!article.data.parent) continue;
+  const list = childrenByParent.get(article.data.parent) ?? [];
+  list.push(article);
+  childrenByParent.set(article.data.parent, list);
 }
-
-// Sort categories by order
-const sortedCategories = Array.from(articlesByCategory.entries()).sort(
-  ([catA], [catB]) =>
-    (categoryConfig[catA]?.order ?? 99) - (categoryConfig[catB]?.order ?? 99) ||
-    catA.localeCompare(catB, 'fr'),
-);
 
 interface SidebarLink {
   label: string;
@@ -66,59 +47,51 @@ interface SidebarLink {
 }
 
 interface NavSection {
-  title: string;
   label: string;
   icon: string;
   links: SidebarLink[];
   isChaptersSection?: boolean;
 }
 
-// Build navigation sections with hierarchical structure:
-// fiche canonique au niveau 0, article de démonstration rattaché (parent) au niveau 1.
-// L'article parent peut se trouver dans une autre catégorie : on cherche les enfants
-// dans toute la collection, puis on les rattache à la fiche parente rencontrée.
-const childrenByParent = new Map<string, typeof articles>();
-for (const article of articles) {
-  if (article.data.parent) {
-    if (!childrenByParent.has(article.data.parent)) {
-      childrenByParent.set(article.data.parent, []);
-    }
-    childrenByParent.get(article.data.parent)!.push(article);
-  }
-}
+const toLink = (a: (typeof articles)[number], level: 0 | 1): SidebarLink => ({
+  label: a.data.title,
+  href: `/theorie/${a.id}`,
+  level,
+  type: a.data.navigationType,
+});
 
-// Tri déterministe : `order` puis `id`, afin que deux articles partageant le même
-// `order` ne puissent jamais permuter d'un build (ou d'une page) à l'autre.
-const byOrderThenId = (a: (typeof articles)[number], b: (typeof articles)[number]) =>
-  a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr');
-
-const buildLinks = (catArticles: typeof articles): SidebarLink[] => {
-  const topLevel = catArticles.filter((a) => !a.data.parent).sort(byOrderThenId);
+// Règle d'affichage (générique, sans cas particuliers codés en dur) :
+// - un article sans parent est en tête de sa catégorie ;
+// - un article dont le parent appartient à la même catégorie est affiché en
+//   dessous de ce parent ;
+// - un article dont le parent est dans une AUTRE catégorie est affiché en tête
+//   de sa propre catégorie (sinon il serait invisible ailleurs que sous son parent).
+const buildLinks = (cat: string): SidebarLink[] => {
+  const inCat = articles.filter((a) => a.data.category === cat);
+  const roots = inCat.filter((a) => {
+    if (!a.data.parent) return true;
+    return byId.get(a.data.parent)?.data.category !== cat;
+  });
 
   const links: SidebarLink[] = [];
-  for (const article of topLevel) {
-    links.push({
-      label: article.data.title,
-      href: `/theorie/${article.id}`,
-      level: 0,
-      type: article.data.navigationType,
-    });
-    const children = (childrenByParent.get(article.id) ?? []).slice().sort(byOrderThenId);
-    for (const child of children) {
-      links.push({
-        label: child.data.title,
-        href: `/theorie/${child.id}`,
-        level: 1,
-        type: child.data.navigationType,
-      });
+  const seen = new Set<string>();
+  const push = (link: SidebarLink) => {
+    if (seen.has(link.href)) return;
+    seen.add(link.href);
+    links.push(link);
+  };
+
+  for (const root of roots) {
+    push(toLink(root, 0));
+    for (const child of childrenByParent.get(root.id) ?? []) {
+      push(toLink(child, 1));
     }
   }
   return links;
 };
 
-const navSections: NavSection[] = [
+const sections: NavSection[] = [
   {
-    title: 'COMMENCER',
     label: 'Commencer',
     icon: '🚀',
     links: [
@@ -129,59 +102,20 @@ const navSections: NavSection[] = [
       { label: 'Lexique essentiel', href: '/aide/glossaire', level: 0, type: 'fiche' },
     ],
   },
-  ...sortedCategories.map(([catKey, catArticles]) => {
-    const config = categoryConfig[catKey];
-    let links = buildLinks(catArticles);
-
-    // P2 adjustments: explicit important entries (keep categories as-is)
-    if (catKey === 'personnages-identites') {
-      // Only manually surface Shirahoshi (child of poseidon-fiche).
-      // Rocks D. Xebec and Gunko are top-level published articles → they appear naturally via buildLinks.
-      links = [
-        ...links,
-        { label: 'Princesse Shirahoshi', href: '/theorie/shirahoshi', level: 0, type: 'fiche' },
-      ];
-    }
-    if (catKey === 'gouvernement-mondial') {
-      links = [
-        ...links,
-        { label: 'Chevaliers Divins', href: '/theorie/chevaliers-divins', level: 0, type: 'fiche' },
-      ];
-    }
-
-    // P2: avoid visual duplication of Nika (primary in Figures principales)
-    if (catKey === 'dieux-croyances') {
-      links = [
-        ...links,
-        { label: '↳ Voir Nika', href: '/theorie/nika', level: 1, type: 'fiche' },
-      ];
-    }
-
-    // Deduplicate links by href to avoid any duplicate entries (Rocks, Gunko, etc.)
-    const seen = new Set();
-    links = links.filter((link) => {
-      if (seen.has(link.href)) return false;
-      seen.add(link.href);
-      return true;
-    });
-
-    return {
-      title: catKey.toUpperCase().replace(/-/g, ' '),
-      label: config?.label ?? catKey,
-      icon: config?.icon ?? '📄',
-      links,
-    };
-  }),
+  ...Object.entries(categoryConfig)
+    .sort(([, a], [, b]) => a.order - b.order)
+    .map(([catKey, config]) => ({ label: config.label, icon: config.icon, links: buildLinks(catKey) }))
+    .filter((section) => section.links.length > 0),
 ];
 
-// Add chapters section
-const chapters = await getCollection('chapters');
-const sortedChapters = chapters.slice().sort((a, b) => b.data.chapter - a.data.chapter);
+const sortedChapters = (await getCollection('chapters'))
+  .slice()
+  .sort((a, b) => b.data.chapter - a.data.chapter);
 
-navSections.push({
-  title: 'CHAPITRES',
+sections.push({
   label: 'Chapitres récents',
   icon: '📖',
+  isChaptersSection: true,
   links: sortedChapters.slice(0, 10).map((chapter) => ({
     label: chapter.data.title.startsWith('Chapitre')
       ? chapter.data.title
@@ -190,13 +124,9 @@ navSections.push({
     level: 0,
     type: 'fiche',
   })),
-  // Marqueur pour identifier la section chapitres
-  isChaptersSection: true,
 });
 
-// Add help section
-navSections.push({
-  title: 'AIDE',
+sections.push({
   label: 'Aide & ressources',
   icon: '❓',
   links: [
@@ -206,11 +136,15 @@ navSections.push({
     { label: 'Crédits', href: '/aide/credits', level: 0, type: 'fiche' },
   ],
 });
+
+// La section contenant la page courante démarre ouverte.
+const normalize = (p: string) => p.replace(/\/+$/, '') || '/';
+const isLinkCurrent = (href: string) =>
+  normalize(currentPath) === normalize(href);
 ---
 
-<nav data-pagefind-ignore>
-  <!-- Mobile filter — only visible in the drawer -->
-  <div class="sidebar-filter" id="sidebar-filter">
+<nav data-pagefind-ignore id="sidebar-nav-root" aria-label="Navigation du wiki">
+  <div class="sidebar-filter">
     <svg class="sidebar-filter__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
     </svg>
@@ -222,42 +156,37 @@ navSections.push({
       enterkeyhint="search"
       autocomplete="off"
       aria-label="Filtrer la navigation"
-      aria-controls="sidebar-filter-results"
       aria-describedby="sidebar-filter-status"
     />
-    <button id="sidebar-filter-clear" class="sidebar-filter__clear" aria-label="Effacer le filtre" style="display:none">
+    <button id="sidebar-filter-clear" class="sidebar-filter__clear" aria-label="Effacer le filtre" hidden>
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
         <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
       </svg>
     </button>
   </div>
   <div id="sidebar-filter-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
-  <div id="sidebar-filter-results"></div>
+
   {
-    navSections.map((section, index) => {
+    sections.map((section, index) => {
       const isExpanded = section.links.some(
-        (link) =>
-          currentPath === link.href ||
-          currentPath === link.href + '/' ||
-          (link.href !== '/' && currentPath.startsWith(link.href)),
+        (link) => isLinkCurrent(link.href) || (link.href !== '/' && currentPath.startsWith(link.href + '/')),
       );
-      // Vérifier si on est sur une page chapitre pour mettre en évidence la section
-      const isChaptersActive = section.isChaptersSection && currentPath.startsWith('/chapitres/');
-      
+      const isChaptersActive = !!section.isChaptersSection && currentPath.startsWith('/chapitres/');
+      const listId = `sidebar-section-${index}-links`;
+
       return (
-        <div class={index > 0 ? 'mt-5' : ''} data-sidebar-section>
+        <div data-sidebar-section>
           <button
-            class={`sidebar-section-toggle ${isChaptersActive ? 'sidebar-section-toggle--chapters-active' : ''}`}
-            aria-expanded={isExpanded ? 'true' : 'false'}
-            aria-label={section.label}
+            class:list={['sidebar-section-toggle', { 'sidebar-section-toggle--chapters-active': isChaptersActive }]}
+            aria-expanded={isExpanded}
+            aria-controls={listId}
           >
-            <span class="flex items-center gap-2">
-              <span class="text-base" aria-hidden="true">{section.icon}</span>
+            <span class="sidebar-section-toggle__label">
+              <span aria-hidden="true">{section.icon}</span>
               <span>{section.label}</span>
             </span>
             <svg
-              class="sidebar-chevron"
-              class:list={[{ 'rotate-90': isExpanded }]}
+              class:list={['sidebar-chevron', { 'rotate-90': isExpanded }]}
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -266,27 +195,28 @@ navSections.push({
               stroke-linejoin="round"
               width="12"
               height="12"
+              aria-hidden="true"
             >
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
-          <ul
-            class="sidebar-section-links"
-            class:list={[{ collapsed: !isExpanded }, { expanded: isExpanded }]}
-          >
+          <ul id={listId} class:list={['sidebar-section-links', { collapsed: !isExpanded }]}>
             {section.links.map((link) => {
-              const isActive = currentPath === link.href || currentPath === link.href + '/';
+              const isActive = isLinkCurrent(link.href);
               return (
                 <li>
                   <a
                     href={link.href}
                     aria-current={isActive ? 'page' : undefined}
-                    class={`sidebar-link ${link.level === 1 ? 'sidebar-link--child' : ''} ${link.type === 'dossier' ? 'sidebar-link--dossier' : ''} ${isActive ? 'sidebar-link--active' : ''}`}
+                    class:list={[
+                      'sidebar-link',
+                      { 'sidebar-link--child': link.level === 1 },
+                      { 'sidebar-link--dossier': link.type === 'dossier' },
+                      { 'sidebar-link--active': isActive },
+                    ]}
                   >
                     {link.level === 1 && (
-                      <span class="sidebar-link__tree" aria-hidden="true">
-                        └
-                      </span>
+                      <span class="sidebar-link__tree" aria-hidden="true">└</span>
                     )}
                     {link.type === 'dossier' && (
                       <span class="sidebar-link__dossier-label">↳ Dossier :</span>
@@ -304,7 +234,7 @@ navSections.push({
 </nav>
 
 <style>
-  /* Visually hidden but accessible to screen readers (live region) */
+  /* Masqué visuellement mais lisible par les lecteurs d'écran (live region). */
   .sr-only {
     position: absolute;
     width: 1px;
@@ -312,12 +242,11 @@ navSections.push({
     padding: 0;
     margin: -1px;
     overflow: hidden;
-    clip: rect(0,0,0,0);
+    clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
   }
 
-  /* Ensure sidebar never causes horizontal scroll */
   nav {
     width: 100%;
     max-width: 100%;
@@ -325,7 +254,7 @@ navSections.push({
     box-sizing: border-box;
   }
 
-  /* Filter — visible on all breakpoints, sticky top */
+  /* Filtre — visible sur tous les breakpoints, sticky en haut de la sidebar. */
   .sidebar-filter {
     display: flex;
     align-items: center;
@@ -398,20 +327,16 @@ navSections.push({
     color: var(--text-main);
   }
 
-  /* Séparateur visuel entre les sections */
+  /* L'attribut `hidden` doit gagner sur le display ci-dessus. */
+  .sidebar-filter__clear[hidden] {
+    display: none;
+  }
+
+  /* Sections */
   [data-sidebar-section] + [data-sidebar-section] {
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px solid var(--border-color);
-  }
-
-  /* Section Chapitres active - indicateur visuel */
-  .sidebar-section-toggle--chapters-active {
-    color: var(--accent-gold) !important;
-  }
-
-  .sidebar-section-toggle--chapters-active .sidebar-chevron {
-    color: var(--accent-gold);
   }
 
   .sidebar-section-toggle {
@@ -438,15 +363,24 @@ navSections.push({
     overflow: hidden;
   }
 
-  .sidebar-section-toggle span {
+  .sidebar-section-toggle:hover {
+    color: var(--cyan);
+  }
+
+  /* Modificateur APRÈS la règle de base : pas besoin de !important. */
+  .sidebar-section-toggle--chapters-active,
+  .sidebar-section-toggle--chapters-active .sidebar-chevron {
+    color: var(--accent-gold);
+  }
+
+  .sidebar-section-toggle__label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .sidebar-section-toggle:hover {
-    color: var(--cyan);
   }
 
   .sidebar-chevron {
@@ -466,38 +400,15 @@ navSections.push({
     display: flex;
     flex-direction: column;
     gap: 2px;
-    overflow: hidden;
-    overflow-x: hidden;
-    transition:
-      max-height 0.25s ease,
-      opacity 0.2s ease;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
   }
 
+  /* display:none plutôt que max-height:0 : les liens d'une section repliée ne
+     sont plus atteignables au Tab ni annoncés par les lecteurs d'écran. */
   .sidebar-section-links.collapsed {
-    max-height: 0;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .sidebar-section-links.expanded {
-    max-height: 2000px;
-    opacity: 1;
-  }
-
-  .sidebar-link--dossier {
-    color: var(--text-muted);
-    font-size: 12px;
-    font-style: italic;
-  }
-
-  .sidebar-link__dossier-label {
-    color: var(--cyan);
-    font-style: normal;
-    white-space: nowrap;
-    flex-shrink: 0;
+    display: none;
   }
 
   .sidebar-link {
@@ -505,7 +416,7 @@ navSections.push({
     align-items: center;
     gap: 6px;
     padding: 7px 10px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     font-size: 13.5px;
     line-height: 1.35;
     text-decoration: none;
@@ -535,33 +446,39 @@ navSections.push({
     font-weight: 600;
     background: color-mix(in srgb, var(--cyan) 12%, transparent);
     box-shadow: inset 3px 0 0 var(--cyan);
-    border-radius: 8px;
   }
 
   .sidebar-link--active:hover {
     background: color-mix(in srgb, var(--cyan) 16%, transparent);
   }
 
-  /* Sous-niveau : fiche canonique parente → article de démonstration rattaché. */
   .sidebar-link--child {
     font-size: 12.5px;
-    color: var(--text-secondary);
     padding-left: 22px;
-    margin-left: 0;
   }
 
-  /* Glyphe purement décoratif (aria-hidden) : il ne porte aucune information,
-     mais il reste au-dessus de 3:1 pour ne pas disparaître visuellement. */
-  .sidebar-link--child .sidebar-link__tree {
+  .sidebar-link__tree {
     font-family: monospace;
     color: var(--violet-light);
+    flex-shrink: 0;
+  }
+
+  .sidebar-link--dossier {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  .sidebar-link__dossier-label {
+    color: var(--cyan);
+    font-style: normal;
+    white-space: nowrap;
     flex-shrink: 0;
   }
 
   @media (max-width: 768px) {
     .sidebar-link {
       padding: 10px 10px;
-      font-size: 13.5px;
       min-height: 44px;
     }
     .sidebar-section-toggle {
@@ -583,134 +500,155 @@ navSections.push({
 </style>
 
 <script>
-  // Sidebar collapsible sections
-  document.querySelectorAll('[data-sidebar-section]').forEach((section) => {
-    const toggle = section.querySelector('.sidebar-section-toggle');
+  const sidebarNav = document.getElementById('sidebar-nav-root');
+  const sidebarContainer = document.getElementById('sidebar-left-container');
+
+  // ── Sections repliables ────────────────────────────────────────────────
+  // Un seul helper pour toutes les sections (statiques + « Récemment lus »).
+  const wireSection = (section: HTMLElement) => {
+    const toggle = section.querySelector<HTMLButtonElement>('.sidebar-section-toggle');
     const links = section.querySelector('.sidebar-section-links');
     const chevron = section.querySelector('.sidebar-chevron');
-
     if (!toggle || !links || !chevron) return;
 
-    const setExpanded = (expanded: boolean) => {
-      toggle.setAttribute('aria-expanded', String(expanded));
-      chevron.classList.toggle('rotate-90', expanded);
-      links.classList.toggle('expanded', expanded);
-      links.classList.toggle('collapsed', !expanded);
-    };
-
     toggle.addEventListener('click', () => {
-      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-      setExpanded(!isExpanded);
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      chevron.classList.toggle('rotate-90', !expanded);
+      links.classList.toggle('collapsed', expanded);
     });
-  });
+  };
+  sidebarNav?.querySelectorAll<HTMLElement>('[data-sidebar-section]').forEach(wireSection);
 
-  // Sidebar filter — desktop + mobile, with state restore + recent
+  // ── « Récemment lus » (reprise de lecture entre sessions) ─────────────
+  const RECENT_KEY = 'fousdu-recent-articles';
+
+  const buildRecentSection = () => {
+    if (!sidebarNav) return;
+    let recents: Array<{ href: string; title: string }> = [];
+    try {
+      recents = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+    } catch {
+      recents = [];
+    }
+    if (!Array.isArray(recents)) return;
+
+    const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+    const items = recents
+      .filter((r) => r?.href && r?.title && r.href.replace(/\/+$/, '') !== currentPath)
+      .slice(0, 5);
+    if (items.length === 0) return;
+
+    const section = document.createElement('div');
+    section.setAttribute('data-sidebar-section', '');
+    section.innerHTML = `
+      <button class="sidebar-section-toggle" aria-expanded="true">
+        <span class="sidebar-section-toggle__label">
+          <span aria-hidden="true">🕘</span>
+          <span>Récemment lus</span>
+        </span>
+        <svg class="sidebar-chevron rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+      <ul class="sidebar-section-links"></ul>`;
+    const ul = section.querySelector('ul')!;
+    for (const r of items) {
+      const a = document.createElement('a');
+      a.href = r.href;
+      a.className = 'sidebar-link';
+      a.textContent = r.title;
+      const li = document.createElement('li');
+      li.appendChild(a);
+      ul.appendChild(li);
+    }
+
+    sidebarNav.insertBefore(section, sidebarNav.querySelector('[data-sidebar-section]'));
+    wireSection(section);
+  };
+  buildRecentSection();
+
+  // ── Filtre ─────────────────────────────────────────────────────────────
   const filterInput = document.getElementById('sidebar-filter-input') as HTMLInputElement | null;
-  const filterClear = document.getElementById('sidebar-filter-clear');
-  const sidebarNav = document.querySelector('[data-pagefind-ignore]');
+  const filterClear = document.getElementById('sidebar-filter-clear') as HTMLButtonElement | null;
+  const liveRegion = document.getElementById('sidebar-filter-status');
 
   if (filterInput && sidebarNav) {
-    const allSections = sidebarNav.querySelectorAll<HTMLDivElement>('[data-sidebar-section]');
-    const liveRegion = document.getElementById('sidebar-filter-status');
-    // Save initial expanded state to restore after clear
-    const initialState = new Map<string, boolean>();
-    allSections.forEach((section, idx) => {
-      const toggle = section.querySelector('.sidebar-section-toggle');
-      if (toggle) initialState.set(String(idx), toggle.getAttribute('aria-expanded') === 'true');
-    });
+    const sections = Array.from(sidebarNav.querySelectorAll<HTMLElement>('[data-sidebar-section]'));
+    // État replié/déplié d'origine, restauré quand le filtre est vidé.
+    const initialExpanded = new Map<HTMLElement, boolean>(
+      sections.map((s) => [
+        s,
+        s.querySelector('.sidebar-section-toggle')?.getAttribute('aria-expanded') === 'true',
+      ]),
+    );
 
-    const applyFilter = (query: string) => {
-      const q = query.trim().toLowerCase();
-      const hasFilter = q.length > 0;
+    const setExpanded = (section: HTMLElement, expanded: boolean) => {
+      section.querySelector('.sidebar-section-toggle')?.setAttribute('aria-expanded', String(expanded));
+      section.querySelector('.sidebar-chevron')?.classList.toggle('rotate-90', expanded);
+      section.querySelector('.sidebar-section-links')?.classList.toggle('collapsed', !expanded);
+    };
+
+    const applyFilter = (rawQuery: string) => {
+      const q = rawQuery.trim().toLowerCase();
+      const filtering = q.length > 0;
       let visibleCount = 0;
 
-      if (filterClear) filterClear.style.display = hasFilter ? 'inline-flex' : 'none';
+      if (filterClear) filterClear.hidden = !filtering;
 
-      allSections.forEach((section, idx) => {
-        const links = section.querySelectorAll<HTMLAnchorElement>('.sidebar-link');
-        const toggle = section.querySelector('.sidebar-section-toggle');
-        const linksList = section.querySelector('.sidebar-section-links');
-        const chevron = section.querySelector('.sidebar-chevron');
+      for (const section of sections) {
         let hasVisible = false;
-
-        links.forEach((link) => {
-          const text = link.textContent?.toLowerCase() ?? '';
-          const matches = !hasFilter || text.includes(q);
-          (link.closest('li') as HTMLElement | null)?.style.setProperty('display', matches ? '' : 'none');
+        section.querySelectorAll<HTMLAnchorElement>('.sidebar-link').forEach((link) => {
+          const matches = !filtering || (link.textContent ?? '').toLowerCase().includes(q);
+          (link.closest('li') as HTMLElement | null)!.hidden = !matches;
           if (matches) {
             hasVisible = true;
             visibleCount++;
           }
         });
 
-        section.style.display = hasVisible || !hasFilter ? '' : 'none';
-
-        if (hasFilter && hasVisible && toggle && linksList && chevron) {
-          toggle.setAttribute('aria-expanded', 'true');
-          chevron.classList.add('rotate-90');
-          linksList.classList.add('expanded');
-          linksList.classList.remove('collapsed');
-        } else if (!hasFilter && toggle && linksList && chevron) {
-          const wasExpanded = initialState.get(String(idx));
-          toggle.setAttribute('aria-expanded', wasExpanded ? 'true' : 'false');
-          chevron.classList.toggle('rotate-90', !!wasExpanded);
-          linksList.classList.toggle('expanded', !!wasExpanded);
-          linksList.classList.toggle('collapsed', !wasExpanded);
-          // Ensure all items visible again
-          links.forEach((link) => {
-            (link.closest('li') as HTMLElement | null)?.style.setProperty('display', '');
-          });
+        section.hidden = filtering && !hasVisible;
+        if (filtering) {
+          if (hasVisible) setExpanded(section, true);
+        } else {
+          setExpanded(section, initialExpanded.get(section) ?? false);
         }
-      });
+      }
 
-      // Announce to screen readers
       if (liveRegion) {
-        if (!hasFilter) liveRegion.textContent = '';
-        else if (visibleCount === 0) liveRegion.textContent = 'Aucun article trouvé';
-        else liveRegion.textContent = `${visibleCount} article${visibleCount > 1 ? 's' : ''} trouvé${visibleCount > 1 ? 's' : ''}`;
+        liveRegion.textContent = !filtering
+          ? ''
+          : visibleCount === 0
+            ? 'Aucun article trouvé'
+            : `${visibleCount} article${visibleCount > 1 ? 's' : ''} trouvé${visibleCount > 1 ? 's' : ''}`;
       }
     };
 
     filterInput.addEventListener('input', () => applyFilter(filterInput.value));
-
     filterClear?.addEventListener('click', () => {
       filterInput.value = '';
       applyFilter('');
       filterInput.focus();
     });
-
-    // Auto-focus filter when drawer opens (a11y)
-    const sidebarContainer = document.getElementById('sidebar-left-container');
-    if (sidebarContainer) {
-      const observerFilter = new MutationObserver(() => {
-        if (sidebarContainer.classList.contains('is-mobile-open')) {
-          setTimeout(() => filterInput.focus(), 100);
-        }
-      });
-      observerFilter.observe(sidebarContainer, { attributes: true, attributeFilter: ['class'] });
-    }
   }
 
-  // Auto-scroll to the active link when the mobile drawer opens
-  const sidebarContainer = document.getElementById('sidebar-left-container');
-  if (sidebarContainer) {
-    const scrollToActive = () => {
-      const activeLink = sidebarContainer.querySelector<HTMLAnchorElement>('.sidebar-link--active');
-      if (activeLink) {
-        // Small delay to let the drawer animation finish
-        setTimeout(() => {
-          activeLink.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }, 300);
-      }
-    };
+  // ── Ouverture du tiroir mobile : focus filtre + scroll vers le lien actif ─
+  // Un seul observer, déclenché uniquement sur la transition fermé → ouvert
+  // (plus de vol de focus lors d'autres changements de classes).
+  if (sidebarContainer && filterInput) {
+    let wasOpen = sidebarContainer.classList.contains('is-mobile-open');
+    const observer = new MutationObserver(() => {
+      const isOpen = sidebarContainer.classList.contains('is-mobile-open');
+      if (isOpen === wasOpen) return;
+      wasOpen = isOpen;
+      if (!isOpen) return;
 
-    // Observe the drawer opening
-    const observer = new MutationObserver((mutations) => {
-      for (const m of mutations) {
-        if (m.type === 'attributes' && (m.target as HTMLElement).classList.contains('is-mobile-open')) {
-          scrollToActive();
-        }
-      }
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // Laisse l'animation du tiroir se terminer avant focus/scroll.
+      window.setTimeout(() => {
+        filterInput.focus({ preventScroll: true });
+        sidebarContainer
+          .querySelector('.sidebar-link--active')
+          ?.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+      }, 300);
     });
     observer.observe(sidebarContainer, { attributes: true, attributeFilter: ['class'] });
   }

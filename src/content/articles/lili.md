@@ -7,7 +7,7 @@ sources: [1084, 1085, 1086, 1116]
 editorialStatus: "canon"
 reviewedUntilChapter: 1188
 order: 49
-related: ["nefertari-vivi", "lili-vivi-et-les-poneglyphes", "poneglyphes"]
+related: ["nefertari-vivi", "vivi", "poneglyphes"]
 ---
 
 ## Présentation canonique
