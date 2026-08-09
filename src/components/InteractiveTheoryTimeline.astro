@@ -880,6 +880,11 @@ const statusOrder: Array<'all' | TimelineStatus> = [
     backdrop-filter: blur(5px);
   }
 
+  :global(html.timeline-dialog-open),
+  :global(html.timeline-dialog-open body) {
+    overflow: hidden;
+  }
+
   .event-dialog__surface {
     position: relative;
     max-height: min(760px, calc(100dvh - 28px));
