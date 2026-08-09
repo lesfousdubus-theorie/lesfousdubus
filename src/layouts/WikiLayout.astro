@@ -163,7 +163,9 @@ const canonicalWikiUrl = new URL(
               </svg>
             </button>
           </div>
-          <SidebarNav currentPath={currentPath} />
+          <div class="sidebar-scroll" data-sidebar-scroll>
+            <SidebarNav currentPath={currentPath} />
+          </div>
         </aside>
       )
     }
@@ -263,20 +265,37 @@ const canonicalWikiUrl = new URL(
     align-self: start;
     height: calc(100vh - var(--nav-h));
     height: calc(100dvh - var(--nav-h));
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-    scrollbar-width: thin;
     background: var(--bg-secondary);
   }
 
   .sidebar-left {
-    padding: 20px 14px 32px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
     border-right: 1px solid var(--border-color);
+  }
+
+  .sidebar-scroll {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    padding: 20px 14px 32px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sidebar-right {
     padding: 24px 16px;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
     border-left: 1px solid var(--border-color);
   }
 
@@ -363,7 +382,6 @@ const canonicalWikiUrl = new URL(
       bottom: 0;
       width: min(88vw, 320px);
       height: auto;
-      padding: 0 14px max(28px, env(safe-area-inset-bottom));
       border-right: 1px solid var(--border-color);
       transform: translateX(-100%);
       visibility: hidden;
@@ -371,8 +389,10 @@ const canonicalWikiUrl = new URL(
       transition:
         transform 220ms ease,
         visibility 220ms ease;
-      touch-action: pan-y;
-      -webkit-overflow-scrolling: touch;
+    }
+
+    .sidebar-scroll {
+      padding: 0 14px max(28px, env(safe-area-inset-bottom));
     }
 
     .sidebar-left.is-open {
@@ -390,7 +410,7 @@ const canonicalWikiUrl = new URL(
       align-items: center;
       justify-content: space-between;
       min-height: 56px;
-      margin: 0 -14px 12px;
+      margin: 0 0 12px;
       padding: 8px 14px;
       border-bottom: 1px solid var(--border-color);
       background: var(--bg-secondary);

@@ -8,7 +8,10 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8'
 describe('régressions UI, UX et accessibilité', () => {
   it('utilise une sidebar simple sans redimensionnement ni état persistant', () => {
     const layout = read('src/layouts/WikiLayout.astro');
+    expect(layout).toContain('class="sidebar-scroll"');
+    expect(layout).toContain('min-height: 0');
     expect(layout).toContain('overflow-y: auto');
+    expect(layout).toContain('-webkit-overflow-scrolling: touch');
     expect(layout).toContain("window.matchMedia('(max-width: 1023px)')");
     expect(layout).not.toContain('sidebar-resizer');
     expect(layout).not.toContain('sidebar-left-width');
