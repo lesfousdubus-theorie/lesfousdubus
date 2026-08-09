@@ -238,7 +238,7 @@ const isActive = (href: string) =>
       class:list={['icon-btn', { 'mobile-toggle--disabled': hideMobileToggle }]}
       aria-label="Menu"
       aria-expanded="false"
-      aria-controls="sidebar-left"
+      aria-controls={hideMobileToggle ? undefined : 'sidebar-left'}
       disabled={hideMobileToggle || undefined}
     >
       <svg

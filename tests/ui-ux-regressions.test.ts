@@ -29,8 +29,26 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(layout).toContain("window.matchMedia('(max-width: 1023px)')");
     expect(layout).toContain('@media (max-width: 1023px)');
     expect(navbar).toContain('@media (max-width: 1023px)');
-    expect(navbar).toContain('aria-controls="sidebar-left"');
+    expect(navbar).toContain("aria-controls={hideMobileToggle ? undefined : 'sidebar-left'}");
     expect(layout).not.toMatch(/window\.innerWidth\s*[<>]=?\s*768/);
+  });
+
+  it('synchronise les composants fixes avec les états réels des superpositions', () => {
+    const backToTop = read('src/components/BackToTop.astro');
+    const progress = read('src/components/ReadingProgressBar.astro');
+
+    for (const source of [backToTop, progress]) {
+      expect(source).toContain('html.nav-drawer-open');
+      expect(source).toContain('html.toc-drawer-open');
+      expect(source).toContain('html.search-modal-open');
+      expect(source).not.toContain("data-nav-open='mobile'");
+    }
+  });
+
+  it('donne un seul nom accessible stable à la fenêtre de la chronologie', () => {
+    const timeline = read('src/components/InteractiveTheoryTimeline.astro');
+    expect(timeline.match(/id="event-dialog-title"/g)).toHaveLength(1);
+    expect(timeline).toContain('aria-labelledby="event-dialog-title"');
   });
 
   it('utilise les éléments details natifs pour les sections de navigation', () => {
@@ -98,6 +116,14 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(navbar).toContain('<SearchModal />');
     expect(navbar).not.toContain('client:idle');
     expect(pkg).not.toContain('"react"');
+  });
+
+  it('neutralise l’arrière-plan de la recherche et annule les résultats périmés', () => {
+    const search = read('src/components/SearchModal.astro');
+    expect(search).toContain("'.navbar, .wiki-layout, #toc-fab, #back-to-top'");
+    expect(search).toContain("element.setAttribute('inert', '')");
+    expect(search).toContain('requestId += 1');
+    expect(search).toContain("input.removeAttribute('aria-activedescendant')");
   });
 
   it('exclut le chrome de lecture et les pages internes des extraits Pagefind', () => {

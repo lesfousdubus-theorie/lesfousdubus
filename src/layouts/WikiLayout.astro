@@ -656,7 +656,10 @@ const canonicalWikiUrl = new URL(
     if (mobileMedia.matches && event.target.closest('a')) setNavOpen(false);
   });
   mobileMedia.addEventListener('change', syncNavViewport);
-  window.addEventListener('openSearch', () => setNavOpen(false));
+  window.addEventListener('openSearch', () => {
+    setNavOpen(false);
+    setTocOpen(false);
+  });
 
   navDrawer?.addEventListener('keydown', (event) => {
     if (event.key !== 'Tab' || !isNavOpen()) return;

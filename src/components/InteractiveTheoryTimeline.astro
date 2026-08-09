@@ -179,6 +179,9 @@ const statusOrder: Array<'all' | TimelineStatus> = [
 
 <dialog class="event-dialog" data-event-dialog aria-labelledby="event-dialog-title">
   <div class="event-dialog__surface">
+    <h2 id="event-dialog-title" class="event-dialog__sr-only">
+      Détails de l’événement chronologique
+    </h2>
     <button
       class="event-dialog__close"
       type="button"
@@ -206,7 +209,7 @@ const statusOrder: Array<'all' | TimelineStatus> = [
           <span class="event-detail__icon" aria-hidden="true">
             {event.icon}
           </span>
-          <h3 id="event-dialog-title">{event.title}</h3>
+          <h3>{event.title}</h3>
         </div>
         <p class="event-detail__lead">{event.summary}</p>
         <p class="event-detail__body">{event.detail}</p>
@@ -891,6 +894,17 @@ const statusOrder: Array<'all' | TimelineStatus> = [
     padding: 26px;
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+
+  .event-dialog__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .event-dialog__close {
