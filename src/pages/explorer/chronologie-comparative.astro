@@ -138,7 +138,7 @@ const statusColors: Record<string, string> = {
   .table { border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); overflow: hidden; margin: 24px 0 16px; }
   .thead, .trow { display: grid; grid-template-columns: 1fr 1.4fr 1.4fr; }
   .thead { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); }
-  .thead span { padding: 12px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+  .thead span { padding: 12px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
   .thead .col-trad { border-left: 1px solid var(--border-color); }
   .thead .col-fdb { border-left: 1px solid var(--border-color); color: var(--violet-light); }
   .trow { border-bottom: 1px solid var(--border-color); }
@@ -147,7 +147,7 @@ const statusColors: Record<string, string> = {
   .cell { padding: 14px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; }
   .cell--sujet { display: flex; flex-direction: column; gap: 6px; }
   .cell--sujet strong { color: var(--text-main); font-size: 14px; }
-  .cell--status { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .cell--status { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
   .cell--trad { border-left: 1px solid var(--border-color); }
   .cell--fdb { border-left: 1px solid var(--border-color); color: var(--text-main); }
   .note { font-size: 12.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
@@ -160,7 +160,7 @@ const statusColors: Record<string, string> = {
     .cell--trad::before, .cell--fdb::before {
       content: attr(data-label);
       display: block;
-      font-size: 10.5px;
+      font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;

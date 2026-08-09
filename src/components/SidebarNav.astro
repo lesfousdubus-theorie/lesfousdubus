@@ -5,40 +5,6 @@ interface Props {
   currentPath: string;
 }
 
-const { currentPath } = Astro.props;
-
-// Source unique de la navigation latérale : toutes les pages consomment ce même
-// composant, trié de façon déterministe (order puis id) pour que la sidebar soit
-// strictement identique sur l'ensemble du site.
-const articles = (
-  await getCollection('articles', ({ data }) => data.status === 'published' && !data.sidebarHidden)
-).sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr'));
-
-const byId = new Map(articles.map((a) => [a.id, a]));
-
-const categoryConfig: Record<string, { label: string; icon: string; order: number }> = {
-  'monde-destinations': { label: 'Monde et destinations', icon: '🌍', order: 1 },
-  'histoire-temporalite': { label: 'Histoire, temps et Ponéglyphes', icon: '📜', order: 2 },
-  'figures-principales': { label: 'Figures principales', icon: '🎭', order: 3 },
-  'personnages-identites': { label: 'Personnages et identités', icon: '👥', order: 4 },
-  'armes-antiques': { label: 'Armes antiques', icon: '🔱', order: 5 },
-  'technologies-pouvoirs': { label: 'Technologies et pouvoirs', icon: '⚡', order: 6 },
-  'peuples-royaumes': { label: 'Peuples, royaumes et témoins', icon: '🏰', order: 7 },
-  'dieux-croyances': { label: 'Dieux et croyances', icon: '🙏', order: 8 },
-  'transmission-memoire': { label: 'Transmission et mémoire', icon: '🎵', order: 9 },
-  'gouvernement-mondial': { label: 'Gouvernement mondial', icon: '⚖️', order: 10 },
-  'guerre-finale': { label: 'Guerre finale', icon: '⚔️', order: 11 },
-};
-
-// Enfants directs par parent (toutes catégories confondues).
-const childrenByParent = new Map<string, typeof articles>();
-for (const article of articles) {
-  if (!article.data.parent) continue;
-  const list = childrenByParent.get(article.data.parent) ?? [];
-  list.push(article);
-  childrenByParent.set(article.data.parent, list);
-}
-
 interface SidebarLink {
   label: string;
   href: string;
@@ -53,40 +19,65 @@ interface NavSection {
   isChaptersSection?: boolean;
 }
 
-const toLink = (a: (typeof articles)[number], level: 0 | 1): SidebarLink => ({
-  label: a.data.title,
-  href: `/theorie/${a.id}`,
+const { currentPath } = Astro.props;
+const normalize = (path: string) => path.replace(/\/+$/, '') || '/';
+const isCurrent = (href: string) => normalize(currentPath) === normalize(href);
+
+const articles = (
+  await getCollection('articles', ({ data }) => data.status === 'published' && !data.sidebarHidden)
+).sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr'));
+
+const byId = new Map(articles.map((article) => [article.id, article]));
+const childrenByParent = new Map<string, typeof articles>();
+for (const article of articles) {
+  if (!article.data.parent) continue;
+  const children = childrenByParent.get(article.data.parent) ?? [];
+  children.push(article);
+  childrenByParent.set(article.data.parent, children);
+}
+
+const categories: Record<string, { label: string; icon: string; order: number }> = {
+  'monde-destinations': { label: 'Monde et destinations', icon: '🌍', order: 1 },
+  'histoire-temporalite': { label: 'Histoire & Ponéglyphes', icon: '📜', order: 2 },
+  'figures-principales': { label: 'Figures principales', icon: '🎭', order: 3 },
+  'personnages-identites': { label: 'Personnages et identités', icon: '👥', order: 4 },
+  'armes-antiques': { label: 'Armes antiques', icon: '🔱', order: 5 },
+  'technologies-pouvoirs': { label: 'Technologies et pouvoirs', icon: '⚡', order: 6 },
+  'peuples-royaumes': { label: 'Peuples & royaumes', icon: '🏰', order: 7 },
+  'dieux-croyances': { label: 'Dieux et croyances', icon: '🙏', order: 8 },
+  'transmission-memoire': { label: 'Transmission et mémoire', icon: '🎵', order: 9 },
+  'gouvernement-mondial': { label: 'Gouvernement mondial', icon: '⚖️', order: 10 },
+  'guerre-finale': { label: 'Guerre finale', icon: '⚔️', order: 11 },
+};
+
+const toLink = (article: (typeof articles)[number], level: 0 | 1): SidebarLink => ({
+  label: article.data.title,
+  href: `/theorie/${article.id}`,
   level,
-  type: a.data.navigationType,
+  type: article.data.navigationType,
 });
 
-// Règle d'affichage (générique, sans cas particuliers codés en dur) :
-// - un article sans parent est en tête de sa catégorie ;
-// - un article dont le parent appartient à la même catégorie est affiché en
-//   dessous de ce parent ;
-// - un article dont le parent est dans une AUTRE catégorie est affiché en tête
-//   de sa propre catégorie (sinon il serait invisible ailleurs que sous son parent).
-const buildLinks = (cat: string): SidebarLink[] => {
-  const inCat = articles.filter((a) => a.data.category === cat);
-  const roots = inCat.filter((a) => {
-    if (!a.data.parent) return true;
-    return byId.get(a.data.parent)?.data.category !== cat;
-  });
-
+const buildCategoryLinks = (category: string) => {
+  const categoryArticles = articles.filter((article) => article.data.category === category);
+  const roots = categoryArticles.filter(
+    (article) => !article.data.parent || byId.get(article.data.parent)?.data.category !== category,
+  );
   const links: SidebarLink[] = [];
   const seen = new Set<string>();
-  const push = (link: SidebarLink) => {
+
+  const add = (link: SidebarLink) => {
     if (seen.has(link.href)) return;
     seen.add(link.href);
     links.push(link);
   };
 
-  for (const root of roots) {
-    push(toLink(root, 0));
-    for (const child of childrenByParent.get(root.id) ?? []) {
-      push(toLink(child, 1));
-    }
-  }
+  roots.forEach((root) => {
+    add(toLink(root, 0));
+    (childrenByParent.get(root.id) ?? [])
+      .filter((child) => child.data.category === category)
+      .forEach((child) => add(toLink(child, 1)));
+  });
+
   return links;
 };
 
@@ -97,559 +88,248 @@ const sections: NavSection[] = [
     links: [
       { label: 'Présentation', href: '/', level: 0, type: 'fiche' },
       { label: 'Résumé de la théorie', href: '/theorie/resume', level: 0, type: 'fiche' },
-      { label: 'Théorie complète', href: '/theorie/theorie-complete', level: 0, type: 'fiche' },
+      {
+        label: 'Théorie complète',
+        href: '/theorie/theorie-complete',
+        level: 0,
+        type: 'fiche',
+      },
       { label: 'Carte mentale', href: '/explorer/carte-mentale', level: 0, type: 'fiche' },
       { label: 'Lexique essentiel', href: '/aide/glossaire', level: 0, type: 'fiche' },
     ],
   },
-  ...Object.entries(categoryConfig)
-    .sort(([, a], [, b]) => a.order - b.order)
-    .map(([catKey, config]) => ({ label: config.label, icon: config.icon, links: buildLinks(catKey) }))
+  ...Object.entries(categories)
+    .sort(([, left], [, right]) => left.order - right.order)
+    .map(([category, config]) => ({
+      label: config.label,
+      icon: config.icon,
+      links: buildCategoryLinks(category),
+    }))
     .filter((section) => section.links.length > 0),
 ];
 
-const sortedChapters = (await getCollection('chapters'))
-  .slice()
-  .sort((a, b) => b.data.chapter - a.data.chapter);
-
-sections.push({
-  label: 'Chapitres récents',
-  icon: '📖',
-  isChaptersSection: true,
-  links: sortedChapters.slice(0, 10).map((chapter) => ({
+const chapters = (await getCollection('chapters'))
+  .sort((a, b) => b.data.chapter - a.data.chapter)
+  .slice(0, 10)
+  .map((chapter): SidebarLink => ({
     label: chapter.data.title.startsWith('Chapitre')
       ? chapter.data.title
       : `Chapitre ${chapter.data.chapter} — ${chapter.data.title}`,
     href: `/chapitres/${chapter.data.chapter}`,
     level: 0,
     type: 'fiche',
-  })),
-});
+  }));
 
-sections.push({
-  label: 'Aide & ressources',
-  icon: '❓',
-  links: [
-    { label: 'À propos', href: '/aide/a-propos', level: 0, type: 'fiche' },
-    { label: 'FAQ', href: '/aide/faq', level: 0, type: 'fiche' },
-    { label: 'Glossaire', href: '/aide/glossaire', level: 0, type: 'fiche' },
-    { label: 'Crédits', href: '/aide/credits', level: 0, type: 'fiche' },
-  ],
-});
-
-// La section contenant la page courante démarre ouverte.
-const normalize = (p: string) => p.replace(/\/+$/, '') || '/';
-const isLinkCurrent = (href: string) =>
-  normalize(currentPath) === normalize(href);
+sections.push(
+  { label: 'Chapitres récents', icon: '📖', links: chapters, isChaptersSection: true },
+  {
+    label: 'Aide & ressources',
+    icon: '❓',
+    links: [
+      { label: 'À propos', href: '/aide/a-propos', level: 0, type: 'fiche' },
+      { label: 'FAQ', href: '/aide/faq', level: 0, type: 'fiche' },
+      { label: 'Glossaire', href: '/aide/glossaire', level: 0, type: 'fiche' },
+      { label: 'Crédits', href: '/aide/credits', level: 0, type: 'fiche' },
+    ],
+  },
+);
 ---
 
-<nav data-pagefind-ignore id="sidebar-nav-root" aria-label="Navigation du wiki">
-  <div class="sidebar-filter">
-    <svg class="sidebar-filter__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-    </svg>
-    <input
-      type="search"
-      id="sidebar-filter-input"
-      class="sidebar-filter__input"
-      placeholder="Filtrer les articles…"
-      enterkeyhint="search"
-      autocomplete="off"
-      aria-label="Filtrer la navigation"
-      aria-describedby="sidebar-filter-status"
-    />
-    <button id="sidebar-filter-clear" class="sidebar-filter__clear" aria-label="Effacer le filtre" hidden>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-        <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-  </div>
-  <div id="sidebar-filter-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
-
+<nav data-pagefind-ignore aria-label="Navigation du wiki">
   {
-    sections.map((section, index) => {
-      const isExpanded = section.links.some(
-        (link) => isLinkCurrent(link.href) || (link.href !== '/' && currentPath.startsWith(link.href + '/')),
+    sections.map((section) => {
+      const containsCurrentPage = section.links.some(
+        (link) =>
+          isCurrent(link.href) ||
+          (link.href !== '/' && normalize(currentPath).startsWith(`${normalize(link.href)}/`)),
       );
-      const isChaptersActive = !!section.isChaptersSection && currentPath.startsWith('/chapitres/');
-      const listId = `sidebar-section-${index}-links`;
+      const isActiveChapterSection =
+        section.isChaptersSection && currentPath.startsWith('/chapitres/');
 
       return (
-        <div data-sidebar-section>
-          <button
-            class:list={['sidebar-section-toggle', { 'sidebar-section-toggle--chapters-active': isChaptersActive }]}
-            aria-expanded={isExpanded}
-            aria-controls={listId}
-          >
-            <span class="sidebar-section-toggle__label">
+        <details class="nav-section" open={containsCurrentPage || isActiveChapterSection}>
+          <summary class="nav-section__summary">
+            <span class="nav-section__title">
               <span aria-hidden="true">{section.icon}</span>
               <span>{section.label}</span>
             </span>
             <svg
-              class:list={['sidebar-chevron', { 'rotate-90': isExpanded }]}
+              class="nav-section__chevron"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               stroke-width="2.5"
               stroke-linecap="round"
-              stroke-linejoin="round"
-              width="12"
-              height="12"
               aria-hidden="true"
             >
               <polyline points="9 18 15 12 9 6" />
             </svg>
-          </button>
-          <ul id={listId} class:list={['sidebar-section-links', { collapsed: !isExpanded }]}>
-            {section.links.map((link) => {
-              const isActive = isLinkCurrent(link.href);
-              return (
-                <li>
-                  <a
-                    href={link.href}
-                    aria-current={isActive ? 'page' : undefined}
-                    class:list={[
-                      'sidebar-link',
-                      { 'sidebar-link--child': link.level === 1 },
-                      { 'sidebar-link--dossier': link.type === 'dossier' },
-                      { 'sidebar-link--active': isActive },
-                    ]}
-                  >
-                    {link.level === 1 && (
-                      <span class="sidebar-link__tree" aria-hidden="true">└</span>
-                    )}
-                    {link.type === 'dossier' && (
-                      <span class="sidebar-link__dossier-label">↳ Dossier :</span>
-                    )}
-                    {link.label}
-                  </a>
-                </li>
-              );
-            })}
+          </summary>
+
+          <ul class="nav-section__links">
+            {section.links.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  aria-current={isCurrent(link.href) ? 'page' : undefined}
+                  class:list={[
+                    'sidebar-link',
+                    { 'sidebar-link--child': link.level === 1 },
+                    { 'sidebar-link--dossier': link.type === 'dossier' },
+                  ]}
+                >
+                  {link.level === 1 && (
+                    <span class="sidebar-link__branch" aria-hidden="true">
+                      └
+                    </span>
+                  )}
+                  {link.type === 'dossier' && <span class="sidebar-link__type">Dossier</span>}
+                  <span>{link.label}</span>
+                </a>
+              </li>
+            ))}
           </ul>
-        </div>
+        </details>
       );
     })
   }
 </nav>
 
 <style>
-  /* Masqué visuellement mais lisible par les lecteurs d'écran (live region). */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
   nav {
     width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    box-sizing: border-box;
-  }
-
-  /* Filtre — visible sur tous les breakpoints, sticky en haut de la sidebar. */
-  .sidebar-filter {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    margin-bottom: 14px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    background: var(--surface);
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-
-  @media (max-width: 768px) {
-    .sidebar-filter {
-      position: relative;
-      top: auto;
-    }
-  }
-
-  .sidebar-filter__icon {
-    color: var(--text-secondary);
-    flex-shrink: 0;
-    opacity: 0.85;
-  }
-
-  .sidebar-filter__input {
-    flex: 1;
     min-width: 0;
-    background: transparent;
-    border: none;
-    color: var(--text-main);
-    font-size: 14px;
-    font-family: inherit;
-    line-height: 1.4;
-    padding: 0;
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 4px;
   }
 
-  .sidebar-filter__input:focus-visible {
-    outline: 2px solid var(--cyan);
-    outline-offset: 2px;
+  .nav-section {
+    border-bottom: 1px solid var(--border-color);
   }
 
-  .sidebar-filter__input::placeholder {
-    color: var(--text-secondary);
-    opacity: 0.85;
+  .nav-section:last-child {
+    border-bottom: 0;
   }
 
-  .sidebar-filter__clear {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: none;
-    background: color-mix(in srgb, var(--surface) 80%, transparent);
-    color: var(--text-secondary);
-    cursor: pointer;
-    flex-shrink: 0;
-    padding: 0;
-    transition: color 0.15s ease;
-  }
-
-  .sidebar-filter__clear:hover {
-    color: var(--text-main);
-  }
-
-  /* L'attribut `hidden` doit gagner sur le display ci-dessus. */
-  .sidebar-filter__clear[hidden] {
-    display: none;
-  }
-
-  /* Sections */
-  [data-sidebar-section] + [data-sidebar-section] {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border-color);
-  }
-
-  .sidebar-section-toggle {
+  .nav-section__summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    max-width: 100%;
-    text-align: left;
-    font-size: 11.5px;
+    gap: 10px;
+    min-height: 46px;
+    padding: 8px 6px;
+    border-radius: var(--border-radius);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.3;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text-main);
-    margin-bottom: 8px;
-    font-weight: 600;
+    letter-spacing: 0.045em;
     cursor: pointer;
-    background: none;
-    border: none;
-    padding: 6px 2px;
-    min-height: 32px;
-    gap: 8px;
-    transition: color 0.2s ease;
-    box-sizing: border-box;
-    overflow: hidden;
+    list-style: none;
+    user-select: none;
   }
 
-  .sidebar-section-toggle:hover {
-    color: var(--cyan);
+  .nav-section__summary::-webkit-details-marker {
+    display: none;
   }
 
-  /* Modificateur APRÈS la règle de base : pas besoin de !important. */
-  .sidebar-section-toggle--chapters-active,
-  .sidebar-section-toggle--chapters-active .sidebar-chevron {
-    color: var(--accent-gold);
+  .nav-section__summary:hover {
+    color: var(--text-main);
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
   }
 
-  .sidebar-section-toggle__label {
+  .nav-section__summary:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: -2px;
+  }
+
+  .nav-section__title {
     display: flex;
     align-items: center;
     gap: 8px;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
-  .sidebar-chevron {
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-    opacity: 0.6;
+  .nav-section__chevron {
+    flex: 0 0 auto;
+    transition: transform 160ms ease;
   }
 
-  .sidebar-section-toggle:hover .sidebar-chevron {
-    opacity: 1;
+  .nav-section[open] .nav-section__chevron {
+    transform: rotate(90deg);
   }
 
-  .sidebar-section-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
+  .nav-section__links {
+    display: grid;
     gap: 2px;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* display:none plutôt que max-height:0 : les liens d'une section repliée ne
-     sont plus atteignables au Tab ni annoncés par les lecteurs d'écran. */
-  .sidebar-section-links.collapsed {
-    display: none;
+    margin: 0;
+    padding: 2px 0 12px;
+    list-style: none;
   }
 
   .sidebar-link {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 6px;
-    padding: 7px 10px;
-    border-radius: var(--border-radius);
-    font-size: 13.5px;
-    line-height: 1.35;
-    text-decoration: none;
+    min-height: 40px;
+    padding: 10px 9px;
+    border-left: 3px solid transparent;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
     color: var(--text-secondary);
-    transition: all 0.15s ease;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    hyphens: auto;
+    font-size: 13px;
+    line-height: 1.45;
+    text-decoration: none;
+    overflow-wrap: anywhere;
   }
 
   .sidebar-link:hover {
-    background-color: var(--surface);
+    color: var(--text-main);
+    background: color-mix(in srgb, var(--surface) 68%, transparent);
+  }
+
+  .sidebar-link[aria-current='page'] {
+    border-left-color: var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 12%, var(--bg-secondary));
     color: var(--text-main);
   }
 
-  .sidebar-link:active {
-    transform: scale(0.98);
-    background-color: color-mix(in srgb, var(--cyan) 10%, transparent);
-  }
-
-  .sidebar-link--active {
-    color: var(--cyan);
-    font-weight: 600;
-    background: color-mix(in srgb, var(--cyan) 12%, transparent);
-    box-shadow: inset 3px 0 0 var(--cyan);
-  }
-
-  .sidebar-link--active:hover {
-    background: color-mix(in srgb, var(--cyan) 16%, transparent);
-  }
-
   .sidebar-link--child {
+    padding-left: 18px;
     font-size: 12.5px;
-    padding-left: 22px;
   }
 
-  .sidebar-link__tree {
-    font-family: monospace;
-    color: var(--violet-light);
-    flex-shrink: 0;
+  .sidebar-link__branch {
+    color: var(--border-strong);
+    flex: 0 0 auto;
   }
 
   .sidebar-link--dossier {
-    color: var(--text-muted);
-    font-size: 12px;
-    font-style: italic;
+    flex-wrap: wrap;
   }
 
-  .sidebar-link__dossier-label {
-    color: var(--cyan);
-    font-style: normal;
-    white-space: nowrap;
-    flex-shrink: 0;
+  .sidebar-link__type {
+    flex: 0 0 auto;
+    padding: 1px 5px;
+    border: 1px solid color-mix(in srgb, var(--violet) 40%, transparent);
+    border-radius: var(--border-radius-sm);
+    color: var(--violet-light);
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1.5;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1023px) {
+    .nav-section__summary {
+      min-height: 48px;
+    }
+
     .sidebar-link {
-      padding: 10px 10px;
       min-height: 44px;
-    }
-    .sidebar-section-toggle {
-      font-size: 11px;
-      padding: 10px 2px;
-      min-height: 44px;
-    }
-    .sidebar-link--child {
-      padding-left: 18px;
-    }
-  }
-
-  @media (max-width: 380px) {
-    .sidebar-link {
-      font-size: 13px;
-      padding: 9px 8px;
+      padding-top: 11px;
+      padding-bottom: 11px;
     }
   }
 </style>
-
-<script>
-  const sidebarNav = document.getElementById('sidebar-nav-root');
-  const sidebarContainer = document.getElementById('sidebar-left-container');
-
-  // ── Sections repliables ────────────────────────────────────────────────
-  // Un seul helper pour toutes les sections (statiques + « Récemment lus »).
-  const wireSection = (section: HTMLElement) => {
-    const toggle = section.querySelector<HTMLButtonElement>('.sidebar-section-toggle');
-    const links = section.querySelector('.sidebar-section-links');
-    const chevron = section.querySelector('.sidebar-chevron');
-    if (!toggle || !links || !chevron) return;
-
-    toggle.addEventListener('click', () => {
-      const expanded = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', String(!expanded));
-      chevron.classList.toggle('rotate-90', !expanded);
-      links.classList.toggle('collapsed', expanded);
-    });
-  };
-  sidebarNav?.querySelectorAll<HTMLElement>('[data-sidebar-section]').forEach(wireSection);
-
-  // ── « Récemment lus » (reprise de lecture entre sessions) ─────────────
-  const RECENT_KEY = 'fousdu-recent-articles';
-
-  const buildRecentSection = () => {
-    if (!sidebarNav) return;
-    let recents: Array<{ href: string; title: string }> = [];
-    try {
-      recents = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
-    } catch {
-      recents = [];
-    }
-    if (!Array.isArray(recents)) return;
-
-    const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
-    const items = recents
-      .filter((r) => r?.href && r?.title && r.href.replace(/\/+$/, '') !== currentPath)
-      .slice(0, 5);
-    if (items.length === 0) return;
-
-    const section = document.createElement('div');
-    section.setAttribute('data-sidebar-section', '');
-    section.innerHTML = `
-      <button class="sidebar-section-toggle" aria-expanded="true">
-        <span class="sidebar-section-toggle__label">
-          <span aria-hidden="true">🕘</span>
-          <span>Récemment lus</span>
-        </span>
-        <svg class="sidebar-chevron rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </button>
-      <ul class="sidebar-section-links"></ul>`;
-    const ul = section.querySelector('ul')!;
-    for (const r of items) {
-      const a = document.createElement('a');
-      a.href = r.href;
-      a.className = 'sidebar-link';
-      a.textContent = r.title;
-      const li = document.createElement('li');
-      li.appendChild(a);
-      ul.appendChild(li);
-    }
-
-    sidebarNav.insertBefore(section, sidebarNav.querySelector('[data-sidebar-section]'));
-    wireSection(section);
-  };
-  buildRecentSection();
-
-  // ── Filtre ─────────────────────────────────────────────────────────────
-  const filterInput = document.getElementById('sidebar-filter-input') as HTMLInputElement | null;
-  const filterClear = document.getElementById('sidebar-filter-clear') as HTMLButtonElement | null;
-  const liveRegion = document.getElementById('sidebar-filter-status');
-
-  if (filterInput && sidebarNav) {
-    const sections = Array.from(sidebarNav.querySelectorAll<HTMLElement>('[data-sidebar-section]'));
-    // État replié/déplié d'origine, restauré quand le filtre est vidé.
-    const initialExpanded = new Map<HTMLElement, boolean>(
-      sections.map((s) => [
-        s,
-        s.querySelector('.sidebar-section-toggle')?.getAttribute('aria-expanded') === 'true',
-      ]),
-    );
-
-    const setExpanded = (section: HTMLElement, expanded: boolean) => {
-      section.querySelector('.sidebar-section-toggle')?.setAttribute('aria-expanded', String(expanded));
-      section.querySelector('.sidebar-chevron')?.classList.toggle('rotate-90', expanded);
-      section.querySelector('.sidebar-section-links')?.classList.toggle('collapsed', !expanded);
-    };
-
-    const applyFilter = (rawQuery: string) => {
-      const q = rawQuery.trim().toLowerCase();
-      const filtering = q.length > 0;
-      let visibleCount = 0;
-
-      if (filterClear) filterClear.hidden = !filtering;
-
-      for (const section of sections) {
-        let hasVisible = false;
-        section.querySelectorAll<HTMLAnchorElement>('.sidebar-link').forEach((link) => {
-          const matches = !filtering || (link.textContent ?? '').toLowerCase().includes(q);
-          (link.closest('li') as HTMLElement | null)!.hidden = !matches;
-          if (matches) {
-            hasVisible = true;
-            visibleCount++;
-          }
-        });
-
-        section.hidden = filtering && !hasVisible;
-        if (filtering) {
-          if (hasVisible) setExpanded(section, true);
-        } else {
-          setExpanded(section, initialExpanded.get(section) ?? false);
-        }
-      }
-
-      if (liveRegion) {
-        liveRegion.textContent = !filtering
-          ? ''
-          : visibleCount === 0
-            ? 'Aucun article trouvé'
-            : `${visibleCount} article${visibleCount > 1 ? 's' : ''} trouvé${visibleCount > 1 ? 's' : ''}`;
-      }
-    };
-
-    filterInput.addEventListener('input', () => applyFilter(filterInput.value));
-    filterClear?.addEventListener('click', () => {
-      filterInput.value = '';
-      applyFilter('');
-      filterInput.focus();
-    });
-  }
-
-  // ── Ouverture du tiroir mobile : focus filtre + scroll vers le lien actif ─
-  // Un seul observer, déclenché uniquement sur la transition fermé → ouvert
-  // (plus de vol de focus lors d'autres changements de classes).
-  if (sidebarContainer && filterInput) {
-    let wasOpen = sidebarContainer.classList.contains('is-mobile-open');
-    const observer = new MutationObserver(() => {
-      const isOpen = sidebarContainer.classList.contains('is-mobile-open');
-      if (isOpen === wasOpen) return;
-      wasOpen = isOpen;
-      if (!isOpen) return;
-
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      // Laisse l'animation du tiroir se terminer avant focus/scroll.
-      window.setTimeout(() => {
-        filterInput.focus({ preventScroll: true });
-        sidebarContainer
-          .querySelector('.sidebar-link--active')
-          ?.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
-      }, 300);
-    });
-    observer.observe(sidebarContainer, { attributes: true, attributeFilter: ['class'] });
-  }
-</script>

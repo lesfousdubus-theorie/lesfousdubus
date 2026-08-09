@@ -23,71 +23,59 @@ interface Props {
   noSidebar?: boolean;
 }
 
-const { title, description, currentPath, headings, image, type, seoTitle, noBreadcrumb = false, noSidebar = false } = Astro.props;
+const {
+  title,
+  description,
+  currentPath,
+  headings,
+  image,
+  type,
+  seoTitle,
+  noBreadcrumb = false,
+  noSidebar = false,
+} = Astro.props;
 
-// Pages without headings must not reserve an empty 240px gutter
-// or show a "Sommaire" drawer with no entries.
-const hasToc = !!(headings && headings.length > 0);
-
-// Breadcrumb auto pour pages génériques (aide, explorer, dossiers, chapitres)
-const breadcrumbMap: Record<string,string> = {
+const hasToc = Boolean(headings?.length);
+const breadcrumbLabels: Record<string, string> = {
   '/dossiers': 'Dossiers',
   '/explorer': 'Explorer',
   '/chapitres': 'Chapitres',
   '/aide': 'Aide',
   '/theorie': 'La théorie',
 };
+
 const buildGenericBreadcrumb = () => {
-  if (currentPath === '/' || currentPath === '') return [];
-  const segs = currentPath.split('/').filter(Boolean);
-  if (segs.length === 0) return [];
-  const items: {label:string, href?:string}[] = [{label:'Accueil', href:'/' }];
-  let acc = '';
-  for (let i=0;i<segs.length;i++) {
-    acc += '/' + segs[i];
-    const isLast = i===segs.length-1;
-    // special labels
-    if (i===0 && breadcrumbMap['/'+segs[0]]) {
-      items.push({label: breadcrumbMap['/'+segs[0]], href: isLast ? undefined : '/'+segs[0] });
-    } else {
-      // pretty label
-      const pretty = segs[i].replace(/-/g,' ').replace(/\b\w/g, (m:string)=>m.toUpperCase());
-      // keep numeric chapter as is
-      const label = /^\d+$/.test(segs[i]) ? `Chapitre ${segs[i]}` : (i===segs.length-1 ? title : pretty);
-      items.push({label, href: isLast ? undefined : acc});
-    }
-  }
+  const segments = currentPath.split('/').filter(Boolean);
+  if (segments.length === 0) return [];
+
+  const items: { label: string; href?: string }[] = [{ label: 'Accueil', href: '/' }];
+  let path = '';
+
+  segments.forEach((segment, index) => {
+    path += `/${segment}`;
+    const isLast = index === segments.length - 1;
+    const sectionLabel = index === 0 ? breadcrumbLabels[`/${segment}`] : undefined;
+    const label = /^\d+$/.test(segment)
+      ? `Chapitre ${segment}`
+      : (sectionLabel ?? (isLast ? title : segment.replace(/-/g, ' ')));
+    items.push({ label, href: isLast ? undefined : path });
+  });
+
   return items;
 };
+
 const genericBreadcrumb = buildGenericBreadcrumb();
-
-
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
 const isCollectionPage = ['/theorie', '/dossiers', '/chapitres', '/explorer', '/aide'].some(
-  (p) => currentPath === p || currentPath === p + '/',
+  (path) => currentPath === path || currentPath === `${path}/`,
 );
 const canonicalWikiUrl = new URL(
-  currentPath.endsWith('/') ? currentPath : currentPath + '/',
+  currentPath.endsWith('/') ? currentPath : `${currentPath}/`,
   siteUrl,
 ).toString();
 ---
 
 <BaseLayout title={title} description={description} image={image} type={type} seoTitle={seoTitle}>
-  <script is:inline>
-    (function () {
-      const collapsed = localStorage.getItem('sidebar-left-collapsed') === 'true';
-      if (collapsed) {
-        document.documentElement.classList.add('sidebar-left-collapsed');
-      }
-      const storedWidth = localStorage.getItem('sidebar-left-width');
-      if (storedWidth) {
-        // The grid gutter keeps its width while the sidebar is visually hidden,
-        // so restoring it here prevents the reading column from jumping.
-        document.documentElement.style.setProperty('--sidebar-left-width', storedWidth);
-      }
-    })();
-  </script>
-
   {
     isCollectionPage && (
       <>
@@ -98,7 +86,7 @@ const canonicalWikiUrl = new URL(
             '@context': 'https://schema.org',
             '@type': 'CollectionPage',
             name: title,
-            description: description,
+            description,
             url: canonicalWikiUrl,
             inLanguage: 'fr-FR',
             isPartOf: { '@id': `${siteUrl}/#website` },
@@ -120,7 +108,6 @@ const canonicalWikiUrl = new URL(
     )
   }
 
-  {/* Article JSON-LD for theory pages */}
   {
     !isCollectionPage && currentPath.startsWith('/theorie/') && (
       <script
@@ -130,7 +117,7 @@ const canonicalWikiUrl = new URL(
           '@context': 'https://schema.org',
           '@type': 'Article',
           headline: title,
-          description: description,
+          description,
           url: canonicalWikiUrl,
           author: { '@type': 'Organization', name: 'Les Fous du Bus' },
           publisher: { '@id': `${siteUrl}/#organization` },
@@ -142,66 +129,100 @@ const canonicalWikiUrl = new URL(
 
   <Navbar hideMobileToggle={noSidebar} />
 
-  <!-- Mobile overlay — unique navigation DOM, affiché uniquement sur mobile quand le tiroir est ouvert -->
-  <div id="sidebar-mobile-overlay" class="sidebar-mobile-overlay" aria-hidden="true"></div>
+  {!noSidebar && <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true" />}
 
-  <div class:list={['layout', { 'layout--no-toc': !hasToc }, { 'layout--no-sidebar': noSidebar }]}>
-    {!noSidebar && (
-      <div class="sidebar-left-container" id="sidebar-left-container">
-        <aside class="sidebar sidebar-left" id="sidebar-left" aria-label="Navigation des articles">
-          <SidebarNav currentPath={currentPath} />
-        </aside>
-
-        <!-- Vertical Resizer Handle — souris (drag) ET clavier (flèches ←/→, Home/End) -->
-        <div
-          id="sidebar-resizer"
-          class="sidebar-resizer"
-          role="separator"
-          aria-orientation="vertical"
-          tabindex="0"
-          aria-label="Redimensionner la barre latérale"
-          aria-valuemin={200}
-          aria-valuemax={480}
-          aria-valuenow={260}
-          title="Glisser (ou flèches ←/→ au clavier) pour redimensionner la barre latérale"
+  <div
+    class:list={[
+      'wiki-layout',
+      { 'wiki-layout--no-toc': !hasToc, 'wiki-layout--no-sidebar': noSidebar },
+    ]}
+  >
+    {
+      !noSidebar && (
+        <aside
+          id="sidebar-left"
+          class="sidebar-left"
+          aria-label="Navigation des articles"
+          aria-hidden="false"
         >
-        </div>
-      </div>
-    )}
+          <div class="sidebar-mobile-header">
+            <span>Navigation</span>
+            <button id="sidebar-close" type="button" aria-label="Fermer la navigation">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <div class="sidebar-scroll" data-sidebar-scroll>
+            <SidebarNav currentPath={currentPath} />
+          </div>
+        </aside>
+      )
+    }
 
     <main class:list={['main-content', { 'main-content--centered': noSidebar }]} id="main-content">
-      {!noBreadcrumb && genericBreadcrumb.length > 1 && currentPath !== '/' && !currentPath.startsWith('/theorie/') && (
-        <Breadcrumb items={genericBreadcrumb} />
-      )}
+      {
+        !noBreadcrumb &&
+          genericBreadcrumb.length > 1 &&
+          currentPath !== '/' &&
+          !currentPath.startsWith('/theorie/') && <Breadcrumb items={genericBreadcrumb} />
+      }
       <slot />
     </main>
 
     {
       hasToc && (
-        <aside class="sidebar sidebar-right" aria-label="Table des matières">
+        <aside class="sidebar-right" aria-label="Table des matières">
           <SidebarToc headings={headings} />
         </aside>
       )
     }
   </div>
 
-  {/* Floating TOC button + drawer for tablet/mobile (when TOC exists) — fixes 1200px gap */}
   {
     hasToc && (
       <>
-        <button id="toc-fab" class="toc-fab" aria-label="Sommaire de la page" aria-expanded="false">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="4" y1="6" x2="20" y2="6"></line>
-            <line x1="4" y1="12" x2="20" y2="12"></line>
-            <line x1="4" y1="18" x2="20" y2="18"></line>
+        <button
+          id="toc-fab"
+          class="toc-fab"
+          type="button"
+          aria-label="Ouvrir le sommaire"
+          aria-expanded="false"
+          aria-controls="toc-drawer"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
           </svg>
           <span>Sommaire</span>
         </button>
-        <div id="toc-overlay" class="toc-overlay" aria-hidden="true"></div>
-        <aside id="toc-drawer" class="toc-drawer" aria-label="Table des matières mobile">
+        <div id="toc-overlay" class="toc-overlay" aria-hidden="true" />
+        <aside id="toc-drawer" class="toc-drawer" aria-label="Sommaire" aria-hidden="true">
           <div class="toc-drawer__header">
-            <span class="toc-drawer__title">Sur cette page</span>
-            <button id="toc-drawer-close" class="toc-drawer__close" aria-label="Fermer le sommaire">✕</button>
+            <span>Sur cette page</span>
+            <button id="toc-close" type="button" aria-label="Fermer le sommaire">
+              ×
+            </button>
           </div>
           <div class="toc-drawer__body">
             <SidebarToc headings={headings} />
@@ -211,1010 +232,490 @@ const canonicalWikiUrl = new URL(
     )
   }
 
-  {/* Overlays rendus HORS de <main> : un élément `inert` ne doit jamais contenir
-      l'overlay qui le neutralise (ex. lightbox d'article). */}
   <slot name="overlays" />
 </BaseLayout>
 
 <style>
-  /* Prevent any horizontal scroll caused by off-screen drawer or long words.
-     Prefer 100% over 100vw — 100vw includes the classic scrollbar width and
-     is a frequent source of 1-axis "phantom" slide bars on mobile. */
   :global(html),
   :global(body) {
-    overflow-x: clip;
     max-width: 100%;
+    overflow-x: hidden;
   }
 
-  .layout {
+  .wiki-layout {
     display: grid;
-    grid-template-columns:
-      var(--sidebar-left-width, 260px)
-      minmax(0, 1fr)
-      var(--sidebar-left-width, 260px);
-    flex: 1;
+    grid-template-columns: 272px minmax(0, 1fr) 240px;
     width: 100%;
-    max-width: 100%;
-    overflow-x: clip;
     min-width: 0;
+    flex: 1;
   }
 
-  .layout--no-toc {
-    grid-template-columns: var(--sidebar-left-width, 260px) minmax(0, 1fr);
+  .wiki-layout--no-toc {
+    grid-template-columns: 272px minmax(0, 1fr);
   }
 
-  /* Pages without sidebar (404/500 errors, etc.) — full width centered column */
-  .layout--no-sidebar {
-    grid-template-columns: minmax(0, 1fr) !important;
+  .wiki-layout--no-sidebar {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .main-content--centered {
-    margin: 0 auto !important;
-    max-width: 860px !important;
-  }
-
-  .sidebar-left-container {
-    position: relative;
-    width: var(--sidebar-left-width, 260px);
-    min-width: 0;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-
-  /* Keep the grid gutter when the sidebar is hidden. The reading column must
-     retain its position instead of recentering into the newly freed space. */
-  .sidebar-left-container.collapsed,
-  :global(.sidebar-left-collapsed) .sidebar-left-container {
-    width: var(--sidebar-left-width, 260px);
-  }
-
-  /* Resizer handle on the right edge of sidebar-left */
-  .sidebar-resizer {
-    position: absolute;
-    top: 0;
-    right: -4px;
-    width: 8px;
-    height: 100%;
-    cursor: col-resize;
-    z-index: 40;
-    touch-action: none;
-  }
-
-  .sidebar-resizer::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 3px;
-    width: 2px;
-    height: 100%;
-    background-color: transparent;
-    transition: background-color 0.2s ease;
-  }
-
-  .sidebar-resizer:hover::after,
-  :global(body.is-resizing) .sidebar-resizer::after,
-  .sidebar-resizer:focus-visible::after {
-    background-color: var(--cyan);
-    box-shadow: 0 0 8px var(--glow-cyan);
-  }
-
-  .sidebar-resizer:focus-visible {
-    outline: 2px solid var(--cyan);
-    outline-offset: -2px;
-    border-radius: 2px;
-  }
-
-  :global(.sidebar-left-collapsed) .sidebar-resizer {
-    display: none;
-  }
-
-  :global(body.is-resizing) {
-    user-select: none !important;
-    cursor: col-resize !important;
-  }
-
-  :global(body.is-resizing) .sidebar-left-container,
-  :global(body.is-resizing) .sidebar-left {
-    transition: none !important;
-  }
-
-  .sidebar {
-    padding: 24px 16px;
-    height: calc(100vh - var(--nav-h));
-    height: calc(100dvh - var(--nav-h));
+  .sidebar-left,
+  .sidebar-right {
     position: sticky;
     top: var(--nav-h);
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: thin;
-    box-sizing: border-box;
-    overscroll-behavior: contain;
+    align-self: start;
+    height: calc(100vh - var(--nav-h));
+    height: calc(100dvh - var(--nav-h));
+    background: var(--bg-secondary);
   }
 
   .sidebar-left {
-    width: var(--sidebar-left-width, 260px);
-    max-width: 100%;
-    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    transition:
-      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 0.3s ease;
-    background-color: var(--bg-secondary);
-    overflow-x: hidden;
+    min-height: 0;
+    overflow: hidden;
+    border-right: 1px solid var(--border-color);
   }
 
-  .sidebar-left-container.collapsed .sidebar-left,
-  :global(.sidebar-left-collapsed) .sidebar-left-container .sidebar-left {
-    transform: translateX(-100%);
-    opacity: 0;
-    pointer-events: none;
+  .sidebar-scroll {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    padding: 20px 14px 32px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sidebar-right {
-    width: 100%;
+    padding: 24px 16px;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
     border-left: 1px solid var(--border-color);
-    background-color: var(--bg-secondary);
-    overflow-x: hidden;
+  }
+
+  .sidebar-mobile-header {
+    display: none;
   }
 
   .main-content {
     display: flex;
     flex-direction: column;
-    padding: 32px 40px;
     width: 100%;
-    margin: 0 auto;
     min-width: 0;
-    max-width: min(860px, 100%);
-    flex-grow: 1;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    box-sizing: border-box;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 40px;
+    overflow-wrap: anywhere;
   }
 
-  /* Ensure any wide element inside main-content scrolls internally, not page */
+  .main-content--centered {
+    max-width: 860px;
+  }
+
   .main-content :global(img),
-  .main-content :global(table),
+  .main-content :global(video),
+  .main-content :global(iframe),
   .main-content :global(pre),
-  .main-content :global(code) {
+  .main-content :global(table) {
     max-width: 100%;
   }
-  .main-content :global(table) {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+
+  .main-content :global(table),
   .main-content :global(pre) {
     overflow-x: auto;
-    white-space: pre-wrap;
-    word-wrap: break-word;
   }
 
-  /* Tablet: hide right sidebar */
-  @media (max-width: 1200px) {
-    .sidebar-right {
-      display: none;
-    }
-    .layout {
-      grid-template-columns: var(--sidebar-left-width, 260px) minmax(0, 1fr);
-    }
-    .layout--no-toc {
-      grid-template-columns: var(--sidebar-left-width, 260px) minmax(0, 1fr);
-    }
+  .main-content :global(table) {
+    display: block;
   }
 
-  @media (max-width: 1024px) and (min-width: 769px) {
-    .layout {
-      grid-template-columns: var(--sidebar-left-width, 240px) minmax(0, 1fr);
-    }
-    .layout--no-toc {
-      grid-template-columns: var(--sidebar-left-width, 240px) minmax(0, 1fr);
-    }
-    .sidebar-left {
-      width: var(--sidebar-left-width, 240px);
-    }
-    .sidebar-left-container {
-      width: var(--sidebar-left-width, 240px);
-    }
-  }
-
-  /* Mobile overlay — single navigation DOM, rendered differently with CSS */
-  .sidebar-mobile-overlay {
-    display: none;
+  .sidebar-overlay,
+  .toc-overlay {
     position: fixed;
-    inset: var(--nav-h) 0 0 0;
-    width: 100%;
-    max-width: 100%;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 45;
+    inset: var(--nav-h) 0 0;
+    z-index: 55;
+    background: rgba(3, 8, 15, 0.58);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transition:
-      opacity 0.25s ease,
-      visibility 0.25s ease;
-    /* Never participate in page scroll metrics */
-    touch-action: none;
-    overscroll-behavior: none;
+      opacity 180ms ease,
+      visibility 180ms ease;
   }
 
-  .sidebar-mobile-overlay.is-open {
+  .sidebar-overlay.is-open,
+  .toc-overlay.is-open {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
   }
 
-  /* Mobile: single navigation becomes drawer, no duplicate DOM */
-  @media (max-width: 768px) {
-    /*
-     * Critical: the drawer must never participate in layout metrics.
-     * - position:fixed + left:0 takes it out of flow
-     * - when closed, translate fully off-screen AND visibility:hidden
-     * - box-shadow only when open, clipped by html overflow-x:clip
-     * - background page must NOT move (no width/padding changes on open)
-     */
-    .sidebar-left-container {
-      position: fixed !important;
+  @media (max-width: 1200px) {
+    .wiki-layout,
+    .wiki-layout--no-toc {
+      grid-template-columns: 272px minmax(0, 1fr);
+    }
+
+    .sidebar-right {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .wiki-layout,
+    .wiki-layout--no-toc,
+    .wiki-layout--no-sidebar {
+      display: block;
+    }
+
+    .sidebar-left {
+      position: fixed;
+      z-index: 60;
       top: var(--nav-h);
       left: 0;
-      right: auto;
       bottom: 0;
-      width: min(86%, 300px);
-      max-width: 300px;
-      height: calc(100vh - var(--nav-h));
-      height: calc(100dvh - var(--nav-h));
-      /* Évite que le contenu du tiroir ne passe sous la barre d'accueil iOS */
-      padding-bottom: env(safe-area-inset-bottom, 0);
-      margin: 0;
-      z-index: 50;
-      background: var(--bg-secondary);
+      width: min(88vw, 320px);
+      height: auto;
       border-right: 1px solid var(--border-color);
-      transform: translate3d(-100%, 0, 0);
-      /* Only animate transform — never width (desktop rule would reflow the page) */
-      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      overflow-x: hidden;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-      display: block;
-      /* paint isolation without affecting page size */
-      contain: layout style paint;
+      transform: translateX(-100%);
       visibility: hidden;
       pointer-events: none;
-      box-shadow: none;
-      touch-action: pan-y;
+      transition:
+        transform 220ms ease,
+        visibility 220ms ease;
     }
 
-    .sidebar-left-container.is-mobile-open {
-      transform: translate3d(0, 0, 0);
+    .sidebar-scroll {
+      padding: 0 14px max(28px, env(safe-area-inset-bottom));
+    }
+
+    .sidebar-left.is-open {
+      transform: translateX(0);
       visibility: visible;
       pointer-events: auto;
-      /* Soft shadow that does not expand document width (html clips x) */
-      box-shadow: 4px 0 24px var(--shadow-color);
+      box-shadow: 8px 0 28px var(--shadow-color);
     }
 
-    .sidebar-left {
-      position: relative;
+    .sidebar-mobile-header {
+      position: sticky;
       top: 0;
-      height: auto;
-      min-height: 100%;
-      max-height: none;
-      width: 100% !important;
-      max-width: 100%;
-      border-right: none;
-      transform: none !important;
-      opacity: 1 !important;
-      pointer-events: auto !important;
-      overflow-y: auto !important;
-      -webkit-overflow-scrolling: touch;
-      padding: 16px 12px 28px;
-      scrollbar-width: thin;
-      /* Masque le bas pour indiquer qu'il y a du contenu à faire défiler */
-      -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
-      mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
-      /* Kill desktop slide/opacity transitions that could fight the drawer */
-      transition: none !important;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 56px;
+      margin: 0 0 12px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
-    .sidebar-left::-webkit-scrollbar {
-      width: 3px;
-    }
-    .sidebar-left::-webkit-scrollbar-thumb {
-      background: color-mix(in srgb, var(--violet) 40%, transparent);
-      border-radius: 3px;
-    }
-
-    .sidebar-resizer {
-      display: none !important;
-    }
-
-    .sidebar-mobile-overlay {
-      display: block;
-    }
-
-    /*
-     * Single block layout: the drawer is position:fixed so it must not
-     * reserve any grid track. display:block keeps main at full width
-     * whether the drawer is open or closed — zero width delta.
-     */
-    .layout,
-    .layout--no-toc {
-      display: block !important;
-      width: 100%;
-      max-width: 100%;
-      overflow-x: clip;
+    #sidebar-close {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      background: var(--surface);
+      color: var(--text-main);
+      cursor: pointer;
     }
 
     .main-content {
-      display: block;
-      padding: 24px 16px;
-      width: 100%;
-      max-width: 100%;
-      overflow-x: clip;
-      min-width: 0;
-      /* Page content stays put under the overlay — never translated */
-      transform: none !important;
-      margin: 0;
+      max-width: 860px;
+      padding: 28px 24px;
     }
   }
 
-  /* Small mobile */
-  @media (max-width: 480px) {
-    .main-content {
-      padding: 20px 14px;
-    }
-    .sidebar-left-container {
-      width: min(88%, 280px);
-      max-width: 280px;
-    }
+  @media (max-width: 640px) {
     .sidebar-left {
-      padding: 14px 10px 24px;
+      width: min(92vw, 304px);
     }
-  }
 
-  @media (max-width: 360px) {
     .main-content {
-      padding: 16px 12px;
-    }
-    .sidebar-left-container {
-      width: min(92%, 260px);
-      max-width: 260px;
+      padding: 22px 16px;
     }
   }
 
-  /*
-   * Scroll lock WITHOUT position:fixed on <body>.
-   * position:fixed was causing a subtle horizontal/vertical shift of the
-   * background page (sticky navbar reflow + width recalculation).
-   * We only freeze overflow; scroll position is preserved natively.
-   * scrollbar-gutter: stable (global) keeps the width identical if a classic
-   * scrollbar would otherwise appear/disappear.
-   */
-  :global(html.mobile-nav-open) {
-    overflow: hidden !important;
+  :global(html.nav-drawer-open),
+  :global(html.nav-drawer-open body),
+  :global(html.toc-drawer-open),
+  :global(html.toc-drawer-open body) {
+    overflow: hidden;
     overscroll-behavior: none;
   }
 
-  :global(body.mobile-nav-open) {
-    overflow: hidden !important;
-    overscroll-behavior: none;
-    /* Do NOT set position/top/width/left — any of these reflow the page. */
-  }
-
-  /* Keep background content inert visually; no transform/filter that reflows */
-  :global(body.mobile-nav-open) .layout,
-  :global(body.mobile-nav-open) .main-content {
-    pointer-events: none;
-    user-select: none;
-  }
-
-  /* Drawer + overlay must remain interactive above the frozen page */
-  :global(body.mobile-nav-open) .sidebar-left-container,
-  :global(body.mobile-nav-open) .sidebar-mobile-overlay,
-  :global(body.mobile-nav-open) .navbar {
-    pointer-events: auto;
-    user-select: auto;
-  }
-
-  /* Tant que le tiroir mobile est ouvert, les actions de la navbar (recherche,
-     thème) sont neutralisées visuellement pour éviter qu'un second overlay ne
-     vienne se superposer au tiroir. Le bouton hamburger de fermeture reste actif. */
-  :global([data-nav-open='mobile']) .navbar .nav-actions {
-    opacity: 0.45;
-    pointer-events: none;
-  }
-  :global([data-nav-open='mobile']) #mobile-menu-toggle {
-    color: var(--cyan);
-    border-color: color-mix(in srgb, var(--cyan) 45%, var(--border-color));
-    background-color: color-mix(in srgb, var(--cyan) 12%, var(--surface));
-  }
-  :global([data-nav-open='mobile']) .navbar {
-    border-bottom-color: color-mix(in srgb, var(--cyan) 25%, var(--border-color));
-  }
-
-  /* ===== TOC FAB + Drawer for tablet/mobile ===== */
   .toc-fab {
     display: none;
     position: fixed;
+    right: 20px;
     bottom: 24px;
-    right: 24px;
-    z-index: 40;
+    z-index: 45;
     align-items: center;
     gap: 8px;
+    min-height: 44px;
     padding: 10px 16px;
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius-full);
     background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
     color: var(--text-main);
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: 0 4px 20px var(--shadow-color);
+    box-shadow: 0 6px 22px var(--shadow-color);
+    font: 700 13px/1 var(--font-sans);
     cursor: pointer;
-    transition: all 0.2s ease;
   }
-  .toc-fab:hover {
-    border-color: var(--cyan);
-    color: var(--cyan);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px var(--shadow-color), 0 0 16px var(--glow-cyan);
+
+  .toc-drawer {
+    position: fixed;
+    z-index: 60;
+    top: var(--nav-h);
+    right: 0;
+    bottom: 0;
+    width: min(88vw, 340px);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition:
+      transform 220ms ease,
+      visibility 220ms ease;
   }
-  .toc-fab:active {
-    transform: translateY(0) scale(0.97);
+
+  .toc-drawer.is-open {
+    transform: translateX(0);
+    visibility: visible;
+    box-shadow: -8px 0 28px var(--shadow-color);
   }
+
+  .toc-drawer__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 56px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  #toc-close {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--surface);
+    color: var(--text-main);
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .toc-drawer__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 18px 16px max(28px, env(safe-area-inset-bottom));
+  }
+
   @media (max-width: 1200px) {
     .toc-fab {
       display: inline-flex;
     }
   }
+
   @media (max-width: 640px) {
     .toc-fab {
-      bottom: 84px;
       right: 16px;
-      padding: 12px 18px;
-      min-height: 44px;
+      bottom: 84px;
     }
   }
 
-  .toc-overlay {
-    display: none;
-    position: fixed;
-    inset: var(--nav-h) 0 0 0;
-    background: rgba(0,0,0,0.45);
-    backdrop-filter: blur(3px);
-    z-index: 45;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.22s ease, visibility 0.22s;
-  }
-  .toc-overlay.is-open {
-    display: block;
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .toc-drawer {
-    position: fixed;
-    top: var(--nav-h);
-    right: 0;
-    bottom: 0;
-    width: min(88%, 340px);
-    background: var(--bg-secondary);
-    border-left: 1px solid var(--border-color);
-    z-index: 50;
-    transform: translateX(100%);
-    visibility: hidden;
-    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), visibility 0.28s;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: -4px 0 24px var(--shadow-color);
-  }
-  .toc-drawer.is-open {
-    transform: translateX(0);
-    visibility: visible;
-  }
-  .toc-drawer__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-  }
-  .toc-drawer__title {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-main);
-  }
-  .toc-drawer__close {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    background: var(--surface);
-    color: var(--text-secondary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-  }
-  .toc-drawer__close:hover {
-    color: var(--text-main);
-    border-color: var(--violet);
-  }
-  .toc-drawer__body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-  }
-
-  /* Hide TOC FAB when other overlays are open */
-  :global([data-nav-open='mobile']) .toc-fab,
-  :global(html.mobile-nav-open) .toc-fab,
+  :global(html.nav-drawer-open) .toc-fab,
   :global(html.search-modal-open) .toc-fab {
     opacity: 0;
-    pointer-events: none;
     visibility: hidden;
+    pointer-events: none;
   }
 
-  /* Zen mode — hides sidebars for focused reading */
-  :global(html.zen-mode) .sidebar-left-container,
+  :global(html.zen-mode) .sidebar-left,
   :global(html.zen-mode) .sidebar-right,
-  :global(html.zen-mode) #toc-fab {
-    display: none !important;
+  :global(html.zen-mode) .toc-fab {
+    display: none;
   }
-  :global(html.zen-mode) .layout {
-    grid-template-columns: minmax(0,1fr) !important;
-    display: block !important;
+
+  :global(html.zen-mode) .wiki-layout {
+    display: block;
   }
+
   :global(html.zen-mode) .main-content {
-    max-width: 780px !important;
-    margin: 0 auto !important;
-    padding: 32px 24px !important;
+    max-width: 780px;
+    margin: 0 auto;
   }
-
-  /* Mobile: no-sidebar pages still use block layout */
-  @media (max-width: 768px) {
-    .layout--no-sidebar {
-      display: block !important;
-    }
-  }
-
-
 </style>
-
 
 <script>
   // @ts-nocheck
-  // Left sidebar collapse / expand logic controlled by the single navbar button
-  const navbarSidebarToggle = document.getElementById('navbar-sidebar-toggle');
-  const sidebarContainer = document.getElementById('sidebar-left-container');
-  const mobileToggle = document.getElementById('mobile-menu-toggle');
-  const mobileOverlay = document.getElementById('sidebar-mobile-overlay');
+  const mobileMedia = window.matchMedia('(max-width: 1023px)');
+  const navDrawer = document.getElementById('sidebar-left');
+  const navToggle = document.getElementById('mobile-menu-toggle');
+  const navClose = document.getElementById('sidebar-close');
+  const navOverlay = document.getElementById('sidebar-overlay');
   const hamburgerIcon = document.getElementById('hamburger-icon');
   const closeIcon = document.getElementById('close-icon');
   const mainContent = document.getElementById('main-content');
+  const navBackground = document.querySelectorAll(
+    '.navbar .nav-left, .navbar .nav-center, .navbar .nav-actions',
+  );
 
-  // --- État du tiroir mobile (déclaré tôt : utilisé à l'initialisation) ---
-  const isMobileOpen = () => sidebarContainer?.classList.contains('is-mobile-open');
+  const isNavOpen = () => navDrawer?.classList.contains('is-open') ?? false;
+  const setInert = (elements, inert) => {
+    elements.forEach((element) => element.toggleAttribute('inert', inert));
+  };
 
-  const syncToggleButtons = () => {
-    const mobile = window.innerWidth <= 768;
-    const mobileOpen = isMobileOpen();
-    const desktopCollapsed =
-      document.documentElement.classList.contains('sidebar-left-collapsed');
-
-    if (mobileToggle) {
-      hamburgerIcon?.classList.toggle('hidden', mobileOpen);
-      closeIcon?.classList.toggle('hidden', !mobileOpen);
-      mobileToggle.setAttribute('aria-expanded', String(mobileOpen));
-      mobileToggle.setAttribute('aria-pressed', String(mobileOpen));
+  const syncNavViewport = () => {
+    if (!navDrawer) return;
+    if (!mobileMedia.matches) {
+      navDrawer.classList.remove('is-open');
+      navDrawer.setAttribute('aria-hidden', 'false');
+      navOverlay?.classList.remove('is-open');
+      navOverlay?.setAttribute('aria-hidden', 'true');
+      document.documentElement.classList.remove('nav-drawer-open');
+      mainContent?.removeAttribute('inert');
+      setInert(navBackground, false);
+    } else if (!isNavOpen()) {
+      navDrawer.setAttribute('aria-hidden', 'true');
     }
-    if (navbarSidebarToggle) {
-      navbarSidebarToggle.setAttribute(
-        'aria-expanded',
-        mobile ? String(mobileOpen) : String(!desktopCollapsed),
-      );
-    }
+    navToggle?.setAttribute('aria-expanded', String(isNavOpen()));
+    hamburgerIcon?.classList.toggle('hidden', isNavOpen());
+    closeIcon?.classList.toggle('hidden', !isNavOpen());
   };
 
-  const updateAriaState = () => {
-    syncToggleButtons();
-  };
+  const setNavOpen = (open, restoreFocus = false) => {
+    if (!navDrawer || (!mobileMedia.matches && open)) return;
+    navDrawer.classList.toggle('is-open', open);
+    navDrawer.setAttribute('aria-hidden', String(!open));
+    navOverlay?.classList.toggle('is-open', open);
+    navOverlay?.setAttribute('aria-hidden', String(!open));
+    document.documentElement.classList.toggle('nav-drawer-open', open);
+    mainContent?.toggleAttribute('inert', open);
+    setInert(navBackground, open);
+    syncNavViewport();
 
-  updateAriaState();
-
-  const toggleSidebar = () => {
-    const isCollapsed = !document.documentElement.classList.contains('sidebar-left-collapsed');
-    if (isCollapsed) {
-      document.documentElement.classList.add('sidebar-left-collapsed');
-      sidebarContainer?.classList.add('collapsed');
-    } else {
-      document.documentElement.classList.remove('sidebar-left-collapsed');
-      sidebarContainer?.classList.remove('collapsed');
-    }
-    localStorage.setItem('sidebar-left-collapsed', String(isCollapsed));
-    syncToggleButtons();
-  };
-
-  navbarSidebarToggle?.addEventListener('click', () => {
-    // Pages sans sidebar (404/500…) : rien à replier/ouvrir.
-    if (!sidebarContainer) return;
-    // Sur mobile, le bouton desktop est masqué : on délègue au tiroir mobile
-    if (window.innerWidth <= 768) {
-      toggleMobile(true);
-      return;
-    }
-    toggleSidebar();
-  });
-
-  // --- Mobile drawer : single navigation DOM, pas de duplication ---
-  let scrollLocked = false;
-  let touchMoveHandler = null;
-  // Le tiroir mobile a-t-il été manipulé depuis le dernier passage desktop ?
-  // Sert à réinitialiser l'état replié AU RETOUR en desktop uniquement dans ce
-  // cas (avant : n'importe quel resize desktop écrasait la préférence de
-  // repli choisie par l'utilisateur, ex. ouverture des devtools).
-  let mobileManipulated = false;
-
-  /**
-   * Freeze background scroll with zero layout shift.
-   * - No position:fixed on body (that was shifting blocks slightly)
-   * - No paddingRight compensation
-   * - overflow:hidden only; native scrollY is kept
-   * - touchmove blocked outside the drawer (iOS rubber-band)
-   */
-  // Éléments de la navbar neutralisés quand le tiroir mobile est ouvert : le
-  // hamburger reste le seul contrôle focusable (le focus ne peut plus « fuir »
-  // derrière l'overlay).
-  const navbarInertSelector = '.navbar .nav-left, .navbar .nav-center, .navbar .nav-actions';
-  const setNavbarInert = (inert) => {
-    document.querySelectorAll(navbarInertSelector).forEach((el) => {
-      if (inert) el.setAttribute('inert', '');
-      else el.removeAttribute('inert');
-    });
-  };
-
-  const lockScroll = () => {
-    if (scrollLocked) return;
-    scrollLocked = true;
-    document.documentElement.classList.add('mobile-nav-open');
-    document.body.classList.add('mobile-nav-open');
-    mainContent?.setAttribute('inert', '');
-    mainContent?.setAttribute('aria-hidden', 'true');
-    setNavbarInert(true);
-
-    touchMoveHandler = (e) => {
-      if (!isMobileOpen()) return;
-      const target = e.target;
-      // Allow scrolling inside the drawer only
-      if (sidebarContainer && sidebarContainer.contains(target)) return;
-      e.preventDefault();
-    };
-    document.addEventListener('touchmove', touchMoveHandler, { passive: false });
-  };
-
-  const unlockScroll = () => {
-    if (!scrollLocked) return;
-    scrollLocked = false;
-    document.documentElement.classList.remove('mobile-nav-open');
-    document.body.classList.remove('mobile-nav-open');
-    mainContent?.removeAttribute('inert');
-    mainContent?.removeAttribute('aria-hidden');
-    setNavbarInert(false);
-
-    if (touchMoveHandler) {
-      document.removeEventListener('touchmove', touchMoveHandler);
-      touchMoveHandler = null;
-    }
-  };
-
-  const toggleMobile = (force) => {
-    // Pages sans sidebar (404/500…) : pas de tiroir → on ne fait rien, surtout
-    // pas lockScroll() qui gèlerait le défilement sans aucun moyen de sortir.
-    if (!sidebarContainer) return;
-    const willOpen = force !== undefined ? force : !isMobileOpen();
-    if (willOpen) {
-      mobileManipulated = true;
-      // Lock first so the open animation never races a layout shift
-      lockScroll();
-      // Double-rAF: apply open class after lock styles are committed
+    if (open) {
       requestAnimationFrame(() => {
-        sidebarContainer?.classList.add('is-mobile-open');
-        mobileOverlay?.classList.add('is-open');
-        mobileOverlay?.setAttribute('aria-hidden', 'false');
-        document.documentElement.setAttribute('data-nav-open', 'mobile');
-        document.body.setAttribute('data-nav-open', 'mobile');
-        syncToggleButtons();
+        const target = navDrawer.querySelector('[aria-current="page"], summary, button, a');
+        target?.focus({ preventScroll: true });
+        navDrawer.querySelector('[aria-current="page"]')?.scrollIntoView({ block: 'center' });
       });
-    } else {
-      sidebarContainer?.classList.remove('is-mobile-open');
-      mobileOverlay?.classList.remove('is-open');
-      mobileOverlay?.setAttribute('aria-hidden', 'true');
-      document.documentElement.removeAttribute('data-nav-open');
-      document.body.removeAttribute('data-nav-open');
-      // Unlock after the close transition starts (layout stays put either way)
-      unlockScroll();
-      syncToggleButtons();
+    } else if (restoreFocus) {
+      navToggle?.focus();
     }
   };
 
-  mobileToggle?.addEventListener('click', () => toggleMobile());
-  mobileOverlay?.addEventListener('click', () => {
-    toggleMobile(false);
-    // Rend le focus au déclencheur (bonne pratique a11y : ne pas perdre la position clavier)
-    mobileToggle?.focus();
+  navToggle?.addEventListener('click', () => setNavOpen(!isNavOpen()));
+  navClose?.addEventListener('click', () => setNavOpen(false, true));
+  navOverlay?.addEventListener('click', () => setNavOpen(false, true));
+  navDrawer?.addEventListener('click', (event) => {
+    if (mobileMedia.matches && event.target.closest('a')) setNavOpen(false);
   });
+  mobileMedia.addEventListener('change', syncNavViewport);
+  window.addEventListener('openSearch', () => setNavOpen(false));
 
-  // Quand le tiroir mobile est ouvert, tout déclenchement de la recherche
-  // (bouton loupe de la navbar ou raccourci Ctrl/Cmd+K) doit d'abord fermer
-  // le tiroir pour éviter la superposition de deux overlays.
-  const closeMobileForOverlay = () => {
-    if (window.innerWidth <= 768 && isMobileOpen()) {
-      toggleMobile(false);
-    }
-  };
-  document.addEventListener('openSearch', closeMobileForOverlay, true);
-  window.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
-      closeMobileForOverlay();
-    }
-  });
-
-  // Focus trap minimal dans le tiroir pour les utilisateurs clavier.
-  sidebarContainer?.addEventListener('keydown', (e) => {
-    if (e.key !== 'Tab' || !isMobileOpen()) return;
-    const focusable = sidebarContainer.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled])',
-    );
+  navDrawer?.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab' || !isNavOpen()) return;
+    const focusable = [...navDrawer.querySelectorAll('a[href], summary, button:not([disabled])')];
     if (focusable.length === 0) return;
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
       last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
       first.focus();
     }
   });
 
-  // Fermer le tiroir lors d'une navigation (clic sur un lien de la sidebar)
-  sidebarContainer?.addEventListener('click', (e) => {
-    const target = e.target;
-    if (target.closest('a') && window.innerWidth <= 768) {
-      toggleMobile(false);
-    }
-  });
-
-  // Swipe left to close the mobile drawer
-  let swipeStartX = 0;
-  let swipeStartY = 0;
-  const SWIPE_THRESHOLD = 60;
-
-  sidebarContainer?.addEventListener('touchstart', (e) => {
-    if (window.innerWidth > 768 || !isMobileOpen()) return;
-    swipeStartX = e.touches[0].clientX;
-    swipeStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  sidebarContainer?.addEventListener('touchend', (e) => {
-    if (window.innerWidth > 768 || !isMobileOpen()) return;
-    const deltaX = e.changedTouches[0].clientX - swipeStartX;
-    const deltaY = Math.abs(e.changedTouches[0].clientY - swipeStartY);
-    // Only trigger on horizontal swipe (left) with minimal vertical movement
-    if (deltaX < -SWIPE_THRESHOLD && deltaY < 40) {
-      toggleMobile(false);
-    }
-  }, { passive: true });
-
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isMobileOpen()) {
-      toggleMobile(false);
-      mobileToggle?.focus();
-    }
-  });
-
-  // Fermer automatiquement le drawer si on repasse en desktop (resize).
-  // On réinitialise l'état replié desktop UNIQUEMENT si le tiroir a été
-  // manipulé en mobile — sinon un simple resize (devtools, zoom…) écraserait
-  // la préférence de repli choisie par l'utilisateur.
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      if (window.innerWidth > 768 && isMobileOpen()) {
-        toggleMobile(false);
-      }
-      if (window.innerWidth > 768 && mobileManipulated) {
-        mobileManipulated = false;
-        document.documentElement.classList.remove('sidebar-left-collapsed');
-        sidebarContainer?.classList.remove('collapsed');
-        localStorage.setItem('sidebar-left-collapsed', 'false');
-      }
-      syncToggleButtons();
-    }, 100);
-  });
-
-  // TOC drawer for tablet/mobile
+  const tocMedia = window.matchMedia('(max-width: 1200px)');
   const tocFab = document.getElementById('toc-fab');
   const tocDrawer = document.getElementById('toc-drawer');
+  const tocClose = document.getElementById('toc-close');
   const tocOverlay = document.getElementById('toc-overlay');
-  const tocClose = document.getElementById('toc-drawer-close');
-  const isTocOpen = () => tocDrawer?.classList.contains('is-open');
+  const isTocOpen = () => tocDrawer?.classList.contains('is-open') ?? false;
 
-  // Fond de page neutralisé pendant que le drawer TOC est ouvert (même pattern
-  // que le tiroir mobile : le focus ne peut plus atteindre le contenu derrière).
-  const tocInertSelector = '.navbar, .layout, #back-to-top, #sidebar-left-container';
-  const setTocInert = (inert) => {
-    document.querySelectorAll(tocInertSelector).forEach((el) => {
-      if (inert) el.setAttribute('inert', '');
-      else el.removeAttribute('inert');
-    });
+  const setTocOpen = (open, restoreFocus = false) => {
+    if (!tocDrawer || (!tocMedia.matches && open)) return;
+    tocDrawer.classList.toggle('is-open', open);
+    tocDrawer.setAttribute('aria-hidden', String(!open));
+    tocOverlay?.classList.toggle('is-open', open);
+    tocOverlay?.setAttribute('aria-hidden', String(!open));
+    tocFab?.setAttribute('aria-expanded', String(open));
+    document.documentElement.classList.toggle('toc-drawer-open', open);
+    document.querySelector('.wiki-layout')?.toggleAttribute('inert', open);
+    document.querySelector('.navbar')?.toggleAttribute('inert', open);
+    if (open) requestAnimationFrame(() => tocClose?.focus());
+    else if (restoreFocus) tocFab?.focus();
   };
 
-  const toggleToc = (force) => {
-    const willOpen = force !== undefined ? force : !isTocOpen();
-    if (willOpen) {
-      tocDrawer?.classList.add('is-open');
-      tocOverlay?.classList.add('is-open');
-      tocOverlay?.setAttribute('aria-hidden','false');
-      tocFab?.setAttribute('aria-expanded','true');
-      document.documentElement.classList.add('toc-open');
-      setTocInert(true);
-      // Déplace le focus dans le drawer (bouton fermer) une fois peint.
-      requestAnimationFrame(() => {
-        const close = document.getElementById('toc-drawer-close');
-        close?.focus();
-      });
-    } else {
-      tocDrawer?.classList.remove('is-open');
-      tocOverlay?.classList.remove('is-open');
-      tocOverlay?.setAttribute('aria-hidden','true');
-      tocFab?.setAttribute('aria-expanded','false');
-      document.documentElement.classList.remove('toc-open');
-      setTocInert(false);
-    }
-  };
-
-  // Focus trap minimal dans le drawer TOC (Tab tourne en boucle à l'intérieur).
-  tocDrawer?.addEventListener('keydown', (e) => {
-    if (e.key !== 'Tab' || !isTocOpen()) return;
-    const focusable = tocDrawer.querySelectorAll(
-      'a[href], button:not([disabled])',
-    );
+  tocFab?.addEventListener('click', () => setTocOpen(!isTocOpen()));
+  tocClose?.addEventListener('click', () => setTocOpen(false, true));
+  tocOverlay?.addEventListener('click', () => setTocOpen(false, true));
+  tocDrawer?.addEventListener('click', (event) => {
+    if (event.target.closest('a')) setTocOpen(false);
+  });
+  tocDrawer?.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab' || !isTocOpen()) return;
+    const focusable = [...tocDrawer.querySelectorAll('a[href], button:not([disabled])')];
     if (focusable.length === 0) return;
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
       last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
       first.focus();
     }
   });
-
-  tocFab?.addEventListener('click', () => toggleToc());
-  tocClose?.addEventListener('click', () => {
-    toggleToc(false);
-    tocFab?.focus();
-  });
-  tocOverlay?.addEventListener('click', () => {
-    toggleToc(false);
-    tocFab?.focus();
-  });
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isTocOpen()) {
-      toggleToc(false);
-      tocFab?.focus();
-    }
-  });
-  // Close TOC on link click ; pour les ancres internes, déplace le focus vers la
-  // section ciblée (sinon le focus « tombe » quand le drawer se referme).
-  tocDrawer?.addEventListener('click', (e) => {
-    const link = (e.target as HTMLElement).closest('a');
-    if (!link) return;
-    toggleToc(false);
-    const href = link.getAttribute('href') || '';
-    if (href.startsWith('#')) {
-      const target = document.getElementById(href.slice(1));
-      if (target) {
-        target.setAttribute('tabindex', '-1');
-        target.focus({ preventScroll: true });
-      }
-    }
+  tocMedia.addEventListener('change', ({ matches }) => {
+    if (!matches && isTocOpen()) setTocOpen(false);
   });
 
-  // Zen mode toggle — exposed globally for ArticleLayout button
-  (window as any).toggleZenMode = () => {
-    const isZen = document.documentElement.classList.toggle('zen-mode');
-    localStorage.setItem('zen-mode', isZen ? 'true' : 'false');
-    return isZen;
+  window.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    if (isNavOpen()) setNavOpen(false, true);
+    else if (isTocOpen()) setTocOpen(false, true);
+  });
+
+  (window as any).closeWikiDrawers = () => {
+    setNavOpen(false);
+    setTocOpen(false);
   };
-  // Restore zen preference
-  if (localStorage.getItem('zen-mode') === 'true') {
-    document.documentElement.classList.add('zen-mode');
-  }
 
-  // Sidebar drag resizer logic
-  const resizer = document.getElementById('sidebar-resizer');
-  const MIN_WIDTH = 200;
-  const MAX_WIDTH = 480;
-
-  if (resizer) {
-    let isDragging = false;
-
-    const setWidth = (widthPx) => {
-      const w = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Math.round(widthPx)));
-      document.documentElement.style.setProperty('--sidebar-left-width', w + 'px');
-      resizer.setAttribute('aria-valuenow', String(w));
-      return w;
-    };
-
-    const persistWidth = () => {
-      const currentWidth = getComputedStyle(document.documentElement)
-        .getPropertyValue('--sidebar-left-width')
-        .trim();
-      if (currentWidth && currentWidth !== '0px') {
-        localStorage.setItem('sidebar-left-width', currentWidth);
-      }
-    };
-
-    // Redimensionnement clavier (WCAG 2.1.1) : ←/→ par pas de 20px, Home/End min/max.
-    resizer.addEventListener('keydown', (e) => {
-      const current =
-        parseInt(
-          getComputedStyle(document.documentElement).getPropertyValue('--sidebar-left-width'),
-          10,
-        ) || 260;
-      let next = null;
-      if (e.key === 'ArrowLeft') next = current - 20;
-      else if (e.key === 'ArrowRight') next = current + 20;
-      else if (e.key === 'Home') next = MIN_WIDTH;
-      else if (e.key === 'End') next = MAX_WIDTH;
-      if (next !== null) {
-        e.preventDefault();
-        setWidth(next);
-        persistWidth();
-      }
-    });
-
-    const startDragging = (e) => {
-      if (document.documentElement.classList.contains('sidebar-left-collapsed')) return;
-      if (window.innerWidth <= 768) return;
-      isDragging = true;
-      document.body.classList.add('is-resizing');
-      e.preventDefault();
-    };
-
-    const onMove = (e) => {
-      if (!isDragging) return;
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-      setWidth(clientX);
-    };
-
-    const stopDragging = () => {
-      if (!isDragging) return;
-      isDragging = false;
-      document.body.classList.remove('is-resizing');
-      persistWidth();
-    };
-
-    resizer.addEventListener('mousedown', startDragging);
-    resizer.addEventListener('touchstart', startDragging, { passive: false });
-
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onMove, { passive: false });
-
-    window.addEventListener('mouseup', stopDragging);
-    window.addEventListener('touchend', stopDragging);
-  }
+  (window as any).toggleZenMode = () => {
+    const enabled = document.documentElement.classList.toggle('zen-mode');
+    localStorage.setItem('zen-mode', String(enabled));
+    return enabled;
+  };
+  document.documentElement.classList.toggle(
+    'zen-mode',
+    localStorage.getItem('zen-mode') === 'true',
+  );
+  syncNavViewport();
 </script>

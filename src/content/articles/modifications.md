@@ -4,6 +4,7 @@ summary: "Suivi des mises à jour des articles suite aux chapitres récents (118
 category: "histoire-temporalite"
 status: "published"
 sidebarHidden: true
+searchHidden: true
 certainty: "central"
 order: 90
 ---

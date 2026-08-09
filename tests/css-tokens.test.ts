@@ -22,7 +22,6 @@ for (const m of GLOBAL_CSS.matchAll(/--([\w-]+)\s*:/g)) {
 const ALLOWED_EXTERNAL = new Set([
   'nav-h',
   'nav-h-mobile',
-  'sidebar-left-width',
   // Couleurs utilitées par les pages explorer
   'bg-card',
   'bg-card-hover',

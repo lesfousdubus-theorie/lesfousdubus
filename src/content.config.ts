@@ -48,6 +48,8 @@ const articles = defineCollection({
     parent: z.string().optional(),
     /** Masquer cet article de la sidebar (reste accessible via recherche et liens). */
     sidebarHidden: z.boolean().default(false),
+    /** Exclure une page interne ou éditoriale de l’index de recherche public. */
+    searchHidden: z.boolean().default(false),
     /** Présentation de navigation : fiche neutre ou dossier d’analyse. */
     navigationType: z.enum(['fiche', 'dossier']).default('fiche'),
   }),

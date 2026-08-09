@@ -1,6 +1,7 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import DiagramViewport from '@components/DiagramViewport.astro';
 
 interface Step {
   id: number;
@@ -68,7 +69,8 @@ const poneglyphTypes = [
 
   <!-- Central loop diagram -->
   <div class="loop-diagram">
-    <svg viewBox="0 0 900 900" class="loop-svg" preserveAspectRatio="xMidYMid meet" aria-label="Schéma circulaire de la boucle des Ponéglyphes">
+    <DiagramViewport id="poneglyph-loop" label="Schéma détaillé de la boucle des Ponéglyphes" minWidth={680}>
+    <svg viewBox="0 0 900 900" class="loop-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Schéma circulaire de la boucle des Ponéglyphes">
       <defs>
         <linearGradient id="loopGrad" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#5fb9c2" />
@@ -114,6 +116,7 @@ const poneglyphTypes = [
       <path d="M140,660 A340,340 0 0,1 100,450" fill="none" stroke="#8899aa" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#aGray)" />
       <path d="M100,412 A340,340 0 0,1 450,378" fill="none" stroke="#b07cc6" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#aPurple)" />
     </svg>
+    </DiagramViewport>
   </div>
 
   <!-- Timeline steps -->

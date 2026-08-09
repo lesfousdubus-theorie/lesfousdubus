@@ -28,6 +28,7 @@ const { headings = [] } = Astro.props;
               class="toc__link"
               data-toc-link
               data-slug={heading.slug}
+              title={heading.text}
             >
               {heading.text}
             </a>
@@ -41,7 +42,7 @@ const { headings = [] } = Astro.props;
   // Highlight active TOC section on scroll
   (function initTocHighlight() {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
+
     const tocLinks = document.querySelectorAll('[data-toc-link]');
     if (tocLinks.length === 0) return;
 
@@ -84,12 +85,14 @@ const { headings = [] } = Astro.props;
         (entries) => {
           const visible = entries
             .filter((e) => e.isIntersecting)
-            .sort((a, b) => a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top);
+            .sort(
+              (a, b) => a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top,
+            );
           if (visible.length > 0) {
             setActive(visible[0].target.id);
           }
         },
-        { rootMargin: '-10% 0px -60% 0px', threshold: 0 }
+        { rootMargin: '-10% 0px -60% 0px', threshold: 0 },
       );
       headings.forEach((h) => observer.observe(h));
     }
@@ -142,7 +145,10 @@ const { headings = [] } = Astro.props;
     color: var(--text-secondary);
     text-decoration: none;
     transition: all 0.2s ease;
-    display: inline-block;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
     padding: 1px 0;
     border-bottom: 1px solid transparent;
   }

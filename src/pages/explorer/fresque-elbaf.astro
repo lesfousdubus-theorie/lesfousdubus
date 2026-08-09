@@ -1,6 +1,7 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import DiagramViewport from '@components/DiagramViewport.astro';
 
 interface Zone {
   id: string;
@@ -69,9 +70,9 @@ const zones: Zone[] = [
 ];
 
 const statusColors: Record<string, string> = {
-  canon: 'var(--cyan)',
-  interpretation: 'var(--violet-light)',
-  hypothese: 'var(--accent-gold)',
+  canon: '#76d3dc',
+  interpretation: '#c7a7ef',
+  hypothese: '#f0bd61',
 };
 ---
 
@@ -85,62 +86,125 @@ const statusColors: Record<string, string> = {
     <p class="eyebrow">🎨 Annotation</p>
     <h1>La fresque d'Elbaf, annotée</h1>
     <p class="page-desc">
-      La fresque gravée sur l'Arbre d'Adam n'est montrée que partiellement dans le manga. Ce schéma est une
-      <strong>annotation de la théorie</strong> : chaque zone cliquable porte une interprétation, clairement étiquetée
-      selon son degré de certitude. Ce n'est pas une reproduction canonique.
+      La fresque gravée sur l'Arbre d'Adam n'est montrée que partiellement dans le manga. Ce schéma
+      est une
+      <strong>annotation de la théorie</strong> : chaque zone cliquable porte une interprétation, clairement
+      étiquetée selon son degré de certitude. Ce n'est pas une reproduction canonique.
     </p>
   </div>
 
   <div class="fresco">
-    <svg viewBox="0 0 800 600" class="fresco-svg" role="img"
-      aria-label="Schéma annoté de la fresque d'Elbaf avec cinq zones : géant, soleil, pluie, silhouette d'Imu et le Harley">
-      <defs>
-        <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#2a2630" />
-          <stop offset="100%" stop-color="#16131c" />
-        </linearGradient>
-        <radialGradient id="sun" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#f5d78e" />
-          <stop offset="100%" stop-color="#e0ab4e" />
-        </radialGradient>
-      </defs>
-      <rect x="0" y="0" width="800" height="600" rx="16" fill="url(#stone)" />
-      <!-- decorative glyphs -->
-      <circle cx="430" cy="170" r="34" fill="url(#sun)" opacity="0.9" />
-      <circle cx="430" cy="170" r="44" fill="none" stroke="#e0ab4e" stroke-width="2" opacity="0.6" />
-      <path d="M230 250 q30 30 0 70 q-40 20 -20 -30 z" fill="#3b3442" />
-      <path d="M220 340 l20 30 l0 40 l-40 0 l0 -40 z" fill="#3b3442" />
-      <circle cx="230" cy="255" r="12" fill="#2a2630" stroke="#4a4350" stroke-width="1.5" />
-      <path d="M600 205 q18 -14 40 0" fill="none" stroke="#5b8aa8" stroke-width="3" stroke-linecap="round" opacity="0.8" />
-      <path d="M596 216 q18 -12 38 0" fill="none" stroke="#5b8aa8" stroke-width="3" stroke-linecap="round" opacity="0.6" />
-      <!-- Imu-like silhouette -->
-      <path d="M640 420 l0 60 M610 470 l30 0 l0 40 l-60 0 l0 -40 l30 0 l0 -60" fill="none" stroke="#2b2038" stroke-width="6" />
-      <!-- Harley block -->
-      <rect x="128" y="440" width="66" height="84" rx="4" fill="#1d1a24" stroke="#4a4350" stroke-width="2" />
-      <rect x="136" y="452" width="50" height="6" fill="#4a4350" />
-      <rect x="136" y="466" width="50" height="6" fill="#4a4350" />
-      <rect x="136" y="480" width="34" height="6" fill="#4a4350" />
+    <DiagramViewport id="elbaf-fresco" label="Fresque d’Elbaf annotée" minWidth={640}>
+      <svg
+        viewBox="0 0 800 600"
+        class="fresco-svg"
+        role="group"
+        aria-label="Schéma annoté de la fresque d'Elbaf avec cinq zones : géant, soleil, pluie, silhouette d'Imu et le Harley"
+      >
+        <defs>
+          <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#26222e"></stop>
+            <stop offset="100%" stop-color="#111018"></stop>
+          </linearGradient>
+          <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#f5d78e"></stop>
+            <stop offset="100%" stop-color="#e0ab4e"></stop>
+          </radialGradient>
+        </defs>
+        <rect x="0" y="0" width="800" height="600" rx="16" fill="url(#stone)"></rect>
+        <!-- decorative glyphs -->
+        <circle cx="430" cy="170" r="34" fill="url(#sun)" opacity="0.9"></circle>
+        <circle cx="430" cy="170" r="44" fill="none" stroke="#e0ab4e" stroke-width="2" opacity="0.6"
+        ></circle>
+        <path d="M230 250 q30 30 0 70 q-40 20 -20 -30 z" fill="#756d7d"></path>
+        <path d="M220 340 l20 30 l0 40 l-40 0 l0 -40 z" fill="#756d7d"></path>
+        <circle cx="230" cy="255" r="12" fill="#3b3544" stroke="#8d8496" stroke-width="1.5"
+        ></circle>
+        <path
+          d="M600 205 q18 -14 40 0"
+          fill="none"
+          stroke="#76b9df"
+          stroke-width="3"
+          stroke-linecap="round"
+          opacity="0.9"></path>
+        <path
+          d="M596 216 q18 -12 38 0"
+          fill="none"
+          stroke="#76b9df"
+          stroke-width="3"
+          stroke-linecap="round"
+          opacity="0.75"></path>
+        <!-- Imu-like silhouette -->
+        <path
+          d="M640 420 l0 60 M610 470 l30 0 l0 40 l-60 0 l0 -40 l30 0 l0 -60"
+          fill="none"
+          stroke="#9b75c4"
+          stroke-width="6"></path>
+        <!-- Harley block -->
+        <rect
+          x="128"
+          y="440"
+          width="66"
+          height="84"
+          rx="4"
+          fill="#29252f"
+          stroke="#8d8496"
+          stroke-width="2"></rect>
+        <rect x="136" y="452" width="50" height="6" fill="#8d8496"></rect>
+        <rect x="136" y="466" width="50" height="6" fill="#8d8496"></rect>
+        <rect x="136" y="480" width="34" height="6" fill="#8d8496"></rect>
 
-      <!-- Interactive zones -->
-      {zones.map((z) => (
-        <>
-          <circle cx={z.x} cy={z.y} r={z.r} fill="none" stroke={statusColors[z.status]}
-            stroke-width="2" stroke-dasharray="6,4" class="zone-hit" data-zone={z.id}
-            data-label={z.label} data-interp={z.interpretation} data-status={z.status}
-            tabindex="0" role="button" aria-label={`Zone de la fresque : ${z.label}`} />
-          <text x={z.x} y={z.y + z.r + 16} text-anchor="middle" fill={statusColors[z.status]}
-            font-size="12" font-weight="700" font-family="Inter,system-ui,sans-serif" class="zone-tag">{z.label}</text>
-        </>
-      ))}
-    </svg>
-    <p class="fresco-caption">Les cinq zones cliquables : le géant, le soleil, la pluie, la silhouette d'Imu et le Harley.</p>
+        <!-- Interactive zones -->
+        {
+          zones.map((z) => (
+            <>
+              <circle
+                cx={z.x}
+                cy={z.y}
+                r={z.r}
+                fill="none"
+                stroke={statusColors[z.status]}
+                stroke-width="2"
+                stroke-dasharray="6,4"
+                class="zone-hit"
+                data-zone={z.id}
+                data-label={z.label}
+                data-interp={z.interpretation}
+                data-status={z.status}
+                tabindex="0"
+                role="button"
+                aria-pressed="false"
+                aria-label={`Zone de la fresque : ${z.label}`}
+              />
+              <text
+                x={z.x}
+                y={z.y + z.r + 16}
+                text-anchor="middle"
+                fill={statusColors[z.status]}
+                font-size="12"
+                font-weight="700"
+                font-family="Inter,system-ui,sans-serif"
+                class="zone-tag"
+              >
+                {z.label}
+              </text>
+            </>
+          ))
+        }
+      </svg>
+    </DiagramViewport>
+    <p class="fresco-caption">
+      Les cinq zones cliquables : le géant, le soleil, la pluie, la silhouette d'Imu et le Harley.
+    </p>
   </div>
 
   <!-- Panel for selected zone -->
   <section class="panel" aria-live="polite" id="panel">
     <span class="panel__status" id="panel-status">Cliquez sur une zone de la fresque</span>
     <h2 class="panel__title" id="panel-title">—</h2>
-    <p class="panel__text" id="panel-text">Sélectionnez un élément de l'image pour afficher son interprétation.</p>
+    <p class="panel__text" id="panel-text">
+      Sélectionnez un élément de l'image pour afficher son interprétation.
+    </p>
   </section>
 
   <div class="legend">
@@ -185,8 +249,12 @@ const statusColors: Record<string, string> = {
     }
     if (titleEl) titleEl.textContent = label;
     if (textEl) textEl.textContent = interp;
-    zoneEls.forEach((z) => z.classList.remove('zone-active'));
+    zoneEls.forEach((z) => {
+      z.classList.remove('zone-active');
+      z.setAttribute('aria-pressed', 'false');
+    });
     zone.classList.add('zone-active');
+    zone.setAttribute('aria-pressed', 'true');
   };
 
   zoneEls.forEach((zone) => {
@@ -201,16 +269,50 @@ const statusColors: Record<string, string> = {
 </script>
 
 <style>
-  .page-header { margin-bottom: 32px; }
-  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
-  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
-  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 780px; line-height: 1.65; }
-  .page-desc strong { color: var(--text-main); }
+  .page-header {
+    margin-bottom: 32px;
+  }
+  .eyebrow {
+    color: var(--violet-light);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .page-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 800;
+    margin: 0 0 12px;
+    line-height: 1.15;
+  }
+  .page-desc {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 780px;
+    line-height: 1.65;
+  }
+  .page-desc strong {
+    color: var(--text-main);
+  }
 
-  .fresco { margin: 24px 0 8px; }
-  .fresco-svg { width: 100%; height: auto; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); }
-  .zone-hit { cursor: pointer; transition: stroke-width 0.15s ease, opacity 0.15s ease; }
-  .zone-hit:hover, .zone-hit.zone-active {
+  .fresco {
+    margin: 24px 0 8px;
+  }
+  .fresco-svg {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+  }
+  .zone-hit {
+    cursor: pointer;
+    transition:
+      stroke-width 0.15s ease,
+      opacity 0.15s ease;
+  }
+  .zone-hit:hover,
+  .zone-hit.zone-active {
     stroke-width: 3.5;
     opacity: 1;
   }
@@ -221,8 +323,14 @@ const statusColors: Record<string, string> = {
     outline-offset: 3px;
     border-radius: 50%;
   }
-  .zone-tag { pointer-events: none; }
-  .fresco-caption { font-size: 12.5px; color: var(--text-muted); margin-top: 10px; }
+  .zone-tag {
+    pointer-events: none;
+  }
+  .fresco-caption {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 10px;
+  }
 
   .panel {
     margin: 20px 0;
@@ -233,15 +341,63 @@ const statusColors: Record<string, string> = {
     background: var(--bg-secondary);
     min-height: 96px;
   }
-  .panel__status { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px; }
-  .panel__title { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
-  .panel__text { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+  .panel__status {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .panel__title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 6px;
+  }
+  .panel__text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+  }
 
-  .legend { display: flex; flex-wrap: wrap; gap: 18px; padding: 12px 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
-  .legend span { display: inline-flex; align-items: center; gap: 7px; }
-  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
 
-  .linked { display: flex; flex-wrap: wrap; gap: 12px; }
-  .linked a { color: var(--cyan); text-decoration: none; font-size: 14px; font-weight: 500; }
-  .linked a:hover { text-decoration: underline; }
+  .linked {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .linked a {
+    color: var(--cyan);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .linked a:hover {
+    text-decoration: underline;
+  }
 </style>
