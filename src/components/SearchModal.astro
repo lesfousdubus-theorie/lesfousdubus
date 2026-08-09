@@ -229,7 +229,8 @@
         document.documentElement.classList.add('search-modal-open');
         background.forEach((element) => element.setAttribute('inert', ''));
         renderRecents();
-        requestAnimationFrame(() => input?.focus());
+        input?.focus({ preventScroll: true });
+        requestAnimationFrame(() => input?.focus({ preventScroll: true }));
       } else {
         if (modal.hidden) return;
         window.clearTimeout(debounce);
