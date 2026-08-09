@@ -2,7 +2,7 @@
 import InteractiveTheoryTimeline from '@components/InteractiveTheoryTimeline.astro';
 import Footer from '@components/Footer.astro';
 import WikiLayout from '@layouts/WikiLayout.astro';
-import { theoryTimeline } from '../../data/theoryTimeline';
+import { theoryTimeline, timelineEras } from '../../data/theoryTimeline';
 
 const canonCount = theoryTimeline.filter((event) => event.status === 'canon').length;
 const theoryCount = theoryTimeline.length - canonCount;
@@ -40,7 +40,7 @@ const theoryCount = theoryTimeline.length - canonCount;
         <span>lectures et projections</span>
       </div>
       <div>
-        <strong>6</strong>
+        <strong>{timelineEras.length}</strong>
         <span>grandes époques</span>
       </div>
     </div>
@@ -76,8 +76,8 @@ const theoryCount = theoryTimeline.length - canonCount;
       <strong>22 chapitres <span aria-hidden="true">→</span></strong>
     </a>
     <a href="/theorie/chronologie">
-      <span>Comprendre le mécanisme temporel</span>
-      <strong>4 possibilités <span aria-hidden="true">→</span></strong>
+      <span>Ouvrir la frise principale</span>
+      <strong>Version complète <span aria-hidden="true">→</span></strong>
     </a>
   </div>
 

@@ -45,10 +45,13 @@ describe('régressions UI, UX et accessibilité', () => {
     }
   });
 
-  it('donne un seul nom accessible stable à la fenêtre de la chronologie', () => {
+  it('donne un nom accessible propre à chaque détail de la chronologie', () => {
     const timeline = read('src/components/InteractiveTheoryTimeline.astro');
-    expect(timeline.match(/id="event-dialog-title"/g)).toHaveLength(1);
-    expect(timeline).toContain('aria-labelledby="event-dialog-title"');
+    expect(timeline).toContain('id={`event-detail-title-${event.id}`}');
+    expect(timeline).toContain(
+      "dialog.setAttribute('aria-labelledby', `event-detail-title-${eventId}`)",
+    );
+    expect(timeline).not.toContain('id="event-dialog-title"');
   });
 
   it('utilise les éléments details natifs pour les sections de navigation', () => {

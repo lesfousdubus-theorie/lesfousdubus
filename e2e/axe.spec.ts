@@ -8,6 +8,7 @@ const PAGES = [
   '/chapitres/',
   '/dossiers/',
   '/explorer/',
+  '/theorie/chronologie/',
 ];
 
 for (const path of PAGES) {
