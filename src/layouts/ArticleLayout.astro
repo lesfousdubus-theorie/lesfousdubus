@@ -144,22 +144,6 @@ const articleJsonLd = {
   headings={headings}
 >
   <ReadingProgressBar />
-  {/* Alimente la section « Récemment lus » de la sidebar (reprise de lecture). */}
-  <script is:inline define:vars={{ articleHref: currentPath, articleTitle: title }}>
-    (function () {
-      try {
-        var KEY = 'fousdu-recent-articles';
-        var list = [];
-        try {
-          list = JSON.parse(localStorage.getItem(KEY) || '[]');
-        } catch (e) {}
-        if (!Array.isArray(list)) list = [];
-        list = list.filter(function (x) { return x && x.href !== articleHref; });
-        list.unshift({ href: articleHref, title: articleTitle });
-        localStorage.setItem(KEY, JSON.stringify(list.slice(0, 8)));
-      } catch (e) {}
-    })();
-  </script>
   <script is:inline type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
   <script
     is:inline
@@ -316,60 +300,60 @@ const articleJsonLd = {
        HORS de <main> : le `inert` posé sur le contenu ne doit jamais neutraliser
        la modale elle-même. -->
   <Fragment slot="overlays">
-  <div
-    id="image-lightbox"
-    class="lightbox-overlay hidden"
-    role="dialog"
-    aria-modal="true"
-    aria-label="Vue agrandie de l'image"
-    aria-hidden="true"
-  >
-    <div class="lightbox-container">
-      <img id="lightbox-img" src="" alt="" />
-      <button id="lightbox-close" aria-label="Fermer (Échap)">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-          ><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"
-          ></line></svg
-        >
-      </button>
-      <button id="lightbox-prev" class="lightbox-nav lightbox-prev" aria-label="Image précédente">
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg
-        >
-      </button>
-      <button id="lightbox-next" class="lightbox-nav lightbox-next" aria-label="Image suivante">
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg
-        >
-      </button>
-      <div id="lightbox-caption" class="lightbox-caption"></div>
+    <div
+      id="image-lightbox"
+      class="lightbox-overlay hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Vue agrandie de l'image"
+      aria-hidden="true"
+    >
+      <div class="lightbox-container">
+        <img id="lightbox-img" src="" alt="" />
+        <button id="lightbox-close" aria-label="Fermer (Échap)">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            ><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"
+            ></line></svg
+          >
+        </button>
+        <button id="lightbox-prev" class="lightbox-nav lightbox-prev" aria-label="Image précédente">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg
+          >
+        </button>
+        <button id="lightbox-next" class="lightbox-nav lightbox-next" aria-label="Image suivante">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg
+          >
+        </button>
+        <div id="lightbox-caption" class="lightbox-caption"></div>
+      </div>
     </div>
-  </div>
   </Fragment>
 
   <script>
@@ -382,50 +366,15 @@ const articleJsonLd = {
     const mainContent = document.getElementById('main-content');
 
     if (lightbox && lightboxImg) {
-      // Ferme le tiroir de navigation mobile s'il était ouvert, afin d'éviter
-      // la superposition de deux overlays (tiroir + lightbox).
-      // Ferme les overlays de navigation s'ils étaient ouverts, afin d'éviter la
-      // superposition de deux overlays. Doit AUSSI retirer tous les états `inert`
-      // / `aria-hidden` posés par WikiLayout, sinon la page resterait gelée.
-      const removeInert = (selector: string) => {
-        document.querySelectorAll(selector).forEach((el) => el.removeAttribute('inert'));
-      };
-
       const closeMobileNavIfOpen = () => {
-        const drawer = document.getElementById('sidebar-left-container');
-        const overlay = document.getElementById('sidebar-mobile-overlay');
-        if (drawer?.classList.contains('is-mobile-open')) {
-          drawer.classList.remove('is-mobile-open');
-          overlay?.classList.remove('is-open');
-          overlay?.setAttribute('aria-hidden', 'true');
-          document.documentElement.classList.remove('mobile-nav-open');
-          document.body.classList.remove('mobile-nav-open');
-          document.documentElement.removeAttribute('data-nav-open');
-          document.body.removeAttribute('data-nav-open');
-          // inert posés par lockScroll (WikiLayout) sur le contenu + la navbar
-          removeInert('#main-content');
-          removeInert('.navbar .nav-left, .navbar .nav-center, .navbar .nav-actions');
-          document.getElementById('main-content')?.removeAttribute('aria-hidden');
-          document.getElementById('mobile-menu-toggle')?.setAttribute('aria-expanded', 'false');
-        }
-        // Also close TOC drawer if open (+ ses inert associés)
-        const tocDrawer = document.getElementById('toc-drawer');
-        if (tocDrawer?.classList.contains('is-open')) {
-          tocDrawer.classList.remove('is-open');
-          const tocOverlay = document.getElementById('toc-overlay');
-          tocOverlay?.classList.remove('is-open');
-          tocOverlay?.setAttribute('aria-hidden', 'true');
-          document.getElementById('toc-fab')?.setAttribute('aria-expanded', 'false');
-          document.documentElement.classList.remove('toc-open');
-          removeInert('.navbar, .layout, #back-to-top, #sidebar-left-container');
-        }
+        (window as typeof window & { closeWikiDrawers?: () => void }).closeWikiDrawers?.();
       };
 
       const galleryImgs = Array.from(document.querySelectorAll<HTMLImageElement>('.content img'));
       let currentIndex = -1;
 
       // Tout ce qui est derrière la modale devient inerte (focus + clic + AT).
-      const backgroundSelector = '.navbar, .layout, #toc-fab, #back-to-top, #sidebar-left-container';
+      const backgroundSelector = '.navbar, .wiki-layout, #toc-fab, #back-to-top, #sidebar-left';
       const setBackgroundInert = (inert: boolean) => {
         mainContent?.toggleAttribute('inert', inert);
         mainContent?.setAttribute('aria-hidden', inert ? 'true' : 'false');
@@ -467,7 +416,8 @@ const articleJsonLd = {
         lightboxImg.src = '';
         // Rend le focus au bouton qui contenait la miniature agrandie.
         if (currentIndex >= 0) {
-          const wrapper = galleryImgs[currentIndex]?.closest<HTMLButtonElement>('.content-img-zoom');
+          const wrapper =
+            galleryImgs[currentIndex]?.closest<HTMLButtonElement>('.content-img-zoom');
           wrapper?.focus();
         }
         currentIndex = -1;
@@ -490,10 +440,7 @@ const articleJsonLd = {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'content-img-zoom';
-        btn.setAttribute(
-          'aria-label',
-          `Agrandir l'image : ${htmlImg.alt || 'sans description'}`,
-        );
+        btn.setAttribute('aria-label', `Agrandir l'image : ${htmlImg.alt || 'sans description'}`);
         htmlImg.replaceWith(btn);
         btn.appendChild(htmlImg);
         btn.addEventListener('click', () => openLightbox(idx));
@@ -566,22 +513,22 @@ const articleJsonLd = {
       try {
         await navigator.clipboard.writeText(window.location.href);
         return true;
+      } catch {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = window.location.href;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          // Repli historique (contextes non sécurisés) — API dépréciée mais
+          // seul secours hors navigator.clipboard ; appel via cast pour
+          // éviter le hint de dépréciation sans supprimer le fallback.
+          (document as unknown as { execCommand(cmd: string): boolean }).execCommand('copy');
+          ta.remove();
+          return true;
         } catch {
-          try {
-            const ta = document.createElement('textarea');
-            ta.value = window.location.href;
-            ta.setAttribute('readonly', '');
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.select();
-            // Repli historique (contextes non sécurisés) — API dépréciée mais
-            // seul secours hors navigator.clipboard ; appel via cast pour
-            // éviter le hint de dépréciation sans supprimer le fallback.
-            (document as unknown as { execCommand(cmd: string): boolean }).execCommand('copy');
-            ta.remove();
-            return true;
-          } catch {
           window.prompt('Copiez ce lien :', window.location.href);
           return false;
         }

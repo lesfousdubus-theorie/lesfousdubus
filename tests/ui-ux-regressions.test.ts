@@ -6,9 +6,13 @@ import { contrastRatio, hexToRgb } from '../src/utils/contrast';
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 
 describe('régressions UI, UX et accessibilité', () => {
-  it('libère la colonne de navigation quand la sidebar est repliée', () => {
+  it('utilise une sidebar simple sans redimensionnement ni état persistant', () => {
     const layout = read('src/layouts/WikiLayout.astro');
-    expect(layout).toContain('grid-template-columns: 0 minmax(0, 1fr)');
+    expect(layout).toContain('overflow-y: auto');
+    expect(layout).toContain("window.matchMedia('(max-width: 1023px)')");
+    expect(layout).not.toContain('sidebar-resizer');
+    expect(layout).not.toContain('sidebar-left-width');
+    expect(layout).not.toContain('sidebar-left-collapsed');
     expect(layout).toContain('aria-controls="toc-drawer"');
   });
 
@@ -19,8 +23,15 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(layout).toContain("window.matchMedia('(max-width: 1023px)')");
     expect(layout).toContain('@media (max-width: 1023px)');
     expect(navbar).toContain('@media (max-width: 1023px)');
-    expect(navbar).toContain('aria-controls="sidebar-left-container"');
+    expect(navbar).toContain('aria-controls="sidebar-left"');
     expect(layout).not.toMatch(/window\.innerWidth\s*[<>]=?\s*768/);
+  });
+
+  it('utilise les éléments details natifs pour les sections de navigation', () => {
+    const sidebar = read('src/components/SidebarNav.astro');
+    expect(sidebar).toContain('<details');
+    expect(sidebar).toContain('<summary');
+    expect(sidebar).not.toContain('<script>');
   });
 
   it('ne rend plus de barre de recherche dans la navigation latérale', () => {
