@@ -62,15 +62,16 @@ test.describe('Drawer sommaire (TOC)', () => {
 test.describe('Navigation tablette tactile', () => {
   test.use({ hasTouch: true, viewport: { width: 1180, height: 820 } });
 
-  test('deux taps sur une rubrique naviguent vers sa page', async ({ page }) => {
+  test('le lien navigue directement et le bouton séparé ouvre le sous-menu', async ({ page }) => {
     await page.goto('/');
-    const dossiers = page.locator('.nav-link').filter({ hasText: 'Dossiers' }).first();
+    const item = page.locator('.nav-item').filter({ hasText: 'Dossiers' }).first();
+    const trigger = item.locator('.nav-menu-trigger');
 
-    await dossiers.tap();
+    await trigger.tap();
     await expect(page.locator('.nav-item--open')).toHaveCount(1);
     expect(page.url()).not.toContain('/dossiers');
 
-    await dossiers.tap();
+    await item.locator('.nav-link').tap();
     await page.waitForURL(/\/dossiers/);
     expect(page.url()).toContain('/dossiers');
   });

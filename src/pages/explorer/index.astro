@@ -1,81 +1,364 @@
 ---
-import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import WikiLayout from '@layouts/WikiLayout.astro';
+import { explorerHighlights } from '../../data/siteNavigation';
+
+const secondaryTools = [
+  {
+    title: 'Fresque d’Elbaf',
+    description: 'Observer les zones et interprétations de la fresque.',
+    href: '/explorer/fresque-elbaf',
+    icon: '🎨',
+    group: 'Monde',
+  },
+  {
+    title: 'Peuples et missions',
+    description: 'Relier chaque peuple à son rôle final.',
+    href: '/explorer/peuples-missions',
+    icon: '🏰',
+    group: 'Monde',
+  },
+  {
+    title: 'Boucle des Ponéglyphes',
+    description: 'Voir comment l’information rejoint le passé.',
+    href: '/explorer/poneglyphes',
+    icon: '📜',
+    group: 'Temps',
+  },
+  {
+    title: 'Road Ponéglyphes et temps',
+    description: 'Comprendre la quatrième coordonnée.',
+    href: '/explorer/road-poneglyphes-temps',
+    icon: '🧭',
+    group: 'Temps',
+  },
+  {
+    title: 'Luffy · Joy Boy · Nika',
+    description: 'Comparer les trois identités proposées.',
+    href: '/explorer/luffy-joy-boy-nika',
+    icon: '🎭',
+    group: 'Identités',
+  },
+  {
+    title: 'Chemin de Pluton',
+    description: 'Water Seven, Wa no Kuni, Zunesha et les géants.',
+    href: '/explorer/schema-pluton',
+    icon: '⚓',
+    group: 'Guerre finale',
+  },
+  {
+    title: 'Déluge et All Blue',
+    description: 'La transformation géographique du monde.',
+    href: '/explorer/deluge-all-blue',
+    icon: '🌊',
+    group: 'Guerre finale',
+  },
+  {
+    title: 'Omen, Mother Flame et Imu',
+    description: 'La branche spéculative autour d’Uranus.',
+    href: '/explorer/omen-imu',
+    icon: '⚠️',
+    group: 'Guerre finale',
+  },
+];
 ---
 
-<WikiLayout title="Explorer" seoTitle="Explorer One Piece : carte mentale et chronologie | Les Fous du Bus" description="Explorez visuellement la théorie One Piece : carte mentale des connexions, frise chronologique et dossiers thématiques interactifs." image="/og-explorer.png" currentPath="/explorer">
-  <header class="page-header">
-    <p class="eyebrow">Visualisation</p>
-    <h1>Explorer la théorie</h1>
-    <p>Trois portes d'entrée visuelles pour relier les personnages, les événements et la chronologie. Les outils sont groupés par usage pour éviter la surcharge.</p>
+<WikiLayout
+  title="Explorer"
+  seoTitle="Explorer la théorie One Piece : frise, cartes et correspondances | Les Fous du Bus"
+  description="Quatre outils principaux pour explorer visuellement la théorie, puis des schémas spécialisés sur les Ponéglyphes, les identités et la guerre finale."
+  image="/og-explorer.png"
+  currentPath="/explorer"
+>
+  <header class="explorer-hero">
+    <p class="eyebrow">Laboratoire visuel</p>
+    <h1>Ne lisez plus seulement la théorie.<br /><em>Manipulez-la.</em></h1>
+    <p>
+      Choisissez d’abord ce que vous voulez comprendre : l’ordre des événements, la géographie du
+      monde, les liens entre personnages ou la chaîne complète du raisonnement.
+    </p>
   </header>
 
-  <section class="explorer-section">
-    <h2 class="explorer-section__title"><span aria-hidden="true">🗺️</span> Cartes & vues d'ensemble</h2>
-    <div class="explorer-grid">
-      <a href="/explorer/carte-mentale" class="explorer-card"><span aria-hidden="true">🧠</span><div><h3>Carte mentale</h3><p>Connexions principales d'un coup d'œil.</p><strong>Ouvrir →</strong></div></a>
-      <a href="/explorer/carte-blue-star" class="explorer-card"><span aria-hidden="true">🗺️</span><div><h3>Carte de Blue Star</h3><p>Red Line, mers, Grand Line, Lodestar, Laugh Tale.</p><strong>Voir la carte →</strong></div></a>
-      <a href="/explorer/fresque-elbaf" class="explorer-card"><span aria-hidden="true">🎨</span><div><h3>Fresque d'Elbaf</h3><p>Zones cliquables et interprétations.</p><strong>Explorer →</strong></div></a>
-      <a href="/explorer/peuples-missions" class="explorer-card"><span aria-hidden="true">🏰</span><div><h3>Peuples et missions</h3><p>Chaque peuple, sa mission, son rôle final.</p><strong>Ouvrir →</strong></div></a>
-    </div>
+  <section class="primary-tools" aria-labelledby="primary-tools-title">
+    <h2 id="primary-tools-title" class="sr-only">Outils principaux</h2>
+    {
+      explorerHighlights.map((tool, index) => (
+        <a href={tool.href} class:list={['primary-tool', { 'primary-tool--wide': index === 0 }]}>
+          <span class="primary-tool__number">0{index + 1}</span>
+          <span class="primary-tool__icon" aria-hidden="true">
+            {tool.icon}
+          </span>
+          <div>
+            <>
+              <h3>{tool.label}</h3>
+              <p>{tool.description}</p>
+              <strong>
+                Explorer <span aria-hidden="true">→</span>
+              </strong>
+            </>
+          </div>
+        </a>
+      ))
+    }
   </section>
 
-  <section class="explorer-section">
-    <h2 class="explorer-section__title"><span aria-hidden="true">🕰️</span> Temps & chronologie</h2>
-    <div class="explorer-grid">
-      <a href="/theorie/chronologie" class="explorer-card"><span aria-hidden="true">📅</span><div><h3>Chronologie</h3><p>Faits connus vs lecture Fous du Bus.</p><strong>Lire →</strong></div></a>
-      <a href="/explorer/chronologie-comparative" class="explorer-card"><span aria-hidden="true">🕰️</span><div><h3>Double chronologie</h3><p>Lecture traditionnelle face à la nôtre.</p><strong>Comparer →</strong></div></a>
-      <a href="/explorer/memoire-avenir" class="explorer-card"><span aria-hidden="true">⏳</span><div><h3>Mémoire de l'avenir</h3><p>Comment le futur devient mémoire du passé.</p><strong>Voir →</strong></div></a>
-      <a href="/explorer/road-poneglyphes-temps" class="explorer-card"><span aria-hidden="true">🧭</span><div><h3>Road Ponéglyphes & temps</h3><p>Coordonnées et lecture temporelle.</p><strong>Voir →</strong></div></a>
+  <details class="tool-library">
+    <summary>
+      <span
+        ><small>Pour aller plus loin</small><strong>Afficher les 8 schémas spécialisés</strong
+        ></span
+      >
+      <span aria-hidden="true">＋</span>
+    </summary>
+    <div class="tool-library__grid">
+      {
+        secondaryTools.map((tool) => (
+          <a href={tool.href}>
+            <span aria-hidden="true">{tool.icon}</span>
+            <div>
+              <>
+                <small>{tool.group}</small>
+                <strong>{tool.title}</strong>
+                <p>{tool.description}</p>
+              </>
+            </div>
+          </a>
+        ))
+      }
     </div>
-  </section>
+  </details>
 
-  <section class="explorer-section">
-    <h2 class="explorer-section__title"><span aria-hidden="true">🎭</span> Identités & correspondances</h2>
-    <div class="explorer-grid">
-      <a href="/explorer/correspondances" class="explorer-card"><span aria-hidden="true">🔗</span><div><h3>Graphe des correspondances</h3><p>Luffy → Joy Boy → Nika, Vivi → Lili, Teach → Davy Jones.</p><strong>Explorer →</strong></div></a>
-      <a href="/explorer/luffy-joy-boy-nika" class="explorer-card"><span aria-hidden="true">🎭</span><div><h3>Luffy · Joy Boy · Nika</h3><p>Trois noms, un même homme.</p><strong>Comparer →</strong></div></a>
-      <a href="/explorer/poneglyphes" class="explorer-card"><span aria-hidden="true">📜</span><div><h3>Schéma des Ponéglyphes</h3><p>Mécanisme de transmission sans boucle.</p><strong>Voir →</strong></div></a>
-    </div>
-  </section>
-
-  <section class="explorer-section">
-    <h2 class="explorer-section__title"><span aria-hidden="true">⚔️</span> Guerre finale & armes</h2>
-    <div class="explorer-grid">
-      <a href="/explorer/guerre-finale" class="explorer-card"><span aria-hidden="true">⚔️</span><div><h3>Guerre finale</h3><p>Coalition vs Gouvernement, Armes, déluge.</p><strong>Voir →</strong></div></a>
-      <a href="/explorer/schema-pluton" class="explorer-card"><span aria-hidden="true">⚓</span><div><h3>Chemin de Pluton</h3><p>Water Seven, Zunesha, Wa no Kuni.</p><strong>Voir →</strong></div></a>
-      <a href="/explorer/deluge-all-blue" class="explorer-card"><span aria-hidden="true">🌊</span><div><h3>Déluge & All Blue</h3><p>Montée des eaux et réunification.</p><strong>Voir →</strong></div></a>
-      <a href="/explorer/omen-imu" class="explorer-card"><span aria-hidden="true">⚠️</span><div><h3>Omen, Mother Flame & Imu</h3><p>Branche spéculative : hypothèse Uranus.</p><strong>Explorer →</strong></div></a>
-    </div>
-  </section>
-
-  <section class="explorer-section">
-    <h2 class="explorer-section__title"><span aria-hidden="true">🗂️</span> Parcourir autrement</h2>
-    <div class="explorer-grid">
-      <a href="/dossiers" class="explorer-card explorer-card--highlight"><span aria-hidden="true">🗂️</span><div><h3>Dossiers thématiques</h3><p>Articles par sujet, sans pages inachevées.</p><strong>Parcourir →</strong></div></a>
-    </div>
-  </section>
+  <aside class="explorer-note">
+    <span aria-hidden="true">✦</span>
+    <p>
+      <strong>Besoin d’une réponse précise ?</strong> Les visualisations synthétisent les liens. Les <a
+        href="/dossiers">dossiers thématiques</a
+      > conservent les arguments détaillés, objections et références.
+    </p>
+  </aside>
 
   <Footer />
 </WikiLayout>
 
 <style>
-.page-header{max-width:680px;margin-bottom:40px}
-.eyebrow{color:var(--violet-light);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
-.page-header h1{font-size:clamp(2rem,4vw,2.6rem);margin:.5rem 0 1rem}
-.page-header p{color:var(--text-secondary);line-height:1.65}
-.explorer-section{margin-bottom:36px}
-.explorer-section__title{font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--border-color)}
-.explorer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
-.explorer-card{display:flex;gap:14px;padding:20px;border:1px solid var(--border-color);border-radius:var(--border-radius-lg);background:var(--gradient-card);text-decoration:none;color:var(--text-main);transition:transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease}
-.explorer-card:hover{transform:translateY(-3px);border-color:var(--violet);box-shadow:0 12px 32px rgba(0,0,0,0.18), 0 0 20px var(--glow-violet)}
-.explorer-card:active{transform:translateY(-1px) scale(0.98)}
-.explorer-card:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-.explorer-card--highlight{border-color: color-mix(in srgb, var(--cyan) 30%, var(--border-color)); background: color-mix(in srgb, var(--cyan) 6%, var(--bg-secondary))}
-.explorer-card>span{font-size:26px;flex-shrink:0;line-height:1}
-.explorer-card h3{font-size:16px;margin:0 0 6px;font-weight:600}
-.explorer-card p{color:var(--text-secondary);line-height:1.5;margin:0 0 12px;font-size:13.5px}
-.explorer-card strong{color:var(--cyan);font-size:13px;font-weight:600;transition: transform 0.2s ease;display:inline-flex;align-items:center;gap:4px}
-.explorer-card:hover strong{transform:translateX(3px)}
-@media (max-width:640px){.explorer-grid{grid-template-columns:1fr}.explorer-card{padding:16px}.page-header{margin-bottom:28px}}
+  .explorer-hero {
+    max-width: 880px;
+    margin: 12px 0 38px;
+  }
+  .eyebrow {
+    margin: 0 0 10px;
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .explorer-hero h1 {
+    margin: 0;
+    font-size: clamp(2.35rem, 7vw, 5rem);
+    font-weight: 900;
+    line-height: 0.96;
+    letter-spacing: -0.05em;
+  }
+  .explorer-hero h1 em {
+    color: var(--cyan);
+    font-style: normal;
+  }
+  .explorer-hero > p:last-child {
+    max-width: 720px;
+    margin: 21px 0 0;
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .primary-tools {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+  }
+  .primary-tool {
+    position: relative;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 18px;
+    min-height: 210px;
+    padding: 28px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: var(--bg-secondary);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      transform 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .primary-tool:hover {
+    transform: translateY(-4px);
+    border-color: var(--cyan);
+  }
+  .primary-tool--wide {
+    background:
+      radial-gradient(
+        circle at 90% 0,
+        color-mix(in srgb, var(--cyan) 16%, transparent),
+        transparent 38%
+      ),
+      var(--bg-secondary);
+  }
+  .primary-tool__number {
+    position: absolute;
+    top: 15px;
+    right: 18px;
+    color: var(--border-strong);
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .primary-tool__icon {
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: var(--surface);
+    font-size: 29px;
+  }
+  .primary-tool h3 {
+    margin: 4px 0 9px;
+    font-size: 23px;
+  }
+  .primary-tool p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .primary-tool strong {
+    display: block;
+    margin-top: 22px;
+    color: var(--cyan);
+    font-size: 13px;
+  }
+
+  .tool-library {
+    margin-top: 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 17px;
+    background: var(--surface);
+  }
+  .tool-library > summary {
+    display: flex;
+    min-height: 76px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 16px 22px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .tool-library > summary::-webkit-details-marker {
+    display: none;
+  }
+  .tool-library > summary small,
+  .tool-library > summary strong {
+    display: block;
+  }
+  .tool-library > summary small {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .tool-library > summary strong {
+    margin-top: 3px;
+    font-size: 16px;
+  }
+  .tool-library[open] > summary > span:last-child {
+    transform: rotate(45deg);
+  }
+  .tool-library__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 0 18px 18px;
+  }
+  .tool-library__grid a {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 11px;
+    min-height: 112px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    color: inherit;
+    text-decoration: none;
+  }
+  .tool-library__grid a:hover {
+    border-color: var(--violet);
+  }
+  .tool-library__grid a > span {
+    font-size: 23px;
+  }
+  .tool-library__grid small,
+  .tool-library__grid strong {
+    display: block;
+  }
+  .tool-library__grid small {
+    color: var(--violet-light);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .tool-library__grid strong {
+    margin-top: 3px;
+    font-size: 15px;
+  }
+  .tool-library__grid p {
+    margin: 5px 0 0;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  .explorer-note {
+    display: flex;
+    gap: 12px;
+    margin: 26px 0 10px;
+    padding: 16px;
+    border-left: 3px solid var(--cyan);
+    background: color-mix(in srgb, var(--cyan) 6%, transparent);
+  }
+  .explorer-note > span {
+    color: var(--cyan);
+  }
+  .explorer-note p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .explorer-note a {
+    color: var(--cyan);
+  }
+
+  @media (max-width: 700px) {
+    .primary-tools,
+    .tool-library__grid {
+      grid-template-columns: 1fr;
+    }
+    .primary-tool {
+      min-height: 0;
+      padding: 21px;
+    }
+    .explorer-hero h1 br {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .primary-tool {
+      transition: none;
+    }
+  }
 </style>

@@ -29,7 +29,9 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(layout).toContain("window.matchMedia('(max-width: 1023px)')");
     expect(layout).toContain('@media (max-width: 1023px)');
     expect(navbar).toContain('@media (max-width: 1023px)');
-    expect(navbar).toContain("aria-controls={hideMobileToggle ? undefined : 'sidebar-left'}");
+    expect(navbar).toContain(
+      "aria-controls={useGlobalMobileMenu ? 'global-mobile-nav' : 'sidebar-left'}",
+    );
     expect(layout).not.toMatch(/window\.innerWidth\s*[<>]=?\s*768/);
   });
 
@@ -59,6 +61,13 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(sidebar).toContain('<details');
     expect(sidebar).toContain('<summary');
     expect(sidebar).not.toContain('<script>');
+  });
+
+  it('conserve le scroll vertical natif autour de la frise', () => {
+    const timeline = read('src/components/InteractiveTheoryTimeline.astro');
+    expect(timeline).not.toContain("viewport.addEventListener(\n      'wheel'");
+    expect(timeline).toContain('data-era-select');
+    expect(timeline).toContain('min-height: 44px');
   });
 
   it('ne rend plus de barre de recherche dans la navigation latérale', () => {

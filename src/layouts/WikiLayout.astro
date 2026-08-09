@@ -32,9 +32,16 @@ const {
   type,
   seoTitle,
   noBreadcrumb = false,
-  noSidebar = false,
+  noSidebar: requestedNoSidebar = false,
 } = Astro.props;
 
+const normalizedCurrentPath = currentPath.replace(/\/+$/, '') || '/';
+const noSidebar =
+  requestedNoSidebar ||
+  normalizedCurrentPath === '/' ||
+  ['/theorie', '/dossiers', '/chapitres', '/explorer'].includes(normalizedCurrentPath) ||
+  normalizedCurrentPath === '/theorie/chronologie' ||
+  normalizedCurrentPath.startsWith('/explorer/');
 const hasToc = Boolean(headings?.length);
 const breadcrumbLabels: Record<string, string> = {
   '/dossiers': 'Dossiers',
@@ -127,7 +134,7 @@ const canonicalWikiUrl = new URL(
     )
   }
 
-  <Navbar hideMobileToggle={noSidebar} />
+  <Navbar useGlobalMobileMenu={noSidebar} />
 
   {!noSidebar && <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true" />}
 
@@ -324,7 +331,7 @@ const canonicalWikiUrl = new URL(
   }
 
   .main-content--centered {
-    max-width: 860px;
+    max-width: 1180px;
   }
 
   .main-content :global(img),

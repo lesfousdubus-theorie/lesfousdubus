@@ -53,6 +53,19 @@ const seenEras = new Set<string>();
     }
   </nav>
 
+  <label class="mobile-era-select">
+    <span>Époque</span>
+    <select data-era-select aria-label="Aller à une époque de la chronologie">
+      {
+        timelineEras.map((era) => (
+          <option value={era.id}>
+            {era.label} · {era.range}
+          </option>
+        ))
+      }
+    </select>
+  </label>
+
   <div class="control-deck">
     <div class="status-filters" role="group" aria-label="Filtrer par niveau de certitude">
       {
@@ -212,7 +225,7 @@ const seenEras = new Set<string>();
     <div class="edge-fade edge-fade--right" aria-hidden="true"></div>
     <p class="drag-instruction">
       <span aria-hidden="true">↔</span>
-      Glissez, utilisez la molette ou les flèches
+      Glissez la frise ou utilisez les flèches
     </p>
   </div>
 
@@ -431,7 +444,11 @@ const seenEras = new Set<string>();
   .era-tab small {
     margin-top: 3px;
     color: var(--text-muted);
-    font-size: 9px;
+    font-size: 11px;
+  }
+
+  .mobile-era-select {
+    display: none;
   }
 
   .era-tab:hover,
@@ -442,8 +459,9 @@ const seenEras = new Set<string>();
   }
 
   .control-deck {
-    position: relative;
-    z-index: 3;
+    position: sticky;
+    z-index: 12;
+    top: calc(var(--nav-h) + 8px);
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 10px;
@@ -468,13 +486,13 @@ const seenEras = new Set<string>();
   }
 
   .filter-chip {
-    min-height: 36px;
+    min-height: 44px;
     padding: 7px 11px;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-full);
     background: var(--bg-main);
     color: var(--text-secondary);
-    font: 700 10px/1 var(--font-sans);
+    font: 700 12px/1 var(--font-sans);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -500,21 +518,21 @@ const seenEras = new Set<string>();
     align-items: center;
     gap: 7px;
     color: var(--text-muted);
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 750;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
   .thread-select select {
-    min-height: 36px;
+    min-height: 44px;
     max-width: 178px;
     padding: 6px 30px 6px 10px;
     border: 1px solid var(--border-color);
     border-radius: 9px;
     background: var(--bg-main);
     color: var(--text-main);
-    font: 650 11px/1 var(--font-sans);
+    font: 650 12px/1 var(--font-sans);
   }
 
   .timeline-actions {
@@ -524,8 +542,8 @@ const seenEras = new Set<string>();
   .timeline-actions button {
     display: grid;
     place-items: center;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: 1px solid var(--border-color);
     border-radius: 9px;
@@ -1064,7 +1082,7 @@ const seenEras = new Set<string>();
   }
 
   .time-loop button {
-    min-height: 40px;
+    min-height: 44px;
     padding: 8px 12px;
     border: 1px solid color-mix(in srgb, #f58ac8 45%, var(--border-color));
     border-radius: var(--border-radius-full);
@@ -1412,7 +1430,7 @@ const seenEras = new Set<string>();
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    min-height: 42px;
+    min-height: 44px;
     padding: 8px 12px;
     border: 1px solid var(--border-color);
     border-radius: 10px;
@@ -1446,7 +1464,7 @@ const seenEras = new Set<string>();
 
   @media (max-width: 640px) {
     .chronoscope {
-      --card-width: min(78vw, 286px);
+      --card-width: min(84vw, 306px);
       --event-gap: 14px;
       margin-top: 22px;
     }
@@ -1469,9 +1487,29 @@ const seenEras = new Set<string>();
     }
 
     .era-strip {
-      margin-right: -16px;
-      margin-left: -16px;
-      padding: 0 16px 6px;
+      display: none;
+    }
+
+    .mobile-era-select {
+      display: grid;
+      gap: 5px;
+      margin-bottom: 10px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .mobile-era-select select {
+      width: 100%;
+      min-height: 48px;
+      padding: 8px 38px 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 11px;
+      background: var(--bg-secondary);
+      color: var(--text-main);
+      font: 650 14px/1.2 var(--font-sans);
     }
 
     .control-deck {
@@ -1501,7 +1539,7 @@ const seenEras = new Set<string>();
     .timeline-actions button {
       flex: 1;
       width: auto;
-      min-height: 42px;
+      min-height: 44px;
     }
 
     .timeline-stage {
@@ -1589,6 +1627,7 @@ const seenEras = new Set<string>();
     const track = root.querySelector<HTMLElement>('[data-timeline-track]');
     const range = root.querySelector<HTMLInputElement>('[data-timeline-range]');
     const threadFilter = root.querySelector<HTMLSelectElement>('[data-thread-filter]');
+    const eraSelect = root.querySelector<HTMLSelectElement>('[data-era-select]');
     const dialog = document.querySelector<HTMLDialogElement>('[data-event-dialog]');
     const dialogContent = dialog?.querySelector<HTMLElement>('[data-dialog-content]');
     if (!viewport || !track || !range) return;
@@ -1680,6 +1719,7 @@ const seenEras = new Set<string>();
       eraButtons.forEach((button) => {
         button.toggleAttribute('aria-current', button.dataset.eraButton === selected.dataset.era);
       });
+      if (eraSelect && selected.dataset.era) eraSelect.value = selected.dataset.era;
     };
 
     const requestPositionUpdate = () => {
@@ -1703,6 +1743,11 @@ const seenEras = new Set<string>();
         );
         button.disabled = !hasVisibleEvent;
       });
+      if (eraSelect) {
+        Array.from(eraSelect.options).forEach((option) => {
+          option.disabled = !visible.some((event) => event.dataset.era === option.value);
+        });
+      }
 
       requestAnimationFrame(() => {
         viewport.scrollLeft = 0;
@@ -1736,6 +1781,12 @@ const seenEras = new Set<string>();
         const event = visibleEvents().find((item) => item.dataset.era === button.dataset.eraButton);
         if (event) scrollToEvent(event);
       });
+    });
+
+    eraSelect?.addEventListener('change', () => {
+      stopStory();
+      const event = visibleEvents().find((item) => item.dataset.era === eraSelect.value);
+      if (event) scrollToEvent(event);
     });
 
     const jump = (direction: number) => {
@@ -1802,20 +1853,6 @@ const seenEras = new Set<string>();
     });
 
     viewport.addEventListener('scroll', requestPositionUpdate, { passive: true });
-    viewport.addEventListener(
-      'wheel',
-      (event) => {
-        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || event.ctrlKey) return;
-        const maximum = maxScroll();
-        const next = viewport.scrollLeft + event.deltaY;
-        if ((next <= 0 && event.deltaY < 0) || (next >= maximum && event.deltaY > 0)) return;
-        event.preventDefault();
-        stopStory();
-        viewport.scrollLeft = Math.max(0, Math.min(maximum, next));
-      },
-      { passive: false },
-    );
-
     viewport.addEventListener('pointerdown', (event) => {
       if (event.pointerType !== 'mouse' || (event.target as Element).closest('button, a, input'))
         return;

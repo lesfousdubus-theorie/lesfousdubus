@@ -1,212 +1,353 @@
 ---
-import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import WikiLayout from '@layouts/WikiLayout.astro';
 import { getCollection } from 'astro:content';
+import { understandingPaths } from '../../data/siteNavigation';
 import { getRecentArticleUpdates } from '@utils/chapter-updates';
 
-const articles = await getCollection('articles');
+const articles = await getCollection('articles', ({ data }) => data.status === 'published');
 const chapters = await getCollection('chapters');
-const publishedArticles = articles.filter((a) => a.data.status === 'published');
-
-// Recommended 16-step reading order
-const orderedSteps = [
-  { step: 1, title: 'Présentation de la théorie', href: '/theorie/siecle-oublie-present', summary: 'Le cadre général : pourquoi le Siècle Oublié ne s\'est pas produit dans le passé mais s\'écrit au présent.' },
-  { step: 2, title: 'Blue Star, Grand Line et Red Line', href: '/dossiers#monde-destinations', summary: 'Les fondations géographiques de la planète et le découpage du monde.' },
-  { step: 3, title: 'Lodestar', href: '/theorie/laugh-tale', summary: 'L\'île ultime de la navigation conventionnelle sur Grand Line.' },
-  { step: 4, title: 'Laugh Tale', href: '/theorie/laugh-tale', summary: 'La destination finale, le secret du trésor et l\'énigme temporelle.' },
-  { step: 5, title: 'One Piece', href: '/theorie/one-piece-histoire', summary: 'La nature du trésor laissé par Joy Boy et la promesse de Gol D. Roger.' },
-  { step: 6, title: 'Siècle Oublié', href: '/theorie/siecle-oublie-present', summary: 'La période effacée de l\'histoire et la boucle de transmission.' },
-  { step: 7, title: 'Royaume antique', href: '/theorie/theorie-complete', summary: 'La grande guerre originelle et la véritable civilisation des pionniers.' },
-  { step: 8, title: 'Ponéglyphes', href: '/theorie/poneglyphes-futur', summary: 'Les stèles indestructibles gravées pour transmettre le futur aux époques antérieures.' },
-  { step: 9, title: 'Joy Boy', href: '/theorie/joy-boy', summary: 'La figure légendaire, sa promesse au Royaume Ryūgū et la résonance du héros.' },
-  { step: 10, title: 'Nika', href: '/theorie/nika', summary: 'Le Dieu du Soleil, le Guerrier de la Libération et le culte transmis à travers les époques.' },
-  { step: 11, title: 'Monkey D. Luffy', href: '/theorie/luffy', summary: 'Le capitaine au Chapeau de Paille comme créateur originel de l\'histoire.' },
-  { step: 12, title: 'Armes antiques', href: '/theorie/poseidon', summary: 'Poséidon, Pluton et Uranus : les trois forces majeures qui remodèleront le monde.' },
-  { step: 13, title: 'Figures et identités', href: '/theorie/davy-jones', summary: 'Les miroirs et correspondances (Davy Jones, Teach, Ryuma, Zoro, Vivi, Lili).' },
-  { step: 14, title: 'Peuples et témoins', href: '/theorie/elbaf-halley', summary: 'Les Géants d\'Elbaf, les Hommes-Poissons, les Shandias et les gardiens de la mémoire.' },
-  { step: 15, title: 'Imu et le Gouvernement mondial', href: '/theorie/imu-nerona', summary: 'L\'autorité du Trône Vacant et la résistance face à l\'inévitable libération.' },
-  { step: 16, title: 'Déluge et guerre finale', href: '/theorie/deluge-all-blue', summary: 'Le cataclysme final, la destruction de Red Line et l\'avènement d\'All Blue.' },
-];
-
-const recentUpdates = getRecentArticleUpdates(publishedArticles, chapters, 6);
+const recentUpdates = getRecentArticleUpdates(articles, chapters, 4);
+const pathIcons = ['⚡', '🧭', '📚'];
 ---
 
-<WikiLayout title="La théorie" seoTitle="Théorie One Piece : le Siècle oublié est le présent — guide complet | Les Fous du Bus" description="Parcours complet de la théorie One Piece : 16 étapes de Blue Star à All Blue, avec analyses, arguments et mises à jour chapitre par chapitre." currentPath="/theorie">
-  <div class="hero">
-    <div class="text-violet font-semibold tracking-widest uppercase text-sm mb-3">Guide de lecture</div>
-    <h1>La théorie</h1>
-    <p class="subtitle">
-      La démonstration complète se déploie en <strong>22 chapitres</strong> dans la <a href="/theorie/theorie-complete">théorie complète</a>. Les étapes ci-dessous vous orientent vers les articles-clés et les points de départ recommandés pour explorer chaque pan de la théorie.
+<WikiLayout
+  title="La théorie"
+  seoTitle="Théorie One Piece : le Siècle oublié est le présent | Les Fous du Bus"
+  description="Choisissez votre niveau de lecture pour comprendre la théorie des Fous du Bus : explication rapide, résumé en 10 points ou démonstration complète."
+  currentPath="/theorie"
+>
+  <header class="theory-hero">
+    <p class="eyebrow">Choisissez votre voyage</p>
+    <h1>Une théorie.<br /><em>Trois façons de la comprendre.</em></h1>
+    <p>
+      Vous n’avez pas besoin de lire tout le wiki pour saisir l’idée. Commencez au niveau qui vous
+      convient ; vous pourrez approfondir chaque preuve ensuite, sans perdre le fil.
     </p>
-  </div>
+  </header>
 
-  <h2 class="section-title">Ordre de lecture recommandé (16 étapes)</h2>
-  <div class="article-list">
-    {orderedSteps.map((step) => (
-      <a href={step.href} class="article-row">
-        <span class="article-num">{step.step}</span>
-        <div class="article-info">
-          <span class="article-title">{step.title}</span>
-          <span class="article-summary">{step.summary}</span>
-        </div>
-      </a>
-    ))}
-  </div>
+  <ol class="reading-levels" aria-label="Niveaux de lecture de la théorie">
+    {
+      understandingPaths.map((path, index) => (
+        <li>
+          <a
+            href={path.href}
+            class:list={['reading-level', { 'reading-level--featured': index === 1 }]}
+          >
+            <span class="reading-level__icon" aria-hidden="true">
+              {pathIcons[index]}
+            </span>
+            <div class="reading-level__content">
+              <span class="reading-level__time">
+                Niveau {index + 1} · {path.duration}
+              </span>
+              <h2>{path.label}</h2>
+              <p>{path.description}</p>
+              <strong>
+                {index === 0
+                  ? 'Découvrir l’idée'
+                  : index === 1
+                    ? 'Commencer ici'
+                    : 'Lire la démonstration'}{' '}
+                <span aria-hidden="true">→</span>
+              </strong>
+            </div>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
 
-  <div class="cta-complete">
-    <a href="/theorie/theorie-complete" class="cta-complete__btn">
-      Lire la démonstration complète en 22 chapitres →
-    </a>
-    <p class="cta-complete__hint">La page maîtresse du site : un seul article continu qui construit le raisonnement pas à pas, de Blue Star au retournement final.</p>
-  </div>
+  <section class="explore-next" aria-labelledby="explore-next-title">
+    <div>
+      <p class="eyebrow">Après la lecture</p>
+      <h2 id="explore-next-title">Passez de la démonstration à l’exploration</h2>
+      <p>
+        La frise replace les événements dans l’ordre proposé par la théorie. Les dossiers permettent
+        ensuite d’isoler un personnage, un lieu ou un mécanisme précis.
+      </p>
+    </div>
+    <div class="explore-next__links">
+      <a href="/theorie/chronologie"
+        ><span aria-hidden="true">🕰️</span><strong>Frise chronologique</strong><small
+          >64 événements reliés</small
+        ></a
+      >
+      <a href="/dossiers"
+        ><span aria-hidden="true">🗂️</span><strong>Dossiers thématiques</strong><small
+          >Filtrer les sujets</small
+        ></a
+      >
+      <a href="/explorer"
+        ><span aria-hidden="true">🧠</span><strong>Explorer visuellement</strong><small
+          >Cartes et correspondances</small
+        ></a
+      >
+    </div>
+  </section>
 
-  <h2 class="section-title">Mises à jour récentes</h2>
-  <div class="article-list">
-    {recentUpdates.map(({ article, chapter }) => (
-      <a href={`/theorie/${article.id}`} class="article-row">
-        <div class="article-info">
-          <span class="article-title">{article.data.title}</span>
-          <span class="article-chapter">Mis à jour au chapitre {chapter}</span>
-        </div>
-      </a>
-    ))}
-  </div>
+  <section class="recent" aria-labelledby="recent-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">La théorie évolue</p><h2 id="recent-title">Mises à jour récentes</h2>
+      </div>
+      <a href="/chapitres">Toutes les analyses →</a>
+    </div>
+    <div class="recent__grid">
+      {
+        recentUpdates.map(({ article, chapter }) => (
+          <a href={`/theorie/${article.id}`}>
+            <small>Mis à jour au chapitre {chapter}</small>
+            <strong>{article.data.title}</strong>
+            <span>{article.data.summary}</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
 
   <Footer />
 </WikiLayout>
 
 <style>
-  .hero {
-    margin-bottom: 40px;
-  }
-
-  .hero h1 {
-    font-size: clamp(1.8rem, 4vw, 2.5rem);
-    font-weight: 700;
-    margin-bottom: 16px;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-  }
-
-  .subtitle {
-    font-size: 15px;
-    color: var(--text-secondary);
-    max-width: 700px;
-    line-height: 1.6;
-  }
-
-  .section-title {
-    font-size: 19px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color);
-    margin-top: 44px;
-  }
-
-  .section-title:first-of-type {
-    margin-top: 0;
-  }
-
-  .article-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 32px;
-  }
-
-  .article-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 15px 18px;
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    text-decoration: none;
-    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
-  }
-
-  .article-row:hover {
-    border-color: var(--violet);
-    background-color: var(--surface);
-    transform: translateY(-2px);
-  }
-
-  .article-num {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--cyan);
-    min-width: 26px;
-    height: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: color-mix(in srgb, var(--cyan) 10%, transparent);
-    border-radius: 50%;
-    margin-top: 2px;
-  }
-
-  .article-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .article-title {
-    font-size: 15.5px;
-    font-weight: 600;
-    color: var(--text-main);
-    transition: color 0.15s;
-  }
-
-  .article-row:hover .article-title {
-    color: var(--cyan);
-  }
-
-  .article-summary {
-    font-size: 13.5px;
-    color: var(--text-secondary);
-    line-height: 1.5;
-  }
-
-  .article-chapter {
-    font-size: 12.5px;
-    color: var(--text-secondary);
-  }
-
-  .cta-complete {
-    margin: 32px 0 40px;
-    padding: 24px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    background: var(--gradient-card);
-    border-left: 3px solid var(--cyan);
+  .theory-hero {
+    max-width: 850px;
+    margin: 12px auto 40px;
     text-align: center;
   }
-
-  .cta-complete__btn {
-    display: inline-block;
-    padding: 12px 24px;
-    background: var(--gradient-border);
-    color: white;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    text-decoration: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  .eyebrow {
+    margin: 0 0 10px;
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
-
-  .cta-complete__btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--glow-cyan);
+  .theory-hero h1 {
+    margin: 0;
+    font-size: clamp(2.4rem, 7vw, 5rem);
+    font-weight: 900;
+    line-height: 0.96;
+    letter-spacing: -0.05em;
   }
-
-  .cta-complete__hint {
-    margin-top: 14px;
-    font-size: 0.85rem;
+  .theory-hero h1 em {
+    color: var(--cyan);
+    font-style: normal;
+  }
+  .theory-hero > p:last-child {
+    max-width: 680px;
+    margin: 22px auto 0;
     color: var(--text-secondary);
-    line-height: 1.5;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .reading-levels {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .reading-levels li {
+    min-width: 0;
+  }
+  .reading-level {
+    display: flex;
+    height: 100%;
+    gap: 15px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: var(--bg-secondary);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      transform 0.18s ease,
+      border-color 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+  .reading-level:hover {
+    transform: translateY(-4px);
+    border-color: var(--cyan);
+    box-shadow: 0 16px 38px var(--shadow-color);
+  }
+  .reading-level--featured {
+    border-color: color-mix(in srgb, var(--cyan) 55%, var(--border-color));
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--cyan) 10%, var(--bg-secondary)),
+      var(--bg-secondary)
+    );
+  }
+  .reading-level__icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--surface);
+    font-size: 22px;
+  }
+  .reading-level__content {
+    min-width: 0;
+  }
+  .reading-level__time {
+    color: var(--violet-light);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  .reading-level h2 {
+    margin: 7px 0 8px;
+    font-size: 20px;
+  }
+  .reading-level p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .reading-level strong {
+    display: block;
+    margin-top: 18px;
+    color: var(--cyan);
+    font-size: 13px;
+  }
+
+  .explore-next {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.85fr) minmax(320px, 1.15fr);
+    gap: 36px;
+    margin: 56px 0 48px;
+    padding: clamp(24px, 5vw, 40px);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: var(--surface);
+  }
+  .explore-next h2,
+  .recent h2 {
+    margin: 0;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+  }
+  .explore-next p:not(.eyebrow) {
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+  .explore-next__links {
+    display: grid;
+    gap: 9px;
+  }
+  .explore-next__links a {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    column-gap: 10px;
+    min-height: 68px;
+    align-items: center;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    color: inherit;
+    text-decoration: none;
+  }
+  .explore-next__links a:hover {
+    border-color: var(--cyan);
+  }
+  .explore-next__links a > span {
+    grid-row: 1 / 3;
+    font-size: 23px;
+  }
+  .explore-next__links strong {
+    font-size: 14px;
+  }
+  .explore-next__links small {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  .section-heading > a {
+    min-height: 44px;
+    color: var(--cyan);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .recent__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .recent__grid a {
+    display: grid;
+    gap: 7px;
+    min-height: 150px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--bg-secondary);
+    color: inherit;
+    text-decoration: none;
+  }
+  .recent__grid a:hover {
+    border-color: var(--violet);
+  }
+  .recent__grid small {
+    color: var(--violet-light);
+    font-size: 12px;
+  }
+  .recent__grid strong {
+    font-size: 16px;
+  }
+  .recent__grid span {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.55;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  @media (max-width: 820px) {
+    .reading-levels {
+      grid-template-columns: 1fr;
+    }
+    .explore-next {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .theory-hero {
+      text-align: left;
+    }
+    .theory-hero > p:last-child {
+      margin-left: 0;
+    }
+    .reading-level {
+      padding: 19px;
+    }
+    .recent__grid {
+      grid-template-columns: 1fr;
+    }
+    .section-heading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reading-level {
+      transition: none;
+    }
   }
 </style>

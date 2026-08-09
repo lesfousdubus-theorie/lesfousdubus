@@ -13,6 +13,7 @@ export default defineConfig({
   },
   server: { host: '0.0.0.0', allowedHosts: true },
   redirects: {
+    '/explorer/chronologie-comparative': '/theorie/chronologie',
     '/theorie/ponelyphes': '/theorie/poneglyphes',
     '/theorie/imu-nerona-fiche': '/theorie/imu-nerona',
     '/theorie/ponelyphes-futur': '/theorie/poneglyphes-futur',

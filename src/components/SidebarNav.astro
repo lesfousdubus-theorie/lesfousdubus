@@ -1,199 +1,153 @@
 ---
 import { getCollection } from 'astro:content';
+import { categoryById, explorerHighlights, understandingPaths } from '../data/siteNavigation';
 
 interface Props {
   currentPath: string;
 }
 
-interface SidebarLink {
+interface NavLink {
   label: string;
   href: string;
-  level: 0 | 1;
-  type: 'fiche' | 'dossier';
+  badge?: string;
 }
 
 interface NavSection {
   label: string;
   icon: string;
-  links: SidebarLink[];
-  isChaptersSection?: boolean;
+  links: NavLink[];
+  open: boolean;
 }
 
 const { currentPath } = Astro.props;
 const normalize = (path: string) => path.replace(/\/+$/, '') || '/';
-const isCurrent = (href: string) => normalize(currentPath) === normalize(href);
+const normalizedPath = normalize(currentPath);
+const isCurrent = (href: string) => normalize(href) === normalizedPath;
 
 const articles = (
   await getCollection('articles', ({ data }) => data.status === 'published' && !data.sidebarHidden)
 ).sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'fr'));
 
-const byId = new Map(articles.map((article) => [article.id, article]));
-const childrenByParent = new Map<string, typeof articles>();
-for (const article of articles) {
-  if (!article.data.parent) continue;
-  const children = childrenByParent.get(article.data.parent) ?? [];
-  children.push(article);
-  childrenByParent.set(article.data.parent, children);
-}
+const currentArticleId = normalizedPath.startsWith('/theorie/')
+  ? normalizedPath.replace('/theorie/', '')
+  : undefined;
+const currentArticle = articles.find((article) => article.id === currentArticleId);
+const currentCategory = currentArticle ? categoryById.get(currentArticle.data.category) : undefined;
 
-const categories: Record<string, { label: string; icon: string; order: number }> = {
-  'monde-destinations': { label: 'Monde et destinations', icon: '🌍', order: 1 },
-  'histoire-temporalite': { label: 'Histoire & Ponéglyphes', icon: '📜', order: 2 },
-  'figures-principales': { label: 'Figures principales', icon: '🎭', order: 3 },
-  'personnages-identites': { label: 'Personnages et identités', icon: '👥', order: 4 },
-  'armes-antiques': { label: 'Armes antiques', icon: '🔱', order: 5 },
-  'technologies-pouvoirs': { label: 'Technologies et pouvoirs', icon: '⚡', order: 6 },
-  'peuples-royaumes': { label: 'Peuples & royaumes', icon: '🏰', order: 7 },
-  'dieux-croyances': { label: 'Dieux et croyances', icon: '🙏', order: 8 },
-  'transmission-memoire': { label: 'Transmission et mémoire', icon: '🎵', order: 9 },
-  'gouvernement-mondial': { label: 'Gouvernement mondial', icon: '⚖️', order: 10 },
-  'guerre-finale': { label: 'Guerre finale', icon: '⚔️', order: 11 },
-};
+const categoryLinks: NavLink[] = currentCategory
+  ? articles
+      .filter((article) => article.data.category === currentCategory.id)
+      .map((article) => ({
+        label: article.data.title,
+        href: `/theorie/${article.id}`,
+        badge: article.data.navigationType === 'dossier' ? 'Dossier' : undefined,
+      }))
+  : [];
 
-const toLink = (article: (typeof articles)[number], level: 0 | 1): SidebarLink => ({
-  label: article.data.title,
-  href: `/theorie/${article.id}`,
-  level,
-  type: article.data.navigationType,
-});
+const recentChapters = (await getCollection('chapters'))
+  .sort((a, b) => b.data.chapter - a.data.chapter)
+  .slice(0, 6)
+  .map((chapter): NavLink => ({
+    label: `Chapitre ${chapter.data.chapter} — ${chapter.data.title}`,
+    href: `/chapitres/${chapter.data.chapter}`,
+  }));
 
-const buildCategoryLinks = (category: string) => {
-  const categoryArticles = articles.filter((article) => article.data.category === category);
-  const roots = categoryArticles.filter(
-    (article) => !article.data.parent || byId.get(article.data.parent)?.data.category !== category,
-  );
-  const links: SidebarLink[] = [];
-  const seen = new Set<string>();
-
-  const add = (link: SidebarLink) => {
-    if (seen.has(link.href)) return;
-    seen.add(link.href);
-    links.push(link);
-  };
-
-  roots.forEach((root) => {
-    add(toLink(root, 0));
-    (childrenByParent.get(root.id) ?? [])
-      .filter((child) => child.data.category === category)
-      .forEach((child) => add(toLink(child, 1)));
-  });
-
-  return links;
-};
+const startLinks: NavLink[] = [
+  ...understandingPaths.map((path) => ({ label: path.label, href: path.href })),
+  { label: 'Frise chronologique', href: '/theorie/chronologie' },
+];
 
 const sections: NavSection[] = [
   {
     label: 'Commencer',
     icon: '🚀',
-    links: [
-      { label: 'Présentation', href: '/', level: 0, type: 'fiche' },
-      { label: 'Résumé de la théorie', href: '/theorie/resume', level: 0, type: 'fiche' },
-      {
-        label: 'Théorie complète',
-        href: '/theorie/theorie-complete',
-        level: 0,
-        type: 'fiche',
-      },
-      { label: 'Carte mentale', href: '/explorer/carte-mentale', level: 0, type: 'fiche' },
-      { label: 'Lexique essentiel', href: '/aide/glossaire', level: 0, type: 'fiche' },
-    ],
+    links: startLinks,
+    open: startLinks.some((link) => isCurrent(link.href)),
   },
-  ...Object.entries(categories)
-    .sort(([, left], [, right]) => left.order - right.order)
-    .map(([category, config]) => ({
-      label: config.label,
-      icon: config.icon,
-      links: buildCategoryLinks(category),
-    }))
-    .filter((section) => section.links.length > 0),
 ];
 
-const chapters = (await getCollection('chapters'))
-  .sort((a, b) => b.data.chapter - a.data.chapter)
-  .slice(0, 10)
-  .map((chapter): SidebarLink => ({
-    label: chapter.data.title.startsWith('Chapitre')
-      ? chapter.data.title
-      : `Chapitre ${chapter.data.chapter} — ${chapter.data.title}`,
-    href: `/chapitres/${chapter.data.chapter}`,
-    level: 0,
-    type: 'fiche',
-  }));
+if (currentCategory && categoryLinks.length) {
+  sections.push({
+    label: currentCategory.label,
+    icon: currentCategory.icon,
+    links: categoryLinks,
+    open: true,
+  });
+}
+
+if (normalizedPath.startsWith('/chapitres/')) {
+  sections.push({
+    label: 'Chapitres récents',
+    icon: '📖',
+    links: recentChapters,
+    open: true,
+  });
+}
 
 sections.push(
-  { label: 'Chapitres récents', icon: '📖', links: chapters, isChaptersSection: true },
   {
-    label: 'Aide & ressources',
-    icon: '❓',
+    label: 'Explorer visuellement',
+    icon: '🧭',
     links: [
-      { label: 'À propos', href: '/aide/a-propos', level: 0, type: 'fiche' },
-      { label: 'FAQ', href: '/aide/faq', level: 0, type: 'fiche' },
-      { label: 'Glossaire', href: '/aide/glossaire', level: 0, type: 'fiche' },
-      { label: 'Crédits', href: '/aide/credits', level: 0, type: 'fiche' },
+      { label: 'Vue d’ensemble', href: '/explorer' },
+      ...explorerHighlights.map((item) => ({ label: item.label, href: item.href })),
     ],
+    open: normalizedPath.startsWith('/explorer'),
+  },
+  {
+    label: 'Parcourir le site',
+    icon: '🗂️',
+    links: [
+      { label: 'Tous les dossiers', href: '/dossiers' },
+      { label: 'Toutes les analyses', href: '/chapitres' },
+      { label: 'Glossaire essentiel', href: '/aide/glossaire' },
+      { label: 'À propos du projet', href: '/aide/a-propos' },
+    ],
+    open: false,
   },
 );
 ---
 
-<nav data-pagefind-ignore aria-label="Navigation du wiki">
+<nav data-pagefind-ignore aria-label="Navigation contextuelle">
   {
-    sections.map((section) => {
-      const containsCurrentPage = section.links.some(
-        (link) =>
-          isCurrent(link.href) ||
-          (link.href !== '/' && normalize(currentPath).startsWith(`${normalize(link.href)}/`)),
-      );
-      const isActiveChapterSection =
-        section.isChaptersSection && currentPath.startsWith('/chapitres/');
+    sections.map((section) => (
+      <details class="nav-section" open={section.open}>
+        <summary class="nav-section__summary">
+          <span class="nav-section__title">
+            <span aria-hidden="true">{section.icon}</span>
+            <span>{section.label}</span>
+          </span>
+          <svg
+            class="nav-section__chevron"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </summary>
 
-      return (
-        <details class="nav-section" open={containsCurrentPage || isActiveChapterSection}>
-          <summary class="nav-section__summary">
-            <span class="nav-section__title">
-              <span aria-hidden="true">{section.icon}</span>
-              <span>{section.label}</span>
-            </span>
-            <svg
-              class="nav-section__chevron"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              aria-hidden="true"
-            >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </summary>
-
-          <ul class="nav-section__links">
-            {section.links.map((link) => (
-              <li>
-                <a
-                  href={link.href}
-                  aria-current={isCurrent(link.href) ? 'page' : undefined}
-                  class:list={[
-                    'sidebar-link',
-                    { 'sidebar-link--child': link.level === 1 },
-                    { 'sidebar-link--dossier': link.type === 'dossier' },
-                  ]}
-                >
-                  {link.level === 1 && (
-                    <span class="sidebar-link__branch" aria-hidden="true">
-                      └
-                    </span>
-                  )}
-                  {link.type === 'dossier' && <span class="sidebar-link__type">Dossier</span>}
-                  <span>{link.label}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </details>
-      );
-    })
+        <ul class="nav-section__links">
+          {section.links.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                aria-current={isCurrent(link.href) ? 'page' : undefined}
+                class="sidebar-link"
+              >
+                <span>{link.label}</span>
+                {link.badge && <small>{link.badge}</small>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
+    ))
   }
 </nav>
 
@@ -202,11 +156,9 @@ sections.push(
     width: 100%;
     min-width: 0;
   }
-
   .nav-section {
     border-bottom: 1px solid var(--border-color);
   }
-
   .nav-section:last-child {
     border-bottom: 0;
   }
@@ -216,64 +168,58 @@ sections.push(
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    min-height: 46px;
-    padding: 8px 6px;
+    min-height: 48px;
+    padding: 9px 7px;
     border-radius: var(--border-radius);
     color: var(--text-secondary);
     font-size: 12px;
     font-weight: 800;
-    line-height: 1.3;
+    line-height: 1.35;
     text-transform: uppercase;
     letter-spacing: 0.045em;
     cursor: pointer;
     list-style: none;
-    user-select: none;
   }
 
   .nav-section__summary::-webkit-details-marker {
     display: none;
   }
-
   .nav-section__summary:hover {
     color: var(--text-main);
-    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    background: var(--surface);
   }
-
   .nav-section__summary:focus-visible {
-    outline: 2px solid var(--cyan);
     outline-offset: -2px;
   }
-
   .nav-section__title {
     display: flex;
     align-items: center;
     gap: 8px;
     min-width: 0;
   }
-
   .nav-section__chevron {
     flex: 0 0 auto;
     transition: transform 160ms ease;
   }
-
   .nav-section[open] .nav-section__chevron {
     transform: rotate(90deg);
   }
 
   .nav-section__links {
     display: grid;
-    gap: 2px;
+    gap: 3px;
     margin: 0;
-    padding: 2px 0 12px;
+    padding: 3px 0 12px;
     list-style: none;
   }
 
   .sidebar-link {
     display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    min-height: 40px;
-    padding: 10px 9px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 10px;
     border-left: 3px solid transparent;
     border-radius: 0 var(--border-radius) var(--border-radius) 0;
     color: var(--text-secondary);
@@ -285,51 +231,27 @@ sections.push(
 
   .sidebar-link:hover {
     color: var(--text-main);
-    background: color-mix(in srgb, var(--surface) 68%, transparent);
+    background: var(--surface);
   }
-
   .sidebar-link[aria-current='page'] {
     border-left-color: var(--cyan);
     background: color-mix(in srgb, var(--cyan) 12%, var(--bg-secondary));
     color: var(--text-main);
   }
 
-  .sidebar-link--child {
-    padding-left: 18px;
-    font-size: 12.5px;
-  }
-
-  .sidebar-link__branch {
-    color: var(--border-strong);
+  .sidebar-link small {
     flex: 0 0 auto;
-  }
-
-  .sidebar-link--dossier {
-    flex-wrap: wrap;
-  }
-
-  .sidebar-link__type {
-    flex: 0 0 auto;
-    padding: 1px 5px;
-    border: 1px solid color-mix(in srgb, var(--violet) 40%, transparent);
-    border-radius: var(--border-radius-sm);
+    padding: 2px 6px;
+    border: 1px solid color-mix(in srgb, var(--violet) 36%, transparent);
+    border-radius: var(--border-radius-full);
     color: var(--violet-light);
-    font-size: 9px;
-    font-weight: 800;
-    line-height: 1.5;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    font-size: 11px;
+    font-weight: 750;
   }
 
-  @media (max-width: 1023px) {
-    .nav-section__summary {
-      min-height: 48px;
-    }
-
-    .sidebar-link {
-      min-height: 44px;
-      padding-top: 11px;
-      padding-bottom: 11px;
+  @media (prefers-reduced-motion: reduce) {
+    .nav-section__chevron {
+      transition: none;
     }
   }
 </style>
