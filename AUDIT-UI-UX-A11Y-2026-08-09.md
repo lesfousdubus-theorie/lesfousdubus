@@ -339,3 +339,37 @@ balayage accessibilité du dist ✓ (1 seul `<h1>` par page réelle, aucun bouto
 
 **À faire hors sandbox (inchangé) :** `scripts/fetch-video-cover.sh` (réseau YouTube) et
 `npm run test:e2e` après `npx playwright install chromium`.
+
+---
+
+## 🧹 Refactoring de la sidebar (passe 3, 09/08/2026)
+
+Réécriture de `SidebarNav.astro` et nettoyage de `WikiLayout.astro` : même rendu,
+beaucoup moins de code, et plusieurs bugs éliminés.
+
+### Code mort supprimé
+- Champ `title` des sections (construit mais jamais rendu).
+- Cas spécial codé en dur pour Nika (déjà dans sa catégorie).
+- Ajout manuel « Chevaliers Divins » (écrasé par la déduplication, ne servait à rien).
+- CSS WikiLayout sans élément correspondant : `.sidebar-left-header`, `.sidebar-left-title`,
+  `.sidebar-collapse-btn`, `.sidebar-expand-btn` (héritage d'une ancienne UI).
+- Deux MutationObservers dupliqués fusionnés en un seul.
+- Commentaires obsolètes, `aria-label` redondant sur les toggles, `id` inutilisé du filtre.
+
+### Bugs corrigés
+- **Sections repliées focusables** : `max-height: 0 + opacity` laissait les liens invisibles
+  dans l'ordre de Tab et annoncés par les lecteurs d'écran → `display: none`.
+- **Hack Shirahoshi remplacé par une règle générique** : un article dont le parent est dans une
+  autre catégorie apparaît en tête de sa propre catégorie (avant : cas codé en dur ; 12 autres
+  articles étaient dans la même situation sans correctif). La sidebar liste désormais toutes les
+  fiches de chaque catégorie, en cohérence avec `/dossiers`.
+- **Vol de focus possible** : l'auto-focus du filtre ne se déclenche plus que sur la transition
+  fermé → ouvert du tiroir (avant : n'importe quel changement de classe).
+- `!important` retiré (réordre des règles CSS), `hidden` natif à la place de styles inline,
+  `aria-controls` corrects entre chaque toggle et sa liste.
+
+### Vérifié
+`npm test` 70/70 · `astro check` 0/0/0 · build 144 pages · rendu contrôlé dans le dist :
+14 sections, une seule expansée par page (la section active), sections chapitres en évidence
+sur `/chapitres/*`, Shirahoshi présente sans hack, aucun href dupliqué hors doublons voulus
+(Commencer/Aide), script sidebar présent et minifié (3,1 Ko), HTTP 200 sur les pages clés.
