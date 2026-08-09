@@ -140,7 +140,7 @@ const canonicalWikiUrl = new URL(
     )
   }
 
-  <Navbar />
+  <Navbar hideMobileToggle={noSidebar} />
 
   <!-- Mobile overlay — unique navigation DOM, affiché uniquement sur mobile quand le tiroir est ouvert -->
   <div id="sidebar-mobile-overlay" class="sidebar-mobile-overlay" aria-hidden="true"></div>
@@ -152,12 +152,18 @@ const canonicalWikiUrl = new URL(
           <SidebarNav currentPath={currentPath} />
         </aside>
 
-        <!-- Vertical Resizer Handle for mouse drag width adjustment -->
+        <!-- Vertical Resizer Handle — souris (drag) ET clavier (flèches ←/→, Home/End) -->
         <div
           id="sidebar-resizer"
           class="sidebar-resizer"
-          title="Glisser pour redimensionner la barre latérale"
+          role="separator"
+          aria-orientation="vertical"
+          tabindex="0"
           aria-label="Redimensionner la barre latérale"
+          aria-valuemin={200}
+          aria-valuemax={480}
+          aria-valuenow={260}
+          title="Glisser (ou flèches ←/→ au clavier) pour redimensionner la barre latérale"
         >
         </div>
       </div>
@@ -204,6 +210,10 @@ const canonicalWikiUrl = new URL(
       </>
     )
   }
+
+  {/* Overlays rendus HORS de <main> : un élément `inert` ne doit jamais contenir
+      l'overlay qui le neutralise (ex. lightbox d'article). */}
+  <slot name="overlays" />
 </BaseLayout>
 
 <style>
@@ -356,9 +366,16 @@ const canonicalWikiUrl = new URL(
   }
 
   .sidebar-resizer:hover::after,
-  :global(body.is-resizing) .sidebar-resizer::after {
+  :global(body.is-resizing) .sidebar-resizer::after,
+  .sidebar-resizer:focus-visible::after {
     background-color: var(--cyan);
     box-shadow: 0 0 8px var(--glow-cyan);
+  }
+
+  .sidebar-resizer:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: -2px;
+    border-radius: 2px;
   }
 
   :global(.sidebar-left-collapsed) .sidebar-resizer {
@@ -550,7 +567,7 @@ const canonicalWikiUrl = new URL(
       visibility: visible;
       pointer-events: auto;
       /* Soft shadow that does not expand document width (html clips x) */
-      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+      box-shadow: 4px 0 24px var(--shadow-color);
     }
 
     .sidebar-left {
@@ -708,7 +725,7 @@ const canonicalWikiUrl = new URL(
     color: var(--text-main);
     font-size: 13px;
     font-weight: 600;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 20px var(--shadow-color);
     cursor: pointer;
     transition: all 0.2s ease;
   }
@@ -716,7 +733,7 @@ const canonicalWikiUrl = new URL(
     border-color: var(--cyan);
     color: var(--cyan);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 16px var(--glow-cyan);
+    box-shadow: 0 8px 24px var(--shadow-color), 0 0 16px var(--glow-cyan);
   }
   .toc-fab:active {
     transform: translateY(0) scale(0.97);
@@ -767,7 +784,7 @@ const canonicalWikiUrl = new URL(
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: -4px 0 24px rgba(0,0,0,0.25);
+    box-shadow: -4px 0 24px var(--shadow-color);
   }
   .toc-drawer.is-open {
     transform: translateX(0);
@@ -901,6 +918,8 @@ const canonicalWikiUrl = new URL(
   };
 
   navbarSidebarToggle?.addEventListener('click', () => {
+    // Pages sans sidebar (404/500…) : rien à replier/ouvrir.
+    if (!sidebarContainer) return;
     // Sur mobile, le bouton desktop est masqué : on délègue au tiroir mobile
     if (window.innerWidth <= 768) {
       toggleMobile(true);
@@ -912,6 +931,11 @@ const canonicalWikiUrl = new URL(
   // --- Mobile drawer : single navigation DOM, pas de duplication ---
   let scrollLocked = false;
   let touchMoveHandler = null;
+  // Le tiroir mobile a-t-il été manipulé depuis le dernier passage desktop ?
+  // Sert à réinitialiser l'état replié AU RETOUR en desktop uniquement dans ce
+  // cas (avant : n'importe quel resize desktop écrasait la préférence de
+  // repli choisie par l'utilisateur, ex. ouverture des devtools).
+  let mobileManipulated = false;
 
   /**
    * Freeze background scroll with zero layout shift.
@@ -920,6 +944,17 @@ const canonicalWikiUrl = new URL(
    * - overflow:hidden only; native scrollY is kept
    * - touchmove blocked outside the drawer (iOS rubber-band)
    */
+  // Éléments de la navbar neutralisés quand le tiroir mobile est ouvert : le
+  // hamburger reste le seul contrôle focusable (le focus ne peut plus « fuir »
+  // derrière l'overlay).
+  const navbarInertSelector = '.navbar .nav-left, .navbar .nav-center, .navbar .nav-actions';
+  const setNavbarInert = (inert) => {
+    document.querySelectorAll(navbarInertSelector).forEach((el) => {
+      if (inert) el.setAttribute('inert', '');
+      else el.removeAttribute('inert');
+    });
+  };
+
   const lockScroll = () => {
     if (scrollLocked) return;
     scrollLocked = true;
@@ -927,6 +962,7 @@ const canonicalWikiUrl = new URL(
     document.body.classList.add('mobile-nav-open');
     mainContent?.setAttribute('inert', '');
     mainContent?.setAttribute('aria-hidden', 'true');
+    setNavbarInert(true);
 
     touchMoveHandler = (e) => {
       if (!isMobileOpen()) return;
@@ -945,6 +981,7 @@ const canonicalWikiUrl = new URL(
     document.body.classList.remove('mobile-nav-open');
     mainContent?.removeAttribute('inert');
     mainContent?.removeAttribute('aria-hidden');
+    setNavbarInert(false);
 
     if (touchMoveHandler) {
       document.removeEventListener('touchmove', touchMoveHandler);
@@ -953,8 +990,12 @@ const canonicalWikiUrl = new URL(
   };
 
   const toggleMobile = (force) => {
+    // Pages sans sidebar (404/500…) : pas de tiroir → on ne fait rien, surtout
+    // pas lockScroll() qui gèlerait le défilement sans aucun moyen de sortir.
+    if (!sidebarContainer) return;
     const willOpen = force !== undefined ? force : !isMobileOpen();
     if (willOpen) {
+      mobileManipulated = true;
       // Lock first so the open animation never races a layout shift
       lockScroll();
       // Double-rAF: apply open class after lock styles are committed
@@ -1055,8 +1096,9 @@ const canonicalWikiUrl = new URL(
   });
 
   // Fermer automatiquement le drawer si on repasse en desktop (resize).
-  // On réinitialise aussi l'état replié desktop pour éviter qu'un tiroir
-  // mobile laissé ouvert ne se transforme en sidebar repliée (icône ↔ incohérente).
+  // On réinitialise l'état replié desktop UNIQUEMENT si le tiroir a été
+  // manipulé en mobile — sinon un simple resize (devtools, zoom…) écraserait
+  // la préférence de repli choisie par l'utilisateur.
   let resizeTimeout;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
@@ -1064,9 +1106,8 @@ const canonicalWikiUrl = new URL(
       if (window.innerWidth > 768 && isMobileOpen()) {
         toggleMobile(false);
       }
-      // Sur desktop, la sidebar de contenu doit rester visible par défaut,
-      // même si elle a été manipulée pendant une session mobile.
-      if (window.innerWidth > 768) {
+      if (window.innerWidth > 768 && mobileManipulated) {
+        mobileManipulated = false;
         document.documentElement.classList.remove('sidebar-left-collapsed');
         sidebarContainer?.classList.remove('collapsed');
         localStorage.setItem('sidebar-left-collapsed', 'false');
@@ -1082,6 +1123,16 @@ const canonicalWikiUrl = new URL(
   const tocClose = document.getElementById('toc-drawer-close');
   const isTocOpen = () => tocDrawer?.classList.contains('is-open');
 
+  // Fond de page neutralisé pendant que le drawer TOC est ouvert (même pattern
+  // que le tiroir mobile : le focus ne peut plus atteindre le contenu derrière).
+  const tocInertSelector = '.navbar, .layout, #back-to-top, #sidebar-left-container';
+  const setTocInert = (inert) => {
+    document.querySelectorAll(tocInertSelector).forEach((el) => {
+      if (inert) el.setAttribute('inert', '');
+      else el.removeAttribute('inert');
+    });
+  };
+
   const toggleToc = (force) => {
     const willOpen = force !== undefined ? force : !isTocOpen();
     if (willOpen) {
@@ -1090,14 +1141,39 @@ const canonicalWikiUrl = new URL(
       tocOverlay?.setAttribute('aria-hidden','false');
       tocFab?.setAttribute('aria-expanded','true');
       document.documentElement.classList.add('toc-open');
+      setTocInert(true);
+      // Déplace le focus dans le drawer (bouton fermer) une fois peint.
+      requestAnimationFrame(() => {
+        const close = document.getElementById('toc-drawer-close');
+        close?.focus();
+      });
     } else {
       tocDrawer?.classList.remove('is-open');
       tocOverlay?.classList.remove('is-open');
       tocOverlay?.setAttribute('aria-hidden','true');
       tocFab?.setAttribute('aria-expanded','false');
       document.documentElement.classList.remove('toc-open');
+      setTocInert(false);
     }
   };
+
+  // Focus trap minimal dans le drawer TOC (Tab tourne en boucle à l'intérieur).
+  tocDrawer?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab' || !isTocOpen()) return;
+    const focusable = tocDrawer.querySelectorAll(
+      'a[href], button:not([disabled])',
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
 
   tocFab?.addEventListener('click', () => toggleToc());
   tocClose?.addEventListener('click', () => {
@@ -1114,8 +1190,21 @@ const canonicalWikiUrl = new URL(
       tocFab?.focus();
     }
   });
-  // Close TOC on link click
-  tocDrawer?.addEventListener('click', (e) => { if ((e.target as HTMLElement).closest('a')) toggleToc(false); });
+  // Close TOC on link click ; pour les ancres internes, déplace le focus vers la
+  // section ciblée (sinon le focus « tombe » quand le drawer se referme).
+  tocDrawer?.addEventListener('click', (e) => {
+    const link = (e.target as HTMLElement).closest('a');
+    if (!link) return;
+    toggleToc(false);
+    const href = link.getAttribute('href') || '';
+    if (href.startsWith('#')) {
+      const target = document.getElementById(href.slice(1));
+      if (target) {
+        target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+      }
+    }
+  });
 
   // Zen mode toggle — exposed globally for ArticleLayout button
   (window as any).toggleZenMode = () => {
@@ -1136,6 +1225,41 @@ const canonicalWikiUrl = new URL(
   if (resizer) {
     let isDragging = false;
 
+    const setWidth = (widthPx) => {
+      const w = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Math.round(widthPx)));
+      document.documentElement.style.setProperty('--sidebar-left-width', w + 'px');
+      resizer.setAttribute('aria-valuenow', String(w));
+      return w;
+    };
+
+    const persistWidth = () => {
+      const currentWidth = getComputedStyle(document.documentElement)
+        .getPropertyValue('--sidebar-left-width')
+        .trim();
+      if (currentWidth && currentWidth !== '0px') {
+        localStorage.setItem('sidebar-left-width', currentWidth);
+      }
+    };
+
+    // Redimensionnement clavier (WCAG 2.1.1) : ←/→ par pas de 20px, Home/End min/max.
+    resizer.addEventListener('keydown', (e) => {
+      const current =
+        parseInt(
+          getComputedStyle(document.documentElement).getPropertyValue('--sidebar-left-width'),
+          10,
+        ) || 260;
+      let next = null;
+      if (e.key === 'ArrowLeft') next = current - 20;
+      else if (e.key === 'ArrowRight') next = current + 20;
+      else if (e.key === 'Home') next = MIN_WIDTH;
+      else if (e.key === 'End') next = MAX_WIDTH;
+      if (next !== null) {
+        e.preventDefault();
+        setWidth(next);
+        persistWidth();
+      }
+    });
+
     const startDragging = (e) => {
       if (document.documentElement.classList.contains('sidebar-left-collapsed')) return;
       if (window.innerWidth <= 768) return;
@@ -1147,20 +1271,14 @@ const canonicalWikiUrl = new URL(
     const onMove = (e) => {
       if (!isDragging) return;
       const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-      const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, clientX));
-      document.documentElement.style.setProperty('--sidebar-left-width', newWidth + 'px');
+      setWidth(clientX);
     };
 
     const stopDragging = () => {
       if (!isDragging) return;
       isDragging = false;
       document.body.classList.remove('is-resizing');
-      const currentWidth = getComputedStyle(document.documentElement)
-        .getPropertyValue('--sidebar-left-width')
-        .trim();
-      if (currentWidth && currentWidth !== '0px') {
-        localStorage.setItem('sidebar-left-width', currentWidth);
-      }
+      persistWidth();
     };
 
     resizer.addEventListener('mousedown', startDragging);

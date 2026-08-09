@@ -144,6 +144,22 @@ const articleJsonLd = {
   headings={headings}
 >
   <ReadingProgressBar />
+  {/* Alimente la section « Récemment lus » de la sidebar (reprise de lecture). */}
+  <script is:inline define:vars={{ articleHref: currentPath, articleTitle: title }}>
+    (function () {
+      try {
+        var KEY = 'fousdu-recent-articles';
+        var list = [];
+        try {
+          list = JSON.parse(localStorage.getItem(KEY) || '[]');
+        } catch (e) {}
+        if (!Array.isArray(list)) list = [];
+        list = list.filter(function (x) { return x && x.href !== articleHref; });
+        list.unshift({ href: articleHref, title: articleTitle });
+        localStorage.setItem(KEY, JSON.stringify(list.slice(0, 8)));
+      } catch (e) {}
+    })();
+  </script>
   <script is:inline type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
   <script
     is:inline
@@ -293,7 +309,10 @@ const articleJsonLd = {
   <BackToTop />
   <Footer />
 
-  <!-- Image Lightbox Modal -->
+  <!-- Image Lightbox Modal — rendue dans le slot `overlays` de WikiLayout, donc
+       HORS de <main> : le `inert` posé sur le contenu ne doit jamais neutraliser
+       la modale elle-même. -->
+  <Fragment slot="overlays">
   <div
     id="image-lightbox"
     class="lightbox-overlay hidden"
@@ -348,6 +367,7 @@ const articleJsonLd = {
       <div id="lightbox-caption" class="lightbox-caption"></div>
     </div>
   </div>
+  </Fragment>
 
   <script>
     const lightbox = document.getElementById('image-lightbox');
@@ -361,23 +381,56 @@ const articleJsonLd = {
     if (lightbox && lightboxImg) {
       // Ferme le tiroir de navigation mobile s'il était ouvert, afin d'éviter
       // la superposition de deux overlays (tiroir + lightbox).
+      // Ferme les overlays de navigation s'ils étaient ouverts, afin d'éviter la
+      // superposition de deux overlays. Doit AUSSI retirer tous les états `inert`
+      // / `aria-hidden` posés par WikiLayout, sinon la page resterait gelée.
+      const removeInert = (selector: string) => {
+        document.querySelectorAll(selector).forEach((el) => el.removeAttribute('inert'));
+      };
+
       const closeMobileNavIfOpen = () => {
         const drawer = document.getElementById('sidebar-left-container');
+        const overlay = document.getElementById('sidebar-mobile-overlay');
         if (drawer?.classList.contains('is-mobile-open')) {
           drawer.classList.remove('is-mobile-open');
-          document.getElementById('sidebar-mobile-overlay')?.classList.remove('is-open');
+          overlay?.classList.remove('is-open');
+          overlay?.setAttribute('aria-hidden', 'true');
           document.documentElement.classList.remove('mobile-nav-open');
           document.body.classList.remove('mobile-nav-open');
           document.documentElement.removeAttribute('data-nav-open');
           document.body.removeAttribute('data-nav-open');
+          // inert posés par lockScroll (WikiLayout) sur le contenu + la navbar
+          removeInert('#main-content');
+          removeInert('.navbar .nav-left, .navbar .nav-center, .navbar .nav-actions');
+          document.getElementById('main-content')?.removeAttribute('aria-hidden');
+          document.getElementById('mobile-menu-toggle')?.setAttribute('aria-expanded', 'false');
         }
-        // Also close TOC drawer if open
-        (document.getElementById('toc-drawer') as any)?.classList.remove('is-open');
-        document.getElementById('toc-overlay')?.classList.remove('is-open');
+        // Also close TOC drawer if open (+ ses inert associés)
+        const tocDrawer = document.getElementById('toc-drawer');
+        if (tocDrawer?.classList.contains('is-open')) {
+          tocDrawer.classList.remove('is-open');
+          const tocOverlay = document.getElementById('toc-overlay');
+          tocOverlay?.classList.remove('is-open');
+          tocOverlay?.setAttribute('aria-hidden', 'true');
+          document.getElementById('toc-fab')?.setAttribute('aria-expanded', 'false');
+          document.documentElement.classList.remove('toc-open');
+          removeInert('.navbar, .layout, #back-to-top, #sidebar-left-container');
+        }
       };
 
       const galleryImgs = Array.from(document.querySelectorAll<HTMLImageElement>('.content img'));
       let currentIndex = -1;
+
+      // Tout ce qui est derrière la modale devient inerte (focus + clic + AT).
+      const backgroundSelector = '.navbar, .layout, #toc-fab, #back-to-top, #sidebar-left-container';
+      const setBackgroundInert = (inert: boolean) => {
+        mainContent?.toggleAttribute('inert', inert);
+        mainContent?.setAttribute('aria-hidden', inert ? 'true' : 'false');
+        document.querySelectorAll(backgroundSelector).forEach((el) => {
+          if (inert) el.setAttribute('inert', '');
+          else el.removeAttribute('inert');
+        });
+      };
 
       const setLightboxImage = (index: number) => {
         if (index < 0 || index >= galleryImgs.length) return;
@@ -397,8 +450,7 @@ const articleJsonLd = {
         lightbox.setAttribute('aria-hidden', 'false');
         document.documentElement.classList.add('lightbox-open');
         document.body.classList.add('lightbox-open');
-        mainContent?.setAttribute('inert', '');
-        mainContent?.setAttribute('aria-hidden', 'true');
+        setBackgroundInert(true);
         // Focus close button after the frame paints
         requestAnimationFrame(() => closeBtn?.focus());
       };
@@ -408,13 +460,12 @@ const articleJsonLd = {
         lightbox.setAttribute('aria-hidden', 'true');
         document.documentElement.classList.remove('lightbox-open');
         document.body.classList.remove('lightbox-open');
-        mainContent?.removeAttribute('inert');
-        mainContent?.removeAttribute('aria-hidden');
+        setBackgroundInert(false);
         lightboxImg.src = '';
-        // Return focus to previously focused thumbnail if possible
+        // Rend le focus au bouton qui contenait la miniature agrandie.
         if (currentIndex >= 0) {
-          const previouslyFocused = galleryImgs[currentIndex];
-          previouslyFocused?.focus();
+          const wrapper = galleryImgs[currentIndex]?.closest<HTMLButtonElement>('.content-img-zoom');
+          wrapper?.focus();
         }
         currentIndex = -1;
       };
@@ -428,24 +479,21 @@ const articleJsonLd = {
         setLightboxImage((currentIndex + 1) % galleryImgs.length);
       };
 
+      // Chaque miniature est enveloppée dans un vrai <button> (pattern conforme,
+      // annoncé correctement par les lecteurs d'écran, focusable nativement).
       galleryImgs.forEach((htmlImg, idx) => {
-        htmlImg.style.cursor = 'zoom-in';
-        htmlImg.title = 'Cliquer pour agrandir';
         htmlImg.loading = 'lazy';
-        // Make image keyboard-focusable for a11y
-        htmlImg.tabIndex = 0;
-        htmlImg.setAttribute('role', 'button');
-        htmlImg.setAttribute(
+        htmlImg.decoding = 'async';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'content-img-zoom';
+        btn.setAttribute(
           'aria-label',
           `Agrandir l'image : ${htmlImg.alt || 'sans description'}`,
         );
-        htmlImg.addEventListener('click', () => openLightbox(idx));
-        htmlImg.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            openLightbox(idx);
-          }
-        });
+        htmlImg.replaceWith(btn);
+        btn.appendChild(htmlImg);
+        btn.addEventListener('click', () => openLightbox(idx));
       });
 
       closeBtn?.addEventListener('click', closeLightbox);
@@ -515,19 +563,22 @@ const articleJsonLd = {
       try {
         await navigator.clipboard.writeText(window.location.href);
         return true;
-      } catch {
-        try {
-          const ta = document.createElement('textarea');
-          ta.value = window.location.href;
-          ta.setAttribute('readonly', '');
-          ta.style.position = 'fixed';
-          ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand('copy');
-          ta.remove();
-          return true;
         } catch {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = window.location.href;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            // Repli historique (contextes non sécurisés) — API dépréciée mais
+            // seul secours hors navigator.clipboard ; appel via cast pour
+            // éviter le hint de dépréciation sans supprimer le fallback.
+            (document as unknown as { execCommand(cmd: string): boolean }).execCommand('copy');
+            ta.remove();
+            return true;
+          } catch {
           window.prompt('Copiez ce lien :', window.location.href);
           return false;
         }
@@ -758,13 +809,29 @@ const articleJsonLd = {
 
   .content :global(img) {
     border-radius: var(--border-radius-md);
-    margin: 1.5rem auto;
+    margin: 0 auto;
     border: 1px solid var(--border-color);
     max-height: 450px;
     width: auto;
     object-fit: contain;
     display: block;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 20px var(--shadow-color);
+  }
+
+  /* Enveloppe <button> des miniatures agrandissables (générée par le script). */
+  .content :global(.content-img-zoom) {
+    display: block;
+    margin: 1.5rem auto;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: zoom-in;
+    max-width: 100%;
+  }
+  .content :global(.content-img-zoom:focus-visible) {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+    border-radius: var(--border-radius-md);
   }
 
   .content :global(blockquote) {
@@ -878,10 +945,12 @@ const articleJsonLd = {
     cursor: pointer;
   }
 
+  /* Bouton fermer en position fixe : toujours visible, même avec une image
+     proche du haut du viewport (l'ancien top:-48px pouvait être rogné). */
   #lightbox-close {
-    position: absolute;
-    top: -48px;
-    right: 0;
+    position: fixed;
+    top: max(16px, env(safe-area-inset-top, 0px));
+    right: 16px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -893,6 +962,7 @@ const articleJsonLd = {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    z-index: 1;
   }
 
   #lightbox-close:hover {
@@ -906,14 +976,16 @@ const articleJsonLd = {
     outline-offset: 2px;
   }
 
+  /* Boutons prev/next superposés à l'image (et non plus à ∓60px hors du
+     conteneur, où ils étaient rognés sur les viewports intermédiaires). */
   .lightbox-nav {
-    position: absolute;
+    position: fixed;
     top: 50%;
     transform: translateY(-50%);
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--surface);
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
     border: 1px solid var(--border-color);
     color: var(--text-main);
     cursor: pointer;
@@ -921,6 +993,7 @@ const articleJsonLd = {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    z-index: 1;
   }
 
   .lightbox-nav:hover {
@@ -934,11 +1007,11 @@ const articleJsonLd = {
   }
 
   .lightbox-prev {
-    left: -60px;
+    left: 12px;
   }
 
   .lightbox-next {
-    right: -60px;
+    right: 12px;
   }
 
   .lightbox-caption {
@@ -953,16 +1026,6 @@ const articleJsonLd = {
   }
 
   @media (max-width: 768px) {
-    .lightbox-prev {
-      left: 8px;
-    }
-    .lightbox-next {
-      right: 8px;
-    }
-    #lightbox-close {
-      top: -44px;
-      right: 0;
-    }
     .lightbox-caption {
       font-size: 12px;
       bottom: -32px;

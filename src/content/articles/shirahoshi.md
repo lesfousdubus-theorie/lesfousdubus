@@ -8,7 +8,7 @@ editorialStatus: "canon"
 reviewedUntilChapter: 1188
 parent: "poseidon-fiche"
 order: 31
-related: ["poseidon", "theorie-complete"]
+related: ["poseidon-fiche", "theorie-complete"]
 ---
 
 ## Présentation canonique

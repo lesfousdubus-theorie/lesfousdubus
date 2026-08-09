@@ -85,7 +85,7 @@ const chapitresBreadcrumbLd = {
               { 'badge-effect--gold': ch.data.effect === 'approfondissement' || ch.data.effect === 'modification' },
             ]}>{effectLabel(ch.data.effect)}</span>
           </div>
-          <h4>{ch.data.title}</h4>
+          <h3>{ch.data.title}</h3>
           {ch.data.summary && <p class="chapter-item__desc">{ch.data.summary}</p>}
         </a>
       ))
@@ -96,7 +96,7 @@ const chapitresBreadcrumbLd = {
         <span class="badge-chapter badge-chapter--muted">Chap 1185</span>
         <span class="badge-effect badge-effect--muted">—</span>
       </div>
-      <h4>Aucune analyse disponible pour le chapitre 1185</h4>
+      <h3>Aucune analyse disponible pour le chapitre 1185</h3>
       <p class="chapter-item__desc">Il n'existe pas de transcription source correspondante pour ce chapitre. Ce n'est pas un oubli technique.</p>
     </div>
   </div>
@@ -239,7 +239,7 @@ const chapitresBreadcrumbLd = {
     color: var(--cyan);
   }
 
-  .chapter-item h4 {
+  .chapter-item h3 {
     font-size: 16px;
     font-weight: 600;
     color: var(--text-main);

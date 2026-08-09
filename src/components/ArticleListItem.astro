@@ -40,19 +40,18 @@ const { badge, badgeColor, title, category, chapter, href, summary } = Astro.pro
     position: relative;
     display: flex;
     align-items: stretch;
-    background-color: var(--bg-main);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    text-decoration: none;
-    transition: all 0.25s ease;
-    overflow: hidden;
-  }
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
 
   .article-item:hover {
     background-color: var(--bg-secondary);
     border-color: color-mix(in srgb, var(--violet) 30%, var(--border-color));
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 20px var(--shadow-color);
   }
   .article-item:focus-visible {
     outline: 2px solid var(--cyan);

@@ -3,11 +3,15 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 import pagefind from 'astro-pagefind';
+import rehypeImageDimensions from './src/plugins/rehype-image-dimensions.mjs';
 
 export default defineConfig({
   site: 'https://lesfousdubus.sbs',
   output: 'static',
   prefetch: true,
+  markdown: {
+    rehypePlugins: [rehypeImageDimensions],
+  },
   server: { host: '0.0.0.0', allowedHosts: true },
   redirects: {
     '/theorie/ponelyphes': '/theorie/poneglyphes',

@@ -3,6 +3,12 @@ import { getCollection } from 'astro:content';
 import { effectLabel } from '@utils/labels';
 import SearchModal from './SearchModal.tsx';
 
+interface Props {
+  /** Pages sans sidebar (404/500) : le hamburger n'a rien à ouvrir → masqué. */
+  hideMobileToggle?: boolean;
+}
+const { hideMobileToggle = false } = Astro.props;
+
 interface SubLink {
   label: string;
   href: string;
@@ -144,9 +150,8 @@ const isActive = (href: string) =>
             <a
               href={item.href}
               class:list={['nav-link', { 'nav-link--active': isActive(item.href) }]}
-              aria-haspopup="true"
               aria-expanded="false"
-              aria-current={isActive(item.href) ? 'true' : undefined}
+              aria-current={isActive(item.href) ? 'page' : undefined}
             >
               {item.label}
               <svg
@@ -249,12 +254,13 @@ const isActive = (href: string) =>
       </button>
     </div>
 
-    <!-- Mobile: hamburger -->
+    <!-- Mobile: hamburger (masqué sur les pages sans sidebar : rien à ouvrir) -->
     <button
       id="mobile-menu-toggle"
-      class="icon-btn lg:hidden"
+      class:list={['icon-btn', 'lg:hidden', { 'mobile-toggle--disabled': hideMobileToggle }]}
       aria-label="Menu"
       aria-expanded="false"
+      disabled={hideMobileToggle || undefined}
     >
       <svg
         id="hamburger-icon"
@@ -290,9 +296,30 @@ const isActive = (href: string) =>
 </nav>
 
 <!-- Search modal: MUST live outside <nav>.
-     `client:load` démarre l'hydratation immédiatement (évite le "bouton qui ne répond pas"
-     sur 3G). Le composant est petit et le singleton Pagefind amortit le coût. -->
-<SearchModal client:load />
+     `client:idle` libère le thread principal pendant le chargement ; le script inline
+     ci-dessous (« recherche avant hydratation ») garantit qu'un clic ou Ctrl/Cmd+K
+     déclenché AVANT l'hydratation ouvre quand même la modale une fois prête. -->
+<SearchModal client:idle />
+
+<script is:inline>
+  // Recherche avant hydratation : si l'utilisateur déclenche la recherche (bouton
+  // loupe, événement `openSearch` ou Ctrl/Cmd+K) avant que React n'ait hydraté la
+  // modale, on mémorise la demande — SearchModal l'honorera au montage.
+  window.__searchHydrated = false;
+  window.__searchPending = false;
+  (function () {
+    var markPending = function () {
+      if (window.__searchHydrated) return;
+      window.__searchPending = true;
+      var trigger = document.querySelector('.search-trigger');
+      if (trigger) trigger.setAttribute('aria-busy', 'true');
+    };
+    document.addEventListener('openSearch', markPending, true);
+    window.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) markPending();
+    });
+  })();
+</script>
 <!-- Mobile drawer is now the single SidebarNav in WikiLayout (no duplicate DOM) -->
 
 <style>
@@ -613,7 +640,7 @@ const isActive = (href: string) =>
   .navbar-sidebar-toggle {
     width: 34px;
     height: 34px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -635,7 +662,7 @@ const isActive = (href: string) =>
   .icon-btn {
     width: 34px;
     height: 34px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -681,6 +708,11 @@ const isActive = (href: string) =>
 
   #mobile-menu-toggle {
     display: none;
+  }
+
+  /* Pages sans sidebar (404/500) : le hamburger n'a pas de tiroir à ouvrir. */
+  #mobile-menu-toggle.mobile-toggle--disabled {
+    display: none !important;
   }
 
   /* Large desktop: roomier nav */
@@ -884,6 +916,16 @@ const isActive = (href: string) =>
 
 <script>
   // Theme toggle logic
+  // Étiquette du raccourci clavier selon la plateforme : ⌘K sur macOS, Ctrl K ailleurs.
+  const isMacPlatform = /Mac|iPhone|iPad|iPod/.test(
+    (typeof navigator !== 'undefined' && navigator.userAgent) || '',
+  );
+  if (isMacPlatform) {
+    document.querySelectorAll('.search-shortcut').forEach((el) => {
+      el.textContent = '⌘ K';
+    });
+  }
+
   const themeBtns = document.querySelectorAll('[data-theme-toggle]');
 
   const updateIcons = (theme: string) => {
@@ -946,17 +988,38 @@ const isActive = (href: string) =>
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       if (!isTouchDevice && window.innerWidth > 1024) return;
 
-      e.preventDefault();
       const isOpen = item.classList.contains('nav-item--open');
 
       if (isOpen) {
+        // 2ᵉ tap : le dropdown est déjà ouvert → on LAISSE la navigation se faire
+        // vers la page de rubrique (sinon les liens top-level seraient inatteignables
+        // sur tablette tactile).
         closeAllDropdowns();
-      } else {
-        closeAllDropdowns();
-        item.classList.add('nav-item--open');
-        navLink.setAttribute('aria-expanded', 'true');
-        openDropdown = item;
+        return;
       }
+
+      // 1ᵉʳ tap : ouvrir le dropdown sans naviguer.
+      e.preventDefault();
+      closeAllDropdowns();
+      item.classList.add('nav-item--open');
+      navLink.setAttribute('aria-expanded', 'true');
+      openDropdown = item;
+    });
+
+    // Synchronise `aria-expanded` quand l'ouverture passe par le survol / le focus
+    // (desktop souris), pour que l'état annoncé corresponde à l'état visuel.
+    const hoverCapable = window.matchMedia('(hover: hover)').matches;
+    const syncHover = (on: boolean) => {
+      if (item.classList.contains('nav-item--open')) return; // l'état clic gagne
+      navLink.setAttribute('aria-expanded', on ? 'true' : 'false');
+    };
+    if (hoverCapable) {
+      item.addEventListener('pointerenter', () => syncHover(true));
+      item.addEventListener('pointerleave', () => syncHover(false));
+    }
+    item.addEventListener('focusin', () => syncHover(true));
+    item.addEventListener('focusout', (e) => {
+      if (!item.contains(e.relatedTarget as Node | null)) syncHover(false);
     });
   });
 
@@ -997,7 +1060,7 @@ const isActive = (href: string) =>
     if (
       e.key === 'ArrowDown' &&
       target.classList.contains('nav-link') &&
-      target.getAttribute('aria-haspopup') === 'true'
+      target.getAttribute('aria-expanded') !== null
     ) {
       const item = target.closest<HTMLDivElement>('.nav-item');
       if (!item) return;

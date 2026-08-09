@@ -14,6 +14,7 @@
 <script>
   const btn = document.getElementById('back-to-top');
   if (btn) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const checkScroll = () => {
       if (window.scrollY > 300) {
         btn.classList.add('back-to-top--visible');
@@ -23,7 +24,7 @@
     };
 
     btn.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
     });
 
     window.addEventListener('scroll', checkScroll, { passive: true });
@@ -46,7 +47,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px var(--shadow-color);
     opacity: 0;
     visibility: hidden;
     transform: translateY(12px);

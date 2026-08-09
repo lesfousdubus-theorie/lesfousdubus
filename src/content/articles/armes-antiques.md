@@ -11,8 +11,8 @@ reviewedUntilChapter: 1188
 order: 1
 related:
   [
-    "poseidon",
-    "pluton",
+    "poseidon-fiche",
+    "pluton-fiche",
     "uranus",
     "shirahoshi",
     "wa-no-kuni",

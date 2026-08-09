@@ -208,7 +208,7 @@ navSections.push({
 });
 ---
 
-<nav data-pagefind-ignore>
+<nav data-pagefind-ignore id="sidebar-nav-root">
   <!-- Mobile filter — only visible in the drawer -->
   <div class="sidebar-filter" id="sidebar-filter">
     <svg class="sidebar-filter__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -222,7 +222,6 @@ navSections.push({
       enterkeyhint="search"
       autocomplete="off"
       aria-label="Filtrer la navigation"
-      aria-controls="sidebar-filter-results"
       aria-describedby="sidebar-filter-status"
     />
     <button id="sidebar-filter-clear" class="sidebar-filter__clear" aria-label="Effacer le filtre" style="display:none">
@@ -232,7 +231,6 @@ navSections.push({
     </button>
   </div>
   <div id="sidebar-filter-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
-  <div id="sidebar-filter-results"></div>
   {
     navSections.map((section, index) => {
       const isExpanded = section.links.some(
@@ -604,10 +602,74 @@ navSections.push({
     });
   });
 
+  // « Récemment lus » — reprise de lecture entre sessions (localStorage).
+  // Construite côté client pour rester 100 % statique ; insérée AVANT l'init du
+  // filtre pour que celui-ci la prenne en compte.
+  const RECENT_ARTICLES_KEY = 'fousdu-recent-articles';
+  const sidebarNav = document.getElementById('sidebar-nav-root');
+
+  const buildRecentSection = () => {
+    if (!sidebarNav) return;
+    let recents: Array<{ href: string; title: string }> = [];
+    try {
+      const raw = localStorage.getItem(RECENT_ARTICLES_KEY);
+      if (raw) recents = JSON.parse(raw);
+    } catch {
+      recents = [];
+    }
+    if (!Array.isArray(recents) || recents.length === 0) return;
+
+    const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+    const items = recents
+      .filter((r) => r && r.href && r.title)
+      .filter((r) => r.href.replace(/\/+$/, '') !== currentPath)
+      .slice(0, 5);
+    if (items.length === 0) return;
+
+    const section = document.createElement('div');
+    section.setAttribute('data-sidebar-section', '');
+    section.setAttribute('data-recent-section', '');
+    section.innerHTML = `
+      <button class="sidebar-section-toggle" aria-expanded="true" aria-label="Récemment lus">
+        <span class="flex items-center gap-2">
+          <span class="text-base" aria-hidden="true">🕘</span>
+          <span>Récemment lus</span>
+        </span>
+        <svg class="sidebar-chevron rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+      <ul class="sidebar-section-links expanded"></ul>`;
+    const ul = section.querySelector('ul')!;
+    items.forEach((r) => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = r.href;
+      a.className = 'sidebar-link';
+      a.textContent = r.title;
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+
+    const firstSection = sidebarNav.querySelector('[data-sidebar-section]');
+    if (firstSection) sidebarNav.insertBefore(section, firstSection);
+    else sidebarNav.appendChild(section);
+
+    // Câblage du bouton de repli (même comportement que les sections statiques)
+    const toggle = section.querySelector('.sidebar-section-toggle');
+    const links = section.querySelector('.sidebar-section-links');
+    const chevron = section.querySelector('.sidebar-chevron');
+    toggle?.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      chevron?.classList.toggle('rotate-90', !expanded);
+      links?.classList.toggle('expanded', !expanded);
+      links?.classList.toggle('collapsed', expanded);
+    });
+  };
+  buildRecentSection();
+
   // Sidebar filter — desktop + mobile, with state restore + recent
   const filterInput = document.getElementById('sidebar-filter-input') as HTMLInputElement | null;
   const filterClear = document.getElementById('sidebar-filter-clear');
-  const sidebarNav = document.querySelector('[data-pagefind-ignore]');
 
   if (filterInput && sidebarNav) {
     const allSections = sidebarNav.querySelectorAll<HTMLDivElement>('[data-sidebar-section]');
@@ -697,9 +759,10 @@ navSections.push({
     const scrollToActive = () => {
       const activeLink = sidebarContainer.querySelector<HTMLAnchorElement>('.sidebar-link--active');
       if (activeLink) {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         // Small delay to let the drawer animation finish
         setTimeout(() => {
-          activeLink.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          activeLink.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
         }, 300);
       }
     };

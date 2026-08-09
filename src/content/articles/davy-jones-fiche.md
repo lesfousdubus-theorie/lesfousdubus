@@ -8,7 +8,7 @@ editorialStatus: "hypothese-secondaire"
 certainty: "moyenne"
 reviewedUntilChapter: 1188
 order: 41
-related: ['davy-jones', 'teach']
+related: ['barbe-noire-davy-jones', 'teach']
 ---
 
 ## Présentation canonique

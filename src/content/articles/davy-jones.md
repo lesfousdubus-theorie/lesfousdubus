@@ -15,11 +15,11 @@ related: ["davy-jones-fiche", "teach", "guerre-finale", "gouvernement-mondial", 
 
 **Résumé** : Davy Jones est présenté comme une figure légendaire liée aux profondeurs de l'océan, au Davy Back Fight et au titre de Roi du Monde. Selon la théorie des Fous du Bus, cette figure n'appartiendrait pas au passé. Elle correspondrait au destin futur de Marshall D. Teach, dernier héritier d'une lignée que le Gouvernement mondial aurait tenté d'effacer à God Valley.
 
-![Teach est Davy Jones](/images/threads/barbe-noire-davy-jones/img_1.jpg)
+![Teach est Davy Jones](/images/threads/barbe-noire-davy-jones/img_1.webp)
 
 ## 1. Le clan Davy et God Valley
 
-![God Valley et le clan Davy](/images/threads/barbe-noire-davy-jones/img_2.jpg)
+![God Valley et le clan Davy](/images/threads/barbe-noire-davy-jones/img_2.webp)
 
 Le nom « Davy » n'apparaît pas par hasard dans *One Piece*. Le Davy Back Fight, le casier de Davy Jones, la légende des profondeurs — tout converge vers un patronyme qui évoque une lignée plutôt qu'un simple individu. La théorie des Fous du Bus propose que cette lignée ait vécu sur God Valley, l'île effacée de l'Histoire par le Gouvernement Mondial après l'incident de 38 ans plus tôt.
 
@@ -29,7 +29,7 @@ Marshall D. Teach est un orphelin sans pays. Il a été trouvé enfant sur le na
 
 ## 2. Imu appelle Rocks « Davy Jones »
 
-![Imu et Rocks](/images/threads/barbe-noire-davy-jones/img_3.jpg)
+![Imu et Rocks](/images/threads/barbe-noire-davy-jones/img_3.webp)
 
 Au chapitre 1164, Imu prononce le nom de « Davy Jones » en référence à Rocks D. Xebec. Cette appellation est surprenante : Rocks n'a jamais été présenté comme Davy Jones dans le manga. Pourquoi Imu utiliserait-il ce nom pour désigner un pirate qu'il a déjà affronté et vaincu à God Valley ?
 
@@ -39,7 +39,7 @@ Cette erreur d'identification est capitale. Elle révèle qu'Imu n'est pas omnis
 
 ## 3. Rocks et Teach visent le même trône
 
-![Ambitions parallèles](/images/threads/barbe-noire-davy-jones/img_4.jpg)
+![Ambitions parallèles](/images/threads/barbe-noire-davy-jones/img_4.webp)
 
 L'ambition de Rocks D. Xebec n'a jamais été de devenir Roi des Pirates. Son objectif, explicitement nommé dans le manga, était de devenir le **Roi du Monde**. Pas le roi d'un océan, pas le maître de Grand Line — le souverain absolu de la planète entière, celui qui siégerait au-dessus de tous les rois et de tous les gouvernements.
 
@@ -49,7 +49,7 @@ Le navire de Teach s'appelle le *Saber of Xebec*. Ce n'est pas un hommage discre
 
 ## 4. « Le monde » est l'objectif de Barbe Noire
 
-![Van Augur et Catarina Devon](/images/threads/barbe-noire-davy-jones/img_5.png)
+![Van Augur et Catarina Devon](/images/threads/barbe-noire-davy-jones/img_5.webp)
 
 Lors de l'incident d'Egghead, St. Jaygarcia Saturn pose à Catarina Devon et Van Augur une question directe : quel est le véritable objectif de Barbe Noire ? La réponse est immédiate, prononcée sans hésitation ni emphase :
 
@@ -63,7 +63,7 @@ C'est exactement ce que la légende attribue à Davy Jones : un pirate si puissa
 
 ## 5. Catarina Devon ouvre la route de Mary Geoise
 
-![Catarina Devon et l'infiltration](/images/threads/barbe-noire-davy-jones/img_6.png)
+![Catarina Devon et l'infiltration](/images/threads/barbe-noire-davy-jones/img_6.webp)
 
 À Egghead, Catarina Devon touche St. Jaygarcia Saturn. Par son pouvoir du Inu Inu no Mi, modèle Kyubi, elle copie instantanément l'apparence physique et les empreintes d'un des cinq Doyens du Gorosei. Ce geste, apparemment anodin dans le feu de l'action, est un acte de préparation stratégique d'une ampleur considérable.
 

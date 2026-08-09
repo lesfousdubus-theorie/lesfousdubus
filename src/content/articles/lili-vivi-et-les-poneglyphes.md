@@ -15,11 +15,11 @@ related: ["lili", "nefertari-vivi", "poneglyphes", "les-bases-du-siecle-oublie",
 
 **Résumé** : Nefertari D. Lili est décrite comme la reine d'Alabasta ayant refusé de vivre à Mary Geoise avant de disparaître mystérieusement. Nefertari Vivi vient elle aussi de disparaître après la Rêverie, tandis qu'Imu ordonne immédiatement qu'on la retrouve. Selon la théorie, ces deux histoires ne seraient pas parallèles : elles formeraient une seule et même histoire.
 
-![Vivi est Lili](/images/threads/lili-vivi-et-les-poneglyphes/img_1.jpg)
+![Vivi est Lili](/images/threads/lili-vivi-et-les-poneglyphes/img_1.webp)
 
 ## 1. Vivi et Lili possèdent la même apparence
 
-![Comparaison Vivi et Lili](/images/threads/lili-vivi-et-les-poneglyphes/img_2.jpg)
+![Comparaison Vivi et Lili](/images/threads/lili-vivi-et-les-poneglyphes/img_2.webp)
 
 Au chapitre 1085, la silhouette de la reine Lili est dévoilée pour la première fois. La coiffure, la posture et les traits du visage sont immédiatement reconnaissables pour tout lecteur de *One Piece* : ils correspondent presque trait pour trait à ceux de Nefertari Vivi. Le chapitre 1116 renforce cette impression avec le portrait de la Chambre Fleurie, qui montre une femme aux cheveux bleus — la couleur caractéristique de Vivi dans la version animée.
 
@@ -29,7 +29,7 @@ La ressemblance physique entre un personnage du présent et une figure historiqu
 
 ## 2. Les deux princesses disparaissent après Mary Geoise
 
-![Disparitions parallèles](/images/threads/lili-vivi-et-les-poneglyphes/img_3.jpg)
+![Disparitions parallèles](/images/threads/lili-vivi-et-les-poneglyphes/img_3.webp)
 
 L'histoire de Lili peut se résumer ainsi : une princesse d'Alabasta se rend à Mary Geoise pour un événement politique majeur. Elle refuse de rester parmi les Tenryūbito. Elle quitte la Terre Sainte. Elle ne retourne jamais dans son royaume. Le Gouvernement Mondial ignore — ou dissimule — ce qui lui est arrivé ensuite.
 
@@ -39,7 +39,7 @@ Dans les deux cas, la souveraine d'Alabasta est présente à Mary Geoise, refuse
 
 ## 3. Imu associe immédiatement Lili à Vivi
 
-![Imu ordonne de retrouver Vivi](/images/threads/lili-vivi-et-les-poneglyphes/img_4.jpg)
+![Imu ordonne de retrouver Vivi](/images/threads/lili-vivi-et-les-poneglyphes/img_4.webp)
 
 La séquence des chapitres 1084 à 1086 est d'une précision chirurgicale. Cobra se présente devant le Trône Vide et interroge les Doyens sur la reine Lili. Il révèle l'existence d'une lettre transmise de génération en génération par la lignée Nefertari. Dans cette lettre, le nom complet de Lili apparaît : Nefertari **D.** Lili. L'initiale du D. est prononcée devant Imu.
 
@@ -49,7 +49,7 @@ La théorie interprète cette réaction comme la reconnaissance d'une menace act
 
 ## 4. La dispersion des Ponéglyphes
 
-![Les Ponéglyphes dispersés](/images/threads/lili-vivi-et-les-poneglyphes/img_5.jpg)
+![Les Ponéglyphes dispersés](/images/threads/lili-vivi-et-les-poneglyphes/img_5.webp)
 
 Imu reproche à Lili ce qu'il qualifie de « grande faute » : la dispersion des Ponéglyphes à travers les mers du monde. C'est cet acte qui a permis à des générations de chercheurs — de Clover à Robin — de reconstituer l'histoire du Siècle oublié. Sans cette dispersion, le Gouvernement Mondial aurait pu effacer toute trace de la vérité.
 
@@ -59,7 +59,7 @@ La lettre de Lili, transmise de génération en génération, prendrait alors un
 
 ## 5. Vivi deviendra la reine d'Alabasta
 
-![Vivi, future reine](/images/threads/lili-vivi-et-les-poneglyphes/img_6.jpg)
+![Vivi, future reine](/images/threads/lili-vivi-et-les-poneglyphes/img_6.webp)
 
 Après l'assassinat de Cobra par Imu, Vivi est l'héritière naturelle du trône d'Alabasta. Même si elle a pris la mer, même si elle se trouve actuellement aux côtés de Morgans, son destin politique demeure : elle est la dernière Nefertari en ligne directe. Le royaume l'attend.
 

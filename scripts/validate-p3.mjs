@@ -3,7 +3,6 @@ import { join } from 'node:path';
 
 const ROOT = process.cwd();
 const ART = join(ROOT, 'src/content/articles');
-const CHAP = join(ROOT, 'src/content/chapters');
 
 let errors = 0;
 
@@ -14,8 +13,7 @@ function check(file, cond, msg) {
 for (const f of readdirSync(ART).filter(f => f.endsWith('.md'))) {
   const p = join(ART, f);
   const raw = readFileSync(p, 'utf8');
-  const id = f.replace(/\.md$/, '');
-  
+
   const fmMatch = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!fmMatch) { check(f, false, 'no frontmatter'); continue; }
   const fm = fmMatch[1];

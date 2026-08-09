@@ -126,7 +126,8 @@ const statusColors: Record<string, string> = {
         <>
           <circle cx={z.x} cy={z.y} r={z.r} fill="none" stroke={statusColors[z.status]}
             stroke-width="2" stroke-dasharray="6,4" class="zone-hit" data-zone={z.id}
-            data-label={z.label} data-interp={z.interpretation} data-status={z.status} tabindex="0" />
+            data-label={z.label} data-interp={z.interpretation} data-status={z.status}
+            tabindex="0" role="button" aria-label={`Zone de la fresque : ${z.label}`} />
           <text x={z.x} y={z.y + z.r + 16} text-anchor="middle" fill={statusColors[z.status]}
             font-size="12" font-weight="700" font-family="Inter,system-ui,sans-serif" class="zone-tag">{z.label}</text>
         </>

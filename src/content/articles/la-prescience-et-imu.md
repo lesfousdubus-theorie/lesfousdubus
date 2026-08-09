@@ -13,21 +13,21 @@ related: ["joy-boy", "coalition-des-20-rois"]
 
 **Résumé** : Selon une extension récente des Fous du Bus (chapitre 1188), Imu pourrait posséder une forme de préscience comparable à celle de Madame Shirley. Cette hypothèse reste une piste récente et est marquée comme telle.
 
-![Prescience et Imu](/images/threads/la-prescience-et-imu/img_1.jpg)
-![Vision d'Imu](/images/threads/la-prescience-et-imu/img_2.png)
+![Prescience et Imu](/images/threads/la-prescience-et-imu/img_1.webp)
+![Vision d'Imu](/images/threads/la-prescience-et-imu/img_2.webp)
 
 ## 1. Qu'est-ce que la Prescience dans One Piece ?
 La prescience est la capacité de percevoir des flashes précis du futur lointain. Le personnage de Mme Shirley sur l'île des Hommes-Poissons en est l'illustration : ses prédictions ne se trompent jamais (elle avait prévu la mort de Barbe Blanche et la destruction de l'île des Hommes-Poissons par Luffy).
 
-![Don de Shirley](/images/threads/la-prescience-et-imu/img_3.jpg)
+![Don de Shirley](/images/threads/la-prescience-et-imu/img_3.webp)
 
 ## 2. Le parallèle visuel entre Shirley et Imu
 Oda a disséminé plusieurs indices graphiques rapprochant Shirley et Imu : une grande taille filiforme, un port altier, des yeux hypnotiques et une esthétique basée sur le contraste d'ombre et de lumière.
 
-![Shirley et Imu](/images/threads/la-prescience-et-imu/img_4.jpg)
+![Shirley et Imu](/images/threads/la-prescience-et-imu/img_4.webp)
 
 ## 3. La malédiction d'Imu : Provoquer sa propre ruine
 En tentant d'effacer le nom de Nika, d'interdire l'étude des Ponéglyphes et de poursuivre la lignée des Nefertari, Imu réagit directement à sa propre vision presciente. Mais en faisant cela, Imu met en place les conditions exactes qui conduisent Luffy à s'éveiller et à accomplir la prophétie.
 
-![Imu et le Chapeau de paille](/images/threads/la-prescience-et-imu/img_5.jpg)
-![Le garcon heureux Joyboy](/images/threads/la-prescience-et-imu/img_6.png)
+![Imu et le Chapeau de paille](/images/threads/la-prescience-et-imu/img_5.webp)
+![Le garcon heureux Joyboy](/images/threads/la-prescience-et-imu/img_6.webp)
