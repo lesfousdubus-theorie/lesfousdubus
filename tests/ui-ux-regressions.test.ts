@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { contrastRatio, hexToRgb } from '../src/utils/contrast';
 
@@ -10,6 +10,28 @@ describe('régressions UI, UX et accessibilité', () => {
     const layout = read('src/layouts/WikiLayout.astro');
     expect(layout).toContain('grid-template-columns: 0 minmax(0, 1fr)');
     expect(layout).toContain('aria-controls="toc-drawer"');
+  });
+
+  it('utilise le même seuil responsive pour la navbar et le tiroir latéral', () => {
+    const layout = read('src/layouts/WikiLayout.astro');
+    const navbar = read('src/components/Navbar.astro');
+
+    expect(layout).toContain("window.matchMedia('(max-width: 1023px)')");
+    expect(layout).toContain('@media (max-width: 1023px)');
+    expect(navbar).toContain('@media (max-width: 1023px)');
+    expect(navbar).toContain('aria-controls="sidebar-left-container"');
+    expect(layout).not.toMatch(/window\.innerWidth\s*[<>]=?\s*768/);
+  });
+
+  it('publie les 15 médias locaux du thread Galley-La', () => {
+    const article = read('src/content/articles/galley-la-coincidence-impossible.md');
+    for (let index = 1; index <= 15; index++) {
+      const imagePath = `public/images/threads/galley-la-coincidence-impossible/img_${index}.webp`;
+      expect(existsSync(resolve(process.cwd(), imagePath))).toBe(true);
+      expect(article).toContain(
+        `/images/threads/galley-la-coincidence-impossible/img_${index}.webp`,
+      );
+    }
   });
 
   it('rend les schémas détaillés lisibles et agrandissables sur mobile', () => {
@@ -66,12 +88,9 @@ describe('régressions UI, UX et accessibilité', () => {
 describe('contraste fixe de la fresque d’Elbaf', () => {
   const background = hexToRgb('#26222e');
 
-  it.each(['#76d3dc', '#c7a7ef', '#f0bd61'])(
-    '%s dépasse 4.5:1 pour les libellés',
-    (foreground) => {
-      expect(contrastRatio(hexToRgb(foreground), background)).toBeGreaterThanOrEqual(4.5);
-    },
-  );
+  it.each(['#76d3dc', '#c7a7ef', '#f0bd61'])('%s dépasse 4.5:1 pour les libellés', (foreground) => {
+    expect(contrastRatio(hexToRgb(foreground), background)).toBeGreaterThanOrEqual(4.5);
+  });
 
   it.each(['#756d7d', '#8d8496', '#9b75c4'])(
     '%s dépasse 3:1 pour les formes significatives',

@@ -543,7 +543,6 @@ const isLinkCurrent = (href: string) => normalize(currentPath) === normalize(hre
 
 <script>
   const sidebarNav = document.getElementById('sidebar-nav-root');
-  const sidebarContainer = document.getElementById('sidebar-left-container');
 
   // ── Sections repliables ────────────────────────────────────────────────
   // Un seul helper pour toutes les sections (statiques + « Récemment lus »).
@@ -672,28 +671,5 @@ const isLinkCurrent = (href: string) => normalize(currentPath) === normalize(hre
       applyFilter('');
       filterInput.focus();
     });
-  }
-
-  // ── Ouverture du tiroir mobile : focus filtre + scroll vers le lien actif ─
-  // Un seul observer, déclenché uniquement sur la transition fermé → ouvert
-  // (plus de vol de focus lors d'autres changements de classes).
-  if (sidebarContainer && filterInput) {
-    let wasOpen = sidebarContainer.classList.contains('is-mobile-open');
-    const observer = new MutationObserver(() => {
-      const isOpen = sidebarContainer.classList.contains('is-mobile-open');
-      if (isOpen === wasOpen) return;
-      wasOpen = isOpen;
-      if (!isOpen) return;
-
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      // Laisse l'animation du tiroir se terminer avant focus/scroll.
-      window.setTimeout(() => {
-        filterInput.focus({ preventScroll: true });
-        sidebarContainer
-          .querySelector('.sidebar-link--active')
-          ?.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
-      }, 300);
-    });
-    observer.observe(sidebarContainer, { attributes: true, attributeFilter: ['class'] });
   }
 </script>
