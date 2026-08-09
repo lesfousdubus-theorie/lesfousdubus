@@ -2,7 +2,6 @@
 import { getCollection } from 'astro:content';
 import { effectLabel } from '@utils/labels';
 import SearchModal from './SearchModal.astro';
-import { explorerHighlights, siteCategories, understandingPaths } from '../data/siteNavigation';
 
 interface Props {
   /** Les pages sans sidebar ouvrent une navigation globale dans un dialogue mobile. */
@@ -34,10 +33,18 @@ const nav: NavItem[] = [
     href: '/theorie',
     groups: [
       {
-        title: 'Choisir son niveau de lecture',
+        title: 'Lire',
         links: [
-          ...understandingPaths.map((path) => ({ label: path.label, href: path.href })),
-          { label: 'Frise chronologique', href: '/theorie/chronologie' },
+          { label: 'Résumé de la théorie', href: '/theorie/resume' },
+          { label: 'Théorie complète', href: '/theorie/theorie-complete' },
+          { label: 'Chronologie', href: '/theorie/chronologie' },
+        ],
+      },
+      {
+        title: 'Outils',
+        links: [
+          { label: 'Carte mentale', href: '/explorer/carte-mentale' },
+          { label: 'Lexique essentiel', href: '/aide/glossaire' },
         ],
       },
     ],
@@ -49,11 +56,15 @@ const nav: NavItem[] = [
       {
         title: 'Thématiques',
         links: [
-          { label: 'Tous les dossiers', href: '/dossiers' },
-          ...siteCategories.slice(0, 6).map((category) => ({
-            label: category.label,
-            href: `/dossiers#${category.id}`,
-          })),
+          { label: 'Monde et destinations', href: '/dossiers#monde-destinations' },
+          { label: 'Histoire et temporalité', href: '/dossiers#histoire-temporalite' },
+          { label: 'Figures principales', href: '/dossiers#figures-principales' },
+          { label: 'Armes antiques', href: '/dossiers#armes-antiques' },
+          { label: 'Technologies et pouvoirs', href: '/dossiers#technologies-pouvoirs' },
+          { label: 'Gouvernement & guerre finale', href: '/dossiers#gouvernement-mondial' },
+          { label: 'Peuples, royaumes et témoins', href: '/dossiers#peuples-royaumes' },
+          { label: 'Dieux et croyances', href: '/dossiers#dieux-croyances' },
+          { label: 'Transmission et mémoire', href: '/dossiers#transmission-memoire' },
         ],
       },
     ],
@@ -83,7 +94,10 @@ const nav: NavItem[] = [
         title: 'Explorer',
         links: [
           { label: 'Vue d’ensemble', href: '/explorer' },
-          ...explorerHighlights.map((item) => ({ label: item.label, href: item.href })),
+          { label: 'Carte mentale', href: '/explorer/carte-mentale' },
+          { label: 'Chronologie', href: '/theorie/chronologie' },
+          { label: 'Correspondances interactives', href: '/explorer/correspondances' },
+          { label: 'Schéma des Ponéglyphes', href: '/explorer/poneglyphes' },
         ],
       },
     ],
@@ -425,8 +439,8 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     font-weight: 500;
     color: var(--text-secondary);
     text-decoration: none;
-    min-height: 44px;
-    padding: 6px 4px 6px 10px;
+    min-height: 40px;
+    padding: 6px 32px 6px 10px;
     border-radius: var(--border-radius-sm);
     display: inline-flex;
     align-items: center;
@@ -454,12 +468,13 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
   }
 
   .nav-menu-trigger {
+    position: absolute;
+    right: 2px;
     display: grid;
     place-items: center;
-    width: 44px;
-    min-width: 44px;
-    height: 44px;
-    margin-left: -3px;
+    width: 28px;
+    min-width: 28px;
+    height: 40px;
     padding: 0;
     border: 0;
     border-radius: var(--border-radius-sm);
@@ -699,7 +714,8 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     display: flex;
     align-items: center;
     gap: 8px;
-    min-height: 44px;
+    height: 34px;
+    min-height: 34px;
     padding: 0 10px 0 12px;
     font-size: 13px;
     color: var(--text-secondary);
@@ -756,8 +772,8 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
 
   .theme-btn,
   .icon-btn {
-    width: 44px;
-    height: 44px;
+    width: 34px;
+    height: 34px;
     border-radius: var(--border-radius);
     display: flex;
     align-items: center;
@@ -819,7 +835,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     }
     .nav-link {
       font-size: 14px;
-      padding: 6px 12px;
+      padding: 6px 34px 6px 12px;
     }
     .nav-links {
       gap: 4px;
@@ -846,7 +862,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     }
     .nav-link {
       font-size: 13px;
-      padding: 5px 8px;
+      padding: 5px 30px 5px 8px;
     }
     .search-trigger {
       max-width: 160px;
