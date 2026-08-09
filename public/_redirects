@@ -1,0 +1,38 @@
+# Redirections permanentes exécutées par Cloudflare avant de servir les fichiers.
+# Les deux variantes évitent que Google voie une page HTML intermédiaire en noindex.
+
+/explorer/chronologie-comparative /theorie/chronologie/ 301
+/explorer/chronologie-comparative/ /theorie/chronologie/ 301
+
+/theorie/ponelyphes /theorie/poneglyphes/ 301
+/theorie/ponelyphes/ /theorie/poneglyphes/ 301
+/theorie/imu-nerona-fiche /theorie/imu-nerona/ 301
+/theorie/imu-nerona-fiche/ /theorie/imu-nerona/ 301
+/theorie/ponelyphes-futur /theorie/poneglyphes-futur/ 301
+/theorie/ponelyphes-futur/ /theorie/poneglyphes-futur/ 301
+/theorie/rio-ponelyphe /theorie/rio-poneglyphe/ 301
+/theorie/rio-ponelyphe/ /theorie/rio-poneglyphe/ 301
+/theorie/road-ponelyphes /theorie/road-poneglyphes/ 301
+/theorie/road-ponelyphes/ /theorie/road-poneglyphes/ 301
+/theorie/le-deluge-et-all-blue /theorie/deluge-all-blue/ 301
+/theorie/le-deluge-et-all-blue/ /theorie/deluge-all-blue/ 301
+
+# Anciennes conclusions désormais fusionnées dans leurs dossiers principaux.
+/theorie/lili-vivi-et-les-poneglyphes /theorie/vivi/ 301
+/theorie/lili-vivi-et-les-poneglyphes/ /theorie/vivi/ 301
+/theorie/zoro-est-ryuma /theorie/ryuma/ 301
+/theorie/zoro-est-ryuma/ /theorie/ryuma/ 301
+/theorie/davy-jones /theorie/barbe-noire-davy-jones/ 301
+/theorie/davy-jones/ /theorie/barbe-noire-davy-jones/ 301
+/theorie/emeth-robot-du-futur /theorie/emeth-futur/ 301
+/theorie/emeth-robot-du-futur/ /theorie/emeth-futur/ 301
+/theorie/zunesha /theorie/zunesha-fiche/ 301
+/theorie/zunesha/ /theorie/zunesha-fiche/ 301
+/theorie/poseidon /theorie/poseidon-fiche/ 301
+/theorie/poseidon/ /theorie/poseidon-fiche/ 301
+/theorie/pluton /theorie/pluton-fiche/ 301
+/theorie/pluton/ /theorie/pluton-fiche/ 301
+
+# Évite les doublons publics en /index.html signalés comme autre canonique.
+/index.html / 301
+/*/index.html /:splat/ 301

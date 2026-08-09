@@ -3,7 +3,12 @@ import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
 ---
 
-<WikiLayout title="Aide" seoTitle="Aide One Piece : FAQ, glossaire et guide du site | Les Fous du Bus" description="Aide et ressources One Piece : FAQ, glossaire, à propos et crédits pour naviguer, comprendre la théorie et contribuer." currentPath="/aide">
+<WikiLayout
+  title="Aide"
+  seoTitle="Aide One Piece : FAQ, glossaire et guide du site | Les Fous du Bus"
+  description="Aide et ressources One Piece : FAQ, glossaire, à propos et crédits pour naviguer, comprendre la théorie et contribuer."
+  currentPath="/aide"
+>
   <div class="page-header">
     <div class="text-cyan font-semibold tracking-widest uppercase text-sm mb-3">Ressources</div>
     <h1>Aide</h1>
@@ -45,6 +50,14 @@ import Footer from '@components/Footer.astro';
         <p>Attributions et remerciements.</p>
       </div>
     </a>
+
+    <a href="/aide/plan-du-site" class="nav-card">
+      <span class="nav-card__icon">🗺️</span>
+      <div>
+        <h3>Plan du site</h3>
+        <p>Toutes les pages de la théorie réunies dans un index clair.</p>
+      </div>
+    </a>
   </div>
 
   <Footer />
@@ -80,12 +93,16 @@ import Footer from '@components/Footer.astro';
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
     text-decoration: none;
-    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    transition:
+      border-color 0.25s ease,
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
   }
   .nav-card:hover {
     border-color: var(--violet);
     transform: translateY(-3px);
-    box-shadow: 0 10px 28px color-mix(in srgb, var(--bg-main) 40%, transparent),
+    box-shadow:
+      0 10px 28px color-mix(in srgb, var(--bg-main) 40%, transparent),
       0 0 18px var(--glow-violet);
   }
   .nav-card__icon {
