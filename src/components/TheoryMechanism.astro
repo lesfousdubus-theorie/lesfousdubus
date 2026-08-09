@@ -56,17 +56,13 @@ const steps = [
     au passé, qui se prépare ensuite à son accomplissement.
   </p>
 
-  <div class="mechanism__tabs" role="tablist" aria-label="Les quatre étapes du mécanisme temporel">
+  <div class="mechanism__tabs" data-mechanism-tabs>
     {
       steps.map((step, index) => (
         <button
           type="button"
           id={`mechanism-tab-${step.id}`}
           class:list={['mechanism__tab', { 'is-active': index === 0 }]}
-          role="tab"
-          aria-selected={index === 0 ? 'true' : 'false'}
-          aria-controls={`mechanism-panel-${step.id}`}
-          tabindex={index === 0 ? 0 : -1}
           data-mechanism-tab
         >
           <span class="mechanism__number" aria-hidden="true">
@@ -87,9 +83,6 @@ const steps = [
         <article
           id={`mechanism-panel-${step.id}`}
           class:list={['mechanism__panel', { 'is-active': index === 0 }]}
-          role="tabpanel"
-          aria-labelledby={`mechanism-tab-${step.id}`}
-          tabindex="0"
           data-mechanism-panel
         >
           <span class="mechanism__status">{step.status}</span>
@@ -118,6 +111,17 @@ const steps = [
     if (!tabs.length || tabs.length !== panels.length) return;
 
     root.dataset.enhanced = 'true';
+
+    const tablist = root.querySelector<HTMLElement>('[data-mechanism-tabs]');
+    tablist?.setAttribute('role', 'tablist');
+    tablist?.setAttribute('aria-label', 'Les quatre étapes du mécanisme temporel');
+    tabs.forEach((tab, index) => {
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-controls', panels[index].id);
+      panels[index].setAttribute('role', 'tabpanel');
+      panels[index].setAttribute('aria-labelledby', tab.id);
+      panels[index].tabIndex = 0;
+    });
 
     const activate = (nextIndex: number, moveFocus = false) => {
       tabs.forEach((tab, index) => {
@@ -206,7 +210,7 @@ const steps = [
   .mechanism__eyebrow {
     margin: 0 0 var(--space-2);
     color: var(--violet-light);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -229,6 +233,10 @@ const steps = [
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-2);
+  }
+
+  .mechanism:not([data-enhanced='true']) .mechanism__tabs {
+    display: none;
   }
 
   .mechanism__tab {
@@ -271,7 +279,7 @@ const steps = [
     border-radius: var(--border-radius-full);
     background: color-mix(in srgb, var(--violet) 16%, transparent);
     color: var(--violet-light);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
   }
 
@@ -293,7 +301,7 @@ const steps = [
   .mechanism__short {
     margin-bottom: 3px;
     color: inherit;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -327,7 +335,7 @@ const steps = [
     border-radius: var(--border-radius-full);
     background: color-mix(in srgb, var(--accent-gold) 13%, transparent);
     color: var(--accent-gold);
-    font-size: 10.5px;
+    font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -354,7 +362,7 @@ const steps = [
     gap: var(--space-2);
     margin: var(--space-4) 0 0;
     color: var(--text-muted);
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 600;
     text-align: center;
   }

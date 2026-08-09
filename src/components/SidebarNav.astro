@@ -18,12 +18,12 @@ const byId = new Map(articles.map((a) => [a.id, a]));
 
 const categoryConfig: Record<string, { label: string; icon: string; order: number }> = {
   'monde-destinations': { label: 'Monde et destinations', icon: '🌍', order: 1 },
-  'histoire-temporalite': { label: 'Histoire, temps et Ponéglyphes', icon: '📜', order: 2 },
+  'histoire-temporalite': { label: 'Histoire & Ponéglyphes', icon: '📜', order: 2 },
   'figures-principales': { label: 'Figures principales', icon: '🎭', order: 3 },
   'personnages-identites': { label: 'Personnages et identités', icon: '👥', order: 4 },
   'armes-antiques': { label: 'Armes antiques', icon: '🔱', order: 5 },
   'technologies-pouvoirs': { label: 'Technologies et pouvoirs', icon: '⚡', order: 6 },
-  'peuples-royaumes': { label: 'Peuples, royaumes et témoins', icon: '🏰', order: 7 },
+  'peuples-royaumes': { label: 'Peuples & royaumes', icon: '🏰', order: 7 },
   'dieux-croyances': { label: 'Dieux et croyances', icon: '🙏', order: 8 },
   'transmission-memoire': { label: 'Transmission et mémoire', icon: '🎵', order: 9 },
   'gouvernement-mondial': { label: 'Gouvernement mondial', icon: '⚖️', order: 10 },
@@ -104,7 +104,11 @@ const sections: NavSection[] = [
   },
   ...Object.entries(categoryConfig)
     .sort(([, a], [, b]) => a.order - b.order)
-    .map(([catKey, config]) => ({ label: config.label, icon: config.icon, links: buildLinks(catKey) }))
+    .map(([catKey, config]) => ({
+      label: config.label,
+      icon: config.icon,
+      links: buildLinks(catKey),
+    }))
     .filter((section) => section.links.length > 0),
 ];
 
@@ -139,13 +143,23 @@ sections.push({
 
 // La section contenant la page courante démarre ouverte.
 const normalize = (p: string) => p.replace(/\/+$/, '') || '/';
-const isLinkCurrent = (href: string) =>
-  normalize(currentPath) === normalize(href);
+const isLinkCurrent = (href: string) => normalize(currentPath) === normalize(href);
 ---
 
 <nav data-pagefind-ignore id="sidebar-nav-root" aria-label="Navigation du wiki">
   <div class="sidebar-filter">
-    <svg class="sidebar-filter__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <svg
+      class="sidebar-filter__icon"
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
       <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
     </svg>
     <input
@@ -158,18 +172,41 @@ const isLinkCurrent = (href: string) =>
       aria-label="Filtrer la navigation"
       aria-describedby="sidebar-filter-status"
     />
-    <button id="sidebar-filter-clear" class="sidebar-filter__clear" aria-label="Effacer le filtre" hidden>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+    <button
+      id="sidebar-filter-clear"
+      class="sidebar-filter__clear"
+      aria-label="Effacer le filtre"
+      hidden
+    >
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
         <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
       </svg>
     </button>
   </div>
-  <div id="sidebar-filter-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div
+    id="sidebar-filter-status"
+    class="sr-only"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+  </div>
 
   {
     sections.map((section, index) => {
       const isExpanded = section.links.some(
-        (link) => isLinkCurrent(link.href) || (link.href !== '/' && currentPath.startsWith(link.href + '/')),
+        (link) =>
+          isLinkCurrent(link.href) ||
+          (link.href !== '/' && currentPath.startsWith(link.href + '/')),
       );
       const isChaptersActive = !!section.isChaptersSection && currentPath.startsWith('/chapitres/');
       const listId = `sidebar-section-${index}-links`;
@@ -177,7 +214,10 @@ const isLinkCurrent = (href: string) =>
       return (
         <div data-sidebar-section>
           <button
-            class:list={['sidebar-section-toggle', { 'sidebar-section-toggle--chapters-active': isChaptersActive }]}
+            class:list={[
+              'sidebar-section-toggle',
+              { 'sidebar-section-toggle--chapters-active': isChaptersActive },
+            ]}
             aria-expanded={isExpanded}
             aria-controls={listId}
           >
@@ -216,7 +256,9 @@ const isLinkCurrent = (href: string) =>
                     ]}
                   >
                     {link.level === 1 && (
-                      <span class="sidebar-link__tree" aria-hidden="true">└</span>
+                      <span class="sidebar-link__tree" aria-hidden="true">
+                        └
+                      </span>
                     )}
                     {link.type === 'dossier' && (
                       <span class="sidebar-link__dossier-label">↳ Dossier :</span>
@@ -311,8 +353,8 @@ const isLinkCurrent = (href: string) =>
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: none;
     background: color-mix(in srgb, var(--surface) 80%, transparent);
@@ -346,7 +388,7 @@ const isLinkCurrent = (href: string) =>
     width: 100%;
     max-width: 100%;
     text-align: left;
-    font-size: 11.5px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.6px;
     color: var(--text-main);
@@ -482,7 +524,7 @@ const isLinkCurrent = (href: string) =>
       min-height: 44px;
     }
     .sidebar-section-toggle {
-      font-size: 11px;
+      font-size: 12px;
       padding: 10px 2px;
       min-height: 44px;
     }
@@ -582,7 +624,9 @@ const isLinkCurrent = (href: string) =>
     );
 
     const setExpanded = (section: HTMLElement, expanded: boolean) => {
-      section.querySelector('.sidebar-section-toggle')?.setAttribute('aria-expanded', String(expanded));
+      section
+        .querySelector('.sidebar-section-toggle')
+        ?.setAttribute('aria-expanded', String(expanded));
       section.querySelector('.sidebar-chevron')?.classList.toggle('rotate-90', expanded);
       section.querySelector('.sidebar-section-links')?.classList.toggle('collapsed', !expanded);
     };

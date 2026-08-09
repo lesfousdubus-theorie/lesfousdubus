@@ -1,6 +1,7 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import DiagramViewport from '@components/DiagramViewport.astro';
 ---
 
 <WikiLayout
@@ -20,6 +21,7 @@ import Footer from '@components/Footer.astro';
   </div>
 
   <figure class="map-wrap">
+    <DiagramViewport id="blue-star-map" label="Carte détaillée de Blue Star" minWidth={680}>
     <svg viewBox="0 0 800 620" class="map-svg" role="img"
       aria-label="Schéma de Blue Star : Red Line verticale, Grand Line horizontale, les quatre mers, Reverse Mountain et Lodestar">
       <defs>
@@ -74,6 +76,7 @@ import Footer from '@components/Footer.astro';
       <text x="24" y="566" fill="#e0ab4e" font-size="12" font-weight="700" font-family="Inter,system-ui,sans-serif">L'hypothèse de la théorie</text>
       <text x="24" y="586" fill="#aeb7c2" font-size="11" font-family="Inter,system-ui,sans-serif">Red Line détruite → les barrières géographiques bouleversées → les quatre mers communiquent → All Blue.</text>
     </svg>
+    </DiagramViewport>
     <figcaption>Schéma de Blue Star : Red Line, les quatre mers, Grand Line, Reverse Mountain et Lodestar. Les cercles en pointillés (Laugh Tale) et le bandeau bas sont des visualisations de la théorie, pas une carte canonique.</figcaption>
   </figure>
 

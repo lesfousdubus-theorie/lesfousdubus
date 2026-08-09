@@ -1,6 +1,7 @@
 ---
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
+import DiagramViewport from '@components/DiagramViewport.astro';
 ---
 
 <WikiLayout
@@ -19,9 +20,10 @@ import Footer from '@components/Footer.astro';
     </p>
   </div>
 
-  <div class="schema" role="img"
-    aria-label="Schéma des quatre Road Ponéglyphes aux coins d'un losange, dont l'intersection délimite Laugh Tale, avec une coordonnée temporelle">
-    <svg viewBox="0 0 800 560" class="schema-svg">
+  <div class="schema">
+    <DiagramViewport id="road-poneglyphes-map" label="Schéma détaillé des quatre Road Ponéglyphes" minWidth={680}>
+    <svg viewBox="0 0 800 560" class="schema-svg" role="img"
+      aria-label="Schéma des quatre Road Ponéglyphes aux coins d'un losange, dont l'intersection délimite Laugh Tale, avec une coordonnée temporelle">
       <defs>
         <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#0c1b2b" />
@@ -74,6 +76,7 @@ import Footer from '@components/Footer.astro';
 
       <text x="400" y="530" text-anchor="middle" fill="#8899aa" font-size="11" font-family="Inter,system-ui,sans-serif">L'intersection des trois points donne l'île ; la théorie ajoute que le 4e point se situe dans le futur.</text>
     </svg>
+    </DiagramViewport>
     <figcaption>Les quatre Road Ponéglyphes et l'intersection de Laugh Tale. La 4e coordonnée temporelle et l'axe du temps sont des éléments de la théorie.</figcaption>
   </div>
 

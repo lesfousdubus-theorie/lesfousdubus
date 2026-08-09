@@ -178,10 +178,13 @@ const articleJsonLd = {
 
   <Breadcrumb items={breadcrumbItems} />
 
-  <article data-pagefind-body>
+  <article
+    data-pagefind-body={!frontmatter.searchHidden ? true : undefined}
+    data-pagefind-ignore={frontmatter.searchHidden ? 'all' : undefined}
+  >
     <h1 class="article-title">{title}</h1>
 
-    <div class="article-top-meta">
+    <div class="article-top-meta" data-pagefind-ignore>
       {
         readingTime && (
           <p class="article-reading-time">
@@ -215,7 +218,7 @@ const articleJsonLd = {
 
     {
       articleChapters.length > 0 && (
-        <p class="article-updated-meta">
+        <p class="article-updated-meta" data-pagefind-ignore>
           Dernière mise à jour de la fiche : chapitre{' '}
           <strong>{articleChapters[0].data.chapter}</strong>
           <span class="article-updated-meta__effect">
@@ -739,7 +742,7 @@ const articleJsonLd = {
      Usage dans le markdown : <div class="section-pill section-pill--canon">Canon</div> juste après le H2. */
   .content :global(.section-pill) {
     display: inline-block;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;

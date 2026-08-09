@@ -1,0 +1,165 @@
+---
+interface Props {
+  id: string;
+  label?: string;
+  minWidth?: number;
+}
+
+const { id, label = 'Schéma détaillé', minWidth = 680 } = Astro.props;
+---
+
+<div class="diagram-frame" data-diagram-frame style={`--diagram-min-width:${minWidth}px`}>
+  <div class="diagram-frame__bar" data-pagefind-ignore>
+    <p class="diagram-frame__hint">
+      <span aria-hidden="true">↔</span>
+      Sur petit écran, faites glisser le schéma pour lire les détails.
+    </p>
+    <button
+      type="button"
+      class="diagram-frame__expand"
+      aria-expanded="false"
+      aria-controls={id}
+      data-diagram-expand
+    >
+      <span data-diagram-label>Agrandir</span>
+      <span aria-hidden="true">⛶</span>
+    </button>
+  </div>
+  <div id={id} class="diagram-frame__scroller" tabindex="0" role="region" aria-label={label}>
+    <slot />
+  </div>
+</div>
+
+<script>
+  const initDiagramFrames = () => {
+    document.querySelectorAll<HTMLElement>('[data-diagram-frame]').forEach((frame) => {
+      if (frame.dataset.enhanced === 'true') return;
+      frame.dataset.enhanced = 'true';
+      const button = frame.querySelector<HTMLButtonElement>('[data-diagram-expand]');
+      const label = frame.querySelector<HTMLElement>('[data-diagram-label]');
+      if (!button) return;
+
+      const setExpanded = (expanded: boolean) => {
+        frame.classList.toggle('is-expanded', expanded);
+        button.setAttribute('aria-expanded', String(expanded));
+        if (label) label.textContent = expanded ? 'Réduire' : 'Agrandir';
+        document.documentElement.classList.toggle('diagram-open', expanded);
+      };
+
+      button.addEventListener('click', () => setExpanded(!frame.classList.contains('is-expanded')));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && frame.classList.contains('is-expanded')) {
+          setExpanded(false);
+          button.focus();
+        }
+      });
+    });
+  };
+
+  initDiagramFrames();
+  document.addEventListener('astro:page-load', initDiagramFrames);
+</script>
+
+<style>
+  .diagram-frame {
+    position: relative;
+  }
+
+  .diagram-frame__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .diagram-frame__hint {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .diagram-frame__expand {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--bg-secondary);
+    color: var(--text-main);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .diagram-frame__expand:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .diagram-frame__expand:focus-visible,
+  .diagram-frame__scroller:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+
+  .diagram-frame__scroller {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--violet) var(--bg-secondary);
+  }
+
+  :global(.diagram-open) {
+    overflow: hidden;
+  }
+
+  .diagram-frame.is-expanded {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    flex-direction: column;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+      max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    background: var(--bg-main);
+  }
+
+  .diagram-frame.is-expanded .diagram-frame__bar {
+    flex: 0 0 auto;
+  }
+
+  .diagram-frame.is-expanded .diagram-frame__scroller {
+    flex: 1 1 auto;
+    display: grid;
+    align-items: center;
+    border-radius: var(--border-radius-lg);
+  }
+
+  .diagram-frame.is-expanded :global(svg) {
+    width: max(100%, var(--diagram-min-width));
+    max-height: calc(100dvh - 84px);
+  }
+
+  @media (min-width: 641px) {
+    .diagram-frame__hint {
+      visibility: hidden;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .diagram-frame__scroller :global(svg) {
+      width: var(--diagram-min-width);
+      max-width: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .diagram-frame__expand {
+      transition: none;
+    }
+  }
+</style>

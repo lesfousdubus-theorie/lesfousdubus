@@ -189,7 +189,13 @@ const canonicalWikiUrl = new URL(
   {
     hasToc && (
       <>
-        <button id="toc-fab" class="toc-fab" aria-label="Sommaire de la page" aria-expanded="false">
+        <button
+          id="toc-fab"
+          class="toc-fab"
+          aria-label="Sommaire de la page"
+          aria-expanded="false"
+          aria-controls="toc-drawer"
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="4" y1="6" x2="20" y2="6"></line>
             <line x1="4" y1="12" x2="20" y2="12"></line>
@@ -237,6 +243,7 @@ const canonicalWikiUrl = new URL(
     max-width: 100%;
     overflow-x: clip;
     min-width: 0;
+    transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .layout--no-toc {
@@ -262,19 +269,28 @@ const canonicalWikiUrl = new URL(
     overflow: hidden;
   }
 
-  /* Keep the grid gutter when the sidebar is hidden. The reading column must
-     retain its position instead of recentering into the newly freed space. */
+  /* Libère réellement la colonne quand la navigation est repliée. */
   .sidebar-left-container.collapsed,
   :global(.sidebar-left-collapsed) .sidebar-left-container {
-    width: var(--sidebar-left-width, 260px);
+    width: 0;
+  }
+
+  @media (min-width: 769px) {
+    :global(.sidebar-left-collapsed) .layout {
+      grid-template-columns: 0 minmax(0, 1fr) var(--sidebar-left-width, 260px);
+    }
+
+    :global(.sidebar-left-collapsed) .layout--no-toc {
+      grid-template-columns: 0 minmax(0, 1fr);
+    }
   }
 
   /* Resizer handle on the right edge of sidebar-left */
   .sidebar-resizer {
     position: absolute;
     top: 0;
-    right: -4px;
-    width: 8px;
+    right: -12px;
+    width: 24px;
     height: 100%;
     cursor: col-resize;
     z-index: 40;
@@ -285,7 +301,7 @@ const canonicalWikiUrl = new URL(
     content: '';
     position: absolute;
     top: 0;
-    left: 3px;
+    left: 11px;
     width: 2px;
     height: 100%;
     background-color: transparent;
