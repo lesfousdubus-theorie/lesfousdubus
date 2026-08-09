@@ -30,7 +30,7 @@ Aucun exemplaire opérationnel de Pluton n'a été observé à ce jour dans le r
 Pluton n'est pas un navire coulé dans un passé lointain : c'est Water Seven transformée en un gigantesque vaisseau grâce à l'intervention des géants charpentiers d'Elbaf. La fusion entre la cité, Zunesha et les plans hérités donnera naissance, au présent, à la véritable Arme antique.
 
 ### Thread détaillé (août 2026)
-**« La Galley-La : une coïncidence impossible »** — Thread X complet avec les 13 images originales :
+**« La Galley-La : une coïncidence impossible »** — Thread X complet avec ses 15 médias originaux :
 
 → [Lire le thread complet avec toutes les images](/theorie/galley-la-coincidence-impossible)
 

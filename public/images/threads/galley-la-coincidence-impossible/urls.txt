@@ -2,21 +2,14 @@
 # Auteur : @FoudubusTV_ — 08/08/2026
 # URL du thread : https://x.com/FoudubusTV_/status/2086126492228964579
 #
-# Pour télécharger les images (pbs.twimg.com est bloqué depuis le sandbox) :
-#   1. Sur votre machine locale, exécutez :
-#        bash scripts/fetch-thread-images.sh
-#      ou bien copiez-collez les URLs ci-dessous dans votre navigateur
-#   2. Enregistrez-les dans public/images/threads/galley-la-coincidence-impossible/
-#      en respectant les noms img_1.jpg, img_2.jpg ...
+# Pour actualiser les copies locales, exécuter :
+#   bash scripts/fetch-thread-images.sh
+# puis :
+#   bash scripts/optimize-thread-images.sh
 #
-# Mapping ordre du thread -> nom local :
-#   Tweet 1 (point de départ)      : img_1.jpg + img_2.jpg
-#   Tweet 2 (gel, géants, marteau): img_3.jpg + img_4.jpg + img_5.jpg
-#   Tweet 3 (Big Mom)             : img_6.jpg
-#   Tweet 4 (récap avant Pluton)  : img_7.png   (capture d'écran tweet)
-#   Tweet 5 (Pluton)              : img_8.png + img_9.png + img_10.jpg
-#   Tweet 6 (schéma final)        : img_11.png + img_12.png + img_13.png (résumé)
-#   Tweet 7 (objection Wano + vidéo) : img_14.png
+# Les noms img_1 à img_15 suivent l'ordre des médias du thread. Certaines
+# images sont répétées dans le fil d'origine ; elles sont conservées telles
+# quelles afin d'en reproduire fidèlement le contenu.
 #
 # Format : nom_local|url
 
