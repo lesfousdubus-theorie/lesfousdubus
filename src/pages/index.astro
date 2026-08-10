@@ -8,8 +8,18 @@ import { getCollection } from 'astro:content';
 import { categoryLabel, effectLabel } from '@utils/labels';
 import { getRecentArticleUpdates } from '@utils/chapter-updates';
 
-// Aucune requête YouTube avant le consentement matérialisé par le clic.
-const videoCoverSrc = '/og-default.png';
+// Miniature de la façade vidéo. Priorité à la vignette auto-hébergée
+// (public/images/video-cover.webp, produite par scripts/fetch-video-cover.sh) :
+// dans ce cas, aucune requête YouTube avant le clic. Si elle manque (sandbox
+// sans réseau YouTube), repli distant maxresdefault → hqdefault → og-default.
+import { existsSync } from 'node:fs';
+const VIDEO_ID = 'SgJ25zjMJyo';
+const localVideoCover = ['/images/video-cover.webp', '/images/video-cover.jpg'].find((src) =>
+  existsSync(new URL(`../../public${src}`, import.meta.url)),
+);
+const videoCoverSrc = localVideoCover ?? `https://img.youtube.com/vi/${VIDEO_ID}/maxresdefault.jpg`;
+// Chaîne de replis : hqdefault (toujours présente) puis carte OG locale.
+const videoCoverFallback = `this.onerror=function(){this.onerror=null;this.src='/og-default.png';};this.src='https://img.youtube.com/vi/${VIDEO_ID}/hqdefault.jpg';`;
 
 const chapters = await getCollection('chapters');
 const articles = await getCollection(
@@ -107,7 +117,8 @@ const badgeColorByEffect = {
       <img
         id="video-facade__img"
         src={videoCoverSrc}
-        alt="Vidéo de présentation de la théorie"
+        onerror={localVideoCover ? undefined : videoCoverFallback}
+        alt="Miniature de la vidéo de présentation de la théorie"
         class="video-facade__img"
         loading="lazy"
       />
