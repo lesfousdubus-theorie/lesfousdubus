@@ -113,11 +113,17 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(mechanism).toContain("panels[index].setAttribute('role', 'tabpanel')");
   });
 
-  it('utilise un bouton natif pour lancer la vidéo sans requête YouTube préalable', () => {
+  it('affiche la miniature de la vidéo : auto-hébergée prioritaire, replis chaînés', () => {
     const homepage = read('src/pages/index.astro');
     expect(homepage).toContain('id="video-facade__trigger"');
-    expect(homepage).toContain("const videoCoverSrc = '/og-default.png'");
-    expect(homepage).not.toContain('img.youtube.com');
+    // La vignette auto-hébergée (scripts/fetch-video-cover.sh) est détectée au
+    // build et court-circuite toute requête YouTube.
+    expect(homepage).toContain('/images/video-cover.webp');
+    expect(homepage).toContain('localVideoCover');
+    // À défaut : miniature distante maxresdefault → hqdefault → og-default.png.
+    expect(homepage).toContain('maxresdefault.jpg');
+    expect(homepage).toContain('hqdefault.jpg');
+    expect(homepage).toContain("/og-default.png'");
   });
 
   it('charge Pagefind à la demande sans embarquer React', () => {
