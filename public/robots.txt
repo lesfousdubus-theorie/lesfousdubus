@@ -65,4 +65,3 @@ Disallow: /
 
 # ── Sitemaps ─────────────────────────────────────────────────────────────────
 Sitemap: https://lesfousdubus.sbs/sitemap-index.xml
-Sitemap: https://lesfousdubus.sbs/sitemap.xml
