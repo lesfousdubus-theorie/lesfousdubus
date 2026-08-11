@@ -29,7 +29,7 @@ if (!canonicalUrl.endsWith('/') && !canonicalUrl.split('/').pop()?.includes('.')
 // Description 140–160c : tronquée si trop longue, conservée telle quelle si fournie
 const metaDescription =
   description.length > 160 ? description.slice(0, 157).trimEnd() + '…' : description;
-const ogImage = image ? new URL(image, siteUrl).toString() : `${siteUrl}/og-default.png`;
+const ogImage = image ? new URL(image, siteUrl).toString() : `${siteUrl}/og-default.jpg`;
 ---
 
 <!doctype html>

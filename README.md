@@ -133,12 +133,12 @@ Parcours alternatif : 19 dossiers (encyclopédique fiche par fiche).
 - Omen / Mother Flame / Imu
 
 **Améliorations prévues** (pas de nouvelles pages) :
-- nœuds cliquables
-- légende Canon / Théorie / Spéculation
-- meilleure version mobile
-- chemin sélectionné mis en surbrillance
+- ✅ nœuds cliquables
+- ✅ légende Canon / Théorie / Spéculation
+- ✅ meilleure version mobile (pan tactile + pinch-to-zoom, Pointer Events)
+- ✅ chemin sélectionné mis en surbrillance (survol/focus d'un nœud)
 - explication inline
-- version HTML lisible sans JS
+- ✅ version HTML lisible sans JS (section « Version textuelle » en bas de page)
 - terminologie alignée sur la théorie complète
 
 ---
@@ -149,7 +149,7 @@ Parcours alternatif : 19 dossiers (encyclopédique fiche par fiche).
 - Passe « CANON » exhaustive sur chaque section « Ce que le manga établit »
 - Provenance précise des sources dans chaque article
 - Amélioration des outils Explorer (sans en créer de nouveaux)
-- Refonte légère de la page Prédictions (formulaires + statut + indices)
+- Refonte légère de la page Prédictions (formulaires + statut + indices) ✅
 - Mise à jour systématique via les chapitres (théorie complète = source unique)
 
 ---

@@ -18,8 +18,11 @@ export function editorialStatusToFrench(s?: string): { label: string; badgeClass
     'hypothese-centrale': { label: 'Hypothèse centrale', badgeClass: 'meta-badge--gold' },
     'hypothese-secondaire': { label: 'Hypothèse secondaire', badgeClass: 'meta-badge--violet' },
     'nouvelle-piste': { label: 'Nouvelle piste', badgeClass: 'meta-badge--violet' },
-    'contredite': { label: 'Contredite', badgeClass: 'meta-badge--muted' },
-    'refutee': { label: 'Réfutée', badgeClass: 'meta-badge--muted' },
+    // Statuts invalidés : rendus visuellement distincts d'une simple hypothèse
+    // en sourdine (`--muted`) grâce à `--alert`, pour éviter la confusion entre
+    // « pas encore confirmé » et « invalidé par le manga ».
+    'contredite': { label: 'Contredite', badgeClass: 'meta-badge--alert' },
+    'refutee': { label: 'Réfutée', badgeClass: 'meta-badge--alert' },
   };
   return map[s ?? ''] ?? { label: 'Hypothèse centrale', badgeClass: 'meta-badge--gold' };
 }

@@ -42,7 +42,7 @@ const articles = defineCollection({
       .optional(),
     /** Titre SEO riche pour <title> (H1 reste court). Ex: "Joy Boy dans One Piece : identité, indices et théorie" */
     seoTitle: z.string().optional(),
-    /** Image Open Graph spécifique à la page (chemin, ex: "/og-foo.png"). Sinon og-default.png. */
+    /** Image Open Graph spécifique à la page (chemin, ex: "/og-foo.png"). Sinon og-default.jpg. */
     ogImage: z.string().optional(),
     /** Identifiant (slug) de la fiche canonique parente pour les articles de démonstration. */
     parent: z.string().optional(),
@@ -113,6 +113,15 @@ const predictions = defineCollection({
     status: z.enum(['en-cours', 'confirmee', 'refutee', 'en-attente']).default('en-cours'),
     chapter: z.number().optional(),
     articles: z.array(z.string()).default([]),
+    /** Champs d'enrichissement optionnels affichés sur /chapitres/predictions
+     * quand ils sont renseignés dans le frontmatter (voir luffy-joy-boy.md). */
+    formulatedSince: z.number().optional(),
+    lastUpdate: z.number().optional(),
+    statusNote: z.string().optional(),
+    confidence: z.enum(['central', 'elevee', 'moyenne', 'hypothese']).optional(),
+    source: z.string().optional(),
+    indices: z.string().optional(),
+    refuterait: z.string().optional(),
   }),
 });
 

@@ -19,7 +19,12 @@ const hasMeta = Boolean(updateChapter || certaintyText || status);
     <div class="meta-row" aria-label="Informations éditoriales">
       {updateChapter && <span>Mis à jour au chapitre {updateChapter}</span>}
       {certaintyText && <span class="meta-badge meta-badge--muted">Niveau : {certaintyText}</span>}
-      {status && <span class:list={['meta-badge', status.badgeClass]}>{status.label}</span>}
+      {status && (
+        <span class:list={['meta-badge', status.badgeClass]}>
+          {status.badgeClass === 'meta-badge--alert' && <span aria-hidden="true">✕ </span>}
+          {status.label}
+        </span>
+      )}
     </div>
   )
 }
@@ -31,4 +36,15 @@ const hasMeta = Boolean(updateChapter || certaintyText || status);
   .meta-badge--violet { color:var(--violet-light); border-color:color-mix(in srgb,var(--violet) 35%,transparent); background:color-mix(in srgb,var(--violet) 10%,transparent); }
   .meta-badge--gold { color:var(--accent-gold); border-color:color-mix(in srgb,var(--accent-gold) 35%,transparent); background:color-mix(in srgb,var(--accent-gold) 10%,transparent); }
   .meta-badge--muted { color:var(--text-secondary); border-color:var(--border-color); background:var(--surface); }
+  /* Statut invalidé (contredit / réfuté par le manga) : distinct d'une simple
+     hypothèse en sourdine — utilise --alert + icône barrée pour éviter la
+     confusion avec « pas encore confirmé ». */
+  .meta-badge--alert {
+    color: var(--alert);
+    border-color: color-mix(in srgb, var(--alert) 35%, transparent);
+    background: color-mix(in srgb, var(--alert) 10%, transparent);
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: color-mix(in srgb, var(--alert) 70%, transparent);
+  }
 </style>

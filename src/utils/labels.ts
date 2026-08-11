@@ -43,6 +43,15 @@ export const predictionStatusLabels: Record<string, string> = {
   'en-attente': 'En attente',
 };
 
+/** Couleur + icône par statut de prédiction, pour un repérage visuel rapide
+ * (au-delà du seul intitulé) sur la page /chapitres/predictions. */
+export const predictionStatusMeta: Record<string, { color: BadgeColor; icon: string }> = {
+  'en-cours': { color: 'violet', icon: '⏳' },
+  confirmee: { color: 'cyan', icon: '✓' },
+  refutee: { color: 'alert', icon: '✕' },
+  'en-attente': { color: 'textSecondary', icon: '…' },
+};
+
 export const objectionStrengthLabels: Record<string, string> = {
   mineure: 'Mineure',
   moderee: 'Modérée',
@@ -67,6 +76,14 @@ export function categoryLabel(c: string): string {
 
 export function predictionStatusLabel(s: string): string {
   return predictionStatusLabels[s] ?? s;
+}
+
+export function predictionStatusColor(s: string): BadgeColor {
+  return predictionStatusMeta[s]?.color ?? 'textSecondary';
+}
+
+export function predictionStatusIcon(s: string): string {
+  return predictionStatusMeta[s]?.icon ?? '';
 }
 
 export function objectionStrengthLabel(s: string): string {

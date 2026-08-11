@@ -125,10 +125,63 @@
     }
   }
 
-  /* Hide scene when page is hidden to save GPU */
+  /* Reduce scene opacity on mobile to lighten the visual + battery cost */
   @media (max-width: 768px) {
     .scene {
       opacity: 0.6;
     }
   }
+
+  /* Mode zen (lecture sans distraction) : on coupe le décor animé et le
+     fond en plus de masquer les sidebars (géré dans WikiLayout). */
+  :global(html.zen-mode) .wallpaper-bg,
+  :global(html.zen-mode) .scene {
+    display: none !important;
+  }
+
+  /* Pause du décor après une période d'inactivité de scroll/clavier : économise
+     CPU/GPU pendant une lecture longue sans supprimer l'identité visuelle au
+     premier chargement (voir le script ci-dessous). */
+  :global(html.scene-idle) .scene-obj,
+  :global(html.scene-idle) .scene-obj svg {
+    animation-play-state: paused !important;
+  }
 </style>
+
+<script>
+  // Économie CPU/GPU : met le décor animé en pause après une période
+  // d'inactivité (pas de scroll/clavier/pointeur), et à la reprise de
+  // l'activité. Respecte prefers-reduced-motion (le décor est déjà masqué
+  // dans ce cas par le CSS ci-dessus, ce script devient un no-op inoffensif).
+  (function initSceneIdlePause() {
+    const IDLE_DELAY = 12000;
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const setIdle = (idle: boolean) => {
+      document.documentElement.classList.toggle('scene-idle', idle);
+    };
+
+    const scheduleIdle = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => setIdle(true), IDLE_DELAY);
+    };
+
+    const onActivity = () => {
+      setIdle(false);
+      scheduleIdle();
+    };
+
+    ['scroll', 'keydown', 'pointerdown', 'pointermove'].forEach((evt) =>
+      window.addEventListener(evt, onActivity, { passive: true }),
+    );
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        setIdle(true);
+      } else {
+        onActivity();
+      }
+    });
+
+    scheduleIdle();
+  })();
+</script>

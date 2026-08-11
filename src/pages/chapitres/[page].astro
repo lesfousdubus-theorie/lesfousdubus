@@ -3,7 +3,14 @@ import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
 import { getRecentArticleUpdates } from '@utils/chapter-updates';
-import { effectLabel, predictionStatusLabel } from '@utils/labels';
+import {
+  effectLabel,
+  predictionStatusLabel,
+  predictionStatusColor,
+  predictionStatusIcon,
+  certaintyLabel,
+  certaintyColor,
+} from '@utils/labels';
 
 export async function getStaticPaths() {
   return ['derniere-analyse', 'toutes-les-analyses', 'predictions', 'modifications'].map((page) => ({ params: { page } }));
@@ -12,14 +19,24 @@ export async function getStaticPaths() {
 const page = Astro.params.page!;
 const chapters = (await getCollection('chapters')).sort((a, b) => b.data.chapter - a.data.chapter);
 const articles = await getCollection('articles', ({ data }) => data.status === 'published');
-const predictions = await getCollection('predictions');
+const predictions = (await getCollection('predictions')).sort(
+  (a, b) => (b.data.chapter ?? 0) - (a.data.chapter ?? 0),
+);
 const latest = chapters[0];
 const updated = getRecentArticleUpdates(articles, chapters);
+
+// Statuts affichés dans l'ordre de priorité de lecture, avec le nombre de
+// prédictions par statut (bandeau de synthèse + filtres rapides).
+const STATUS_ORDER = ['en-cours', 'confirmee', 'refutee', 'en-attente'] as const;
+const statusCounts = STATUS_ORDER.map((status) => ({
+  status,
+  count: predictions.filter((p) => p.data.status === status).length,
+})).filter((s) => s.count > 0);
 
 const config = {
   'derniere-analyse': { title: 'Dernière analyse', icon: '📖', description: "Le dernier chapitre analysé et les articles qu'il a fait évoluer." },
   'toutes-les-analyses': { title: 'Toutes les analyses', icon: '📚', description: 'Toutes les analyses publiées, de la plus récente à la plus ancienne.' },
-  predictions: { title: 'Prédictions', icon: '🔮', description: 'Les prédictions formulées par la théorie et leur statut actuel.' },
+  predictions: { title: 'Prédictions', icon: '🔮', description: 'Les prédictions formulées par la théorie, leur statut actuel et ce qui les confirmerait ou les invaliderait.' },
   modifications: { title: 'Modifications', icon: '📋', description: 'Les articles dont la lecture a été actualisée au fil des chapitres.' },
 }[page]!;
 ---
@@ -50,9 +67,95 @@ const config = {
     <a class="card" href={`/chapitres/${chapter.data.chapter}`}><span>Chapitre {chapter.data.chapter}</span><h2>{chapter.data.title}</h2><p>{effectLabel(chapter.data.effect)}{chapter.data.summary ? ` · ${chapter.data.summary}` : ''}</p></a>
   ))}</section>}
 
-  {page === 'predictions' && <section class="cards">{predictions.sort((a, b) => (b.data.chapter ?? 0) - (a.data.chapter ?? 0)).map((prediction) => (
-    <article class="card"><span>Statut : {predictionStatusLabel(prediction.data.status)}</span><h2>{prediction.data.title}</h2><p>{prediction.data.statement}</p>{prediction.data.chapter && <small>Suivie jusqu’au chapitre {prediction.data.chapter}</small>}<div class="article-links">{prediction.data.articles.map((id) => { const article = articles.find((item) => item.id === id); return article && <a href={`/theorie/${id}`}>Lire l’article associé</a>; })}</div></article>
-  ))}</section>}
+  {page === 'predictions' && (
+    <>
+      <div class="predictions-legend" role="note" aria-label="Légende des statuts">
+        <p class="legend-hint">
+          Chaque prédiction est une conséquence testable de la théorie : elle sera confirmée,
+          réfutée ou restera en cours à mesure que le manga avance.
+        </p>
+        <div class="status-filters" data-status-filters role="group" aria-label="Filtrer par statut">
+          <button type="button" class="status-filter is-active" data-status-filter="all">
+            Toutes <span class="count">{predictions.length}</span>
+          </button>
+          {statusCounts.map(({ status, count }) => (
+            <button
+              type="button"
+              class={`status-filter status-filter--${predictionStatusColor(status)}`}
+              data-status-filter={status}
+            >
+              <span aria-hidden="true">{predictionStatusIcon(status)}</span>
+              {predictionStatusLabel(status)} <span class="count">{count}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <section class="cards" data-predictions-list>
+        {predictions.map((prediction) => {
+          const color = predictionStatusColor(prediction.data.status);
+          const icon = predictionStatusIcon(prediction.data.status);
+          const hasDetails = Boolean(
+            prediction.data.indices || prediction.data.source || prediction.data.refuterait,
+          );
+          return (
+            <article class="card prediction-card" data-status={prediction.data.status}>
+              <div class="prediction-head">
+                <span class={`status-badge status-badge--${color}`}>
+                  <span aria-hidden="true">{icon}</span> {predictionStatusLabel(prediction.data.status)}
+                </span>
+                {prediction.data.confidence && (
+                  <span class={`confidence-badge confidence-badge--${certaintyColor(prediction.data.confidence)}`}>
+                    Confiance : {certaintyLabel(prediction.data.confidence)}
+                  </span>
+                )}
+              </div>
+              <h2>{prediction.data.title}</h2>
+              <p>{prediction.data.statement}</p>
+
+              <dl class="prediction-meta">
+                {prediction.data.chapter && (
+                  <div><dt>Suivie jusqu’au</dt><dd>chapitre {prediction.data.chapter}</dd></div>
+                )}
+                {prediction.data.formulatedSince && (
+                  <div><dt>Formulée dès</dt><dd>chapitre {prediction.data.formulatedSince}</dd></div>
+                )}
+                {prediction.data.statusNote && (
+                  <div><dt>Place dans la théorie</dt><dd>{prediction.data.statusNote}</dd></div>
+                )}
+              </dl>
+
+              {hasDetails && (
+                <details class="prediction-details">
+                  <summary>Voir les indices et ce qui invaliderait cette piste</summary>
+                  {prediction.data.indices && (
+                    <p><strong>Indices actuels :</strong> {prediction.data.indices}</p>
+                  )}
+                  {prediction.data.source && (
+                    <p><strong>Source :</strong> {prediction.data.source}</p>
+                  )}
+                  {prediction.data.refuterait && (
+                    <p class="refuterait"><strong>Ce qui la réfuterait :</strong> {prediction.data.refuterait}</p>
+                  )}
+                </details>
+              )}
+
+              <div class="article-links">
+                {prediction.data.articles.map((id) => {
+                  const article = articles.find((item) => item.id === id);
+                  return article && <a href={`/theorie/${id}`}>Lire l’article associé</a>;
+                })}
+              </div>
+            </article>
+          );
+        })}
+      </section>
+
+      <p class="empty-state" data-predictions-empty hidden>
+        Aucune prédiction ne correspond à ce filtre pour l’instant.
+      </p>
+    </>
+  )}
 
   {page === 'modifications' && <section class="cards">{updated.map(({ article, chapter }) => (
     <a class="card" href={`/theorie/${article.id}`}><span>Mis à jour au chapitre {chapter}</span><h2>{article.data.title}</h2><p>{article.data.summary}</p></a>
@@ -60,6 +163,86 @@ const config = {
   <Footer />
 </WikiLayout>
 
+{page === 'predictions' && (
+  <script>
+    // Filtre client léger : pas de rechargement, pas de dépendance —
+    // masque simplement les cartes dont le statut ne correspond pas.
+    const filters = document.querySelectorAll<HTMLButtonElement>('[data-status-filter]');
+    const cards = document.querySelectorAll<HTMLElement>('[data-predictions-list] .prediction-card');
+    const emptyState = document.querySelector<HTMLElement>('[data-predictions-empty]');
+
+    filters.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const status = btn.dataset.statusFilter!;
+        filters.forEach((b) => b.classList.toggle('is-active', b === btn));
+        let visibleCount = 0;
+        cards.forEach((card) => {
+          const match = status === 'all' || card.dataset.status === status;
+          card.hidden = !match;
+          if (match) visibleCount += 1;
+        });
+        if (emptyState) emptyState.hidden = visibleCount !== 0;
+      });
+    });
+  </script>
+)}
+
 <style>
 .page-header{max-width:720px;margin-bottom:36px}.icon{font-size:2.5rem;display:block;margin-bottom:8px}.page-header h1{font-size:clamp(1.8rem,4vw,2.5rem);margin:0 0 12px}.page-header p,.feature-card>p,.card p{color:var(--text-secondary);line-height:1.6}.feature-card,.card{background:var(--gradient-card);border:1px solid var(--border-color);border-radius:var(--border-radius-lg);padding:22px}.feature-card{margin-bottom:28px}.feature-card h2,.card h2{font-size:1.2rem;margin:8px 0}.feature-card h3{font-size:1rem;margin:24px 0 8px}.eyebrow,.card>span{font-size:.78rem;font-weight:700;letter-spacing:.04em;color:var(--cyan);text-transform:uppercase}.cards{display:grid;gap:14px}.card{text-decoration:none;color:var(--text-main);transition:transform .2s,border-color .2s}.card:hover{border-color:var(--cyan);transform:translateY(-2px)}small{color:var(--text-secondary)}.button,.article-links a,.link-list a{color:var(--cyan);text-decoration:none}.button{display:inline-flex;margin-top:10px;padding:9px 14px;border:1px solid var(--cyan);border-radius:7px}.link-list{padding-left:18px}.article-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:.9rem}
+
+/* --- Page Prédictions : légende, filtres, badges de statut --- */
+.predictions-legend { max-width: 760px; margin-bottom: 24px; }
+.legend-hint { color: var(--text-secondary); line-height: 1.6; margin: 0 0 14px; }
+.status-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.status-filter {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: inherit; font-size: 13.5px; font-weight: 600;
+  padding: 7px 12px; min-height: 36px;
+  border-radius: var(--border-radius-full);
+  border: 1px solid var(--border-color);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.status-filter .count { opacity: 0.7; font-weight: 700; }
+.status-filter:hover { border-color: var(--border-strong); }
+.status-filter.is-active { color: var(--text-main); border-color: var(--border-strong); background: color-mix(in srgb, var(--text-main) 6%, var(--surface)); }
+.status-filter--cyan.is-active { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 45%, transparent); background: color-mix(in srgb, var(--cyan) 12%, transparent); }
+.status-filter--violet.is-active { color: var(--violet-light); border-color: color-mix(in srgb, var(--violet) 45%, transparent); background: color-mix(in srgb, var(--violet) 12%, transparent); }
+.status-filter--alert.is-active { color: var(--alert); border-color: color-mix(in srgb, var(--alert) 45%, transparent); background: color-mix(in srgb, var(--alert) 12%, transparent); }
+.status-filter--textSecondary.is-active { color: var(--text-main); }
+
+.prediction-head { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.status-badge, .confidence-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+  padding: 3px 10px; border-radius: var(--border-radius-full); border: 1px solid;
+}
+.status-badge--cyan { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 35%, transparent); background: color-mix(in srgb, var(--cyan) 10%, transparent); }
+.status-badge--violet { color: var(--violet-light); border-color: color-mix(in srgb, var(--violet) 35%, transparent); background: color-mix(in srgb, var(--violet) 10%, transparent); }
+.status-badge--alert { color: var(--alert); border-color: color-mix(in srgb, var(--alert) 35%, transparent); background: color-mix(in srgb, var(--alert) 10%, transparent); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--alert) 70%, transparent); }
+.status-badge--textSecondary { color: var(--text-secondary); border-color: var(--border-color); background: var(--surface); }
+.confidence-badge--cyan { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 30%, transparent); background: transparent; }
+.confidence-badge--gold { color: var(--accent-gold); border-color: color-mix(in srgb, var(--accent-gold) 30%, transparent); background: transparent; }
+.confidence-badge--violet { color: var(--violet-light); border-color: color-mix(in srgb, var(--violet) 30%, transparent); background: transparent; }
+.confidence-badge--textSecondary { color: var(--text-secondary); border-color: var(--border-color); background: transparent; }
+
+.prediction-meta { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 12px 0 0; font-size: 13.5px; }
+.prediction-meta div { display: flex; gap: 5px; }
+.prediction-meta dt { color: var(--text-muted); margin: 0; }
+.prediction-meta dd { margin: 0; color: var(--text-secondary); }
+
+.prediction-details { margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 12px; }
+.prediction-details summary { cursor: pointer; font-weight: 600; color: var(--cyan); font-size: 14px; }
+.prediction-details summary:hover { text-decoration: underline; }
+.prediction-details p { margin: 10px 0 0; color: var(--text-secondary); line-height: 1.6; font-size: 14.5px; }
+.prediction-details .refuterait { color: var(--text-main); }
+
+.empty-state { color: var(--text-secondary); text-align: center; padding: 32px 0; }
+
+@media (max-width: 640px) {
+  .status-filters { gap: 6px; }
+  .status-filter { padding: 6px 10px; font-size: 13px; }
+}
 </style>

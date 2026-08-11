@@ -143,7 +143,9 @@ import Footer from '@components/Footer.astro';
   const allNodes = [...chain, ...subs];
   allNodes.forEach(n => nodePos[n.slug] = { x: n.x, y: n.y });
 
-  function drawPath(x1, y1, x2, y2, color, dashed = false, opacity = 0.45, arrow = false) {
+  const edgeElements = [];
+
+  function drawPath(x1, y1, x2, y2, color, dashed = false, opacity = 0.45, arrow = false, edge = null) {
     const dx = x2 - x1, dy = y2 - y1;
     const mx1 = x1 + dx * 0.5;
     const my1 = y1 + dy * 0.15;
@@ -159,9 +161,11 @@ import Footer from '@components/Footer.astro';
     if (arrow) path.setAttribute('marker-end', 'url(#arrow)');
     path.style.color = color;
     connectionsGroup.appendChild(path);
+    if (edge) edgeElements.push({ el: path, baseOpacity: opacity, a: edge.a, b: edge.b });
+    return path;
   }
 
-  function drawStraight(x1, y1, x2, y2, color, dashed = false, opacity = 0.45) {
+  function drawStraight(x1, y1, x2, y2, color, dashed = false, opacity = 0.45, edge = null) {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     path.setAttribute('x1', x1); path.setAttribute('y1', y1);
     path.setAttribute('x2', x2); path.setAttribute('y2', y2);
@@ -170,6 +174,8 @@ import Footer from '@components/Footer.astro';
     path.setAttribute('stroke-opacity', String(opacity));
     if (dashed) path.setAttribute('stroke-dasharray', '4,3');
     connectionsGroup.appendChild(path);
+    if (edge) edgeElements.push({ el: path, baseOpacity: opacity, a: edge.a, b: edge.b });
+    return path;
   }
 
   // Draw main causal chain (connections between consecutive chain nodes)
@@ -187,7 +193,7 @@ import Footer from '@components/Footer.astro';
   ];
   for (let i = 0; i < chain.length - 1; i++) {
     const a = chain[i], b = chain[i+1];
-    drawPath(a.x, a.y, b.x, b.y, levelColors[b.level] || '#8899aa', false, 0.55, true);
+    drawPath(a.x, a.y, b.x, b.y, levelColors[b.level] || '#8899aa', false, 0.55, true, { a: a.slug, b: b.slug });
     // Add label at midpoint
     const mx = (a.x + b.x) / 2;
     const my = (a.y + b.y) / 2;
@@ -203,19 +209,19 @@ import Footer from '@components/Footer.astro';
     connectionsGroup.appendChild(label);
   }
   // Close the loop back visually (11 → 1? Optional - keep subtle)
-  drawPath(chain[chain.length-1].x, chain[chain.length-1].y, chain[0].x, chain[0].y, '#8899aa', true, 0.18);
+  drawPath(chain[chain.length-1].x, chain[chain.length-1].y, chain[0].x, chain[0].y, '#8899aa', true, 0.18, false, { a: chain[chain.length-1].slug, b: chain[0].slug });
 
   // Draw sub-node connections
   subs.forEach(s => {
     const p = nodePos[s.parent];
     if (!p) return;
-    drawStraight(p.x, p.y, s.x, s.y, levelColors[s.level] || '#8899aa', false, 0.35);
+    drawStraight(p.x, p.y, s.x, s.y, levelColors[s.level] || '#8899aa', false, 0.35, { a: s.parent, b: s.slug });
   });
 
   // Draw cross-links
   crossLinks.forEach(l => {
     const a = nodePos[l.from], b = nodePos[l.to];
-    if (a && b) drawPath(a.x, a.y, b.x, b.y, '#8899aa', true, 0.22);
+    if (a && b) drawPath(a.x, a.y, b.x, b.y, '#8899aa', true, 0.22, false, { a: l.from, b: l.to });
   });
 
   // ─── Draw nodes ──────────────────────────────────────────────
@@ -273,19 +279,24 @@ import Footer from '@components/Footer.astro';
     g.addEventListener('mouseenter', () => {
       rect.setAttribute('stroke-opacity', '1');
       rect.setAttribute('stroke-width', isMain ? '2.8' : '2');
+      highlightConnections(n.slug);
     });
     g.addEventListener('mouseleave', () => {
       rect.setAttribute('stroke-opacity', '0.85');
       rect.setAttribute('stroke-width', isMain ? '2' : '1.3');
+      clearHighlight();
     });
-    // Indicateur de focus clavier (même effet visuel que le survol)
+    // Indicateur de focus clavier (même effet visuel que le survol) : le
+    // chemin causal connecté au nœud se met aussi en surbrillance.
     g.addEventListener('focus', () => {
       rect.setAttribute('stroke-opacity', '1');
       rect.setAttribute('stroke-width', isMain ? '2.8' : '2');
+      highlightConnections(n.slug);
     });
     g.addEventListener('blur', () => {
       rect.setAttribute('stroke-opacity', '0.85');
       rect.setAttribute('stroke-width', isMain ? '2' : '1.3');
+      clearHighlight();
     });
     const navigate = () => { window.location.href = `/theorie/${n.slug}`; };
     g.addEventListener('click', navigate);
@@ -299,11 +310,32 @@ import Footer from '@components/Footer.astro';
     nodesGroup.appendChild(g);
   }
 
+  // ─── Mise en surbrillance du chemin connecté ──────────────────
+  // Survol/focus d'un nœud : les arêtes qui le touchent restent nettes,
+  // le reste du graphe s'estompe pour faire ressortir le chemin causal.
+  function highlightConnections(slug) {
+    edgeElements.forEach(({ el, a, b }) => {
+      const connected = a === slug || b === slug;
+      el.setAttribute('stroke-opacity', connected ? '1' : '0.08');
+      if (connected) el.setAttribute('stroke-width', el.tagName === 'path' ? '3' : '2.2');
+    });
+  }
+  function clearHighlight() {
+    edgeElements.forEach(({ el, baseOpacity }) => {
+      el.setAttribute('stroke-opacity', String(baseOpacity));
+      el.removeAttribute('stroke-width');
+      el.setAttribute('stroke-width', el.tagName === 'path' ? '2' : '1.5');
+    });
+  }
+
   subs.forEach(s => makeNode(s, false));
   chain.forEach(c => makeNode(c, true));
 
   // ─── Zoom & Pan ──────────────────────────────────────────────
-  let scale = 1, panX = 0, panY = 0, isPanning = false, startX = 0, startY = 0;
+  // Pointer Events unifie souris/tactile/stylet : le glisser-déposer et le
+  // pincement à deux doigts (pinch-zoom) fonctionnent donc aussi sur mobile,
+  // là où l'ancienne implémentation « mousedown/mousemove » ignorait le tactile.
+  let scale = 1, panX = 0, panY = 0;
   const minScale = 0.4, maxScale = 2.5;
   function updateViewBox() {
     const w = W / scale, h = H / scale;
@@ -318,16 +350,75 @@ import Footer from '@components/Footer.astro';
   const wrapper = document.getElementById('mindmap-wrapper');
   wrapper.addEventListener('wheel', (e) => { e.preventDefault(); scale = Math.max(minScale, Math.min(maxScale, scale * (e.deltaY < 0 ? 1.08 : 0.93))); updateViewBox(); }, { passive: false });
 
-  svg.addEventListener('mousedown', (e) => {
+  // Un seul pointeur actif = pan ; deux pointeurs (tactile) = pinch-zoom.
+  const activePointers = new Map();
+  let lastPanPoint = null;
+  let lastPinchDistance = null;
+
+  const pointFromEvent = (e) => ({ x: e.clientX, y: e.clientY });
+  const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+  svg.addEventListener('pointerdown', (e) => {
     if (e.target.closest('.mindmap-node')) return;
-    isPanning = true; startX = e.clientX; startY = e.clientY; svg.style.cursor = 'grabbing';
+    svg.setPointerCapture(e.pointerId);
+    activePointers.set(e.pointerId, pointFromEvent(e));
+    if (activePointers.size === 1) {
+      lastPanPoint = pointFromEvent(e);
+      svg.style.cursor = 'grabbing';
+    } else if (activePointers.size === 2) {
+      const pts = [...activePointers.values()];
+      lastPinchDistance = distance(pts[0], pts[1]);
+    }
   });
-  window.addEventListener('mousemove', (e) => {
-    if (!isPanning) return;
-    panX -= (e.clientX - startX)/scale; panY -= (e.clientY - startY)/scale;
-    startX = e.clientX; startY = e.clientY; updateViewBox();
+
+  svg.addEventListener('pointermove', (e) => {
+    if (!activePointers.has(e.pointerId)) return;
+    activePointers.set(e.pointerId, pointFromEvent(e));
+
+    if (activePointers.size === 2) {
+      // Pinch-zoom : le facteur de zoom suit la variation de distance entre
+      // les deux doigts ; le pan n'est pas ajusté (recentrage simple au reset).
+      const pts = [...activePointers.values()];
+      const dist = distance(pts[0], pts[1]);
+      if (lastPinchDistance) {
+        const factor = dist / lastPinchDistance;
+        scale = Math.max(minScale, Math.min(maxScale, scale * factor));
+        updateViewBox();
+      }
+      lastPinchDistance = dist;
+      return;
+    }
+
+    if (activePointers.size === 1 && lastPanPoint) {
+      const p = pointFromEvent(e);
+      panX -= (p.x - lastPanPoint.x) / scale;
+      panY -= (p.y - lastPanPoint.y) / scale;
+      lastPanPoint = p;
+      updateViewBox();
+    }
   });
-  window.addEventListener('mouseup', () => { isPanning = false; svg.style.cursor = 'grab'; });
+
+  const endPointer = (e) => {
+    activePointers.delete(e.pointerId);
+    if (activePointers.size < 2) lastPinchDistance = null;
+    if (activePointers.size === 1) {
+      // Un doigt reste posé : on repart du pan sans saut visuel.
+      lastPanPoint = [...activePointers.values()][0];
+    } else {
+      lastPanPoint = null;
+      svg.style.cursor = 'grab';
+    }
+  };
+  svg.addEventListener('pointerup', endPointer);
+  svg.addEventListener('pointercancel', endPointer);
+  svg.addEventListener('pointerleave', (e) => {
+    if (activePointers.size <= 1) endPointer(e);
+  });
+
+  // Empêche le geste tactile natif (scroll de page / zoom navigateur) de
+  // rentrer en conflit avec notre pan/pinch maison à l'intérieur du widget.
+  svg.style.touchAction = 'none';
   svg.style.cursor = 'grab';
 </script>
 
