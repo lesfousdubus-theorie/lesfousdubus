@@ -14,7 +14,7 @@ related: ["divinites-shandias", "nika", "elbaf-halley", "dieux-one-piece", "guer
 
 ## Présentation
 
-Zaza est présentée comme la **déesse de la pluie**. Sa révélation complète le trio des divinités shandias déjà identifiées, aux côtés du dieu du soleil (Nika) et du dieu de la forêt.
+Zaza est présentée comme la **déesse de la pluie**. Avec Nika, elle constitue l'une des deux divinités shandias désormais nommées ou identifiées, tandis que les dieux de la forêt et de la terre restent encore mystérieux.
 
 ## Ce que le manga établit
 
@@ -33,7 +33,7 @@ Imu = dieu de la forêt ou de la terre → hypothèse seulement.
 
 La théorie considère que la fresque de l'Arbre d'Adam représente des événements à venir. Si la pluie y figure, et si une déesse de la pluie vient d'être nommée, alors Zaza aurait un rôle à jouer dans la guerre finale — en contrepoint de Nika, dieu du soleil, incarné par Luffy.
 
-Le raisonnement est structurel : Oda a introduit quatre divinités il y a plus de vingt ans et les révèle une à une. Zaza est la troisième.
+Le raisonnement est structurel : Oda a introduit quatre divinités il y a plus de vingt ans et les révèle progressivement.
 
 ## Limites et nuances
 

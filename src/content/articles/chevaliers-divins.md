@@ -7,7 +7,7 @@ sources: [1086, 1087, 1096, 1170, 1183]
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1188
-parent: "vingt-rois"
+parent: "gouvernement-mondial"
 order: 67
 related: ["gouvernement-mondial", "vingt-rois", "dragons-celestes", "imu-nerona", "guerre-finale", "brook", "dozan"]
 ---

@@ -27,7 +27,7 @@ Oda a disséminé plusieurs indices graphiques rapprochant Shirley et Imu : une 
 ![Shirley et Imu](/images/threads/la-prescience-et-imu/img_4.webp)
 
 ## 3. La malédiction d'Imu : Provoquer sa propre ruine
-En tentant d'effacer le nom de Nika, d'interdire l'étude des Ponéglyphes et de poursuivre la lignée des Nefertari, Imu réagit directement à sa propre vision presciente. Mais en faisant cela, Imu met en place les conditions exactes qui conduisent Luffy à s'éveiller et à accomplir la prophétie.
+En tentant d'effacer le nom de Nika, d'interdire l'étude des Ponéglyphes et de poursuivre la lignée des Nefertari, Imu réagirait directement à sa propre vision presciente. Mais en faisant cela, il mettrait en place les conditions exactes qui pourraient conduire Luffy à s'éveiller et à accomplir la prophétie.
 
 ![Imu et le Chapeau de paille](/images/threads/la-prescience-et-imu/img_5.webp)
 ![Le garcon heureux Joyboy](/images/threads/la-prescience-et-imu/img_6.webp)
