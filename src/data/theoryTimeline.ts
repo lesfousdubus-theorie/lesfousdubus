@@ -926,9 +926,9 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'aube',
     thread: 'joyboy',
     icon: '☺',
-    title: 'Le monde donne à Luffy le nom de Joy Boy',
+    title: 'Luffy est reconnu comme Joy Boy',
     summary:
-      'Le libérateur au rire éclatant reçoit un nom de règne, tandis que les croyants reconnaissent en lui Nika.',
+      'À l’aboutissement de son aventure, Luffy pourrait être identifié — voire se présenter lui-même — sous le nom ou surnom de Joy Boy.',
     detail:
       'Luffy, Nika et Joy Boy ne formeraient qu’une personne vue par trois regards : son nom de naissance, son nom divin et son nom historique. Il n’est pas la réincarnation d’une légende ; ses actes produisent la légende.',
     status: 'central',

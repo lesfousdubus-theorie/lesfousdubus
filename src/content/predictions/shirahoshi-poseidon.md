@@ -1,6 +1,6 @@
 ---
-title: "Shirahoshi deviendra Poséidon"
-statement: "Shirahoshi est l'arme antique Poséidon. Elle commandera les rois des mers pour détruire Red Line avec l'île des Hommes-Poissons."
+title: "Shirahoshi / Poséidon — rôle dans la guerre finale"
+statement: "Shirahoshi est l'arme antique Poséidon. Selon la théorie, elle commandera les Rois des Mers dans la guerre finale, pour déplacer Noah, évacuer l'île des Hommes-Poissons et contribuer à la chute de Red Line."
 status: "en-cours"
 chapter: 1188
 articles: ["poseidon"]
