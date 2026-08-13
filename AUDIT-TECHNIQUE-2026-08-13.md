@@ -181,5 +181,26 @@ Le workflow CI est prêt dans **`docs/ci/ci.yml`** : le jeton de cette session n
 pas la permission `workflows`, il doit être déplacé à la main vers
 `.github/workflows/ci.yml`.
 
-Restent ouverts : le raccourcissement du gabarit de titre des chapitres (point 7)
-et les montées de version (point 8).
+**Points 7 et 8 également appliqués.** Titres : 54 → **24** au-dessus de
+65 caractères, 10 → **0** en dessous de 25. Le gabarit chapitres perd
+« de One Piece » et « : analyse et théorie » (33 caractères jamais affichés), le
+mot-clé étant désormais garanti dans la meta description ; 26 `seoTitle` ont été
+réécrits à la main, et 10 fiches qui n'affichaient qu'un « Nom | Les Fous du
+Bus » de 23 caractères ont reçu un titre descriptif. `validate-seo.mjs` échoue
+sous 25 caractères et applique un budget de 24 dépassements pour interdire la
+régression.
+
+Dépendances : toutes les mineures sont à jour (`astro` 7.2.1, `@playwright/test`
+1.62.1, `prettier` 3.9.6, `wrangler` 4.123, `typescript` 5.9.3, `vitest` 3.2.7,
+`@astrojs/check` 0.9.10, `@axe-core/playwright` 4.13). Les majeures
+(`tailwindcss` 4, `typescript` 7, `vitest` 4, `@types/node` 26) restent en
+attente : ce sont des migrations à part entière.
+
+L'avertissement de dépréciation `markdown.rehypePlugins` a disparu : le plugin
+`rehype-image-dimensions` passe par `unified({...})` de
+`@astrojs/markdown-remark`. Vérifié : les 189 images de contenu conservent leurs
+`width`/`height`, donc toujours pas de CLS.
+
+Le seul point non traité reste le **workflow CI**, prêt dans `docs/ci/ci.yml` et
+à déplacer manuellement vers `.github/workflows/ci.yml` (permission `workflows`
+absente du jeton de session).
