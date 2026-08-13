@@ -3,8 +3,9 @@ title: "Le Déluge et la création d'All Blue"
 summary: "Le niveau de la mer augmentera de 200m lors de la guerre finale, créant All Blue et permettant à Luffy de devenir le premier pirate à naviguer sur cette mer unique."
 category: "guerre-finale"
 status: "published"
+editorialStatus: "hypothese-centrale"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "guerre-finale"
 sources: [1113, 1115, 1114]
 order: 2

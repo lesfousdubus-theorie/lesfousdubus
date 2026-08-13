@@ -3,8 +3,9 @@ title: "La voix de Joy Boy"
 summary: "Le choix d’Urara Takano, ancienne voix de Luffy, pour interpréter Joy Boy est un indice de mise en scène remarquable. Il nourrit la lecture des Fous du Bus sans constituer une confirmation narrative."
 category: "transmission-memoire"
 status: "published"
+editorialStatus: "interpretation"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 sources: [1122]
 order: 60
 related: ["joy-boy", "luffy", "emeth-futur", "communication-temps", "volonte-heritee"]

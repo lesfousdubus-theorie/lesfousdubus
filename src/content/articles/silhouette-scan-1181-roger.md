@@ -1,14 +1,15 @@
 ---
-parent: "gol-d-roger"
 title: "La Silhouette du Scan 1181 : Joy Boy ou Gol D. Roger ?"
 summary: "Analyse détaillée en 6 points expliquant pourquoi la mystérieuse silhouette dévoilée dans les récents chapitres pourrait être Gol D. Roger plutôt que Joy Boy."
 category: "personnages-identites"
 status: "published"
+sources: [604, 967, 1181]
 sidebarHidden: true
+editorialStatus: "nouvelle-piste"
 certainty: "hypothese"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 57
-related: ["joy-boy", "la-prescience-et-imu"]
+related: ["gol-d-roger", "joy-boy", "la-prescience-et-imu"]
 ---
 
 **Résumé** : Les chapitres récents ont révélé une silhouette énigmatique associée aux récits anciens. Bien que beaucoup y aient vu la première apparition directe de Joy Boy, 6 indices troublants suggèrent qu'il s'agirait en réalité de Gol D. Roger.

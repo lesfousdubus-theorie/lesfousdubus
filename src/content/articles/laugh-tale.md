@@ -7,7 +7,7 @@ status: "published"
 sources: [966, 967, 968, 1056]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 5
 related:
   [
@@ -57,7 +57,7 @@ Il n'existe donc qu'un seul chemin pour faire le tour du monde, et c'est Grand L
 Seulement voilà : un problème que personne n'évoque jamais. Pour traverser le globe via Grand Line, on rencontre Red Line **trois fois** :
 
 1. **Reverse Mountain** (entrée) : le point de départ où les courants des quatre mers convergent
-2. **Marie Geoise** (passage vers le Nouveau Monde) : le territoire des Dragons Célestes
+2. **Mary Geoise** (passage vers le Nouveau Monde) : le territoire des Dragons Célestes
 3. **Une troisième fois en fin de parcours** : au dos de Reverse Mountain, où **aucune issue n'est décrite**
 
 La dernière île de Grand Line, **Lodestar**, se trouve juste avant ce mur rouge haut de dix mille mètres. Après elle, une seule solution : faire demi-tour, comme le fit Gol D. Roger il y a trente-neuf ans.
@@ -68,7 +68,7 @@ D'où une question : comment Roger a-t-il bien pu faire le tour du monde si la R
 
 Plusieurs réponses sont possibles :
 
-1. **Réponse littérale** : le manga n'a simplement pas encore montré le passage secret qui permet de passer la troisième fois la Red Line (par exemple sous Marie Geoise, via une porte, une technologie ancienne, etc.).
+1. **Réponse littérale** : le manga n'a simplement pas encore montré le passage secret qui permet de passer la troisième fois la Red Line (par exemple sous Mary Geoise, via une porte, une technologie ancienne, etc.).
 2. **Réponse théorique** : Roger n'aurait pas atteint Laugh Tale dans le même **espace** mais à une autre **époque** — une époque où la Red Line n'existe plus, c'est-à-dire le futur.
 
 C'est la seconde réponse que développe la théorie.

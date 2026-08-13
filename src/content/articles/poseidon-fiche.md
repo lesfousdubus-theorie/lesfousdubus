@@ -7,7 +7,7 @@ status: "published"
 sources: [610, 967, 653]
 editorialStatus: "canon"
 certainty: "central"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "armes-antiques"
 order: 34
 related: ["shirahoshi"]

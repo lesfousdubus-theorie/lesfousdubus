@@ -3,8 +3,9 @@ title: "Les dieux de One Piece"
 summary: "Dossier central : dans One Piece, le divin naît de la foi, de la peur, du pouvoir politique et du regard porté sur les individus."
 category: "dieux-croyances"
 status: "published"
+editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 sources: [254, 287, 1018, 1044]
 order: 20
 related: ["nika", "divinites-shandias", "zaza", "boucaniers", "lunariens", "gorosei", "dragons-celestes"]

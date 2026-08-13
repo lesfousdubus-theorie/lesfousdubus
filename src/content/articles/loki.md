@@ -3,8 +3,9 @@ title: "Loki"
 summary: "Loki, le géant d'Elbaf, s'approprie le pouvoir du Ryu Ryu no Mi modèle Nidhogg. La théorie le relie au dieu de la guerre, aux géants charpentiers de Galley-La et à la branche Pluton."
 category: "personnages-identites"
 status: "published"
+editorialStatus: "canon"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 navigationType: "fiche"
 related: ["nidhogg-ratatoskr", "elbaf-halley", "pluton-water-seven-galley-la", "dieux-one-piece", "fresque-elbaf"]
 sources: [1174, 1175, 1182]

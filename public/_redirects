@@ -17,22 +17,27 @@
 /theorie/le-deluge-et-all-blue /theorie/deluge-all-blue/ 301
 /theorie/le-deluge-et-all-blue/ /theorie/deluge-all-blue/ 301
 
+# Doublons stricts supprimés (corps identiques au fichier cible).
+/theorie/les-bases-du-siecle-oublie /theorie/siecle-oublie-present/ 301
+/theorie/les-bases-du-siecle-oublie/ /theorie/siecle-oublie-present/ 301
+/theorie/coalition-des-20-rois /theorie/vingt-rois-chevaliers-divins/ 301
+/theorie/coalition-des-20-rois/ /theorie/vingt-rois-chevaliers-divins/ 301
+
 # Anciennes conclusions désormais fusionnées dans leurs dossiers principaux.
-/theorie/lili-vivi-et-les-poneglyphes /theorie/vivi/ 301
-/theorie/lili-vivi-et-les-poneglyphes/ /theorie/vivi/ 301
 /theorie/zoro-est-ryuma /theorie/ryuma/ 301
 /theorie/zoro-est-ryuma/ /theorie/ryuma/ 301
-/theorie/davy-jones /theorie/barbe-noire-davy-jones/ 301
-/theorie/davy-jones/ /theorie/barbe-noire-davy-jones/ 301
 /theorie/emeth-robot-du-futur /theorie/emeth-futur/ 301
 /theorie/emeth-robot-du-futur/ /theorie/emeth-futur/ 301
 /theorie/zunesha /theorie/zunesha-fiche/ 301
 /theorie/zunesha/ /theorie/zunesha-fiche/ 301
-/theorie/poseidon /theorie/poseidon-fiche/ 301
-/theorie/poseidon/ /theorie/poseidon-fiche/ 301
 /theorie/pluton /theorie/pluton-fiche/ 301
 /theorie/pluton/ /theorie/pluton-fiche/ 301
 
 # Évite les doublons publics en /index.html signalés comme autre canonique.
 /index.html / 301
 /*/index.html /:splat/ 301
+
+# Journal manuel retiré : la page /chapitres/modifications est générée
+# automatiquement à partir des updatedArticles des fiches de chapitres.
+/theorie/modifications /chapitres/modifications/ 301
+/theorie/modifications/ /chapitres/modifications/ 301

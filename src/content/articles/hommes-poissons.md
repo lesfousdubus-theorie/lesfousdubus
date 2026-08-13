@@ -6,7 +6,7 @@ status: "published"
 sources: [621, 626, 649, 653]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "royaume-ryugu"
 order: 88
 related: ["peuples-royaumes", "royaume-ryugu", "noah", "shirahoshi", "poseidon-fiche"]

@@ -4,8 +4,7 @@ summary: "L'Omen est le pouvoir d'Imu évoqué par les analyses récentes. Méca
 category: "technologies-pouvoirs"
 status: "published"
 certainty: "hypothese"
-reviewedUntilChapter: 1188
-parent: "imu-nerona"
+reviewedUntilChapter: 1190
 navigationType: "dossier"
 editorialStatus: "nouvelle-piste"
 related: ["imu-nerona", "mother-flame", "uranus", "fruits-du-demon"]

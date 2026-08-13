@@ -3,10 +3,10 @@ title: "Princesse Shirahoshi"
 summary: "Fiche d'analyse sur la princesse Sirène du Royaume Ryūgū et l'incarnation de l'Arme Antique Poséidon."
 category: "personnages-identites"
 status: "published"
-sources: []
+sources: [610, 618, 649, 653]
 editorialStatus: "canon"
-reviewedUntilChapter: 1188
-parent: "poseidon-fiche"
+certainty: "elevee"
+reviewedUntilChapter: 1190
 order: 31
 related: ["poseidon-fiche", "theorie-complete"]
 ---

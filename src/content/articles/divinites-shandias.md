@@ -6,7 +6,7 @@ status: "published"
 sources: [287, 1138, 1182]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "dieux-one-piece"
 order: 22
 related: ["nika", "zaza", "dieux-one-piece", "shandora-shandias", "elbaf-halley", "zoans"]

@@ -6,8 +6,7 @@ status: "published"
 sources: [819, 963, 973, 1037]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
-parent: "wa-no-kuni"
+reviewedUntilChapter: 1190
 order: 28
 related: ["wa-no-kuni", "kozuki-toki", "poneglyphes", "zunesha-fiche", "nico-robin"]
 ---

@@ -3,8 +3,9 @@ title: "La fresque d'Elbaf"
 summary: "Annotation élément par élément de la fresque gravée sur l'Arbre d'Adam à Elbaf : géants, soleil, pluie, Imu, et la lecture de la théorie qui y voit la guerre finale à venir."
 category: "dieux-croyances"
 status: "published"
+editorialStatus: "interpretation"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "dieux-one-piece"
 navigationType: "dossier"
 related: ["elbaf-halley", "divinites-shandias", "zaza", "imu-nerona", "mother-flame", "uranus", "guerre-finale", "nika"]

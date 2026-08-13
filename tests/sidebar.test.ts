@@ -82,6 +82,7 @@ describe('sidebar : source unique et ordre déterministe', () => {
       'Laugh Tale',
       'One Piece',
       'All Blue',
+      'God Valley',
     ]);
   });
 

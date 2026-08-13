@@ -6,7 +6,7 @@ status: "published"
 sources: [963, 971, 972, 973]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 58
 related: ["communication-temps", "wa-no-kuni", "poneglyphes-futur", "madame-shirley", "fruits-du-demon"]
 ---
@@ -29,7 +29,19 @@ La prophétie de Toki n'est pas une divination : elle annonce avec exactitude un
 
 ## La lecture des Fous du Bus
 
-Toki est présentée par les Fous du Bus comme **l'anomalie la plus embarrassante de leur propre théorie**. Une femme qui déclare venir du passé contredit frontalement l'idée que le Siècle oublié soit le présent.
+### Un précédent canonique favorable
+
+Avant d'être une objection, Toki est d'abord un **appui**. Elle établit trois choses que le manga assume sans détour :
+
+- le **déplacement temporel existe** dans *One Piece*, et il est officiellement montré, pas suggéré ;
+- une **prophétie textuelle exacte** peut exister sans divination, à condition que son auteur en soit la cause ;
+- un personnage peut **traverser les siècles** et se retrouver à une époque qui n'est pas la sienne.
+
+Ces trois points sont exactement ce que la théorie postule pour les Ponéglyphes et pour le Harley d'Elbaf. On ne peut donc pas rejeter le principe d'une information circulant entre les époques en le traitant d'invraisemblable : Oda l'a déjà mis en scène, et il en a fait le pivot de tout un arc.
+
+### Mais aussi une anomalie assumée
+
+Cela dit, les Fous du Bus reconnaissent que Toki reste **une anomalie gigantesque** pour leur propre théorie. Une femme qui déclare venir du passé contredit frontalement l'idée que le Siècle oublié soit le présent.
 
 L'hypothèse avancée, formulée comme telle et non comme une conclusion : Toki ne comprendrait pas sa propre origine. Elle pourrait venir d'une époque future, avoir été déplacée dans le passé, puis avoir utilisé son fruit pour revenir progressivement vers son époque d'origine — croyant avoir accompli un bond de 800 ans vers l'avant alors que sa situation serait plus complexe.
 
@@ -39,7 +51,8 @@ Les Fous du Bus reconnaissent explicitement que cette hypothèse « paraît foll
 
 - Rien dans le manga ne suggère que Toki se trompe sur son origine. Elle est cohérente et jamais démentie.
 - Son fruit ne permet pas de voyager vers le passé : l'hypothèse suppose un déplacement par un autre moyen, jamais montré.
-- C'est le point où la théorie doit postuler le plus pour préserver sa cohérence, ce que ses auteurs assument.
+- C'est le point où la théorie doit postuler le plus pour préserver sa cohérence, ce que ses auteurs assument (« je sais que cette hypothèse paraît folle »).
+- Le précédent canonique joue dans les deux sens : que le déplacement temporel existe ne prouve pas qu'il ait servi à écrire les Ponéglyphes. Il rend l'hypothèse **recevable**, pas démontrée.
 
 ## Points encore à expliquer
 

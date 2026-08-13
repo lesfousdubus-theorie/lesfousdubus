@@ -6,7 +6,7 @@ status: "published"
 sources: [233, 906, 1044, 1085, 1110, 1118, 1125]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "gouvernement-mondial"
 order: 66
 related: ["gouvernement-mondial", "imu-nerona", "chevaliers-divins", "mary-geoise", "emeth-futur"]

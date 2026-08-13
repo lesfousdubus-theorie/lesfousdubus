@@ -7,7 +7,7 @@ status: "published"
 sources: [1018, 1044, 1046, 1069, 1096, 1102, 1117]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 
 order: 20
 related:

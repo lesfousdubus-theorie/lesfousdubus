@@ -6,7 +6,7 @@ status: "published"
 sources: [234, 483, 1096, 1097, 1102]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 22
 related: ["kuma-foi-nika", "nika", "boucaniers", "luffy", "joy-boy"]
 ---

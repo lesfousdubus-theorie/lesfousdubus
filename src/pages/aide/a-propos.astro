@@ -2,6 +2,7 @@
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
 import Breadcrumb from '@components/Breadcrumb.astro';
+import { getCollection } from 'astro:content';
 
 const breadcrumbItems = [
   { label: 'Accueil', href: '/' },
@@ -9,6 +10,10 @@ const breadcrumbItems = [
   { label: 'À propos' },
 ];
 
+// L'état de fraîcheur est dérivé des fiches de chapitres, jamais écrit en dur :
+// il ne peut donc pas devenir faux si l'on oublie de mettre à jour cette page.
+const chapters = await getCollection('chapters');
+const latestChapter = chapters.sort((a, b) => b.data.chapter - a.data.chapter)[0];
 ---
 
 <WikiLayout title="À propos" seoTitle="À propos — Les Fous du Bus : projet et méthode | Les Fous du Bus" description="À propos du wiki Les Fous du Bus : projet fan-made, théorie du Siècle oublié est le présent, méthode, sources et démarche éditoriale." currentPath="/aide/a-propos">
@@ -29,6 +34,20 @@ const breadcrumbItems = [
         Le site a pour objectif de structurer, documenter, développer et faire évoluer cette théorie
         au fil des nouveaux chapitres de <em>One Piece</em>.
       </p>
+      {
+        latestChapter && (
+          <p class="freshness">
+            <span class="freshness__dot" aria-hidden="true" />
+            <span>
+              Contenu à jour jusqu'au{' '}
+              <a href={`/chapitres/${latestChapter.data.chapter}/`}>
+                <strong>chapitre {latestChapter.data.chapter}</strong>
+              </a>{' '}
+              — « {latestChapter.data.title} ».
+            </span>
+          </p>
+        )
+      }
     </section>
 
     <section class="section">
@@ -155,5 +174,27 @@ const breadcrumbItems = [
   .principle-item p {
     font-size: 13.5px;
     margin: 0;
+  }
+
+  /* Indicateur de fraîcheur : dérivé de la collection `chapters`. */
+  .freshness {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 12px 14px;
+    font-size: 14px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--cyan);
+    border-radius: var(--border-radius);
+  }
+
+  .freshness__dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--cyan);
   }
 </style>

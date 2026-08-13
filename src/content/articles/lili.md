@@ -5,7 +5,8 @@ category: "personnages-identites"
 status: "published"
 sources: [1084, 1085, 1086, 1116]
 editorialStatus: "canon"
-reviewedUntilChapter: 1188
+certainty: "elevee"
+reviewedUntilChapter: 1190
 order: 49
 related: ["nefertari-vivi", "vivi", "poneglyphes"]
 ---

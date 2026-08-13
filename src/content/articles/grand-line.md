@@ -3,10 +3,10 @@ title: "Grand Line"
 summary: "Fiche d'identification de Grand Line, la mer linéaire qui traverse Blue Star en coupant le monde en deux, axe central de la route des pirates."
 category: "monde-destinations"
 status: "published"
-sources: []
+sources: [105, 216, 522]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 2
 ---
 
@@ -20,7 +20,7 @@ Elle constitue l'axe principal de la quête du One Piece et le théâtre de la p
 
 - L'accès à Grand Line se fait par Reverse Mountain, le seul point où les navires peuvent franchir Red Line depuis les Blue Seas.
 - La progression est difficile en raison de l'absence de boussoles fiables, de la dangerosité des eaux et de la concentration des puissances marines.
-- Laugh Tale, Lodestar et Mariejois se trouvent sur l'axe de Grand Line.
+- Laugh Tale, Lodestar et Mary Geoise se trouvent sur l'axe de Grand Line.
 
 ## La lecture des Fous du Bus
 

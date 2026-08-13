@@ -3,8 +3,9 @@ title: "Nidhogg et Ratatoskr"
 summary: "Nidhogg, pouvoir de Loki et dragon du Harley ; Ratatoskr, créature du folklore scandinave de One Piece. Fiches liées depuis Loki et les dieux et croyances."
 category: "dieux-croyances"
 status: "published"
+editorialStatus: "interpretation"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "dieux-one-piece"
 navigationType: "fiche"
 related: ["loki", "dieux-one-piece", "elbaf-halley", "zoans"]

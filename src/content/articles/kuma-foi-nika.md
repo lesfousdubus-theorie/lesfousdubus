@@ -4,8 +4,9 @@ summary: "Bartholomew Kuma a parié sa vie entière sur l'existence de Nika. Sa 
 category: "figures-principales"
 status: "published"
 navigationType: "dossier"
+editorialStatus: "interpretation"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 sources: [1094, 1102]
 order: 23
 parent: "bartholomew-kuma"

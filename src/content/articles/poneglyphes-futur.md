@@ -4,11 +4,11 @@ summary: "Dans la théorie, les Ponéglyphes pourraient avoir été produits à 
 category: "transmission-memoire"
 status: "published"
 sidebarHidden: true
+editorialStatus: "hypothese-centrale"
 certainty: "central"
-reviewedUntilChapter: 1188
-sources: [1]
+reviewedUntilChapter: 1190
+sources: [395, 628, 818]
 order: 54
-parent: "poneglyphes"
 ---
 
 ## Le Rio Ponéglyphe

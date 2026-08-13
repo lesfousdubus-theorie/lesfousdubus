@@ -5,7 +5,8 @@ category: "personnages-identites"
 status: "published"
 sources: [1085, 1116]
 editorialStatus: "canon"
-reviewedUntilChapter: 1188
+certainty: "elevee"
+reviewedUntilChapter: 1190
 order: 48
 related: ['lili', 'vivi', 'theorie-complete']
 ---

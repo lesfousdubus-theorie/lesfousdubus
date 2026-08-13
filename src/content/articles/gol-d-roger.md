@@ -5,37 +5,46 @@ category: "figures-principales"
 status: "published"
 sources: [967, 968, 1]
 editorialStatus: "canon"
-reviewedUntilChapter: 1188
+certainty: "elevee"
+reviewedUntilChapter: 1190
 order: 18
 related: ["luffy", "joy-boy", "laugh-tale"]
 ---
 
-**Résumé** : Les chapitres récents ont révélé une silhouette énigmatique associée aux récits anciens. Bien que beaucoup y aient vu la première apparition directe de Joy Boy, 6 indices troublants suggèrent qu'il s'agirait en réalité de Gol D. Roger.
+## Présentation
 
-![Silhouette scan 1181](/images/threads/silhouette-scan-1181-roger/img_1.webp)
-![Silhouette comparée](/images/threads/silhouette-scan-1181-roger/img_2.webp)
+Gol D. Roger est le Seigneur des Pirates, le seul homme à avoir atteint Laugh Tale et découvert le One Piece. Son exécution à Loguetown ouvre la Grande Ère de la Piraterie et le premier chapitre du manga.
 
-## 1. Le principe de la double lecture
-Dans la vision du Mont Corvo, Imu attend désespérément l'arrivée du véritable Joy Boy (Luffy). Mais tout au long de l'histoire, d'autres prétendants ont été pris par erreur pour cette figure légendaire.
+## Ce que le manga établit
 
-![Double lecture](/images/threads/silhouette-scan-1181-roger/img_3.webp)
+- Il atteint **Laugh Tale** environ vingt-cinq ans avant le présent du récit, accompagné de son équipage.
+- Devant le trésor, l'équipage **éclate de rire**. La raison n'a jamais été expliquée.
+- Il déclare y être arrivé **trop tôt** : « Nous sommes venus trop tôt dans cette ère » (chapitre 968).
+- Il conclut qu'il n'est pas celui qu'on attendait, et affirme que le véritable Joy Boy viendra plus tard.
+- Il est atteint d'une maladie incurable et se rend volontairement à la Marine.
+- Il possédait le **Haki des Rois** et entendait la « voix de toute chose », comme Luffy et Momonosuke.
+- Il n'a **pas trouvé Poséidon** sur l'île des Hommes-Poissons, alors que le Ponéglyphe de Shandora en indiquait l'emplacement.
+- Son chapeau de paille, transmis à Shanks puis à Luffy, appartenait originellement à un autre porteur.
 
-## 2. Le mystère de la jeunesse de Roger
-Eiichiro Oda a sciemment gardé le passé et la jeunesse de Gol D. Roger sous le sceau du secret. Les rares aperçus de Roger jeune (notamment sa première rencontre avec Silvers Rayleigh avec son chapeau de paille) montrent une posture et une esthétique quasi identiques à cette silhouette.
+## La lecture des Fous du Bus
 
-![Jeunesse de Roger](/images/threads/silhouette-scan-1181-roger/img_4.webp)
+Roger est le témoin central de la théorie, pour une raison précise : **il est arrivé au bon endroit au mauvais moment**.
 
-## 3. Analyse de la composition de la case
-La posture, le port de tête et la découpe d'ombre de la vignette rappellent étrangement plusieurs planches iconiques de Gol D. Roger lors de son périple vers Loguetown et Grand Line.
+Son échec à trouver Poséidon s'explique dans cette grille sans difficulté : Shirahoshi n'était pas encore née. La stèle n'indiquait pas un lieu vide, elle indiquait une arme à venir. Le même raisonnement s'appliquerait à Pluton, désigné sous Wa no Kuni alors qu'il resterait à construire.
 
-![Composition de la case](/images/threads/silhouette-scan-1181-roger/img_5.webp)
+Son rire serait celui de la reconnaissance : avoir compris que l'histoire gravée sur le Rio Ponéglyphe n'était pas celle d'un passé lointain, mais celle d'un garçon qui n'était pas encore né.
 
-## 4. L'écho des mêmes paroles
-Roger et Luffy partagent mot pour mot le même "rêve secret" (le fameux vœu qui a fait rire Shanks et Oden). Si la légende a confondu leurs voix à travers les époques, il est naturel que les récits d'Imu et du Gouvernement associent leurs silhouettes.
+L'analyse de la silhouette du chapitre 1181 — Joy Boy ou Roger ? — est développée dans [La Silhouette du Scan 1181](/theorie/silhouette-scan-1181-roger).
 
-![Paroles identiques Roger et Luffy](/images/threads/silhouette-scan-1181-roger/img_6.webp)
+## Limites et nuances
 
-## 5. Pourquoi cela concorde avec les propos d'Imu
-Si Imu a longtemps cru que Gol D. Roger était le Joy Boy annoncé par la prophétie, alors la mort de Roger à Loguetown explique parfaitement pourquoi Imu pensait que *"Joy Boy était mort"*, avant de réaliser avec horreur à Marineford et Egghead que le véritable héritier arrive.
+- « Trop tôt » peut simplement signifier que Roger était condamné par la maladie, sans aucune implication temporelle.
+- L'absence de Poséidon s'explique aussi par le fait que le titre passe d'une sirène à l'autre au fil des générations : c'est la lecture la plus économique.
+- Le rire de Roger admet des dizaines d'explications, dont beaucoup n'exigent aucun paradoxe.
 
-![Discours d'Imu sur Joyboy](/images/threads/silhouette-scan-1181-roger/img_7.webp)
+## Articles liés
+
+- [Laugh Tale](/theorie/laugh-tale)
+- [Joy Boy](/theorie/joy-boy)
+- [La Silhouette du Scan 1181](/theorie/silhouette-scan-1181-roger)
+- [Monkey D. Luffy](/theorie/luffy)

@@ -6,7 +6,7 @@ status: "published"
 sources: [1023, 1035, 1036, 1049]
 editorialStatus: "canon"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "peuples-royaumes"
 order: 87
 related: ["peuples-royaumes", "red-line", "joy-boy", "guerre-finale", "dieux-one-piece"]

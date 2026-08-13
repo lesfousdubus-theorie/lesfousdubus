@@ -146,10 +146,12 @@ describe('régressions UI, UX et accessibilité', () => {
 
   it('exclut le chrome de lecture et les pages internes des extraits Pagefind', () => {
     const layout = read('src/layouts/ArticleLayout.astro');
-    const modifications = read('src/content/articles/modifications.md');
     expect(layout).toContain('class="article-top-meta" data-pagefind-ignore');
     expect(layout).toContain('frontmatter.searchHidden');
-    expect(modifications).toContain('searchHidden: true');
+    // `searchHidden` doit rester un opt-out disponible dans le schéma même
+    // quand aucun article ne l'utilise (les pages de service sont désormais
+    // des routes `/chapitres/*`, pas des articles).
+    expect(read('src/content.config.ts')).toContain('searchHidden');
   });
 });
 

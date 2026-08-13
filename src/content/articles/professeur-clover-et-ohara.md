@@ -1,13 +1,14 @@
 ---
-parent: "siecle-oublie"
 title: "Le Professeur Clover et les pionniers d'Ohara"
 summary: "Clover, Olvia et Vegapunk : comment les chercheurs d'Ohara ont été les tout premiers 'Fous du Bus' à deviner la vérité sur l'Histoire."
 category: "transmission-memoire"
 status: "published"
+sources: [391, 395, 398]
 sidebarHidden: true
+editorialStatus: "hypothese-centrale"
 certainty: "central"
-reviewedUntilChapter: 1188
-related: ["les-bases-du-siecle-oublie", "vivi"]
+reviewedUntilChapter: 1190
+related: ["siecle-oublie", "siecle-oublie-present", "vivi"]
 ---
 
 **Résumé** : Le Professeur Clover, Nico Olvia et le Dr. Vegapunk sont les trois figures pionnières de l'étude de l'Histoire. En analysant leurs déclarations exactes, on réalise qu'ils n'ont pas simplement découvert une encyclopédie du passé, mais qu'ils ont compris que les textes anciens décrivaient ce qui doit se produire.

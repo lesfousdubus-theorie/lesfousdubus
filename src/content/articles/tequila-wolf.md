@@ -3,12 +3,12 @@ title: "Les quatre ponts du Gouvernement mondial (Tequila Wolf, Bourbon, Vodka, 
 summary: "Les quatre ponts gigantesques du Gouvernement mondial — Tequila Wolf, Bourbon, Vodka et Rum — seraient, selon la théorie, dimensionnés pour survivre à une future montée des eaux de 200 mètres, preuve que le pouvoir en place se prépare au déluge."
 category: "peuples-royaumes"
 status: "published"
+editorialStatus: "hypothese-secondaire"
 certainty: "hypothese"
-reviewedUntilChapter: 1188
-parent: "guerre-finale"
-related: ['grande-guerre', 'deluge-all-blue', 'gouvernement-mondial', 'red-line', 'mary-geoise']
+reviewedUntilChapter: 1190
+related: ["guerre-finale", 'grande-guerre', 'deluge-all-blue', 'gouvernement-mondial', 'red-line', 'mary-geoise']
 order: 91
-sources: []
+sources: [522, 904]
 
 ---
 

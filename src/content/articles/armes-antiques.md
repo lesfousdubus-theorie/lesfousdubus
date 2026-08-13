@@ -7,7 +7,7 @@ status: "published"
 sources: [399, 650, 653, 1056, 1113, 1114, 1115]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 1
 related:
   [
@@ -57,7 +57,7 @@ Poséidon ne serait pas une arme de destruction aveugle, mais une force appelée
 ### Ce que le manga établit
 
 - Pluton est un **navire de guerre** légendaire, capable selon la rumeur de détruire une île d’un seul coup.
-- Ses plans ont été conservés pendant des siècles par les charpentiers de Water Seven (Iceburg, Franky) ; Franky finira par les brûler (chapitre 428).
+- Ses plans ont été conservés pendant des siècles par les charpentiers de Water Seven (Icebarg, Franky) ; Franky finira par les brûler (chapitre 428).
 - Un Ponéglyphe gardé à Alabasta révèle son existence ; un autre, à Wa no Kuni, indique qu’il y a été **scellé**.
 - Au chapitre 1056, il est confirmé que Pluton se trouve à Wa no Kuni, endormi sous la cascade.
 

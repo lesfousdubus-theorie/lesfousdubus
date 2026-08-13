@@ -3,11 +3,13 @@ title: "Marshall D. Teach et Davy Jones"
 summary: "Comment Marshall D. Teach incarne la figure mythique de Davy Jones et s'apprête à ravir le titre de Roi du Monde à Mary Geoise."
 category: "personnages-identites"
 status: "published"
+sources: [441, 1064, 1164]
 order: 43
 navigationType: "dossier"
+editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-reviewedUntilChapter: 1188
-related: ['coalition-des-20-rois', 'la-prescience-et-imu']
+reviewedUntilChapter: 1190
+related: ['vingt-rois-chevaliers-divins', 'la-prescience-et-imu']
 ---
 
 **Résumé** : Le nom de Davy Jones est cité dans le manga comme une légende des mers et l'ancien "Roi du Monde" d'après Rocks D. Xebec. Selon la théorie des Fous du Bus, Davy Jones n'est pas un pirate d'il y a 800 ans : c'est le titre que l'Histoire donnera à Marshall D. Teach (Barbe Noire).

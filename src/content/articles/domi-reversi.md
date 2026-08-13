@@ -4,8 +4,8 @@ summary: "Le Domi Reversi est le pouvoir par lequel Imu prend le contrôle d'un 
 category: "technologies-pouvoirs"
 status: "published"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
-parent: "imu-nerona"
+reviewedUntilChapter: 1190
+parent: "omen"
 navigationType: "dossier"
 editorialStatus: "nouvelle-piste"
 related: ["imu-nerona", "brook", "omen", "fruits-du-demon"]

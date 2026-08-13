@@ -3,9 +3,9 @@ title: "Le Jour du serment"
 summary: "Concept de la théorie : le moment où les promesses du passé (à Ryūgū, aux peuples) sont enfin tenues au présent, point de convergence du retour de Joy Boy et des missions des peuples."
 category: "transmission-memoire"
 status: "published"
+editorialStatus: "canon"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
-parent: "peuples-royaumes"
+reviewedUntilChapter: 1190
 navigationType: "fiche"
 related: ["peuples-royaumes", "joy-boy", "hommes-poissons", "royaume-ryugu", "voix-de-joy-boy", "volonte-heritee", "siecle-oublie-present"]
 sources: [628]

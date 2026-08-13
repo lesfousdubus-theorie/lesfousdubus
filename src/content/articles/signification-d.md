@@ -4,11 +4,12 @@ summary: "Le « D. » ne serait pas une simple initiale mais un serment de liber
 category: "figures-principales"
 status: "published"
 navigationType: "dossier"
+editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "luffy"
 related: ['joy-boy', 'communication-temps', 'tequila-wolf']
-sources: []
+sources: [105, 507, 1114]
 order: 24
 ---
 

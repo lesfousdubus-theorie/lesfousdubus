@@ -295,6 +295,40 @@ for (const file of files) {
   }
 }
 
+// --- Conventions orthographiques -------------------------------------------
+// Le corpus mélangeait plusieurs graphies pour les mêmes noms propres, ce qui
+// cassait la recherche interne et les liens mentaux entre fiches. On fige la
+// graphie retenue (édition française Glénat quand elle existe) et on refuse
+// toute variante réintroduite par une nouvelle fiche.
+const SPELLING_RULES = [
+  { wrong: /\bHalley\b/g, right: 'Harley' },
+  { wrong: /\bMarie[- ]Geoise\b/g, right: 'Mary Geoise' },
+  { wrong: /\bMariejois\b/g, right: 'Mary Geoise' },
+  { wrong: /\bWano Kuni\b/g, right: 'Wa no Kuni' },
+  { wrong: /\bIce(?:burg|berg)\b/g, right: 'Icebarg' },
+  { wrong: /\bShamrock\b/g, right: 'Chamrock' },
+  { wrong: /\bPoneglyphe/g, right: 'Ponéglyphe' },
+];
+
+for (const file of files) {
+  const rel = relative(CONTENT_DIR, file).split(sep).join('/');
+  const lines = readFileSync(file, 'utf8').split('\n');
+  lines.forEach((line, index) => {
+    // Les chemins d'images et les liens portent d'anciens slugs figés : les
+    // renommer casserait des fichiers réels ou des redirections en place.
+    if (line.includes('/images/') || line.includes('](/')) return;
+    for (const { wrong, right } of SPELLING_RULES) {
+      wrong.lastIndex = 0;
+      const found = line.match(wrong);
+      if (found) {
+        errors.push(
+          `${rel}:${index + 1} : graphie \"${found[0]}\" — utiliser \"${right}\" (convention du site).`,
+        );
+      }
+    }
+  });
+}
+
 if (errors.length > 0) {
   console.error(`\n❌ Validation du contenu : ${errors.length} erreur(s)\n`);
   for (const e of errors) console.error(`  • ${e}`);

@@ -3,8 +3,9 @@ title: "La Chambre Fleurie"
 summary: "La Chambre Fleurie, salle secrète où Imu tranche aux côtés des Gorosei. Dossier séparé de Mary Geoise, centré sur Imu et la branche des Fruits du Démon."
 category: "gouvernement-mondial"
 status: "published"
+editorialStatus: "interpretation"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "mary-geoise"
 navigationType: "dossier"
 related: ["mary-geoise", "imu-nerona", "gorosei", "fruits-du-demon", "dragons-celestes"]

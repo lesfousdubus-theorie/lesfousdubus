@@ -7,7 +7,7 @@ navigationType: "dossier"
 sources: [1023]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 46
 related: ['shimotsuki-ryuma', 'zoro']
 ---

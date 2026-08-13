@@ -6,7 +6,7 @@ status: "published"
 sources: [442, 486, 487, 1183, 1184]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 51
 related: ["equipage-rumbar", "binks-no-sake", "dozan", "volonte-heritee", "fruits-du-demon"]
 ---

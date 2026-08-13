@@ -7,7 +7,7 @@ navigationType: "dossier"
 sources: [1085, 1116]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 50
 related: ['lili', 'nefertari-vivi']
 ---

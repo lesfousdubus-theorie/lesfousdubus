@@ -1,14 +1,15 @@
 ---
-parent: "imu-nerona"
 title: "La Prescience et la malédiction d'Imu"
 summary: "Comment le don de prescience (aperçu chez Shirley) explique le règne d'Imu, sa peur obsessionnelle de Nika et son attente de 800 ans."
 category: "personnages-identites"
 status: "published"
+sources: [610, 1179, 1188]
 sidebarHidden: true
+editorialStatus: "nouvelle-piste"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 55
-related: ["joy-boy", "coalition-des-20-rois"]
+related: ["imu-nerona", "joy-boy", "vingt-rois-chevaliers-divins"]
 ---
 
 **Résumé** : Selon une extension récente des Fous du Bus (chapitre 1188), Imu pourrait posséder une forme de préscience comparable à celle de Madame Shirley. Cette hypothèse reste une piste récente et est marquée comme telle.

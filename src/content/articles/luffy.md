@@ -7,7 +7,7 @@ status: "published"
 sources: [1, 444, 1044, 1045, 1046, 1049, 1050, 1102]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 19
 related:
   [
@@ -47,7 +47,7 @@ Tout le manga est raconté de son point de vue : son équipage, ses rencontres, 
 
 Le chapeau de paille est la figure de transmission la plus visible du manga : Roger → Rayleigh ? → Shanks → Luffy. Dans la lecture traditionnelle, c’est un symbole de la volonté héritée, transmis d’un homme libre à un autre. Dans la lecture des Fous du Bus, la boucle se referme d’une façon différente : le chapeau aurait été originellement celui de **Joy Boy** — c’est-à-dire celui de Luffy lui-même —, et Roger et Shanks n’auraient fait que le « garder » pendant huit cents ans en attendant que vienne le moment où Luffy le porte.
 
-Cette lecture explique la présence du chapeau de paille géant congelé dans la chambre froide de Marie Geoise (chapitre 906) : Imu conserverait une trace matérielle du Joy Boy qu’il craint.
+Cette lecture explique la présence du chapeau de paille géant congelé dans la chambre froide de Mary Geoise (chapitre 906) : Imu conserverait une trace matérielle du Joy Boy qu’il craint.
 
 ## La lecture des Fous du Bus : Luffy créateur de la légende
 

@@ -4,11 +4,13 @@ summary: "Uranus est la troisième Arme antique, dont la nature précise n'est p
 seoTitle: "Uranus dans One Piece : Mother Flame, Imu et théorie | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
+editorialStatus: "hypothese-centrale"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "armes-antiques"
-sources: []
+sources: [1086, 1116, 1180]
 order: 30
+related: ["mother-flame", "omen", "imu-nerona", "armes-antiques", "vegapunk"]
 ---
 
 ## Ce que le manga établit
@@ -22,28 +24,45 @@ order: 30
 
 ## La lecture des Fous du Bus
 
-### Mother Flame et l'incident de Lulusia
+### Uranus n'a jamais été antique : Vegapunk l'a créée
 
-La théorie relie l'arme de Lulusia à la **Mother Flame**, l'énergie créée par Vegapunk en étudiant Emeth. Une partie de cette énergie aurait été volée et utilisée par Imu pour détruire l'île.
+C'est la thèse centrale de la théorie sur cette arme, et elle est frontale : **Vegapunk a créé Uranus sans le vouloir**.
 
-> ⚠️ Ce rapprochement est une **hypothèse de la théorie**. Le chapitre 1180 envisage plusieurs possibilités autour d'Imu, de l'Omen et d'Uranus sans trancher. Vegapunk n'a pas « créé Uranus » au sens canonique : c'est une lecture.
+Le raisonnement se déroule en quatre temps :
+
+1. Vegapunk rêvait d'une **énergie infinie capable d'arrêter les guerres**. Pour y parvenir, il a étudié le robot **Emeth** et tenté de reproduire son énergie prétendument antique.
+2. Or Emeth viendrait du futur et aurait été construit par les satellites de Vegapunk eux-mêmes (voir [Emeth](/theorie/emeth-futur)). En étudiant Emeth, **Vegapunk s'auto-étudiait** : il est le créateur de la machine dont il croit percer le secret, et donc du soleil infini qui l'alimente.
+3. Il est par conséquent le créateur de la **Mother Flame**. Son surnom — « l'homme qui avait cinq cents ans d'avance sur l'humanité » — s'expliquerait par cette boucle : ses découvertes viennent du futur.
+4. À cause de la trahison de York, une partie de la Mother Flame a été dérobée par le Gouvernement pour alimenter une arme secrète. C'est l'**incident de Lulusia**.
+
+Uranus ne serait donc pas une arme vieille de huit cents ans que Vegapunk aurait « réveillée » : **c'est une arme d'aujourd'hui**, cohérente avec la lecture « le Siècle oublié est le présent ».
 
 ### Imu et la forme « Uranus »
 
-La théorie propose qu'**Imu lui-même** puisse être la forme que le monde appellera Uranus : son pouvoir (l'Omen), amplifié par la Mother Flame, pourrait frapper depuis le ciel et détruire des îles. La fresque d'Elbaf montrerait Imu avec un soleil entre les mains, évoquant la Mother Flame.
+Reste la question de la forme. La théorie retient deux candidats, et penche nettement pour le second :
 
-Ces identifications restent **spéculatives** (voir [Omen, Mother Flame et Imu](/explorer/omen-imu)).
+- **Un appareil aéronautique.** Les avions n'existent pas encore dans *One Piece*, alors que les navires et les robots volants, si. Uranus pourrait être la dernière invention aéronautique du Gouvernement.
+- **Imu Nerona en personne.** Sabo décrit au chapitre 1086 « quelque chose de très noir qui volait au-dessus des nuages », sans pouvoir dire si c'était un être vivant ou un phénomène naturel — description qui correspond à Imu, lequel voulait précisément utiliser la Mother Flame dans ce même chapitre. La fresque d'Elbaf montre par ailleurs **Imu tenant un soleil entre les mains** : ce soleil serait la Mother Flame, faisant d'Imu l'arme Uranus elle-même.
 
-### Pourquoi maintenant ?
+Dans cette lecture, la Mother Flame est **l'énergie qui alimente Uranus**, et Imu est l'arme qu'elle alimente (voir [Omen, Mother Flame et Imu](/explorer/omen-imu)).
 
-La théorie répond à la question de Dragon — pourquoi le gouvernement n'a pas utilisé cette arme plus tôt — par : ils ne la possédaient pas. Vegapunk vient de la créer. C'est cohérent avec la lecture « le Siècle oublié est le présent », mais ce raisonnement relève de l'interprétation.
+### La question de Dragon, et sa réponse
+
+Au chapitre 1116, Ivankov et Dragon, proches de Vegapunk, refusent de croire que leur ami ait pu créer une telle arme. Dragon pose alors la question qui contient sa propre réponse : si le Gouvernement possédait cette arme, **pourquoi ne l'avoir utilisée que maintenant** ?
+
+Parce qu'il ne la possédait pas. Elle vient d'être créée.
+
+### La dimension Oppenheimer
+
+Vegapunk est visuellement inspiré d'Einstein, mais Oda lui a injecté la trajectoire tragique de **Robert Oppenheimer** : le savant qui libère une puissance immense, puis découvre qu'elle servira à détruire. L'incident de Lulusia reprend l'imaginaire du drame atomique — la mort qui tombe du ciel, sans laisser de chance à personne. Vegapunk incarne le progrès scientifique détourné par le pouvoir politique, et porte dans son discours à l'humanité le poids de cette culpabilité. Tel Icare, il a volé trop près du soleil.
 
 ## Limites et nuances
 
-- La nature d'Uranus reste **inconnue** du manga.
-- L'identification de l'arme de Lulusia à Uranus n'est pas confirmée.
-- « Imu = Uranus » et « Mother Flame = Uranus » sont des **hypothèses récentes**, pas des faits.
-- Le nom « Uranus » (le ciel) est cohérent avec la destruction depuis les airs, mais ce n'est qu'un indice de nom.
+- La nature d'Uranus reste **inconnue** du manga : le nom, un domaine (le ciel) et une destruction d'île depuis les airs, c'est tout ce qui est établi.
+- L'identification de l'arme de Lulusia à Uranus n'est **pas confirmée** par le récit.
+- « Vegapunk a créé Uranus », « Imu est Uranus » et « la Mother Flame alimente Uranus » sont des **conclusions de la théorie**, pas des faits. Elles dépendent entièrement de l'hypothèse « Emeth vient du futur » : si Emeth est réellement antique, toute la chaîne s'effondre et Vegapunk n'a fait que redécouvrir une technologie perdue.
+- Le chapitre 1180 envisage plusieurs possibilités autour d'Imu, de l'Omen et d'Uranus **sans trancher**.
+- Le nom « Uranus » (le ciel) est cohérent avec une destruction venue des airs, mais un indice onomastique ne vaut pas démonstration.
 
 ## Articles liés
 

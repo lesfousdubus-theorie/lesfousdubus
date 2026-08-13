@@ -7,7 +7,7 @@ status: "published"
 sources: [395, 398, 1113, 1115]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 1
 related:
   [
@@ -34,7 +34,7 @@ Cette fiche décrit ce que le manga établit de ce siècle, puis expose la lectu
 
 - Il y a huit cents ans, une période de cent ans a été **effacée de l’histoire officielle** par les vainqueurs de la guerre qui a fondé le Gouvernement mondial.
 - Cette période a vu exister un grand royaume (le Royaume antique), qui a été vaincu par une coalition de **vingt rois** à l’issue d’une grande guerre.
-- À la fin de ce siècle, les vingt rois fondateurs se sont installés à Marie Geoise et ont créé le Gouvernement mondial.
+- À la fin de ce siècle, les vingt rois fondateurs se sont installés à Mary Geoise et ont créé le Gouvernement mondial.
 - Les **Ponéglyphes** sont les seuls supports subsistant de cette époque : indestructibles, gravés par le clan Kozuki, ils conservent des fragments de l’histoire effacée.
 - Le **Gouvernement mondial interdit formellement toute recherche** sur le Siècle oublié. Les érudits d’Ohara, qui l’étudiaient, ont été exterminés par le Buster Call (chapitres 391–398).
 - Le professeur Clover a été abattu sur le point de prononcer **le nom du Royaume antique**.

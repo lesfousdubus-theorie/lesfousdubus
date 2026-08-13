@@ -6,28 +6,43 @@ status: "published"
 sources: [610, 611, 618]
 editorialStatus: "nouvelle-piste"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 59
 related: ["communication-temps", "kozuki-toki", "royaume-ryugu", "imu-nerona", "joy-boy"]
 ---
 
-**Résumé** : Selon une extension récente des Fous du Bus, le pouvoir de Madame Shirley pourrait offrir une clé pour comprendre Imu : celui-ci pourrait disposer d'une forme de préscience et tenter depuis huit siècles d'empêcher un avenir qu'il ne comprend qu'imparfaitement.
+## Présentation
 
-![Prescience et Imu](/images/threads/la-prescience-et-imu/img_1.webp)
-![Vision d'Imu](/images/threads/la-prescience-et-imu/img_2.webp)
+Madame Shirley est la propriétaire du Mermaid Café sur l'île des Hommes-Poissons et la sœur cadette d'Arlong. Elle est surtout la **seule détentrice attestée du don de préscience** dans tout *One Piece*.
 
-## 1. Qu'est-ce que la Prescience dans One Piece ?
-La prescience est la capacité de percevoir des flashes précis du futur lointain. Le personnage de Mme Shirley sur l'île des Hommes-Poissons en est l'illustration : ses prédictions ne se trompent jamais (elle avait prévu la mort de Barbe Blanche et la destruction de l'île des Hommes-Poissons par Luffy).
+## Ce que le manga établit
 
-![Don de Shirley](/images/threads/la-prescience-et-imu/img_3.webp)
+- Le mot « préscience » n'est employé **qu'une seule fois** dans le manga, au chapitre 610, pour décrire son don.
+- Elle serait la seule à pouvoir percevoir le passé, le présent et l'avenir.
+- Ses prédictions **se sont toutes réalisées**, dont la mort de Barbe Blanche.
+- Ses visions ne sont ni claires ni précises : elle doit les **interpréter**, et se trompe régulièrement sur leur sens.
+- Elle a renoncé à son pouvoir, qu'elle jugeait trop pénible à porter.
+- Sa dernière vision montre une **silhouette au chapeau de paille détruisant l'île des Hommes-Poissons**. Dans le manga, cette silhouette reste ambiguë : Shirley conclut à tort qu'il s'agit de Luffy.
+- L'anime la représente explicitement sous les traits de Luffy — c'est un **ajout de la Toei**, absent du manga.
 
-## 2. Le parallèle visuel entre Shirley et Imu
-Oda a disséminé plusieurs indices graphiques rapprochant Shirley et Imu : une grande taille filiforme, un port altier, des yeux hypnotiques et une esthétique basée sur le contraste d'ombre et de lumière.
+## La lecture des Fous du Bus
 
-![Shirley et Imu](/images/threads/la-prescience-et-imu/img_4.webp)
+Shirley établit un précédent décisif : dans cet univers, **on peut connaître l'avenir sans voyager dans le temps**, et une prédiction exacte peut être mal interprétée par celui qui la reçoit.
 
-## 3. La malédiction d'Imu : Provoquer sa propre ruine
-En tentant d'effacer le nom de Nika, d'interdire l'étude des Ponéglyphes et de poursuivre la lignée des Nefertari, Imu réagirait directement à sa propre vision presciente. Mais en faisant cela, il mettrait en place les conditions exactes qui pourraient conduire Luffy à s'éveiller et à accomplir la prophétie.
+C'est exactement le statut que la théorie propose pour Imu. Si la silhouette vue par Shirley n'est pas Luffy mais **Joy Boy**, alors elle et Imu seraient les deux seuls personnages à avoir aperçu la même figure future — et tous deux à l'avoir mal comprise.
 
-![Imu et le Chapeau de paille](/images/threads/la-prescience-et-imu/img_5.webp)
-![Le garcon heureux Joyboy](/images/threads/la-prescience-et-imu/img_6.webp)
+Le parallèle est aussi visuel et moral : silhouette filiforme, mèche devant l'œil, port altier. Mais Shirley a **renoncé** à son pouvoir et vit apaisée, là où Imu ne l'a jamais lâché et est devenu paranoïaque. Yin et yang.
+
+Le développement de cette hypothèse appliquée à Imu se trouve dans [La Préscience et la malédiction d'Imu](/theorie/la-prescience-et-imu).
+
+## Limites et nuances
+
+- Rien n'indique que le don de Shirley soit reproductible ou partagé par d'autres personnages.
+- Que la préscience existe ne prouve pas qu'Imu la possède : c'est une analogie, pas une démonstration.
+- La lecture « la silhouette est Joy Boy, pas Luffy » repose sur une ambiguïté graphique que l'anime a d'ailleurs tranchée dans l'autre sens.
+
+## Articles liés
+
+- [La Préscience et la malédiction d'Imu](/theorie/la-prescience-et-imu)
+- [Kozuki Toki](/theorie/kozuki-toki)
+- [La communication à travers le temps](/theorie/communication-temps)

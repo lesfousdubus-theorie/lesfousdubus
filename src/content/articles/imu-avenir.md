@@ -4,8 +4,9 @@ summary: "Imu existe depuis 800 ans grâce au Ope Ope no Mi. Il a lu les Ponégl
 category: "gouvernement-mondial"
 status: "published"
 sidebarHidden: true
+editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 sources: [1164, 1188]
 order: 64
 parent: "imu-nerona"

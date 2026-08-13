@@ -3,14 +3,13 @@ parent: "lili"
 title: "Vivi est Lili : la reine qui dispersera les Ponéglyphes"
 summary: "5 preuves expliquant pourquoi Nefertari D. Lili ne serait pas une lointaine ancêtre de Vivi, mais le nom sous lequel la princesse d'Alabasta entrera dans l'Histoire."
 category: "personnages-identites"
-status: "draft"
-sidebarHidden: true
+status: "published"
 sources: [1084, 1085, 1086, 1116]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 56
-related: ["lili", "nefertari-vivi", "poneglyphes", "les-bases-du-siecle-oublie", "professeur-clover-et-ohara"]
+related: ["lili", "nefertari-vivi", "poneglyphes", "siecle-oublie-present", "professeur-clover-et-ohara"]
 ---
 
 **Résumé** : Nefertari D. Lili est décrite comme la reine d'Alabasta ayant refusé de vivre à Mary Geoise avant de disparaître mystérieusement. Nefertari Vivi vient elle aussi de disparaître après la Rêverie, tandis qu'Imu ordonne immédiatement qu'on la retrouve. Selon la théorie, ces deux histoires ne seraient pas parallèles : elles formeraient une seule et même histoire.

@@ -7,7 +7,7 @@ status: "published"
 sources: [1084, 1085, 1086, 1125, 1164, 1186, 1188]
 editorialStatus: "hypothese-centrale"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 62
 related:
   [
@@ -24,7 +24,7 @@ related:
 
 ## Présentation
 
-Imu Nerona est la figure invisible qui siège au sommet du Gouvernement mondial. Officiellement, le Trône Vide de Marie Geoise n’appartient à personne ; en réalité, Imu y siège depuis huit cents ans et donne ses ordres aux Gorosei, qui règnent à sa place. Son existence n’est connue que d’un très petit nombre de personnages au sein du pouvoir.
+Imu Nerona est la figure invisible qui siège au sommet du Gouvernement mondial. Officiellement, le Trône Vide de Mary Geoise n’appartient à personne ; en réalité, Imu y siège depuis huit cents ans et donne ses ordres aux Gorosei, qui règnent à sa place. Son existence n’est connue que d’un très petit nombre de personnages au sein du pouvoir.
 
 Imu est l’une des principales figures antagonistes de la fin de *One Piece* et pourrait constituer son antagoniste final. Cette fiche distingue les faits établis de l’interprétation qu’en proposent les Fous du Bus.
 
@@ -39,7 +39,7 @@ Imu est l’une des principales figures antagonistes de la fin de *One Piece* et
 - Aux chapitres 1186 et 1188, Imu apparaît doté d’un pouvoir personnel redoutable. La destruction de Lulusia et l’usage de la Mother Flame sont traités comme hypothèses dans les analyses récentes (voir section Lecture des Fous du Bus).
 - Les Gorosei, pourtant tout-puissants, obéissent à Imu comme à un supérieur absolu.
 - Imu semble obsédé par trois choses : Joy Boy, Nika, et la lignée du D.
-- Il garde dans une chambre de Marie Geoise un chapeau de paille géant congelé (chapitre 906).
+- Il garde dans une chambre de Mary Geoise un chapeau de paille géant congelé (chapitre 906).
 
 ## L’immortalité
 

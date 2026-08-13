@@ -6,14 +6,14 @@ status: "published"
 sources: [1023]
 editorialStatus: "hypothese-secondaire"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 44
 related: ['ryuma', 'zoro']
 ---
 
 ## Présentation canonique
 
-Shimotsuki Ryuma, dit le Dieu de la Lame, est un samouraï légendaire de Wano Kuni. Il a tranché un dragon au-dessus de la capitale des Fleurs et n'a jamais perdu un combat.
+Shimotsuki Ryuma, dit le Dieu de la Lame, est un samouraï légendaire de Wa no Kuni. Il a tranché un dragon au-dessus de la capitale des Fleurs et n'a jamais perdu un combat.
 
 Son corps momifié fut dérobé par Gekko Moria lors de l'arc Thriller Bark. Son sabre, Shusui, a été récupéré par Roronoa Zoro.
 

@@ -7,7 +7,7 @@ status: "published"
 sources: [576, 972, 1113, 1115, 1125, 1146]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 0
 related:
   [
@@ -103,7 +103,7 @@ L’enchaînement proposé est le suivant :
 ## Points encore à expliquer
 
 - Comment Red Line, continent de 10 000 mètres de haut, peut-elle être détruite, et par quel moyen (conjoint des trois Armes antiques ?).
-- Ce qu’il advient de Marie Geoise et de ses habitants au moment de cette destruction.
+- Ce qu’il advient de Mary Geoise et de ses habitants au moment de cette destruction.
 - Si le Déluge est le but d’Imu ou la conséquence non voulue de son usage de la Mother Flame.
 - La date exacte du « Jour du Serment » et qui en fixe le terme.
 - Le rôle que jouent Teach/Barbe Noire, Shanks et les autres Yonko dans ce conflit.

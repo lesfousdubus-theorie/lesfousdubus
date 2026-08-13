@@ -3,8 +3,9 @@ title: "Binks no Sake : le chant qui traverse les âges"
 summary: "Binks no Sake est une chanson populaire dont l'origine reste incertaine. Les chapitres 1183-1184 suggèrent que Brook pourrait en être le compositeur (ou en avoir créé un prototype) et que Dōzan pourrait être un nom d'artiste lié à Brook."
 category: "transmission-memoire"
 status: "published"
+editorialStatus: "interpretation"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 sources: [1183, 1184]
 order: 53
 related: ["brook", "equipage-rumbar", "dozan", "volonte-heritee"]

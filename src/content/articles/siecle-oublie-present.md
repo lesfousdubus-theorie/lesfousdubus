@@ -5,8 +5,9 @@ seoTitle: "Le Siècle oublié est le présent dans One Piece : théorie complèt
 category: "histoire-temporalite"
 status: "published"
 sidebarHidden: true
+editorialStatus: "hypothese-centrale"
 certainty: "central"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "siecle-oublie"
 sources: [1]
 order: 4

@@ -3,8 +3,9 @@ title: "La Volonté héritée : le fil rouge du siècle"
 summary: "La Volonté du D. n'est pas un héritage génétique mais la convergence de huit siècles de résistance. Chaque génération transmet sa flamme jusqu'à ce qu'un homme porte le fardeau de toutes."
 category: "transmission-memoire"
 status: "published"
+editorialStatus: "interpretation"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 sources: [576, 602]
 order: 52
 ---

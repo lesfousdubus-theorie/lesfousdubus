@@ -2,12 +2,11 @@
 title: "Teach est Davy Jones : le futur Roi du Monde"
 summary: "5 preuves expliquant pourquoi Davy Jones ne serait pas un pirate du Siècle oublié, mais le nom légendaire que Marshall D. Teach recevra après avoir tenté de conquérir le monde."
 category: "personnages-identites"
-status: "draft"
-sidebarHidden: true
+status: "published"
 sources: [1164, 1107, 957]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 47
 parent: "davy-jones-fiche"
 related: ["davy-jones-fiche", "teach", "guerre-finale", "gouvernement-mondial", "gorosei"]

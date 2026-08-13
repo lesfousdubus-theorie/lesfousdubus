@@ -73,38 +73,6 @@ const chapters = defineCollection({
   }),
 });
 
-const glossary = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/glossary' }),
-  schema: z.object({
-    term: z.string(),
-    definition: z.string(),
-    relatedArticles: z.array(z.string()).default([]),
-  }),
-});
-
-const characters = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/characters' }),
-  schema: z.object({
-    name: z.string(),
-    era: z.enum(['ancien', 'moderne', 'transversal']).default('transversal'),
-    aliases: z.array(z.string()).default([]),
-    summary: z.string(),
-    articles: z.array(z.string()).default([]),
-    order: z.number().default(0),
-  }),
-});
-
-const locations = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/locations' }),
-  schema: z.object({
-    name: z.string(),
-    region: z.string().default('Inconnu'),
-    summary: z.string(),
-    articles: z.array(z.string()).default([]),
-    order: z.number().default(0),
-  }),
-});
-
 const predictions = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/predictions' }),
   schema: z.object({
@@ -116,22 +84,8 @@ const predictions = defineCollection({
   }),
 });
 
-const timelines = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/timelines' }),
-  schema: z.object({
-    title: z.string(),
-    period: z.enum(['siecle-oublie', 'present', 'futur', 'boucle']).default('present'),
-    summary: z.string(),
-    articles: z.array(z.string()).default([]),
-  }),
-});
-
 export const collections = {
   articles,
   chapters,
-  glossary,
-  characters,
-  locations,
   predictions,
-  timelines,
 };
