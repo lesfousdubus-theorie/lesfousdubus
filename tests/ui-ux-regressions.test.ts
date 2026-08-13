@@ -120,10 +120,10 @@ describe('régressions UI, UX et accessibilité', () => {
     // build et court-circuite toute requête YouTube.
     expect(homepage).toContain('/images/video-cover.webp');
     expect(homepage).toContain('localVideoCover');
-    // À défaut : miniature distante maxresdefault → hqdefault → og-default.png.
+    // À défaut : miniature distante maxresdefault → hqdefault → og-default.jpg.
     expect(homepage).toContain('maxresdefault.jpg');
     expect(homepage).toContain('hqdefault.jpg');
-    expect(homepage).toContain("/og-default.png'");
+    expect(homepage).toContain("/og-default.jpg'");
   });
 
   it('charge Pagefind à la demande sans embarquer React', () => {

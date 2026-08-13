@@ -42,7 +42,7 @@ const articles = defineCollection({
       .optional(),
     /** Titre SEO riche pour <title> (H1 reste court). Ex: "Joy Boy dans One Piece : identité, indices et théorie" */
     seoTitle: z.string().optional(),
-    /** Image Open Graph spécifique à la page (chemin, ex: "/og-foo.png"). Sinon og-default.png. */
+    /** Image Open Graph spécifique à la page (chemin, ex: "/og-foo.png"). Sinon og-default.jpg. */
     ogImage: z.string().optional(),
     /** Identifiant (slug) de la fiche canonique parente pour les articles de démonstration. */
     parent: z.string().optional(),

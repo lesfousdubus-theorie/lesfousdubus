@@ -12,7 +12,7 @@ editorialStatus: "hypothese-centrale"
 order: 38
 related: ["pluton-fiche", "pluton-water-seven-galley-la", "loki", "zunesha-fiche", "wa-no-kuni", "poseidon-fiche"]
 sources: [431, 1154, 1182]
-ogImage: "/og-default.png"
+ogImage: "/og-default.jpg"
 ---
 
 > **Thread X du 08/08/2026** par [@FoudubusTV_](https://x.com/FoudubusTV_/status/2086126492228964579) — inspiré de la vidéo de [@MontCorvo_Off](https://x.com/MontCorvo_Off) #ONEPIECE1190.

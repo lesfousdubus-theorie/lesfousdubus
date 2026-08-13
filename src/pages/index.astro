@@ -19,7 +19,7 @@ const localVideoCover = ['/images/video-cover.webp', '/images/video-cover.jpg'].
 );
 const videoCoverSrc = localVideoCover ?? `https://img.youtube.com/vi/${VIDEO_ID}/maxresdefault.jpg`;
 // Chaîne de replis : hqdefault (toujours présente) puis carte OG locale.
-const videoCoverFallback = `this.onerror=function(){this.onerror=null;this.src='/og-default.png';};this.src='https://img.youtube.com/vi/${VIDEO_ID}/hqdefault.jpg';`;
+const videoCoverFallback = `this.onerror=function(){this.onerror=null;this.src='/og-default.jpg';};this.src='https://img.youtube.com/vi/${VIDEO_ID}/hqdefault.jpg';`;
 
 const chapters = await getCollection('chapters');
 const articles = await getCollection(
@@ -43,7 +43,7 @@ const badgeColorByEffect = {
 <WikiLayout
   title="Le Siècle oublié est le présent — Théorie One Piece"
   description="Et si le Siècle oublié n'avait pas eu lieu il y a 800 ans ? Les Ponéglyphes raconteraient l'avenir, Joy Boy serait Luffy et la Grande Guerre approche."
-  image="/og-default.png"
+  image="/og-default.jpg"
   currentPath="/"
 >
   <div class="hero">

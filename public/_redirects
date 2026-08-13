@@ -45,3 +45,7 @@
 # Slug aligné sur la graphie officielle (Harley)
 /theorie/elbaf-halley   /theorie/elbaf-harley/   301
 /theorie/elbaf-halley/  /theorie/elbaf-harley/   301
+
+# og-default : PNG 898 KB remplacé par un JPEG 85 KB (13/08/2026).
+# Les partages sociaux déjà en circulation pointent encore sur le .png.
+/og-default.png  /og-default.jpg  301

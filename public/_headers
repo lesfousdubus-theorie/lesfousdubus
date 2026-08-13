@@ -1,0 +1,30 @@
+# En-têtes Cloudflare Pages.
+#
+# NB : quand plusieurs règles correspondent à une même URL, Cloudflare applique
+# les en-têtes de toutes les règles. On ne met donc PAS de Cache-Control sur /*,
+# qui viendrait concurrencer les règles « immutable » ci-dessous. Le HTML garde
+# le comportement par défaut de Pages (revalidation à chaque visite), qui est
+# celui qu'on veut : le site est republié à chaque sortie de chapitre.
+
+# Fichiers au nom hashé par Astro : le contenu ne change jamais sans que l'URL
+# change, ils peuvent donc être mis en cache un an.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images de contenu : stables en pratique, mais remplaçables sans changement de
+# nom, d'où un TTL d'un mois plutôt qu'un an.
+/images/*
+  Cache-Control: public, max-age=2592000
+
+# Index de recherche : régénéré à chaque build, sous le même nom.
+/pagefind/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
+# En-têtes de sécurité, sur tout le site.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN

@@ -93,6 +93,18 @@ if (!existsSync(redirectsPath)) {
     if (!source || !destination || status !== '301') {
       errors.push(`Redirection invalide : ${line}`);
     }
+
+    // Les redirections d'assets (og-default.png -> .jpg, etc.) ne visent pas une
+    // page : ni le slash final ni la présence au sitemap ne les concernent.
+    const isAssetRedirect = /\.[a-z0-9]{2,4}$/i.test(destination);
+    if (isAssetRedirect) {
+      if (sources.has(source)) errors.push(`Source de redirection dupliquée : ${source}`);
+      sources.add(source);
+      if (!existsSync(join(DIST, destination.replace(/^\//, '')))) {
+        errors.push(`Cible de redirection absente de dist/ : ${line}`);
+      }
+      continue;
+    }
     if (destination !== '/' && !destination.endsWith('/')) {
       errors.push(`La destination doit utiliser le slash final : ${line}`);
     }
