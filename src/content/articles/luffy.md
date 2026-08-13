@@ -4,6 +4,7 @@ summary: "Fiche consacrée à Monkey D. Luffy : ce que le manga établit sur le 
 seoTitle: "Monkey D. Luffy dans One Piece : Nika, Joy Boy et théorie | Les Fous du Bus"
 category: "figures-principales"
 status: "published"
+navigationType: "dossier"
 sources: [1, 444, 1044, 1045, 1046, 1049, 1050, 1102]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"

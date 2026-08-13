@@ -3,6 +3,7 @@ title: "Scopper Gaban"
 summary: "Fiche consacrée à Scopper Gaban, second de l'équipage de Roger réapparu à Elbaf : ce que le manga établit, pourquoi son ignorance et son affrontement avec Imu tiennent une place centrale dans la lecture des Fous du Bus, et les limites de cet argument."
 category: "figures-principales"
 status: "published"
+navigationType: "fiche"
 sources: [966, 1055, 1169, 1170, 1189, 1190]
 editorialStatus: "canon"
 certainty: "elevee"

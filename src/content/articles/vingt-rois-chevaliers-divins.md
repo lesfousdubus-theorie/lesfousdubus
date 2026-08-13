@@ -3,6 +3,7 @@ title: "Les Vingt Rois et les Chevaliers Divins"
 summary: "Article d'analyse rattaché à la fiche Vingt Rois : les vingt familles fondatrices du Gouvernement Mondial pourraient-elles être celles des Chevaliers Divins actuels, déployées comme rois pour reprendre les pays libérés par Joy Boy ?"
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "fiche"
 editorialStatus: "hypothese-secondaire"
 certainty: "moyenne"
 reviewedUntilChapter: 1190

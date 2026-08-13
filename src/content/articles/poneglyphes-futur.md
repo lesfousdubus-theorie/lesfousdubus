@@ -3,6 +3,7 @@ title: "Les Ponéglyphes racontent le futur"
 summary: "Dans la théorie, les Ponéglyphes pourraient avoir été produits à partir de l'histoire vécue par les protagonistes actuels puis transmis vers le passé. Robin et le savoir des Kozuki occupent une place centrale dans cette hypothèse."
 category: "transmission-memoire"
 status: "published"
+navigationType: "fiche"
 sidebarHidden: true
 editorialStatus: "hypothese-centrale"
 certainty: "central"

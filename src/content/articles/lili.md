@@ -3,6 +3,7 @@ title: "Nefertari D. Lili"
 summary: "Fiche d'identification de Nefertari D. Lili, reine d'Alabasta qui refusa de vivre à Mary Geoise et disparut après la fondation du Gouvernement Mondial."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
 sources: [1084, 1085, 1086, 1116]
 editorialStatus: "canon"
 certainty: "elevee"

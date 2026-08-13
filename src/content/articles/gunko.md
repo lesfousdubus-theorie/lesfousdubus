@@ -3,6 +3,7 @@ title: "Gunko"
 summary: "Fiche canonique neutre sur Gunko, membre des Chevaliers Divins, et son rôle dans les analyses récentes autour de Brook."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
 editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1190

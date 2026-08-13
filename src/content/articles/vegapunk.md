@@ -3,6 +3,7 @@ title: "Vegapunk"
 summary: "Fiche du docteur Vegapunk : le plus grand scientifique du monde, son message à l'humanité, ses six satellites et son annonce de la submersion du monde."
 category: "technologies-pouvoirs"
 status: "published"
+navigationType: "fiche"
 sources: [1066, 1069, 1110, 1113, 1114, 1115, 1125]
 editorialStatus: "canon"
 certainty: "elevee"

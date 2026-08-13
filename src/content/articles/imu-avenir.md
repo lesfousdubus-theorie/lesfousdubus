@@ -3,6 +3,7 @@ title: "Imu, le créateur terrifié par l'avenir"
 summary: "Imu existe depuis 800 ans grâce au Ope Ope no Mi. Il a lu les Ponéglyphes et sait que Joy Boy apparaîtra, mais il ne connaît pas son identité. Il confond les générations."
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "fiche"
 sidebarHidden: true
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"

@@ -123,9 +123,12 @@ describe('parcours de lecture', () => {
     expect(last.step).toBe(READING_PATH.length);
     expect(last.next).toBeNull();
 
-    const middle = getParcoursPosition('joy-boy');
-    expect(middle.previous?.slug).toBe('poneglyphes');
-    expect(middle.next?.slug).toBe('nika');
+    // Dérivé de READING_PATH plutôt que codé en dur : insérer une étape ne doit
+    // pas casser ce test, seulement le chaînage réel doit être vérifié.
+    const middleIndex = Math.floor(READING_PATH.length / 2);
+    const middle = getParcoursPosition(READING_PATH[middleIndex]);
+    expect(middle.previous?.slug).toBe(READING_PATH[middleIndex - 1]);
+    expect(middle.next?.slug).toBe(READING_PATH[middleIndex + 1]);
   });
 
   it('renvoie une position vide pour un article hors parcours', () => {

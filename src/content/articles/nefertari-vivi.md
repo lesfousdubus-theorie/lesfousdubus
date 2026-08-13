@@ -3,6 +3,7 @@ title: "Nefertari Vivi"
 summary: "Fiche d'identification de Nefertari Vivi, princesse d'Alabasta, membre honoraire des Chapeaux de Paille et héritière de la volonté de Nefertari D. Lili."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
 sources: [1085, 1116]
 editorialStatus: "canon"
 certainty: "elevee"

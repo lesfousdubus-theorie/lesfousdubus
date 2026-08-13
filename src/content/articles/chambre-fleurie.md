@@ -7,7 +7,7 @@ editorialStatus: "interpretation"
 certainty: "moyenne"
 reviewedUntilChapter: 1190
 parent: "mary-geoise"
-navigationType: "dossier"
+navigationType: "fiche"
 related: ["mary-geoise", "imu-nerona", "gorosei", "fruits-du-demon", "dragons-celestes"]
 sources: [1084, 1085]
 order: 70

@@ -3,6 +3,7 @@ title: "Noah"
 summary: "Fiche consacrée à l'arche Noah : le navire géant conservé par le royaume Ryugu depuis 800 ans, sa liaison au Ponéglyphe de Joy Boy, à Poséidon et au jour du serment."
 category: "armes-antiques"
 status: "published"
+navigationType: "fiche"
 sources: [649, 653, 967, 968]
 editorialStatus: "canon"
 certainty: "elevee"

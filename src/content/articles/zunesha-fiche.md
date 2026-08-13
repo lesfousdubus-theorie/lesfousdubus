@@ -3,6 +3,7 @@ title: "Zunesha"
 summary: "Fiche d'identification de Zunesha, l'éléphant géant portant le duché de Mokomo sur son dos, seul être vivant à avoir connu Joy Boy."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "dossier"
 editorialStatus: "hypothese-secondaire"
 certainty: "moyenne"
 reviewedUntilChapter: 1190

@@ -3,6 +3,7 @@ title: "Gouvernement mondial"
 summary: "Fiche centrale du Gouvernement mondial : sa fondation par les Vingt Rois, sa structure de pouvoir d'Imu au Gorosei, les Chevaliers Divins, les Dragons Célestes et Mary Geoise."
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "fiche"
 sources: [395, 906, 1044, 1084, 1085, 1110]
 editorialStatus: "canon"
 certainty: "elevee"

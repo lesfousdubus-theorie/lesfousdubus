@@ -3,6 +3,7 @@ title: "Brook pourrait-il être Dōzan ?"
 summary: "Article d'analyse rattaché à la fiche Brook : le rapprochement proposé entre Brook, la figure de Dōzan et l'origine de Binks no Sake."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
 sidebarHidden: true
 editorialStatus: "nouvelle-piste"
 certainty: "hypothese"

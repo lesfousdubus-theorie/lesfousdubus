@@ -3,6 +3,7 @@ title: "Gol D. Roger"
 summary: "Fiche d'identification de Gol D. Roger, le Seigneur des Pirates, qui a découvert Laugh Tale et conclu que le véritable Joy Boy n'était pas encore né."
 category: "figures-principales"
 status: "published"
+navigationType: "fiche"
 sources: [967, 968, 1]
 editorialStatus: "canon"
 certainty: "elevee"

@@ -4,6 +4,7 @@ title: "Vivi est Lili : la reine qui dispersera les Ponéglyphes"
 summary: "5 preuves expliquant pourquoi Nefertari D. Lili ne serait pas une lointaine ancêtre de Vivi, mais le nom sous lequel la princesse d'Alabasta entrera dans l'Histoire."
 category: "personnages-identites"
 status: "published"
+navigationType: "dossier"
 sources: [1084, 1085, 1086, 1116]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"

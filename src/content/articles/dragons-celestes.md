@@ -3,6 +3,7 @@ title: "Dragons Célestes"
 summary: "Fiche des Dragons Célestes : les descendants des dix-neuf familles fondatrices installées à Mary Geoise, leur statut et le cas des Nefertari."
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "fiche"
 sources: [497, 498, 906, 1084]
 editorialStatus: "canon"
 certainty: "elevee"

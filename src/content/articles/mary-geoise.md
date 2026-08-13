@@ -3,6 +3,7 @@ title: "Mary Geoise"
 summary: "Fiche de Mary Geoise : la capitale du monde au sommet de Red Line, le Trône Vide, l'escalier des vingt rois et la Chambre Fleurie."
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "fiche"
 sources: [906, 908, 1084, 1085, 1114]
 editorialStatus: "canon"
 certainty: "elevee"

@@ -4,6 +4,7 @@ summary: "Fiche d'identification de Poséidon, l'Arme antique capable de command
 seoTitle: "Poséidon dans One Piece : Shirahoshi, Rois des Mers et théorie | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
+navigationType: "fiche"
 sources: [610, 967, 653]
 editorialStatus: "canon"
 certainty: "central"

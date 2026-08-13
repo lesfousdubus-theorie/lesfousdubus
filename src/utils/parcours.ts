@@ -6,9 +6,14 @@
  * bas des fiches, et par la page « Théorie complète ».
  *
  * L'ordre n'est pas chronologique dans l'univers : c'est l'ordre nécessaire
- * pour comprendre le raisonnement. Seules les fiches neutres figurent dans le
- * parcours ; les articles d'analyse rattachés (`parent`) restent accessibles
+ * pour comprendre le raisonnement. Seuls les articles racines (sans `parent`)
+ * figurent dans le parcours ; les analyses rattachées restent accessibles
  * depuis leur fiche et depuis la sidebar, mais n'interrompent pas la lecture.
+ *
+ * Le parcours inclut les articles porteurs du raisonnement (`rio-poneglyphe`,
+ * `communication-temps`) et pas seulement les fiches descriptives : sans eux,
+ * la lecture séquentielle passait du « quoi » au « qui » sans jamais exposer
+ * le « comment ».
  */
 
 export const READING_PATH: readonly string[] = [
@@ -21,6 +26,8 @@ export const READING_PATH: readonly string[] = [
   'siecle-oublie',
   'royaume-antique',
   'poneglyphes',
+  'rio-poneglyphe',
+  'communication-temps',
   'joy-boy',
   'nika',
   'luffy',

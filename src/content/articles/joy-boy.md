@@ -4,6 +4,7 @@ summary: "Fiche consacrée à Joy Boy : ce que le manga établit sur la figure l
 seoTitle: "Joy Boy dans One Piece : identité, promesse, Luffy et théorie | Les Fous du Bus"
 category: "figures-principales"
 status: "published"
+navigationType: "dossier"
 sources: [628, 967, 968, 1049, 1052, 1115, 1122]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"

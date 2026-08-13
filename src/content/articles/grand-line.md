@@ -3,6 +3,7 @@ title: "Grand Line"
 summary: "Fiche d'identification de Grand Line, la mer linéaire qui traverse Blue Star en coupant le monde en deux, axe central de la route des pirates."
 category: "monde-destinations"
 status: "published"
+navigationType: "fiche"
 sources: [105, 216, 522]
 editorialStatus: "canon"
 certainty: "elevee"

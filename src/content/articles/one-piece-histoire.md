@@ -4,6 +4,7 @@ summary: "Fiche consacrée au One Piece : ce que le manga établit sur le tréso
 seoTitle: "One Piece : nature du trésor de Laugh Tale, hypothèses et limites | Les Fous du Bus"
 category: "monde-destinations"
 status: "published"
+navigationType: "dossier"
 sources: [1, 967, 968]
 editorialStatus: "hypothese-centrale"
 certainty: "moyenne"

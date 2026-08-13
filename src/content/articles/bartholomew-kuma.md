@@ -3,6 +3,7 @@ title: "Bartholomew Kuma"
 summary: "Fiche neutre de Bartholomew Kuma : ancien roi de Sorbet, révolutionnaire, Grand Corsaire, dernier Boucanier connu et porteur de la foi en Nika."
 category: "figures-principales"
 status: "published"
+navigationType: "fiche"
 sources: [234, 483, 1096, 1097, 1102]
 editorialStatus: "canon"
 certainty: "elevee"

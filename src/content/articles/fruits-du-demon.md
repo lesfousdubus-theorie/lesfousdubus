@@ -3,6 +3,7 @@ title: "Fruits du Démon"
 summary: "Fiche des Fruits du Démon : leur fonctionnement, leur répartition chronologique dans le récit et la question de leur existence avant le siècle en cours."
 category: "technologies-pouvoirs"
 status: "published"
+navigationType: "fiche"
 sources: [1044, 1114, 1186]
 editorialStatus: "canon"
 certainty: "elevee"

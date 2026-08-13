@@ -3,6 +3,7 @@ title: "La Prescience et la malédiction d'Imu"
 summary: "Comment le don de prescience (aperçu chez Shirley) explique le règne d'Imu, sa peur obsessionnelle de Nika et son attente de 800 ans."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
 sources: [610, 1179, 1188]
 sidebarHidden: true
 editorialStatus: "nouvelle-piste"

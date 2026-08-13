@@ -4,6 +4,7 @@ summary: "Fiche centrale de la guerre finale : les forces en présence, le rôle
 seoTitle: "Guerre finale dans One Piece : Imu, déluge, All Blue et Jour du Serment | Les Fous du Bus"
 category: "guerre-finale"
 status: "published"
+navigationType: "dossier"
 sources: [576, 972, 1113, 1115, 1125, 1146]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"

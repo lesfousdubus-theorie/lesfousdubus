@@ -3,6 +3,7 @@ title: "Red Line"
 summary: "Fiche d'identification de Red Line, le continent vertical qui coupe Blue Star en deux et soutient Mary Geoise, l'île des Dragons Célestes."
 category: "monde-destinations"
 status: "published"
+navigationType: "fiche"
 sources: [906, 1114, 1115]
 editorialStatus: "canon"
 certainty: "elevee"

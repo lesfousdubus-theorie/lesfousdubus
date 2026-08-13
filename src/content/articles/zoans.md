@@ -3,6 +3,7 @@ title: "Zoans"
 summary: "Fiche des Fruits du Démon de type Zoan : leur volonté propre, les Zoans mythiques et la question de la conscience des fruits."
 category: "technologies-pouvoirs"
 status: "published"
+navigationType: "fiche"
 sources: [1044, 1114, 1182]
 editorialStatus: "canon"
 certainty: "moyenne"

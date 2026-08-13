@@ -3,6 +3,7 @@ title: "Nico Robin"
 summary: "Fiche neutre de Nico Robin : dernière survivante d'Ohara, seule personne au monde capable de lire les Ponéglyphes, archéologue de l'équipage du Chapeau de Paille."
 category: "figures-principales"
 status: "published"
+navigationType: "fiche"
 sources: [391, 395, 398, 649, 818]
 editorialStatus: "canon"
 certainty: "elevee"

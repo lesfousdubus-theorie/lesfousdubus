@@ -3,6 +3,7 @@ title: "Davy Jones"
 summary: "Pirate légendaire, ancien Roi du Monde, à l'origine du Davy Back Fight. La théorie distingue Davy, le clan transmis par le sang, de Jones, le titre qu'un Davy doit encore conquérir."
 category: "personnages-identites"
 status: "published"
+navigationType: "dossier"
 sources: [1164, 1169]
 editorialStatus: "hypothese-secondaire"
 certainty: "moyenne"

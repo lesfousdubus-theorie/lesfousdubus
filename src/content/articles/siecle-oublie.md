@@ -4,6 +4,7 @@ summary: "Fiche consacrée au Siècle oublié : ce que le manga établit sur les
 seoTitle: "Siècle oublié dans One Piece : cent ans manquants et théorie temporelle | Les Fous du Bus"
 category: "histoire-temporalite"
 status: "published"
+navigationType: "dossier"
 sources: [395, 398, 1113, 1115]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"

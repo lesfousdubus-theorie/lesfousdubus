@@ -3,6 +3,7 @@ title: "Lunariens"
 summary: "Fiche du peuple lunarien : les habitants du Red Line disparus, leur flamme dorsale, leur attente de Joy Boy et le cas de King."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "fiche"
 sources: [1023, 1035, 1036, 1049]
 editorialStatus: "canon"
 certainty: "moyenne"

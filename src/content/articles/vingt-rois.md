@@ -3,6 +3,7 @@ title: "Vingt Rois"
 summary: "Les vingt familles royales fondatrices du Gouvernement Mondial. Quatorze sont identifiées, six restent inconnues — et la théorie y voit un compte à rebours avant la guerre finale."
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "dossier"
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
 reviewedUntilChapter: 1190

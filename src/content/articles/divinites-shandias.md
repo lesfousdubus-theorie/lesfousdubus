@@ -3,6 +3,7 @@ title: "Divinités shandias"
 summary: "Fiche des quatre divinités invoquées par le peuple shandia au chapitre 287 : les dieux du soleil, de la pluie, de la forêt et de la terre, et leur réapparition progressive dans le récit."
 category: "dieux-croyances"
 status: "published"
+navigationType: "fiche"
 sources: [287, 1138, 1182]
 editorialStatus: "canon"
 certainty: "elevee"

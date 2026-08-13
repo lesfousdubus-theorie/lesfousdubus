@@ -3,6 +3,7 @@ title: "Road Ponéglyphes"
 summary: "Fiche d'identification des quatre Road Ponéglyphes, stèles dispersées dans le monde dont la réunion indique l'emplacement de Laugh Tale."
 category: "transmission-memoire"
 status: "published"
+navigationType: "fiche"
 sources: [818, 967, 1057]
 editorialStatus: "canon"
 certainty: "elevee"

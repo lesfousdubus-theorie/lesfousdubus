@@ -3,6 +3,7 @@ title: "Kaido"
 summary: "Fiche neutre de Kaido : ancien Empereur, porteur du Uo Uo no Mi modèle Seiryu, vaincu à Onigashima et lié à l'attente de Joy Boy par les Lunariens."
 category: "figures-principales"
 status: "published"
+navigationType: "fiche"
 sources: [795, 1010, 1049, 1044]
 editorialStatus: "canon"
 certainty: "elevee"

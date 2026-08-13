@@ -3,6 +3,7 @@ title: "Shanks"
 summary: "Fiche neutre de Shanks : Empereur, ancien membre de l'équipage de Roger, dépositaire du chapeau de paille et acteur discret des grands équilibres du monde."
 category: "figures-principales"
 status: "published"
+navigationType: "fiche"
 sources: [1, 434, 907, 1054, 1055]
 editorialStatus: "canon"
 certainty: "elevee"

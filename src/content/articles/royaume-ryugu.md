@@ -3,6 +3,7 @@ title: "Royaume Ryugu"
 summary: "Fiche du royaume Ryugu, capitale des Hommes-Poissons située 10 000 mètres sous la surface : sa légende de Poséidon, la garde de Noah et sa mission jusqu'au jour du serment."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "fiche"
 sources: [611, 626, 649, 653, 967, 968]
 editorialStatus: "canon"
 certainty: "elevee"

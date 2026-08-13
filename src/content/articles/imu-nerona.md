@@ -4,6 +4,7 @@ summary: "Fiche consacrée à Imu : ce que le manga établit sur le souverain ca
 seoTitle: "Imu dans One Piece : identité, préscience, Joy Boy et théorie | Les Fous du Bus"
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "dossier"
 sources: [1084, 1085, 1086, 1125, 1164, 1186, 1188]
 editorialStatus: "hypothese-centrale"
 certainty: "moyenne"

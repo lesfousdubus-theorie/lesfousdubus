@@ -3,6 +3,7 @@ title: "Zaza"
 summary: "Fiche de Zaza, la déesse de la pluie : sa révélation récente, sa place parmi les quatre divinités shandias et son rapprochement avec la fresque d'Elbaf."
 category: "dieux-croyances"
 status: "published"
+navigationType: "dossier"
 sources: [287, 1138, 1182]
 editorialStatus: "nouvelle-piste"
 certainty: "moyenne"

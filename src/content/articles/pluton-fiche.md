@@ -4,6 +4,7 @@ summary: "Fiche d'identification de Pluton, l'Arme antique conservée sous forme
 seoTitle: "Pluton dans One Piece : navire antique et théorie | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
+navigationType: "fiche"
 sources: [431]
 editorialStatus: "canon"
 certainty: "elevee"

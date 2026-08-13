@@ -3,6 +3,7 @@ title: "Gorosei"
 summary: "Fiche des Cinq Doyens : la direction visible du Gouvernement mondial, leur agenouillement devant Imu, leurs pouvoirs et les limites de leur savoir."
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "fiche"
 sources: [233, 906, 1044, 1085, 1110, 1118, 1125]
 editorialStatus: "canon"
 certainty: "elevee"

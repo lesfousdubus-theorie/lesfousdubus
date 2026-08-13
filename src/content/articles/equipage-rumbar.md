@@ -3,6 +3,7 @@ title: "Équipage Rumbar"
 summary: "Fiche de l'équipage Rumbar : les pirates musiciens qui escortèrent Laboon, leur disparition dans le Triangle Florian et l'enregistrement de Binks no Sake."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
 sources: [486, 487, 488]
 editorialStatus: "canon"
 certainty: "elevee"

@@ -5,7 +5,7 @@ category: "personnages-identites"
 status: "published"
 sources: [441, 1064, 1164]
 order: 43
-navigationType: "dossier"
+navigationType: "fiche"
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 reviewedUntilChapter: 1190

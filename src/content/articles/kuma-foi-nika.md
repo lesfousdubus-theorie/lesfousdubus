@@ -3,7 +3,7 @@ title: "Kuma et la foi en Nika : la preuve par le miracle"
 summary: "Bartholomew Kuma a parié sa vie entière sur l'existence de Nika. Sa foi inébranlable a fait exister le dieu du soleil. Luffy est Nika parce que Kuma y croyait."
 category: "figures-principales"
 status: "published"
-navigationType: "dossier"
+navigationType: "fiche"
 editorialStatus: "interpretation"
 certainty: "elevee"
 reviewedUntilChapter: 1190

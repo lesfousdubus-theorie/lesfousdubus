@@ -4,6 +4,7 @@ summary: "Fiche consacrée aux Armes antiques (Poséidon, Pluton, Uranus) : ce q
 seoTitle: "Armes antiques dans One Piece : Poséidon, Pluton, Uranus et guerre finale | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
+navigationType: "dossier"
 sources: [399, 650, 653, 1056, 1113, 1114, 1115]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"

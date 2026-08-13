@@ -3,6 +3,7 @@ title: "Chevaliers Divins"
 summary: "Le bras armé direct d'Imu, commandé par Figarland Garling. La théorie soutient qu'ils n'existaient pas il y a huit cents ans — et s'appuie pour cela sur ce que Scopper Gaban ignorait."
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "dossier"
 sources: [906, 1086, 1087, 1096, 1127, 1169, 1170, 1183]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"

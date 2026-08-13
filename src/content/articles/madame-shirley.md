@@ -3,6 +3,7 @@ title: "Madame Shirley"
 summary: "Fiche de Madame Shirley : la voyante de l'île des Hommes-Poissons, seule détentrice attestée du don de préscience dans One Piece, et sa vision de l'homme au chapeau de paille."
 category: "transmission-memoire"
 status: "published"
+navigationType: "fiche"
 sources: [610, 611, 618]
 editorialStatus: "nouvelle-piste"
 certainty: "moyenne"

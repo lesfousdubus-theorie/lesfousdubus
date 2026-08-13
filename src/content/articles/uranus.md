@@ -4,6 +4,7 @@ summary: "Uranus est la troisième Arme antique, dont la nature précise n'est p
 seoTitle: "Uranus dans One Piece : Mother Flame, Imu et théorie | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
+navigationType: "dossier"
 editorialStatus: "hypothese-centrale"
 certainty: "moyenne"
 reviewedUntilChapter: 1190

@@ -3,6 +3,7 @@ title: "Hommes-Poissons"
 summary: "Fiche du peuple des Hommes-Poissons et des sirènes : la discrimination subie, le rêve d'Otohime d'une vie à la surface et la garde de Noah."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "fiche"
 sources: [621, 626, 649, 653]
 editorialStatus: "canon"
 certainty: "elevee"

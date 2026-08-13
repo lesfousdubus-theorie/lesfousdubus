@@ -3,6 +3,7 @@ title: "Peuples, royaumes et missions"
 summary: "Fiche centrale des peuples et royaumes de la théorie : la mission confiée à chaque nation pendant 800 ans, en préparation du retour de Joy Boy et du jour du serment."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "dossier"
 sources: [649, 653, 820, 968, 1113]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"

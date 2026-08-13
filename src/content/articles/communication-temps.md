@@ -3,6 +3,7 @@ title: "Une communication à travers le temps"
 summary: "Le chapitre 1188 renforce l'idée que des informations pourraient circuler entre différentes époques. Les Ponéglyphes constituent le mécanisme historique central de la théorie, tandis qu'une communication directe à travers le temps devient une nouvelle piste."
 category: "transmission-memoire"
 status: "published"
+navigationType: "fiche"
 editorialStatus: "hypothese-centrale"
 certainty: "moyenne"
 reviewedUntilChapter: 1190

@@ -3,6 +3,7 @@ title: "Kozuki Toki"
 summary: "Fiche de Kozuki Toki : porteuse du Toki Toki no Mi, seule utilisatrice attestée d'un pouvoir temporel, autrice d'une prophétie et anomalie centrale de la théorie."
 category: "transmission-memoire"
 status: "published"
+navigationType: "fiche"
 sources: [963, 971, 972, 973]
 editorialStatus: "canon"
 certainty: "elevee"

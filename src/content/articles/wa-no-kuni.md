@@ -3,6 +3,7 @@ title: "Wa no Kuni"
 summary: "Fiche du pays des samouraïs : le clan Kozuki, graveur des Ponéglyphes, les frontières fermées, la prophétie de Toki et l'ouverture annoncée du pays."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "fiche"
 sources: [818, 819, 963, 967, 972, 1023]
 editorialStatus: "canon"
 certainty: "elevee"

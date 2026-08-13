@@ -5,7 +5,7 @@ category: "technologies-pouvoirs"
 status: "published"
 certainty: "hypothese"
 reviewedUntilChapter: 1190
-navigationType: "dossier"
+navigationType: "fiche"
 editorialStatus: "nouvelle-piste"
 related: ["imu-nerona", "mother-flame", "uranus", "fruits-du-demon"]
 sources: [1180]
