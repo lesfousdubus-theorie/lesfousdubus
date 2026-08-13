@@ -3,10 +3,11 @@ title: "Zou et les Minks"
 summary: "Fiche de Zou et du peuple des Minks : la cité installée sur le dos de Zunesha, les gardiens du Road Ponéglyphe et la mission de conduire l'éléphant à destination."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "fiche"
 sources: [802, 820, 821, 1037]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "peuples-royaumes"
 order: 84
 related: ["peuples-royaumes", "zunesha-fiche", "poneglyphes", "guerre-finale", "joy-boy"]

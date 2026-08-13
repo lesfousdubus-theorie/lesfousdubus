@@ -74,6 +74,42 @@ const pairs: Pair[] = [
     legendary: { label: 'Dōzan', href: '/theorie/dozan', type: 'legendaire' },
     note: 'Piste ouverte par les chapitres 1183-1184. Binks no Sake aurait été composée dans le futur, puis transmise vers le passé.',
   },
+  {
+    id: 'loki-nidhogg',
+    description:
+      "Le prince maudit d'Elbaf et le serpent qui ronge les racines de l'arbre-monde. La théorie lit Nidhogg comme la trace laissée dans la mythologie des géants par ce que Loki fera.",
+    status: 'theorie-consequence',
+    modern: { label: 'Loki', href: '/theorie/loki', type: 'moderne' },
+    legendary: { label: 'Nidhogg', href: '/theorie/nidhogg-ratatoskr', type: 'legendaire' },
+    note: "Elbaf traite déjà Loki comme une figure démoniaque annoncée par ses propres textes sacrés : la prophétie et l'accusation se confondent.",
+  },
+  {
+    id: 'usopp-louis-arnot',
+    description:
+      "Le corpus sacré d'Elbaf décrit un passé, un présent et un futur. La théorie propose qu'il ait été écrit par Usopp, sous le nom d'auteur Louis Arnot.",
+    status: 'theorie-consequence',
+    modern: { label: 'Usopp', href: '/theorie/elbaf-harley', type: 'moderne' },
+    legendary: { label: 'Louis Arnot', href: '/theorie/elbaf-harley', type: 'legendaire' },
+    note: "Le Harley est consultable par les doyens d'Elbaf : ce n'est pas un vestige enfoui mais un texte vivant, ce qui rend possible une rédaction récente projetée vers le passé.",
+  },
+  {
+    id: 'momonosuke-rio-poneglyphe',
+    description:
+      "L'héritier des Kozuki, seul clan capable de graver les Ponéglyphes, et le texte qui rassemble toute l'Histoire vraie.",
+    status: 'theorie-consequence',
+    modern: { label: 'Kozuki Momonosuke', href: '/theorie/momonosuke', type: 'moderne' },
+    legendary: { label: 'Rio Ponéglyphe', href: '/theorie/rio-poneglyphe', type: 'legendaire' },
+    note: "Si le Rio Ponéglyphe est le récit de l'aventure en cours, il faut quelqu'un pour le graver : le dernier Kozuki est le seul à en avoir la compétence.",
+  },
+  {
+    id: 'franky-emeth',
+    description:
+      "Le charpentier des Mugiwaras et le robot géant de l'Ancien Royaume, présenté par la théorie comme son dernier Battle Franky envoyé dans le passé.",
+    status: 'theorie-consequence',
+    modern: { label: 'Franky', href: '/theorie/emeth-futur', type: 'moderne' },
+    legendary: { label: 'Emeth', href: '/theorie/emeth-futur', type: 'legendaire' },
+    note: "Armature, engrenages et épaulières rapprochent Emeth du Franky Shogun ; son énergie autonome est celle qu'aucun savant contemporain ne sait reproduire.",
+  },
 ];
 
 const statusLabels: Record<string, string> = {
@@ -91,7 +127,7 @@ const statusColors: Record<string, string> = {
 
 <WikiLayout
   title="Correspondances interactives"
-  seoTitle="Correspondances One Piece : Luffy/Joy Boy, Vivi/Lili, Teach/Davy Jones | Les Fous du Bus"
+  seoTitle="Correspondances : Luffy/Joy Boy, Vivi/Lili | Les Fous du Bus"
   description="Correspondances interactives de la théorie : qui est qui ? Filtrez Luffy → Joy Boy → Nika, Vivi → Lili, Teach → Davy Jones, Zoro → Ryuma et les autres identités."
   currentPath="/explorer/correspondances"
 >

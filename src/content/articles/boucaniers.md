@@ -3,10 +3,11 @@ title: "Boucaniers"
 summary: "Fiche du peuple des Boucaniers : porteurs du culte de Nika, transmetteurs d'une foi de génération en génération, et lignée dont est issu Bartholomew Kuma."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "fiche"
 sources: [1096, 1097, 1102]
 editorialStatus: "canon"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "peuples-royaumes"
 order: 86
 related: ["peuples-royaumes", "nika", "bartholomew-kuma", "dieux-one-piece", "guerre-finale"]

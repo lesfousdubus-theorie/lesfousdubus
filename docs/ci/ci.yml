@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    name: Tests, typage et build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Validation du contenu : liens internes, graphies figées, frontmatters.
+      - name: Valider le contenu
+        run: npm run validate
+
+      - name: Vérifier le typage
+        run: npm run check
+
+      - name: Tests unitaires
+        run: npm run test
+
+      # `npm run build` réenchaîne validate + generate + astro build + validate-seo.
+      - name: Build de production
+        run: npm run build
+
+      - name: Audit des dépendances de production
+        run: npm audit --omit=dev --audit-level=high

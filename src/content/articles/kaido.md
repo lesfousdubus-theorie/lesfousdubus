@@ -3,12 +3,14 @@ title: "Kaido"
 summary: "Fiche neutre de Kaido : ancien Empereur, porteur du Uo Uo no Mi modèle Seiryu, vaincu à Onigashima et lié à l'attente de Joy Boy par les Lunariens."
 category: "figures-principales"
 status: "published"
+navigationType: "fiche"
 sources: [795, 1010, 1049, 1044]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 26
 related: ["joy-boy", "luffy", "lunariens", "nika", "wa-no-kuni"]
+seoTitle: "Kaido One Piece : Empereur, Uo Uo no Mi, Nika | Les Fous du Bus"
 ---
 
 ## Présentation

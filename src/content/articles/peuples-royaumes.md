@@ -3,10 +3,11 @@ title: "Peuples, royaumes et missions"
 summary: "Fiche centrale des peuples et royaumes de la théorie : la mission confiée à chaque nation pendant 800 ans, en préparation du retour de Joy Boy et du jour du serment."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "dossier"
 sources: [649, 653, 820, 968, 1113]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 80
 related:
   [
@@ -17,7 +18,7 @@ related:
     "shandora-shandias",
     "boucaniers",
     "lunariens",
-    "elbaf-halley",
+    "elbaf-harley",
     "zunesha-fiche",
     "guerre-finale",
   ]
@@ -37,7 +38,7 @@ La théorie accorde une place centrale à une idée simple : pendant 800 ans, **
 | **Minks** (Zou) | Emmener Zunesha à destination |
 | **Boucaniers** | Transmettre de génération en génération le culte de Nika |
 | **Alabasta** (Nefertari) | Protéger les Ponéglyphes et hisser le pavillon de l'aube nouvelle |
-| **Géants** (Elbaf) | Conserver le Halley et les textes sacrés de Nika |
+| **Géants** (Elbaf) | Conserver le Harley et les textes sacrés de Nika |
 
 ## Ce que le manga établit
 

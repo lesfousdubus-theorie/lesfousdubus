@@ -1,13 +1,14 @@
 ---
 title: "One Piece"
 summary: "Fiche consacrée au One Piece : ce que le manga établit sur le trésor de Laugh Tale, les hypothèses de lecture (objet, aventure, histoire que nous lisons) et leurs limites."
-seoTitle: "One Piece : nature du trésor de Laugh Tale, hypothèses et limites | Les Fous du Bus"
+seoTitle: "Le trésor de Laugh Tale : hypothèses | Les Fous du Bus"
 category: "monde-destinations"
 status: "published"
+navigationType: "dossier"
 sources: [1, 967, 968]
 editorialStatus: "hypothese-centrale"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 6
 related:
   [

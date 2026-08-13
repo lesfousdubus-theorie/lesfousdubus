@@ -3,10 +3,11 @@ title: "Shandora et les Shandias"
 summary: "Fiche de la cité d'or de Shandora et du peuple shandia : la cloche d'or, le Ponéglyphe qui situe Poséidon et quatre siècles de garde ininterrompue."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "fiche"
 sources: [292, 293, 301, 429, 967]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "peuples-royaumes"
 order: 85
 related: ["peuples-royaumes", "poneglyphes", "poseidon-fiche", "dieux-one-piece", "guerre-finale"]

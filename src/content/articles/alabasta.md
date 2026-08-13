@@ -3,10 +3,11 @@ title: "Alabasta"
 summary: "Fiche du royaume d'Alabasta : la famille Nefertari, seule des vingt familles fondatrices à avoir refusé Mary Geoise, la garde des Ponéglyphes et le pavillon de l'aube nouvelle."
 category: "peuples-royaumes"
 status: "published"
+navigationType: "fiche"
 sources: [218, 628, 906, 1084]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "peuples-royaumes"
 order: 82
 related: ["peuples-royaumes", "nefertari-vivi", "lili", "vingt-rois", "gouvernement-mondial"]

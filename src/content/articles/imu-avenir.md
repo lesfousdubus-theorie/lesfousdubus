@@ -3,9 +3,11 @@ title: "Imu, le créateur terrifié par l'avenir"
 summary: "Imu existe depuis 800 ans grâce au Ope Ope no Mi. Il a lu les Ponéglyphes et sait que Joy Boy apparaîtra, mais il ne connaît pas son identité. Il confond les générations."
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "fiche"
 sidebarHidden: true
+editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 sources: [1164, 1188]
 order: 64
 parent: "imu-nerona"
@@ -39,3 +41,10 @@ Il utilise le conditionnel, pas le passé. Il ne dit pas « n'était pas » mais
 
 Comme Madame Shirley, Imu pourrait posséder un don de préscience. Shirley voit l'avenir dans une perle d'huître. Imu utilise probablement un dispositif similaire sur Laugh Tale. Les deux personnages se ressemblent physiquement et sont diamétralement opposés : Shirley le yin, Imu le yang.
 
+
+## Limites et nuances
+
+- **La comparaison avec Dark Vador est un outil de lecture, pas un argument.** Elle éclaire la psychologie prêtée à Imu ; elle ne démontre rien sur le récit d'Oda.
+- **Rien n'établit qu'Imu ait lu les Ponéglyphes.** Sa connaissance de Joy Boy peut venir d'archives du Gouvernement, de témoignages, ou de sa propre expérience s'il est immortel.
+- **L'ironie tragique est une figure narrative séduisante.** Qu'un tyran fabrique son opposant est un ressort classique ; l'observer ici ne prouve pas qu'Imu réagisse à une vision de l'avenir.
+- **La confusion des générations admet des lectures plus simples**, notamment une référence mythologique ou le mépris d'un être qui ne distingue pas ses ennemis.

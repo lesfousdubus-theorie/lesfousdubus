@@ -20,8 +20,8 @@ import { execFileSync } from 'node:child_process';
 const PUBLIC = join(process.cwd(), 'public');
 
 // Pages principales et leur titre (titre court affiché sur l'image).
-// NB : on n'écrase PAS og-default.png (image de marque originale) ; la home
-// continue d'utiliser og-default.png. Chaque page listée reçoit son propre og-<slug>.png.
+// NB : on n'écrase PAS og-default.jpg (image de marque originale) ; la home
+// continue d'utiliser og-default.jpg. Chaque page listée reçoit son propre og-<slug>.png.
 const PAGES = {
   resume: 'Résumé de la théorie',
   'theorie-complete': 'La théorie complète',

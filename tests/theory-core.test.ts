@@ -17,8 +17,17 @@ describe('présentation du noyau de la théorie', () => {
 
   it('distingue la boucle d’information du mécanisme physique non résolu', () => {
     expect(mechanism).toContain('boucle d’information');
-    expect(mechanism).toContain('Mécanisme non résolu');
+    expect(mechanism).toContain('Véhicule non tranché');
     expect(summary).toContain('le mécanisme temporel exact n’est pas résolu');
+  });
+
+  it('énumère les véhicules de transmission envisagés sans trancher', () => {
+    // Le cadrage doit rester homogène partout : plusieurs véhicules possibles,
+    // mais jamais de boucle physique généralisée.
+    expect(mechanism).toContain('Ponéglyphes');
+    expect(mechanism).toContain('préscience');
+    expect(mechanism).toContain('Toki Toki no Mi');
+    expect(mechanism).toContain('jamais une boucle physique généralisée');
   });
 
   it('annonce un temps de lecture réaliste sur la page d’accueil', () => {

@@ -120,10 +120,10 @@ describe('régressions UI, UX et accessibilité', () => {
     // build et court-circuite toute requête YouTube.
     expect(homepage).toContain('/images/video-cover.webp');
     expect(homepage).toContain('localVideoCover');
-    // À défaut : miniature distante maxresdefault → hqdefault → og-default.png.
+    // À défaut : miniature distante maxresdefault → hqdefault → og-default.jpg.
     expect(homepage).toContain('maxresdefault.jpg');
     expect(homepage).toContain('hqdefault.jpg');
-    expect(homepage).toContain("/og-default.png'");
+    expect(homepage).toContain("/og-default.jpg'");
   });
 
   it('charge Pagefind à la demande sans embarquer React', () => {
@@ -146,10 +146,12 @@ describe('régressions UI, UX et accessibilité', () => {
 
   it('exclut le chrome de lecture et les pages internes des extraits Pagefind', () => {
     const layout = read('src/layouts/ArticleLayout.astro');
-    const modifications = read('src/content/articles/modifications.md');
     expect(layout).toContain('class="article-top-meta" data-pagefind-ignore');
     expect(layout).toContain('frontmatter.searchHidden');
-    expect(modifications).toContain('searchHidden: true');
+    // `searchHidden` doit rester un opt-out disponible dans le schéma même
+    // quand aucun article ne l'utilise (les pages de service sont désormais
+    // des routes `/chapitres/*`, pas des articles).
+    expect(read('src/content.config.ts')).toContain('searchHidden');
   });
 });
 

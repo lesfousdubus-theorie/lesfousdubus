@@ -3,12 +3,14 @@ title: "Brook"
 summary: "Fiche neutre de Brook : musicien de l'équipage Rumbar puis des Mugiwara, mort et revenu grâce au Yomi Yomi no Mi, témoin vivant de plus de quatre-vingts ans d'histoire."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
 sources: [442, 486, 487, 1183, 1184]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 51
 related: ["equipage-rumbar", "binks-no-sake", "dozan", "volonte-heritee", "fruits-du-demon"]
+seoTitle: "Brook One Piece : Rumbar, Yomi Yomi et Dōzan | Les Fous du Bus"
 ---
 
 ## Présentation

@@ -4,10 +4,11 @@ summary: "Fiche d'identification de Blue Star, la planète-terre fictive de One 
 seoTitle: "Blue Star dans One Piece : planète, géographie et théorie | Les Fous du Bus"
 category: "monde-destinations"
 status: "published"
+navigationType: "fiche"
 sources: [1113, 1115]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 1
 ---
 

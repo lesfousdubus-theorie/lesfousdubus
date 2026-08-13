@@ -3,10 +3,11 @@ title: "Hito Hito no Mi, modèle Nika"
 summary: "Fiche du fruit de Luffy : Zoan mythique de type humain, longtemps désigné comme Gomu Gomu no Mi, révélé par le Gorosei au chapitre 1044."
 category: "technologies-pouvoirs"
 status: "published"
+navigationType: "fiche"
 sources: [1, 1044, 1046, 1114]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 75
 parent: "fruits-du-demon"
 related: ["fruits-du-demon", "zoans", "nika", "luffy", "joy-boy"]

@@ -3,10 +3,13 @@ title: "La Volonté héritée : le fil rouge du siècle"
 summary: "La Volonté du D. n'est pas un héritage génétique mais la convergence de huit siècles de résistance. Chaque génération transmet sa flamme jusqu'à ce qu'un homme porte le fardeau de toutes."
 category: "transmission-memoire"
 status: "published"
+navigationType: "fiche"
+editorialStatus: "interpretation"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 sources: [576, 602]
 order: 52
+related: ["jour-du-serment"]
 ---
 
 ## Les paroles de Barbe Blanche
@@ -40,3 +43,10 @@ Chaque membre de l'équipage deviendra une figure du Siècle oublié :
 - Brook = transmission de Binks no Sake
 - Jinbei = capitaine du lien entre surface et mer
 
+
+## Limites et nuances
+
+- **Barbe Blanche ne nomme personne.** « Un homme viendra défier le monde » est une prophétie ouverte, que le récit peut accomplir sans boucle temporelle.
+- **La phrase de Rayleigh sur le destin est une réplique de personnage**, pas une règle du monde.
+- **Les parallèles avec Frodon et Sun Wukong sont des clés de lecture externes.** Ils éclairent la construction du héros ; ils ne disent rien de la chronologie de *One Piece*.
+- **La volonté héritée fonctionne parfaitement en lecture classique** : une transmission de génération en génération depuis un passé réel, ce qui est d'ailleurs sa formulation dans le manga.

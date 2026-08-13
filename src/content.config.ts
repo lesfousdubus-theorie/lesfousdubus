@@ -42,7 +42,7 @@ const articles = defineCollection({
       .optional(),
     /** Titre SEO riche pour <title> (H1 reste court). Ex: "Joy Boy dans One Piece : identité, indices et théorie" */
     seoTitle: z.string().optional(),
-    /** Image Open Graph spécifique à la page (chemin, ex: "/og-foo.png"). Sinon og-default.png. */
+    /** Image Open Graph spécifique à la page (chemin, ex: "/og-foo.png"). Sinon og-default.jpg. */
     ogImage: z.string().optional(),
     /** Identifiant (slug) de la fiche canonique parente pour les articles de démonstration. */
     parent: z.string().optional(),
@@ -73,38 +73,6 @@ const chapters = defineCollection({
   }),
 });
 
-const glossary = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/glossary' }),
-  schema: z.object({
-    term: z.string(),
-    definition: z.string(),
-    relatedArticles: z.array(z.string()).default([]),
-  }),
-});
-
-const characters = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/characters' }),
-  schema: z.object({
-    name: z.string(),
-    era: z.enum(['ancien', 'moderne', 'transversal']).default('transversal'),
-    aliases: z.array(z.string()).default([]),
-    summary: z.string(),
-    articles: z.array(z.string()).default([]),
-    order: z.number().default(0),
-  }),
-});
-
-const locations = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/locations' }),
-  schema: z.object({
-    name: z.string(),
-    region: z.string().default('Inconnu'),
-    summary: z.string(),
-    articles: z.array(z.string()).default([]),
-    order: z.number().default(0),
-  }),
-});
-
 const predictions = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/predictions' }),
   schema: z.object({
@@ -113,25 +81,20 @@ const predictions = defineCollection({
     status: z.enum(['en-cours', 'confirmee', 'refutee', 'en-attente']).default('en-cours'),
     chapter: z.number().optional(),
     articles: z.array(z.string()).default([]),
-  }),
-});
-
-const timelines = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/timelines' }),
-  schema: z.object({
-    title: z.string(),
-    period: z.enum(['siecle-oublie', 'present', 'futur', 'boucle']).default('present'),
-    summary: z.string(),
-    articles: z.array(z.string()).default([]),
+    // Champs de suivi : ils étaient déjà renseignés dans certaines fiches mais
+    // absents du schéma, donc silencieusement ignorés au rendu.
+    formulatedSince: z.number().optional(),
+    lastUpdate: z.number().optional(),
+    statusNote: z.string().optional(),
+    confidence: z.enum(['elevee', 'moyenne', 'faible']).optional(),
+    source: z.string().optional(),
+    indices: z.string().optional(),
+    refuterait: z.string().optional(),
   }),
 });
 
 export const collections = {
   articles,
   chapters,
-  glossary,
-  characters,
-  locations,
   predictions,
-  timelines,
 };

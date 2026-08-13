@@ -2,12 +2,12 @@
 title: "Teach est Davy Jones : le futur Roi du Monde"
 summary: "5 preuves expliquant pourquoi Davy Jones ne serait pas un pirate du Siècle oublié, mais le nom légendaire que Marshall D. Teach recevra après avoir tenté de conquérir le monde."
 category: "personnages-identites"
-status: "draft"
-sidebarHidden: true
+status: "published"
+navigationType: "dossier"
 sources: [1164, 1107, 957]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 47
 parent: "davy-jones-fiche"
 related: ["davy-jones-fiche", "teach", "guerre-finale", "gouvernement-mondial", "gorosei"]
@@ -70,3 +70,11 @@ C'est exactement ce que la légende attribue à Davy Jones : un pirate si puissa
 Avec l'apparence d'un Doyen, l'équipage de Barbe Noire peut franchir chaque porte, chaque contrôle, chaque protocole de sécurité de Mary Geoise. Saturn est l'un des cinq êtres les plus puissants de la hiérarchie mondiale : son visage est un passe universel. L'infiltration des appartements sacrés de Pangea, l'accès au château, la pénétration jusqu'au Trône Vide — tout devient possible avec ce seul déguisement. Catarina Devon n'a pas volé une apparence : elle a volé une clé.
 
 La théorie conclut sur l'opposition centrale du récit. Joy Boy et Davy Jones ne seraient pas deux figures du Siècle oublié, mais les deux grands pirates de la même époque — l'époque actuelle de *One Piece*. Luffy est Joy Boy : celui qui libère, qui refuse de gouverner, qui brise les chaînes sans vouloir en forger de nouvelles. Teach est Davy Jones : celui qui conquiert, qui usurpe, qui veut s'emparer du monde entier et régner par la force. L'un est la lumière du D., l'autre son ombre. Et leur affrontement final ne serait pas un écho du passé, mais l'événement fondateur qui créera les légendes que le monde appellera Joy Boy et Davy Jones dans huit cents ans.
+
+## Limites et nuances
+
+- **« Davy Jones » n'est peut-être qu'une insulte.** Qu'Imu emploie ce nom pour Rocks (chapitre 1164) peut relever de la référence culturelle — le fond de l'océan, l'endroit où l'on envoie les morts — sans désigner ni un clan, ni un titre, ni une lignée.
+- **La lecture « Davy = clan, Jones = titre » n'est pas établie par le manga.** C'est un découpage proposé par la théorie ; aucun texte ne le formule.
+- **Rien ne dit que Teach vise le Trône Vide.** Son ambition déclarée est le One Piece et « l'ère » qu'il veut ouvrir ; l'objectif de Mary Geoise lui est prêté par déduction.
+- **Le geste de Catarina Devon peut n'avoir aucune suite.** Copier Saturn est un fait ; en faire un plan d'infiltration de Pangea est une extrapolation qu'aucune planche ne confirme pour l'instant.
+- **La symétrie Joy Boy / Davy Jones est séduisante, donc suspecte.** Une opposition aussi nette est le genre de figure que le lecteur projette volontiers sur un récit ; elle demande à être confirmée par le texte, pas seulement par son élégance.

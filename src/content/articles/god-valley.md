@@ -3,11 +3,11 @@ title: "God Valley"
 summary: "God Valley, l'île effacée de l'Histoire après l'affrontement entre Rocks D. Xebec et l'alliance Garp-Roger. La théorie y situe le clan Davy, les Figarland et le destin de Teach."
 category: "monde-destinations"
 status: "published"
+editorialStatus: "canon"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
-parent: "gouvernement-mondial"
+reviewedUntilChapter: 1190
 navigationType: "fiche"
-related: ["barbe-noire-davy-jones", "davy-jones-fiche", "bartholomew-kuma", "chevaliers-divins", "dragons-celestes", "coalition-des-20-rois"]
+related: ["gouvernement-mondial", "barbe-noire-davy-jones", "davy-jones-fiche", "bartholomew-kuma", "chevaliers-divins", "dragons-celestes", "vingt-rois-chevaliers-divins"]
 sources: [1164]
 order: 65
 ---

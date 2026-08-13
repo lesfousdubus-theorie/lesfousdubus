@@ -3,10 +3,11 @@ title: "Grande Guerre"
 summary: "Fiche d'identification de la Grande Guerre évoquée par Vegapunk : le conflit du Siècle oublié, présenté comme « toujours d'actualité », et la lecture des Fous du Bus qui attend son dénouement — et son déluge — au présent."
 category: "guerre-finale"
 status: "published"
+navigationType: "fiche"
 sources: [1113, 1114, 1115]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "guerre-finale"
 order: 1
 ---

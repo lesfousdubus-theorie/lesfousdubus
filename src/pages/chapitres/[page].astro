@@ -5,6 +5,9 @@ import { getCollection } from 'astro:content';
 import { getRecentArticleUpdates } from '@utils/chapter-updates';
 import { effectLabel, predictionStatusLabel } from '@utils/labels';
 
+const confidenceLabel = (value: 'elevee' | 'moyenne' | 'faible') =>
+  ({ elevee: 'élevée', moyenne: 'moyenne', faible: 'faible' })[value];
+
 export async function getStaticPaths() {
   return ['derniere-analyse', 'toutes-les-analyses', 'predictions', 'modifications'].map((page) => ({ params: { page } }));
 }
@@ -51,7 +54,24 @@ const config = {
   ))}</section>}
 
   {page === 'predictions' && <section class="cards">{predictions.sort((a, b) => (b.data.chapter ?? 0) - (a.data.chapter ?? 0)).map((prediction) => (
-    <article class="card"><span>Statut : {predictionStatusLabel(prediction.data.status)}</span><h2>{prediction.data.title}</h2><p>{prediction.data.statement}</p>{prediction.data.chapter && <small>Suivie jusqu’au chapitre {prediction.data.chapter}</small>}<div class="article-links">{prediction.data.articles.map((id) => { const article = articles.find((item) => item.id === id); return article && <a href={`/theorie/${id}`}>Lire l’article associé</a>; })}</div></article>
+    <article class="card">
+      <span>Statut : {predictionStatusLabel(prediction.data.status)}{prediction.data.confidence ? ` · confiance ${confidenceLabel(prediction.data.confidence)}` : ''}</span>
+      <h2>{prediction.data.title}</h2>
+      <p>{prediction.data.statement}</p>
+      {prediction.data.statusNote && <p class="prediction-note">{prediction.data.statusNote}</p>}
+      <dl class="prediction-details">
+        {prediction.data.indices && (<><dt>Indices</dt><dd>{prediction.data.indices}</dd></>)}
+        {prediction.data.refuterait && (<><dt>Ce qui la réfuterait</dt><dd>{prediction.data.refuterait}</dd></>)}
+        {prediction.data.source && (<><dt>Source</dt><dd>{prediction.data.source}</dd></>)}
+      </dl>
+      {prediction.data.chapter && (
+        <small>
+          {prediction.data.formulatedSince ? `Formulée depuis le chapitre ${prediction.data.formulatedSince} · ` : ''}
+          Suivie jusqu’au chapitre {prediction.data.chapter}
+        </small>
+      )}
+      <div class="article-links">{prediction.data.articles.map((id) => { const article = articles.find((item) => item.id === id); return article && <a href={`/theorie/${id}`}>{article.data.title}</a>; })}</div>
+    </article>
   ))}</section>}
 
   {page === 'modifications' && <section class="cards">{updated.map(({ article, chapter }) => (
@@ -61,5 +81,5 @@ const config = {
 </WikiLayout>
 
 <style>
-.page-header{max-width:720px;margin-bottom:36px}.icon{font-size:2.5rem;display:block;margin-bottom:8px}.page-header h1{font-size:clamp(1.8rem,4vw,2.5rem);margin:0 0 12px}.page-header p,.feature-card>p,.card p{color:var(--text-secondary);line-height:1.6}.feature-card,.card{background:var(--gradient-card);border:1px solid var(--border-color);border-radius:var(--border-radius-lg);padding:22px}.feature-card{margin-bottom:28px}.feature-card h2,.card h2{font-size:1.2rem;margin:8px 0}.feature-card h3{font-size:1rem;margin:24px 0 8px}.eyebrow,.card>span{font-size:.78rem;font-weight:700;letter-spacing:.04em;color:var(--cyan);text-transform:uppercase}.cards{display:grid;gap:14px}.card{text-decoration:none;color:var(--text-main);transition:transform .2s,border-color .2s}.card:hover{border-color:var(--cyan);transform:translateY(-2px)}small{color:var(--text-secondary)}.button,.article-links a,.link-list a{color:var(--cyan);text-decoration:none}.button{display:inline-flex;margin-top:10px;padding:9px 14px;border:1px solid var(--cyan);border-radius:7px}.link-list{padding-left:18px}.article-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:.9rem}
+.page-header{max-width:720px;margin-bottom:36px}.icon{font-size:2.5rem;display:block;margin-bottom:8px}.page-header h1{font-size:clamp(1.8rem,4vw,2.5rem);margin:0 0 12px}.page-header p,.feature-card>p,.card p{color:var(--text-secondary);line-height:1.6}.feature-card,.card{background:var(--gradient-card);border:1px solid var(--border-color);border-radius:var(--border-radius-lg);padding:22px}.feature-card{margin-bottom:28px}.feature-card h2,.card h2{font-size:1.2rem;margin:8px 0}.feature-card h3{font-size:1rem;margin:24px 0 8px}.eyebrow,.card>span{font-size:.78rem;font-weight:700;letter-spacing:.04em;color:var(--cyan);text-transform:uppercase}.cards{display:grid;gap:14px}.card{text-decoration:none;color:var(--text-main);transition:transform .2s,border-color .2s}.card:hover{border-color:var(--cyan);transform:translateY(-2px)}small{color:var(--text-secondary)}.button,.article-links a,.link-list a{color:var(--cyan);text-decoration:none}.button{display:inline-flex;margin-top:10px;padding:9px 14px;border:1px solid var(--cyan);border-radius:7px}.link-list{padding-left:18px}.article-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:.9rem}.prediction-note{font-size:.9rem;font-style:italic;color:var(--text-secondary);margin:0 0 12px}.prediction-details{margin:12px 0 0;display:grid;gap:6px}.prediction-details dt{font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-secondary)}.prediction-details dd{margin:0 0 8px;font-size:.92rem;line-height:1.55;color:var(--text-secondary)}
 </style>

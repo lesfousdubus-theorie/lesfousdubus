@@ -4,7 +4,7 @@ summary: "Dossier : comment Water Seven, la Galley-La des géants, Zunesha et Wa
 category: "armes-antiques"
 status: "published"
 certainty: "hypothese"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "armes-antiques"
 navigationType: "dossier"
 editorialStatus: "hypothese-centrale"
@@ -19,9 +19,9 @@ order: 37
 
 Pluton n'est pas un navire coulé dans un passé lointain : c'est **Water Seven elle-même**, transformée en gigantesque vaisseau grâce aux géants charpentiers de la Galley-La, qui prendra la mer pour rejoindre Wa no Kuni et donner naissance à l'Arme antique.
 
-## Le rêve d'Iceberg
+## Le rêve d'Icebarg
 
-Au chapitre 431, Iceberg veut transformer **Water Seven en un gigantesque navire** pour protéger l'île d'Aqua Laguna. Franky s'étonne : « Tu veux transformer Water Seven en un gigantesque navire ? »
+Au chapitre 431, Icebarg veut transformer **Water Seven en un gigantesque navire** pour protéger l'île d'Aqua Laguna. Franky s'étonne : « Tu veux transformer Water Seven en un gigantesque navire ? »
 
 Ironiquement, c'est exactement ce qu'est Pluton selon la description canonique : un navire gigantesque capable de détruire des îles. La théorie lit ce rêve comme une **préfiguration de l'Arme** plutôt que comme une simple idée d'ingénieur.
 
@@ -29,7 +29,7 @@ Ironiquement, c'est exactement ce qu'est Pluton selon la description canonique :
 
 La **Galley-La** est double dans One Piece :
 
-1. la **compagnie de charpentiers** de Water Seven, héritière des plans de Pluton (lignée Iceberg/Franky) ;
+1. la **compagnie de charpentiers** de Water Seven, héritière des plans de Pluton (lignée Icebarg/Franky) ;
 2. la **brigade au grand marteau**, escouade de **géants charpentiers d'Elbaf**.
 
 La théorie unit les deux : l'équipage des géants serait en réalité **l'équipage de Loki**, cryogénisé pour le protéger (voir [Loki](/theorie/loki)). Ces mêmes géants, aperçus congelés à Punk Hazard, rejoindraient Water Seven et la **transformeraient en Pluton**.
@@ -76,7 +76,7 @@ Cela renforce l'hypothèse **Loki congèle son propre équipage pour le protége
 
 ## Limites et nuances
 
-- Le « rêve d'Iceberg » peut être une simple préoccupation d'ingénieur, sans portée prophétique.
+- Le « rêve d'Icebarg » peut être une simple préoccupation d'ingénieur, sans portée prophétique.
 - L'identification des géants congelés à l'équipage de Loki est une **hypothèse non confirmée**.
 - Le manga ne dit pas que Pluton « sera envoyé » à Wa no Kuni : ce parallèle avec Poséidon est une **déduction de la théorie**.
 - L'intervention de Zunesha à Wa no Kuni n'est pas établie par une source explicite.

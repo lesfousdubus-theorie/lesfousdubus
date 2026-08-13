@@ -3,11 +3,13 @@ title: "Marshall D. Teach et Davy Jones"
 summary: "Comment Marshall D. Teach incarne la figure mythique de Davy Jones et s'apprête à ravir le titre de Roi du Monde à Mary Geoise."
 category: "personnages-identites"
 status: "published"
+sources: [441, 1064, 1164]
 order: 43
-navigationType: "dossier"
+navigationType: "fiche"
+editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-reviewedUntilChapter: 1188
-related: ['coalition-des-20-rois', 'la-prescience-et-imu']
+reviewedUntilChapter: 1190
+related: ["davy-jones"]
 ---
 
 **Résumé** : Le nom de Davy Jones est cité dans le manga comme une légende des mers et l'ancien "Roi du Monde" d'après Rocks D. Xebec. Selon la théorie des Fous du Bus, Davy Jones n'est pas un pirate d'il y a 800 ans : c'est le titre que l'Histoire donnera à Marshall D. Teach (Barbe Noire).
@@ -37,3 +39,10 @@ En touchant St. Saturn à Egghead, Catarina Devon a copié l'apparence physique 
 ![Infiltration Mary Geoise](/images/threads/barbe-noire-davy-jones/img_4.webp)
 ![Trone vide Teach](/images/threads/barbe-noire-davy-jones/img_5.webp)
 ![Barbe noire vainqueur](/images/threads/barbe-noire-davy-jones/img_6.webp)
+
+## Limites et nuances
+
+- **Le titre de « Davy Jones » n'est jamais attribué à Teach.** Le rapprochement repose sur un faisceau (la ruche, le navire de Xebec, l'initiale D.), pas sur une désignation explicite.
+- **« Le monde » est une réponse ambiguë.** Elle peut décrire une ambition de domination sans impliquer le Trône Vide ni une reprise du projet de Rocks.
+- **Rocks et Teach peuvent simplement se ressembler.** Oda construit souvent des échos entre générations de pirates sans qu'un titre se transmette.
+- **La lecture dépend du mécanisme temporel de la théorie.** Si les légendes du Siècle oublié décrivent bien un passé, Davy Jones a existé et Teach n'en est qu'un héritier symbolique.

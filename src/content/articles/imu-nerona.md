@@ -1,13 +1,14 @@
 ---
 title: "Imu Nerona"
 summary: "Fiche consacrée à Imu : ce que le manga établit sur le souverain caché du monde, son immortalité supposée, la lecture des Fous du Bus (préscience, confusion des générations), les arguments et les limites."
-seoTitle: "Imu dans One Piece : identité, préscience, Joy Boy et théorie | Les Fous du Bus"
+seoTitle: "Imu One Piece : identité et préscience | Les Fous du Bus"
 category: "gouvernement-mondial"
 status: "published"
-sources: [1084, 1085, 1086, 1125, 1164, 1186, 1188]
+navigationType: "dossier"
+sources: [1084, 1085, 1086, 1125, 1164, 1186, 1188, 1189, 1190]
 editorialStatus: "hypothese-centrale"
 certainty: "moyenne"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 62
 related:
   [
@@ -19,12 +20,14 @@ related:
     "la-prescience-et-imu",
     "joy-boy",
     "lili",
+    "chambre-fleurie",
+    "imu-avenir",
   ]
 ---
 
 ## Présentation
 
-Imu Nerona est la figure invisible qui siège au sommet du Gouvernement mondial. Officiellement, le Trône Vide de Marie Geoise n’appartient à personne ; en réalité, Imu y siège depuis huit cents ans et donne ses ordres aux Gorosei, qui règnent à sa place. Son existence n’est connue que d’un très petit nombre de personnages au sein du pouvoir.
+Imu Nerona est la figure invisible qui siège au sommet du Gouvernement mondial. Officiellement, le Trône Vide de Mary Geoise n’appartient à personne ; en réalité, Imu y siège depuis huit cents ans et donne ses ordres aux Gorosei, qui règnent à sa place. Son existence n’est connue que d’un très petit nombre de personnages au sein du pouvoir.
 
 Imu est l’une des principales figures antagonistes de la fin de *One Piece* et pourrait constituer son antagoniste final. Cette fiche distingue les faits établis de l’interprétation qu’en proposent les Fous du Bus.
 
@@ -39,7 +42,7 @@ Imu est l’une des principales figures antagonistes de la fin de *One Piece* et
 - Aux chapitres 1186 et 1188, Imu apparaît doté d’un pouvoir personnel redoutable. La destruction de Lulusia et l’usage de la Mother Flame sont traités comme hypothèses dans les analyses récentes (voir section Lecture des Fous du Bus).
 - Les Gorosei, pourtant tout-puissants, obéissent à Imu comme à un supérieur absolu.
 - Imu semble obsédé par trois choses : Joy Boy, Nika, et la lignée du D.
-- Il garde dans une chambre de Marie Geoise un chapeau de paille géant congelé (chapitre 906).
+- Il garde dans une chambre de Mary Geoise un chapeau de paille géant congelé (chapitre 906).
 
 ## L’immortalité
 
@@ -72,6 +75,16 @@ Cette lecture rend compte de la confiance étrange d’Imu au moment même où L
 
 Ce point reste **en cours de stabilisation** : il s’appuie sur une interprétation fine de planches très récentes.
 
+### L'aveu d'Imu (chapitre 1190) <span class="pill pill--hypothese">Évolution récente</span>
+
+Le chapitre 1190 apporte à cette section son appui le plus direct. Face à Scopper Gaban, qui lui oppose que Roger avait raison et qu'il était simplement arrivé « trop tôt », **Imu le reconnaît** : il admet avoir pris **de nombreuses coïncidences pour le destin**.
+
+C'est très exactement le mécanisme décrit plus haut. Un être qui entrevoit une silhouette sans en connaître le moment finit par surinterpréter chaque figure qui lui ressemble — Xebec, Roger, Vivi — et par confondre les générations. L'aveu déplace la préscience du statut d'hypothèse à celui de lecture soutenue par le texte : Imu lui-même décrit ses huit cents ans de traque comme une suite d'erreurs d'identification.
+
+Le même chapitre confirme un second point : Imu se souvient d'avoir **ordonné la dissimulation du vrai nom de Roger parce qu'il était un « D. »**. La persécution ne visait donc pas un individu mais un marqueur, ce qui explique qu'elle ait pu se tromper de cible aussi longtemps.
+
+Une réserve : « prendre des coïncidences pour le destin » n'implique pas nécessairement une préscience au sens de visions. Cela peut décrire un pouvoir mal compris, une lecture obsessionnelle de présages, ou une conviction idéologique. Le rapprochement avec Madame Shirley reste une piste de lecture, pas une capacité établie.
+
 ### L'idéologie d'Imu (chapitre 1181)
 
 Le chapitre 1181 développe une dimension idéologique fondamentale :
@@ -96,15 +109,17 @@ Le Gouvernement mondial lui-même, fruit de cette peur, devient un régime total
 
 - **La confusion sur God Valley** (chapitre 1164) : qu’Imu appelle Xebec « Davy Jones » indique qu’il ne distingue pas clairement les époques — exactement ce qu’on attendrait d’un homme qui voit des fragments d’avenir sans savoir quand ils se produisent.
 - **La longévité supposée** : si Imu est vraiment immortel, il est cohérent qu’il ait passé huit cents ans à attendre, terrifié, la venue qu’il a vue.
-- **Le chapeau de paille géant** (chapitre 906) : il suggère qu’Imu conserve une trace matérielle du Joy Boy qu’il craint — trace qui pourrait être un indice transmis du futur.
+- **Le chapeau de paille géant** (chapitre 906) : il suggère qu’Imu conserve une trace matérielle du Joy Boy qu’il craint — trace qui pourrait être un indice transmis du futur. La théorie précise l’objet : ce chapeau n’aurait jamais appartenu à Joy Boy mais à **Emeth** (voir [Emeth, robot venu du futur](/theorie/emeth-futur)).
 - **La destruction de Lulusia** : rayer une île de la carte sans justification stratégique claire évoque davantage une réaction de panique qu’une stratégie impériale raisonnée.
 - **La lecture des chapitres 1187–1188** : si Imu a effectivement « tué » Joy Boy en la personne de Roger, sa confiance actuelle devient parfaitement cohérente.
+- **L'aveu du chapitre 1190** : Imu reconnaît devant Scopper Gaban avoir pris de nombreuses coïncidences pour le destin. C'est l'argument le plus direct en faveur de cette section, formulé par le personnage lui-même.
 
 ## Limites et objections
 
 - **L’immortalité n’est pas démontrée.** On ne sait pas si Imu est bien immortel, ni si la préscience est un pouvoir explicite.
 - **La « confusion des générations » peut se lire autrement.** Qu’Imu appelle Xebec « Davy Jones » peut être une référence mythologique, pas une erreur temporelle.
 - **La « communication à travers le temps »** des chapitres 1187–1188 est un indice nouveau dont l’interprétation n’est pas stabilisée, y compris dans la théorie elle-même.
+- **L'aveu du chapitre 1190 ne prouve pas la préscience.** Prendre des coïncidences pour le destin peut décrire une obsession, une lecture de présages ou une conviction idéologique, sans aucune vision de l'avenir.
 - **Imu peut simplement être un tyran classique**, sans préscience particulière, qui persécute Joy Boy parce que celui-ci a réellement existé dans le passé et qu’il craint son retour.
 
 ## Points encore à expliquer

@@ -3,13 +3,15 @@ title: "Dōzan"
 summary: "Fiche de Dōzan : figure évoquée dans les chapitres récents, associée à Wa no Kuni et à l'origine de Binks no Sake."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
 sources: [1183, 1184]
 editorialStatus: "nouvelle-piste"
 certainty: "hypothese"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "brook"
 order: 53
 related: ["brook", "binks-no-sake", "wa-no-kuni", "equipage-rumbar"]
+seoTitle: "Dōzan One Piece : Wa no Kuni et Binks no Sake | Les Fous du Bus"
 ---
 
 ## Présentation

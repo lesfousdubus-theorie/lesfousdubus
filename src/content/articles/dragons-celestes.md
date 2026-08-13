@@ -3,10 +3,11 @@ title: "Dragons Célestes"
 summary: "Fiche des Dragons Célestes : les descendants des dix-neuf familles fondatrices installées à Mary Geoise, leur statut et le cas des Nefertari."
 category: "gouvernement-mondial"
 status: "published"
+navigationType: "fiche"
 sources: [497, 498, 906, 1084]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "gouvernement-mondial"
 order: 68
 related: ["gouvernement-mondial", "vingt-rois", "mary-geoise", "chevaliers-divins", "alabasta"]
@@ -22,7 +23,7 @@ Les Dragons Célestes, ou Nobles Mondiaux, sont les descendants des familles qui
 - Ils pratiquent ouvertement l'esclavage et disposent du droit de vie et de mort sur les roturiers.
 - Un appel de leur part déclenche l'intervention d'un Amiral.
 - Ils portent des bulles pour ne pas respirer le même air que les autres.
-- Certains renoncent à leur statut, comme Donquixote Homing, avec des conséquences fatales.
+- Certains renoncent à leur statut, comme Donquixote Homing, avec des conséquences fatales. La théorie tire un fil de ce constat : voir [Doflamingo et le roi Donquixote](/theorie/donquixote-roi-antique).
 
 ## La lecture des Fous du Bus
 

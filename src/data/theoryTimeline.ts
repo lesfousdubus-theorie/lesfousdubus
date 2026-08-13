@@ -127,11 +127,11 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     summary:
       'La théorie fait commencer la chronologie par ses conséquences : textes, pierres et souvenirs arrivent avant leur création.',
     detail:
-      'Le point de départ n’est pas une civilisation disparue mais une information déplacée. Les Ponéglyphes, le Halley et certains êtres auraient été envoyés vers des époques anciennes. Le monde les date alors naturellement de neuf siècles, sans pouvoir savoir qu’ils viennent de son avenir.',
+      'Le point de départ n’est pas une civilisation disparue mais une information déplacée. Les Ponéglyphes, le Harley et certains êtres auraient été envoyés vers des époques anciennes. Le monde les date alors naturellement de neuf siècles, sans pouvoir savoir qu’ils viennent de son avenir.',
     status: 'central',
     image: images.origin,
     imageAlt: 'Composition visuelle autour du Siècle oublié et du One Piece',
-    links: [{ label: 'Les bases de la théorie', href: '/theorie/les-bases-du-siecle-oublie' }],
+    links: [{ label: 'Les bases de la théorie', href: '/theorie/siecle-oublie-present' }],
   },
   {
     id: 'imu-lit-avenir',
@@ -199,7 +199,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     image: images.lili,
     imageAlt: 'Imu évoquant Vivi dans la chambre fleurie',
     links: [
-      { label: 'Lili, Vivi et les Ponéglyphes', href: '/theorie/lili-vivi-et-les-poneglyphes' },
+      { label: 'Lili, Vivi et les Ponéglyphes', href: '/theorie/vivi' },
     ],
   },
   {
@@ -294,7 +294,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     chapter: 'Ch. 1067, 1125',
     image: images.emeth,
     imageAlt: 'Le robot géant Emeth étudié sur Egghead',
-    links: [{ label: 'Emeth, robot du futur', href: '/theorie/emeth-robot-du-futur' }],
+    links: [{ label: 'Emeth, robot du futur', href: '/theorie/emeth-futur' }],
   },
   {
     id: 'rocks-cherche-galley-la',
@@ -408,7 +408,10 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     status: 'central',
     image: images.roger,
     imageAlt: 'Gol D. Roger avant le lancement de la Grande Ère',
-    links: [{ label: 'Gol D. Roger', href: '/theorie/gol-d-roger' }],
+    links: [
+      { label: 'Gol D. Roger', href: '/theorie/gol-d-roger' },
+      { label: 'Scopper Gaban', href: '/theorie/scopper-gaban' },
+    ],
   },
   {
     id: 'execution-roger',
@@ -514,7 +517,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '⚒',
     title: 'La Galley-La Company est créée à Water Seven',
     summary:
-      'Iceburg rassemble sept compagnies navales sous un nom identique à celui d’une légendaire brigade de géants.',
+      'Icebarg rassemble sept compagnies navales sous un nom identique à celui d’une légendaire brigade de géants.',
     detail:
       'Cette coïncidence est centrale dans la transcription. La compagnie humaine et l’équipage de Loki finiraient par fusionner : les meilleurs charpentiers du monde disposeraient enfin de la taille nécessaire pour transformer une île entière en navire.',
     status: 'canon',
@@ -551,7 +554,10 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     detail:
       'Le démon céleste, l’usine cachée et le retour des Riku composent un miroir presque exact. La théorie propose que l’ancien roi cruel ne soit pas un ancêtre : ce serait Doflamingo lui-même devenu sa propre caricature historique.',
     status: 'hypothese',
-    links: [{ label: 'Les Dragons célestes', href: '/theorie/dragons-celestes' }],
+    links: [
+      { label: 'Doflamingo et le roi Donquixote', href: '/theorie/donquixote-roi-antique' },
+      { label: 'Les Dragons célestes', href: '/theorie/dragons-celestes' },
+    ],
   },
   {
     id: 'promesses-du-voyage',
@@ -573,7 +579,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'voyage',
     thread: 'armes',
     icon: '⚓',
-    title: 'Iceburg rêve de faire flotter Water Seven',
+    title: 'Icebarg rêve de faire flotter Water Seven',
     summary:
       'Face à Aqua Laguna, le maire veut transformer toute l’île en navire, mais l’ouvrage dépasse la force humaine.',
     detail:
@@ -597,7 +603,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
       'La transcription identifie cette scène à la promesse attribuée à Joy Boy et Poséidon. La lettre d’excuses ne raconterait donc pas un échec ancien : elle demanderait au passé de construire Noah afin que Luffy puisse tenir sa promesse future.',
     status: 'central',
     chapter: 'Ch. 653',
-    links: [{ label: 'La promesse de Poséidon', href: '/theorie/poseidon' }],
+    links: [{ label: 'La promesse de Poséidon', href: '/theorie/poseidon-fiche' }],
   },
   {
     id: 'nika-eveil',
@@ -661,7 +667,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     chapter: 'Ch. 1120–1122',
     image: images.emeth,
     imageAlt: 'Le robot Emeth sur Egghead',
-    links: [{ label: 'Emeth, robot du futur', href: '/theorie/emeth-robot-du-futur' }],
+    links: [{ label: 'Emeth, robot du futur', href: '/theorie/emeth-futur' }],
   },
   {
     id: 'haki-du-futur',
@@ -720,7 +726,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'present',
     thread: 'memoire',
     icon: '✧',
-    title: 'Le Halley décrit des scènes qui se réalisent',
+    title: 'Le Harley décrit des scènes qui se réalisent',
     summary:
       'Le texte sacré et la fresque d’Elbaf annoncent une bête sous l’orage de neige, le Dieu Soleil et une guerre mondiale.',
     detail:
@@ -824,7 +830,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     status: 'projection',
     image: images.deluge,
     imageAlt: 'Une mer gigantesque recouvrant le monde',
-    links: [{ label: 'Le Déluge', href: '/theorie/le-deluge-et-all-blue' }],
+    links: [{ label: 'Le Déluge', href: '/theorie/deluge-all-blue' }],
   },
   {
     id: 'pluton-water-seven',
@@ -834,7 +840,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '⚓',
     title: 'Water Seven devient Pluton',
     summary:
-      'Iceburg, Franky et l’escouade géante de Loki transforment la cité des charpentiers en île-navire de guerre.',
+      'Icebarg, Franky et l’escouade géante de Loki transforment la cité des charpentiers en île-navire de guerre.',
     detail:
       'Pluton naîtrait de la fusion de la Galley-La humaine et de la brigade au grand marteau. L’arsenal capable de détruire des îles serait le Hakoku combiné des géants, embarqués sur le plus grand navire jamais construit.',
     status: 'projection',
@@ -856,7 +862,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     status: 'projection',
     image: images.pluton,
     imageAlt: 'Indices reliant Water Seven, Wano et l’arme Pluton',
-    links: [{ label: 'Zunesha', href: '/theorie/zunesha' }],
+    links: [{ label: 'Zunesha', href: '/theorie/zunesha-fiche' }],
   },
   {
     id: 'noah-evacuation',
@@ -950,7 +956,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     status: 'projection',
     image: images.zoro,
     imageAlt: 'Rapprochement visuel entre Zoro et Ryuma',
-    links: [{ label: 'Zoro est Ryuma', href: '/theorie/zoro-est-ryuma' }],
+    links: [{ label: 'Zoro est Ryuma', href: '/theorie/ryuma' }],
   },
   {
     id: 'vivi-devient-lili',
@@ -1014,7 +1020,10 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     status: 'projection',
     image: images.emeth,
     imageAlt: 'Le robot Emeth, possible propriétaire du chapeau géant',
-    links: [{ label: 'Le chapeau de paille', href: '/theorie/shanks' }],
+    links: [
+      { label: 'Emeth, robot venu du futur', href: '/theorie/emeth-futur' },
+      { label: 'Le chapeau de paille', href: '/theorie/shanks' },
+    ],
   },
   {
     id: 'rio-poneglyphe-ecrit',
@@ -1038,7 +1047,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'aube',
     thread: 'memoire',
     icon: '✧',
-    title: 'Usopp écrit le Halley et devient Louis Arnot',
+    title: 'Usopp écrit le Harley et devient Louis Arnot',
     summary:
       'Le plus grand affabulateur raconte les événements sous forme de légende afin de préparer Elbaf sans tout révéler.',
     detail:
@@ -1072,7 +1081,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '↺',
     title: 'La mémoire est envoyée vers le passé',
     summary:
-      'Ponéglyphes, Halley et certains êtres traversent le temps, mais la mécanique exacte reste volontairement non résolue.',
+      'Ponéglyphes, Harley et certains êtres traversent le temps, mais la mécanique exacte reste volontairement non résolue.',
     detail:
       'La transcription distingue plusieurs possibilités : déplacement ponctuel, transmission d’informations, communication entre époques ou préscience. La frise montre le résultat de la théorie sans transformer ce mécanisme encore inconnu en certitude.',
     status: 'hypothese',
@@ -1094,7 +1103,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     status: 'projection',
     image: images.emeth,
     imageAlt: 'Emeth, le robot qui relie le futur au passé',
-    links: [{ label: 'Emeth, robot du futur', href: '/theorie/emeth-robot-du-futur' }],
+    links: [{ label: 'Emeth, robot du futur', href: '/theorie/emeth-futur' }],
   },
   {
     id: 'ryuma-repart-wano',

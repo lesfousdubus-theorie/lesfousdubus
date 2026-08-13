@@ -1,14 +1,16 @@
 ---
-parent: "gol-d-roger"
 title: "La Silhouette du Scan 1181 : Joy Boy ou Gol D. Roger ?"
 summary: "Analyse détaillée en 6 points expliquant pourquoi la mystérieuse silhouette dévoilée dans les récents chapitres pourrait être Gol D. Roger plutôt que Joy Boy."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
+sources: [604, 967, 1181]
 sidebarHidden: true
+editorialStatus: "nouvelle-piste"
 certainty: "hypothese"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 57
-related: ["joy-boy", "la-prescience-et-imu"]
+related: ["gol-d-roger", "joy-boy", "la-prescience-et-imu"]
 ---
 
 **Résumé** : Les chapitres récents ont révélé une silhouette énigmatique associée aux récits anciens. Bien que beaucoup y aient vu la première apparition directe de Joy Boy, 6 indices troublants suggèrent qu'il s'agirait en réalité de Gol D. Roger.
@@ -40,3 +42,11 @@ Roger et Luffy partagent mot pour mot le même "rêve secret" (le fameux vœu qu
 Si Imu a longtemps cru que Gol D. Roger était le Joy Boy annoncé par la prophétie, alors la mort de Roger à Loguetown explique parfaitement pourquoi Imu pensait que *"Joy Boy était mort"*, avant de réaliser avec horreur à Marineford et Egghead que le véritable héritier arrive.
 
 ![Discours d'Imu sur Joyboy](/images/threads/silhouette-scan-1181-roger/img_7.webp)
+
+## Limites et nuances
+
+- **Une silhouette est par définition ambiguë.** La lecture proposée repose sur une posture et une découpe d'ombre, éléments que le dessin laisse volontairement indéterminés.
+- **La lecture majoritaire y voit Joy Boy**, et rien n'exclut qu'elle soit la bonne.
+- **Le secret entretenu sur la jeunesse de Roger n'est pas un argument.** Il rend l'hypothèse possible, il ne la soutient pas.
+- **L'écho des mêmes paroles peut être un procédé de mise en scène.** Oda fait fréquemment rimer les répliques de personnages différents pour souligner une filiation d'esprit.
+- **Cette page est classée « nouvelle piste »** : elle est explicitement instable et pourrait être infirmée par la planche suivante.

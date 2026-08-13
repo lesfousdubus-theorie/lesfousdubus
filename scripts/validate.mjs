@@ -154,12 +154,34 @@ function parseFrontmatter(raw) {
   const body = lines.slice(end + 1).join('\n');
   const data = {};
   const lineRe = /^([A-Za-z0-9_-]+):\s*(.*)$/;
-  for (const line of fm.split(/\r?\n/)) {
+  const fmLines = fm.split(/\r?\n/);
+  for (let i = 0; i < fmLines.length; i++) {
+    const line = fmLines[i];
     if (!line.trim() || line.trim().startsWith('#')) continue;
     const m = line.match(lineRe);
     if (!m) continue;
     const key = m[1];
     let val = m[2].trim();
+    // Liste YAML étalée sur plusieurs lignes :
+    //   related:
+    //     [
+    //       "slug",
+    //     ]
+    // On recolle jusqu'au crochet fermant avant de parser.
+    if (val === '' || (val.startsWith('[') && !val.endsWith(']'))) {
+      let joined = val;
+      let j = i;
+      while (j + 1 < fmLines.length && !joined.endsWith(']')) {
+        const next = fmLines[j + 1];
+        if (joined === '' && !next.trim().startsWith('[')) break;
+        joined += next.trim();
+        j++;
+      }
+      if (joined.startsWith('[') && joined.endsWith(']')) {
+        val = joined;
+        i = j;
+      }
+    }
     if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
       val = val.slice(1, -1);
     }
@@ -291,6 +313,143 @@ for (const file of files) {
       );
     } else {
       seen.set(key, rel);
+    }
+  }
+}
+
+// --- Liens /theorie/* écrits hors Markdown ---------------------------------
+// Les liens du corps Markdown sont déjà validés plus haut, mais la frise
+// (`src/data/theoryTimeline.ts`) et les pages `.astro` référencent elles aussi
+// des articles en dur. Un slug renommé y restait invisible jusqu'au build.
+{
+  const sourceFiles = [];
+  const walkSource = (dir) => {
+    let entries;
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) walkSource(full);
+      else if (/\.(astro|ts|tsx)$/.test(entry)) sourceFiles.push(full);
+    }
+  };
+  walkSource(join(process.cwd(), 'src'));
+
+  for (const file of sourceFiles) {
+    const rel = relative(process.cwd(), file).split(sep).join('/');
+    const content = readFileSync(file, 'utf8');
+    for (const match of content.matchAll(/['"`](\/theorie\/[a-z0-9-]+)\/?['"`]/g)) {
+      const slug = match[1].replace(/^\/theorie\//, '');
+      // Routes réelles de src/pages/theorie/, pas des articles.
+      if (KNOWN_PAGES.has(match[1])) continue;
+      if (!articleIds.includes(slug)) {
+        errors.push(`${rel} : lien vers un article inexistant : "${match[1]}".`);
+      }
+    }
+  }
+}
+
+// --- Conventions orthographiques -------------------------------------------
+// Le corpus mélangeait plusieurs graphies pour les mêmes noms propres, ce qui
+// cassait la recherche interne et les liens mentaux entre fiches. On fige la
+// graphie retenue (édition française Glénat quand elle existe) et on refuse
+// toute variante réintroduite par une nouvelle fiche.
+const SPELLING_RULES = [
+  { wrong: /\bHalley\b/g, right: 'Harley' },
+  { wrong: /\bMarie[- ]Geoise\b/g, right: 'Mary Geoise' },
+  { wrong: /\bMariejois\b/g, right: 'Mary Geoise' },
+  { wrong: /\bWano Kuni\b/g, right: 'Wa no Kuni' },
+  { wrong: /\bIce(?:burg|berg)\b/g, right: 'Icebarg' },
+  { wrong: /\bShamrock\b/g, right: 'Chamrock' },
+  { wrong: /\bPoneglyphe/g, right: 'Ponéglyphe' },
+];
+
+for (const file of files) {
+  const rel = relative(CONTENT_DIR, file).split(sep).join('/');
+  const lines = readFileSync(file, 'utf8').split('\n');
+  lines.forEach((line, index) => {
+    // Les chemins d'images et les liens portent d'anciens slugs figés : les
+    // renommer casserait des fichiers réels ou des redirections en place.
+    if (line.includes('/images/') || line.includes('](/')) return;
+    for (const { wrong, right } of SPELLING_RULES) {
+      wrong.lastIndex = 0;
+      const found = line.match(wrong);
+      if (found) {
+        errors.push(
+          `${rel}:${index + 1} : graphie \"${found[0]}\" — utiliser \"${right}\" (convention du site).`,
+        );
+      }
+    }
+  });
+}
+
+// --- Règles éditoriales -----------------------------------------------------
+// La théorie se distingue d'une spéculation ordinaire par le fait qu'elle
+// s'expose à l'objection. Un article interprétatif qui n'énonce jamais ses
+// limites est un défaut de fond, pas de forme : on le refuse.
+const INTERPRETIVE = new Set([
+  'hypothese-centrale',
+  'hypothese-secondaire',
+  'interpretation',
+  'nouvelle-piste',
+]);
+const LIMIT_HEADINGS =
+  /^##+\s+(Limites|Points encore à expliquer|Questions non résolues|Ce que le manga ne tranche pas)/im;
+
+for (const file of files) {
+  const rel = relative(CONTENT_DIR, file).split(sep).join('/');
+  if (!rel.startsWith('articles/')) continue;
+  const raw = readFileSync(file, 'utf8');
+  const parsed = parseFrontmatter(raw);
+  if (!parsed) continue;
+  const { data, body } = parsed;
+  if (!INTERPRETIVE.has(data.editorialStatus)) continue;
+
+  if (!LIMIT_HEADINGS.test(body)) {
+    errors.push(
+      `${rel} : article "${data.editorialStatus}" sans section de limites. ` +
+        `Ajouter "## Limites et nuances" (ou "## Points encore à expliquer").`,
+    );
+  }
+
+}
+
+// Un article que rien ne référence est une impasse : il reste atteignable par la
+// navigation et la recherche, mais aucun raisonnement n'y conduit. On exige au
+// moins un lien entrant, en corps de texte ou via le `related` d'une autre fiche.
+{
+  const bodies = new Map();
+  const relatedOut = new Map();
+  for (const file of files) {
+    const rel = relative(CONTENT_DIR, file).split(sep).join('/');
+    if (!rel.startsWith('articles/')) continue;
+    const parsed = parseFrontmatter(readFileSync(file, 'utf8'));
+    if (!parsed) continue;
+    const slug = rel.slice('articles/'.length).replace(/\.md$/, '');
+    bodies.set(slug, parsed.body);
+    relatedOut.set(
+      slug,
+      String(parsed.data.related ?? '').match(/[a-z0-9-]+/g) ?? [],
+    );
+  }
+  const inbound = new Set();
+  for (const [slug, body] of bodies) {
+    for (const m of body.matchAll(/\]\(\/theorie\/([a-z0-9-]+)/g)) {
+      if (m[1] !== slug) inbound.add(m[1]);
+    }
+    for (const target of relatedOut.get(slug) ?? []) {
+      if (target !== slug) inbound.add(target);
+    }
+  }
+  for (const slug of bodies.keys()) {
+    if (!inbound.has(slug)) {
+      errors.push(
+        `articles/${slug}.md : aucun article n'y renvoie. Ajouter un lien dans ` +
+          `le corps d'une fiche liée, ou l'ajouter à son "related".`,
+      );
     }
   }
 }

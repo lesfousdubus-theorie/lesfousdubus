@@ -12,7 +12,7 @@ editorialStatus: "hypothese-centrale"
 order: 38
 related: ["pluton-fiche", "pluton-water-seven-galley-la", "loki", "zunesha-fiche", "wa-no-kuni", "poseidon-fiche"]
 sources: [431, 1154, 1182]
-ogImage: "/og-default.png"
+ogImage: "/og-default.jpg"
 ---
 
 > **Thread X du 08/08/2026** par [@FoudubusTV_](https://x.com/FoudubusTV_/status/2086126492228964579) — inspiré de la vidéo de [@MontCorvo_Off](https://x.com/MontCorvo_Off) #ONEPIECE1190.
@@ -105,7 +105,7 @@ Tout s'imbrique : les géants de Loki rejoignent Icebarg, transforment Water 7 e
 
 ![Franky reformule le projet d'Icebarg : transformer Water Seven en un gigantesque bateau](/images/threads/galley-la-coincidence-impossible/img_15.webp)
 
-## Objection : Pluton est sous Wano Kuni ?
+## Objection : Pluton est sous Wa no Kuni ?
 
 Si tu te dis « OK cohérent, mais on dit que Pluton est sous Wano », la vidéo Mont Corvo explique en détail le lien Water 7 / Zunesha / Kaido / Big Mom / ouverture frontières Wano.
 
@@ -118,7 +118,7 @@ La lecture Fous du Bus :
 Voir dossier complet : [Pluton, Water Seven et Galley-La](/theorie/pluton-water-seven-galley-la).
 
 <figure>
-  <figcaption>Vidéo de Mont Corvo expliquant le lien Pluton / Water 7 / Zunesha / Wano Kuni : <a href="https://www.youtube.com/watch?v=SgJ25zjMJyo" rel="noopener">sur YouTube</a>.</figcaption>
+  <figcaption>Vidéo de Mont Corvo expliquant le lien Pluton / Water 7 / Zunesha / Wa no Kuni : <a href="https://www.youtube.com/watch?v=SgJ25zjMJyo" rel="noopener">sur YouTube</a>.</figcaption>
 </figure>
 
 ## Confirmation chapitre 1154

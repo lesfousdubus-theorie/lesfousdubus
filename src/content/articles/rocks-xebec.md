@@ -3,8 +3,10 @@ title: "Rocks D. Xebec"
 summary: "Fiche canonique neutre sur Rocks D. Xebec, capitaine des Rocks Pirates, figure centrale de God Valley et de l'histoire récente du monde."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
+editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 42
 sources: [957, 1164, 1188]
 related: ["barbe-noire-davy-jones", "god-valley", "imu-nerona", "gouvernement-mondial"]

@@ -13,7 +13,7 @@ import { effectLabel, categoryLabel } from '@utils/labels';
 const { title, description, currentPath, headings, frontmatter } = Astro.props;
 // Image sociale de la page : on privilégie `ogImage` du frontmatter si fourni,
 // sinon l'image par défaut.
-const socialImagePath = frontmatter.ogImage ?? '/og-default.png';
+const socialImagePath = frontmatter.ogImage ?? '/og-default.jpg';
 const socialImage = new URL(socialImagePath, Astro.site).toString();
 const seoTitle = frontmatter.seoTitle ?? undefined;
 

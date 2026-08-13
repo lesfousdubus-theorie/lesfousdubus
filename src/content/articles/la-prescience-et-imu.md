@@ -1,14 +1,16 @@
 ---
-parent: "imu-nerona"
 title: "La Prescience et la malédiction d'Imu"
 summary: "Comment le don de prescience (aperçu chez Shirley) explique le règne d'Imu, sa peur obsessionnelle de Nika et son attente de 800 ans."
 category: "personnages-identites"
 status: "published"
+navigationType: "fiche"
+sources: [610, 1179, 1188]
 sidebarHidden: true
+editorialStatus: "nouvelle-piste"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 55
-related: ["joy-boy", "coalition-des-20-rois"]
+related: ["imu-nerona", "joy-boy", "vingt-rois-chevaliers-divins"]
 ---
 
 **Résumé** : Selon une extension récente des Fous du Bus (chapitre 1188), Imu pourrait posséder une forme de préscience comparable à celle de Madame Shirley. Cette hypothèse reste une piste récente et est marquée comme telle.
@@ -31,3 +33,11 @@ En tentant d'effacer le nom de Nika, d'interdire l'étude des Ponéglyphes et de
 
 ![Imu et le Chapeau de paille](/images/threads/la-prescience-et-imu/img_5.webp)
 ![Le garcon heureux Joyboy](/images/threads/la-prescience-et-imu/img_6.webp)
+
+## Limites et nuances
+
+- **La préscience n'est pas attestée chez Imu.** Aucune planche ne lui prête de vision ; l'ensemble repose sur un parallèle avec Madame Shirley.
+- **Les indices graphiques sont faibles.** Une silhouette filiforme et des yeux marqués sont des choix esthétiques fréquents chez Oda et ne constituent pas un indice de pouvoir partagé.
+- **Les prédictions de Shirley ne sont pas infaillibles.** Elle se trompe sur l'auteur de la destruction de l'île des Hommes-Poissons, ce qui affaiblit le modèle utilisé ici.
+- **La « malédiction » décrite fonctionne sans préscience.** Un régime qui réprime une croyance en fabrique souvent le martyre : le mécanisme n'exige aucune vision de l'avenir.
+- **Le statut de cette page est celui d'une piste récente**, explicitement non stabilisée.

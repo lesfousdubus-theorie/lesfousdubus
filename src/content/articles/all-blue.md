@@ -3,10 +3,11 @@ title: "All Blue"
 summary: "Fiche d'identification d'All Blue, la mer légendaire où se rejoignent les poissons des quatre océans, encore jamais observée par les cuisiniers du monde."
 category: "monde-destinations"
 status: "published"
+navigationType: "fiche"
 sources: [1113, 1115, 1114]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 7
 ---
 

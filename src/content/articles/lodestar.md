@@ -3,10 +3,11 @@ title: "Lodestar"
 summary: "Fiche d'identification de Lodestar, l'île-proue située à l'intersection de Grand Line et de Red Line, dernière escale avant Laugh Tale."
 category: "monde-destinations"
 status: "published"
+navigationType: "fiche"
 sources: [968]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 order: 4
 ---
 

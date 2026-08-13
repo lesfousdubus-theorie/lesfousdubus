@@ -4,10 +4,11 @@ summary: "Fiche consacrée à Nika, le dieu du soleil : ce que le manga établit
 seoTitle: "Nika dans One Piece : dieu du soleil, fruit Nika et Luffy | Les Fous du Bus"
 category: "figures-principales"
 status: "published"
+navigationType: "dossier"
 sources: [1018, 1044, 1046, 1069, 1096, 1102, 1117]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 
 order: 20
 related:
@@ -18,6 +19,7 @@ related:
     "kuma-foi-nika",
     "boucaniers",
     "dieux-one-piece",
+    "kaido",
   ]
 ---
 

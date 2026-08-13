@@ -3,11 +3,11 @@ title: "Kozuki Momonosuke"
 summary: "Fiche neutre de Kozuki Momonosuke : héritier du clan des graveurs de Ponéglyphes, envoyé vingt ans dans le futur par Toki, seul à pouvoir entendre Zunesha."
 category: "figures-principales"
 status: "published"
+navigationType: "fiche"
 sources: [819, 963, 973, 1037]
 editorialStatus: "canon"
 certainty: "elevee"
-reviewedUntilChapter: 1188
-parent: "wa-no-kuni"
+reviewedUntilChapter: 1190
 order: 28
 related: ["wa-no-kuni", "kozuki-toki", "poneglyphes", "zunesha-fiche", "nico-robin"]
 ---

@@ -3,13 +3,15 @@ title: "Emeth"
 summary: "Fiche d'analyse consacrée au robot géant Emeth de l'Ancien Royaume, son rôle sur Egghead et ses liens avec Joy Boy."
 category: "technologies-pouvoirs"
 status: "published"
+navigationType: "dossier"
 sources: [1120, 1118, 1176, 523]
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
-reviewedUntilChapter: 1188
+reviewedUntilChapter: 1190
 parent: "vegapunk"
 order: 70
 related: ["voix-de-joy-boy"]
+seoTitle: "Emeth One Piece : robot géant venu du futur | Les Fous du Bus"
 ---
 
 **Résumé** : Le robot géant Emeth découvert à Egghead conserve le Haki de Joy Boy et utilise des technologies d'alimentation et de nœuds de vent (Wind Knot). Selon la théorie des Fous du Bus, Emeth est le dernier *Battle Franky* construit par Franky à la fin de l'aventure et envoyé dans le passé.
@@ -36,3 +38,20 @@ Lors de son sacrifice face au Gorosei sur Egghead, Emeth déroule une corde renf
 L'incursion mystérieuse d'Emeth à Mary Geoise il y a 200 ans prend tout son sens : il s'agissait d'un saut temporel imprécis ou d'une directive d'attente programmée avant la réactivation par le tambour de la libération (Gear 5).
 
 ![Assaut de Mary Geoise par Emeth](/images/threads/emeth-robot-du-futur/img_6.webp)
+
+## 5. Le chapeau de paille géant de la chambre froide
+
+Au chapitre 906, Imu est présenté devant un chapeau de paille géant conservé dans une chambre froide de Mary Geoise. Le site l'a longtemps attribué à Joy Boy. La théorie propose une autre lecture : ce chapeau serait celui d'**Emeth**.
+
+L'argument passe par un parallèle de mise en scène. Au chapitre 555, dans les souvenirs d'Oars Junior, Ace offre au géant un amigasa géant pour sceller leur amitié. On y retrouve la même composition que dans la scène entre Joy Boy et Emeth : un géant antique, un humain qu'il apprécie, un coucher de soleil. Emeth, qui sur Egghead s'exprime comme un enfant et redoute l'abandon, recevrait de la même façon un chapeau confectionné par l'équipage — Usopp à la manœuvre — pour lui signifier qu'il est lui aussi un Mugiwara.
+
+Projeté ensuite deux cents ans en arrière à Mary Geoise, Emeth y perdrait une corne pendant l'assaut, et avec elle son chapeau. Saturne étudie le robot, Imu confisque le chapeau et le conserve : non comme une relique du passé, mais comme le signalement d'un homme qui n'est pas encore né.
+
+**Limites** : l'échelle du chapeau reste indéterminable (on ne connaît ni la taille d'Imu ni la perspective de la case), l'attribution à Emeth n'est étayée par aucun élément explicite du manga, et la scène du chapitre 555 peut n'être qu'un motif récurrent chez Oda plutôt qu'un indice.
+
+## Limites et nuances
+
+- **La ressemblance stylistique avec les Battle Franky est subjective.** Une charpente d'épaulières et des engrenages sont des motifs récurrents du design mécanique d'Oda, présents bien avant Franky.
+- **L'énergie d'Emeth n'est pas datée.** Que la technologie soit incomprise des savants actuels indique une civilisation avancée, pas nécessairement future : c'est aussi la description du Royaume Antique.
+- **Le Haki de Joy Boy scellé dans une corde n'implique pas Franky.** Les Wind Knots existent à Weatheria, donc dans le présent, et rien n'exclut une technique ancienne redécouverte.
+- **Aucun élément ne montre Franky construisant Emeth.** La filiation est entièrement inférée à partir du style et de la fonction.

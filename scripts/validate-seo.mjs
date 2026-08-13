@@ -93,6 +93,18 @@ if (!existsSync(redirectsPath)) {
     if (!source || !destination || status !== '301') {
       errors.push(`Redirection invalide : ${line}`);
     }
+
+    // Les redirections d'assets (og-default.png -> .jpg, etc.) ne visent pas une
+    // page : ni le slash final ni la présence au sitemap ne les concernent.
+    const isAssetRedirect = /\.[a-z0-9]{2,4}$/i.test(destination);
+    if (isAssetRedirect) {
+      if (sources.has(source)) errors.push(`Source de redirection dupliquée : ${source}`);
+      sources.add(source);
+      if (!existsSync(join(DIST, destination.replace(/^\//, '')))) {
+        errors.push(`Cible de redirection absente de dist/ : ${line}`);
+      }
+      continue;
+    }
     if (destination !== '/' && !destination.endsWith('/')) {
       errors.push(`La destination doit utiliser le slash final : ${line}`);
     }
@@ -112,6 +124,42 @@ if (!existsSync(redirectsPath)) {
       }
     }
   }
+}
+
+// --- Longueur des <title> ---------------------------------------------------
+// Google tronque autour de 60-65 caractères, et un titre trop court gâche de
+// l'espace en SERP. 24 pages dépassent encore le seuil (titres de chapitres
+// longs, essentiellement) : on n'échoue donc pas dessus, mais on interdit toute
+// régression au-delà du niveau atteint le 13/08/2026.
+const TITLE_MAX = 65;
+const TITLE_MIN = 25;
+const TITLE_LONG_BUDGET = 24;
+
+const titleIssues = { long: [], short: [] };
+for (const file of walk(DIST).filter((f) => f.endsWith('.html'))) {
+  const match = readFileSync(file, 'utf8').match(/<title>([\s\S]*?)<\/title>/);
+  if (!match) continue;
+  const title = match[1].replace(/&#39;/g, "'").trim();
+  const route = routeFor(file);
+  if (title.length > TITLE_MAX) titleIssues.long.push({ route, len: title.length });
+  else if (title.length < TITLE_MIN) titleIssues.short.push({ route, len: title.length });
+}
+
+if (titleIssues.short.length) {
+  errors.push(
+    `${titleIssues.short.length} <title> sous ${TITLE_MIN} caractères : ` +
+      titleIssues.short.map((t) => `${t.route} (${t.len})`).join(', '),
+  );
+}
+if (titleIssues.long.length > TITLE_LONG_BUDGET) {
+  errors.push(
+    `${titleIssues.long.length} <title> dépassent ${TITLE_MAX} caractères, ` +
+      `au-delà du budget de ${TITLE_LONG_BUDGET}. Raccourcir le seoTitle des pages ajoutées.`,
+  );
+} else if (titleIssues.long.length) {
+  console.warn(
+    `\n⚠️  ${titleIssues.long.length}/${TITLE_LONG_BUDGET} <title> encore au-dessus de ${TITLE_MAX} caractères.`,
+  );
 }
 
 if (errors.length) {
