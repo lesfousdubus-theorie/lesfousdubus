@@ -42,3 +42,11 @@ Imu semble actuellement "rendre" ou réactiver l'autorité martiale aux descenda
 Les anciennes représentations graphiques de Joy Boy le montrent souvent avec des armes ou des objets singuliers. Grâce aux capacités d'imagination illimitée du Gear 5, Luffy est en mesure de matérialiser ce dont il a besoin pour répondre à la coalition.
 
 ![Armes de Luffy Gear 5](/images/threads/coalition-des-20-rois/img_8.webp)
+
+## Limites et nuances
+
+- **Le récit de Vegapunk situe explicitement la coalition dans le passé.** L'inverser suppose déjà acquise la thèse du Siècle oublié au présent.
+- **« Vingt rois » n'est pas nécessairement « vingt familles fondatrices ».** L'assimilation est cohérente mais reste une lecture.
+- **Les épées plantées autour du Trône Vide** admettent une valeur symbolique — un serment d'allégeance — sans désigner les porteurs actuels.
+- **La nomination de Garling montre la continuité des lignées nobles**, pas que les Chevaliers Divins soient les vingt rois du récit antique.
+- **Le chapitre 1189 renforce le lien famille/arme mais ne le tranche pas** : il établit des trésors héréditaires, sans dire que chaque chevalier incarne un roi fondateur.

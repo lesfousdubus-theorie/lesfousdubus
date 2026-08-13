@@ -42,3 +42,10 @@ Il faut néanmoins conserver la bonne hiérarchie des preuves : un choix de cast
 - [Monkey D. Luffy](/theorie/luffy)
 - [Emeth](/theorie/emeth-futur)
 - [Une communication à travers le temps](/theorie/communication-temps)
+
+## Limites et nuances
+
+- **C'est un choix de production, pas un élément du manga.** L'anime et le manga sont des œuvres distinctes ; un casting n'engage pas le récit d'Oda.
+- **Le clin d'œil se suffit à lui-même.** Confier cette voix à la première interprète de Luffy est un hommage aux vingt-cinq ans de la série, lisible sans aucune hypothèse temporelle.
+- **L'implication d'Oda dans ce choix est rapportée, non documentée.**
+- **Un indice de mise en scène ne peut pas servir de preuve.** Cette page est classée « interprétation » précisément pour cette raison : elle illustre la lecture, elle ne la démontre pas.

@@ -42,3 +42,10 @@ Chaque membre de l'équipage deviendra une figure du Siècle oublié :
 - Brook = transmission de Binks no Sake
 - Jinbei = capitaine du lien entre surface et mer
 
+
+## Limites et nuances
+
+- **Barbe Blanche ne nomme personne.** « Un homme viendra défier le monde » est une prophétie ouverte, que le récit peut accomplir sans boucle temporelle.
+- **La phrase de Rayleigh sur le destin est une réplique de personnage**, pas une règle du monde.
+- **Les parallèles avec Frodon et Sun Wukong sont des clés de lecture externes.** Ils éclairent la construction du héros ; ils ne disent rien de la chronologie de *One Piece*.
+- **La volonté héritée fonctionne parfaitement en lecture classique** : une transmission de génération en génération depuis un passé réel, ce qui est d'ailleurs sa formulation dans le manga.

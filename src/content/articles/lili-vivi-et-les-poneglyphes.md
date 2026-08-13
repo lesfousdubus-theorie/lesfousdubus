@@ -66,3 +66,11 @@ Après l'assassinat de Cobra par Imu, Vivi est l'héritière naturelle du trône
 La théorie propose que le retour de Vivi à Alabasta, après la chute du Gouvernement Mondial, produise exactement la figure historique que le manga décrit sous le nom de Lili. Considérons le portrait complet : reine d'Alabasta, membre du clan du D., opposée frontalement à Imu, impliquée dans la création et la dispersion des Ponéglyphes, absente de son royaume pendant l'événement décisif qui a remodelé le monde. Chacun de ces traits appartient à Lili. Et chacun de ces traits appartient, ou appartiendra, à Vivi.
 
 Lili ne serait donc pas la femme dont Vivi répète le destin par un caprice de la génétique. Lili serait le nom donné plus tard — par les historiens, par la mémoire collective, par les Ponéglyphes eux-mêmes — à l'histoire que Nefertari Vivi est encore en train d'écrire. La princesse d'Alabasta ne marche pas dans les pas de son ancêtre : elle trace les pas dans lesquels l'Histoire croira voir une ancêtre.
+
+## Limites et nuances
+
+- **La ressemblance physique est un argument faible chez Oda.** Le manga multiplie les sosies sans lien temporel (Bellamy et Doflamingo, les nombreux visages récurrents des foules) ; une même apparence entre Lili et Vivi peut n'être qu'un trait de famille.
+- **Lili est mentionnée au passé par des sources internes au monde.** Faire d'elle une figure future suppose que ces mentions soient des reconstructions postérieures, ce qui reste à démontrer.
+- **Vivi n'a jamais été montrée en lien avec les Ponéglyphes.** Son implication dans leur création ou leur dispersion est entièrement déduite du parallèle avec Lili, pas d'une scène.
+- **Le retour de Vivi sur le trône n'est pas acquis.** Elle a quitté Alabasta, se trouve auprès de Morgans, et le récit peut très bien lui réserver une trajectoire non royale.
+- **Cette lecture dépend entièrement du mécanisme temporel de la théorie.** Si le Siècle oublié n'est pas le présent, l'ensemble de la démonstration tombe.

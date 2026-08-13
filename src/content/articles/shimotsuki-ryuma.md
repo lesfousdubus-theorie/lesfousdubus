@@ -29,3 +29,10 @@ Son corps momifié fut dérobé par Gekko Moria lors de l'arc Thriller Bark. Son
 Ryuma n'est pas seulement un ancêtre honoré : dans la théorie, sa légende s'écrit au présent. Zoro endosse progressivement ses attributs (borgnitude, défaite du dragon, épée unique), jusqu'à devenir lui-même le Dieu de la Lame. Le mécanisme temporel se referme par la transmission de Shusui.
 
 L'article de démonstration Shimotsuki Ryuma et Roronoa Zoro détaille cette continuité.
+
+## Limites et nuances
+
+- **Hyogoro et Kawamatsu parlent de ressemblance, pas d'identité.** Ils citent Ryuma comme un modèle pour Zoro, ce qui est un hommage explicite plutôt qu'un indice de boucle temporelle.
+- **Ushimaru partage cette ressemblance**, ce qui suggère un trait de lignée à Wa no Kuni plutôt qu'un individu unique.
+- **Le corps de Ryuma est présent et daté.** Sa dépouille existe à Thriller Bark ; en faire un Zoro futur exige un déplacement dans le temps que rien ne montre.
+- **La transmission de Shusui s'explique sans la théorie** : c'est le sabre d'un héros national, récupéré puis rendu à Wa no Kuni.

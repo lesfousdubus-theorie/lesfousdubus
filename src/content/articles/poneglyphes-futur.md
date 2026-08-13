@@ -36,3 +36,11 @@ Les Ponéglyphes sont une « mémoire de l'avenir », une lettre du futur adress
 - Les prophéties sont précises : elles sont écrites après coup
 - Imu ne comprend pas pourquoi les événements se reproduisent
 
+
+## Limites et nuances
+
+- **L'indestructibilité n'implique pas un matériau futur.** Le manga présente d'autres substances qu'aucun savant contemporain ne reproduit, sans les rattacher au futur.
+- **L'ignorance de Vegapunk est un argument par le silence.** Elle indique une technologie perdue, ce qui décrit tout aussi bien le Royaume Antique.
+- **Que Robin lise sa propre écriture future est une inversion élégante mais invérifiable.** Le récit établit seulement qu'elle a appris une langue ancienne à Ohara.
+- **Le rôle prêté aux Kozuki repose sur une extrapolation.** Leur maîtrise de la taille des Ponéglyphes est établie ; leur collaboration avec Robin ne l'est pas.
+- **Cette page dépend entièrement de la thèse du Siècle oublié au présent** : elle n'a pas de valeur démonstrative indépendante.

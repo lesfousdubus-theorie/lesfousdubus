@@ -47,3 +47,10 @@ L'argument passe par un parallèle de mise en scène. Au chapitre 555, dans les 
 Projeté ensuite deux cents ans en arrière à Mary Geoise, Emeth y perdrait une corne pendant l'assaut, et avec elle son chapeau. Saturne étudie le robot, Imu confisque le chapeau et le conserve : non comme une relique du passé, mais comme le signalement d'un homme qui n'est pas encore né.
 
 **Limites** : l'échelle du chapeau reste indéterminable (on ne connaît ni la taille d'Imu ni la perspective de la case), l'attribution à Emeth n'est étayée par aucun élément explicite du manga, et la scène du chapitre 555 peut n'être qu'un motif récurrent chez Oda plutôt qu'un indice.
+
+## Limites et nuances
+
+- **La ressemblance stylistique avec les Battle Franky est subjective.** Une charpente d'épaulières et des engrenages sont des motifs récurrents du design mécanique d'Oda, présents bien avant Franky.
+- **L'énergie d'Emeth n'est pas datée.** Que la technologie soit incomprise des savants actuels indique une civilisation avancée, pas nécessairement future : c'est aussi la description du Royaume Antique.
+- **Le Haki de Joy Boy scellé dans une corde n'implique pas Franky.** Les Wind Knots existent à Weatheria, donc dans le présent, et rien n'exclut une technique ancienne redécouverte.
+- **Aucun élément ne montre Franky construisant Emeth.** La filiation est entièrement inférée à partir du style et de la fonction.

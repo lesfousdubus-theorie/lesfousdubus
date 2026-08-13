@@ -38,3 +38,10 @@ Celui qui souhaite devenir un grand et fier guerrier des mers aurait inspiré to
 
 **Statut** : Extension éditoriale / hypothèse secondaire. Non centrale dans la théorie principale.
 
+
+## Limites et nuances
+
+- **La fresque peut représenter un passé mythifié.** Les textes sacrés décrivent volontiers une alliance fondatrice ; y voir un dessin du futur suppose déjà admise la thèse du Siècle oublié au présent.
+- **La déclaration de Rip peut être inexacte.** Qu'Elbaf « ne se soit jamais alliée » est une affirmation de personnage, pas un fait établi, et l'histoire d'Elbaf nous est encore largement inconnue.
+- **Une prophétie vérifiée ne prouve pas un aller-retour temporel.** Le procédé le plus courant, chez Oda comme ailleurs, reste la prophétie ancienne qui s'accomplit — sans que le texte vienne du futur.
+- **Le lien avec Usopp est explicitement secondaire** et ne doit pas être lu comme un appui de la thèse principale.

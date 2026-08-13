@@ -42,3 +42,11 @@ Roger et Luffy partagent mot pour mot le même "rêve secret" (le fameux vœu qu
 Si Imu a longtemps cru que Gol D. Roger était le Joy Boy annoncé par la prophétie, alors la mort de Roger à Loguetown explique parfaitement pourquoi Imu pensait que *"Joy Boy était mort"*, avant de réaliser avec horreur à Marineford et Egghead que le véritable héritier arrive.
 
 ![Discours d'Imu sur Joyboy](/images/threads/silhouette-scan-1181-roger/img_7.webp)
+
+## Limites et nuances
+
+- **Une silhouette est par définition ambiguë.** La lecture proposée repose sur une posture et une découpe d'ombre, éléments que le dessin laisse volontairement indéterminés.
+- **La lecture majoritaire y voit Joy Boy**, et rien n'exclut qu'elle soit la bonne.
+- **Le secret entretenu sur la jeunesse de Roger n'est pas un argument.** Il rend l'hypothèse possible, il ne la soutient pas.
+- **L'écho des mêmes paroles peut être un procédé de mise en scène.** Oda fait fréquemment rimer les répliques de personnages différents pour souligner une filiation d'esprit.
+- **Cette page est classée « nouvelle piste »** : elle est explicitement instable et pourrait être infirmée par la planche suivante.

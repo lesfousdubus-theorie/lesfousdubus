@@ -39,3 +39,10 @@ Dire que Luffy n'est pas Nika revient à dire que Kuma avait tort. Et dans un ma
 ## Le Christ de One Piece
 
 Kuma est un homme d'église, figure christique. Il meurt rempli d'espoir mais d'incertitude. C'est dans le doute que se manifeste la foi. Sa résurrection protectrice sur Sabaody et les deux ans d'entraînement accordés aux Mugiwara permettront à Nika d'exister.
+
+## Limites et nuances
+
+- **« Le crime des boucaniers » n'est pas défini par le manga.** L'identifier à la création de Nika est une hypothèse ; le texte laisse la question ouverte.
+- **La réaction de Saturn admet d'autres causes.** Sa peur peut viser la contagion politique d'un symbole, sans supposer qu'une foi puisse littéralement créer un dieu.
+- **La foi de Kuma peut se lire comme un trait de personnage** plutôt que comme un mécanisme du monde : sa constance est admirable sans être surnaturelle.
+- **Le lien entre foi et éveil du fruit reste spéculatif.** Le manga ne formule aucune règle reliant la croyance d'un individu à la manifestation de Nika.

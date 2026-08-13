@@ -33,3 +33,11 @@ Lili a écrit une lettre à sa descendance et dispersé les Ponéglyphes à trav
 L'opening 28 montre Vivi avec les Ponéglyphes qui s'éparpillent derrière elle, suggérant son rôle futur.
 
 L'article de démonstration _Vivi est Lili : la reine qui dispersera les Ponéglyphes_ détaille cette analyse en cinq preuves.
+
+## Limites et nuances
+
+- **La couleur des cheveux est un indice fragile.** Oda l'utilise librement, et la ressemblance entre Lili et Vivi peut relever de la simple hérédité au sein d'une même dynastie.
+- **Deux disparitions ne font pas une identité.** Que Lili n'ait jamais reparu de Mary Geoise et que Vivi ait pris la mer sont des faits sans lien établi.
+- **Le futur prêté à Koza est une hypothèse.** Son anoblissement est attesté ; son accession au trône ne l'est pas.
+- **Aucune scène ne relie Vivi aux Ponéglyphes.** Son rôle dans leur dispersion est déduit du portrait de Lili, non observé.
+- **Le manga parle de Lili au passé** ; en faire une figure future exige que ces mentions soient des reconstructions ultérieures.

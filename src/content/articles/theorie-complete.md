@@ -81,3 +81,10 @@ Le One Piece serait **l'histoire que nous lisons depuis le chapitre 1**. Quand l
 3. **Elle justifie les parallèles** : Les similarités ne sont pas des coïncidences, ce sont les mêmes personnes
 4. **Elle explique les prophéties** : Elles sont précises car écrites après coup
 5. **Elle donne du sens au titre** : "Le Siècle oublié est le présent"
+
+## Limites et nuances
+
+- **Cette page est une synthèse, pas une démonstration.** Chaque maillon est argumenté dans son propre dossier, avec ses réserves ; le résumé ci-dessus en gomme nécessairement les nuances.
+- **Le mécanisme temporel reste le point faible assumé.** Le manga atteste la transmission d'information (Ponéglyphes, préscience, témoignages écrits) et un unique déplacement vers le futur ; il n'a jamais montré d'envoi vers le passé.
+- **Plusieurs éléments résistent encore**, notamment les datations internes du Siècle oublié et la matérialité des vestiges antiques.
+- **La théorie est falsifiable, et c'est voulu** : une planche établissant clairement un Joy Boy distinct de Luffy, ou une datation incontestable des Ponéglyphes, suffirait à la renverser.

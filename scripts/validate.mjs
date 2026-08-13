@@ -364,6 +364,37 @@ for (const file of files) {
   });
 }
 
+// --- Règles éditoriales -----------------------------------------------------
+// La théorie se distingue d'une spéculation ordinaire par le fait qu'elle
+// s'expose à l'objection. Un article interprétatif qui n'énonce jamais ses
+// limites est un défaut de fond, pas de forme : on le refuse.
+const INTERPRETIVE = new Set([
+  'hypothese-centrale',
+  'hypothese-secondaire',
+  'interpretation',
+  'nouvelle-piste',
+]);
+const LIMIT_HEADINGS =
+  /^##+\s+(Limites|Points encore à expliquer|Questions non résolues|Ce que le manga ne tranche pas)/im;
+
+for (const file of files) {
+  const rel = relative(CONTENT_DIR, file).split(sep).join('/');
+  if (!rel.startsWith('articles/')) continue;
+  const raw = readFileSync(file, 'utf8');
+  const parsed = parseFrontmatter(raw);
+  if (!parsed) continue;
+  const { data, body } = parsed;
+  if (!INTERPRETIVE.has(data.editorialStatus)) continue;
+
+  if (!LIMIT_HEADINGS.test(body)) {
+    errors.push(
+      `${rel} : article "${data.editorialStatus}" sans section de limites. ` +
+        `Ajouter "## Limites et nuances" (ou "## Points encore à expliquer").`,
+    );
+  }
+
+}
+
 if (errors.length > 0) {
   console.error(`\n❌ Validation du contenu : ${errors.length} erreur(s)\n`);
   for (const e of errors) console.error(`  • ${e}`);

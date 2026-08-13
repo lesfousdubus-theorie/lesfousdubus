@@ -39,3 +39,10 @@ En touchant St. Saturn à Egghead, Catarina Devon a copié l'apparence physique 
 ![Infiltration Mary Geoise](/images/threads/barbe-noire-davy-jones/img_4.webp)
 ![Trone vide Teach](/images/threads/barbe-noire-davy-jones/img_5.webp)
 ![Barbe noire vainqueur](/images/threads/barbe-noire-davy-jones/img_6.webp)
+
+## Limites et nuances
+
+- **Le titre de « Davy Jones » n'est jamais attribué à Teach.** Le rapprochement repose sur un faisceau (la ruche, le navire de Xebec, l'initiale D.), pas sur une désignation explicite.
+- **« Le monde » est une réponse ambiguë.** Elle peut décrire une ambition de domination sans impliquer le Trône Vide ni une reprise du projet de Rocks.
+- **Rocks et Teach peuvent simplement se ressembler.** Oda construit souvent des échos entre générations de pirates sans qu'un titre se transmette.
+- **La lecture dépend du mécanisme temporel de la théorie.** Si les légendes du Siècle oublié décrivent bien un passé, Davy Jones a existé et Teach n'en est qu'un héritier symbolique.

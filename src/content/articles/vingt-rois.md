@@ -8,7 +8,7 @@ editorialStatus: "hypothese-centrale"
 certainty: "elevee"
 reviewedUntilChapter: 1190
 parent: "gouvernement-mondial"
-sources: [906, 1115, 1127, 1170]
+sources: [906, 1115, 1127, 1170, 1189]
 order: 63
 related: ["vingt-rois-chevaliers-divins", "chevaliers-divins", "gouvernement-mondial", "nefertari-vivi", "guerre-finale"]
 ---
@@ -47,6 +47,14 @@ Ces dix-neuf familles seraient celles des **Chevaliers Divins et du Gorosei**. S
 
 L'objection « ce sont des chevaliers, pas des rois » trouve sa réponse dans la politique de Garling : les nouveaux ordres du chapitre 1127 consisteraient à renvoyer les familles fondatrices sur leurs trônes natals pour lever des armées contre la coalition de Joy Boy. Les épées d'Imu redeviendraient des rois, et la guerre du Siècle oublié pourrait commencer.
 
+### Ce que le chapitre 1189 confirme : les armes des fondateurs
+
+La métaphore des « épées d'Imu » s'est révélée littérale. Le chapitre 1189 établit que les armes maniées par les Chevaliers Divins sont **celles des vingt rois fondateurs** : déposées devant le Trône Vide au terme de la guerre, enchantées, puis rendues à chaque famille comme trésor héréditaire. Imu remet ainsi l'épée **Gram** à Sommers et la lance **Longinus** à Killingham — Gram appartenant à la famille **Shepherd**, Longinus aux **Limosives**. Par l'*Omen*, leurs porteurs les emploient comme Imu lui-même.
+
+C'est un appui direct pour cette page. Le lien entre « famille fondatrice » et « Chevalier Divin » n'est plus seulement déduit de silhouettes encapuchonnées du chapitre 906 : il est matérialisé par un objet transmis, qui rattache nommément un chevalier en exercice à une lignée fondatrice. Le décompte des vingt familles gagne au passage un second instrument de vérification — non plus seulement les noms révélés, mais les armes qui réapparaissent.
+
+Deux prudences, toutefois. Le chapitre parle des armes déposées par les fondateurs sans donner leur nombre exact, et rien n'impose une arme par famille. Et la traduction officielle n'est pas encore parue : les graphies (*Omen*, Limosives) comme le détail du mécanisme de transmission restent à confirmer.
+
 L'argument décisif vient de ce que **Scopper Gaban ignorait** : voir [Scopper Gaban](/theorie/scopper-gaban) et [Chevaliers Divins](/theorie/chevaliers-divins).
 
 ## Limites et nuances
@@ -54,6 +62,7 @@ L'argument décisif vient de ce que **Scopper Gaban ignorait** : voir [Scopper G
 - Que quatorze familles soient nommées n'implique pas que les six autres soient réservées à des révélations majeures : Oda peut ne jamais les détailler.
 - L'assimilation des statues du chapitre 906 à des Chevaliers Divins repose sur une lecture de silhouettes encapuchonnées.
 - « Joy Boy a affronté les vingt rois » est un récit rapporté par des textes anciens, pas une scène montrée.
+- Le chapitre 1189 ne dit pas combien d'armes furent déposées devant le Trône Vide : rien n'établit une arme par famille fondatrice, ni que toutes aient été rendues.
 
 ## Articles liés
 

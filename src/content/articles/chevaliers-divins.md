@@ -4,7 +4,7 @@ summary: "Le bras armé direct d'Imu, commandé par Figarland Garling. La théor
 category: "gouvernement-mondial"
 status: "published"
 navigationType: "dossier"
-sources: [906, 1086, 1087, 1096, 1127, 1169, 1170, 1183]
+sources: [906, 1086, 1087, 1096, 1127, 1169, 1170, 1183, 1189]
 editorialStatus: "hypothese-centrale"
 certainty: "elevee"
 reviewedUntilChapter: 1190
@@ -56,12 +56,21 @@ C'est ce qui expliquerait la mission de Chamrock et Ginko sur Elbaf : faire de L
 
 Gaban conclut en disant à Shanks — lui-même Figarland — d'arrêter de se torturer sur ses origines : « Tu as forcément un rôle à jouer. »
 
+### Les épées d'Imu au sens propre (chapitre 1189)
+
+Le surnom « les épées d'Imu » s'est avéré descriptif. Au chapitre 1189, Imu distribue aux Chevaliers Divins des armes qui sont celles des **vingt rois fondateurs** : déposées devant le Trône Vide après la guerre, enchantées, puis rendues à chaque famille comme trésor héréditaire. **Gram** revient ainsi à Sommers, **Longinus** à Killingham — la première appartenant aux **Shepherd**, la seconde aux **Limosives** — et l'*Omen* permet à leurs porteurs de s'en servir comme Imu lui-même.
+
+Cela renforce la lecture ci-dessus : un Chevalier Divin en exercice est rattaché nommément à une famille fondatrice par un objet transmis de génération en génération. « Chevalier » et « héritier d'un roi fondateur » cessent d'être deux catégories distinctes.
+
+Mais cela **affaiblit l'argument par le silence de Gaban**, et il faut le dire clairement. Si ces armes datent de la fondation du Gouvernement, elles appartiennent bien au Siècle oublié — donc à ce que le Rio Ponéglyphe est censé raconter. La surprise de Gaban devient alors plus difficile à expliquer par « les Chevaliers Divins n'existaient pas à l'époque » : il faut supposer qu'il ignorait ce qu'étaient devenues les armes, ou que le message de Laugh Tale ne descend pas à ce niveau de détail. L'hypothèse reste tenable, elle n'est plus aussi économique.
+
 ## Limites et nuances
 
 - L'argument repose sur un **silence**. Le Rio Ponéglyphe peut très bien ne pas détailler la structure militaire du Gouvernement, ou Gaban peut avoir oublié, ou Oda peut simplement ne pas avoir encore écrit cette information.
 - La surprise de Gaban peut porter sur la *nature* des Chevaliers (des Dragons Célestes réellement puissants) plutôt que sur leur *existence*.
 - « Reformer les Vingt Rois » est une extrapolation à partir d'une seule réplique sur de « nouveaux ordres ».
 - Le parallèle Dressrosa est réel mais isolé : rien ne dit qu'il soit un modèle généralisable.
+- Les armes des fondateurs (chapitre 1189) datent du Siècle oublié : leur existence rend la surprise de Gaban plus coûteuse à expliquer, et fragilise d'autant l'argument par le silence.
 
 ## Points encore à expliquer
 

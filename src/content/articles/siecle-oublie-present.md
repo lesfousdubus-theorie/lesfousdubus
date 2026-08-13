@@ -37,3 +37,11 @@ Les steppes indestructibles taillées par le clan Kozuki sont gravées par Nico 
 Pourquoi envoyer des messages dans le passé ? Pour que les nations (Hommes-Poissons, Géants d'Elbaf, Mink, Wano) construisent les outils nécessaires (Noah, Pluton, frontières fermées) afin d'être prêts le jour J.
 
 ![L'arche Noah et les hommes poissons](/images/threads/les-bases-du-siecle-oublie/img_4.webp)
+
+## Limites et nuances
+
+- **C'est le postulat de la théorie, non une conclusion démontrée.** Tout le reste du site en dépend ; cette page doit donc être lue comme la position de départ, pas comme une preuve.
+- **Le manga n'a jamais montré d'envoi d'objet ou de message vers le passé.** Le seul déplacement temporel attesté, le Toki Toki no Mi, ne fonctionne que vers le futur.
+- **Les Ponéglyphes sont datés d'environ huit cents ans par des sources internes** (Robin, Vegapunk) ; les considérer comme futurs suppose que ces datations soient erronées ou trompeuses.
+- **L'inversion explique beaucoup, ce qui est aussi sa faiblesse.** Une hypothèse capable d'absorber n'importe quel indice devient difficile à réfuter, donc difficile à confirmer.
+- **Une lecture classique reste possible** : un royaume antique réellement passé, dont l'histoire rime avec le présent parce qu'Oda construit des échos.

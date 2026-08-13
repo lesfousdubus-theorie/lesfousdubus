@@ -33,3 +33,11 @@ En tentant d'effacer le nom de Nika, d'interdire l'étude des Ponéglyphes et de
 
 ![Imu et le Chapeau de paille](/images/threads/la-prescience-et-imu/img_5.webp)
 ![Le garcon heureux Joyboy](/images/threads/la-prescience-et-imu/img_6.webp)
+
+## Limites et nuances
+
+- **La préscience n'est pas attestée chez Imu.** Aucune planche ne lui prête de vision ; l'ensemble repose sur un parallèle avec Madame Shirley.
+- **Les indices graphiques sont faibles.** Une silhouette filiforme et des yeux marqués sont des choix esthétiques fréquents chez Oda et ne constituent pas un indice de pouvoir partagé.
+- **Les prédictions de Shirley ne sont pas infaillibles.** Elle se trompe sur l'auteur de la destruction de l'île des Hommes-Poissons, ce qui affaiblit le modèle utilisé ici.
+- **La « malédiction » décrite fonctionne sans préscience.** Un régime qui réprime une croyance en fabrique souvent le martyre : le mécanisme n'exige aucune vision de l'avenir.
+- **Le statut de cette page est celui d'une piste récente**, explicitement non stabilisée.

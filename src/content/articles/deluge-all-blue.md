@@ -53,3 +53,11 @@ La destruction des parois mondiales et la montée des eaux qui en découle fusio
 
 ![Creation de All Blue](/images/threads/le-deluge-et-all-blue/img_6.webp)
 ![Effondrement du monde](/images/threads/le-deluge-et-all-blue/img_7.webp)
+
+## Limites et nuances
+
+- **Les 200 mètres peuvent être une approximation de Vegapunk.** Il transmet un message dans l'urgence, à partir de données incomplètes ; l'incohérence relevée peut tenir à sa source plutôt qu'à la chronologie du monde.
+- **Une montée des eaux passée reste défendable.** Huit cents ans de sédimentation, de courants et de reliefs sous-marins peuvent suffire à rendre des vestiges introuvables, sans qu'il faille déplacer le cataclysme dans le futur.
+- **Le décompte des « 199 tirs » suppose beaucoup.** Il faut admettre que Lulusia a fait monter le niveau d'un mètre, que la Mother Flame soit réutilisable à l'identique, et que l'objectif visé soit bien de 200 mètres — trois hypothèses dont aucune n'est établie.
+- **All Blue n'a jamais été présenté comme le produit d'un cataclysme.** Le rêve de Sanji est décrit comme une mer où les poissons des quatre océans se rencontrent ; en faire le résultat d'un déluge mondial est une lecture de la théorie, pas une donnée du manga.
+- **Le calendrier reste indéterminé.** Même en acceptant le processus, rien n'indique qu'il s'achève pendant l'arc final plutôt que sur une échelle de plusieurs siècles.
