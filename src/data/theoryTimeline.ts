@@ -408,7 +408,10 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     status: 'central',
     image: images.roger,
     imageAlt: 'Gol D. Roger avant le lancement de la Grande Ère',
-    links: [{ label: 'Gol D. Roger', href: '/theorie/gol-d-roger' }],
+    links: [
+      { label: 'Gol D. Roger', href: '/theorie/gol-d-roger' },
+      { label: 'Scopper Gaban', href: '/theorie/scopper-gaban' },
+    ],
   },
   {
     id: 'execution-roger',

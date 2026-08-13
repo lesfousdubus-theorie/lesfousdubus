@@ -46,7 +46,7 @@ Ces dix-neuf familles seraient celles des **Chevaliers Divins et du Gorosei**. S
 
 L'objection « ce sont des chevaliers, pas des rois » trouve sa réponse dans la politique de Garling : les nouveaux ordres du chapitre 1127 consisteraient à renvoyer les familles fondatrices sur leurs trônes natals pour lever des armées contre la coalition de Joy Boy. Les épées d'Imu redeviendraient des rois, et la guerre du Siècle oublié pourrait commencer.
 
-L'argument décisif vient de ce que **Scopper Gaban ignorait** : voir [Chevaliers Divins](/theorie/chevaliers-divins).
+L'argument décisif vient de ce que **Scopper Gaban ignorait** : voir [Scopper Gaban](/theorie/scopper-gaban) et [Chevaliers Divins](/theorie/chevaliers-divins).
 
 ## Limites et nuances
 

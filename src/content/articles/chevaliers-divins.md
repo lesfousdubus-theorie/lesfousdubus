@@ -32,6 +32,8 @@ La théorie soutient que les Chevaliers Divins, tels qu'on les connaît, **n'exi
 
 ### La preuve par Scopper Gaban
 
+Voir la fiche dédiée : [Scopper Gaban](/theorie/scopper-gaban).
+
 C'est l'argument central, et il est de nature négative — il repose sur ce qu'un personnage **ignore**.
 
 Scopper Gaban est un témoin de Laugh Tale. Il a tout appris sur l'histoire du monde : la vérité du Siècle oublié, les Armes antiques, la volonté de Joy Boy. Si les Chevaliers Divins avaient joué un rôle il y a huit cents ans, le Rio Ponéglyphe le lui aurait appris.
