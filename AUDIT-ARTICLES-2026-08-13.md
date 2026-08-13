@@ -88,15 +88,58 @@ finit par être désactivée.
 
 ---
 
+## Corrigé depuis (second passage)
+
+### 4. Dix-sept articles sans aucun lien entrant
+
+**Rectification d'un chiffre de ce rapport.** J'avais annoncé 38 orphelins : le
+compte ne portait que sur les liens en corps de texte et ignorait le champ
+`related`, pourtant rendu au lecteur par `RelatedArticles.astro`. Le nombre réel
+d'articles que **rien** ne référence était de **17** : `kaido`, `davy-jones`,
+`lodestar`, `zou-minks`, `poseidon`, `all-blue`, `gunko`, `chambre-fleurie`,
+`jour-du-serment`, `one-piece-histoire`, `tequila-wolf`, `zoro`, `grand-line`,
+`blue-star`, `imu-avenir`, `road-poneglyphes`, `lili-vivi-et-les-poneglyphes`.
+
+Tous reçoivent désormais des liens depuis les fiches qui traitent réellement du
+sujet. Vérifié sur le HTML généré : 1 à 4 liens contextuels dans `<main>` par
+article, hors sidebar. `validate.mjs` refuse maintenant tout article que rien ne
+référence.
+
+### 5. Un bug du validateur, révélé au passage
+
+`parseFrontmatter` (dans `validate.mjs`) ne lisait pas les listes YAML étalées
+sur plusieurs lignes — la forme utilisée par une quarantaine d'articles :
+
+```yaml
+related:
+  [
+    "joy-boy",
+  ]
+```
+
+Leur champ `related` était donc vu comme **vide**, et les références qu'il
+contenait n'étaient jamais validées. Corrigé. Cela a mis au jour trois défauts
+latents : 7 fichiers avec une clé `related` **dupliquée** (la seconde écrasant
+silencieusement la première), 3 listes contenant des doublons, et des références
+jamais contrôlées.
+
+### 6. Propagation des chapitres vers les articles
+
+`scripts/impact-chapitre.mjs` (`npm run impact 1191`) liste, à la sortie d'un
+chapitre, les articles à relire. Le recoupement de termes est **pondéré par leur
+rareté** : un mot présent dans 90 % du corpus (« Luffy », « Ponéglyphes »,
+« limites ») ne discrimine rien et est écarté. Sur le chapitre 1190, la sortie
+tient en 7 pistes exploitables au lieu des 77 d'une version naïve.
+
+Le script signale en particulier les articles dont le `reviewedUntilChapter` est
+supérieur ou égal au chapitre alors qu'ils ne le citent nulle part — exactement
+le défaut relevé au point 1.
+
+---
+
 ## Points restants, non corrigés
 
 Ils demandent un arbitrage éditorial qui vous revient.
-
-**38 articles sur 105 ne sont liés depuis aucun autre article.** `alabasta`,
-`davy-jones`, `kaido`, `brook-dozan`, `gunko`, `all-blue`… Ils restent
-accessibles par la navigation et la recherche, mais ne reçoivent aucun lien
-contextuel. C'est une perte pour le lecteur qui suit un raisonnement, et pour le
-référencement. À l'inverse, `imu-nerona` reçoit 9 liens entrants.
 
 **Dix articles canon sont très courts** (114 à 174 mots) : `gunko`, `red-line`,
 `road-poneglyphes`, `rocks-xebec`, `lodestar`, `nefertari-vivi`, `grand-line`,

@@ -170,5 +170,16 @@ et resteraient à contrôler depuis un poste connecté :
 6. Raccourcissement du gabarit de titre des chapitres (15 min)
 7. Montées de version mineures (30 min, à tester)
 
-Les points 1 à 4 sont sans risque et peuvent être appliqués immédiatement sur
-votre accord.
+**Mise à jour du 13/08/2026 — points 1 à 5 appliqués.** `og-default` en JPEG
+(898 → 85 KB) avec redirection 301, `icon-512.png` recompressé (217 → 53 KB),
+`scripts/prune-dist.mjs` (−563 KB : UI Pagefind et polices `.woff`, avec
+réécriture préalable du repli `@font-face`), `public/_headers` (cache immutable
+sur les assets hashés + en-têtes de sécurité), et `validate.mjs` déplacé en tête
+du script `build`. `dist/` passe de 23 à 21 Mo.
+
+Le workflow CI est prêt dans **`docs/ci/ci.yml`** : le jeton de cette session n'a
+pas la permission `workflows`, il doit être déplacé à la main vers
+`.github/workflows/ci.yml`.
+
+Restent ouverts : le raccourcissement du gabarit de titre des chapitres (point 7)
+et les montées de version (point 8).
