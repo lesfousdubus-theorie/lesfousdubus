@@ -17,7 +17,7 @@ related:
     "shandora-shandias",
     "boucaniers",
     "lunariens",
-    "elbaf-halley",
+    "elbaf-harley",
     "zunesha-fiche",
     "guerre-finale",
   ]

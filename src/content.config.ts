@@ -81,6 +81,15 @@ const predictions = defineCollection({
     status: z.enum(['en-cours', 'confirmee', 'refutee', 'en-attente']).default('en-cours'),
     chapter: z.number().optional(),
     articles: z.array(z.string()).default([]),
+    // Champs de suivi : ils étaient déjà renseignés dans certaines fiches mais
+    // absents du schéma, donc silencieusement ignorés au rendu.
+    formulatedSince: z.number().optional(),
+    lastUpdate: z.number().optional(),
+    statusNote: z.string().optional(),
+    confidence: z.enum(['elevee', 'moyenne', 'faible']).optional(),
+    source: z.string().optional(),
+    indices: z.string().optional(),
+    refuterait: z.string().optional(),
   }),
 });
 

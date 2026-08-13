@@ -1017,7 +1017,10 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     status: 'projection',
     image: images.emeth,
     imageAlt: 'Le robot Emeth, possible propriétaire du chapeau géant',
-    links: [{ label: 'Le chapeau de paille', href: '/theorie/shanks' }],
+    links: [
+      { label: 'Emeth, robot venu du futur', href: '/theorie/emeth-futur' },
+      { label: 'Le chapeau de paille', href: '/theorie/shanks' },
+    ],
   },
   {
     id: 'rio-poneglyphe-ecrit',

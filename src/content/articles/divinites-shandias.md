@@ -9,7 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1190
 parent: "dieux-one-piece"
 order: 22
-related: ["nika", "zaza", "dieux-one-piece", "shandora-shandias", "elbaf-halley", "zoans"]
+related: ["nika", "zaza", "dieux-one-piece", "shandora-shandias", "elbaf-harley", "zoans"]
 ---
 
 ## Présentation

@@ -9,7 +9,7 @@ certainty: "moyenne"
 reviewedUntilChapter: 1190
 parent: "dieux-one-piece"
 order: 23
-related: ["divinites-shandias", "nika", "elbaf-halley", "dieux-one-piece", "guerre-finale"]
+related: ["divinites-shandias", "nika", "elbaf-harley", "dieux-one-piece", "guerre-finale", "dragons-celestes", "nefertari-vivi"]
 ---
 
 ## Présentation
@@ -35,8 +35,22 @@ La théorie considère que la fresque de l'Arbre d'Adam représente des événem
 
 Le raisonnement est structurel : Oda a introduit quatre divinités il y a plus de vingt ans et les révèle progressivement.
 
+## Qui pourrait incarner Zaza ?
+
+Le nom de Zaza vient, comme celui de Nika, d'une **onomatopée** : « zāzā » est le bruit de la pluie battante. Le parallèle va plus loin — Nika apparaît au rythme des tambours, Zaza se manifeste au rythme de la danse de la pluie. Si l'idée de Nika s'est incarnée en Luffy par un Zoan mythique, la théorie suppose que Zaza puisse en faire autant, par un Hito Hito no Mi modèle Zaza ou par un pouvoir d'une autre nature.
+
+Trois candidats sont avancés :
+
+- **Monkey D. Dragon** — ennemi public numéro un de Mary Geoise, il apparaît presque systématiquement sous une pluie battante et au milieu des orages.
+- **Nami** — sa maîtrise du climat en fait la personne du récit qui fait littéralement tomber la pluie.
+- **Vivi** — l'héritière d'un royaume dont toute l'histoire récente tient à l'absence puis au retour de la pluie.
+
+Le raisonnement s'appuie aussi sur ce que la pluie représente pour les Dragons Célestes. Vivant au-dessus des nuages, ils ont fini par craindre ce qu'ils ne contrôlent pas : sur Elbaf, la matérialisation de Zaza naît de la peur de Saint Figarland Garling lui-même. Dans cette lecture, les dieux ne sont pas des origines mais des **conséquences** — des figures que la peur du Gouvernement mondial contribue à faire exister.
+
 ## Limites et nuances
 
+- Les trois candidats reposent sur des associations d'ambiance (pluie, orage, climat), pas sur un indice textuel.
+- Rien n'établit qu'un Fruit du Démon modèle Zaza existe.
 - L'identité de Zaza et son rôle restent très peu développés à ce stade.
 - La pluie sur une fresque peut être un élément d'atmosphère et non un événement.
 - Le lien entre Zaza et la guerre finale est une déduction, jamais formulée dans l'œuvre.

@@ -8,7 +8,7 @@ certainty: "moyenne"
 reviewedUntilChapter: 1190
 parent: "dieux-one-piece"
 navigationType: "dossier"
-related: ["elbaf-halley", "divinites-shandias", "zaza", "imu-nerona", "mother-flame", "uranus", "guerre-finale", "nika"]
+related: ["elbaf-harley", "divinites-shandias", "zaza", "imu-nerona", "mother-flame", "uranus", "guerre-finale", "nika"]
 sources: [1138, 1180]
 order: 24
 ---
@@ -20,7 +20,7 @@ order: 24
 - De la **pluie** est visible sur la fresque (depuis le chapitre 1138).
 - Le contenu exact de la fresque n'est montré que partiellement ; son interprétation par les personnages est limitée.
 
-> Le **Harley**, texte sacré d'Elbaf, accompagne cette fresque et en propose une lecture en trois parties et trois mondes (voir [Elbaf et le Harley](/theorie/elbaf-halley)). La fresque et le Harley sont liés mais distincts : la fresque est l'image, le Harley le récit.
+> Le **Harley**, texte sacré d'Elbaf, accompagne cette fresque et en propose une lecture en trois parties et trois mondes (voir [Elbaf et le Harley](/theorie/elbaf-harley)). La fresque et le Harley sont liés mais distincts : la fresque est l'image, le Harley le récit.
 
 ## La lecture des Fous du Bus : annotation élément par élément
 
@@ -55,7 +55,7 @@ La fresque incluant une dimension aquatique, la théorie y voit la montée des e
 
 ## Articles liés
 
-- [Elbaf et le Harley](/theorie/elbaf-halley)
+- [Elbaf et le Harley](/theorie/elbaf-harley)
 - [Divinités shandias](/theorie/divinites-shandias)
 - [Zaza](/theorie/zaza)
 - [Imu Nerona](/theorie/imu-nerona)

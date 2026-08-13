@@ -41,3 +41,7 @@
 # automatiquement à partir des updatedArticles des fiches de chapitres.
 /theorie/modifications /chapitres/modifications/ 301
 /theorie/modifications/ /chapitres/modifications/ 301
+
+# Slug aligné sur la graphie officielle (Harley)
+/theorie/elbaf-halley   /theorie/elbaf-harley/   301
+/theorie/elbaf-halley/  /theorie/elbaf-harley/   301

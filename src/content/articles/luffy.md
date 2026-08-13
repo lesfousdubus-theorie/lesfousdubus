@@ -49,6 +49,8 @@ Le chapeau de paille est la figure de transmission la plus visible du manga : Ro
 
 Cette lecture explique la présence du chapeau de paille géant congelé dans la chambre froide de Mary Geoise (chapitre 906) : Imu conserverait une trace matérielle du Joy Boy qu’il craint.
 
+La théorie va plus loin sur ce point précis : le chapeau géant n’aurait pas appartenu à Joy Boy, mais à **Emeth**. L’équipage le lui aurait confectionné pour marquer son amitié, exactement comme Ace offre un amigasa géant à Oars Junior au chapitre 555 — même mise en scène, même coucher de soleil, un géant antique et un humain qu’il aime. Emeth, projeté ensuite deux siècles en arrière à Mary Geoise, y aurait perdu ce chapeau, qu’Imu conserve depuis en attendant de voir apparaître quelqu’un portant le même symbole. Voir [Emeth, robot venu du futur](/theorie/emeth-futur).
+
 ## La lecture des Fous du Bus : Luffy créateur de la légende
 
 <div class="section-pill section-pill--hypothese">Hypothèse</div>

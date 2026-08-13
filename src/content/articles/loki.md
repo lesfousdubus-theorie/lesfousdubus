@@ -7,7 +7,7 @@ editorialStatus: "canon"
 certainty: "moyenne"
 reviewedUntilChapter: 1190
 navigationType: "fiche"
-related: ["nidhogg-ratatoskr", "elbaf-halley", "pluton-water-seven-galley-la", "dieux-one-piece", "fresque-elbaf"]
+related: ["nidhogg-ratatoskr", "elbaf-harley", "pluton-water-seven-galley-la", "dieux-one-piece", "fresque-elbaf"]
 sources: [1174, 1175, 1182]
 order: 92
 ---
@@ -44,7 +44,7 @@ Loki est souvent rapproché des figures de la [fresque d'Elbaf](/theorie/fresque
 ## Articles liés
 
 - [Nidhogg et Ratatoskr](/theorie/nidhogg-ratatoskr)
-- [Elbaf et le Harley](/theorie/elbaf-halley)
+- [Elbaf et le Harley](/theorie/elbaf-harley)
 - [La fresque d'Elbaf](/theorie/fresque-elbaf)
 - [Pluton, Water Seven et Galley-La](/theorie/pluton-water-seven-galley-la)
 - [Les dieux de One Piece](/theorie/dieux-one-piece)

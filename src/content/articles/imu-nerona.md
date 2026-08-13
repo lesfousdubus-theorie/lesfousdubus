@@ -96,7 +96,7 @@ Le Gouvernement mondial lui-même, fruit de cette peur, devient un régime total
 
 - **La confusion sur God Valley** (chapitre 1164) : qu’Imu appelle Xebec « Davy Jones » indique qu’il ne distingue pas clairement les époques — exactement ce qu’on attendrait d’un homme qui voit des fragments d’avenir sans savoir quand ils se produisent.
 - **La longévité supposée** : si Imu est vraiment immortel, il est cohérent qu’il ait passé huit cents ans à attendre, terrifié, la venue qu’il a vue.
-- **Le chapeau de paille géant** (chapitre 906) : il suggère qu’Imu conserve une trace matérielle du Joy Boy qu’il craint — trace qui pourrait être un indice transmis du futur.
+- **Le chapeau de paille géant** (chapitre 906) : il suggère qu’Imu conserve une trace matérielle du Joy Boy qu’il craint — trace qui pourrait être un indice transmis du futur. La théorie précise l’objet : ce chapeau n’aurait jamais appartenu à Joy Boy mais à **Emeth** (voir [Emeth, robot venu du futur](/theorie/emeth-futur)).
 - **La destruction de Lulusia** : rayer une île de la carte sans justification stratégique claire évoque davantage une réaction de panique qu’une stratégie impériale raisonnée.
 - **La lecture des chapitres 1187–1188** : si Imu a effectivement « tué » Joy Boy en la personne de Roger, sa confiance actuelle devient parfaitement cohérente.
 
