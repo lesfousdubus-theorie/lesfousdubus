@@ -554,7 +554,10 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     detail:
       'Le démon céleste, l’usine cachée et le retour des Riku composent un miroir presque exact. La théorie propose que l’ancien roi cruel ne soit pas un ancêtre : ce serait Doflamingo lui-même devenu sa propre caricature historique.',
     status: 'hypothese',
-    links: [{ label: 'Les Dragons célestes', href: '/theorie/dragons-celestes' }],
+    links: [
+      { label: 'Doflamingo et le roi Donquixote', href: '/theorie/donquixote-roi-antique' },
+      { label: 'Les Dragons célestes', href: '/theorie/dragons-celestes' },
+    ],
   },
   {
     id: 'promesses-du-voyage',
