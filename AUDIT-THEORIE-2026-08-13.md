@@ -179,3 +179,123 @@ Depuis `ANALYSE-UI-UX-2026.md` : ancre sans `scroll-smooth` sur `/dossiers` · M
 **Lot 5 — Hygiène** : E1, E3 (+ règle dans `scripts/validate.mjs`), E5.
 
 > Prérequis technique : `node_modules` est absent du checkout. `node scripts/validate.mjs` fonctionne tel quel, mais `npm install` est nécessaire avant `build`, `check`, `test` et `test:e2e`.
+
+---
+
+# Suivi d'exécution — 13/08/2026
+
+Le plan en 5 lots ci-dessus a été **exécuté**. Cette section enregistre l'état
+final vérifié, y compris les points où l'exécution a dû s'écarter du plan.
+
+**État final** : `node scripts/validate.mjs` → 120 fichiers, 0 erreur ·
+`npm run test` → 100 tests verts (99 au départ, +1 sur le mécanisme temporel) ·
+`npx astro build` → 147 pages, exit 0 · `public/llms*.txt` régénérés (97 articles).
+
+## A — Contradictions ✅
+
+Les six points sont corrigés (`uranus.md`, `rio-poneglyphe.md`, `kozuki-toki.md`,
+`chevaliers-divins.md`, `vingt-rois.md`, `theorie-complete.md`, `characters/imu.md`,
+`TheoryMechanism.astro`). La formulation canonique du mécanisme temporel est
+désormais **couverte par un test** (`tests/theory-core.test.ts`) pour éviter
+qu'une réécriture future ne réintroduise la boucle physique généralisée.
+
+**Contradiction supplémentaire trouvée en cours de route** : le chapeau de paille
+géant du chapitre 906 était attribué à **Joy Boy** par `luffy.md` et
+`imu-nerona.md`, alors que la source l'attribue à **Emeth** (parallèle avec
+l'amigasa d'Ace à Oars Junior, ch. 555). Corrigé, et développé dans `emeth-futur.md`.
+
+## B — Duplications ✅
+
+Les 6 corps strictement identiques sont défusionnés ; vérification finale :
+**0 paire d'articles au corps identique**. Trois doublons stricts supprimés avec
+301 (`les-bases-du-siecle-oublie`, `emeth-robot-du-futur`, `coalition-des-20-rois`).
+
+**Piège rencontré** : les dossiers `public/images/threads/<ancien-slug>/`
+conservent l'ancien nom. Un `sed` global de renommage de slug a réécrit ces
+chemins et cassé les images ; il a fallu un second passage correctif. Toute
+opération de ce type doit exclure `/images/threads/`.
+
+## C — Fraîcheur ✅
+
+Chapitres 1189 et 1190 ajoutés ; corps rédigés pour 1180, 1181 et 1182 ;
+`reviewedUntilChapter` uniformisé à **1190** sur la totalité du corpus (valeur
+unique vérifiée). L'indicateur de fraîcheur de `/aide/a-propos` est désormais
+**dérivé de `getCollection('chapters')`** et non écrit en dur — c'est le pattern
+à conserver. La promesse de mise à jour de la FAQ a été dépromise.
+
+## D — Contenu mort et trous ✅
+
+- **D1** : les 4 collections mortes (21 fichiers) sont supprimées et
+  `content.config.ts` réduit à `articles`, `chapters`, `predictions`.
+  Le glossaire du site est la page en dur `src/pages/aide/glossaire.astro` :
+  **toute nouvelle entrée s'ajoute là**, pas dans une collection.
+- **D2** : fiches créées pour **Scopper Gaban** (central en 1189-1190, il
+  n'existait que dans une ligne de la frise) et **Doflamingo / roi Donquixote**.
+  Contradiction du chapeau géant résolue (voir A).
+- **D3** : `correspondances.astro` passe de 6 à **10 paires** (Loki/Nidhogg,
+  Usopp/Louis Arnot, Momonosuke/Rio Ponéglyphe, Franky/Emeth).
+- **D4** : la thèse directrice de `les-dieux.txt` — « les dieux ne sont pas des
+  origines mais des conséquences », « le Gouvernement mondial a créé Nika »
+  (dialectique historique, ch. 1106) — n'existait nulle part dans `src/` ; elle
+  est maintenant le cœur de `dieux-one-piece.md`. `zaza.md` a reçu ses candidats
+  à l'incarnation (Dragon, Nami, Vivi) et son origine onomatopéique.
+- **D5** : les champs de suivi (`formulatedSince`, `confidence`, `indices`,
+  `refuterait`…) étaient renseignés dans `luffy-joy-boy.md` mais **absents du
+  schéma Zod**, donc silencieusement ignorés au rendu. Ajoutés au schéma,
+  affichés sur `/chapitres/predictions`, et les 4 prédictions creuses complétées.
+
+### Drafts : arbitrage inversé
+
+Les 7 `status: "draft"` étaient tous redirigés vers une page « live ». Mesure
+faite du corps réel : **trois drafts étaient 3 à 5× plus riches que leur cible**
+(`davy-jones` 1223 mots vs 248 ; `lili-vivi-et-les-poneglyphes` 1102 vs 211 ;
+`poseidon` 1131 vs 342). Ces trois-là ont donc été **publiés et dé-redirigés**
+plutôt que supprimés. Les trois réellement redondants (`pluton`, `zoro-est-ryuma`,
+`zunesha`) ont été supprimés, redirections conservées, après avoir replié dans
+`zunesha-fiche.md` leur contenu unique. Il ne reste **aucun draft**.
+
+## E — Hygiène ✅
+
+- **E1** : 0 article sans `editorialStatus`, `certainty`, `sources`,
+  `navigationType` ou `reviewedUntilChapter` ; 0 `sources: []` ; 0 `parent`
+  invalide. Les 13 `parent` inter-catégories étaient **silencieusement ignorés**
+  par `SidebarNav` (qui ne niche que dans la même catégorie) : ils sont
+  repointés vers un hub de leur catégorie, ou redeviennent racines avec
+  l'ancien parent basculé dans `related`.
+- **E2** : les fiches les plus courtes sur des nœuds majeurs sont étoffées —
+  `shirahoshi` 76 → 575 mots, `signification-d` 120 → 626,
+  `communication-temps` 177 → 606, `energie-antique` et `deluge-all-blue`
+  enrichis (zone épipélagique, journal d'Oden ch. 972, calcul Lulusia = 1 m
+  donc 199 tirs restants). Les fiches courtes restantes sont des fiches
+  d'identification descriptives, où la brièveté est appropriée.
+- **E3** : graphies unifiées sur l'édition française — **Harley** (titre officiel
+  du ch. 1138 et du tome 112 chez Glénat), **Mary Geoise**, **Wa no Kuni**,
+  **Icebarg**, **Ponéglyphe** accentué. Vérification : 0 occurrence de chaque
+  variante. Le slug `elbaf-halley` a été renommé `elbaf-harley` (301) pour
+  aligner slug et titre. **Une règle de non-régression a été ajoutée à
+  `scripts/validate.mjs`** : toute variante réintroduite fait échouer la validation.
+- **E4** : plus aucun lien interne vers un slug redirigé. `navigationType`
+  n'était renseigné que sur 16 fiches sur 104 alors que la sidebar et
+  `/dossiers` s'en servent : il est désormais dérivé sur **tout** le corpus
+  (31 dossiers / 73 fiches). `READING_PATH` reçoit `rio-poneglyphe` et
+  `communication-temps` — le parcours passait du « quoi » au « qui » sans
+  jamais exposer le « comment ».
+- **E5** : la liste UI/a11y héritée des audits de début août s'est révélée
+  **largement périmée**. Vérification faite : `--text-muted` et `--border-strong`
+  sont définis dans les deux thèmes, la Lightbox a `role="dialog"`,
+  `aria-modal`, `inert` sur le fond et restitution du focus, `404.astro` a son
+  footer, `500.astro` existe, l'iframe YouTube a un `title` FR, `R2Image` impose
+  `width`/`height`, et les deux FAB sont décalés sous 1200 px. Ces points sont
+  **clos, non par une action de ce lot, mais parce qu'ils étaient déjà traités**.
+
+## Reste à faire (hors périmètre du « corrige tout »)
+
+- Le doublon **partiel** assumé entre les trois drafts republiés et leurs
+  anciennes cibles courtes (`davy-jones` / `barbe-noire-davy-jones`,
+  `lili-vivi-et-les-poneglyphes` / `vivi`, `poseidon` / `poseidon-fiche`) :
+  les deux versions coexistent volontairement, une fusion demanderait un
+  arbitrage éditorial.
+- Éléments de `D2` de moindre portée toujours absents : Gan Forr, incarnation
+  du dieu de la terre, Loguetown/Koulechov/Schopenhauer, les 4 divinités
+  shandias en fiche propre.
+- `SidebarNav` reste limité à 2 niveaux (choix de design, pas un défaut).

@@ -830,7 +830,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     status: 'projection',
     image: images.deluge,
     imageAlt: 'Une mer gigantesque recouvrant le monde',
-    links: [{ label: 'Le Déluge', href: '/theorie/le-deluge-et-all-blue' }],
+    links: [{ label: 'Le Déluge', href: '/theorie/deluge-all-blue' }],
   },
   {
     id: 'pluton-water-seven',

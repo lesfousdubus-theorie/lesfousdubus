@@ -295,6 +295,41 @@ for (const file of files) {
   }
 }
 
+// --- Liens /theorie/* écrits hors Markdown ---------------------------------
+// Les liens du corps Markdown sont déjà validés plus haut, mais la frise
+// (`src/data/theoryTimeline.ts`) et les pages `.astro` référencent elles aussi
+// des articles en dur. Un slug renommé y restait invisible jusqu'au build.
+{
+  const sourceFiles = [];
+  const walkSource = (dir) => {
+    let entries;
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) walkSource(full);
+      else if (/\.(astro|ts|tsx)$/.test(entry)) sourceFiles.push(full);
+    }
+  };
+  walkSource(join(process.cwd(), 'src'));
+
+  for (const file of sourceFiles) {
+    const rel = relative(process.cwd(), file).split(sep).join('/');
+    const content = readFileSync(file, 'utf8');
+    for (const match of content.matchAll(/['"`](\/theorie\/[a-z0-9-]+)\/?['"`]/g)) {
+      const slug = match[1].replace(/^\/theorie\//, '');
+      // Routes réelles de src/pages/theorie/, pas des articles.
+      if (KNOWN_PAGES.has(match[1])) continue;
+      if (!articleIds.includes(slug)) {
+        errors.push(`${rel} : lien vers un article inexistant : "${match[1]}".`);
+      }
+    }
+  }
+}
+
 // --- Conventions orthographiques -------------------------------------------
 // Le corpus mélangeait plusieurs graphies pour les mêmes noms propres, ce qui
 // cassait la recherche interne et les liens mentaux entre fiches. On fige la
