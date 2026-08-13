@@ -19,6 +19,7 @@ related:
     "guerre-finale",
     "armes-antiques",
   ]
+seoTitle: "Noah One Piece : arche du royaume Ryugu | Les Fous du Bus"
 ---
 
 ## Présentation

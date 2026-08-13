@@ -11,6 +11,7 @@ reviewedUntilChapter: 1190
 parent: "dieux-one-piece"
 order: 23
 related: ["divinites-shandias", "nika", "elbaf-harley", "dieux-one-piece", "guerre-finale", "dragons-celestes", "nefertari-vivi"]
+seoTitle: "Zaza One Piece : déesse de la pluie shandia | Les Fous du Bus"
 ---
 
 ## Présentation

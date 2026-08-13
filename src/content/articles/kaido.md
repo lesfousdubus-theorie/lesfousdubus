@@ -10,6 +10,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1190
 order: 26
 related: ["joy-boy", "luffy", "lunariens", "nika", "wa-no-kuni"]
+seoTitle: "Kaido One Piece : Empereur, Uo Uo no Mi, Nika | Les Fous du Bus"
 ---
 
 ## Présentation

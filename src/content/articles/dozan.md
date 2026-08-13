@@ -11,6 +11,7 @@ reviewedUntilChapter: 1190
 parent: "brook"
 order: 53
 related: ["brook", "binks-no-sake", "wa-no-kuni", "equipage-rumbar"]
+seoTitle: "Dōzan One Piece : Wa no Kuni et Binks no Sake | Les Fous du Bus"
 ---
 
 ## Présentation

@@ -1,7 +1,7 @@
 ---
 title: "Imu Nerona"
 summary: "Fiche consacrée à Imu : ce que le manga établit sur le souverain caché du monde, son immortalité supposée, la lecture des Fous du Bus (préscience, confusion des générations), les arguments et les limites."
-seoTitle: "Imu dans One Piece : identité, préscience, Joy Boy et théorie | Les Fous du Bus"
+seoTitle: "Imu One Piece : identité et préscience | Les Fous du Bus"
 category: "gouvernement-mondial"
 status: "published"
 navigationType: "dossier"

@@ -10,6 +10,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1190
 order: 51
 related: ["equipage-rumbar", "binks-no-sake", "dozan", "volonte-heritee", "fruits-du-demon"]
+seoTitle: "Brook One Piece : Rumbar, Yomi Yomi et Dōzan | Les Fous du Bus"
 ---
 
 ## Présentation

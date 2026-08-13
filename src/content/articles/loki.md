@@ -10,6 +10,7 @@ navigationType: "fiche"
 related: ["nidhogg-ratatoskr", "elbaf-harley", "pluton-water-seven-galley-la", "dieux-one-piece", "fresque-elbaf"]
 sources: [1174, 1175, 1182]
 order: 92
+seoTitle: "Loki One Piece : géant d'Elbaf et Nidhogg | Les Fous du Bus"
 ---
 
 ## Ce que le manga établit

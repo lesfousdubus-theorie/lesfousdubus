@@ -1,7 +1,7 @@
 ---
 title: "Laugh Tale"
 summary: "Fiche consacrée à Laugh Tale : ce que le manga établit sur la dernière île, l'énigme géographique de la circumnavigation, la lecture temporelle des Fous du Bus et les limites de cette interprétation."
-seoTitle: "Laugh Tale dans One Piece : dernière île, Road Ponéglyphes et théorie temporelle | Les Fous du Bus"
+seoTitle: "Laugh Tale One Piece : île finale et Road | Les Fous du Bus"
 category: "monde-destinations"
 status: "published"
 navigationType: "dossier"

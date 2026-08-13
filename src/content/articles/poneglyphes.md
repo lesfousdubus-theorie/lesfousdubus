@@ -1,7 +1,7 @@
 ---
 title: "Ponéglyphes"
 summary: "Fiche consacrée aux Ponéglyphes : ce que le manga établit sur ces stèles indestructibles, la lecture temporelle des Fous du Bus, les arguments et les limites."
-seoTitle: "Ponéglyphes dans One Piece : stèles indestructibles, langue, Rio Ponéglyphe et théorie | Les Fous du Bus"
+seoTitle: "Ponéglyphes One Piece : stèles, langue, Rio | Les Fous du Bus"
 category: "histoire-temporalite"
 status: "published"
 navigationType: "dossier"

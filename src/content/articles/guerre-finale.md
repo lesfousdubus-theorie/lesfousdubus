@@ -1,7 +1,7 @@
 ---
 title: "Guerre finale"
 summary: "Fiche centrale de la guerre finale : les forces en présence, le rôle des Armes antiques, la destruction annoncée de Red Line, le Déluge, la naissance d'All Blue et le Jour du Serment."
-seoTitle: "Guerre finale dans One Piece : Imu, déluge, All Blue et Jour du Serment | Les Fous du Bus"
+seoTitle: "Guerre finale One Piece : Imu et All Blue | Les Fous du Bus"
 category: "guerre-finale"
 status: "published"
 navigationType: "dossier"

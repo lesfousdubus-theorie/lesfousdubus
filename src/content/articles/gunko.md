@@ -10,6 +10,7 @@ reviewedUntilChapter: 1190
 order: 68
 sources: [1183]
 related: ["chevaliers-divins", "brook", "brook-dozan", "gouvernement-mondial"]
+seoTitle: "Gunko One Piece : Chevalier Divin et analyses | Les Fous du Bus"
 ---
 
 ## Présentation

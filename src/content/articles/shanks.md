@@ -10,6 +10,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1190
 order: 25
 related: ["luffy", "gol-d-roger", "joy-boy", "gouvernement-mondial"]
+seoTitle: "Shanks One Piece : Empereur et chapeau de Luffy | Les Fous du Bus"
 ---
 
 ## Présentation

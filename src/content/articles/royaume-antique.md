@@ -1,7 +1,7 @@
 ---
 title: "Royaume antique"
 summary: "Fiche consacrée au Royaume antique (Ancien Royaume) : ce que le manga établit, ses vestiges technologiques, la lecture des Fous du Bus qui en fait un monde à construire, les arguments et les limites."
-seoTitle: "Royaume antique dans One Piece : civilisation disparue, technologies et théorie | Les Fous du Bus"
+seoTitle: "Royaume antique One Piece : civilisation perdue | Les Fous du Bus"
 category: "histoire-temporalite"
 status: "published"
 navigationType: "dossier"

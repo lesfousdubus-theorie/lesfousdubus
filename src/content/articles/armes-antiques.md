@@ -1,7 +1,7 @@
 ---
 title: "Armes antiques"
 summary: "Fiche consacrée aux Armes antiques (Poséidon, Pluton, Uranus) : ce que le manga établit, leurs liens respectifs aux peuples, la lecture des Fous du Bus sur leur rôle dans la guerre finale et les limites."
-seoTitle: "Armes antiques dans One Piece : Poséidon, Pluton, Uranus et guerre finale | Les Fous du Bus"
+seoTitle: "Armes antiques One Piece : Poséidon, Pluton | Les Fous du Bus"
 category: "armes-antiques"
 status: "published"
 navigationType: "dossier"

@@ -11,6 +11,7 @@ related: ["guerre-finale", 'grande-guerre', 'deluge-all-blue', 'gouvernement-mon
 order: 91
 sources: [522, 904]
 
+seoTitle: "Tequila Wolf One Piece : les quatre ponts | Les Fous du Bus"
 ---
 
 ## Ce que le manga établit

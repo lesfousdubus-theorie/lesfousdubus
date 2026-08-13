@@ -23,8 +23,20 @@ const chapterIndex = allChapters.findIndex((c) => c.data.chapter === entry.data.
 const prevChapter = chapterIndex > 0 ? allChapters[chapterIndex - 1] : null;
 const nextChapter = chapterIndex >= 0 && chapterIndex < allChapters.length - 1 ? allChapters[chapterIndex + 1] : null;
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
-const chapterSeoTitle = `Chapitre ${entry.data.chapter} de One Piece — ${entry.data.title} : analyse et théorie | Les Fous du Bus`;
-const chapterDescription = entry.data.summary ?? `Analyse du chapitre ${entry.data.chapter} de One Piece : ${entry.data.title} et son apport à la théorie du Siècle oublié.`;
+// Google tronque le <title> autour de 60-65 caractères. « de One Piece » et
+// « : analyse et théorie » coûtaient 33 caractères sans rien apporter : le
+// contexte One Piece est déjà porté par le titre du chapitre et le suffixe de
+// marque. Le mot-clé reste présent dans la meta description et le H1.
+const chapterSeoTitle = `Chapitre ${entry.data.chapter} — ${entry.data.title} | Les Fous du Bus`;
+// Le titre ne porte plus « One Piece » (trop long en SERP) : on garantit donc
+// que la description le contient toujours, y compris quand la fiche fournit son
+// propre summary.
+const rawChapterDescription =
+  entry.data.summary ??
+  `${entry.data.title} et son apport à la théorie du Siècle oublié.`;
+const chapterDescription = /one piece/i.test(rawChapterDescription)
+  ? rawChapterDescription
+  : `Chapitre ${entry.data.chapter} de One Piece — ${rawChapterDescription}`;
 const canonicalChapterUrl = new URL(`/chapitres/${entry.data.chapter}/`, siteUrl).toString();
 const chapterJsonLd = {
   '@context': 'https://schema.org',
