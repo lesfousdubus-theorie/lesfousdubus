@@ -21,6 +21,7 @@ related:
     "zunesha-fiche",
     "noah",
     "laugh-tale",
+    "jour-du-serment",
   ]
 ---
 

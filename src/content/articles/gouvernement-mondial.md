@@ -19,6 +19,7 @@ related:
     "gorosei",
     "guerre-finale",
     "royaume-antique",
+    "tequila-wolf",
   ]
 ---
 

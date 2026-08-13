@@ -14,6 +14,7 @@
     "llms": "node scripts/generate-llms.mjs",
     "og": "node scripts/generate-og.mjs",
     "validate": "node scripts/validate.mjs",
+    "impact": "node scripts/impact-chapitre.mjs",
     "validate:seo": "node scripts/validate-seo.mjs",
     "format": "prettier --write \"**/*.{astro,js,jsx,ts,tsx,md,mdx,json,css}\"",
     "test": "vitest run",

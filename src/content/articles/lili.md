@@ -9,7 +9,7 @@ editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1190
 order: 49
-related: ["nefertari-vivi", "vivi", "poneglyphes"]
+related: ["nefertari-vivi", "vivi", "poneglyphes", "lili-vivi-et-les-poneglyphes"]
 ---
 
 ## Présentation canonique

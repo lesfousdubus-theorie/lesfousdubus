@@ -20,6 +20,7 @@ related:
     "volonte-heritee",
     "signification-d",
     "theorie-complete",
+    "kaido",
   ]
 ---
 
@@ -48,9 +49,9 @@ Tout le manga est raconté de son point de vue : son équipage, ses rencontres, 
 
 Le chapeau de paille est la figure de transmission la plus visible du manga : Roger → Rayleigh ? → Shanks → Luffy. Dans la lecture traditionnelle, c’est un symbole de la volonté héritée, transmis d’un homme libre à un autre. Dans la lecture des Fous du Bus, la boucle se referme d’une façon différente : le chapeau aurait été originellement celui de **Joy Boy** — c’est-à-dire celui de Luffy lui-même —, et Roger et Shanks n’auraient fait que le « garder » pendant huit cents ans en attendant que vienne le moment où Luffy le porte.
 
-Cette lecture explique la présence du chapeau de paille géant congelé dans la chambre froide de Mary Geoise (chapitre 906) : Imu conserverait une trace matérielle du Joy Boy qu’il craint.
+Il faut ici distinguer deux objets que l’on confond souvent. Le chapeau de paille **de Luffy**, à taille humaine, est celui de cette chaîne de transmission. Le chapeau de paille **géant** congelé dans la chambre froide de Mary Geoise (chapitre 906) en est un autre : le site l’a longtemps attribué à Joy Boy, mais la théorie ne le lit plus ainsi.
 
-La théorie va plus loin sur ce point précis : le chapeau géant n’aurait pas appartenu à Joy Boy, mais à **Emeth**. L’équipage le lui aurait confectionné pour marquer son amitié, exactement comme Ace offre un amigasa géant à Oars Junior au chapitre 555 — même mise en scène, même coucher de soleil, un géant antique et un humain qu’il aime. Emeth, projeté ensuite deux siècles en arrière à Mary Geoise, y aurait perdu ce chapeau, qu’Imu conserve depuis en attendant de voir apparaître quelqu’un portant le même symbole. Voir [Emeth, robot venu du futur](/theorie/emeth-futur).
+Ce chapeau géant n’aurait pas appartenu à Joy Boy, mais à **Emeth**. L’équipage le lui aurait confectionné pour marquer son amitié, exactement comme Ace offre un amigasa géant à Oars Junior au chapitre 555 — même mise en scène, même coucher de soleil, un géant antique et un humain qu’il aime. Emeth, projeté ensuite deux siècles en arrière à Mary Geoise, y aurait perdu ce chapeau, qu’Imu conserve depuis en attendant de voir apparaître quelqu’un portant le même symbole. Voir [Emeth, robot venu du futur](/theorie/emeth-futur).
 
 ## La lecture des Fous du Bus : Luffy créateur de la légende
 

@@ -10,6 +10,7 @@ reviewedUntilChapter: 1190
 parent: "guerre-finale"
 sources: [576, 972, 1060, 1113, 1115, 1125, 1146]
 order: 2
+related: ["all-blue"]
 ---
 
 **Résumé** : Le message mondial de Vegapunk affirme que le monde s'est effondré sous une montée des eaux de 200 mètres au cours du Siècle Oublié. Selon notre analyse, ce grand cataclysme n'est pas un souvenir du passé mais l'événement cataclysmique imminent qui détruira Red Line et engendrera la mer légendaire : All Blue.

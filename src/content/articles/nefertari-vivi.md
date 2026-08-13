@@ -9,7 +9,7 @@ editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1190
 order: 48
-related: ['lili', 'vivi', 'theorie-complete']
+related: ["lili-vivi-et-les-poneglyphes"]
 ---
 
 ## Présentation canonique

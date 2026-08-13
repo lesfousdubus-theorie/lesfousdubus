@@ -20,6 +20,7 @@ related:
     "nico-robin",
     "grande-guerre",
     "guerre-finale",
+    "one-piece-histoire",
   ]
 ---
 

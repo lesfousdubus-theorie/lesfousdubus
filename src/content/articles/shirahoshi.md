@@ -9,7 +9,7 @@ editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1190
 order: 31
-related: ["poseidon-fiche", "royaume-ryugu", "noah", "vivi", "imu-nerona", "theorie-complete"]
+related: ["poseidon-fiche", "royaume-ryugu", "noah", "vivi", "imu-nerona", "theorie-complete", "poseidon"]
 ---
 
 ## Présentation

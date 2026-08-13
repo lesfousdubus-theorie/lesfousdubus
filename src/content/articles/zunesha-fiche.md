@@ -10,7 +10,7 @@ reviewedUntilChapter: 1190
 parent: "peuples-royaumes"
 sources: [1050]
 order: 89
-related: ["emeth-futur"]
+related: ["emeth-futur", "zou-minks"]
 ---
 
 ## Présentation canonique

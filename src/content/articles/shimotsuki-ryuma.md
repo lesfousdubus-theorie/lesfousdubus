@@ -9,7 +9,7 @@ editorialStatus: "hypothese-secondaire"
 certainty: "moyenne"
 reviewedUntilChapter: 1190
 order: 44
-related: ['ryuma', 'zoro']
+related: ["zoro"]
 ---
 
 ## Présentation canonique

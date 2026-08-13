@@ -9,6 +9,7 @@ editorialStatus: "canon"
 certainty: "elevee"
 reviewedUntilChapter: 1190
 order: 3
+related: ["blue-star", "grand-line"]
 ---
 
 ## Présentation canonique

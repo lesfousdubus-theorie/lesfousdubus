@@ -9,7 +9,7 @@ editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 reviewedUntilChapter: 1190
 order: 46
-related: ['shimotsuki-ryuma', 'zoro']
+related: ["zoro"]
 ---
 
 ## Le samouraï borgne

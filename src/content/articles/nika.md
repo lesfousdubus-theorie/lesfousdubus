@@ -19,6 +19,7 @@ related:
     "kuma-foi-nika",
     "boucaniers",
     "dieux-one-piece",
+    "kaido",
   ]
 ---
 

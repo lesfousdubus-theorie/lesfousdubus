@@ -10,7 +10,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1190
 parent: "gouvernement-mondial"
 order: 67
-related: ["gouvernement-mondial", "vingt-rois", "dragons-celestes", "imu-nerona", "guerre-finale", "brook", "dozan"]
+related: ["gouvernement-mondial", "vingt-rois", "dragons-celestes", "imu-nerona", "guerre-finale", "brook", "dozan", "gunko"]
 ---
 
 ## Présentation

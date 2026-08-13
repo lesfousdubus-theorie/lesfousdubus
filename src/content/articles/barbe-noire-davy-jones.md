@@ -9,7 +9,7 @@ navigationType: "fiche"
 editorialStatus: "hypothese-secondaire"
 certainty: "elevee"
 reviewedUntilChapter: 1190
-related: ['vingt-rois-chevaliers-divins', 'la-prescience-et-imu']
+related: ["davy-jones"]
 ---
 
 **Résumé** : Le nom de Davy Jones est cité dans le manga comme une légende des mers et l'ancien "Roi du Monde" d'après Rocks D. Xebec. Selon la théorie des Fous du Bus, Davy Jones n'est pas un pirate d'il y a 800 ans : c'est le titre que l'Histoire donnera à Marshall D. Teach (Barbe Noire).

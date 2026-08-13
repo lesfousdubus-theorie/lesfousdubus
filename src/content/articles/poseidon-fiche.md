@@ -11,7 +11,7 @@ certainty: "central"
 reviewedUntilChapter: 1190
 parent: "armes-antiques"
 order: 34
-related: ["shirahoshi"]
+related: ["shirahoshi", "poseidon"]
 ---
 
 ## Présentation canonique

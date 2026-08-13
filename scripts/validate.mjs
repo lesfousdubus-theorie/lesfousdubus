@@ -154,12 +154,34 @@ function parseFrontmatter(raw) {
   const body = lines.slice(end + 1).join('\n');
   const data = {};
   const lineRe = /^([A-Za-z0-9_-]+):\s*(.*)$/;
-  for (const line of fm.split(/\r?\n/)) {
+  const fmLines = fm.split(/\r?\n/);
+  for (let i = 0; i < fmLines.length; i++) {
+    const line = fmLines[i];
     if (!line.trim() || line.trim().startsWith('#')) continue;
     const m = line.match(lineRe);
     if (!m) continue;
     const key = m[1];
     let val = m[2].trim();
+    // Liste YAML étalée sur plusieurs lignes :
+    //   related:
+    //     [
+    //       "slug",
+    //     ]
+    // On recolle jusqu'au crochet fermant avant de parser.
+    if (val === '' || (val.startsWith('[') && !val.endsWith(']'))) {
+      let joined = val;
+      let j = i;
+      while (j + 1 < fmLines.length && !joined.endsWith(']')) {
+        const next = fmLines[j + 1];
+        if (joined === '' && !next.trim().startsWith('[')) break;
+        joined += next.trim();
+        j++;
+      }
+      if (joined.startsWith('[') && joined.endsWith(']')) {
+        val = joined;
+        i = j;
+      }
+    }
     if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
       val = val.slice(1, -1);
     }
@@ -393,6 +415,43 @@ for (const file of files) {
     );
   }
 
+}
+
+// Un article que rien ne référence est une impasse : il reste atteignable par la
+// navigation et la recherche, mais aucun raisonnement n'y conduit. On exige au
+// moins un lien entrant, en corps de texte ou via le `related` d'une autre fiche.
+{
+  const bodies = new Map();
+  const relatedOut = new Map();
+  for (const file of files) {
+    const rel = relative(CONTENT_DIR, file).split(sep).join('/');
+    if (!rel.startsWith('articles/')) continue;
+    const parsed = parseFrontmatter(readFileSync(file, 'utf8'));
+    if (!parsed) continue;
+    const slug = rel.slice('articles/'.length).replace(/\.md$/, '');
+    bodies.set(slug, parsed.body);
+    relatedOut.set(
+      slug,
+      String(parsed.data.related ?? '').match(/[a-z0-9-]+/g) ?? [],
+    );
+  }
+  const inbound = new Set();
+  for (const [slug, body] of bodies) {
+    for (const m of body.matchAll(/\]\(\/theorie\/([a-z0-9-]+)/g)) {
+      if (m[1] !== slug) inbound.add(m[1]);
+    }
+    for (const target of relatedOut.get(slug) ?? []) {
+      if (target !== slug) inbound.add(target);
+    }
+  }
+  for (const slug of bodies.keys()) {
+    if (!inbound.has(slug)) {
+      errors.push(
+        `articles/${slug}.md : aucun article n'y renvoie. Ajouter un lien dans ` +
+          `le corps d'une fiche liée, ou l'ajouter à son "related".`,
+      );
+    }
+  }
 }
 
 if (errors.length > 0) {

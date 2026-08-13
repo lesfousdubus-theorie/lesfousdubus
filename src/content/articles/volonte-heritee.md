@@ -9,6 +9,7 @@ certainty: "elevee"
 reviewedUntilChapter: 1190
 sources: [576, 602]
 order: 52
+related: ["jour-du-serment"]
 ---
 
 ## Les paroles de Barbe Blanche

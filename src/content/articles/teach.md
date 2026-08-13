@@ -9,7 +9,7 @@ editorialStatus: "canon"
 certainty: "moyenne"
 reviewedUntilChapter: 1190
 order: 40
-related: ["davy-jones-fiche", "barbe-noire-davy-jones", "rocks-xebec", "god-valley"]
+related: ["davy-jones-fiche", "barbe-noire-davy-jones", "rocks-xebec", "god-valley", "davy-jones"]
 ---
 
 ## Présentation canonique

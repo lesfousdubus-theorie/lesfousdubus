@@ -20,6 +20,8 @@ related:
     "la-prescience-et-imu",
     "joy-boy",
     "lili",
+    "chambre-fleurie",
+    "imu-avenir",
   ]
 ---
 
