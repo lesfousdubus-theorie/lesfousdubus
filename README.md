@@ -110,6 +110,8 @@ Parcours alternatif : 19 dossiers (encyclopédique fiche par fiche).
 - 1186 → Fruits du Démon (apparition récente) + géants + Domi Reversi
 - 1187 → Imu appelle Luffy Joy Boy + Luffy refuse + Joy Boy = conséquence
 - 1188 → Préscience + communication entre époques + Roger / Joy Boy + Joy Boy n’est pas un titre
+- 1189 → Imu cloue Luffy à l’Arbre d’Adam + armes des Vingt Rois + Shanks/Loki « Roi du Monde » + Gaban
+- 1190 → Gaban vs Imu + nom de Roger falsifié + Imu admet avoir pris des coïncidences pour le destin
 
 **1185** : aucune transcription source disponible (géré explicitement).
 

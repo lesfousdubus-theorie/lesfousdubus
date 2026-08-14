@@ -1,5 +1,5 @@
 ---
-title: "Vivi / Lili"
+title: "Vivi / Lili — accomplissement des actions attribuées à Lili"
 statement: "Vivi accomplirait les actions que l'Histoire attribue à Nefertari D. Lili : disperser les Ponéglyphes et contribuer à l'écriture du Rio Ponéglyphe. Koza deviendrait roi d'Alabasta, la laissant libre de prendre la mer."
 status: "en-cours"
 chapter: 1190

@@ -49,6 +49,8 @@ Trois candidats sont avancés :
 
 Le raisonnement s'appuie aussi sur ce que la pluie représente pour les Dragons Célestes. Vivant au-dessus des nuages, ils ont fini par craindre ce qu'ils ne contrôlent pas : sur Elbaf, la matérialisation de Zaza naît de la peur de Saint Figarland Garling lui-même. Dans cette lecture, les dieux ne sont pas des origines mais des **conséquences** — des figures que la peur du Gouvernement mondial contribue à faire exister.
 
+**Provenance** : les trois candidats ci-dessus et la matérialisation de Zaza liée à la peur de Garling proviennent de l'analyse thématique « Tous les dieux de One Piece » (transcription `les-dieux`), et non de la transcription du chapitre 1182 sur laquelle repose la première partie de cette fiche.
+
 ## Limites et nuances
 
 - Les trois candidats reposent sur des associations d'ambiance (pluie, orage, climat), pas sur un indice textuel.

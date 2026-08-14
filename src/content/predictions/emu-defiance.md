@@ -6,7 +6,7 @@ chapter: 1190
 articles: ["imu-nerona", "imu-avenir", "la-prescience-et-imu"]
 formulatedSince: 1085
 lastUpdate: 1190
-statusNote: "Renforcée au chapitre 1190 : Imu admet avoir pris des coïncidences pour du destin."
+statusNote: "Hypothèse interprétative (portrait psychologique d'Imu) plutôt que prédiction d'un événement futur précis. Renforcée au chapitre 1190 : Imu admet avoir pris des coïncidences pour du destin."
 confidence: "elevee"
 source: "Théorie complète, chapitre « Imu Nerona » ; chapitres 1179, 1189, 1190"
 indices: "Imu appelle Rocks D. Xebec « Davy Jones » (ch. 1163-1164) ; il conserve le portrait de Lili pour identifier Vivi ; il tient au ch. 908 les avis de recherche de Luffy, Teach, Vivi et Shirahoshi ; « tout était inévitable » (ch. 1179) reprend les mots de Rayleigh (ch. 603) ; au ch. 1190 il reconnaît avoir confondu de nombreuses coïncidences avec le destin."

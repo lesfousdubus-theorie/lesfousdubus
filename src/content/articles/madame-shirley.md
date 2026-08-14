@@ -4,7 +4,7 @@ summary: "Fiche de Madame Shirley : la voyante de l'île des Hommes-Poissons, se
 category: "transmission-memoire"
 status: "published"
 navigationType: "fiche"
-sources: [610, 611, 618]
+sources: [610, 611, 618, 1188]
 editorialStatus: "nouvelle-piste"
 certainty: "moyenne"
 reviewedUntilChapter: 1190
@@ -19,11 +19,11 @@ Madame Shirley est la propriétaire du Mermaid Café sur l'île des Hommes-Poiss
 ## Ce que le manga établit
 
 - Le mot « préscience » n'est employé **qu'une seule fois** dans le manga, au chapitre 610, pour décrire son don.
-- Elle serait la seule à pouvoir percevoir le passé, le présent et l'avenir.
-- Ses prédictions **se sont toutes réalisées**, dont la mort de Barbe Blanche.
-- Ses visions ne sont ni claires ni précises : elle doit les **interpréter**, et se trompe régulièrement sur leur sens.
+- Elle serait la seule à posséder un **don de prédiction** attesté dans le récit.
+- Plusieurs de ses prédictions **se sont réalisées**, dont la mort de Barbe Blanche.
+- Ses visions ne sont ni claires ni précises : elle doit les **interpréter** pour en comprendre le sens.
 - Elle a renoncé à son pouvoir, qu'elle jugeait trop pénible à porter.
-- Sa dernière vision montre une **silhouette au chapeau de paille détruisant l'île des Hommes-Poissons**. Dans le manga, cette silhouette reste ambiguë : Shirley conclut à tort qu'il s'agit de Luffy.
+- Sa dernière vision montre une **silhouette au chapeau de paille détruisant l'île des Hommes-Poissons**. Shirley associe cette silhouette à Luffy, mais l'identité exacte de l'homme aperçu et l'accomplissement de cette vision restent non résolus.
 - L'anime la représente explicitement sous les traits de Luffy — c'est un **ajout de la Toei**, absent du manga.
 
 ## La lecture des Fous du Bus
