@@ -1,6 +1,6 @@
 ---
 title: "Imu, le créateur terrifié par l'avenir"
-summary: "Imu existe depuis 800 ans grâce au Ope Ope no Mi. Il a lu les Ponéglyphes et sait que Joy Boy apparaîtra, mais il ne connaît pas son identité. Il confond les générations."
+summary: "Imu, souverain caché du monde : la théorie envisage une longévité par le Ope Ope no Mi ou une préscience, et décrit un guetteur qui confond les générations faute de connaître les visages."
 category: "gouvernement-mondial"
 status: "published"
 navigationType: "fiche"
@@ -15,13 +15,13 @@ parent: "imu-nerona"
 
 ## Le Dark Vador de One Piece
 
-Imu est le commandant suprême de l'univers, le plus grand méchant. Comme Vador, c'est un être brisé par la peur. Il a lu les Ponéglyphes et sait qu'un jour Joy Boy apparaîtra pour détruire le monde.
+Imu est le commandant suprême de l'univers, le plus grand méchant. Comme Vador, c'est un être brisé par la peur. Dans la lecture des Fous du Bus, il aurait lu les Ponéglyphes et saurait qu'un jour Joy Boy apparaîtra pour détruire le monde.
 
 ## L'ironie tragique
 
 En voulant empêcher Joy Boy, Imu commet les actes qui le créent. En humiliant des peuples, en éradiquant des races, en brûlant le savoir, il crée exactement ce qu'il redoute : un monde qui a besoin d'être libéré.
 
-Comme Anakin qui en tentant de sauver Padmé la tue, Imu a échoué il y a 800 ans déjà.
+Comme Anakin qui en tentant de sauver Padmé la tue, Imu échouerait à empêcher ce qu'il redoute : sa répression créerait les conditions mêmes de l'apparition de Joy Boy.
 
 ## Il confond les générations
 
