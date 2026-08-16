@@ -23,7 +23,12 @@ const eraFirstEvent = new Map(
 const seenEras = new Set<string>();
 ---
 
-<section class="chronoscope" data-timeline-root data-zoom="normal">
+<section
+  class="chronoscope"
+  data-timeline-root
+  data-zoom="normal"
+  aria-keyshortcuts="ArrowLeft ArrowRight Home End"
+>
   <div class="chronoscope__topline">
     <div>
       <p class="chronoscope__eyebrow">Chronoscope des Fous du Bus</p>
@@ -234,7 +239,7 @@ const seenEras = new Set<string>();
 
   <div class="timeline-console">
     <div class="timeline-console__current">
-      <span data-current-index>01</span>
+      <span data-current-index>01/{theoryTimeline.length}</span>
       <div>
         <small data-current-date>{theoryTimeline[0].date}</small>
         <strong data-current-title>{theoryTimeline[0].title}</strong>
@@ -508,7 +513,7 @@ const seenEras = new Set<string>();
 
   .era-tab:hover,
   .era-tab:focus-visible,
-  .era-tab[aria-current='step'] {
+  .era-tab[aria-current='true'] {
     border-color: color-mix(in srgb, var(--violet-light) 65%, var(--border-color));
     background: color-mix(in srgb, var(--violet) 15%, var(--bg-secondary));
   }
@@ -1274,14 +1279,16 @@ const seenEras = new Set<string>();
 
   .timeline-console__current > span {
     display: grid;
-    flex: 0 0 38px;
+    flex: 0 0 auto;
     place-items: center;
-    width: 38px;
+    min-width: 44px;
     height: 38px;
+    padding: 0 6px;
     border: 1px solid color-mix(in srgb, var(--cyan) 40%, var(--border-color));
     border-radius: 10px;
     color: var(--cyan);
     font: 850 11px/1 var(--font-sans);
+    white-space: nowrap;
   }
 
   .timeline-console__current div {
@@ -1435,12 +1442,11 @@ const seenEras = new Set<string>();
     position: sticky;
     z-index: 4;
     top: 12px;
-    float: right;
     display: grid;
     place-items: center;
     width: 44px;
     height: 44px;
-    margin: 12px 12px -56px 0;
+    margin: 12px 12px -56px auto;
     padding: 0;
     border: 1px solid var(--border-color);
     border-radius: 50%;
@@ -1841,7 +1847,8 @@ const seenEras = new Set<string>();
       const selectedTitle =
         selected.querySelector<HTMLElement>('.event-card__body > strong')?.textContent?.trim() ??
         '';
-      if (currentIndex) currentIndex.textContent = String(index + 1).padStart(2, '0');
+      if (currentIndex)
+        currentIndex.textContent = `${String(index + 1).padStart(2, '0')}/${visible.length}`;
       if (currentDate) currentDate.textContent = selectedDate;
       if (currentTitle) currentTitle.textContent = selectedTitle;
 
@@ -1944,9 +1951,15 @@ const seenEras = new Set<string>();
 
     const setZoom = (index: number) => {
       const zooms = ['compact', 'normal', 'large'];
+      const zoomLabels: Record<string, string> = {
+        compact: 'Cartes réduites',
+        normal: 'Cartes en taille normale',
+        large: 'Cartes agrandies',
+      };
       zoomIndex = Math.max(0, Math.min(zooms.length - 1, index));
       const current = visibleEvents()[closestVisibleIndex()];
       root.dataset.zoom = zooms[zoomIndex];
+      if (live) live.textContent = zoomLabels[zooms[zoomIndex]];
       requestAnimationFrame(() => {
         if (current) scrollToEvent(current, false);
         updatePosition();
@@ -1969,6 +1982,8 @@ const seenEras = new Set<string>();
       let index = closestVisibleIndex();
       if (index >= visible.length - 1) index = -1;
       scrollToEvent(visible[index + 1]);
+      // Cadence plus lente pour les personnes sensibles au mouvement.
+      const interval = reducedMotion ? 9000 : 4200;
       storyTimer = window.setInterval(() => {
         index += 1;
         if (index >= visible.length - 1) {
@@ -1976,7 +1991,7 @@ const seenEras = new Set<string>();
           return;
         }
         scrollToEvent(visible[index + 1]);
-      }, 4200);
+      }, interval);
     });
 
     range.addEventListener('input', () => {
@@ -2004,7 +2019,12 @@ const seenEras = new Set<string>();
     viewport.addEventListener('pointerup', stopDragging);
     viewport.addEventListener('pointercancel', stopDragging);
 
-    viewport.addEventListener('keydown', (event) => {
+    // Les flèches fonctionnent dès que le focus est dans la frise (cartes, onglets,
+    // filtres), pas seulement sur la zone de défilement. Les contrôles natifs
+    // (range, select) gardent leur comportement clavier propre.
+    root.addEventListener('keydown', (event) => {
+      const target = event.target as Element;
+      if (target.closest('input, select, textarea')) return;
       if (event.key === 'ArrowRight') jump(1);
       else if (event.key === 'ArrowLeft') jump(-1);
       else if (event.key === 'Home')

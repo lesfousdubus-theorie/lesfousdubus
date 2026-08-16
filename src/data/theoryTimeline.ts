@@ -711,15 +711,30 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'present',
     thread: 'armes',
     icon: '⌘',
-    title: 'Les satellites contactent Weatheria',
+    title: 'Les satellites rejoignent Weatheria',
     summary:
-      'Les survivants de Vegapunk rejoignent Haredas, spécialiste des nœuds capables de conserver le vent.',
+      'Les survivants de Vegapunk retrouvent Haredas, spécialiste des nœuds capables de conserver le vent.',
     detail:
-      'Pour la transcription, cette destination prépare le Haki Node : la technologie des Weather Nodes remplacera le vent par le Haki de Luffy. Franky et Lilith pourront ensuite reconstruire Emeth avec cette arme secrète.',
-    status: 'central',
+      'Après Egghead, les satellites et le laboratoire de Vegapunk se replient vers Weatheria. Le manga y présente les Weather Nodes, des cordes capables de stocker un phénomène naturel : le même principe que celui employé par Emeth.',
+    status: 'canon',
     chapter: 'Ch. 1125',
     image: images.emethFranky,
     imageAlt: 'Franky en cyborg, futur constructeur possible d’Emeth',
+    links: [{ label: 'Énergie antique', href: '/theorie/energie-antique' }],
+  },
+  {
+    id: 'haki-node-weatheria',
+    date: 'Présent — après Egghead',
+    era: 'present',
+    thread: 'armes',
+    icon: '⚡',
+    title: 'Le Haki Node prépare la reconstruction d’Emeth',
+    summary:
+      'La technologie des Weather Nodes servirait à sceller le Haki de Luffy et à reconstruire Emeth.',
+    detail:
+      'Pour la transcription, cette destination prépare le Haki Node : la technologie des Weather Nodes remplacerait le vent par le Haki de Luffy. Franky et Lilith pourraient ensuite reconstruire Emeth avec cette arme secrète.',
+    status: 'hypothese',
+    chapter: 'Ch. 1125',
     links: [{ label: 'Énergie antique', href: '/theorie/energie-antique' }],
   },
   {
