@@ -1,32 +1,39 @@
 ---
-title: "Nefertari D. Lili"
-summary: "Fiche d'identification de Nefertari D. Lili, reine d'Alabasta qui refusa de vivre à Mary Geoise et disparut après la fondation du Gouvernement Mondial."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
+title: 'Nefertari D. Lili'
+summary: "Fiche factuelle de Nefertari D. Lili : fondatrice d'Alabasta absente de Mary Geoise, porteuse du D. et historiquement liée à la dispersion des Ponéglyphes."
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
 sources: [1084, 1085, 1086, 1116]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 49
-related: ["nefertari-vivi", "vivi", "poneglyphes", "lili-vivi-et-les-poneglyphes"]
+related: ['nefertari-vivi', 'vivi', 'poneglyphes', 'lili-vivi-et-les-poneglyphes']
 ---
-
-## Présentation canonique
-
-Nefertari D. Lili est la reine d'Alabasta qui participa à la fondation du Gouvernement Mondial il y a huit cents ans. Contrairement aux dix-neuf autres souverains fondateurs, elle refusa de s'installer à Mary Geoise et disparut dans des circonstances que le Gouvernement n'a jamais éclaircies.
-
-Son nom complet, révélé dans une lettre adressée à sa descendance, inclut l'initiale D., un détail dissimulé pendant huit siècles.
 
 ## Ce que le manga établit
 
-- Au chapitre 1084, Cobra interroge les Doyens sur la reine Lili et la lettre qu'elle a laissée à sa lignée.
-- Au chapitre 1085, Imu évoque la « grande faute » de Lili : la dispersion des Ponéglyphes à travers le monde.
-- Au chapitre 1116, le portrait de la Chambre Fleurie montre une femme à la silhouette et à la coiffure très proches de celles de Nefertari Vivi.
-- Le Gouvernement Mondial ne reconnaît pas officiellement la présence du D. dans le nom de Lili.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## La lecture des Fous du Bus
+Nefertari D. Lili régnait sur Alabasta au temps des Premiers Vingt. Elle refusa de s'installer à Mary Geoise et ne rentra jamais à Alabasta. Sa lettre transmet le nom **D.** et une instruction relative aux Ponéglyphes.
 
-Selon la théorie, Nefertari D. Lili n'est pas une ancêtre lointaine de Vivi mais le nom que l'Histoire donnera à la princesse d'Alabasta après qu'elle aura dispersé les Ponéglyphes et protégé la mémoire du Siècle oublié.
+Imu accuse l'« erreur » de Lili d'avoir provoqué la dispersion des stèles dans le monde. L'intention exacte de Lili et les circonstances de sa disparition ne sont pas encore montrées.
 
-L'article de démonstration *Vivi est Lili : la reine qui dispersera les Ponéglyphes* détaille cette lecture.
+**Sources précises :** chapitres 1084 à 1086 et 1116.
+
+## Le portrait ancien
+
+<div class="section-pill section-pill--manga">Manga</div>
+
+Un portrait associé à Lili ressemble à Vivi. Cette ressemblance visuelle ne confirme ni une couleur de cheveux, ni une identité commune, ni un déplacement temporel.
+
+## Le rôle que Vivi pourrait accomplir
+
+<div class="section-pill section-pill--extension">Extension</div>
+
+La théorie propose que Vivi **accomplisse dans le futur un rôle analogue à celui attribué à Lili**, notamment dans la transmission ou la dispersion d'informations. Dire que Vivi « devient Lili » reste une branche plus forte et séparée.
+
+## Limites et objections
+
+La dispersion est historiquement associée à Lili dans le manga. Une action future de Vivi ne peut donc être présentée comme le seul événement réel sans expliquer les sources antiques. La disparition parallèle et un éventuel règne de Koza sont des projections, pas des faits.

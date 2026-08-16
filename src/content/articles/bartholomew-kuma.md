@@ -1,43 +1,41 @@
 ---
-title: "Bartholomew Kuma"
-summary: "Fiche neutre de Bartholomew Kuma : ancien roi de Sorbet, révolutionnaire, Grand Corsaire, dernier Boucanier connu et porteur de la foi en Nika."
-category: "figures-principales"
-status: "published"
-navigationType: "fiche"
-sources: [234, 483, 1096, 1097, 1102]
-editorialStatus: "canon"
-certainty: "elevee"
+title: 'Bartholomew Kuma'
+summary: 'Histoire canonique de Kuma : foi en Nika, protection de Bonney, transformation par Vegapunk et sauvegarde finale du Sunny, sans causalité théorique ajoutée.'
+seoTitle: 'Bartholomew Kuma : Buccaneer, Nika et Bonney | Les Fous du Bus'
+category: 'figures-principales'
+status: 'published'
+navigationType: 'dossier'
+sources: [473, 603, 1067, 1095, 1102]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-order: 22
-related: ["kuma-foi-nika", "nika", "boucaniers", "luffy", "joy-boy"]
+order: 11
+related: ['boucaniers', 'nika', 'kuma-foi-nika', 'joy-boy', 'luffy', 'vegapunk']
 ---
 
-## Présentation
+## Buccaneer, révolutionnaire et père
 
-Bartholomew Kuma est un ancien roi du royaume de Sorbet, commandant de l'Armée révolutionnaire, puis Grand Corsaire. Le Gouvernement mondial l'a progressivement transformé en arme humaine, jusqu'à l'effacement complet de sa personnalité.
+Kuma est un Buccaneer réduit en esclavage dans son enfance. La tradition transmise par son père associe Nika à un rythme et à l'espoir de libération. Devenu révolutionnaire puis souverain de Sorbet, Kuma élève Bonney comme sa fille et cherche un traitement contre sa maladie.
 
-## Ce que le manga établit
+## L'accord avec Vegapunk
 
-- Kuma est le **dernier descendant connu des Boucaniers**, peuple persécuté et presque éteint.
-- Il a reçu de son père Bacchus la foi en **Nika**, le guerrier de la libération, et l'a conservée toute sa vie.
-- Il accepte volontairement le programme Pacifista de Vegapunk, en échange d'une unique requête : protéger le Thousand Sunny, puis les Mugiwara.
-- Il protège le navire durant deux ans, réduit à l'état de machine, sans que personne comprenne pourquoi.
-- Il traverse le monde entier, mourant, pour rejoindre sa fille Bonney à Egghead.
+Vegapunk peut soigner Bonney, tandis que le Gouvernement impose des conditions qui conduisent Kuma à devenir le prototype des Pacifistas puis à perdre sa volonté. Kuma accepte ce programme pour sauver Bonney.
 
-## Ce que le manga ne tranche pas
+Sa dernière requête connue — programmer la protection du Thousand Sunny jusqu'au retour d'un membre de l'équipage — intervient dans ce processus. Elle ne doit pas être présentée comme la contrepartie initiale et unique de toute sa transformation.
 
-Le manga n'établit jamais de lien causal entre la foi de Kuma et l'éveil du fruit de Luffy. Les deux faits coexistent sans que l'œuvre les rapproche explicitement.
+## Le lien avec Luffy
 
-## La lecture des Fous du Bus
+À Thriller Bark et Sabaody, Kuma intervient autour des Chapeaux de Paille. Il reconnaît dans Luffy le fils de Dragon et prend des décisions qui permettent à l'équipage de survivre et de progresser.
 
-Cette fiche présente le personnage. L'argument théorique — selon lequel le parcours de Kuma constituerait une démonstration de la réalité de Nika — est développé dans l'article d'analyse rattaché **Kuma et la foi en Nika : la preuve par le miracle**.
+Sa foi en Nika et son observation de Luffy produisent un parallèle puissant. Elles ne créent pas littéralement Nika, le Fruit ou le Joy Boy historique.
 
-## Limites et nuances
+## Fil « Libération »
 
-- L'attachement de Kuma aux Mugiwara s'explique aussi par sa loyauté envers Dragon, père de Luffy.
-- Sa foi est un trait de personnage, non une position que le récit valide.
+Kuma transmet une croyance ancienne et agit pour la liberté d'autrui. Dans la lecture du site, il est un maillon essentiel du fil « Libération » qui converge vers Luffy. Cette transmission humaine et culturelle suffit ; aucun retour dans le temps n'est nécessaire.
 
-## Points encore à expliquer
+## Limites
 
-- Ce que Kuma savait exactement au moment de formuler sa requête.
-- Pourquoi le Gouvernement a laissé subsister ses souvenirs dans le Pacifista.
+- Kuma n'est pas l'origine historique du mythe de Nika.
+- Ses actes ne prouvent pas qu'il connaissait toute la véritable histoire.
+- Les conditions exactes et toutes les étapes de son accord avec le Gouvernement doivent rester distinguées.
+- Son état et son avenir après Egghead restent ouverts.

@@ -1,35 +1,39 @@
 ---
-title: "Grande Guerre"
-summary: "Fiche d'identification de la Grande Guerre évoquée par Vegapunk : le conflit du Siècle oublié, présenté comme « toujours d'actualité », et la lecture des Fous du Bus qui attend son dénouement — et son déluge — au présent."
-category: "guerre-finale"
-status: "published"
-navigationType: "fiche"
+title: 'La grande guerre du Siècle oublié'
+summary: "La guerre ancienne et la submersion de 200 mètres sont des faits historiques rapportés ; la guerre mondiale future annoncée par Barbe Blanche est un conflit distinct jusqu'à preuve du contraire."
+category: 'guerre-finale'
+status: 'published'
+navigationType: 'fiche'
 sources: [1113, 1114, 1115]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "guerre-finale"
+parent: 'guerre-finale'
 order: 1
 ---
 
-## Présentation canonique
+## La guerre ancienne
 
-La Grande Guerre est le conflit évoqué par Vegapunk dans son message au monde : une guerre qui a ravagé le monde durant le Siècle oublié — et qu'il présente comme « toujours d'actualité ».
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Ce que le manga établit
+Vegapunk décrit une guerre idéologique entre le Royaume antique de Joy Boy et l'alliance qui deviendra le Gouvernement mondial. L'emploi des Armes antiques provoque une hausse des eaux d'environ 200 mètres.
 
-- Vegapunk annonce publiquement, au chapitre 1113, que le monde est menacé par une nouvelle submersion.
-- Il explique également que le conflit du Siècle oublié s'est accompagné d'une hausse du niveau marin d'environ 200 mètres, qui a englouti l'ancien monde sous les eaux.
-- Vegapunk décrit cette guerre à la fois comme un événement passé remontant à 800 ans et comme un danger immédiat, « toujours d'actualité » (chapitre 1115).
-- Le Gouvernement mondial construit depuis des siècles d'immenses ponts à travers le monde (Tequila Wolf, Bourbon, Rum, Vodka), sans destination précisée dans le manga.
+**Sources précises :** chapitres 395 et 1115–1116.
 
-## La lecture des Fous du Bus
+## La guerre annoncée
 
-La lecture des Fous du Bus relie les faits ci-dessus sans qu'aucun de ces liens ne soit établi par le manga lui-même :
+<div class="section-pill section-pill--manga">Manga</div>
 
-- **Le déluge reste à venir** : la théorie considère que cette guerre ancienne est en réalité la guerre actuelle, encore inachevée, et que le déluge de 200 mètres reste donc à venir. L'argument central : à 200 mètres sous la surface, une profondeur encore éclairée par le soleil, les vestiges d'un ancien monde auraient été retrouvés depuis longtemps.
-- **Les Armes antiques et Red Line** : le manga ne dit pas que les Armes antiques pourraient détruire Red Line. C'est un raisonnement de la théorie, qui imagine leur puissance tournée contre le continent rouge lors de la guerre finale.
-- **Les ponts et la montée des eaux** : le manga ne dit pas que Tequila Wolf, Bourbon, Rum et Vodka sont dimensionnés pour faire face au futur déluge. C'est une interprétation de la théorie : ces ouvrages de plusieurs centaines de mètres de haut, bâtis pendant 700 ans, ne se justifieraient pleinement que si le Gouvernement mondial anticipait la montée des eaux.
-- **La bataille se joue au présent** : les différentes forces susceptibles de prendre part à cette guerre se mettent progressivement en place autour de Luffy et face au Gouvernement mondial. La victoire n'aboutirait pas à une destruction totale, mais à la réunification des mers et à la fin du Gouvernement Mondial.
+Barbe Blanche annonce qu'après la découverte du One Piece, une immense guerre engloutira le monde. Les révolutionnaires et le Gouvernement sont déjà en conflit au présent.
 
-> ⚠️ Ces quatre points relèvent de l'interprétation de la théorie, pas de faits canoniques. Ils sont présentés comme des hypothèses et non comme des acquis du manga.
+**Sources précises :** chapitres 576 et 1083.
+
+## Échos possibles
+
+<div class="section-pill section-pill--extension">Extension</div>
+
+La guerre future peut reproduire, inverser ou compléter des motifs du conflit ancien. Une information future transmise au passé pourrait renforcer ces parallèles sans transformer automatiquement les deux guerres en un seul événement.
+
+## Limites et objections
+
+Une nouvelle hausse de 200 mètres et l'ordre des opérations restent des projections. L'absence supposée de ruines retrouvées n'annule pas les révélations historiques de Vegapunk.

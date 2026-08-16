@@ -7,23 +7,24 @@ import DiagramViewport from '@components/DiagramViewport.astro';
 <WikiLayout
   title="Les quatre Road Ponéglyphes et le temps"
   seoTitle="Road Ponéglyphes et temps : coordonnées | Les Fous du Bus"
-  description="Schéma des quatre Road Ponéglyphes : leurs coordonnées délimitent Laugh Tale, et la théorie y voit une lecture temporelle (la quatrième coordonnée encode le futur)."
+  description="Schéma des quatre Road Ponéglyphes : quatre coordonnées spatiales localisent Laugh Tale ; une lecture temporelle distincte reste une hypothèse de mécanisme."
   currentPath="/explorer/road-poneglyphes-temps"
 >
   <div class="page-header">
     <p class="eyebrow">🧭 Road Ponéglyphes</p>
     <h1>Quatre pierres, quatre coordonnées</h1>
     <p class="page-desc">
-      Les quatre Road Ponéglyphes indiquent chacune une coordonnée ; leur intersection délimite Laugh Tale.
-      La théorie y ajoute une <strong>lecture temporelle</strong> : la quatrième pierre n'encoderait pas un
-      point de l'espace mais une coordonnée dans le temps.
+      <strong>Manga :</strong> les quatre Road Ponéglyphes fournissent quatre positions spatiales ; le croisement
+      des lignes reliant les points opposés localise Laugh Tale. <strong>Hypothèse distincte :</strong> leur contenu,
+      Laugh Tale ou un autre dispositif pourrait aussi intervenir dans une transmission temporelle. La quatrième
+      pierre reste une coordonnée spatiale dans la géométrie établie.
     </p>
   </div>
 
   <div class="schema">
     <DiagramViewport id="road-poneglyphes-map" label="Schéma détaillé des quatre Road Ponéglyphes" minWidth={680}>
     <svg viewBox="0 0 800 560" class="schema-svg" role="img"
-      aria-label="Schéma des quatre Road Ponéglyphes aux coins d'un losange, dont l'intersection délimite Laugh Tale, avec une coordonnée temporelle">
+      aria-label="Schéma des quatre coordonnées spatiales des Road Ponéglyphes, dont les diagonales se croisent à Laugh Tale, avec une hypothèse temporelle séparée">
       <defs>
         <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#0c1b2b" />
@@ -64,26 +65,26 @@ import DiagramViewport from '@components/DiagramViewport.astro';
         <text x="190" y="498" text-anchor="middle" fill="#8899aa" font-size="10" font-family="Inter,system-ui,sans-serif">point 3</text>
       </g>
       <g>
-        <circle cx="610" cy="440" r="34" fill="#0e1722" stroke="#b07cc6" stroke-width="2" stroke-dasharray="4,3" />
-        <text x="610" y="436" text-anchor="middle" fill="#b07cc6" font-size="11" font-weight="700" font-family="Inter,system-ui,sans-serif">ROAD 4</text>
-        <text x="610" y="452" text-anchor="middle" fill="#f3efe6" font-size="10" font-family="Inter,system-ui,sans-serif">Temps ?</text>
-        <text x="610" y="498" text-anchor="middle" fill="#b07cc6" font-size="10" font-family="Inter,system-ui,sans-serif">(théorie)</text>
+        <circle cx="610" cy="440" r="34" fill="#0e1722" stroke="#5fb9c2" stroke-width="2" />
+        <text x="610" y="436" text-anchor="middle" fill="#5fb9c2" font-size="11" font-weight="700" font-family="Inter,system-ui,sans-serif">ROAD 4</text>
+        <text x="610" y="452" text-anchor="middle" fill="#f3efe6" font-size="10" font-family="Inter,system-ui,sans-serif">Coordonnée</text>
+        <text x="610" y="498" text-anchor="middle" fill="#8899aa" font-size="10" font-family="Inter,system-ui,sans-serif">point 4</text>
       </g>
 
       <!-- Temporal axis note -->
       <line x1="400" y1="90" x2="400" y2="40" stroke="#e0ab4e" stroke-width="2" marker-end="url(#arrow)" />
-      <text x="400" y="30" text-anchor="middle" fill="#e0ab4e" font-size="11" font-weight="700" font-family="Inter,system-ui,sans-serif">axe du temps</text>
+      <text x="400" y="30" text-anchor="middle" fill="#e0ab4e" font-size="11" font-weight="700" font-family="Inter,system-ui,sans-serif">mécanisme temporel ? (hypothèse séparée)</text>
 
-      <text x="400" y="530" text-anchor="middle" fill="#8899aa" font-size="11" font-family="Inter,system-ui,sans-serif">L'intersection des trois points donne l'île ; la théorie ajoute que le 4e point se situe dans le futur.</text>
+      <text x="400" y="530" text-anchor="middle" fill="#8899aa" font-size="11" font-family="Inter,system-ui,sans-serif">Les quatre points sont spatiaux. Leur rôle temporel éventuel n'est pas confirmé.</text>
     </svg>
     </DiagramViewport>
-    <figcaption>Les quatre Road Ponéglyphes et l'intersection de Laugh Tale. La 4e coordonnée temporelle et l'axe du temps sont des éléments de la théorie.</figcaption>
+    <figcaption>Géométrie établie : quatre positions spatiales et deux diagonales. L'axe temporel est affiché à part comme hypothèse de mécanisme, sans remplacer le quatrième point.</figcaption>
   </div>
 
   <div class="legend">
-    <span><i class="dot" style="background:#5fb9c2"></i> Road Ponéglyphes (coordonnée spatiale)</span>
-    <span><i class="dot" style="background:#b07cc6"></i> Road 4 — coordonnée temporelle (théorie)</span>
-    <span><i class="dot" style="background:#e0ab4e"></i> Laugh Tale</span>
+    <span><i class="dot" style="background:#5fb9c2"></i> 4 Road Ponéglyphes · coordonnées spatiales (manga)</span>
+    <span><i class="dot" style="background:#e0ab4e"></i> Laugh Tale · croisement spatial (manga)</span>
+    <span><i class="dot" style="background:#b07cc6"></i> Fonction temporelle éventuelle (hypothèse)</span>
   </div>
 
   <div class="linked">

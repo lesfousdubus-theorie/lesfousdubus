@@ -1,44 +1,32 @@
 ---
-title: "Dōzan"
-summary: "Fiche de Dōzan : figure évoquée dans les chapitres récents, associée à Wa no Kuni et à l'origine de Binks no Sake."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
+title: 'Dōzan'
+summary: 'Nom évoqué dans les développements récents autour de Wano, de Brook et de Binks no Sake ; identité, époque et fonction restent à confirmer.'
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
 sources: [1183, 1184]
-editorialStatus: "nouvelle-piste"
-certainty: "hypothese"
+editorialStatus: 'hypothese-recente'
+certainty: 'hypothese'
 reviewedUntilChapter: 1190
-parent: "brook"
+parent: 'brook'
 order: 53
-related: ["brook", "binks-no-sake", "wa-no-kuni", "equipage-rumbar"]
-seoTitle: "Dōzan One Piece : Wa no Kuni et Binks no Sake | Les Fous du Bus"
+related: ['brook', 'brook-dozan', 'binks-no-sake', 'wa-no-kuni', 'equipage-rumbar']
+seoTitle: 'Dōzan One Piece : hypothèse Brook et Wano | Les Fous du Bus'
 ---
 
-## Présentation
+## État de l'information
 
-Dōzan est une figure évoquée dans les chapitres récents, rattachée à Wa no Kuni et associée à l'histoire de *Binks no Sake*. Le manga en dit encore très peu.
+Le nom **Dōzan** apparaît dans les transcriptions récentes utilisées pour les analyses des chapitres 1183–1184, dans un contexte rapproché de Wano, de Brook et de _Binks no Sake_. La graphie, les nuances et le rôle exact doivent suivre la traduction publiée.
 
-## Ce que le manga établit
+Le site ne traite donc pas comme acquis que Dōzan est musicien, auteur de la chanson, membre d'un royaume précis ou personnage d'une époque déterminée.
 
-Les éléments disponibles sont limités :
+## Hypothèses concurrentes
 
-- Dōzan est rattaché à Wa no Kuni.
-- Son nom apparaît dans un contexte lié à la musique et à la transmission.
-- Aucune scène ne le montre directement en action, et son époque n'est pas fixée avec certitude.
+- Dōzan pourrait être une personne distincte liée à Wano.
+- Le nom pourrait être un titre ou un nom d'artiste.
+- Brook pourrait l'avoir porté, inspiré ou seulement rencontré.
+- Le rapprochement pourrait reposer sur une traduction provisoire qui sera précisée.
 
-Cette fiche restera courte tant que l'œuvre n'aura pas apporté d'éléments supplémentaires.
+## Critères de révision
 
-## La lecture des Fous du Bus
-
-L'hypothèse d'une identité entre Brook et Dōzan est développée dans l'article d'analyse rattaché **Brook pourrait-il être Dōzan ?**. Elle repose sur le rapprochement entre la longévité exceptionnelle de Brook, son lien ancien avec *Binks no Sake* et la présence de la chanson dans le folklore de Wa no Kuni.
-
-## Limites et nuances
-
-- Les informations canoniques sont trop minces pour étayer une identification.
-- Rien n'établit que Dōzan ait été musicien.
-
-## Points encore à expliquer
-
-- Qui est Dōzan et à quelle époque il a vécu.
-- Son rôle dans l'histoire de Wa no Kuni.
-- Son rapport éventuel à *Binks no Sake*.
+Une identification explicite, une date, un visage ou une attribution claire de _Binks no Sake_ permettraient de trancher. En leur absence, Brook/Dōzan reste une hypothèse récente et non une branche nécessaire de la théorie.

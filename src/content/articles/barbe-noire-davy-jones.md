@@ -1,48 +1,36 @@
 ---
-title: "Marshall D. Teach et Davy Jones"
-summary: "Comment Marshall D. Teach incarne la figure mythique de Davy Jones et s'apprête à ravir le titre de Roi du Monde à Mary Geoise."
-category: "personnages-identites"
-status: "published"
+title: 'Teach pourrait-il prolonger la figure de Davy Jones ?'
+summary: 'Hachinosu, le Saber of Xebec et l’ambition de Teach motivent un parallèle avec Davy Jones, sans identité, lignée ou conquête du Trône établies.'
+seoTitle: 'Teach et Davy Jones : hypothèse | Les Fous du Bus'
+category: 'personnages-identites'
+status: 'published'
 sources: [441, 1064, 1164]
 order: 43
-navigationType: "fiche"
-editorialStatus: "hypothese-secondaire"
-certainty: "elevee"
+navigationType: 'fiche'
+editorialStatus: 'hypothese-recente'
+certainty: 'hypothese'
 reviewedUntilChapter: 1190
-related: ["davy-jones"]
+related: ['davy-jones']
 ---
 
-**Résumé** : Le nom de Davy Jones est cité dans le manga comme une légende des mers et l'ancien "Roi du Monde" d'après Rocks D. Xebec. Selon la théorie des Fous du Bus, Davy Jones n'est pas un pirate d'il y a 800 ans : c'est le titre que l'Histoire donnera à Marshall D. Teach (Barbe Noire).
+## Dépôt de la piste
 
-![Barbe noire Davy Jones](/images/threads/barbe-noire-davy-jones/img_1.webp)
+Teach occupe Hachinosu, navigue sur le _Saber of Xebec_ et son équipage répond poursuivre « le monde ». Ces éléments rapprochent son ambition de celle attribuée à Rocks.
 
-## 1. L'ambition de Rocks et de Teach
+![Teach et Davy Jones](/images/threads/barbe-noire-davy-jones/img_1.webp)
+![Rocks et Teach](/images/threads/barbe-noire-davy-jones/img_2.webp)
 
-La ruche de Hachinosu, le navire _Saber of Xebec_, et le sang de la lignée D. : Teach marche exactement dans les pas de Rocks D. Xebec. L'objectif ultime de Rocks n'était pas de devenir le Roi des Pirates, mais le **Roi du Monde**.
+## Hypothèse récente
 
-![Lignée Rocks et Teach](/images/threads/barbe-noire-davy-jones/img_2.webp)
+Teach pourrait prolonger la figure maritime de Davy Jones ou chercher une domination mondiale. Le nom ne lui est jamais attribué, sa parenté avec Xebec n'est pas confirmée et « le monde » ne désigne pas nécessairement le Trône vacant.
 
-## 2. "Le Monde" comme cible explicite
-
-Lors de l'incident d'Egghead, St. Jaygarcia Saturn demande à Catarina Devon et Van Augur quel est le véritable objectif de Barbe Noire. Leur réponse est cinglante et immédiate :
-
-> _"Le monde."_
-
-Chez Oda, "Le Monde" désigne l'autorité suprême incarnée par Imu au sommet de Mary Geoise.
+Catarina Devon a copié l'apparence de Saturn. Cela prépare une utilisation de cette apparence, pas obligatoirement une infiltration réussie de Mary Geoise.
 
 ![Catarina Devon et Saturn](/images/threads/barbe-noire-davy-jones/img_3.webp)
+![Projection d'infiltration](/images/threads/barbe-noire-davy-jones/img_4.webp)
+![Projection du Trône vacant](/images/threads/barbe-noire-davy-jones/img_5.webp)
+![Projection de victoire](/images/threads/barbe-noire-davy-jones/img_6.webp)
 
-## 3. Le rôle de Catarina Devon et l'assaut sur Mary Geoise
+## Limites et motif d'identité
 
-En touchant St. Saturn à Egghead, Catarina Devon a copié l'apparence physique et les empreintes d'un des Doyens du Gorosei. Cet élément prépare une infiltration directe des appartements sacrés de Mary Geoise. Teach ne cherche pas seulement des Road Ponéglyphes : il s'apprête à usurper le Trône Vide et à devenir le Roi du Monde (Davy Jones).
-
-![Infiltration Mary Geoise](/images/threads/barbe-noire-davy-jones/img_4.webp)
-![Trone vide Teach](/images/threads/barbe-noire-davy-jones/img_5.webp)
-![Barbe noire vainqueur](/images/threads/barbe-noire-davy-jones/img_6.webp)
-
-## Limites et nuances
-
-- **Le titre de « Davy Jones » n'est jamais attribué à Teach.** Le rapprochement repose sur un faisceau (la ruche, le navire de Xebec, l'initiale D.), pas sur une désignation explicite.
-- **« Le monde » est une réponse ambiguë.** Elle peut décrire une ambition de domination sans impliquer le Trône Vide ni une reprise du projet de Rocks.
-- **Rocks et Teach peuvent simplement se ressembler.** Oda construit souvent des échos entre générations de pirates sans qu'un titre se transmette.
-- **La lecture dépend du mécanisme temporel de la théorie.** Si les légendes du Siècle oublié décrivent bien un passé, Davy Jones a existé et Teach n'en est qu'un héritier symbolique.
+La méprise signalée entre Xebec et Davy Jones peut nourrir le motif « Imu se trompe d'identité ». Elle n'établit pas que le vrai Davy soit Teach et ne se transpose pas automatiquement à Roger/Joy Boy ou Vivi/Lili.

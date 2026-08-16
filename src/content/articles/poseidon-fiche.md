@@ -1,49 +1,47 @@
 ---
-title: "Poséidon"
-summary: "Fiche d'identification de Poséidon, l'Arme antique capable de commander les Rois des Mers et matérialisée par la princesse Shirahoshi."
-seoTitle: "Poséidon One Piece : Shirahoshi, Rois des Mers | Les Fous du Bus"
-category: "armes-antiques"
-status: "published"
-navigationType: "fiche"
-sources: [610, 967, 653]
-editorialStatus: "canon"
-certainty: "central"
+title: 'Poséidon'
+summary: "Poséidon est le pouvoir cyclique de commander aux Rois des Mers, incarné aujourd'hui par Shirahoshi ; promesse de Joy Boy, Noah et futurs possibles sont distingués."
+category: 'armes-antiques'
+status: 'published'
+navigationType: 'fiche'
+sources: [626, 628, 648, 649, 968]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "armes-antiques"
-order: 34
-related: ["shirahoshi", "poseidon"]
+parent: 'armes-antiques'
+order: 35
+related: ['shirahoshi', 'royaume-ryugu', 'noah', 'joy-boy', 'gol-d-roger', 'guerre-finale']
 ---
 
-## Présentation canonique
+## Le pouvoir de Poséidon
 
-Poséidon est l'une des trois Armes antiques, désignée comme l'arme capable de commander les Rois des Mers. Sa nature est liée à une personne vivante, réincarnée à chaque génération.
+Poséidon est l'une des trois Armes antiques. Ce nom désigne une princesse sirène capable de communiquer avec les Rois des Mers et de leur donner des ordres. **Shirahoshi** est l'incarnation actuelle de ce pouvoir.
 
-Shirahoshi, princesse du Royaume Ryūgū, en est l'incarnation actuelle.
+Poséidon ne naît pas à chaque génération : le pouvoir réapparaît à des intervalles de plusieurs siècles. Le manga ne fixe pas un cycle exact.
 
-## Ce que le manga établit
+## Ce que Roger apprend
 
-- La prophétie de dame Shirley annonce la naissance simultanée de Shirahoshi et d'un autre souverain.
-- Au chapitre 653, Luffy fait à Shirahoshi une promesse soulignée à cinq reprises.
-- Le Ponéglyphe de l'île des Hommes-Poissons évoque explicitement Poséidon et sa promesse.
+Sur l'île des Hommes-Poissons, Roger entend les Rois des Mers annoncer la naissance prochaine de leur souveraine et le temps nécessaire à sa croissance. Cette information contribue à expliquer pourquoi son équipage est arrivé trop tôt.
 
-## La lecture des Fous du Bus
+Cette conversation n'est pas une prophétie de Madame Shirley. Shirley possède son propre don et ses propres visions ; les Rois des Mers constituent une source distincte.
 
-Poséidon n'est pas une figure attendue dans un futur lointain : c'est Shirahoshi, qui s'éveillera au présent. La promesse du Ponéglyphe est celle que Luffy vient de lui faire, et son accomplissement est en cours. Le rôle de l'Arme antique consiste précisément à commander les Rois des Mers lors de la destruction de Red Line.
+## Le Ponéglyphe de Ryūgū
 
-L'article de démonstration Poséidon et Shirahoshi détaille cette activation.
+Le Ponéglyphe de la Forêt de la Mer contient les excuses du **Joy Boy historique** envers la Poséidon de son époque pour une promesse non tenue. Il n'établit pas que Shirahoshi existait alors ni que la promesse actuelle de Luffy à Shirahoshi constitue exactement le même message.
 
-## Arguments et réserves
+L'absence de Shirahoshi à l'époque de Roger n'est donc pas un anachronisme : il attendait la naissance de l'incarnation annoncée.
 
-L’identification de Shirahoshi à Poséidon est **établie par le manga**. En revanche, relier sa promesse à Luffy, Noah et à une future destruction de Red Line relève de la lecture des Fous du Bus. Les éléments convergent — promesse, Rois des Mers, Noah et attente d’un jour à venir — mais aucune scène ne confirme encore le déroulement final proposé.
+## Noah et les Rois des Mers
 
-Une autre lecture reste possible : la promesse de Joy Boy pourrait concerner un Joy Boy ancien et une mission indépendante du scénario temporel. Le rôle exact de Shirahoshi, de Noah et des Rois des Mers demeure donc ouvert.
+Noah attend au royaume Ryūgū et les Rois des Mers disent pouvoir le réparer avec l'aide d'une « famille » encore inconnue. Le navire est lié à une promesse ancienne et à Poséidon, mais son constructeur et sa fonction finale ne sont pas révélés.
 
-## Ce que les chapitres récents ont changé
+## Projections
 
-Les révélations d’Egghead sur le niveau des mers donnent davantage de poids à une mission d’évacuation ou de déplacement des peuples. Elles ne confirment toutefois ni la cible de Poséidon ni l’ordre des événements de la guerre finale.
+Shirahoshi pourrait employer son pouvoir pour déplacer Noah, protéger des populations ou agir dans une bataille future. Ces scénarios restent ouverts : le manga ne lui a pas assigné une mission complète et ne fixe aucun ordre avec Pluton, Wano, Red Line ou une nouvelle montée des eaux.
 
-## Questions non résolues
+## Limites
 
-- Quelle promesse Luffy devra-t-il réellement tenir envers Shirahoshi ?
-- Quand et pourquoi les Rois des Mers devront-ils déplacer Noah ?
-- Poséidon agira-t-elle aux côtés de Luffy, ou son pouvoir pourra-t-il être contraint par un autre camp ?
+- La fréquence exacte de réapparition de Poséidon est inconnue.
+- La promesse de Joy Boy n'est pas entièrement expliquée.
+- Noah n'est pas établi comme une construction du peuple des Hommes-Poissons.
+- Les « deux souverains » entendus par les Rois des Mers ne peuvent pas être identifiés avec certitude au-delà de ce que le récit révèle.

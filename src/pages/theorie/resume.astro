@@ -1,460 +1,164 @@
 ---
-import ArticleLayout from '@layouts/ArticleLayout.astro';
+import WikiLayout from '@layouts/WikiLayout.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
 import TheoryMechanism from '@components/TheoryMechanism.astro';
+import Footer from '@components/Footer.astro';
 
-const headings = [
-  { depth: 2, slug: 'laugh-tale', text: '1. Tout commence avec Laugh Tale' },
-  { depth: 2, slug: 'poneglyphes-avenir', text: '2. Les Ponéglyphes raconteraient l’avenir' },
-  { depth: 2, slug: 'joy-boy-luffy', text: '3. Joy Boy serait Monkey D. Luffy' },
-  { depth: 2, slug: 'trois-noms', text: '4. Luffy, Joy Boy et Nika : trois noms' },
-  { depth: 2, slug: 'figures-presentes', text: '5. Les autres figures du Siècle oublié' },
-  { depth: 2, slug: 'missions-peuples', text: '6. Les missions des peuples' },
-  { depth: 2, slug: 'royaume-antique', text: '7. Le Royaume antique' },
-  { depth: 2, slug: 'imu-avenir', text: '8. Imu face à son avenir' },
-  { depth: 2, slug: 'guerre-finale', text: '9. La Grande Guerre' },
-  { depth: 2, slug: 'retournement-final', text: '10. Le retournement final' },
+const points = [
+  {
+    number: '01',
+    status: 'Manga',
+    kind: 'manga',
+    title: 'Joy Boy appartient au passé historique',
+    text: "Vegapunk situe Joy Boy environ neuf siècles avant le présent, dans le Royaume antique, et le décrit comme le premier pirate. Luffy n'efface pas cette existence distincte.",
+    source: 'Chapitres 1043–1044 et 1115',
+  },
+  {
+    number: '02',
+    status: 'Théorie centrale',
+    kind: 'core',
+    title: 'Des informations futures pourraient être devenues des sources du passé',
+    text: "La théorie ne pose pas une boucle générale. Elle suit un passé apparent contenant des informations futures, le présent où les événements sont vécus et un futur projeté qui pourrait créer cette mémoire.",
+    source: 'Synthèse théorique, mise à jour au chapitre 1190',
+  },
+  {
+    number: '03',
+    status: 'Théorie centrale',
+    kind: 'core',
+    title: 'Les Ponéglyphes sont le mécanisme central de conservation',
+    text: "Ils peuvent préserver récits, promesses, coordonnées et plans pendant des siècles. Robin les lit mais ne sait pas les graver ; Momonosuke n'a pas reçu ce savoir et Sukiyaki le possède encore.",
+    source: 'Chapitres 301, 395, 967 et 1055',
+  },
+  {
+    number: '04',
+    status: 'Hypothèse récente',
+    kind: 'recent',
+    title: 'Le moyen de transmission reste ouvert',
+    text: "Une communication temporelle, une forme de préscience ou une information fixée dans le passé sont des branches alternatives. Harley, Emeth et Zoro ne sont pas nécessaires au noyau.",
+    source: 'Chapitre 1188 et branches de la théorie',
+  },
+  {
+    number: '05',
+    status: 'Manga',
+    kind: 'manga',
+    title: 'Roger atteint Laugh Tale après Lodestar et arrive trop tôt',
+    text: "Lodestar est la dernière île indiquée par le Log Pose. Les quatre Road Ponéglyphes donnent quatre positions spatiales dont le croisement désigne Laugh Tale ; une coordonnée temporelle demeure hypothétique.",
+    source: 'Chapitres 966–968',
+  },
+  {
+    number: '06',
+    status: 'Extension',
+    kind: 'extension',
+    title: 'Luffy hérite d’un rôle de libération sans devenir le Joy Boy historique',
+    text: "À Elbaf, Imu appelle Luffy « Joy Boy » et Luffy répond être Monkey D. Luffy. La théorie lit Joy Boy comme la conséquence de huit siècles d'héritages convergents, non comme une identité personnelle imposée.",
+    source: 'Chapitres 1115 et 1187–1188',
+  },
+  {
+    number: '07',
+    status: 'Manga + projection',
+    kind: 'projection',
+    title: 'Le monde a déjà subi une hausse des eaux d’environ 200 mètres',
+    text: "La submersion passée est rapportée par Vegapunk. Une nouvelle montée comparable est un risque futur possible ; elle ne découle pas d'un calcul de 199 destructions supplémentaires.",
+    source: 'Chapitres 1114–1116',
+  },
+  {
+    number: '08',
+    status: 'Manga + projection',
+    kind: 'projection',
+    title: 'Pluton existe sous Wano et les Armes antiques restent incomplètement connues',
+    text: "Shirahoshi est Poséidon. Pluton est sous l'ancien Wano : Water Seven pourrait seulement contribuer à sa transformation ou reconstruction. Uranus n'est pas identifié ; Imu pourrait employer la Mother Flame pour atteindre une puissance qui lui serait associée.",
+    source: 'Chapitres 649, 1055, 1060 et 1086',
+  },
+  {
+    number: '09',
+    status: 'Extensions',
+    kind: 'extension',
+    title: 'Les ressemblances de personnages restent des branches',
+    text: "Vivi pourrait accomplir le rôle attribué à Lili ; Zoro pourrait prolonger la légende de Ryuma. Loki/Nidhogg, Emeth/BF-39 et Usopp/Louis Arnot restent séparés et révisables.",
+    source: 'Branches Vivi/Lili, Zoro/Ryuma, Loki, Emeth et Usopp',
+  },
+  {
+    number: '10',
+    status: 'Projection',
+    kind: 'projection',
+    title: 'La guerre finale possède plusieurs ordres possibles',
+    text: "Water Seven, Pluton, ouverture de Wano, Noah, Red Line et All Blue ne forment pas encore une séquence certaine. Le One Piece pourrait contenir la véritable histoire vécue par Luffy, mais son contenu reste inconnu.",
+    source: 'Chapitres 576 et 967–968 ; projection théorique',
+  },
 ];
-
-const summary =
-  'Le Siècle oublié serait le présent : Laugh Tale dans le futur, Ponéglyphes transmis au passé, Luffy devenu Joy Boy et One Piece comme récit de son aventure.';
 ---
 
-<ArticleLayout
-  title="Résumé de la théorie"
-  description={summary}
+<WikiLayout
+  title="La théorie en 10 points"
+  description="Résumé révisé : faits du manga, théorie centrale, extensions, hypothèses récentes et projections clairement séparés."
   currentPath="/theorie/resume"
-  headings={headings}
-  frontmatter={{
-    category: 'histoire-temporalite',
-    ogImage: '/og-resume.png',
-    seoTitle: 'Résumé de la théorie One Piece : le Siècle oublié en 10 points | Les Fous du Bus',
-    related: ['siecle-oublie-present', 'joy-boy', 'poneglyphes-futur'],
-    searchHidden: false,
-  }}
 >
-  <div class="resume-page">
-    <p class="subtitle">Le Siècle oublié est le présent</p>
+  <Breadcrumb items={[{ label: 'Accueil', href: '/' }, { label: 'La théorie', href: '/theorie' }, { label: 'Résumé' }]} />
 
-    <div class="content">
-      <div class="intro-box">
-        <p>
-          Dans <em>One Piece</em>, tout le monde considère le Siècle oublié comme une période
-          disparue de l’Histoire, située il y a environ huit cents ans.
-        </p>
-        <p>
-          La théorie des Fous du Bus propose de renverser cette lecture, sans présenter ses
-          hypothèses comme des faits établis.
-        </p>
-        <p>
-          <strong
-            >Et si les événements attribués au Siècle oublié n’avaient pas encore eu lieu ?</strong
-          >
-        </p>
-        <p>
-          Et si Joy Boy, la Grande Guerre, le Royaume antique et une partie de la véritable histoire
-          du monde appartenaient en réalité à l’époque de Luffy ?
-        </p>
-        <p class="intro-strong">
-          Son idée centrale : le monde croit se souvenir de son passé alors qu’il posséderait,
-          depuis environ neuf siècles, la mémoire d’événements vécus à l’époque de Luffy.
-        </p>
-      </div>
+  <article class="summary" data-pagefind-body>
+    <header class="summary__hero">
+      <p class="summary__eyebrow">Version courte · état au chapitre 1190</p>
+      <h1>La théorie en 10 points</h1>
+      <p>
+        Le fil central porte sur une <strong>transmission d’informations</strong> conservées par les Ponéglyphes. Les faits, extensions et futurs possibles gardent chacun leur niveau de preuve.
+      </p>
+    </header>
 
-      <TheoryMechanism />
+    <aside class="paradox">
+      <strong>Passé apparent : informations du futur</strong>
+      <span>→</span>
+      <strong>Présent : événements vécus</strong>
+      <span>→</span>
+      <strong>Futur projeté : création possible de la mémoire</strong>
+    </aside>
 
-      <hr />
+    <TheoryMechanism />
 
-      <section class="resume-section">
-        <h2 id="laugh-tale">1. Tout commence avec Laugh Tale</h2>
-        <p>La théorie part d’un problème géographique.</p>
-        <p>
-          Grand Line fait le tour du monde, mais Red Line empêche aujourd’hui d’accomplir librement
-          une véritable circumnavigation. À la fin de la route se trouve Lodestar, tandis que Laugh
-          Tale demeure introuvable pour presque toute l’humanité.
-        </p>
-        <p>
-          Les Fous du Bus proposent donc que le problème ne soit pas seulement de savoir <em
-            >où se trouve Laugh Tale</em
-          >, mais aussi <em>quand</em> elle se trouve.
-        </p>
-        <p>
-          Dans la version originale de la théorie, Laugh Tale serait <strong
-            >Lodestar à une autre époque</strong
-          > : un monde futur où Red Line et le Gouvernement mondial auraient disparu. Le quatrième Road
-          Ponéglyphe pourrait alors fournir une coordonnée temporelle, en plus des coordonnées géographiques.
-        </p>
-        <p>C’est ce qui donnerait un sens particulier aux paroles de Roger :</p>
-        <blockquote>il était arrivé trop tôt.</blockquote>
-      </section>
+    <ol class="summary__list">
+      {points.map((point) => (
+        <li class={`summary-card summary-card--${point.kind}`}>
+          <div class="summary-card__top">
+            <span class="summary-card__number">{point.number}</span>
+            <span class="summary-card__status">{point.status}</span>
+          </div>
+          <h2>{point.title}</h2>
+          <p>{point.text}</p>
+          <small><strong>Source :</strong> {point.source}</small>
+        </li>
+      ))}
+    </ol>
 
-      <section class="resume-section">
-        <h2 id="poneglyphes-avenir">2. Les Ponéglyphes raconteraient l’avenir</h2>
-        <p>C’est le mécanisme fondamental de la théorie.</p>
-        <p>Les Ponéglyphes existent bien depuis huit cents ans.</p>
-        <p>
-          Mais les événements qu’ils racontent ne se seraient pas nécessairement déjà produits
-          lorsqu’ils sont apparus.
-        </p>
-        <p>
-          Les Ponéglyphes constituent le principal mécanisme de transmission de la mémoire vers le
-          passé dans la théorie. Depuis le chapitre 1188, une communication directe entre différentes
-          époques constitue également une piste distincte.
-        </p>
-        <p>
-          La théorie propose que Robin et le savoir des Kozuki puissent participer à la rédaction et
-          à la gravure de cette mémoire future.
-        </p>
-        <p>
-          Le monde aurait donc pris ces textes pour les vestiges d’une civilisation disparue, alors
-          qu’ils raconteraient en réalité une histoire encore à venir.
-        </p>
-        <p>
-          Le Rio Ponéglyphe ne raconterait donc pas seulement une ancienne guerre : il raconterait
-          l’histoire que nous lisons depuis le chapitre 1.
-        </p>
-      </section>
-
-      <section class="resume-section">
-        <h2 id="joy-boy-luffy">3. Joy Boy serait Monkey D. Luffy</h2>
-        <p>
-          Dans cette lecture, Joy Boy ne serait pas un ancien héros dont Luffy répète l’existence
-          huit cents ans plus tard.
-        </p>
-        <p>Ce serait l’inverse.</p>
-        <p>Joy Boy serait le nom sous lequel Monkey D. Luffy entrera dans l’Histoire.</p>
-        <p>
-          Pendant huit siècles, des peuples ont transmis des croyances, protégé des objets, conservé
-          des promesses et attendu un futur libérateur.
-        </p>
-        <p>Toutes ces volontés finiraient par converger vers Luffy.</p>
-        <p>Joy Boy ne serait donc pas l’origine de Luffy.</p>
-        <p><strong>Joy Boy serait la conséquence de huit cents années d’Histoire.</strong></p>
-        <p>
-          C’est aussi pour cela que Luffy ne se considère lui-même ni comme Joy Boy ni comme Nika :
-          il ne cherche pas à reproduire une légende. Il agit librement, et c’est précisément ainsi
-          qu’il finirait par devenir cette légende.
-        </p>
-      </section>
-
-      <section class="resume-section">
-        <h2 id="trois-noms">
-          4. Luffy, Joy Boy et Nika seraient trois noms autour d’un même homme
-        </h2>
-        <p>Monkey D. Luffy serait son identité.</p>
-        <p>Joy Boy serait le nom sous lequel le monde retiendra le grand libérateur.</p>
-        <p>
-          Nika serait la figure divine sous laquelle certains peuples et croyants interprètent ce
-          même personnage.
-        </p>
-        <p>
-          Ainsi, les trois noms ne désigneraient pas nécessairement trois personnes vivant à trois
-          époques différentes.
-        </p>
-        <p>Ils pourraient représenter trois manières différentes de parler de Monkey D. Luffy.</p>
-      </section>
-
-      <section class="resume-section">
-        <h2 id="figures-presentes">
-          5. Les autres figures du Siècle oublié pourraient elles aussi appartenir au présent
-        </h2>
-        <p>La même logique est appliquée à plusieurs grandes figures de l’Histoire.</p>
-        <p>La théorie rapproche notamment :</p>
-        <ul>
-          <li>Shirahoshi et Poséidon ;</li>
-          <li>Nefertari Vivi et Nefertari D. Lili ;</li>
-          <li>Marshall D. Teach et Davy Jones ;</li>
-          <li>Roronoa Zoro et Shimotsuki Ryuma ;</li>
-          <li>Loki et Nidhogg ;</li>
-          <li>Doflamingo et le roi Donquixote décrit par les Tontattas.</li>
-        </ul>
-        <p>
-          L’idée n’est pas simplement que les personnages actuels ressemblent à des personnages du
-          passé.
-        </p>
-        <p>
-          La théorie propose que certaines de ces grandes figures historiques soient devenues des
-          légendes parce que leurs actions présentes ou futures ont été transmises vers le passé.
-        </p>
-        <p class="precision">
-          Ces rapprochements sont des extensions plus spéculatives : ils ne possèdent pas tous le
-          même niveau de solidité que le noyau Luffy–Joy Boy–Nika.
-        </p>
-      </section>
-
-      <section class="resume-section">
-        <h2 id="missions-peuples">
-          6. Chaque peuple aurait préparé une partie du monde pendant huit cents ans
-        </h2>
-        <p>
-          Si les Ponéglyphes contiennent des informations venues du futur, ils peuvent également
-          servir d’instructions.
-        </p>
-        <p>
-          Pendant des siècles, différents peuples auraient ainsi conservé ce dont Joy Boy aura
-          besoin au moment de la guerre finale.
-        </p>
-        <ul>
-          <li>Le royaume Ryugu protège Noah et attend Poséidon.</li>
-          <li>Wa no Kuni protège ses secrets et doit un jour ouvrir ses frontières.</li>
-          <li>Les Minks sont liés à Zunesha.</li>
-          <li>Les Shandias ont conservé leur héritage.</li>
-          <li>Les Boucaniers ont transmis la croyance en Nika.</li>
-          <li>Alabasta est lié aux Ponéglyphes et à la famille Nefertari.</li>
-        </ul>
-        <p>
-          Toutes ces histoires séparées formeraient en réalité les différentes pièces d’une même
-          préparation.
-        </p>
-      </section>
-
-      <section class="resume-section">
-        <h2 id="royaume-antique">
-          7. Le Royaume antique serait lié au monde qui reste à construire
-        </h2>
-        <p>
-          Vegapunk décrit une civilisation ancienne dont la technologie semble extraordinairement
-          avancée.
-        </p>
-        <p>Pour les Fous du Bus, ce paradoxe pourrait s’expliquer simplement :</p>
-        <p>ce que le monde appelle « antique » pourrait en réalité provenir d’une époque future.</p>
-        <p>
-          Les inventions de Vegapunk, la Mother Flame, Emeth et les technologies développées durant
-          l’histoire actuelle pourraient participer à la naissance de ce monde. Le passé l’aurait
-          ensuite interprété, à travers les informations reçues, comme un Royaume antique disparu.
-        </p>
-        <p>Encore une fois, l’antique serait en réalité du futur.</p>
-      </section>
-
-      <section class="resume-section">
-        <h2 id="imu-avenir">8. Imu ne craindrait pas seulement son passé, mais son avenir</h2>
-        <p>Imu représente l’autre moitié du mystère.</p>
-        <p>
-          Depuis huit cents ans, le souverain du monde semble obsédé par Joy Boy, Nika, certaines
-          familles et certains événements.
-        </p>
-        <p>
-          Selon la théorie, Imu pourrait disposer d’informations incomplètes sur ce qui doit
-          arriver.
-        </p>
-        <p>
-          Il chercherait alors depuis des siècles à empêcher un avenir qu’il ne comprend pas
-          parfaitement.
-        </p>
-        <p>
-          Et en voulant supprimer Nika, effacer l’Histoire, persécuter certains peuples et contrôler
-          le monde, Imu aurait lui-même créé les conditions nécessaires à l’apparition de Joy Boy.
-        </p>
-        <p>Luffy serait ainsi la conséquence du monde qu’Imu a construit.</p>
-      </section>
-
-      <section class="resume-section">
-        <h2 id="guerre-finale">9. La Grande Guerre serait encore devant nous</h2>
-        <p>
-          La guerre associée au Siècle oublié ne serait pas nécessairement une guerre terminée huit
-          cents ans auparavant.
-        </p>
-        <p>
-          Elle pourrait être la guerre finale vers laquelle <em>One Piece</em> se dirige actuellement.
-        </p>
-        <p>
-          Luffy et ses alliés, les peuples qu’il a libérés, les Armes antiques et les différentes
-          nations préparées depuis des siècles finiraient par se retrouver face au Gouvernement
-          mondial.
-        </p>
-        <p>Cette guerre provoquerait un bouleversement majeur du monde.</p>
-        <ul>
-          <li>Red Line pourrait être détruite.</li>
-          <li>Le niveau des mers pourrait monter de 200 mètres.</li>
-          <li>Les quatre mers pourraient être réunies dans All Blue.</li>
-          <li>Les peuples séparés pourraient enfin se retrouver.</li>
-        </ul>
-        <p>Le monde deviendrait littéralement une seule pièce.</p>
-      </section>
-
-      <section class="resume-section">
-        <h2 id="retournement-final">10. Le retournement final</h2>
-        <p>Voilà le cœur de la théorie des Fous du Bus.</p>
-        <p>
-          Nous pensions lire l’histoire d’un garçon qui héritait d’un héros ayant vécu huit cents
-          ans auparavant.
-        </p>
-        <p><strong>La révélation serait que ce héros n’était autre que lui.</strong></p>
-        <p>Nous pensions que les Ponéglyphes racontaient une civilisation disparue.</p>
-        <p>Ils raconteraient le monde que les protagonistes doivent encore créer.</p>
-        <p>Nous pensions que Roger avait découvert l’histoire du passé.</p>
-        <p>Il aurait découvert l’histoire de ceux qui allaient venir après lui.</p>
-        <p>
-          Et le <strong>One Piece serait cette histoire elle-même</strong> — le récit de l’aventure de
-          Luffy, conservé sous une forme concrète encore inconnue et complété lorsque la fin rejoindra
-          le début.
-        </p>
-        <p>
-          Et depuis le chapitre 1, sans le savoir, nous ne serions pas en train d’assister au retour
-          du Siècle oublié.
-        </p>
-        <p><strong>Nous serions en train de le vivre.</strong></p>
-      </section>
-
-      <hr />
-
-      <div class="extensions-box">
-        <p>
-          La transcription originale distingue un noyau — Laugh Tale, les Ponéglyphes, Luffy/Joy
-          Boy/Nika, la guerre finale et le One Piece — et des prolongements plus spéculatifs : Imu,
-          Emeth, Zunesha, Ryuma, les Armes antiques ou le déplacement ponctuel d’êtres et d’objets
-          dans le temps.
-        </p>
-        <p>
-          Elle reconnaît explicitement que le mécanisme temporel exact n’est pas résolu. Le site
-          doit donc présenter ces pistes comme des possibilités, pas comme une explication déjà
-          démontrée.
-        </p>
-        <p>
-          Pour aller plus loin, vous pouvez lire la <a href="/theorie/theorie-complete"
-            >théorie complète</a
-          > ou explorer chaque sujet séparément dans les <a href="/dossiers">dossiers thématiques</a
-          >.
-        </p>
-      </div>
-    </div>
-  </div>
-</ArticleLayout>
+    <nav class="summary__actions" aria-label="Poursuivre la lecture">
+      <a class="primary" href="/theorie/theorie-complete">Lire la théorie complète</a>
+      <a href="/theorie/chronologie">Explorer la chronologie</a>
+      <a href="/explorer">Ouvrir les outils visuels</a>
+    </nav>
+  </article>
+  <Footer />
+</WikiLayout>
 
 <style>
-  .resume-page {
-    max-width: 720px;
-  }
-
-  .subtitle {
-    font-size: 17px;
-    color: var(--violet-light);
-    font-weight: 600;
-    margin-bottom: 28px;
-    letter-spacing: -0.01em;
-  }
-
-  .intro-box {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-left: 3px solid var(--cyan);
-    padding: 22px 24px;
-    border-radius: var(--border-radius-lg);
-    margin-bottom: 32px;
-  }
-
-  .intro-box p {
-    font-size: 15px;
-    color: var(--text-secondary);
-    line-height: 1.7;
-    margin: 0 0 10px;
-  }
-
-  .intro-box p:last-child {
-    margin-bottom: 0;
-  }
-
-  .intro-strong {
-    color: var(--text-main) !important;
-    font-weight: 600;
-  }
-
-  .resume-section {
-    margin: 36px 0;
-  }
-
-  .resume-section h2 {
-    font-size: 19px;
-    font-weight: 700;
-    margin-bottom: 14px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color);
-    line-height: 1.3;
-  }
-
-  .resume-section p {
-    font-size: 15px;
-    color: var(--text-secondary);
-    line-height: 1.75;
-    margin: 0 0 10px;
-  }
-
-  .resume-section strong {
-    color: var(--text-main);
-  }
-
-  .resume-section em {
-    color: var(--text-main);
-  }
-
-  .resume-section .precision {
-    margin-top: 14px;
-    padding: 12px 14px;
-    border-left: 3px solid var(--accent-gold);
-    border-radius: 0 var(--border-radius) var(--border-radius) 0;
-    background: color-mix(in srgb, var(--accent-gold) 8%, transparent);
-    color: var(--text-main);
-    font-size: 13.5px;
-  }
-
-  .resume-section ul {
-    margin: 12px 0 16px 1.2rem;
-    padding: 0;
-    list-style: disc;
-  }
-
-  .resume-section li {
-    font-size: 14.5px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin-bottom: 4px;
-  }
-
-  .resume-section li::marker {
-    color: var(--violet-light);
-  }
-
-  .resume-section blockquote {
-    margin: 14px 0;
-    padding: 12px 16px;
-    border-left: 3px solid var(--violet);
-    background: color-mix(in srgb, var(--violet) 6%, transparent);
-    border-radius: 0 8px 8px 0;
-    color: var(--text-main);
-    font-style: italic;
-    font-size: 15px;
-  }
-
-  .content hr {
-    border: none;
-    height: 1px;
-    background: var(--gradient-border);
-    opacity: 0.35;
-    margin: 32px 0;
-  }
-
-  .extensions-box {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-left: 3px solid var(--violet);
-    padding: 18px 20px;
-    border-radius: var(--border-radius-lg);
-    margin-top: 32px;
-  }
-
-  .extensions-box p {
-    font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.65;
-    margin: 0 0 10px;
-  }
-
-  .extensions-box p:last-child {
-    margin-bottom: 0;
-  }
-
-  .extensions-box a {
-    color: var(--cyan);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
+  .summary { max-width: 840px; margin: 0 auto; }
+  .summary__hero { padding: 38px 0 24px; text-align: center; }
+  .summary__eyebrow { color: var(--violet-light); font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .summary__hero h1 { margin: 8px 0 14px; font-size: clamp(2rem, 5vw, 3rem); }
+  .summary__hero > p:last-child { max-width: 670px; margin: 0 auto; color: var(--text-secondary); line-height: 1.7; }
+  .paradox { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 8px 0 28px; padding: 15px; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-gold); border-radius: var(--border-radius-lg); background: var(--bg-secondary); color: var(--text-secondary); font-size: 12px; }
+  .summary__list { display: grid; gap: 16px; margin: 34px 0; padding: 0; list-style: none; }
+  .summary-card { padding: 22px 24px; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: color-mix(in srgb, var(--surface) 58%, transparent); }
+  .summary-card--manga { border-left: 3px solid var(--cyan); }
+  .summary-card--core { border-left: 3px solid var(--accent-gold); }
+  .summary-card--extension, .summary-card--recent { border-left: 3px solid var(--violet); }
+  .summary-card--projection { border-left: 3px dashed var(--text-muted); }
+  .summary-card__top { display: flex; align-items: center; gap: 10px; }
+  .summary-card__number { color: var(--text-muted); font-family: var(--font-mono); font-size: 12px; }
+  .summary-card__status { padding: 3px 8px; border: 1px solid currentColor; border-radius: 999px; color: var(--violet-light); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  .summary-card h2 { margin: 12px 0 8px; color: var(--text-main); font-size: 1.2rem; }
+  .summary-card p { margin: 0; color: var(--text-secondary); line-height: 1.7; }
+  .summary-card small { display: block; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); color: var(--text-muted); }
+  .summary__actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 50px; }
+  .summary__actions a { display: inline-flex; min-height: var(--control-size); align-items: center; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius); color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600; }
+  .summary__actions a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+  .summary__actions .primary { border-color: var(--cyan); color: var(--cyan); }
+  @media (max-width: 600px) { .paradox span { display: none; } }
 </style>

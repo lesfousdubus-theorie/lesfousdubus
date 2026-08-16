@@ -12,25 +12,25 @@ const threadCount = Object.keys(timelineThreads).length;
 <WikiLayout
   title="Frise chronologique — La mémoire de l’avenir"
   seoTitle="Frise chronologique interactive One Piece | Les Fous du Bus"
-  description="La frise complète de la théorie des Fous du Bus, reconstruite depuis sa transcription : événements, personnages, armes antiques et boucle temporelle, de −900 ans au retour des informations vers le passé."
+  description="La frise complète de la théorie des Fous du Bus : faits du manga, noyau théorique, extensions, hypothèses récentes et projections, du passé apparent au futur qui pourrait l’avoir créé."
   image="/og-chronologie.png"
   currentPath="/theorie/chronologie"
 >
   <header class="page-hero">
     <div class="page-hero__orbit" aria-hidden="true"></div>
-    <p class="page-hero__badge"><span aria-hidden="true">✦</span> Reconstituée depuis la source</p>
+    <p class="page-hero__badge"><span aria-hidden="true">✦</span> Cadre éditorial révisé</p>
     <h1>Le Siècle oublié<br /><em>commence maintenant</em></h1>
     <p class="page-hero__lead">
-      La transcription complète ne raconte pas seulement un passé mystérieux : elle propose que les
-      actes de Luffy et de ses alliés deviennent l’Histoire que Roger a découverte huit siècles plus
-      tôt. Parcourez cette boucle de gauche à droite, événement après événement.
+      Cette lecture ne raconte pas seulement un passé mystérieux : elle propose que les actes de
+      Luffy et de ses alliés produisent des informations retrouvées par Roger huit siècles plus tôt.
+      Parcourez cette chronologie du passé apparent au futur qui pourrait l’avoir créé.
     </p>
 
     <div class="page-hero__stats" aria-label="Contenu de la frise">
       <div><strong>{theoryTimeline.length}</strong><span>événements</span></div>
-      <div><strong>{timelineEras.length}</strong><span>époques</span></div>
+      <div><strong>{imageCount}</strong><span>illustrés</span></div>
+      <div><strong>{timelineEras.length}</strong><span>périodes</span></div>
       <div><strong>{threadCount}</strong><span>fils narratifs</span></div>
-      <div><strong>{imageCount}</strong><span>cartes illustrées</span></div>
     </div>
   </header>
 
@@ -53,15 +53,17 @@ const threadCount = Object.keys(timelineThreads).length;
     </div>
     <div class="reading-key__body">
       <p>
-        Les cartes <strong>« Manga »</strong> correspondent à des faits établis par l’œuvre. Les cartes
-        <strong>« Théorie centrale »</strong> forment le raisonnement des Fous du Bus ; les
-        <strong>hypothèses</strong> complètent les zones encore ouvertes et les
-        <strong>projections</strong> décrivent la guerre finale envisagée.
+        Les cartes <strong>« Manga »</strong> se limitent aux faits établis par l’œuvre. La
+        <strong>« Théorie centrale »</strong> porte le raisonnement indispensable ; les
+        <strong>« Extensions »</strong> développent ses branches. Les
+        <strong>« Hypothèses récentes »</strong> isolent les lectures encore fragiles ; les
+        <strong>« Projections »</strong> décrivent un avenir possible.
       </p>
       <p class="reading-key__warning">
-        Le mécanisme précis reste volontairement non résolu : transmission d’informations,
-        communication entre époques, préscience ou transport physique limité. La frise représente
-        les correspondances de la théorie, pas une confirmation officielle du manga.
+        Le noyau repose d’abord sur une transmission d’informations futures dont les Ponéglyphes
+        sont le véhicule central. Communication entre époques, préscience, Harley ou transport
+        physique limité restent des mécanismes concurrents ou des branches plus spéculatives. La
+        frise ne vaut pas confirmation officielle du manga.
       </p>
     </div>
   </section>
@@ -76,14 +78,14 @@ const threadCount = Object.keys(timelineThreads).length;
       <strong>Communication temporelle <span aria-hidden="true">→</span></strong>
     </a>
     <a href="/explorer/road-poneglyphes-temps">
-      <span>Comprendre la quatrième coordonnée</span>
+      <span>Explorer le rôle encore ouvert du quatrième Road Ponéglyphe</span>
       <strong>Road Ponéglyphes <span aria-hidden="true">→</span></strong>
     </a>
   </nav>
 
   <p class="source-note">
-    {canonCount} repères canoniques structurent la frise. Les formulations théoriques ont été reconstruites
-    à partir de la transcription complète conservée dans les sources du projet.
+    {canonCount} repères Manga structurent la frise. Chaque carte indique les chapitres ou le dossier
+    d’analyse précis qui motive sa formulation.
   </p>
 
   <Footer />
@@ -328,9 +330,51 @@ const threadCount = Object.keys(timelineThreads).length;
     }
     .reading-key {
       grid-template-columns: 1fr;
+      margin-top: 34px;
     }
     .page-links {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .page-hero {
+      margin-top: 0;
+      padding: 20px 16px;
+    }
+
+    .page-hero h1 {
+      font-size: clamp(2rem, 11vw, 2.65rem);
+      line-height: 0.98;
+    }
+
+    .page-hero__lead {
+      margin-top: 17px;
+      line-height: 1.58;
+    }
+
+    .page-hero__stats {
+      gap: 6px;
+      margin-top: 22px;
+    }
+
+    .page-hero__stats div {
+      padding: 9px 10px;
+    }
+
+    .how-to {
+      gap: 9px;
+      padding: 12px;
+    }
+
+    .reading-key {
+      gap: 18px;
+      padding: 18px 16px;
+      border-radius: 14px;
+    }
+
+    .page-links a {
+      padding: 13px 14px;
     }
   }
 

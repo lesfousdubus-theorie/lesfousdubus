@@ -1,29 +1,43 @@
 ---
-title: "Red Line"
-summary: "Fiche d'identification de Red Line, le continent vertical qui coupe Blue Star en deux et soutient Mary Geoise, l'île des Dragons Célestes."
-category: "monde-destinations"
-status: "published"
-navigationType: "fiche"
-sources: [906, 1114, 1115]
-editorialStatus: "canon"
-certainty: "elevee"
+title: 'Red Line'
+summary: 'Le continent qui ceinture Blue Star : faits géographiques, lieux majeurs et projection distincte concernant une éventuelle rupture lors de la guerre finale.'
+category: 'monde-destinations'
+status: 'published'
+navigationType: 'dossier'
+sources: [22, 496, 604, 906]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 3
-related: ["blue-star", "grand-line"]
+related:
+  ['grand-line', 'mary-geoise', 'royaume-ryugu', 'all-blue', 'deluge-all-blue', 'guerre-finale']
 ---
 
-## Présentation canonique
+## Le continent
 
-Red Line est un continent vertical qui traverse Blue Star d'un pôle à l'autre. Large de plusieurs kilomètres, il sépare physiquement les deux hémisphères de Grand Line et abrite à son sommet Mary Geoise, siège du Gouvernement Mondial.
+Red Line est le continent qui fait le tour de Blue Star et croise Grand Line. Avec Calm Belt, elle contribue à séparer les quatre mers. Reverse Mountain permet d'entrer sur Grand Line ; Mary Geoise se trouve à son sommet, au-dessus de l'île des Hommes-Poissons.
 
-Reverse Mountain, point de passage obligé pour entrer dans Grand Line, est également un prolongement de Red Line.
+Le manga montre une formation gigantesque et difficile à franchir. Il n'en révèle ni l'origine géologique, ni une hauteur uniforme, ni le rôle initial.
 
-## Ce que le manga établit
+## Des passages décisifs
 
-- Red Line coupe perpendiculairement Grand Line au niveau de Mary Geoise.
-- Les Dragons Célestes y demeurent et n'en descendent jamais.
-- Les vingt familles fondatrices y ont bâti leur autorité il y a 800 ans.
+L'entrée de Grand Line par Reverse Mountain et le passage sous Mary Geoise structurent le voyage. Laboon attend près de Reverse Mountain ; le royaume Ryūgū et Noah se trouvent sous le continent, dans une zone qui serait directement concernée par une catastrophe locale.
 
-## La lecture des Fous du Bus
+Ces positions géographiques sont canoniques. Elles ne constituent pas à elles seules un plan de destruction.
 
-Red Line est l'obstacle central de la géographie du monde. Sa destruction partielle, combinée à la submersion de 200 mètres décrite par Vegapunk, permettrait aux eaux des quatre mers de se rejoindre, créant ainsi All Blue. La coalition des Armes antiques (Poséidon, Pluton, Uranus) est précisément pensée pour briser ce verrou géographique.
+## Projection : une rupture possible
+
+Une lecture ancienne de la communauté propose qu'une partie de Red Line puisse être détruite, reliant les mers et contribuant à All Blue. Cette projection pourrait également donner un sens futur à la vision de Madame Shirley concernant l'île des Hommes-Poissons.
+
+Le site conserve cette possibilité sans imposer de moyen : Pluton, Poséidon, une autre Arme antique, une catastrophe naturelle ou une action indépendante restent des branches concurrentes.
+
+## Ordre ouvert
+
+Une nouvelle montée des eaux, l'ouverture de Wano, l'emploi de Noah, une rupture de Red Line et l'apparition d'All Blue ne forment pas une séquence confirmée. Chacun de ces résultats doit pouvoir être validé ou réfuté séparément.
+
+## Limites
+
+- Le manga n'annonce pas explicitement la destruction de Red Line.
+- La vision de Shirley ne précise ni la cause, ni la date, ni toutes les conséquences.
+- Une rupture locale ne signifie pas la disparition de tout le continent.
+- All Blue pourrait déjà exister ailleurs.

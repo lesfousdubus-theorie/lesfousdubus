@@ -1,40 +1,29 @@
 ---
-title: "Pluton"
-summary: "Fiche d'identification de Pluton, l'Arme antique conservée sous forme de plans à Water Seven et capable de détruire des îles entières."
-seoTitle: "Pluton dans One Piece : navire antique et théorie | Les Fous du Bus"
-category: "armes-antiques"
-status: "published"
-navigationType: "fiche"
-sources: [431]
-editorialStatus: "canon"
-certainty: "elevee"
+title: 'Pluton'
+summary: 'Pluton est un navire antique situé sous Wano ; les plans de Water Seven sont une contre-mesure et toute contribution future des charpentiers reste projetée.'
+seoTitle: 'Pluton : navire antique sous Wano | Les Fous du Bus'
+category: 'armes-antiques'
+status: 'published'
+navigationType: 'fiche'
+sources: [399, 431, 1055]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "armes-antiques"
+parent: 'armes-antiques'
 order: 33
-related: ["pluton-water-seven-galley-la"]
+related: ['pluton-water-seven-galley-la']
 ---
 
-## Présentation canonique
+## Manga : Pluton existe sous Wano
 
-Pluton est l'une des trois Armes antiques. Le Gouvernement Mondial la décrit comme un navire de guerre capable de détruire des îles entières d'un seul tir. Ses plans sont conservés par les charpentiers de Water Seven, dans la lignée d'Icebarg et de Franky.
+Pluton est un navire de guerre antique capable de destructions considérables. Le Ponéglyphe d'Alabasta en indique l'emplacement. Au chapitre 1055, Sukiyaki révèle que **l'Arme existe sous l'ancien Wano** et que sa libération est liée à la destruction des remparts du pays.
 
-Aucun exemplaire opérationnel de Pluton n'a été observé à ce jour dans le récit.
+Les plans transmis par les charpentiers de Water Seven permettaient de construire une contre-mesure si l'Arme tombait entre de mauvaises mains. Franky les brûle à Enies Lobby ; cela ne détruit pas l'original sous Wano.
 
-## Ce que le manga établit
+## Projection Water Seven → Pluton
 
-- Franky a brûlé les plans de Pluton pour les soustraire au Gouvernement Mondial (arc Water Seven).
-- Icebarg confie ensuite la mémoire des plans à Franky, qui en est désormais l'unique dépositaire.
-- Le Ponéglyphe d'Alabasta indique l'emplacement de Pluton à Wa no Kuni.
+Icebarg veut transformer Water Seven pour la sauver de l'affaissement et de l'Aqua Laguna. La théorie propose que ses charpentiers, Franky et éventuellement des géants puissent contribuer à l'activation, la modification ou la manœuvre de Pluton.
 
-## La lecture des Fous du Bus
+Water Seven n'est donc plus présentée comme l'origine certaine de l'Arme. Zunesha, l'ouverture de Wano et l'intervention des charpentiers forment des branches à ordre ouvert.
 
-Pluton n'est pas un navire coulé dans un passé lointain : c'est Water Seven transformée en un gigantesque vaisseau grâce à l'intervention des géants charpentiers d'Elbaf. La fusion entre la cité, Zunesha et les plans hérités donnera naissance, au présent, à la véritable Arme antique.
-
-### Thread détaillé (août 2026)
-**« La Galley-La : une coïncidence impossible »** — Thread X complet avec ses 15 médias originaux :
-
-→ [Lire le thread complet avec toutes les images](/theorie/galley-la-coincidence-impossible)
-
-Ce thread (inspiré de la vidéo Mont Corvo) explique pourquoi Icebarg n’a pas copié une légende ancienne mais a **créé** la Galley-La qui deviendra réalité avec l’équipage de Loki.
-
-L'article principal : [Pluton, Water Seven et Galley-La](/theorie/pluton-water-seven-galley-la)
+Voir [Pluton, Water Seven et Galley-La](/theorie/pluton-water-seven-galley-la) et l'[archive critique du thread](/theorie/galley-la-coincidence-impossible).

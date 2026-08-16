@@ -1,16 +1,16 @@
 ---
-title: "Gunko"
-summary: "Fiche canonique neutre sur Gunko, membre des Chevaliers Divins, et son rôle dans les analyses récentes autour de Brook."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
-editorialStatus: "canon"
-certainty: "elevee"
+title: 'Gunko'
+summary: 'Fiche canonique neutre sur Gunko, membre des Chevaliers Divins, et son rôle dans les analyses récentes autour de Brook.'
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 68
 sources: [1183]
-related: ["chevaliers-divins", "brook", "brook-dozan", "gouvernement-mondial"]
-seoTitle: "Gunko One Piece : Chevalier Divin et analyses | Les Fous du Bus"
+related: ['chevaliers-divins', 'brook', 'brook-dozan', 'gouvernement-mondial']
+seoTitle: 'Gunko One Piece : Chevalier Divin et analyses | Les Fous du Bus'
 ---
 
 ## Présentation

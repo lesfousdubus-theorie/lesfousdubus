@@ -5,9 +5,7 @@ const currentYear = new Date().getFullYear();
 
 // Dernier chapitre analysé pour affichage dans le footer
 const chapters = await getCollection('chapters');
-const lastChapter = chapters
-  .slice()
-  .sort((a, b) => b.data.chapter - a.data.chapter)[0];
+const lastChapter = chapters.slice().sort((a, b) => b.data.chapter - a.data.chapter)[0];
 ---
 
 <footer class="footer" data-pagefind-ignore>
@@ -26,11 +24,16 @@ const lastChapter = chapters
       <p class="footer__note">
         Projet fan-made non officiel. One Piece © Eiichiro Oda / Shueisha / Toei Animation.
       </p>
-      {lastChapter && (
-        <p class="footer__updated">
-          Dernière analyse : <a href={`/chapitres/${lastChapter.data.chapter}`}>chapitre {lastChapter.data.chapter}</a>
-        </p>
-      )}
+      {
+        lastChapter && (
+          <p class="footer__updated">
+            Dernière analyse :{' '}
+            <a href={`/chapitres/${lastChapter.data.chapter}`}>
+              chapitre {lastChapter.data.chapter}
+            </a>
+          </p>
+        )
+      }
     </div>
 
     <div class="footer__right">
@@ -71,7 +74,11 @@ const lastChapter = chapters
           </svg>
         </a>
         <span class="footer__social-separator" aria-hidden="true"></span>
-        <a href="#main-content" class="footer__social-link footer__back-to-top" aria-label="Retour en haut">
+        <a
+          href="#main-content"
+          class="footer__social-link footer__back-to-top"
+          aria-label="Retour en haut"
+        >
           <svg
             width="16"
             height="16"
@@ -94,7 +101,7 @@ const lastChapter = chapters
 <style>
   .footer {
     margin-top: auto;
-    padding: 24px 0 28px;
+    padding: var(--space-6) 0 var(--space-7);
     border-top: 1px solid var(--border-color);
   }
 
@@ -198,6 +205,9 @@ const lastChapter = chapters
   }
 
   .footer__links a {
+    display: inline-flex;
+    min-height: var(--control-size);
+    align-items: center;
     font-size: 13px;
     color: var(--text-secondary);
     text-decoration: none;
@@ -222,8 +232,8 @@ const lastChapter = chapters
   }
 
   .footer__social-link {
-    width: 32px;
-    height: 32px;
+    width: var(--control-size);
+    height: var(--control-size);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
@@ -252,7 +262,8 @@ const lastChapter = chapters
 
   .footer__back-to-top {
     width: auto;
-    padding: 0 10px;
+    min-width: var(--control-size);
+    padding: 0 12px;
     gap: 6px;
   }
 

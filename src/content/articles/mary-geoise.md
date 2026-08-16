@@ -1,47 +1,41 @@
 ---
-title: "Mary Geoise"
+title: 'Mary Geoise'
 summary: "Fiche de Mary Geoise : la capitale du monde au sommet de Red Line, le Trône Vide, l'escalier des vingt rois et la Chambre Fleurie."
-category: "gouvernement-mondial"
-status: "published"
-navigationType: "fiche"
+category: 'gouvernement-mondial'
+status: 'published'
+navigationType: 'fiche'
 sources: [906, 908, 1084, 1085, 1114]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "gouvernement-mondial"
+parent: 'gouvernement-mondial'
 order: 69
-related: ["gouvernement-mondial", "imu-nerona", "vingt-rois", "red-line", "lunariens", "fruits-du-demon", "chambre-fleurie"]
+related:
+  [
+    'gouvernement-mondial',
+    'imu-nerona',
+    'vingt-rois',
+    'red-line',
+    'lunariens',
+    'fruits-du-demon',
+    'chambre-fleurie',
+  ]
 ---
-
-## Présentation
-
-Mary Geoise est la capitale du monde, bâtie au sommet de Red Line, à 10 000 mètres d'altitude. Elle abrite le Gouvernement mondial, les Dragons Célestes et le Trône Vide.
 
 ## Ce que le manga établit
 
-- Le **Trône Vide** est officiellement le symbole d'un monde sans souverain unique. En réalité, Imu s'y assied.
-- L'**escalier infini** est bordé des statues des vingt rois fondateurs (chapitre 906).
-- Le site était autrefois le territoire des **Lunariens**, avant leur disparition.
-- La **Chambre Fleurie** est une salle secrète où Imu se rend pour trancher, entouré des Gorosei. Sa localisation précise par rapport au palais n'est pas précisément établie par les transcriptions.
-- Des chantiers colossaux sont menés depuis Mary Geoise dans le monde entier : les ponts Tequila Wolf, Bourbon, Vodka et Rum.
+Mary Geoise est la capitale du Gouvernement mondial au sommet de Red Line. Elle abrite les Dragons Célestes, le Trône vacant sur lequel Imu s'assied en secret et plusieurs espaces liés au pouvoir.
 
-## La lecture des Fous du Bus
+Les épées déposées devant le Trône symbolisent le serment des fondateurs. Les détails des statues, la position exacte de la Chambre Fleurie et les relations avec les Lunariens restent partiellement documentés.
 
-Deux éléments retiennent l'attention.
+## Extensions distinctes
 
-D'abord, les **statues de l'escalier infini** : la théorie y reconnaît les silhouettes encapuchonnées des Chevaliers Divins, ce que le manga ne confirme pas.
+- Certaines silhouettes architecturales peuvent être rapprochées des Chevaliers Divins ; l'image ne les identifie pas.
+- Les ponts Tequila Wolf, Bourbon, Vodka et Rum pourraient servir au contrôle territorial, au transport, à l'exploitation ou à un futur monde submergé.
+- La connaissance par Imu d'une future montée des eaux pourrait venir d'archives, d'une communication ou de préscience.
 
-Ensuite, les **ponts titanesques**. Construire depuis 700 ans des ouvrages de plusieurs centaines de mètres de haut, capables de contenir des villes entières, n'a de rationalité que si l'on sait que le niveau de la mer va monter de 200 mètres. C'est l'un des arguments les plus concrets de la théorie : une infrastructure ne se justifie que par un besoin anticipé.
+La hauteur des ponts n'est pas une preuve à elle seule d'un nouveau Déluge.
 
-## Limites et nuances
+## Projection
 
-- Les statues sont représentées de façon peu détaillée : la ressemblance est une lecture d'image.
-- Les grands ponts peuvent répondre à des besoins de circulation entre continents, sans anticipation d'un déluge.
-- Le manga ne relie jamais explicitement ces chantiers à la montée des eaux.
-
-## Points encore à expliquer
-
-- La localisation exacte de la **Chambre Fleurie** (l'affirmation « sous le palais » n'est pas confirmée par les sources).
-- La présence éventuelle de l'**Arbre d'Ève** dans ou sous Mary Geoise (raisonnement de la théorie, à appuyer sur une source précise).
-- Ce qu'il est advenu des Lunariens lors de la construction.
-- Ce que devient Mary Geoise si Red Line est détruite.
+Une rupture de Red Line menacerait Mary Geoise, mais sa destruction, l'évacuation de ses habitants et sa place dans l'ordre de la guerre finale restent inconnues.

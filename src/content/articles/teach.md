@@ -1,49 +1,55 @@
 ---
-title: "Marshall D. Teach"
-summary: "Fiche d'analyse consacrée à Marshall D. Teach, son double pouvoir et sa place dans la théorie."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
-sources: [441, 1164]
-editorialStatus: "canon"
-certainty: "moyenne"
+title: 'Marshall D. Teach'
+summary: 'Fiche de Teach : faits sur Barbe Noire et hypothèses distinctes concernant Xebec, Davy Jones, un troisième Fruit ou une ambition mondiale.'
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'dossier'
+sources: [225, 440, 576, 925, 1107]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 40
-related: ["davy-jones-fiche", "barbe-noire-davy-jones", "rocks-xebec", "god-valley", "davy-jones"]
+related:
+  [
+    'barbe-noire-davy-jones',
+    'davy-jones',
+    'davy-jones-fiche',
+    'signification-d',
+    'god-valley',
+    'luffy',
+  ]
 ---
 
-## Présentation canonique
+## Barbe Noire
 
-Marshall D. Teach, dit Barbe Noire, est l'amiral de l'équipage de Barbe Noire et l'un des Quatre Empereurs. Il est le seul être connu capable de détenir **deux Fruits du Démon** (*Yami Yami no Mi* et *Gura Gura no Mi*), sa constitution physique étant décrite comme anormale.
+Marshall D. Teach, dit Barbe Noire, est capitaine de l'équipage de Barbe Noire, Amiral d'une flotte et l'un des Quatre Empereurs. Son équipage occupe Hachinosu et son navire amiral porte le nom **Saber of Xebec**.
 
-## Ce que le manga établit
+Teach poursuit une ambition de grande ampleur, collectionne les Fruits du Démon et agit avec patience. Son objectif final et son rapport exact à la Volonté du D. ne sont pas révélés.
 
-- Il a servi des années dans l'équipage de **Barbe Blanche** avant de tuer Thatch pour s'emparer du Yami Yami no Mi.
-- Il s'empare du pouvoir de Barbe Blanche après sa mort à Marineford — un fait jamais expliqué.
-- Il porte la **volonté du D.**
-- Il a fait de **Hachinosu**, ancien fief de Rocks D. Xebec, son royaume ; son navire s'appelle le *Saber of Xebec*.
-- Interrogé par Saturn à Egghead sur l'objectif de Barbe Noire, Van Augur répond : « **Le monde.** »
-- À Egghead, **Catarina Devon** touche St. Saturn et peut donc copier son apparence.
-- Il déclare que « les rêves des hommes n'ont pas de fin ».
+## Deux pouvoirs connus
 
-## La lecture des Fous du Bus
+Teach possède le Yami Yami no Mi et le Gura Gura no Mi. Son corps est décrit comme atypique, et Marco souligne cette singularité après Marineford. Le manga n'a pas encore expliqué comment il peut détenir deux pouvoirs.
 
-Teach serait l'héritier du **clan Davy** — fils de Rocks D. Xebec et seul rescapé de God Valley — appelé à conquérir le titre de **Jones**, c'est-à-dire de Roi du Monde.
+Le pavillon à trois crânes, l'absence de sommeil rapportée par Shanks et Baggy, et la structure particulière de son corps alimentent plusieurs théories. Aucun troisième Fruit n'est acquis.
 
-Il est ainsi l'exact contrepoint de Luffy : là où Luffy deviendra Joy Boy, figure de libération, Teach deviendra Davy Jones, figure de domination. Les deux sont des D., les deux montent vers Mary Geoise, mais l'un veut détruire le trône et l'autre s'y asseoir.
+## Xebec et Davy Jones
 
-Chez Oda, « le Monde » désigne l'autorité suprême incarnée par Imu. L'infiltration préparée par Catarina Devon viserait donc le Trône Vide lui-même.
+Le nom de son navire et Hachinosu justifient un parallèle avec Rocks D. Xebec. Ils ne prouvent ni filiation, ni identité, ni volonté identique.
 
-Voir [Davy Jones](/theorie/davy-jones-fiche) pour la distinction entre le clan et le titre, et [Marshall D. Teach et Davy Jones](/theorie/barbe-noire-davy-jones) pour la démonstration complète.
+Les chapitres récents relancent aussi le nom de **Davy Jones** autour de Xebec et d'une possible erreur d'identité d'Imu. Teach pourrait prolonger ce motif maritime ou chercher à s'emparer du monde ; le récit ne l'appelle toutefois jamais Davy Jones.
 
-## Limites et nuances
+## Contrepoint de Luffy
 
-- Aucune filiation entre Xebec et Teach n'est établie par le manga.
-- Reprendre le fief et le nom d'un prédécesseur est un geste de piraterie banal, pas une preuve de sang.
-- « Le monde » peut désigner une ambition de conquête ordinaire, sans viser Imu.
+Teach et Luffy partagent l'initiale D., une ambition extrême et une capacité à attirer des alliés, tout en défendant des rapports opposés à la liberté et au pouvoir. Cette construction narrative permet d'imaginer Teach comme adversaire final ou rival majeur sans conclure qu'il deviendra Davy Jones ou s'assiéra sur le Trône vacant.
 
-## Articles liés
+## Projections ouvertes
 
-- [Davy Jones](/theorie/davy-jones-fiche)
-- [Marshall D. Teach et Davy Jones](/theorie/barbe-noire-davy-jones)
-- [Rocks D. Xebec](/theorie/rocks-xebec)
+Teach pourrait chercher un troisième pouvoir, attaquer Mary Geoise, affronter Shanks, Luffy ou Imu, ou poursuivre un autre objectif. Chaque proposition doit rester indépendante et clôturable.
+
+## Limites
+
+- Sa parenté avec Xebec n'est pas confirmée.
+- Le nom Davy Jones ne lui est pas attribué.
+- Son ambition mondiale ne signifie pas nécessairement le Trône vacant.
+- La cause de ses deux Fruits reste inconnue.
+- Aucun ordre final Teach → Shanks → Imu n'est établi.

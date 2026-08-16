@@ -12,16 +12,19 @@ export function formatChapter(chapter: number): string {
  */
 export function editorialStatusToFrench(s?: string): { label: string; badgeClass: string } {
   const map: Record<string, { label: string; badgeClass: string }> = {
-    'canon': { label: 'Canon', badgeClass: 'meta-badge--cyan' },
-    'fait-observe': { label: 'Fait observé', badgeClass: 'meta-badge--cyan' },
-    'interpretation': { label: 'Interprétation', badgeClass: 'meta-badge--violet' },
-    'hypothese-centrale': { label: 'Hypothèse centrale', badgeClass: 'meta-badge--gold' },
-    'hypothese-secondaire': { label: 'Hypothèse secondaire', badgeClass: 'meta-badge--violet' },
-    'nouvelle-piste': { label: 'Nouvelle piste', badgeClass: 'meta-badge--violet' },
-    'contredite': { label: 'Contredite', badgeClass: 'meta-badge--muted' },
-    'refutee': { label: 'Réfutée', badgeClass: 'meta-badge--muted' },
+    manga: { label: 'Manga', badgeClass: 'meta-badge--cyan' },
+    'theorie-centrale': {
+      label: 'Théorie centrale',
+      badgeClass: 'meta-badge--gold',
+    },
+    extension: { label: 'Extension de la théorie', badgeClass: 'meta-badge--violet' },
+    'hypothese-recente': {
+      label: 'Hypothèse récente',
+      badgeClass: 'meta-badge--violet',
+    },
+    projection: { label: 'Projection', badgeClass: 'meta-badge--gold' },
   };
-  return map[s ?? ''] ?? { label: 'Hypothèse centrale', badgeClass: 'meta-badge--gold' };
+  return map[s ?? ''] ?? { label: 'Statut non classé', badgeClass: 'meta-badge--muted' };
 }
 
 

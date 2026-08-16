@@ -3,7 +3,13 @@ import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
 ---
 
-<WikiLayout title="Page non trouvée" description="Cette page n'existe pas ou a été déplacée." currentPath="/404" noBreadcrumb noSidebar>
+<WikiLayout
+  title="Page non trouvée"
+  description="Cette page n'existe pas ou a été déplacée."
+  currentPath="/404"
+  noBreadcrumb
+  noSidebar
+>
   <div class="not-found">
     <h1>404</h1>
     <p>Page non trouvée</p>
@@ -61,9 +67,10 @@ import Footer from '@components/Footer.astro';
 
   .btn {
     display: inline-flex;
+    min-height: var(--touch-target);
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
+    gap: 7px;
+    padding: 9px 16px;
     border-radius: var(--border-radius);
     font-weight: 500;
     transition: all 0.2s ease;

@@ -1,43 +1,43 @@
 ---
-title: "Kozuki Momonosuke"
-summary: "Fiche neutre de Kozuki Momonosuke : héritier du clan des graveurs de Ponéglyphes, envoyé vingt ans dans le futur par Toki, seul à pouvoir entendre Zunesha."
-category: "figures-principales"
-status: "published"
-navigationType: "fiche"
+title: 'Kozuki Momonosuke'
+summary: "Fiche révisée de Momonosuke : voyageur envoyé vingt ans vers le futur, shogun de Wano et interlocuteur de Zunesha ; il a reporté l'ouverture des frontières."
+category: 'figures-principales'
+status: 'published'
+navigationType: 'fiche'
 sources: [819, 963, 973, 1037]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 28
-related: ["wa-no-kuni", "kozuki-toki", "poneglyphes", "zunesha-fiche", "nico-robin"]
+related: ['wa-no-kuni', 'kozuki-toki', 'poneglyphes', 'zunesha-fiche', 'nico-robin']
 ---
 
-## Présentation
+## Le voyage de Toki
 
-Kozuki Momonosuke est l'héritier du clan Kozuki et le shogun de Wa no Kuni. Fils d'Oden et de Toki, il a été envoyé vingt ans dans le futur par le pouvoir de sa mère.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Ce que le manga établit
+Kozuki Toki envoie **Momonosuke, Kin'emon, Kanjuro, Raizo et Kiku** vingt ans dans le futur. Hiyori reste dans le présent de Wano et est confiée à Kawamatsu. Le pouvoir montré par le Toki Toki no Mi ne va que vers le futur.
 
-- Le **clan Kozuki est le clan des graveurs** : ses membres savent tailler et écrire les Ponéglyphes. Momonosuke est l'héritier de ce savoir.
-- Toki l'a projeté vingt ans en avant, avec sa sœur Hiyori et les Fourreaux Rouges, au moment de la mort d'Oden.
-- Il possède un Fruit du Démon artificiel conçu par Vegapunk, qui le transforme en dragon.
-- Il est **le seul, avec Luffy, à pouvoir entendre la voix de Zunesha**, et le seul à pouvoir lui donner un ordre.
-- Il a fait rouvrir les frontières de Wa no Kuni.
+**Sources précises :** chapitres 920, 939 et 973.
 
-## La lecture des Fous du Bus
+## Zunesha et le shogunat
 
-Momonosuke est un point d'articulation majeur : il est à la fois un voyageur temporel attesté et l'héritier de ceux qui fabriquent les Ponéglyphes. Dans la lecture des Fous du Bus, ce serait lui qui graverait, avec Robin, les pierres envoyées vers le passé.
+<div class="section-pill section-pill--manga">Manga</div>
 
-Sa capacité à commander à Zunesha est également lue comme la marque d'une autorité héritée, cohérente avec l'idée que l'éléphant exécute un ordre ancien.
+Momonosuke entend la Voix de Toutes Choses et peut ordonner à Zunesha d'agir. Après la chute de Kaido, il devient shogun. Il décide toutefois de **ne pas ouvrir immédiatement les frontières** : l'ouverture reste reportée.
 
-## Limites et nuances
+## Pluton sous Wano
 
-- Son voyage temporel est à sens unique et ne concerne que vingt ans.
-- Sa capacité à entendre Zunesha est expliquée dans le manga par la Voix de Toutes Choses, faculté déjà connue.
-- Rien n'indique qu'il ait commencé à graver quoi que ce soit.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Points encore à expliquer
+Sukiyaki explique au chapitre 1055 que Pluton existe sous l'ancien Wano. Faire tomber les murs du pays libérerait l'accès à l'Arme et correspondrait à l'ouverture physique des frontières.
 
-- Comment le clan Kozuki a acquis le savoir des graveurs.
-- Pourquoi Momonosuke et Luffy partagent cette faculté.
-- Le contenu de ce que Momonosuke pourrait graver.
+## Le savoir Kozuki
+
+<div class="section-pill section-pill--manga">Manga</div>
+
+Momonosuke descend des artisans des Ponéglyphes, mais Oden n'a pas eu le temps de lui transmettre leur écriture. Sukiyaki est vivant et sait encore la lire et la graver. Attribuer à Momonosuke la gravure de futurs textes est donc une projection non établie.
+
+## Limites et objections
+
+Son lien exact avec Zunesha, la date future de l'ouverture de Wano et son rôle avec Pluton sont inconnus. La projection forte Zunesha + Water Seven → ouverture de Wano doit rester conditionnelle et indépendante d'un voyage vers le passé.

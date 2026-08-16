@@ -3,11 +3,19 @@ import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
 ---
 
-<WikiLayout title="Erreur serveur" description="Une erreur inattendue s'est produite." currentPath="/500" noBreadcrumb noSidebar>
+<WikiLayout
+  title="Erreur serveur"
+  description="Une erreur inattendue s'est produite."
+  currentPath="/500"
+  noBreadcrumb
+  noSidebar
+>
   <div class="error-page">
     <h1>500</h1>
     <p>Erreur serveur</p>
-    <p class="error-page__hint">Une erreur inattendue s'est produite. Veuillez réessayer dans quelques instants.</p>
+    <p class="error-page__hint">
+      Une erreur inattendue s'est produite. Veuillez réessayer dans quelques instants.
+    </p>
     <div class="error-page__actions">
       <a href="/" class="btn btn-primary">Retour à l'accueil</a>
       <a href="/theorie/resume" class="btn btn-secondary">Lire le résumé</a>
@@ -56,9 +64,10 @@ import Footer from '@components/Footer.astro';
 
   .btn {
     display: inline-flex;
+    min-height: var(--touch-target);
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
+    gap: 7px;
+    padding: 9px 16px;
     border-radius: var(--border-radius);
     font-weight: 500;
     transition: all 0.2s ease;

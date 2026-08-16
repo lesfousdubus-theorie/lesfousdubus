@@ -1,49 +1,37 @@
 ---
-title: "Madame Shirley"
-summary: "Fiche de Madame Shirley : la voyante de l'île des Hommes-Poissons, seule détentrice attestée du don de préscience dans One Piece, et sa vision de l'homme au chapeau de paille."
-category: "transmission-memoire"
-status: "published"
-navigationType: "fiche"
-sources: [610, 611, 618, 1188]
-editorialStatus: "nouvelle-piste"
-certainty: "moyenne"
+title: 'Madame Shirley'
+summary: "Voyante de l'île des Hommes-Poissons : ses prédictions établissent un précédent de perception du futur, sans attribuer le même pouvoir à Imu."
+category: 'transmission-memoire'
+status: 'published'
+navigationType: 'fiche'
+sources: [610, 611, 618]
+editorialStatus: 'hypothese-recente'
+certainty: 'moyenne'
 reviewedUntilChapter: 1190
 order: 59
-related: ["communication-temps", "kozuki-toki", "royaume-ryugu", "imu-nerona", "joy-boy"]
+related: ['la-prescience-et-imu', 'communication-temps', 'royaume-ryugu', 'imu-nerona']
 ---
 
-## Présentation
+## Une voyante de Ryūgū
 
-Madame Shirley est la propriétaire du Mermaid Café sur l'île des Hommes-Poissons et la sœur cadette d'Arlong. Elle est surtout la **seule détentrice attestée du don de préscience** dans tout *One Piece*.
+Madame Shirley est la propriétaire du Mermaid Café et la demi-sœur d'Arlong. Le récit lui attribue des prédictions portant parfois sur un futur lointain ; elle aurait notamment annoncé l'âge des pirates et la mort de Barbe Blanche.
 
-## Ce que le manga établit
+Ses visions sont fragmentaires et doivent être interprétées. Le manga ne fournit pas de règle générale expliquant leur déclenchement, leur précision ou l'existence d'autres personnes dotées du même don.
 
-- Le mot « préscience » n'est employé **qu'une seule fois** dans le manga, au chapitre 610, pour décrire son don.
-- Elle serait la seule à posséder un **don de prédiction** attesté dans le récit.
-- Plusieurs de ses prédictions **se sont réalisées**, dont la mort de Barbe Blanche.
-- Ses visions ne sont ni claires ni précises : elle doit les **interpréter** pour en comprendre le sens.
-- Elle a renoncé à son pouvoir, qu'elle jugeait trop pénible à porter.
-- Sa dernière vision montre une **silhouette au chapeau de paille détruisant l'île des Hommes-Poissons**. Shirley associe cette silhouette à Luffy, mais l'identité exacte de l'homme aperçu et l'accomplissement de cette vision restent non résolus.
-- L'anime la représente explicitement sous les traits de Luffy — c'est un **ajout de la Toei**, absent du manga.
+## La vision du chapeau de paille
 
-## La lecture des Fous du Bus
+Shirley voit une silhouette portant un chapeau de paille au milieu de la destruction de l'île des Hommes-Poissons et l'identifie à Luffy. La vision ne montre pas la cause complète, le moment, ni le sens de « destruction ». Son accomplissement reste ouvert.
 
-Shirley établit un précédent décisif : dans cet univers, **on peut connaître l'avenir sans voyager dans le temps**, et une prédiction exacte peut être mal interprétée par celui qui la reçoit.
+L'adaptation animée peut rendre la silhouette plus explicitement semblable à Luffy ; elle ne remplace pas l'ambiguïté de la planche.
 
-C'est exactement le statut que la théorie propose pour Imu. Si la silhouette vue par Shirley n'est pas Luffy mais **Joy Boy**, alors elle et Imu seraient les deux seuls personnages à avoir aperçu la même figure future — et tous deux à l'avoir mal comprise.
+## Une branche explicative
 
-Le parallèle est aussi visuel et moral : silhouette filiforme, mèche devant l'œil, port altier. Mais Shirley a **renoncé** à son pouvoir et vit apaisée, là où Imu ne l'a jamais lâché et est devenu paranoïaque. Yin et yang.
+Shirley prouve qu'une perception de l'avenir est possible dans l'univers. Le site conserve donc la **préscience** comme une explication possible du savoir d'Imu, en concurrence avec les souvenirs, les archives, les Ponéglyphes et une communication temporelle.
 
-Le développement de cette hypothèse appliquée à Imu se trouve dans [La Préscience et la malédiction d'Imu](/theorie/la-prescience-et-imu).
+Cette analogie ne démontre pas qu'Imu possède le même don ni que les deux personnages voient les mêmes événements.
 
-## Limites et nuances
+## Limites
 
-- Rien n'indique que le don de Shirley soit reproductible ou partagé par d'autres personnages.
-- Que la préscience existe ne prouve pas qu'Imu la possède : c'est une analogie, pas une démonstration.
-- La lecture « la silhouette est Joy Boy, pas Luffy » repose sur une ambiguïté graphique que l'anime a d'ailleurs tranchée dans l'autre sens.
-
-## Articles liés
-
-- [La Préscience et la malédiction d'Imu](/theorie/la-prescience-et-imu)
-- [Kozuki Toki](/theorie/kozuki-toki)
-- [La communication à travers le temps](/theorie/communication-temps)
+- Une prédiction peut être réelle mais mal interprétée.
+- La vision ne permet pas de distinguer destruction volontaire, dommage collatéral ou évacuation.
+- Son existence ne permet pas d'attribuer la préscience à un autre personnage.

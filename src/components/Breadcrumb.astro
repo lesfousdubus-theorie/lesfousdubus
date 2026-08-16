@@ -28,7 +28,9 @@ const { items } = Astro.props;
               </span>
             )}
             {!isLast && (
-              <span class="breadcrumb-sep" aria-hidden="true">/</span>
+              <span class="breadcrumb-sep" aria-hidden="true">
+                /
+              </span>
             )}
           </li>
         );
@@ -39,13 +41,19 @@ const { items } = Astro.props;
 
 <style>
   .breadcrumb-nav {
-    margin-bottom: 16px;
+    max-width: 100%;
+    margin-bottom: var(--space-5);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
   }
   .breadcrumb-list {
     display: flex;
-    flex-wrap: wrap;
+    width: max-content;
+    min-width: 100%;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1);
     list-style: none;
     padding: 0;
     margin: 0;
@@ -55,14 +63,18 @@ const { items } = Astro.props;
   .breadcrumb-item {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1);
+    white-space: nowrap;
   }
   .breadcrumb-link {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
     color: var(--text-secondary);
     text-decoration: none;
     transition: color 0.15s ease;
-    padding: 2px 4px;
-    border-radius: 4px;
+    padding: 4px 6px;
+    border-radius: var(--border-radius-sm);
   }
   .breadcrumb-link:hover {
     color: var(--cyan);
@@ -79,5 +91,11 @@ const { items } = Astro.props;
   .breadcrumb-sep {
     opacity: 0.4;
     color: var(--text-secondary);
+  }
+
+  @media (max-width: 767px) {
+    .breadcrumb-link {
+      min-height: var(--control-size);
+    }
   }
 </style>

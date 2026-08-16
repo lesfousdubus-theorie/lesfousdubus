@@ -1,44 +1,39 @@
 ---
-title: "Kaido"
-summary: "Fiche neutre de Kaido : ancien Empereur, porteur du Uo Uo no Mi modèle Seiryu, vaincu à Onigashima et lié à l'attente de Joy Boy par les Lunariens."
-category: "figures-principales"
-status: "published"
-navigationType: "fiche"
-sources: [795, 1010, 1049, 1044]
-editorialStatus: "canon"
-certainty: "elevee"
+title: 'Kaido'
+summary: 'Fiche de Kaido : Empereur de Wano, rapport à King et déclaration selon laquelle Joy Boy sera celui qui le vaincra ; interprétations séparées.'
+seoTitle: 'Kaido : Joy Boy et Wano | Les Fous du Bus'
+category: 'figures-principales'
+status: 'published'
+navigationType: 'fiche'
+sources: [795, 1049]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-order: 26
-related: ["joy-boy", "luffy", "lunariens", "nika", "wa-no-kuni"]
-seoTitle: "Kaido One Piece : Empereur, Uo Uo no Mi, Nika | Les Fous du Bus"
+order: 13
+related: ['joy-boy', 'luffy', 'lunariens', 'nika', 'wa-no-kuni']
 ---
 
-## Présentation
+## Kaido à Wano
 
-Kaido des Cent Bêtes était l'un des Empereurs, réputé « la créature la plus forte du monde ». Il régnait sur Wa no Kuni avec Orochi avant d'être vaincu par Luffy sur le toit d'Onigashima.
+Kaido est l'ancien capitaine des Cent Bêtes et l'un des Quatre Empereurs. Avec Orochi, il soumet Wano et en exploite les ressources. Il recherche une guerre d'ampleur mondiale et valorise la puissance comme critère de domination.
 
-## Ce que le manga établit
+## King et Joy Boy
 
-- Kaido porte le **Uo Uo no Mi, modèle Seiryu**, un Zoan mythique de dragon.
-- Il a passé une vingtaine d'années à rassembler une armée en vue d'une guerre contre le Gouvernement mondial.
-- Il connaît l'existence de Joy Boy et sait que les **Lunariens l'attendent**.
-- Au chapitre 1049, il en tire une déduction explicite : si les Lunariens attendent Joy Boy, alors Joy Boy est nécessairement celui qui le vaincra.
-- Il tombe précisément au moment où Luffy éveille son fruit.
+King, un Lunarien, croit que Kaido pourra changer le monde. Dans leur échange rapporté au chapitre 1049, Kaido déclare à King que **Joy Boy sera celui qui le vaincra un jour**. King répond alors qu'il pense que Joy Boy ne viendra jamais.
 
-## La lecture des Fous du Bus
+Cette scène établit la déduction personnelle de Kaido. Elle ne permet pas d'affirmer que tout le peuple lunarien attend Joy Boy, qu'une prophétie lunarienne complète existe ou que Kaido gardait volontairement Wano pour tester un candidat.
 
-Kaido est présenté comme le miroir inversé de Joy Boy : tous deux veulent abolir les inégalités du monde, mais l'un par la destruction, l'autre par le rire. Sa propre déduction fonctionne comme une condition logique — tant que personne ne peut le battre, Joy Boy ne peut pas exister ; le jour où il tombe, Joy Boy apparaît.
+## La défaite face à Luffy
 
-C'est exactement ce qui se produit sur le toit d'Onigashima, ce qui fait de cette chute un point de bascule dans la lecture de la théorie.
+Luffy vainc Kaido après l'éveil du Hito Hito no Mi, modèle Nika. Les habitants de Wano apprennent ensuite qu'un homme appelé Joy Boy a vaincu Kaido, Luffy refusant d'être présenté comme un héros. Cette désignation populaire ne signifie pas qu'ils connaissent toute son identité ou la véritable histoire.
 
-## Limites et nuances
+## Lecture : un seuil narratif
 
-- Kaido est un témoin peu fiable sur les questions historiques : il rapporte des rumeurs.
-- La simultanéité entre sa défaite et l'éveil de Luffy est une construction narrative classique.
-- Son projet de guerre s'explique par son ambition personnelle, sans référence au Siècle oublié.
+La déclaration de Kaido fait de sa défaite un critère narratif : celui qui parvient à le vaincre peut correspondre à son idée de Joy Boy. Dans le fil « Libération », Kaido devient ainsi un obstacle et un témoin indirect, pas le gardien canonique d'une chronologie future.
 
-## Points encore à expliquer
+## Limites
 
-- D'où Kaido tient sa connaissance des Lunariens et de Joy Boy.
-- Ce qu'il cherchait exactement à Wa no Kuni.
-- Son sort réel après Onigashima.
+- Le manga ne dit pas que Kaido connaît l'identité du Joy Boy historique.
+- Il ne décrit pas une mission collective des Lunariens.
+- Une future coalition lunarienne n'est pas annoncée.
+- Le rôle exact de Wano dans la guerre finale demeure distinct de la motivation personnelle de Kaido.

@@ -14,9 +14,9 @@ import DiagramViewport from '@components/DiagramViewport.astro';
     <p class="eyebrow">🗺️ Géographie</p>
     <h1>La carte de Blue Star</h1>
     <p class="page-desc">
-      Blue Star est coupée en deux par le continent rouge (Red Line) et traversée par Grand Line, ce qui isole
-      quatre mers. Cette carte visualise la géographie, puis l'hypothèse de la théorie : après la destruction
-      de Red Line, les barrières s'effondreraient et les quatre mers formeraient une seule pièce.
+      Red Line et Grand Line découpent le globe en quatre Blues. Reverse Mountain donne accès à Grand Line ;
+      Lodestar est la dernière destination indiquée par le Log Pose, après laquelle Roger a recherché l'île manquante.
+      Le dessin est schématique : Red Line n'interdit pas à elle seule une circumnavigation.
     </p>
   </div>
 
@@ -62,29 +62,29 @@ import DiagramViewport from '@components/DiagramViewport.astro';
       <circle cx="400" cy="40" r="14" fill="#e0ab4e" stroke="#c98d2e" stroke-width="2" />
       <text x="400" y="16" fill="#e0ab4e" font-size="10" font-weight="700" text-anchor="middle" font-family="Inter,system-ui,sans-serif">Reverse Mountain</text>
 
-      <!-- Lodestar (right, theory marks Laugh Tale) -->
-      <circle cx="720" cy="150" r="11" fill="#b07cc6" stroke="#9a5fc0" stroke-width="2" />
-      <text x="720" y="120" fill="#b07cc6" font-size="10" font-weight="700" text-anchor="middle" font-family="Inter,system-ui,sans-serif">Lodestar</text>
-      <text x="720" y="133" fill="#8a6f9e" font-size="9" text-anchor="middle" font-family="Inter,system-ui,sans-serif">(fictif)</text>
+      <!-- Lodestar: schematic point on Grand Line -->
+      <circle cx="720" cy="316" r="11" fill="#b07cc6" stroke="#9a5fc0" stroke-width="2" />
+      <text x="720" y="286" fill="#b07cc6" font-size="10" font-weight="700" text-anchor="middle" font-family="Inter,system-ui,sans-serif">Lodestar</text>
+      <text x="720" y="299" fill="#8a6f9e" font-size="9" text-anchor="middle" font-family="Inter,system-ui,sans-serif">position schématique</text>
 
-      <!-- Theory: Laugh Tale === Lodestar at the time of Joy Boy -->
-      <circle cx="720" cy="180" r="14" fill="none" stroke="#e0ab4e" stroke-width="1.5" stroke-dasharray="4,3" />
-      <text x="720" y="205" fill="#e0ab4e" font-size="10" font-weight="600" text-anchor="middle" font-family="Inter,system-ui,sans-serif">Laugh Tale ?</text>
+      <!-- Laugh Tale: spatial position unknown -->
+      <circle cx="665" cy="220" r="14" fill="none" stroke="#e0ab4e" stroke-width="1.5" stroke-dasharray="4,3" />
+      <text x="665" y="245" fill="#e0ab4e" font-size="10" font-weight="600" text-anchor="middle" font-family="Inter,system-ui,sans-serif">Laugh Tale : position inconnue</text>
 
       <!-- After Red Line falls -->
       <rect x="12" y="540" width="776" height="64" rx="12" fill="#0e1722" stroke="#e0ab4e" stroke-width="1" opacity="0.9" />
-      <text x="24" y="566" fill="#e0ab4e" font-size="12" font-weight="700" font-family="Inter,system-ui,sans-serif">L'hypothèse de la théorie</text>
-      <text x="24" y="586" fill="#aeb7c2" font-size="11" font-family="Inter,system-ui,sans-serif">Red Line détruite → les barrières géographiques bouleversées → les quatre mers communiquent → All Blue.</text>
+      <text x="24" y="566" fill="#e0ab4e" font-size="12" font-weight="700" font-family="Inter,system-ui,sans-serif">Projection géographique</text>
+      <text x="24" y="586" fill="#aeb7c2" font-size="11" font-family="Inter,system-ui,sans-serif">Une ouverture de Red Line pourrait relier des mers et contribuer à All Blue ; l'ordre et le mécanisme restent ouverts.</text>
     </svg>
     </DiagramViewport>
-    <figcaption>Schéma de Blue Star : Red Line, les quatre mers, Grand Line, Reverse Mountain et Lodestar. Les cercles en pointillés (Laugh Tale) et le bandeau bas sont des visualisations de la théorie, pas une carte canonique.</figcaption>
+    <figcaption>Schéma non à l'échelle. Lodestar est placée sur Grand Line à titre pédagogique ; la position de Laugh Tale reste inconnue. Le pointillé et le bandeau bas relèvent de l'hypothèse.</figcaption>
   </figure>
 
   <div class="legend">
     <span><i class="dot" style="background:#b0563a"></i> Red Line (continent)</span>
     <span><i class="dot" style="background:#163a54"></i> Grand Line (océan)</span>
-    <span><i class="dot" style="background:#e0ab4e"></i> Reverse Mountain / Laugh Tale (théorie)</span>
-    <span><i class="dot" style="background:#b07cc6"></i> Lodestar</span>
+    <span><i class="dot" style="background:#e0ab4e"></i> Reverse Mountain (manga) / Laugh Tale (position inconnue)</span>
+    <span><i class="dot" style="background:#b07cc6"></i> Lodestar · placement schématique</span>
   </div>
 
   <Footer />

@@ -95,6 +95,7 @@
   :root {
     --font-sans: 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-display: 'Fraunces', Georgia, Cambria, 'Times New Roman', serif;
+    --font-mono: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
     --nav-h: 56px;
     --nav-h-mobile: 52px;
     /* Échelle de rayons avec vraie progression visuelle
@@ -108,12 +109,28 @@
     --icon-xs: 12px;
     --icon-sm: 16px;
     --icon-md: 20px;
+    /* Base 4 px spacing scale. Components should compose these values rather
+       than introduce one-off gaps that drift between pages. */
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
     --space-4: 16px;
     --space-5: 24px;
     --space-6: 32px;
+    --space-7: 40px;
+    /* Controls use a compact visual scale. Primary CTAs may opt into a larger
+       size, while coarse-pointer layouts keep a separate comfortable target. */
+    --control-size: 38px;
+    --control-size-compact: 34px;
+    --touch-target: 40px;
+    --page-gutter: clamp(16px, 3.2vw, 40px);
+    --page-block-start: clamp(22px, 3vw, 32px);
+    --section-gap: clamp(32px, 5vw, 48px);
+    --card-padding: clamp(16px, 2.4vw, 22px);
+    --grid-gap: 16px;
+    --content-max: 920px;
+    --sidebar-left-width: 248px;
+    --sidebar-right-width: 224px;
   }
 
   html {
@@ -231,10 +248,10 @@
     transform: translateY(-2px);
   }
 
-  /* Tap target helper - ensure minimum 44px touch targets on mobile */
+  /* Tap target helper for links and custom controls on mobile. */
   @media (max-width: 768px) {
     .tap-target {
-      min-height: 44px;
+      min-height: var(--touch-target);
       display: flex;
       align-items: center;
     }
@@ -348,8 +365,34 @@
 a,
 button,
 input,
+select,
 [role='button'] {
   @apply transition-colors duration-200;
+}
+
+/* Interactive form controls share a compact baseline. Primary actions can
+   grow beyond it; touch-first screens gain a little more room without forcing
+   desktop icon controls into oversized 44 px squares. */
+button,
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
+select {
+  min-height: var(--control-size);
+}
+
+button {
+  min-width: var(--control-size);
+}
+
+@media (pointer: coarse) {
+  button,
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select {
+    min-height: var(--touch-target);
+  }
+
+  button {
+    min-width: var(--touch-target);
+  }
 }
 
 /* Prevent horizontal overflow globally — critical for mobile slide fix.

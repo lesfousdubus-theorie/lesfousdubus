@@ -1,45 +1,37 @@
 ---
-title: "Shimotsuki Ryuma et Roronoa Zoro"
-summary: "Fiche d'analyse sur Shimotsuki Ryuma, le Dieu de la Lame de Wano, et ses parallèles avec Roronoa Zoro."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
+title: 'Zoro pourrait accomplir la légende de Ryuma'
+summary: "Analyse révisée des parallèles Zoro/Ryuma : exploits canoniques séparés d'une éventuelle extension temporelle vers l'ancien Wano."
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
 sources: [1023]
-editorialStatus: "hypothese-secondaire"
-certainty: "elevee"
+editorialStatus: 'extension'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 46
-related: ["zoro"]
+related: ['zoro']
 ---
 
-## Le samouraï borgne
+## Ryuma et son dragon
 
-Ryuma était un samouraï légendaire de Wano, borgne, qui a tranché un dragon au sommet de la capitale des Fleurs. Il n'a jamais perdu un combat.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Zoro correspond parfaitement
+Ryuma est le samouraï de Wano surnommé le Dieu de la Lame. Sa légende retient qu'il a abattu un dragon **au-dessus de la capitale des Fleurs**. Son corps et Shusui sont volés puis utilisés par Moria.
 
-Au chapitre 1023, Hyogoro dit que Zoro et le daimyo Ushimaru ressemblent comme deux gouttes d'eau à Ryuma. Kawamatsu ajoute qu'ils ressemblent au dieu des lames, lui aussi borgne.
+**Sources précises :** chapitres 450 à 467 et 937 ; récit _Monsters_.
 
-Zoro est déjà borgne après Wano. Il a tranché Kaido (un dragon) au-dessus de la capitale des Fleurs. Les ressemblances sont frappantes.
+## Ce que Zoro a accompli
 
-## Shusui
+<div class="section-pill section-pill--manga">Manga</div>
 
-Zoro s'est transmis Shusui à Thriller Bark sans le savoir : il a rencontré son propre corps futur. L'ombre de Brook dans Ryuma empêchait de voir la vérité.
+Zoro vainc à Thriller Bark le zombie qui porte le corps de Ryuma et reçoit Shusui. À Wano, il restitue Shusui et reçoit Enma. Il blesse Kaido et lui laisse une cicatrice **sur Onigashima**, pas au-dessus de la capitale des Fleurs.
 
-## Le dernier katana
+## Une extension vers l'ancien Wano
 
-Zoro manie actuellement trois katanas. Mais pour devenir Ryuma, il ne doit en garder qu'un : Shusui. Il confiera Wado Ichimonji, Enma et Sandai Kitetsu à Tashigi, qui lui rappelle Kuina.
+<div class="section-pill section-pill--extension">Extension</div>
 
-Puis il partira à Wano, récupérera Shusui (trésor national), et deviendra Ryuma le dieu des lames, réalisant son rêve impossible : devenir le plus grand sabreur pour que Kuina puisse l'entendre.
+Zoro pourrait être envoyé dans l'ancien Wano et contribuer à la légende attribuée à Ryuma. Cette branche pourrait rapprocher œil, sabre, dépouille et répétition des duels, mais elle dépend d'un transport physique vers le passé que le manga n'a pas montré.
 
-## Transmission temporelle (hypothèse)
+## Limites et objections
 
-Dans la lecture temporelle, le corps de Ryuma aurait été transmis vers le passé et enterré à Ringo. 800 ans plus tard, Gekko Moria le récupérerait, permettant à Zoro de recevoir Shusui et de boucler la transmission.
-
-## Limites et nuances
-
-- **La ressemblance est explicitement commentée par les personnages**, ce qui en fait un clin d'œil assumé d'Oda autant qu'un indice : Wano regorge de doubles et de lignées qui se ressemblent.
-- **Ushimaru ressemble aussi à Ryuma.** Le manga propose donc au moins deux sosies, ce qui affaiblit l'idée d'une identité unique.
-- **La transmission de Shusui a une explication simple** : Ryuma l'a portée, Zoro en hérite à Thriller Bark. Y voir une rencontre avec son propre corps futur ajoute une hypothèse sans nécessité.
-- **Ryuma est mort et enterré à Wano.** Faire de Zoro son incarnation future suppose un déplacement temporel dont le récit ne montre rien.
-- **La théorie elle-même classe ce point comme secondaire** : il illustre le mécanisme sans en constituer une preuve.
+Le dragon de Ryuma, Kaido et le dragon artificiel de Punk Hazard sont des scènes distinctes. Rien n'établit que Zoro abandonnera ses autres sabres, conservera définitivement Shusui ou deviendra littéralement Ryuma.

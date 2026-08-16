@@ -13,49 +13,49 @@ const secondaryTools = [
   },
   {
     title: 'Peuples et missions',
-    description: 'Relier chaque peuple à son rôle final.',
+    description: 'Comparer faits, datations indépendantes et projections.',
     href: '/explorer/peuples-missions',
     icon: '🏰',
     group: 'Monde',
   },
   {
-    title: 'Boucle des Ponéglyphes',
-    description: 'Voir comment l’information rejoint le passé.',
+    title: 'Transmission par les Ponéglyphes',
+    description: 'Suivre l’information du futur possible au passé apparent.',
     href: '/explorer/poneglyphes',
     icon: '📜',
     group: 'Temps',
   },
   {
-    title: 'Road Ponéglyphes et temps',
-    description: 'Comprendre la quatrième coordonnée.',
+    title: 'Road Ponéglyphes : espace et hypothèse temporelle',
+    description: 'Distinguer quatre coordonnées spatiales du mécanisme temporel possible.',
     href: '/explorer/road-poneglyphes-temps',
     icon: '🧭',
     group: 'Temps',
   },
   {
     title: 'Luffy · Joy Boy · Nika',
-    description: 'Comparer les trois identités proposées.',
+    description: 'Distinguer personne historique, mythe, Fruit et Luffy.',
     href: '/explorer/luffy-joy-boy-nika',
     icon: '🎭',
     group: 'Identités',
   },
   {
     title: 'Chemin de Pluton',
-    description: 'Water Seven, Wa no Kuni, Zunesha et les géants.',
+    description: 'Pluton sous Wano et contributions futures possibles.',
     href: '/explorer/schema-pluton',
     icon: '⚓',
     group: 'Guerre finale',
   },
   {
     title: 'Déluge et All Blue',
-    description: 'La transformation géographique du monde.',
+    description: 'Séparer submersion passée et futurs géographiques possibles.',
     href: '/explorer/deluge-all-blue',
     icon: '🌊',
     group: 'Guerre finale',
   },
   {
     title: 'Omen, Mother Flame et Imu',
-    description: 'La branche spéculative autour d’Uranus.',
+    description: 'Comparer Mother Flame, arme de Lulusia, Omen et Uranus.',
     href: '/explorer/omen-imu',
     icon: '⚠️',
     group: 'Guerre finale',
@@ -75,7 +75,7 @@ const secondaryTools = [
     <h1>Ne lisez plus seulement la théorie.<br /><em>Manipulez-la.</em></h1>
     <p>
       Choisissez d’abord ce que vous voulez comprendre : l’ordre des événements, la géographie du
-      monde, les liens entre personnages ou la chaîne complète du raisonnement.
+      monde, les relations entre personnages ou les niveaux du raisonnement.
     </p>
   </header>
 
@@ -143,7 +143,7 @@ const secondaryTools = [
 <style>
   .explorer-hero {
     max-width: 880px;
-    margin: 12px 0 38px;
+    margin: var(--space-3) 0 var(--space-7);
   }
   .eyebrow {
     margin: 0 0 10px;
@@ -174,8 +174,9 @@ const secondaryTools = [
 
   .primary-tools {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: var(--grid-gap);
+    align-items: stretch;
   }
   .primary-tool {
     position: relative;
@@ -197,6 +198,12 @@ const secondaryTools = [
   .primary-tool:hover {
     transform: translateY(-4px);
     border-color: var(--cyan);
+  }
+  .primary-tool:focus-visible,
+  .tool-library__grid a:focus-visible,
+  .tool-library > summary:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
   }
   .primary-tool--wide {
     background:
@@ -279,9 +286,9 @@ const secondaryTools = [
   }
   .tool-library__grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    padding: 0 18px 18px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: var(--space-3);
+    padding: 0 var(--space-5) var(--space-5);
   }
   .tool-library__grid a {
     display: grid;

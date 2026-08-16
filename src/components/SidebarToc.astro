@@ -176,4 +176,20 @@ const { headings = [] } = Astro.props;
     outline-offset: 2px;
     border-radius: 3px;
   }
+
+  /* Sous ce seuil, le sommaire vit dans un tiroir tactile : chaque entrée
+     garde donc une cible confortable sans agrandir la colonne desktop. */
+  @media (max-width: 1399px) {
+    .toc__list {
+      gap: 0;
+    }
+
+    .toc__link {
+      display: flex;
+      min-height: var(--control-size);
+      align-items: center;
+      padding-block: var(--space-2);
+      -webkit-line-clamp: initial;
+    }
+  }
 </style>

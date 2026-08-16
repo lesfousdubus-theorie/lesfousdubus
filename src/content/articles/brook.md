@@ -1,46 +1,47 @@
 ---
-title: "Brook"
-summary: "Fiche neutre de Brook : musicien de l'équipage Rumbar puis des Mugiwara, mort et revenu grâce au Yomi Yomi no Mi, témoin vivant de plus de quatre-vingts ans d'histoire."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
+title: 'Brook'
+summary: 'Fiche chronologique de Brook : enfance et musique, passé royal, Rumbar, ignorance des Fruits, massacre et retour à la vie entre environ −80 et −50.'
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
 sources: [442, 486, 487, 1183, 1184]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 51
-related: ["equipage-rumbar", "binks-no-sake", "dozan", "volonte-heritee", "fruits-du-demon"]
-seoTitle: "Brook One Piece : Rumbar, Yomi Yomi et Dōzan | Les Fous du Bus"
+related: ['equipage-rumbar', 'binks-no-sake', 'dozan', 'volonte-heritee', 'fruits-du-demon']
+seoTitle: 'Brook One Piece : Rumbar, Yomi Yomi et Dōzan | Les Fous du Bus'
 ---
 
-## Présentation
+## Mini-chronologie : environ −80 à −50
 
-Brook est le musicien de l'équipage du Chapeau de Paille. Ancien capitaine adjoint de l'équipage Rumbar, il est mort une première fois, puis revenu à la vie grâce au **Yomi Yomi no Mi**, avant de dériver cinquante ans dans le Triangle Florian.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Ce que le manga établit
+- **≈ −80 à −70 — enfance :** Brook connaît une chanson prototype et des personnages liés à un passé royal ; les détails autour de la princesse Shuri et de Dōzan restent en cours d'interprétation.
+- **Avant −62 — musique et service royal :** il sert comme chef d'une unité militaire dans un royaume du West Blue avant de rejoindre les Rumbar. _Binks no Sake_ circule déjà bien avant le voyage de Roger.
+- **≈ −62 — les Rumbar :** Brook mange le Yomi Yomi no Mi mais explique qu'il ne connaissait pas auparavant les Fruits du Démon.
+- **≈ −52 — massacre et retour :** les Rumbar sont empoisonnés, enregistrent leur dernière chanson pour Laboon, puis Brook revient à la vie et erre dans le Triangle de Florian.
 
-- Brook a vécu **plus de quatre-vingt-dix ans** : c'est le personnage vivant le plus ancien de l'équipage, et l'un des rares témoins directs d'une époque révolue.
-- Il faisait partie de l'équipage Rumbar, qui escorta la baleine Laboon jusqu'à Reverse Mountain.
-- Il connaît ***Binks no Sake*** depuis toujours et l'a chantée avec Laboon.
-- Au chapitre 1184, il révèle avoir écrit une **première version des paroles alors qu'il était enfant, il y a 79 ans**.
-- Il y a 70 ans, la princesse Shuri et lui chantaient déjà cette mélodie.
-- Avant l'équipage Rumbar, Brook appartenait à une unité militaire dont le passé reste peu détaillé.
+**Sources précises :** chapitres 442 et 486–488 ; éléments récents 1183–1184 à confirmer selon la traduction officielle.
 
-## Ce que le manga ne tranche pas
+## Brook ne connaît pas les Fruits du Démon
 
-L'identité de **Dōzan** et le rapport exact de Brook à la composition de *Binks no Sake* restent ouverts. Le manga ne dit pas qui a écrit la chanson ni à quelle date elle est apparue.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## La lecture des Fous du Bus
+Ce témoignage renseigne son environnement culturel au moment où il découvre le Yomi Yomi no Mi. Il ne prouve pas que les Fruits n'existaient pas ailleurs dans le monde.
 
-Cette fiche présente le personnage. Les hypothèses le concernant sont développées dans les articles d'analyse rattachés : **Brook pourrait-il être Dōzan ?** et **Binks no Sake : le chant qui traverse les âges**.
+## Une diffusion massive récente ?
 
-## Limites et nuances
+<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
-- La longévité de Brook s'explique entièrement par son Fruit du Démon.
-- Sa connaissance ancienne de *Binks no Sake* est présentée comme banale : la chanson est un standard de marins.
+La théorie propose que les Fruits aient connu une diffusion massive au dernier siècle. Le chapitre 1186 crée une tension : les géants et Imu semblent disposer de traditions ou connaissances bien plus anciennes. L'alternative simple est une circulation ancienne mais très inégale du savoir.
 
-## Points encore à expliquer
+## Dōzan et Binks no Sake
 
-- Le passé militaire de Brook avant l'équipage Rumbar.
-- L'origine réelle de *Binks no Sake*.
-- Le lien entre Brook et Wa no Kuni.
+<div class="section-pill section-pill--extension">Extension</div>
+
+Brook pourrait être lié à Dōzan ou à une étape de composition de la chanson. Aucun élément ne permet encore de transformer cette proximité en identité définitive ou en voyage temporel.
+
+## Limites et objections
+
+La datation fine des révélations 1183–1184 et plusieurs noms dépendent encore des traductions disponibles. Le retour de Brook s'explique par son Fruit et non par un déplacement temporel.

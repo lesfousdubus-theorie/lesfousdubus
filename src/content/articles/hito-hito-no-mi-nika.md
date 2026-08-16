@@ -1,48 +1,47 @@
 ---
-title: "Hito Hito no Mi, modèle Nika"
-summary: "Fiche du fruit de Luffy : Zoan mythique de type humain, longtemps désigné comme Gomu Gomu no Mi, révélé par le Gorosei au chapitre 1044."
-category: "technologies-pouvoirs"
-status: "published"
-navigationType: "fiche"
+title: 'Hito Hito no Mi, modèle Nika'
+summary: "Fiche factuelle du Fruit de Luffy : Zoan mythique modèle Nika, anciennement dissimulé sous le nom Gomu Gomu no Mi, dont Gear 5 est l'éveil."
+category: 'technologies-pouvoirs'
+status: 'published'
+navigationType: 'fiche'
 sources: [1, 1044, 1046, 1114]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 75
-parent: "fruits-du-demon"
-related: ["fruits-du-demon", "zoans", "nika", "luffy", "joy-boy"]
+parent: 'fruits-du-demon'
+related: ['fruits-du-demon', 'zoans', 'nika', 'luffy', 'joy-boy']
 ---
 
-## Présentation
+## Nom et classification
 
-Le Hito Hito no Mi, modèle Nika est le Fruit du Démon consommé par Monkey D. Luffy au chapitre 1. Présenté durant plus de mille chapitres comme le Gomu Gomu no Mi, un simple Paramecia, il est révélé au chapitre 1044 comme un **Zoan mythique de type humain**.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Ce que le manga établit
+Le Fruit mangé par Luffy est le **Hito Hito no Mi, modèle Nika**, un Zoan mythique. Le Gouvernement mondial a dissimulé son nom sous celui de Gomu Gomu no Mi.
 
-- C'est le Gorosei qui révèle le véritable nom du fruit, et les Cinq Doyens sont les seuls à le connaître.
-- Le fruit confère les pouvoirs du **guerrier de la libération Nika**, figure vénérée par les esclaves et les opprimés.
-- Le Gouvernement mondial a cherché ce fruit durant des siècles sans jamais le capturer ; il « a fui » à répétition.
-- Son éveil transforme le combat en une forme de jeu, où le porteur agit selon son imagination.
-- Le Gorosei considère ce fruit comme la menace la plus sérieuse contre l'ordre du monde.
+**Sources précises :** chapitres 1, 1044 et 1046.
 
-## Ce qui n'est pas montré
+## Éveil : Gear 5
 
-Le manga ne montre **jamais** ce fruit consommé par Joy Boy il y a 800 ans. La seule scène de consommation attestée est celle de Luffy enfant, sur l'île de Dawn. C'est un point de fait que l'analyse du chapitre 1186 exploite.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## La lecture des Fous du Bus
+Après l'éveil à Wano, Luffy nomme sa forme **Gear 5**. Son corps conserve ses propriétés élastiques avec une liberté accrue, et son cœur bat au rythme des Tambours de la Libération.
 
-Le renommage du fruit est l'un des points d'appui les plus solides de la théorie : un pouvoir décrit pendant mille chapitres comme banal se révèle porter le nom d'un dieu attendu depuis 800 ans. Si Joy Boy n'a jamais été montré en train de le manger, alors rien n'oblige à situer son porteur dans le passé.
+## Quatre notions distinctes
 
-L'acharnement du Gouvernement à traquer un fruit précis pendant des siècles suppose par ailleurs qu'il savait ce que ce fruit allait produire — connaissance dont la source reste inexpliquée.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Limites et nuances
+- **Nika** : figure mythique ancienne ;
+- **modèle Nika** : identité du Fruit ;
+- **Gear 5** : éveil de Luffy ;
+- **Monkey D. Luffy** : personne qui a mangé le Fruit.
 
-- L'absence de scène de consommation par Joy Boy peut être une simple réserve narrative d'Oda.
-- Le Gorosei parle de Nika au passé, comme d'une figure ancienne.
-- Le fruit peut avoir eu plusieurs porteurs successifs sans que cela soit montré.
+## Hypothèse de diffusion récente
 
-## Points encore à expliquer
+<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
-- Combien de porteurs a connus ce fruit avant Luffy.
-- Comment le Gouvernement a su, huit siècles à l'avance, quel fruit chercher.
-- Pourquoi le fruit a « choisi » de rejoindre Luffy.
+L'ignorance de Brook envers les Fruits vers −62 peut suggérer une diffusion massive récente ou seulement une connaissance inégale selon les régions. Les références anciennes d'Imu et des géants au chapitre 1186 empêchent d'en faire une conclusion générale.
+
+## Limites et objections
+
+La manière dont les Zoans acquièrent une volonté, l'origine du Fruit et son rapport exact au Joy Boy historique ne sont pas révélés.

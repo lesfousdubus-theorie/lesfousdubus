@@ -1,48 +1,30 @@
 ---
-title: "Gorosei"
-summary: "Fiche des Cinq Doyens : la direction visible du Gouvernement mondial, leur agenouillement devant Imu, leurs pouvoirs et les limites de leur savoir."
-category: "gouvernement-mondial"
-status: "published"
-navigationType: "fiche"
+title: 'Gorosei'
+summary: 'Fiche des Cinq Doyens : la direction visible du Gouvernement mondial, leur agenouillement devant Imu, leurs pouvoirs et les limites de leur savoir.'
+category: 'gouvernement-mondial'
+status: 'published'
+navigationType: 'fiche'
 sources: [233, 906, 1044, 1085, 1110, 1118, 1125]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "gouvernement-mondial"
+parent: 'gouvernement-mondial'
 order: 66
-related: ["gouvernement-mondial", "imu-nerona", "chevaliers-divins", "mary-geoise", "emeth-futur"]
+related: ['gouvernement-mondial', 'imu-nerona', 'chevaliers-divins', 'mary-geoise', 'emeth-futur']
 ---
-
-## Présentation
-
-Le Gorosei, ou Cinq Doyens, constitue la plus haute autorité visible du Gouvernement mondial. Ses cinq membres portent chacun le titre de « dieu » d'un domaine : savoir, justice, agriculture, défense scientifique, finance.
 
 ## Ce que le manga établit
 
-- Les Cinq Doyens s'agenouillent devant **Imu** : ils ne sont pas le sommet du pouvoir.
-- Ils sont d'une longévité anormale et disposent chacun d'un Zoan mythique qui les rend extrêmement difficiles à tuer.
-- Ils **connaissent la véritable histoire** : ils sont les premiers à nommer le Hito Hito no Mi modèle Nika (chapitre 1044), connaissent Joy Boy, les Armes antiques et le nom du Royaume antique.
-- Ils voulaient exécuter le professeur Clover précisément parce qu'il allait prononcer ce nom.
+Le Gorosei constitue l'autorité publique supérieure du Gouvernement mondial mais s'agenouille devant Imu. Ses membres connaissent le nom dissimulé du Fruit de Nika, organisent la censure du Siècle oublié et reconnaissent l'ancien robot ayant attaqué Mary Geoise deux cents ans avant le présent.
 
-## La limite de leur savoir
+Leur longévité, la nature exacte de leurs pouvoirs et l'étendue de leur connaissance historique ne sont pas entièrement expliquées. Le site ne les traite donc ni comme omniscients ni automatiquement comme témoins directs de huit siècles.
 
-C'est le point que la théorie exploite. Malgré cette connaissance, les Cinq Doyens **ne connaissent pas Emeth** :
+## Emeth : une limite possible de leur savoir
 
-- Saturne demande à ses scientifiques d'étudier cette « technologie inconnue » et déclare : « C'est le futur, et je suis sûr qu'il constituera un atout majeur pour notre puissance militaire » (chapitre 1125).
-- Warcury n'y voit que « le robot qui a attaqué Mary Geoise il y a 200 ans » (chapitre 1118), jamais un compagnon de Joy Boy.
+Des réactions du Gorosei à Emeth peuvent indiquer un savoir partiel. La formule décrivant une technologie comme « le futur » se lit d'abord comme une avance scientifique ; en faire l'indice littéral d'une origine future est une extension Emeth/BF-39.
 
-## La lecture des Fous du Bus
+## Questions ouvertes
 
-Si le Gorosei sait tout du Siècle oublié mais ignore un compagnon de Joy Boy, c'est que ce compagnon n'existait pas à l'époque. Emeth serait une création future, ce que le mot de Saturne — « c'est le futur » — dirait littéralement sans qu'il en mesure la portée.
-
-## Limites et nuances
-
-- Le savoir du Gorosei peut être partiel ou déformé par huit siècles.
-- Le mot « futur » chez Saturne désigne vraisemblablement une avance technologique, sens courant de l'expression.
-- Emeth peut avoir existé sans que le Gouvernement en ait gardé trace.
-
-## Points encore à expliquer
-
-- L'origine de leur longévité et la manière dont ils ont obtenu leurs fruits.
-- Ce qu'ils savent exactement d'Imu et depuis quand.
-- Pourquoi ils obéissent à un souverain qu'ils pourraient techniquement affronter.
+- Depuis quand chaque Doyen sert-il Imu ?
+- Que savent-ils du Joy Boy historique, des Armes antiques et d'Emeth ?
+- Leurs pouvoirs relèvent-ils de Fruits, de l'Omen ou d'un autre mécanisme ?

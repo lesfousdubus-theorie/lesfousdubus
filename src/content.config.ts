@@ -29,16 +29,7 @@ const articles = defineCollection({
     sources: z.array(z.number()).default([]),
     order: z.number().default(0),
     editorialStatus: z
-      .enum([
-        'canon',
-        'fait-observe',
-        'interpretation',
-        'hypothese-centrale',
-        'hypothese-secondaire',
-        'nouvelle-piste',
-        'contredite',
-        'refutee',
-      ])
+      .enum(['manga', 'theorie-centrale', 'extension', 'hypothese-recente', 'projection'])
       .optional(),
     /** Titre SEO riche pour <title> (H1 reste court). Ex: "Joy Boy dans One Piece : identité, indices et théorie" */
     seoTitle: z.string().optional(),
@@ -60,6 +51,8 @@ const chapters = defineCollection({
   schema: z.object({
     chapter: z.number(),
     title: z.string(),
+    /** Titre SERP concis, distinct du titre éditorial affiché. */
+    seoTitle: z.string().optional(),
     effect: z.enum([
       'fondation',
       'approfondissement',
@@ -79,16 +72,27 @@ const predictions = defineCollection({
     title: z.string(),
     statement: z.string(),
     status: z.enum(['en-cours', 'confirmee', 'refutee', 'en-attente']).default('en-cours'),
+    /** Dernier chapitre observé, jamais la date de dépôt. */
     chapter: z.number().optional(),
     articles: z.array(z.string()).default([]),
-    // Champs de suivi : ils étaient déjà renseignés dans certaines fiches mais
-    // absents du schéma, donc silencieusement ignorés au rendu.
-    formulatedSince: z.number().optional(),
+    /** Date de dépôt immuable de la proposition atomique. */
+    depositedAtChapter: z.number(),
     lastUpdate: z.number().optional(),
+    resolvedAtChapter: z.number().optional(),
+    outcome: z.string().optional(),
+    revisionHistory: z
+      .array(
+        z.object({
+          chapter: z.number(),
+          change: z.string(),
+        }),
+      )
+      .default([]),
     statusNote: z.string().optional(),
     confidence: z.enum(['elevee', 'moyenne', 'faible']).optional(),
-    source: z.string().optional(),
+    primarySource: z.string(),
     indices: z.string().optional(),
+    observableCriterion: z.string(),
     refuterait: z.string().optional(),
   }),
 });

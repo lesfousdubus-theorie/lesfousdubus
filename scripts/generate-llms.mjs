@@ -115,19 +115,9 @@ const published = articles.filter((a) => !a.sidebarHidden);
 function metaTag(a) {
   const tags = [];
   if (a.editorialStatus) {
-    const map = {
-      canon: 'canon',
-      'fait-observe': 'fait-observe',
-      interpretation: 'interpretation',
-      'hypothese-centrale': 'core-theory',
-      'hypothese-secondaire': 'secondary-theory',
-      'nouvelle-piste': 'speculative',
-      contredite: 'contradicted',
-      refutee: 'refuted',
-    };
-    tags.push(map[a.editorialStatus] || a.editorialStatus);
+    tags.push(a.editorialStatus);
   } else if (a.certainty === 'hypothese') {
-    tags.push('speculative');
+    tags.push('hypothese-recente');
   }
   return tags.length ? ` [${tags.join(',')}]` : '';
 }
@@ -141,16 +131,24 @@ function linkLine(a) {
 // ---- llms.txt (structure éditoriale) ----------------------------------------
 let out = [];
 out.push('# Les Fous du Bus\n');
-out.push('> Wiki consacré à la théorie One Piece selon laquelle le Siècle oublié serait le présent.');
-out.push('Le contenu distingue ce que le manga établit (canon) des hypothèses de la théorie (core-theory, speculative).');
+out.push(
+  '> Wiki consacré à une théorie One Piece sur des informations futures conservées par les Ponéglyphes.',
+);
+out.push(
+  'Le contenu distingue cinq niveaux : manga, theorie-centrale, extension, hypothese-recente et projection.',
+);
 out.push('');
 
 out.push('## Commencer\n');
 out.push(`- [Accueil](${SITE}/) : pitch et vidéo d'introduction`);
 out.push(`- [Résumé de la théorie](${SITE}/theorie/resume) : l'argument en 10 points`);
-out.push(`- [Théorie complète](${SITE}/theorie/theorie-complete) : démonstration continue en 22 chapitres`);
+out.push(
+  `- [Théorie complète](${SITE}/theorie/theorie-complete) : démonstration continue en 22 chapitres`,
+);
 out.push(`- [Carte mentale](${SITE}/explorer/carte-mentale)`);
-out.push(`- [Glossaire](${SITE}/aide/glossaire) : définitions « Dans le manga / Selon la théorie »`);
+out.push(
+  `- [Glossaire](${SITE}/aide/glossaire) : définitions « Dans le manga / Selon la théorie »`,
+);
 out.push('');
 
 const sections = [
@@ -180,7 +178,9 @@ out.push(`- [Tous les chapitres](${SITE}/chapitres) : index complet`);
 out.push('');
 
 out.push('---');
-out.push('Site : ' + SITE + ' — One Piece © Eiichiro Oda / Shueisha / Toei Animation. Projet fan-made.');
+out.push(
+  'Site : ' + SITE + ' — One Piece © Eiichiro Oda / Shueisha / Toei Animation. Projet fan-made.',
+);
 out.push('');
 
 writeFileSync(join(ROOT, 'public', 'llms.txt'), out.join('\n'), 'utf8');
@@ -189,7 +189,9 @@ writeFileSync(join(ROOT, 'public', 'llms.txt'), out.join('\n'), 'utf8');
 let full = [];
 full.push('# Les Fous du Bus — Index complet\n');
 full.push('> Index généré automatiquement de tous les articles publiés.');
-full.push('Les balises entre crochets indiquent la nature : canon, fait-observe, interpretation, core-theory, secondary-theory, speculative.');
+full.push(
+  'Les balises entre crochets indiquent la nature : manga, theorie-centrale, extension, hypothese-recente ou projection.',
+);
 full.push('');
 
 const byCategory = new Map();

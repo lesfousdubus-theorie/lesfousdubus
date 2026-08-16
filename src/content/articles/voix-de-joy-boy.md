@@ -1,20 +1,20 @@
 ---
-title: "La voix de Joy Boy"
-summary: "Le choix d’Urara Takano, ancienne voix de Luffy, pour interpréter Joy Boy est un indice de mise en scène remarquable. Il nourrit la lecture des Fous du Bus sans constituer une confirmation narrative."
-category: "transmission-memoire"
-status: "published"
-navigationType: "fiche"
-editorialStatus: "interpretation"
-certainty: "moyenne"
+title: 'La voix de Joy Boy'
+summary: 'Le choix d’Urara Takano, ancienne voix de Luffy, pour interpréter Joy Boy est un indice de mise en scène remarquable. Il nourrit la lecture des Fous du Bus sans constituer une confirmation narrative.'
+category: 'transmission-memoire'
+status: 'published'
+navigationType: 'fiche'
+editorialStatus: 'extension'
+certainty: 'moyenne'
 reviewedUntilChapter: 1190
 sources: [1122]
 order: 60
-related: ["joy-boy", "luffy", "emeth-futur", "communication-temps", "volonte-heritee"]
+related: ['joy-boy', 'luffy', 'emeth-futur', 'communication-temps', 'volonte-heritee']
 ---
 
 ## Présentation
 
-Lors de la séquence où Emeth entend la voix de Joy Boy, l’anime confie cette voix à **Urara Takano**, qui avait interprété Luffy dans *One Piece: Defeat Him! The Pirate Ganzack!*, première adaptation animée de *One Piece* réalisée en 1998 avant la série télévisée de Toei. Eiichiro Oda aurait personnellement souhaité ce choix. C’est un fait de production ; son sens dans l’histoire, lui, reste à interpréter.
+Lors de la séquence où Emeth entend la voix de Joy Boy, l’anime confie cette voix à **Urara Takano**, qui avait interprété Luffy dans _One Piece: Defeat Him! The Pirate Ganzack!_, première adaptation animée de _One Piece_ réalisée en 1998 avant la série télévisée de Toei. Eiichiro Oda aurait personnellement souhaité ce choix. C’est un fait de production ; son sens dans l’histoire, lui, reste à interpréter.
 
 ## Ce que l’œuvre établit
 
@@ -26,7 +26,7 @@ Lors de la séquence où Emeth entend la voix de Joy Boy, l’anime confie cette
 
 <div class="section-pill section-pill--hypothese">Indice de mise en scène</div>
 
-La théorie y voit un clin d’œil cohérent avec son noyau : **Luffy pourrait être la figure que l’Histoire nommera Joy Boy**. Le rapprochement vocal rend sensible une continuité que le récit entretient déjà par les tambours de la libération, la réaction d’Emeth et la Volonté héritée.
+La théorie y voit un clin d’œil cohérent avec le fil « Libération » : **Luffy pourrait recevoir ou accomplir une fonction associée à Joy Boy**. Le rapprochement vocal rend sensible une continuité narrative entretenue par les tambours de la libération, la réaction d’Emeth et la volonté héritée, sans effacer le Joy Boy historique.
 
 Il faut néanmoins conserver la bonne hiérarchie des preuves : un choix de casting est un **indice éditorial**, pas une preuve diégétique. Il soutient une lecture ; il ne permet pas de conclure seul.
 

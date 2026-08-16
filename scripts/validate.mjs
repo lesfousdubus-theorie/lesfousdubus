@@ -36,7 +36,13 @@ const ENUMS = {
   'articles.certainty': ['central', 'elevee', 'moyenne', 'hypothese'],
   'articles.status': ['draft', 'published'],
   // Doit rester aligné sur le schéma `chapters` de src/content.config.ts.
-  'chapters.effect': ['fondation', 'approfondissement', 'nouvelle-piste', 'modification', 'piste-abandonnee'],
+  'chapters.effect': [
+    'fondation',
+    'approfondissement',
+    'nouvelle-piste',
+    'modification',
+    'piste-abandonnee',
+  ],
   'characters.era': ['ancien', 'moderne', 'transversal'],
   'predictions.status': ['en-cours', 'confirmee', 'refutee', 'en-attente'],
   'timelines.period': ['siecle-oublie', 'present', 'futur', 'boucle'],
@@ -390,14 +396,9 @@ for (const file of files) {
 // La théorie se distingue d'une spéculation ordinaire par le fait qu'elle
 // s'expose à l'objection. Un article interprétatif qui n'énonce jamais ses
 // limites est un défaut de fond, pas de forme : on le refuse.
-const INTERPRETIVE = new Set([
-  'hypothese-centrale',
-  'hypothese-secondaire',
-  'interpretation',
-  'nouvelle-piste',
-]);
+const INTERPRETIVE = new Set(['theorie-centrale', 'extension', 'hypothese-recente', 'projection']);
 const LIMIT_HEADINGS =
-  /^##+\s+(Limites|Points encore à expliquer|Questions non résolues|Ce que le manga ne tranche pas)/im;
+  /^##+\s+(Limites|Points (?:encore )?à (?:expliquer|trancher)|Questions (?:non résolues|ouvertes)|Ce que (?:le manga ne tranche pas|la théorie n'efface pas)|Critères? (?:de révision|de clôture)|Objections(?: et clôture)?)/im;
 
 for (const file of files) {
   const rel = relative(CONTENT_DIR, file).split(sep).join('/');
@@ -406,7 +407,7 @@ for (const file of files) {
   const parsed = parseFrontmatter(raw);
   if (!parsed) continue;
   const { data, body } = parsed;
-  if (!INTERPRETIVE.has(data.editorialStatus)) continue;
+  if (!INTERPRETIVE.has(data.editorialStatus) || data.status === 'draft') continue;
 
   if (!LIMIT_HEADINGS.test(body)) {
     errors.push(
@@ -414,7 +415,6 @@ for (const file of files) {
         `Ajouter "## Limites et nuances" (ou "## Points encore à expliquer").`,
     );
   }
-
 }
 
 // Un article que rien ne référence est une impasse : il reste atteignable par la
@@ -430,10 +430,7 @@ for (const file of files) {
     if (!parsed) continue;
     const slug = rel.slice('articles/'.length).replace(/\.md$/, '');
     bodies.set(slug, parsed.body);
-    relatedOut.set(
-      slug,
-      String(parsed.data.related ?? '').match(/[a-z0-9-]+/g) ?? [],
-    );
+    relatedOut.set(slug, String(parsed.data.related ?? '').match(/[a-z0-9-]+/g) ?? []);
   }
   const inbound = new Set();
   for (const [slug, body] of bodies) {

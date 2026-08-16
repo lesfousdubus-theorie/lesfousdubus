@@ -1,52 +1,40 @@
 ---
-title: "La Silhouette du Scan 1181 : Joy Boy ou Gol D. Roger ?"
-summary: "Analyse détaillée en 6 points expliquant pourquoi la mystérieuse silhouette dévoilée dans les récents chapitres pourrait être Gol D. Roger plutôt que Joy Boy."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
+title: 'La Silhouette du Scan 1181 : Joy Boy ou Gol D. Roger ?'
+summary: 'Analyse détaillée en 6 points expliquant pourquoi la mystérieuse silhouette dévoilée dans les récents chapitres pourrait être Gol D. Roger plutôt que Joy Boy.'
+seoTitle: 'Scan 1181 : Roger jeune ou Joy Boy ? | Les Fous du Bus'
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
 sources: [604, 967, 1181]
 sidebarHidden: true
-editorialStatus: "nouvelle-piste"
-certainty: "hypothese"
+editorialStatus: 'hypothese-recente'
+certainty: 'hypothese'
 reviewedUntilChapter: 1190
 order: 57
-related: ["gol-d-roger", "joy-boy", "la-prescience-et-imu"]
+related: ['gol-d-roger', 'joy-boy', 'la-prescience-et-imu']
 ---
 
-**Résumé** : Les chapitres récents ont révélé une silhouette énigmatique associée aux récits anciens. Bien que beaucoup y aient vu la première apparition directe de Joy Boy, 6 indices troublants suggèrent qu'il s'agirait en réalité de Gol D. Roger.
+> **Statut : hypothèse récente, formulée au chapitre 1181 et réévaluée aux chapitres 1188–1190.**
 
-![Silhouette scan 1181](/images/threads/silhouette-scan-1181-roger/img_1.webp)
-![Silhouette comparée](/images/threads/silhouette-scan-1181-roger/img_2.webp)
+La silhouette du chapitre 1181 a pu être rapprochée d'un Roger jeune plutôt que du Joy Boy historique. La posture, le chapeau et la composition motivent la comparaison, mais une silhouette ne permet pas une identification certaine.
 
-## 1. Le principe de la double lecture
-Dans la vision du Mont Corvo, Imu attend désespérément l'arrivée du véritable Joy Boy (Luffy). Mais tout au long de l'histoire, d'autres prétendants ont été pris par erreur pour cette figure légendaire.
+![Silhouette du chapitre 1181](/images/threads/silhouette-scan-1181-roger/img_1.webp)
+![Comparaison visuelle](/images/threads/silhouette-scan-1181-roger/img_2.webp)
 
-![Double lecture](/images/threads/silhouette-scan-1181-roger/img_3.webp)
+## Pourquoi Roger reste une branche possible
 
-## 2. Le mystère de la jeunesse de Roger
-Eiichiro Oda a sciemment gardé le passé et la jeunesse de Gol D. Roger sous le sceau du secret. Les rares aperçus de Roger jeune (notamment sa première rencontre avec Silvers Rayleigh avec son chapeau de paille) montrent une posture et une esthétique quasi identiques à cette silhouette.
+Roger et Luffy partagent un rêve dont le contenu n'est pas révélé, et Roger occupe une place centrale dans la transmission de l'histoire de Laugh Tale. Ces échos autorisent une lecture visuelle de la silhouette, pas une confusion des personnes par le récit.
 
-![Jeunesse de Roger](/images/threads/silhouette-scan-1181-roger/img_4.webp)
+![Roger jeune](/images/threads/silhouette-scan-1181-roger/img_4.webp)
 
-## 3. Analyse de la composition de la case
-La posture, le port de tête et la découpe d'ombre de la vignette rappellent étrangement plusieurs planches iconiques de Gol D. Roger lors de son périple vers Loguetown et Grand Line.
+## Mise à jour 1188–1190
 
-![Composition de la case](/images/threads/silhouette-scan-1181-roger/img_5.webp)
+Le souvenir d'Imu au chapitre 1188 distingue un premier Joy Boy. Surtout, le texte disponible du chapitre 1190 montre Imu **distinguant Roger de Joy Boy**. Cette donnée est une objection majeure à la version où Imu aurait longtemps pris Roger pour Joy Boy.
 
-## 4. L'écho des mêmes paroles
-Roger et Luffy partagent mot pour mot le même "rêve secret" (le fameux vœu qui a fait rire Shanks et Oden). Si la légende a confondu leurs voix à travers les époques, il est naturel que les récits d'Imu et du Gouvernement associent leurs silhouettes.
+La branche Roger reste donc évolutive : elle peut concerner une silhouette, une communication reçue vers −25 ou un relais à Laugh Tale, mais elle ne fixe plus une chaîne d'identités.
 
-![Paroles identiques Roger et Luffy](/images/threads/silhouette-scan-1181-roger/img_6.webp)
+## Limites
 
-## 5. Pourquoi cela concorde avec les propos d'Imu
-Si Imu a longtemps cru que Gol D. Roger était le Joy Boy annoncé par la prophétie, alors la mort de Roger à Loguetown explique parfaitement pourquoi Imu pensait que *"Joy Boy était mort"*, avant de réaliser avec horreur à Marineford et Egghead que le véritable héritier arrive.
-
-![Discours d'Imu sur Joyboy](/images/threads/silhouette-scan-1181-roger/img_7.webp)
-
-## Limites et nuances
-
-- **Une silhouette est par définition ambiguë.** La lecture proposée repose sur une posture et une découpe d'ombre, éléments que le dessin laisse volontairement indéterminés.
-- **La lecture majoritaire y voit Joy Boy**, et rien n'exclut qu'elle soit la bonne.
-- **Le secret entretenu sur la jeunesse de Roger n'est pas un argument.** Il rend l'hypothèse possible, il ne la soutient pas.
-- **L'écho des mêmes paroles peut être un procédé de mise en scène.** Oda fait fréquemment rimer les répliques de personnages différents pour souligner une filiation d'esprit.
-- **Cette page est classée « nouvelle piste »** : elle est explicitement instable et pourrait être infirmée par la planche suivante.
+- L'attribution graphique reste indéterminée.
+- Un parallèle de mise en scène ne prouve ni identité ni voyage temporel.
+- Les traductions récentes peuvent évoluer ; la page doit suivre le texte primaire disponible.

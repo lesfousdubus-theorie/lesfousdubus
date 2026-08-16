@@ -1,56 +1,44 @@
 ---
-title: "Zou et les Minks"
-summary: "Fiche de Zou et du peuple des Minks : la cité installée sur le dos de Zunesha, les gardiens du Road Ponéglyphe et la mission de conduire l'éléphant à destination."
-category: "peuples-royaumes"
-status: "published"
-navigationType: "fiche"
+title: 'Zou et les Minks'
+summary: "Fiche de Zou et des Minks : gardiens d'un Road Ponéglyphe sur le dos de Zunesha ; leur rôle futur et la peine de l'éléphant restent ouverts."
+category: 'peuples-royaumes'
+status: 'published'
+navigationType: 'fiche'
 sources: [802, 820, 821, 1037]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "peuples-royaumes"
+parent: 'peuples-royaumes'
 order: 84
-related: ["peuples-royaumes", "zunesha-fiche", "poneglyphes", "guerre-finale", "joy-boy"]
+related: ['peuples-royaumes', 'zunesha-fiche', 'poneglyphes', 'guerre-finale', 'joy-boy']
 ---
 
-## Présentation
+## Zou et son Road Ponéglyphe
 
-Zou est une cité bâtie sur le dos de Zunesha, un éléphant colossal qui marche sans interruption depuis plus de mille ans. Elle est peuplée par les Minks, un peuple animalier dirigé par Inuarashi le jour et Nekomamushi la nuit.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Ce que le manga établit
+Zou est une cité mink installée sur le dos de Zunesha. Elle protège l'un des quatre Road Ponéglyphes. Le texte contient une position : le fait que la stèle se déplace avec Zunesha ne transforme pas cette coordonnée en date.
 
-- Les Minks vivent sur Zunesha depuis des générations et se considèrent comme ses gardiens.
-- Zou abrite un **Road Ponéglyphe**, l'un des quatre nécessaires pour atteindre Laugh Tale.
-- Les Minks se déclarent « serviteurs de Joy Boy » et attendent son retour.
-- Inuarashi explique au chapitre 820 que l'itinéraire indiqué par les trois aiguilles du Log Pose est désormais « superflu », et qu'il faut d'abord déceler les mystères des Ponéglyphes à l'endroit où elles pointent.
-- Zunesha n'agit que sur ordre, et n'a plus reçu d'ordre depuis très longtemps.
+**Sources précises :** chapitres 802, 818–821 et 1037.
 
-## Sa mission
+## Zunesha
 
-Emmener Zunesha à destination. C'est la mission la plus littéralement inachevée du dispositif : le peuple accompagne un trajet dont il ignore le terme.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Son lien avec les Ponéglyphes
+Zunesha marche depuis des siècles en punition d'un crime inconnu et ne peut agir librement sans ordre. Momonosuke peut l'entendre et lui commander d'attaquer Jack. À Wano, Zunesha reconnaît les Tambours de la Libération puis repart quand l'ouverture est reportée.
 
-Le Road Ponéglyphe de Zou est mobile : il se déplace avec l'éléphant. Cette particularité en fait le seul des quatre à ne pas avoir de coordonnée fixe, ce que la théorie relie à l'idée que la quatrième indication ne serait pas spatiale mais temporelle.
+## Destination et mission
 
-## La lecture des Fous du Bus
+<div class="section-pill section-pill--extension">Extension</div>
 
-La phrase d'Inuarashi est lue comme une indication de méthode : la destination finale ne s'atteint pas en naviguant, mais en comprenant. Il faudrait apporter le Rio Ponéglyphe sur Lodestar pour que Laugh Tale apparaisse — non pas en un autre lieu, mais à une autre époque.
+La théorie propose que Zunesha participe plus tard à l'ouverture de Wano ou au déplacement de Pluton. Les Minks peuvent rejoindre la coalition de libération, mais aucune destination finale précise de Zunesha n'est donnée.
 
-Les Minks, en conduisant Zunesha, exécuteraient un ordre donné par Joy Boy lui-même, dont le terme coïnciderait avec le jour du serment.
+## Laugh Tale
 
-## Son rôle dans la guerre finale
+<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
-Les Minks rejoindraient la coalition de Joy Boy, et Zunesha — dont la puissance physique est démesurée — constituerait un appui de premier plan.
+Une relation entre Zou, Lodestar et un mécanisme temporel de Laugh Tale reste possible. Elle ne remplace pas la règle canonique des **quatre positions spatiales** des Road Ponéglyphes.
 
-## Limites et nuances
+## Limites et objections
 
-- La fidélité des Minks à Joy Boy est une tradition orale, sans document à l'appui.
-- La phrase d'Inuarashi porte peut-être simplement sur la nécessité de rassembler les quatre Road Ponéglyphes.
-- Rien n'établit que Zunesha ait une « destination » au sens géographique.
-
-## Points encore à expliquer
-
-- Quel est le crime de Zunesha et qui l'a condamné.
-- Qui peut légitimement lui donner un ordre, et pourquoi Momonosuke y parvient.
-- Où Zunesha doit arriver, et ce qui se passe alors.
+Le crime de Zunesha, l'auteur de la condamnation et le prochain ordre sont inconnus. Rien n'impose de transporter le Rio Ponéglyphe à Lodestar pour faire apparaître Laugh Tale.

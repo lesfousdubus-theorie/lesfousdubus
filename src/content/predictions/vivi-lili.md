@@ -1,14 +1,18 @@
 ---
-title: "Vivi / Lili — accomplissement des actions attribuées à Lili"
-statement: "Vivi accomplirait les actions que l'Histoire attribue à Nefertari D. Lili : disperser les Ponéglyphes et contribuer à l'écriture du Rio Ponéglyphe. Koza deviendrait roi d'Alabasta, la laissant libre de prendre la mer."
+title: "Vivi participera à une nouvelle dispersion des Ponéglyphes"
+statement: "Avant l’épilogue, Vivi accomplira une action volontaire qui déplacera ou diffusera au moins un Ponéglyphe ou son contenu vers un nouveau destinataire."
 status: "en-cours"
 chapter: 1190
 articles: ["vivi", "lili", "nefertari-vivi", "rio-poneglyphe"]
-formulatedSince: 1085
+depositedAtChapter: 1190
 lastUpdate: 1190
-statusNote: "Conséquence directe du noyau : si le Siècle oublié est le présent, Lili n'est pas une ancêtre mais un nom futur."
-confidence: "moyenne"
-source: "Théorie complète, chapitre « Lili » ; chapitres 1084-1085"
-indices: "Lili quitte le Conseil des Rois avec les Ponéglyphes ; la reine Titi ressemblait à Vivi au point que Cobra dit « c'est à s'y méprendre » (ch. 215) ; la silhouette du ch. 1085 ; les Nefertari sont la seule famille fondatrice restée en bas ; Imu possédait la photo de Vivi au ch. 908."
-refuterait: "Le manga date explicitement Lili d'il y a huit cents ans avec un visage distinct de Vivi, ou Vivi monte sur le trône d'Alabasta."
+revisionHistory:
+  - chapter: 1190
+    change: "Dépôt atomique initial ; l’identité Vivi/Lili, l’écriture du Rio Ponéglyphe et le règne de Koza ont été retirés de la proposition."
+statusNote: "La dispersion historique est attribuée à Lili ; la prédiction porte seulement sur un rôle analogue accompli dans le futur par Vivi."
+confidence: "faible"
+primarySource: "Chapitres 1084-1085 (lettre de Lili, D. et dispersion historique des Ponéglyphes)."
+indices: "Vivi est héritière de la famille de Lili, porteuse de la lettre transmise par Cobra et actuellement séparée du pouvoir d’Alabasta."
+observableCriterion: "La prédiction est confirmée si Vivi décide et exécute le déplacement d’un Ponéglyphe, ou la diffusion fidèle de son contenu à un destinataire qui ne le possédait pas ; elle est réfutée si l’épilogue clôt la transmission des Ponéglyphes sans action de ce type de sa part."
+refuterait: "L’histoire des Ponéglyphes est définitivement résolue et leur transmission achevée sans intervention de Vivi."
 ---

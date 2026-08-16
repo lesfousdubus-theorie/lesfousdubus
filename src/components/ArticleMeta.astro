@@ -17,7 +17,7 @@ const hasMeta = Boolean(updateChapter || certaintyText || status);
 {
   hasMeta && (
     <div class="meta-row" aria-label="Informations éditoriales">
-      {updateChapter && <span>Mis à jour au chapitre {updateChapter}</span>}
+      {updateChapter && <span class="meta-update">Mis à jour au chapitre {updateChapter}</span>}
       {certaintyText && <span class="meta-badge meta-badge--muted">Niveau : {certaintyText}</span>}
       {status && <span class:list={['meta-badge', status.badgeClass]}>{status.label}</span>}
     </div>
@@ -25,10 +25,64 @@ const hasMeta = Boolean(updateChapter || certaintyText || status);
 }
 
 <style>
-  .meta-row { display:flex; align-items:center; flex-wrap:wrap; gap:.75rem; font-size:13.5px; color:var(--text-secondary); padding:.75rem 0; border-top:1px solid var(--border-color); border-bottom:1px solid var(--border-color); margin:1.5rem 0; }
-  .meta-badge { border:1px solid; border-radius:var(--border-radius-full); padding:.2rem .55rem; font-size:12px; font-weight:600; }
-  .meta-badge--cyan { color:var(--cyan); border-color:color-mix(in srgb,var(--cyan) 35%,transparent); background:color-mix(in srgb,var(--cyan) 10%,transparent); }
-  .meta-badge--violet { color:var(--violet-light); border-color:color-mix(in srgb,var(--violet) 35%,transparent); background:color-mix(in srgb,var(--violet) 10%,transparent); }
-  .meta-badge--gold { color:var(--accent-gold); border-color:color-mix(in srgb,var(--accent-gold) 35%,transparent); background:color-mix(in srgb,var(--accent-gold) 10%,transparent); }
-  .meta-badge--muted { color:var(--text-secondary); border-color:var(--border-color); background:var(--surface); }
+  .meta-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    margin: var(--space-5) 0;
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .meta-update {
+    margin-right: auto;
+  }
+
+  .meta-badge {
+    display: inline-flex;
+    min-height: 26px;
+    align-items: center;
+    padding: 3px 9px;
+    border: 1px solid;
+    border-radius: var(--border-radius-full);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.3;
+  }
+
+  .meta-badge--cyan {
+    color: var(--cyan);
+    border-color: color-mix(in srgb, var(--cyan) 35%, transparent);
+    background: color-mix(in srgb, var(--cyan) 10%, transparent);
+  }
+
+  .meta-badge--violet {
+    color: var(--violet-light);
+    border-color: color-mix(in srgb, var(--violet) 35%, transparent);
+    background: color-mix(in srgb, var(--violet) 10%, transparent);
+  }
+
+  .meta-badge--gold {
+    color: var(--accent-gold);
+    border-color: color-mix(in srgb, var(--accent-gold) 35%, transparent);
+    background: color-mix(in srgb, var(--accent-gold) 10%, transparent);
+  }
+
+  .meta-badge--muted {
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+    background: var(--surface);
+  }
+
+  @media (max-width: 520px) {
+    .meta-update {
+      flex-basis: 100%;
+      margin-right: 0;
+    }
+  }
 </style>

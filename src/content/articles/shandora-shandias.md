@@ -1,54 +1,43 @@
 ---
-title: "Shandora et les Shandias"
-summary: "Fiche de la cité d'or de Shandora et du peuple shandia : la cloche d'or, le Ponéglyphe qui situe Poséidon et quatre siècles de garde ininterrompue."
-category: "peuples-royaumes"
-status: "published"
-navigationType: "fiche"
-sources: [292, 293, 301, 429, 967]
-editorialStatus: "canon"
-certainty: "elevee"
+title: 'Shandora et les Shandias'
+summary: 'Histoire canonique de Shandora, du peuple shandia et de la protection de son Ponéglyphe ; liens futurs et divinités restent des lectures séparées.'
+category: 'peuples-royaumes'
+status: 'published'
+navigationType: 'dossier'
+sources: [272, 286, 287, 290, 301]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "peuples-royaumes"
-order: 85
-related: ["peuples-royaumes", "poneglyphes", "poseidon-fiche", "dieux-one-piece", "guerre-finale"]
+order: 0
+related: ['divinites-shandias', 'poneglyphes', 'poseidon-fiche', 'peuples-royaumes']
 ---
 
-## Présentation
+## Shandora
 
-Shandora est une cité antique, autrefois située sur la Terre Bleue puis emportée dans le ciel par un Knock Up Stream. Son peuple, les Shandias, s'est battu quatre cents ans durant pour retrouver l'accès à sa terre sacrée et à sa cloche d'or.
+Shandora, la cité d'or, prospérait sur Jaya avant d'être projetée dans le ciel par le Knock Up Stream. Les Shandias descendent de ses habitants et ont défendu pendant des siècles la terre et les vestiges de leurs ancêtres.
 
-## Ce que le manga établit
+L'histoire de Montblanc Noland et Kalgara explique leur combat, la disparition apparente de la cité et la volonté de faire sonner la Cloche d'or.
 
-- Shandora abrite un **Ponéglyphe** qui indique l'emplacement de l'Arme antique **Poséidon**.
-- La **cloche d'or** est le trésor du peuple shandia : la faire sonner est le devoir transmis de génération en génération depuis quatre siècles.
-- Kalgara et Montblanc Noland scellent cette transmission il y a 400 ans ; c'est Luffy qui finit par faire sonner la cloche.
-- Gol D. Roger a lu ce Ponéglyphe et y a laissé sa propre inscription.
-- Au chapitre 967, Roger s'étonne : « Pourquoi l'arme qui peut contrôler les rois des mers n'est pas ici ? La pierre de l'île céleste disait pourtant qu'elle serait ici. »
+## Le Ponéglyphe
 
-## Sa mission
+Le Ponéglyphe de Shandora est un texte historique protégé par la cité. Son inscription indique l'emplacement de **Poséidon**, à l'île des Hommes-Poissons. Roger ajoute à proximité un message gravé par Oden annonçant qu'il guidera le texte jusqu'au bout du monde.
 
-Protéger la cloche d'or de Shandora. La mission est accomplie : la cloche a sonné, et son écho a été entendu jusqu'au Blue Sea.
+La pierre ne dit pas que Poséidon se trouve à Skypiea et n'exige pas que Shirahoshi ait été vivante à l'époque de Roger : Poséidon réapparaît au fil des siècles.
 
-## Son lien avec les Ponéglyphes
+## Une mission circonscrite
 
-Le Ponéglyphe de Shandora est celui qui pose le problème chronologique le plus net de toute la théorie. Il localise Poséidon à l'île des Hommes-Poissons à une date où Shirahoshi n'est pas née. Le texte n'est donc pas faux : il est en avance.
+Les ancêtres de Shandora ont combattu pour protéger la cité et son texte. Ce devoir peut être rapproché de la conservation de la mémoire, mais le manga ne date pas toutes les traditions des peuples de la même année et ne leur attribue pas un ordre commun reçu vers −800.
 
-## La lecture des Fous du Bus
+## Croyances distinctes
 
-De deux choses l'une : soit une Poséidon existait déjà il y a 800 ans, soit ce Ponéglyphe a été gravé à une époque où Shirahoshi existe, puis envoyé en arrière. Dans le second cas, Roger l'a simplement lu trop tôt — ce qui rejoint sa formule de Laugh Tale : « Nous sommes arrivés trop tôt. »
+Le sacrifice observé dans le flash-back invoque les dieux du soleil, de la pluie, de la forêt et de la terre. Il établit des croyances locales. Identifier chacune de ces divinités à un personnage, à un Fruit ou à une figure du Harley demeure une extension.
 
-## Son rôle dans la guerre finale
+## Projection
 
-Les guerriers shandias figurent en tête de la liste des forces libérées par Luffy et rejoindraient la coalition de Joy Boy.
+Les Shandias pourraient soutenir Luffy lors d'un conflit futur en raison des liens forgés à Skypiea. Cette alliance n'est ni annoncée, ni datée, ni indispensable au mécanisme central des Ponéglyphes.
 
-## Limites et nuances
+## Limites
 
-- Le Ponéglyphe peut désigner une lignée de Poséidon plutôt qu'une personne, auquel cas il n'y a pas d'anachronisme.
-- L'histoire de Shandora est datée de 400 ans dans le manga, pas de 800 : elle ne s'inscrit pas exactement dans le cadre des missions du Siècle oublié.
-- L'étonnement de Roger est rapporté brièvement et pourrait viser autre chose.
-
-## Points encore à expliquer
-
-- Qui a gravé le Ponéglyphe de Shandora et à quelle date.
-- Pourquoi la cloche d'or est associée à un Ponéglyphe d'Arme antique.
-- Ce que Roger a inscrit sur la pierre et à l'intention de qui.
+- La date exacte de fondation de Shandora et tous ses liens avec le Royaume antique restent incomplets.
+- Le texte localise Poséidon ; il ne raconte pas à lui seul toute la fonction de l'Arme.
+- Les quatre divinités ne sont pas quatre incarnations confirmées.

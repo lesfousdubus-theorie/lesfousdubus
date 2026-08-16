@@ -23,7 +23,16 @@ const { chapter, title, effect, href } = Astro.props;
     </div>
     <span class="chapter-banner__link">
       Voir l'analyse
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg
+      >
     </span>
   </div>
 </a>
@@ -39,17 +48,25 @@ const { chapter, title, effect, href } = Astro.props;
       color-mix(in srgb, var(--bg-secondary) 95%, var(--violet) 5%),
       color-mix(in srgb, var(--bg-secondary) 90%, var(--cyan-dim) 10%)
     );
+    min-height: 72px;
+    padding: var(--space-4) var(--card-padding);
+    margin-bottom: var(--section-gap);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
-    padding: 16px 20px;
-    margin-bottom: 48px;
     text-decoration: none;
     transition: all 0.3s ease;
   }
 
   .chapter-banner:hover {
     border-color: color-mix(in srgb, var(--cyan-dim) 40%, var(--border-color));
-    box-shadow: 0 4px 24px var(--shadow-color), 0 0 16px var(--glow-cyan);
+    box-shadow:
+      0 4px 24px var(--shadow-color),
+      0 0 16px var(--glow-cyan);
+  }
+
+  .chapter-banner:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
   }
 
   .chapter-banner__glow {
@@ -134,7 +151,7 @@ const { chapter, title, effect, href } = Astro.props;
 
   @media (max-width: 480px) {
     .chapter-banner {
-      padding: 12px 14px;
+      padding: var(--space-3) var(--space-4);
     }
     .chapter-banner__title {
       font-size: 14px;

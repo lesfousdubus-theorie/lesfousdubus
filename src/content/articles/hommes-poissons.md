@@ -1,51 +1,51 @@
 ---
-title: "Hommes-Poissons"
-summary: "Fiche du peuple des Hommes-Poissons et des sirènes : la discrimination subie, le rêve d'Otohime d'une vie à la surface et la garde de Noah."
-category: "peuples-royaumes"
-status: "published"
-navigationType: "fiche"
-sources: [621, 626, 649, 653]
-editorialStatus: "canon"
-certainty: "elevee"
+title: 'Hommes-Poissons et Sirènes'
+summary: 'Histoire, discriminations et espoirs du peuple de Ryūgū ; Poséidon, Noah et la promesse de Joy Boy sont décrits sans leur attribuer une mission collective non confirmée.'
+category: 'peuples-royaumes'
+status: 'published'
+navigationType: 'dossier'
+sources: [521, 622, 626, 628, 649]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "royaume-ryugu"
-order: 88
-related: ["peuples-royaumes", "royaume-ryugu", "noah", "shirahoshi", "poseidon-fiche"]
+order: 6
+related:
+  [
+    'royaume-ryugu',
+    'shirahoshi',
+    'poseidon-fiche',
+    'noah',
+    'joy-boy',
+    'red-line',
+    'peuples-royaumes',
+  ]
 ---
 
-## Présentation
+## Le peuple de Ryūgū
 
-Les Hommes-Poissons et les sirènes forment le peuple du royaume Ryugu. Physiquement bien plus puissants que les humains dans l'eau, ils subissent depuis des siècles une discrimination qui les tient à l'écart de la surface.
+Hommes-Poissons et Sirènes vivent principalement sur l'île des Hommes-Poissons, sous Red Line. Leur histoire est marquée par l'esclavage, le racisme de la surface et des mouvements opposés concernant la coexistence.
 
-## Ce que le manga établit
+La reine Otohime cherche un rapprochement pacifique avec les humains ; Fisher Tiger libère des esclaves mais porte les blessures de la haine. Leurs héritages structurent les choix du royaume.
 
-- Les sirènes communiquent avec la faune sous-marine ; certains Hommes-Poissons parlent aux baleines. **Personne, en revanche, n'a jamais pu parler aux rois des mers** — sauf Poséidon.
-- La reine **Otohime** a consacré sa vie à obtenir l'installation de son peuple à la surface, et a été assassinée pour cela.
-- Le peuple garde **Noah** dans le quartier des Hommes-Poissons depuis 800 ans.
-- Au chapitre 653, Luffy et les Mugiwara promettent à Shirahoshi de l'emmener voir le soleil et une véritable forêt.
+## Poséidon et Shirahoshi
 
-## Sa mission
+Shirahoshi est la Poséidon actuelle et peut commander aux Rois des Mers. Ce pouvoir réapparaît après plusieurs siècles ; il n'est pas détenu par chaque génération de princesse sirène.
 
-Construire et protéger l'arche Noah jusqu'au jour du serment, conformément au message signé Joy Boy sur le Ponéglyphe de la forêt sous-marine.
+Les Hommes-Poissons ne forment pas eux-mêmes l'Arme antique, et leur histoire politique ne se réduit pas à l'attente de Poséidon.
 
-## Son lien avec les Ponéglyphes
+## Noah et la promesse
 
-Le Ponéglyphe qui les concerne est unique en son genre : il ne consigne ni une coordonnée ni un fragment d'histoire, mais une demande adressée à un peuple, assortie d'une échéance.
+Noah se trouve près de l'île. Un Ponéglyphe conserve les excuses du Joy Boy historique à la Poséidon de son époque pour une promesse non tenue. Le constructeur de Noah, sa fonction finale et l'intégralité de cette promesse ne sont pas révélés.
 
-## La lecture des Fous du Bus
+Le manga n'établit pas que Noah a été construit par le peuple des Hommes-Poissons ni qu'une mission collective unique lui a été confiée vers −800.
 
-La promesse de Joy Boy à Poséidon et celle de Luffy à Shirahoshi seraient une seule et même promesse. Le rêve d'Otohime — faire vivre les Hommes-Poissons sous le soleil — serait ainsi l'objet même du serment, et sa réalisation dépendrait de la fin de la guerre.
+## Futurs possibles
 
-## Son rôle dans la guerre finale
+La vision de Shirley montre une silhouette au chapeau de paille associée à la destruction de l'île. L'évacuation vers la surface, l'emploi de Noah et l'action de Shirahoshi sont des projections plausibles mais séparées. Elles ne fixent pas l'ordre avec Red Line, Pluton ou une nouvelle montée des eaux.
 
-Les Hommes-Poissons du royaume Ryugu figurent parmi les forces ralliées à Joy Boy. Noah et Poséidon en font l'un des contingents les plus déterminants.
+## Limites
 
-## Limites et nuances
-
-- La discrimination subie suffit à expliquer le rêve d'Otohime sans recourir à une promesse ancienne.
-- Le manga ne dit jamais que le peuple ait « construit » Noah.
-
-## Points encore à expliquer
-
-- Comment la consigne de garder Noah s'est transmise sur huit siècles.
-- Pourquoi les Hommes-Poissons ignorent le sens de ce qu'ils protègent.
+- La promesse ancienne n'est pas entièrement connue.
+- Le rôle futur de Noah reste ouvert.
+- La vision de Shirley exige encore une cause, une date et une identification définitive.
+- Les choix futurs de Ryūgū ne sont pas une répétition automatique du passé.

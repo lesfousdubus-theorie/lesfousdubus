@@ -1,46 +1,44 @@
 ---
-title: "Les Ponéglyphes racontent le futur"
-summary: "Dans la théorie, les Ponéglyphes pourraient avoir été produits à partir de l'histoire vécue par les protagonistes actuels puis transmis vers le passé. Robin et le savoir des Kozuki occupent une place centrale dans cette hypothèse."
-category: "transmission-memoire"
-status: "published"
-navigationType: "fiche"
+title: 'Les Ponéglyphes pourraient conserver une information future'
+summary: "La théorie révisée place les Ponéglyphes au centre : ils conserveraient dans le passé une information issue d'événements futurs, sans auteurs ni transport physique imposés."
+seoTitle: 'Ponéglyphes : une information future ? | Les Fous du Bus'
+category: 'transmission-memoire'
+status: 'published'
+navigationType: 'fiche'
 sidebarHidden: true
-editorialStatus: "hypothese-centrale"
-certainty: "central"
+editorialStatus: 'theorie-centrale'
+certainty: 'central'
 reviewedUntilChapter: 1190
 sources: [395, 628, 818]
 order: 54
 ---
 
-## Le Rio Ponéglyphe
+## Le support canonique
 
-Les Ponéglyphes sont indestructibles. Rien ni personne n'a réussi à les abîmer en 800 ans. Mais si personne ne peut les détruire, c'est parce qu'ils sont faits avec un matériau qui n'existe pas encore.
+<div class="section-pill section-pill--manga">Manga</div>
 
-Vegapunk n'a jamais pu découvrir de quoi ils sont faits. C'est un alliage futuriste créé par le clan Kozuki et Vegapunk à partir de roches plutoniques et de granit marin.
+Les Ponéglyphes sont des stèles extrêmement résistantes, gravées dans une écriture transmise par les Kozuki. Ils conservent histoire, messages, excuses, coordonnées et informations sur les Armes antiques. Leur matériau n'est pas identifié comme une matière « qui n'existe pas encore ».
 
-## Le langage antique
+**Sources précises :** chapitres 301, 395, 818, 967 et 1055.
 
-Nico Robin peut lire les Ponéglyphes parce qu'elle a appris le langage antique dans l'arbre de la cognition. Mais en réalité, elle lit sa propre écriture future.
+## Le mécanisme central
 
-Robin demandera au clan Kozuki de tailler les Ponéglyphes et de graver l'histoire de Luffy/Joy Boy avec une langue ésotérique qu'elle seule peut déchiffrer. Le « langage antique » est en réalité une langue futuriste créée par Robin elle-même.
+<div class="section-pill section-pill--theorie-centrale">Théorie centrale</div>
 
-## Momonosuke grave les pierres
+Des informations produites par les événements vécus au présent ou dans un futur possible pourraient atteindre une époque antérieure. Des artisans de cette époque les fixeraient alors sur les pierres, qui les transmettraient pendant huit siècles. Le noyau porte sur **l'information**, pas sur l'envoi physique des stèles depuis le futur.
 
-Momonosuke apprendra de son grand-père Sukiyaki l'art de tailler les Ponéglyphes. Lui et Robin écriront le Rio Ponéglyphe, qui sera dispersé dans le monde par Vivi/Lili.
+## Rédacteurs et graveurs inconnus
 
-## La mémoire de l'avenir
+<div class="section-pill section-pill--manga">Manga</div>
 
-Les Ponéglyphes sont une « mémoire de l'avenir », une lettre du futur adressée au passé pour préparer le monde au Jour du Serment. C'est pourquoi :
+Robin sait lire l'écriture ancienne mais ne l'a pas inventée et ne sait pas la graver. Momonosuke n'a pas reçu le savoir d'Oden. Sukiyaki, vivant au chapitre 1055, maîtrise encore lecture et gravure. Une contribution future de Robin, Sukiyaki ou Momonosuke est possible, mais aucune n'est établie.
 
-- Roger dit « Nous sommes arrivés trop tôt »
-- Les prophéties sont précises : elles sont écrites après coup
-- Imu ne comprend pas pourquoi les événements se reproduisent
+## Dispersion
 
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Limites et nuances
+Imu relie la dispersion historique à Lili. Vivi pourrait accomplir plus tard un rôle analogue de diffusion, sans remplacer ce fait ni devenir nécessairement Lili.
 
-- **L'indestructibilité n'implique pas un matériau futur.** Le manga présente d'autres substances qu'aucun savant contemporain ne reproduit, sans les rattacher au futur.
-- **L'ignorance de Vegapunk est un argument par le silence.** Elle indique une technologie perdue, ce qui décrit tout aussi bien le Royaume Antique.
-- **Que Robin lise sa propre écriture future est une inversion élégante mais invérifiable.** Le récit établit seulement qu'elle a appris une langue ancienne à Ohara.
-- **Le rôle prêté aux Kozuki repose sur une extrapolation.** Leur maîtrise de la taille des Ponéglyphes est établie ; leur collaboration avec Robin ne l'est pas.
-- **Cette page dépend entièrement de la thèse du Siècle oublié au présent** : elle n'a pas de valeur démonstrative indépendante.
+## Limites et objections
+
+Aucun mécanisme d'information vers le passé n'est montré. Le manga présente l'écriture comme réellement ancienne et ne dit pas que les pierres ont été fabriquées dans le futur.

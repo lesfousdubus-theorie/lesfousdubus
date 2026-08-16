@@ -1,47 +1,31 @@
 ---
-title: "Omen : le pouvoir d'Imu"
-summary: "L'Omen est le pouvoir d'Imu évoqué par les analyses récentes. Mécanisme encore spéculatif, il serait amplifié par la Mother Flame pour atteindre une échelle apocalyptique."
-category: "technologies-pouvoirs"
-status: "published"
-certainty: "hypothese"
+title: "Omen : une étiquette pour le pouvoir d'Imu"
+summary: "« Omen » est le nom éditorial donné à une hypothèse récente sur les manifestations d'Imu ; Mother Flame et Uranus restent des rapprochements conditionnels."
+category: 'technologies-pouvoirs'
+status: 'published'
+certainty: 'hypothese'
 reviewedUntilChapter: 1190
-navigationType: "fiche"
-editorialStatus: "nouvelle-piste"
-related: ["imu-nerona", "mother-flame", "uranus", "fruits-du-demon"]
+navigationType: 'fiche'
+editorialStatus: 'hypothese-recente'
+related: ['imu-nerona', 'mother-flame', 'uranus', 'fruits-du-demon', 'domi-reversi']
 sources: [1180]
 order: 76
 ---
 
-> **Développement récent** : l'Omen est une piste apparue dans les analyses des chapitres récents (notamment 1180). Ce n'est pas une notion fondatrice de la théorie originale. Elle est présentée ici comme un mécanisme **encore en cours de construction**.
+## Un terme d'analyse
 
-## Ce que le manga établit
+Le site utilise **« Omen »** comme étiquette de travail pour regrouper certaines manifestations attribuées à Imu dans l'analyse du chapitre 1180. Ce terme ne doit pas être présenté comme le nom canonique définitivement publié d'un pouvoir tant que la traduction et les explications du manga ne l'établissent pas.
 
-- Le terme **Omen** apparaît dans les analyses récentes pour désigner le pouvoir propre d'Imu.
-- Le manga ne détaille pas formellement la nature de ce pouvoir ; sa dénomination et son fonctionnement relèvent en grande partie de la lecture des Fous du Bus.
+## Hypothèse de fonctionnement
 
-## La lecture des Fous du Bus
+L'analyse imagine une capacité permettant à Imu de manifester ou projeter sa puissance. Sa nature — Fruit du Démon, pacte, technologie, pouvoir partagé ou autre mécanisme — reste inconnue.
 
-### Un pouvoir récent et spéculatif
+## Mother Flame et Uranus
 
-La théorie utilise « Omen » pour nommer la capacité d'Imu à **frapper et manifester sa puissance**. Ce mécanisme est volontairement maintenu à l'état d'hypothèse : les analyses récentes ne prétendent pas en avoir cartographié tous les contours.
+La Mother Flame alimente l'arme employée contre Lulusia. Imu pourrait l'utiliser pour amplifier un pouvoir, activer Uranus, alimenter une autre technologie ou atteindre une puissance comparable à l'Arme antique.
 
-### L'Omen boosté par la Mother Flame
+La chaîne « Omen → Mother Flame → Uranus » n'est donc pas un mécanisme établi : ses maillons restent concurrents et révisables.
 
-Le chapitre 1180 explore l'idée d'un **Omen amplifié** : l'Omen observé à Elbaf ne serait qu'une version basique. Alimenté par la **Mother Flame**, le pouvoir d'Imu pourrait atteindre une échelle apocalyptique — frapper depuis le ciel, créer des explosions gigantesques, faire disparaître des îles entières.
+## Critères de révision
 
-### Omen et Uranus
-
-Dans cette lecture, l'Omen boosté correspondrait à la chose noire crachant des flammes décrite par Sabo au-dessus de Lulusia. La théorie rapproche alors ce pouvoir de l'**Arme Antique Uranus** (voir [Imu, l'Omen et Uranus](/theorie/imu-nerona) et [Mother Flame](/theorie/mother-flame)). Ce rapprochement reste une **hypothèse**, pas un fait du manga.
-
-## Limites et nuances
-
-- L'Omen est un **mécanisme récent et spéculatif** : tout ce qui le concerne doit être lu au conditionnel.
-- Le lien Omen → Mother Flame → Uranus est une chaîne d'hypothèses, aucun maillon n'étant établi par le manga.
-- Le chapitre 1180 envisage plusieurs possibilités autour d'Imu, de l'Omen et d'Uranus sans trancher.
-
-## Articles liés
-
-- [Imu Nerona](/theorie/imu-nerona)
-- [Mother Flame](/theorie/mother-flame)
-- [Uranus](/theorie/uranus)
-- [Fruits du Démon](/theorie/fruits-du-demon)
+Un nom officiel, une explication des règles ou l'identification de l'arme de Lulusia permettraient de préciser ou d'abandonner cette étiquette.

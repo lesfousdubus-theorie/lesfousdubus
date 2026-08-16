@@ -1,34 +1,29 @@
 ---
-title: "Rocks D. Xebec"
+title: 'Rocks D. Xebec'
 summary: "Fiche canonique neutre sur Rocks D. Xebec, capitaine des Rocks Pirates, figure centrale de God Valley et de l'histoire récente du monde."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
-editorialStatus: "canon"
-certainty: "elevee"
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 42
 sources: [957, 1164, 1188]
-related: ["barbe-noire-davy-jones", "god-valley", "imu-nerona", "gouvernement-mondial"]
+related: ['barbe-noire-davy-jones', 'god-valley', 'imu-nerona', 'gouvernement-mondial']
 ---
-
-## Présentation
-
-Rocks D. Xebec est l'ancien capitaine de l'équipage des Rocks, une des forces les plus redoutables de l'ère précédente. Il a mené une coalition de pirates légendaires (dont Barbe Blanche, Kaido, Big Mom, Shanks jeune) lors de l'incident de God Valley.
 
 ## Ce que le manga établit
 
-- Il a affronté directement Imu lors de l'incident de God Valley (chapitre 1164).
-- Imu l'appelle « Davy Jones », ce à quoi Xebec répond qu'il y a erreur sur la personne.
-- Il est considéré comme l'un des pirates les plus dangereux de l'histoire.
-- Son équipage a été dissous après God Valley.
+Rocks D. Xebec a commandé l'équipage de Rocks, qui comptait notamment Newgate, Linlin et Kaido. L'incident de God Valley met fin à cet équipage. Les faits détaillés de l'incident et les dialogues récents doivent être distingués de leur interprétation théorique.
 
-## La lecture des Fous du Bus
+Dans les éléments associés au chapitre 1164, Imu emploie « Davy Jones » face à Xebec et celui-ci conteste l'attribution. Cela établit une **méprise signalée dans la scène**, pas son explication.
 
-Xebec est central dans l'hypothèse de confusion des générations : Imu semble confondre Xebec avec Davy Jones. Il devient un pivot important pour comprendre comment Imu perçoit le temps et les identités à travers les époques (chapitres 1187-1188).
+## Motif secondaire : Imu se trompe d'identité
 
-## Articles liés
+Xebec/Davy Jones constitue le cas le plus direct du motif éditorial. Préscience, archives, provocation et erreur ordinaire restent des explications concurrentes. Ce cas ne démontre pas que Roger a été pris pour Joy Boy ; le chapitre 1190 montre au contraire Imu les distinguant.
 
-- [Barbe Noire / Davy Jones](/theorie/barbe-noire-davy-jones)
-- [God Valley](/theorie/god-valley)
-- [Imu Nerona](/theorie/imu-nerona)
+## Questions ouvertes
+
+- Qui ou quoi désigne exactement Davy Jones ?
+- Quel lien réel unit Xebec et Teach, au-delà des motifs ?
+- Quelle part de God Valley est désormais montrée et quelle part demeure rapportée ?

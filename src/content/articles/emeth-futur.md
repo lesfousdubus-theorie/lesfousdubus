@@ -1,57 +1,45 @@
 ---
-title: "Emeth"
-summary: "Fiche d'analyse consacrée au robot géant Emeth de l'Ancien Royaume, son rôle sur Egghead et ses liens avec Joy Boy."
-category: "technologies-pouvoirs"
-status: "published"
-navigationType: "dossier"
+title: 'Emeth pourrait être un transport physique venu du futur'
+summary: 'Fiche révisée : le robot antique et le Haki attribué au Joy Boy historique sont canoniques ; BF-39, Franky constructeur et origine future restent une extension.'
+category: 'technologies-pouvoirs'
+status: 'published'
+navigationType: 'dossier'
 sources: [1120, 1118, 1176, 523]
-editorialStatus: "hypothese-secondaire"
-certainty: "elevee"
+editorialStatus: 'extension'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "vegapunk"
+parent: 'vegapunk'
 order: 70
-related: ["voix-de-joy-boy"]
-seoTitle: "Emeth One Piece : robot géant venu du futur | Les Fous du Bus"
+related: ['voix-de-joy-boy']
+seoTitle: 'Emeth One Piece : robot géant venu du futur | Les Fous du Bus'
 ---
 
-**Résumé** : Le robot géant Emeth découvert à Egghead conserve le Haki de Joy Boy et utilise des technologies d'alimentation et de nœuds de vent (Wind Knot). Selon la théorie des Fous du Bus, Emeth est le dernier *Battle Franky* construit par Franky à la fin de l'aventure et envoyé dans le passé.
+## Emeth dans le manga
 
-![Emeth le robot](/images/threads/emeth-robot-du-futur/img_1.webp)
-![Emeth et Joyboy](/images/threads/emeth-robot-du-futur/img_2.webp)
+<div class="section-pill section-pill--manga">Manga</div>
 
-## 1. La continuité des Battle Franky
-La silhouette, l'armature et la conception d'Emeth présentent une filiation directe avec le style de Franky. Son système d'engrenages et sa charpente d'épaulières rappellent immédiatement Franky Shogun en version colossale.
+Emeth est un robot associé au Royaume antique. Il attaque Mary Geoise environ deux cents ans avant le présent, reste ensuite inactif puis se réveille à Egghead au rythme des Tambours de la Libération. Un nœud libère un Haki qu'Emeth attribue à Joy Boy.
 
-![Franky et Emeth](/images/threads/emeth-robot-du-futur/img_3.webp)
+**Sources précises :** chapitres 1065 et 1111–1122.
 
-## 2. Le système d'alimentation autonome
-Sur Egghead, Lilith explique que la station tente de capter l'énergie naturelle environnante. Emeth utilise exactement cette source d'énergie mystérieuse qu'aucun savant contemporain n'arrive à reproduire, car c'est la technologie future perfectionnée par le scientifique des Mugiwaras.
+## Le Haki stocké
 
-![Energie autonome](/images/threads/emeth-robot-du-futur/img_4.webp)
+<div class="section-pill section-pill--manga">Manga</div>
 
-## 3. Le Wind Knot et le Haki scellé
-Lors de son sacrifice face au Gorosei sur Egghead, Emeth déroule une corde renfermant le Haki de déferlement de Joy Boy. Cette méthode de stockage d'énergie et d'éléments dans des cordes est exactement la technologie des *Wind Knots* étudiée par Nami à Weatheria.
+Dans la lecture directe, le Haki appartient au Joy Boy historique connu d'Emeth. La théorie explore une autre possibilité : il **pourrait être celui du Luffy de fin d'aventure**, transmis à Emeth avant un déplacement temporel. Cette proposition doit rester au conditionnel.
 
-![Wind knot et Haki](/images/threads/emeth-robot-du-futur/img_5.webp)
+## Emeth/BF-39
 
-## 4. L'assaut de Mary Geoise il y a 200 ans
-L'incursion mystérieuse d'Emeth à Mary Geoise il y a 200 ans prend tout son sens : il s'agissait d'un saut temporel imprécis ou d'une directive d'attente programmée avant la réactivation par le tambour de la libération (Gear 5).
+<div class="section-pill section-pill--extension">Extension</div>
 
-![Assaut de Mary Geoise par Emeth](/images/threads/emeth-robot-du-futur/img_6.webp)
+La ressemblance avec les Battle Franky, l'énergie incomprise et les nœuds de Weatheria permettent d'imaginer un dernier modèle construit ou complété dans le futur. « BF-39 », Franky constructeur et saut vers −200 sont des éléments théoriques, pas des noms canoniques.
 
-## 5. Le chapeau de paille géant de la chambre froide
+## Une branche physique séparée
 
-Au chapitre 906, Imu est présenté devant un chapeau de paille géant conservé dans une chambre froide de Mary Geoise. Le site l'a longtemps attribué à Joy Boy. La théorie propose une autre lecture : ce chapeau serait celui d'**Emeth**.
+<div class="section-pill section-pill--extension">Extension</div>
 
-L'argument passe par un parallèle de mise en scène. Au chapitre 555, dans les souvenirs d'Oars Junior, Ace offre au géant un amigasa géant pour sceller leur amitié. On y retrouve la même composition que dans la scène entre Joy Boy et Emeth : un géant antique, un humain qu'il apprécie, un coucher de soleil. Emeth, qui sur Egghead s'exprime comme un enfant et redoute l'abandon, recevrait de la même façon un chapeau confectionné par l'équipage — Usopp à la manœuvre — pour lui signifier qu'il est lui aussi un Mugiwara.
+Emeth est une hypothèse de **transport d'objet**. Elle n'est pas nécessaire au mécanisme central, qui porte sur la transmission d'informations et leur conservation par les Ponéglyphes.
 
-Projeté ensuite deux cents ans en arrière à Mary Geoise, Emeth y perdrait une corne pendant l'assaut, et avec elle son chapeau. Saturne étudie le robot, Imu confisque le chapeau et le conserve : non comme une relique du passé, mais comme le signalement d'un homme qui n'est pas encore né.
+## Limites et objections
 
-**Limites** : l'échelle du chapeau reste indéterminable (on ne connaît ni la taille d'Imu ni la perspective de la case), l'attribution à Emeth n'est étayée par aucun élément explicite du manga, et la scène du chapitre 555 peut n'être qu'un motif récurrent chez Oda plutôt qu'un indice.
-
-## Limites et nuances
-
-- **La ressemblance stylistique avec les Battle Franky est subjective.** Une charpente d'épaulières et des engrenages sont des motifs récurrents du design mécanique d'Oda, présents bien avant Franky.
-- **L'énergie d'Emeth n'est pas datée.** Que la technologie soit incomprise des savants actuels indique une civilisation avancée, pas nécessairement future : c'est aussi la description du Royaume Antique.
-- **Le Haki de Joy Boy scellé dans une corde n'implique pas Franky.** Les Wind Knots existent à Weatheria, donc dans le présent, et rien n'exclut une technique ancienne redécouverte.
-- **Aucun élément ne montre Franky construisant Emeth.** La filiation est entièrement inférée à partir du style et de la fonction.
+La technologie peut réellement venir du Royaume antique. Le Haki, l'attaque de Mary Geoise et la corrosion n'exigent aucun voyage depuis le futur. Le chapeau géant n'est pas attribué à Emeth.

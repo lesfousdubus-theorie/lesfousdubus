@@ -1,14 +1,24 @@
 ---
 title: "La fresque d'Elbaf"
-summary: "Annotation élément par élément de la fresque gravée sur l'Arbre d'Adam à Elbaf : géants, soleil, pluie, Imu, et la lecture de la théorie qui y voit la guerre finale à venir."
-category: "dieux-croyances"
-status: "published"
-editorialStatus: "interpretation"
-certainty: "moyenne"
+summary: 'Annotation critique de la fresque d’Elbaf : éléments visibles, Harley et interprétations futures sont distingués.'
+category: 'dieux-croyances'
+status: 'published'
+editorialStatus: 'extension'
+certainty: 'moyenne'
 reviewedUntilChapter: 1190
-parent: "dieux-one-piece"
-navigationType: "dossier"
-related: ["elbaf-harley", "divinites-shandias", "zaza", "imu-nerona", "mother-flame", "uranus", "guerre-finale", "nika"]
+parent: 'dieux-one-piece'
+navigationType: 'dossier'
+related:
+  [
+    'elbaf-harley',
+    'divinites-shandias',
+    'zaza',
+    'imu-nerona',
+    'mother-flame',
+    'uranus',
+    'guerre-finale',
+    'nika',
+  ]
 sources: [1138, 1180]
 order: 24
 ---
@@ -24,23 +34,23 @@ order: 24
 
 ## La lecture des Fous du Bus : annotation élément par élément
 
-La théorie lit la fresque non comme une trace du passé mais comme la **préfiguration de la guerre finale à venir**. Chaque élément reçoit une interprétation, clairement distinguée de ce que le manga montre réellement.
+La théorie explore la fresque comme une **préfiguration possible** de la guerre finale. Un récit du passé mythifié reste une lecture concurrente ; chaque identification est séparée de ce que l’image montre.
 
 ### 1. Le géant combattant avec l'humanité
 
-Ce que le manga montre : un géant au côté des humains. La théorie y lit l'**alliance d'Elbaf avec le reste du monde**, une chose que les géants (selon Rip) disent ne s'être jamais produite — précisément parce que la fresque représenterait un événement à venir, pas un passé.
+Ce que l’image montre : un géant au côté des humains. Une lecture y voit une **alliance future d’Elbaf avec le reste du monde** ; un passé mythifié ou une représentation symbolique restent possibles.
 
 ### 2. Le soleil et le « dieu du soleil »
 
-La théorie relie la figure solaire de la fresque à **Nika / Joy Boy** : le dieu du soleil serait l'incarnation de Luffy dans la bataille finale, en écho aux divinités shandias (dieu du soleil, de la pluie, de la forêt, de la terre).
+La figure solaire peut être rapprochée du mythe de **Nika**. Son identification au Joy Boy historique, à Luffy ou à une bataille future reste une interprétation.
 
 ### 3. La pluie et Zaza
 
-La pluie visible sur la fresque est rapprochée de **Zaza, déesse de la pluie** récemment révélée. Dans la lecture de la théorie, Zaza aurait un rôle à jouer dans la guerre finale, en contrepoint du dieu du soleil. C'est une déduction : la pluie peut n'être qu'un élément d'atmosphère.
+La pluie visible sur la fresque est rapprochée du nom provisoire **Zaza** et de la déesse de la pluie invoquée par les Shandias. Aucun texte ne confirme leur identité. Dans cette lecture, Zaza pourrait jouer un rôle dans la guerre finale ; la pluie peut aussi n’être qu’un élément d’atmosphère.
 
 ### 4. La silhouette géante et Imu
 
-Depuis le chapitre 1180, l'analyse rapproche une silhouette de la fresque de la **forme gigantesque d'Imu**, éventuellement amplifiée par la **Mother Flame**. Ce rapprochement nourrit l'hypothèse « Imu = Uranus » et le schéma Nika vs Dark Nika. Ces identifications restent spéculatives (voir [Imu, l'Omen et Uranus](/theorie/imu-nerona) et [Mother Flame](/theorie/mother-flame)).
+Depuis le chapitre 1180, l'analyse rapproche une silhouette de la fresque de la **forme gigantesque d'Imu**, éventuellement amplifiée par la **Mother Flame**. Ce rapprochement nourrit l'hypothèse qu'Imu emploie la Mother Flame pour atteindre une puissance associée à Uranus, ainsi que le schéma Nika vs Dark Nika. Ces identifications restent spéculatives (voir [Imu, l'Omen et Uranus](/theorie/imu-nerona) et [Mother Flame](/theorie/mother-flame)).
 
 ### 5. Le déluge et la mer
 

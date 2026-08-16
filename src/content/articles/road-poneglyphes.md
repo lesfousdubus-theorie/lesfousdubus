@@ -1,29 +1,36 @@
 ---
-title: "Road Ponéglyphes"
-summary: "Fiche d'identification des quatre Road Ponéglyphes, stèles dispersées dans le monde dont la réunion indique l'emplacement de Laugh Tale."
-category: "transmission-memoire"
-status: "published"
-navigationType: "fiche"
+title: 'Road Ponéglyphes'
+summary: 'Les quatre Road Ponéglyphes fournissent quatre positions dont le croisement indique Laugh Tale ; tout rôle temporel du quatrième est une hypothèse distincte.'
+category: 'transmission-memoire'
+status: 'published'
+navigationType: 'fiche'
 sources: [818, 967, 1057]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 51
 ---
 
-## Présentation canonique
+## Le mécanisme géographique
 
-Les Road Ponéglyphes sont quatre Ponéglyphes dispersés dans le monde, dont la localisation conjointe révèle l'emplacement de Laugh Tale. Robin en déchiffre les coordonnées lors de l'arc Wa no Kuni.
+<div class="section-pill section-pill--manga">Manga</div>
 
-Ils constituent l'unique moyen pour un équipage pirate d'atteindre l'île finale.
+Chaque Road Ponéglyphe contient une position. **Les quatre positions**, reliées sur une carte, permettent de déterminer le point de croisement où se trouve Laugh Tale. Une représentation à trois sommets ne suffit pas à rendre ce mécanisme canonique.
 
-## Ce que le manga établit
+**Sources précises :** chapitres 818, 967 et 1057.
 
-- Un Road Ponéglyphe se trouve sur l'île de Big Mom (Whole Cake Island, arc éponyme).
-- Un autre est conservé à Wa no Kuni par les Kozuki.
-- Un troisième se trouve à Elbaf, après les événements de l'arc récent.
-- Le quatrième est conservé dans le monde souterrain de Mary Geoise.
+## Positions connues et inconnues
 
-## La lecture des Fous du Bus
+<div class="section-pill section-pill--manga">Manga</div>
 
-La disposition des quatre Road Ponéglyphes illustre la convergence au présent des acteurs de la théorie : chacun d'eux se retrouve, au moment voulu, entre les mains d'un héritier direct de l'Ancien Royaume. Luffy peut désormais atteindre Laugh Tale non pas en déchiffrant un secret ancien, mais en activant la chaîne formée par ses alliés.
+Au cours du récit, les Chapeaux de Paille obtiennent les copies des Road Ponéglyphes de Zou, Whole Cake Island et Wano. Le quatrième était autrefois sur l'île des Hommes-Poissons à l'époque de Roger ; sa position actuelle n'est pas confirmée.
+
+## Une éventuelle fonction temporelle
+
+<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
+
+La théorie explore un rôle supplémentaire : Laugh Tale pourrait combiner destination physique et mécanisme de communication. Après le chapitre 1188, cette piste ne doit plus être figée en « quatrième coordonnée temporelle ». Roger peut avoir reçu une information sans déplacement physique, et le quatrième texte peut conserver un rôle encore inconnu.
+
+## Limites et objections
+
+Aucun chapitre n'établit que Lodestar et Laugh Tale sont la même île à deux époques, ni qu'un Road Ponéglyphe donne une date. L'hypothèse temporelle complète la géographie canonique ; elle ne la remplace pas.

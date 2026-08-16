@@ -10,7 +10,7 @@ interface Zone {
   y: number;
   r: number;
   interpretation: string;
-  status: 'canon' | 'interpretation' | 'hypothese';
+  status: 'manga' | 'extension' | 'hypothese-recente';
 }
 
 // La fresque d'Elbaf n'étant pas montrée en intégralité dans le manga, ce schéma
@@ -24,8 +24,8 @@ const zones: Zone[] = [
     y: 300,
     r: 54,
     interpretation:
-      'Géant combattant aux côtés de l’humanité. La théorie y lit l’alliance d’Elbaf avec le reste du monde, un événement que les géants (selon Rip) disent ne jamais avoir eu lieu — donc un événement à venir.',
-    status: 'interpretation',
+      'La fresque montre une figure géante. Une alliance future d’Elbaf avec d’autres peuples est une interprétation ; le dessin seul ne date pas la scène.',
+    status: 'extension',
   },
   {
     id: 'soleil',
@@ -34,8 +34,8 @@ const zones: Zone[] = [
     y: 170,
     r: 40,
     interpretation:
-      'La figure solaire est rapprochée de Nika / Joy Boy : le dieu du soleil, incarnation de Luffy dans la bataille finale.',
-    status: 'interpretation',
+      'La figure solaire peut être rapprochée du mythe de Nika. Son identification à Luffy, au Joy Boy historique ou à une bataille future n’est pas établie.',
+    status: 'extension',
   },
   {
     id: 'pluie',
@@ -44,8 +44,8 @@ const zones: Zone[] = [
     y: 220,
     r: 36,
     interpretation:
-      'La pluie visible sur la fresque est rapprochée de Zaza, déesse de la pluie récemment révélée. Peut n’être qu’un élément d’atmosphère.',
-    status: 'hypothese',
+      'La pluie est rapprochée du nom provisoire Zaza et de la déesse shandia. Leur identité commune n’est pas confirmée ; il peut ne s’agir que d’un élément d’atmosphère.',
+    status: 'hypothese-recente',
   },
   {
     id: 'imu',
@@ -54,8 +54,8 @@ const zones: Zone[] = [
     y: 470,
     r: 48,
     interpretation:
-      'Depuis le chapitre 1180, une silhouette est rapprochée d’Imu sous forme gigantesque, éventuellement amplifiée par la Mother Flame (hypothèse Imu = Uranus). Spéculatif.',
-    status: 'hypothese',
+      'Depuis le chapitre 1180, cette silhouette est rapprochée d’Imu. La Mother Flame pourrait lui permettre d’atteindre une puissance associée à Uranus, alimenter Uranus ou activer une autre arme : branches concurrentes.',
+    status: 'hypothese-recente',
   },
   {
     id: 'harley',
@@ -64,22 +64,22 @@ const zones: Zone[] = [
     y: 480,
     r: 44,
     interpretation:
-      'Texte sacré d’Elbaf en trois parties et trois mondes qui accompagne la fresque. La théorie le lit comme une prophétie du futur (voir Elbaf et le Harley).',
-    status: 'canon',
+      'Texte sacré d’Elbaf en trois parties. Sa présence est établie ; sa lecture comme information future ou prophétie reste une branche distincte des Ponéglyphes.',
+    status: 'manga',
   },
 ];
 
 const statusColors: Record<string, string> = {
-  canon: '#76d3dc',
-  interpretation: '#c7a7ef',
-  hypothese: '#f0bd61',
+  manga: '#76d3dc',
+  extension: '#c7a7ef',
+  'hypothese-recente': '#f0bd61',
 };
 ---
 
 <WikiLayout
   title="La fresque d'Elbaf annotée"
   seoTitle="Fresque d'Elbaf annotée : zones cliquables | Les Fous du Bus"
-  description="Schéma annoté de la fresque d'Elbaf : géants, soleil, pluie, Imu et le Harley. Zones cliquables avec leurs interprétations, clairement distinguées du canon."
+  description="Schéma annoté de la fresque d'Elbaf : géants, soleil, pluie, Imu et le Harley. Zones cliquables avec leurs interprétations, classées comme Manga, Extension ou Hypothèse récente."
   currentPath="/explorer/fresque-elbaf"
 >
   <div class="page-header">
@@ -208,9 +208,9 @@ const statusColors: Record<string, string> = {
   </section>
 
   <div class="legend">
-    <span><i class="dot" style="background:var(--cyan)"></i> Établi par le manga</span>
-    <span><i class="dot" style="background:var(--violet-light)"></i> Lecture de la théorie</span>
-    <span><i class="dot" style="background:var(--accent-gold)"></i> Hypothèse / spéculatif</span>
+    <span><i class="dot" style="background:var(--cyan)"></i> Manga</span>
+    <span><i class="dot" style="background:var(--violet-light)"></i> Extension de la théorie</span>
+    <span><i class="dot" style="background:var(--accent-gold)"></i> Hypothèse récente</span>
   </div>
 
   <div class="linked">
@@ -226,14 +226,14 @@ const statusColors: Record<string, string> = {
 <script>
   const zoneEls = document.querySelectorAll<HTMLElement>('.zone-hit');
   const statusLabel: Record<string, string> = {
-    canon: 'Établi par le manga',
-    interpretation: 'Lecture de la théorie',
-    hypothese: 'Hypothèse / spéculatif',
+    manga: 'Manga',
+    extension: 'Extension de la théorie',
+    'hypothese-recente': 'Hypothèse récente',
   };
   const statusColor: Record<string, string> = {
-    canon: 'var(--cyan)',
-    interpretation: 'var(--violet-light)',
-    hypothese: 'var(--accent-gold)',
+    manga: 'var(--cyan)',
+    extension: 'var(--violet-light)',
+    'hypothese-recente': 'var(--accent-gold)',
   };
   const statusEl = document.getElementById('panel-status');
   const titleEl = document.getElementById('panel-title');
@@ -242,7 +242,7 @@ const statusColors: Record<string, string> = {
   const showZone = (zone: HTMLElement) => {
     const label = zone.dataset.label ?? '';
     const interp = zone.dataset.interp ?? '';
-    const status = zone.dataset.status ?? 'hypothese';
+    const status = zone.dataset.status ?? 'hypothese-recente';
     if (statusEl) {
       statusEl.textContent = statusLabel[status];
       statusEl.style.color = statusColor[status];
