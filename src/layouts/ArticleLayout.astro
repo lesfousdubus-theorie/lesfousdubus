@@ -2,6 +2,7 @@
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Breadcrumb from '@components/Breadcrumb.astro';
 import RelatedArticles from '@components/RelatedArticles.astro';
+import ArticleMeta from '@components/ArticleMeta.astro';
 import ChapterReferences from '@components/ChapterReferences.astro';
 import ReadingProgressBar from '@components/ReadingProgressBar.astro';
 import BackToTop from '@components/BackToTop.astro';
@@ -167,6 +168,12 @@ const articleJsonLd = {
     data-pagefind-ignore={frontmatter.searchHidden ? 'all' : undefined}
   >
     <h1 class="article-title">{title}</h1>
+
+    <ArticleMeta
+      updateChapter={frontmatter.updateChapter}
+      editorialStatus={frontmatter.editorialStatus}
+      certainty={frontmatter.certainty}
+    />
 
     <div class="article-top-meta" data-pagefind-ignore>
       {
@@ -685,8 +692,8 @@ const articleJsonLd = {
     display: block;
   }
 
-  /* Pastilles de statut au niveau des blocs : Canon, Interprétation, Hypothèse.
-     Usage dans le markdown : <div class="section-pill section-pill--canon">Canon</div> juste après le H2. */
+  /* Le statut global de la fiche indique son niveau dominant ; ces pastilles
+     distinguent les propositions quand un même article mêle faits et théorie. */
   .content :global(.section-pill) {
     display: inline-block;
     font-size: 12px;
@@ -699,22 +706,34 @@ const articleJsonLd = {
     margin: -6px 0 18px;
   }
 
-  .content :global(.section-pill--canon) {
+  .content :global(.section-pill--manga) {
     color: var(--cyan);
     border-color: color-mix(in srgb, var(--cyan) 40%, transparent);
     background: color-mix(in srgb, var(--cyan) 10%, transparent);
   }
 
-  .content :global(.section-pill--interpretation) {
+  .content :global(.section-pill--theorie-centrale) {
+    color: var(--accent-gold);
+    border-color: color-mix(in srgb, var(--accent-gold) 40%, transparent);
+    background: color-mix(in srgb, var(--accent-gold) 10%, transparent);
+  }
+
+  .content :global(.section-pill--extension),
+  .content :global(.section-pill--hypothese-recente) {
     color: var(--violet-light);
     border-color: color-mix(in srgb, var(--violet) 40%, transparent);
     background: color-mix(in srgb, var(--violet) 10%, transparent);
   }
 
-  .content :global(.section-pill--hypothese) {
-    color: var(--accent-gold);
-    border-color: color-mix(in srgb, var(--accent-gold) 40%, transparent);
-    background: color-mix(in srgb, var(--accent-gold) 10%, transparent);
+  .content :global(.section-pill--hypothese-recente) {
+    border-style: dashed;
+  }
+
+  .content :global(.section-pill--projection) {
+    color: var(--text-secondary);
+    border-color: color-mix(in srgb, var(--text-secondary) 40%, transparent);
+    border-style: dashed;
+    background: color-mix(in srgb, var(--text-secondary) 8%, transparent);
   }
 
   .content :global(h2::before) {

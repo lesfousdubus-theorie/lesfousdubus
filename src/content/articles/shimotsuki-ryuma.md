@@ -1,38 +1,39 @@
 ---
-title: "Shimotsuki Ryuma"
-summary: "Fiche d'identification de Shimotsuki Ryuma, samouraï légendaire de Wano surnommé le Dieu de la Lame, dont le corps fut exhumé par Moria à Thriller Bark."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
-sources: [1023]
-editorialStatus: "hypothese-secondaire"
-certainty: "moyenne"
+title: 'Shimotsuki Ryuma'
+summary: 'Fiche canonique de Ryuma, samouraï légendaire de Wano ; les parallèles avec Zoro et tout déplacement temporel sont renvoyés à une analyse distincte.'
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
+sources: [450, 937, 1023]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 44
-related: ["zoro"]
+related: ['ryuma', 'zoro', 'wa-no-kuni']
 ---
 
-## Présentation canonique
+## Le héros de Wano
 
-Shimotsuki Ryuma, dit le Dieu de la Lame, est un samouraï légendaire de Wa no Kuni. Il a tranché un dragon au-dessus de la capitale des Fleurs et n'a jamais perdu un combat.
+Shimotsuki Ryuma est un samouraï légendaire surnommé le **Dieu de la Lame**. Sa légende rapporte qu'il a tranché un dragon au-dessus de la capitale des Fleurs et qu'il a protégé Wano contre ses ennemis. Il maniait Shusui, devenue une lame noire et un trésor national.
 
-Son corps momifié fut dérobé par Gekko Moria lors de l'arc Thriller Bark. Son sabre, Shusui, a été récupéré par Roronoa Zoro.
+## Corps et sabre
 
-## Ce que le manga établit
+Le corps de Ryuma et Shusui sont volés par Gecko Moria. À Thriller Bark, sa dépouille est animée par l'ombre de Brook. Après le duel, Ryuma remet Shusui à Zoro. À Wano, Zoro rend ensuite le sabre en échange d'Enma.
 
-- Ryuma est cité explicitement au chapitre 1023 par Hyogoro et Kawamatsu comme un modèle pour Zoro.
-- L'ombre de Ryuma avait été volée par Moria et installée dans son propre corps à Thriller Bark.
-- Shusui est ensuite transmis à Zoro, qui le conserve à travers Wano.
+L'ombre placée dans le zombie est celle de **Brook**, pas celle de Ryuma. La personnalité observée combine le corps et les techniques du samouraï avec les habitudes de l'ombre.
 
-## La lecture des Fous du Bus
+## Ressemblances avec Zoro
 
-Ryuma n'est pas seulement un ancêtre honoré : dans la théorie, sa légende s'écrit au présent. Zoro endosse progressivement ses attributs (borgnitude, défaite du dragon, épée unique), jusqu'à devenir lui-même le Dieu de la Lame. Le mécanisme temporel se referme par la transmission de Shusui.
+Hyogoro et Kawamatsu rapprochent Zoro de Shimotsuki Ushimaru et de Ryuma. Zoro abat également un dragon artificiel à Punk Hazard et blesse Kaido, mais ces exploits sont distincts de la scène légendaire de Ryuma.
 
-L'article de démonstration Shimotsuki Ryuma et Roronoa Zoro détaille cette continuité.
+Les ressemblances peuvent relever de la lignée, de l'héritage ou du parallèle narratif. Elles ne prouvent pas que Zoro est Ryuma.
 
-## Limites et nuances
+## Analyse distincte
 
-- **Hyogoro et Kawamatsu parlent de ressemblance, pas d'identité.** Ils citent Ryuma comme un modèle pour Zoro, ce qui est un hommage explicite plutôt qu'un indice de boucle temporelle.
-- **Ushimaru partage cette ressemblance**, ce qui suggère un trait de lignée à Wa no Kuni plutôt qu'un individu unique.
-- **Le corps de Ryuma est présent et daté.** Sa dépouille existe à Thriller Bark ; en faire un Zoro futur exige un déplacement dans le temps que rien ne montre.
-- **La transmission de Shusui s'explique sans la théorie** : c'est le sabre d'un héros national, récupéré puis rendu à Wa no Kuni.
+La branche « Zoro pourrait prolonger ou accomplir la légende de Ryuma » est développée dans la fiche [Ryuma et Zoro](/theorie/ryuma). Un transport physique de Zoro vers l'ancien Wano reste une extension avancée, non nécessaire au noyau informationnel.
+
+## Limites
+
+- La date exacte de Ryuma n'est pas fixée dans la chronologie principale.
+- Son corps historique existe, ce qui constitue une objection majeure à une identité simple avec Zoro.
+- Zoro ne possède plus Shusui et son avenir martial reste ouvert.

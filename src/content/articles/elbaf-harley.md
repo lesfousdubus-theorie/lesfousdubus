@@ -1,47 +1,36 @@
 ---
-title: "Elbaf et le Harley"
-summary: "Le Harley d'Elbaf ne raconte pas le passé mais le futur. Usopp, orateur des géants, serait l'auteur de ce texte sacré sous le nom de plume de Louis Arnot."
-category: "peuples-royaumes"
-status: "published"
-navigationType: "fiche"
-editorialStatus: "hypothese-secondaire"
-certainty: "moyenne"
+title: 'Le Harley pourrait-il décrire un futur ?'
+summary: 'Le Harley peut décrire un passé mythifié ou un futur ; la branche Usopp/Louis Arnot reste une hypothèse secondaire distincte.'
+category: 'peuples-royaumes'
+status: 'published'
+navigationType: 'fiche'
+editorialStatus: 'hypothese-recente'
+certainty: 'hypothese'
 reviewedUntilChapter: 1190
-parent: "peuples-royaumes"
+parent: 'peuples-royaumes'
 sources: [1174, 1175, 1132]
 order: 90
 ---
 
-## Le Harley
+## Manga : un texte et une fresque d'Elbaf
 
-Le Harley est le texte sacré d'Elbaf, divisé en trois parties et trois mondes. La fresque sur l'Arbre d'Adam montre un géant antique combattant aux côtés de l'humanité.
+Le Harley est un texte sacré structuré en plusieurs mondes. Une fresque sur l'Arbre d'Adam montre des figures dont le contexte historique n'est pas entièrement établi.
 
-Rip dit qu'Elbaf ne s'est jamais allié au reste du monde. Pourtant la fresque montre cette alliance : c'est un dessin du futur, la bataille finale.
+Une citation du Harley est rapprochée, dans les chapitres récents, d'une scène réunissant une bête colossale, un orage de neige et le dieu du soleil. La proximité est un argument d'interprétation ; elle ne dit pas comment le texte a obtenu l'information.
 
-## La prophétie réalisée
+## Deux lectures concurrentes
 
-Le doyen Yar cite le Harley au chapitre 1174 : « En un jour d'orage de neige si rare en ce monde, une bête colossale recouvrant le ciel apparaîtra et avec lui le dieu du soleil. »
+1. **Passé mythifié** : le Harley conserverait des traditions anciennes réinterprétées au présent.
+2. **Futur possible** : une partie pourrait préfigurer des événements que vivent Luffy et Loki.
 
-C'est exactement ce qui se passe au chapitre 1175 : Loki en forme dragon avec Luffy en forme blanche sur son dos, sous un orage de neige. Trop précis pour ne pas être du vécu.
+Même si la seconde lecture était confirmée, préscience, communication ou information transmise resteraient des mécanismes distincts.
 
-## Usopp et le Harley (hypothèse secondaire)
+## Hypothèse secondaire : Usopp / Louis Arnot
 
-**Extension éditoriale / hypothèse secondaire** (non présente de façon centrale dans la théorie principale).
+Usopp pourrait inspirer un récit destiné aux géants, et Louis Arnot pourrait être un nom lié à cette diffusion. Leur identité commune et l'attribution du Harley à Usopp ne sont pas établies. Cette branche ne fait pas partie du noyau central.
 
-Le Harley est prophétique. Certains lecteurs proposent qu’Usopp, grand affabulateur, en soit l’auteur sous le nom de plume de Louis Arnot (mentionné au chapitre 1132).
+## Questions ouvertes
 
-Cette hypothèse n’est **pas explicitement formulée** comme noyau de la théorie des Fous du Bus dans les transcriptions fournies. Elle est conservée ici comme piste spéculative et doit être marquée comme telle.
-
-## Le plus grand accomplissement (spéculatif)
-
-Celui qui souhaite devenir un grand et fier guerrier des mers aurait inspiré tous les plus grands et fiers guerriers des mers. Usopp, le plus faible de l'équipage, deviendrait la référence pour la jeunesse géante.
-
-**Statut** : Extension éditoriale / hypothèse secondaire. Non centrale dans la théorie principale.
-
-
-## Limites et nuances
-
-- **La fresque peut représenter un passé mythifié.** Les textes sacrés décrivent volontiers une alliance fondatrice ; y voir un dessin du futur suppose déjà admise la thèse du Siècle oublié au présent.
-- **La déclaration de Rip peut être inexacte.** Qu'Elbaf « ne se soit jamais alliée » est une affirmation de personnage, pas un fait établi, et l'histoire d'Elbaf nous est encore largement inconnue.
-- **Une prophétie vérifiée ne prouve pas un aller-retour temporel.** Le procédé le plus courant, chez Oda comme ailleurs, reste la prophétie ancienne qui s'accomplit — sans que le texte vienne du futur.
-- **Le lien avec Usopp est explicitement secondaire** et ne doit pas être lu comme un appui de la thèse principale.
+- De quand datent les différentes parties du Harley et la fresque ?
+- Décrivent-elles la même époque ?
+- Louis Arnot est-il auteur, témoin ou simple référence distincte ?

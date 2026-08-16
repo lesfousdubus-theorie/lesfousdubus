@@ -1,16 +1,16 @@
 ---
-title: "Dragons Célestes"
-summary: "Fiche des Dragons Célestes : les descendants des dix-neuf familles fondatrices installées à Mary Geoise, leur statut et le cas des Nefertari."
-category: "gouvernement-mondial"
-status: "published"
-navigationType: "fiche"
+title: 'Dragons Célestes'
+summary: 'Fiche des Dragons Célestes : les descendants des dix-neuf familles fondatrices installées à Mary Geoise, leur statut et le cas des Nefertari.'
+category: 'gouvernement-mondial'
+status: 'published'
+navigationType: 'fiche'
 sources: [497, 498, 906, 1084]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "gouvernement-mondial"
+parent: 'gouvernement-mondial'
 order: 68
-related: ["gouvernement-mondial", "vingt-rois", "mary-geoise", "chevaliers-divins", "alabasta"]
+related: ['gouvernement-mondial', 'vingt-rois', 'mary-geoise', 'chevaliers-divins', 'alabasta']
 ---
 
 ## Présentation
@@ -29,7 +29,7 @@ Les Dragons Célestes, ou Nobles Mondiaux, sont les descendants des familles qui
 
 Le refus des Nefertari est le fait le plus significatif : une famille victorieuse, invitée à régner, décline. La théorie relie ce refus à l'identité de Nefertari D. Lili, porteuse du D., et à l'hypothèse selon laquelle les Nefertari auraient su quelque chose que les dix-neuf autres ignoraient.
 
-La panique d'Imu lorsque Cobra prononce le nom de Lili (chapitre 1084) est lue dans le même sens : ce nom désignerait une personne encore à venir.
+La réaction d’Imu au nom de Lili peut viser son action historique, un message, Vivi ou une autre information. La branche Vivi/Lili reste conditionnelle et ne transforme pas Lili en personne future établie.
 
 ## Limites et nuances
 

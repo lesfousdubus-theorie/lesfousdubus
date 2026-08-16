@@ -27,7 +27,7 @@ export async function GET(context: { site: URL }) {
   return rss({
     title: 'Les Fous du Bus — Wiki de la théorie One Piece',
     description:
-      'Théorie One Piece : le Siècle oublié est le présent. Articles, analyses chapitre par chapitre, et mises à jour de la théorie des Fous du Bus.',
+      'Théorie One Piece : des informations futures pourraient être conservées dans les sources du Siècle oublié. Articles et analyses révisables.',
     site: context.site,
     items,
     customData: `<language>fr-FR</language>`,

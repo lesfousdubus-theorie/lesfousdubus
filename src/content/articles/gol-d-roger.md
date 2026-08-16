@@ -1,51 +1,47 @@
 ---
-title: "Gol D. Roger"
-summary: "Fiche d'identification de Gol D. Roger, le Seigneur des Pirates, qui a découvert Laugh Tale et conclu que le véritable Joy Boy n'était pas encore né."
-category: "figures-principales"
-status: "published"
-navigationType: "fiche"
+title: 'Gol D. Roger'
+summary: 'Fiche révisée de Gol D. Roger : son équipage atteint Laugh Tale après Lodestar, découvre la véritable histoire et comprend être arrivé trop tôt.'
+category: 'figures-principales'
+status: 'published'
+navigationType: 'fiche'
 sources: [967, 968, 1]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 18
-related: ["luffy", "joy-boy", "laugh-tale"]
+related: ['luffy', 'joy-boy', 'laugh-tale', 'scopper-gaban', 'silhouette-scan-1181-roger']
 ---
 
-## Présentation
+## Le voyage jusqu'à Laugh Tale
 
-Gol D. Roger est le Seigneur des Pirates, le seul homme à avoir atteint Laugh Tale et découvert le One Piece. Son exécution à Loguetown ouvre la Grande Ère de la Piraterie et le premier chapitre du manga.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Ce que le manga établit
+Roger atteint **Lodestar**, dernière destination indiquée par le Log Pose. Il comprend alors qu'une île manque au parcours connu et recherche les quatre Road Ponéglyphes. Avec son équipage et l'aide d'Oden pour lire les inscriptions, il atteint Laugh Tale.
 
-- Il atteint **Laugh Tale** environ vingt-cinq ans avant le présent du récit, accompagné de son équipage.
-- Devant le trésor, l'équipage **éclate de rire**. La raison n'a jamais été expliquée.
-- Il déclare y être arrivé **trop tôt** : « Nous sommes venus trop tôt dans cette ère » (chapitre 968).
-- Il conclut qu'il n'est pas celui qu'on attendait, et affirme que le véritable Joy Boy viendra plus tard.
-- Il est atteint d'une maladie incurable et se rend volontairement à la Marine.
-- Il possédait le **Haki des Rois** et entendait la « voix de toute chose », comme Luffy et Momonosuke.
-- Il n'a **pas trouvé Poséidon** sur l'île des Hommes-Poissons, alors que le Ponéglyphe de Shandora en indiquait l'emplacement.
-- Son chapeau de paille, transmis à Shanks puis à Luffy, appartenait originellement à un autre porteur.
+Roger n'est donc pas « le seul homme » arrivé sur l'île : l'équipage de Roger y parvient collectivement.
 
-## La lecture des Fous du Bus
+**Sources précises :** chapitres 966 à 968.
 
-Roger est le témoin central de la théorie, pour une raison précise : **il est arrivé au bon endroit au mauvais moment**.
+## « Trop tôt »
 
-Son échec à trouver Poséidon s'explique dans cette grille sans difficulté : Shirahoshi n'était pas encore née. La stèle n'indiquait pas un lieu vide, elle indiquait une arme à venir. Le même raisonnement s'appliquerait à Pluton, désigné sous Wa no Kuni alors qu'il resterait à construire.
+<div class="section-pill section-pill--manga">Manga</div>
 
-Son rire serait celui de la reconnaissance : avoir compris que l'histoire gravée sur le Rio Ponéglyphe n'était pas celle d'un passé lointain, mais celle d'un garçon qui n'était pas encore né.
+L'équipage découvre la véritable histoire, les Armes antiques et le trésor laissé par Joy Boy. Il comprend être arrivé trop tôt. La chronologie de Poséidon fournit un repère canonique : Shirahoshi devait naître dix ans plus tard et grandir encore.
 
-L'analyse de la silhouette du chapitre 1181 — Joy Boy ou Roger ? — est développée dans [La Silhouette du Scan 1181](/theorie/silhouette-scan-1181-roger).
+Le manga ne fait pas prononcer à Roger une conclusion explicite identifiant un **futur Joy Boy précis**.
 
-## Limites et nuances
+## Pluton et Poséidon
 
-- « Trop tôt » peut simplement signifier que Roger était condamné par la maladie, sans aucune implication temporelle.
-- L'absence de Poséidon s'explique aussi par le fait que le titre passe d'une sirène à l'autre au fil des générations : c'est la lecture la plus économique.
-- Le rire de Roger admet des dizaines d'explications, dont beaucoup n'exigent aucun paradoxe.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Articles liés
+Poséidon renaît en Shirahoshi. **Pluton existe au présent sous Wano**, comme le confirme Sukiyaki au chapitre 1055. Roger pouvait manquer des conditions d'usage ou d'accès ; il n'est plus possible d'écrire que Pluton n'existait pas encore.
 
-- [Laugh Tale](/theorie/laugh-tale)
-- [Joy Boy](/theorie/joy-boy)
-- [La Silhouette du Scan 1181](/theorie/silhouette-scan-1181-roger)
-- [Monkey D. Luffy](/theorie/luffy)
+## Une branche temporelle évolutive
+
+<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
+
+La théorie Roger reste évolutive après le chapitre 1188 : Roger pourrait avoir reçu une communication liée à Joy Boy vers −25 ; un message pourrait être reçu vers −800 ; Luffy pourrait répondre depuis Laugh Tale. Ces possibilités ne démontrent ni que Lodestar est dans une autre époque ni que le quatrième Road Ponéglyphe encode nécessairement le temps.
+
+## Limites et objections
+
+Les quatre Road Ponéglyphes donnent quatre positions spatiales dont le croisement révèle Laugh Tale. Le rôle exact du quatrième, sa localisation actuelle et tout mécanisme temporel restent ouverts.

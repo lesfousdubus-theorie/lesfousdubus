@@ -80,7 +80,7 @@ describe('sidebar : source unique et ordre déterministe', () => {
       'Red Line',
       'Lodestar',
       'Laugh Tale',
-      'One Piece',
+      'Le One Piece pourrait contenir la véritable histoire vécue par Luffy',
       'All Blue',
       'God Valley',
     ]);

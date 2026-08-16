@@ -3,47 +3,47 @@ const steps = [
   {
     id: 'present',
     number: '01',
-    label: 'Le présent écrit l’Histoire',
+    label: 'Les événements sont vécus',
     shortLabel: 'Présent',
-    title: 'Luffy et ses alliés vivent les événements fondateurs',
-    text: 'La guerre finale, les promesses tenues et la transformation du monde ne seraient pas la répétition du Siècle oublié : elles en constitueraient les événements réels.',
-    status: 'Thèse centrale',
+    title: 'Luffy et ses alliés vivent une histoire nouvelle',
+    text: 'La guerre finale, les promesses tenues et les transformations du monde appartiennent au présent du récit ou à ses futurs possibles. Elles ne sont pas encore des faits historiques accomplis.',
+    status: 'Manga et projection',
   },
   {
     id: 'future',
     number: '02',
-    label: 'La légende prend forme',
-    shortLabel: 'Futur proche',
-    title: 'Luffy devient Joy Boy et le récit peut être consigné',
-    text: 'À l’issue de l’aventure, Luffy serait retenu comme Joy Boy. Robin et Momonosuke pourraient alors participer à la rédaction et à la gravure des Ponéglyphes.',
-    status: 'Développement de la théorie',
+    label: 'L’information est consignée',
+    shortLabel: 'Futur projeté',
+    title: 'Des témoins pourraient produire la mémoire des événements',
+    text: 'Le contenu peut être un récit, des coordonnées, une promesse ou des plans. Robin peut lire les Ponéglyphes, mais le manga ne dit pas qu’elle les grave ; Momonosuke n’a pas reçu ce savoir et Sukiyaki le possède encore.',
+    status: 'Théorie centrale',
   },
   {
     id: 'transmission',
     number: '03',
     label: 'L’information rejoint le passé',
     shortLabel: 'Transmission',
-    title: 'Les Ponéglyphes sont transmis environ neuf siècles plus tôt',
-    text: 'Le passé reçoit le récit et les instructions du futur. Le véhicule exact n’est pas tranché : la théorie envisage la transmission d’informations par les Ponéglyphes, la préscience (Madame Shirley, Imu) et des déplacements ponctuels attestés comme le Toki Toki no Mi — mais jamais une boucle physique généralisée. C’est le principal point ouvert.',
-    status: 'Véhicule non tranché',
+    title: 'Le véhicule exact reste ouvert',
+    text: 'Le noyau exige seulement que des informations atteignent une époque antérieure puis soient fixées sur les Ponéglyphes. Communication temporelle et préscience sont deux branches alternatives. Harley peut transmettre un récit ; Emeth ou Zoro relèvent d’un transport physique plus spéculatif.',
+    status: 'Mécanisme non tranché',
   },
   {
     id: 'preparation',
     number: '04',
-    label: 'Huit siècles de préparation',
-    shortLabel: 'Accomplissement',
-    title: 'Les peuples préparent le monde jusqu’au retour de Joy Boy',
-    text: 'Noah, Wa no Kuni, les croyances autour de Nika et les héritages protégés convergent vers le présent. Le futur devient mémoire, puis cette mémoire aide le présent à l’accomplir.',
-    status: 'Boucle d’information',
+    label: 'La mémoire traverse les siècles',
+    shortLabel: 'Longue veille',
+    title: 'Les Ponéglyphes rendent l’information durable',
+    text: 'Les textes, promesses et préparatifs peuvent apparaître à des dates différentes, puis guider les héritiers jusqu’au présent. Le futur pourrait ainsi créer une partie de la mémoire attribuée au passé, sans déplacer physiquement le monde entier.',
+    status: 'Théorie centrale',
   },
-];
+]
 ---
 
 <section class="mechanism" aria-labelledby="mechanism-title" data-theory-mechanism>
   <div class="mechanism__heading">
     <div>
       <p class="mechanism__eyebrow">Le mécanisme minimal</p>
-      <h2 id="mechanism-title">Comment le futur devient-il le « passé » du monde ?</h2>
+      <h2 id="mechanism-title">Comment une information future devient-elle une source du passé ?</h2>
     </div>
     <a href="/theorie/chronologie"
       >Voir les mécanismes envisagés <span aria-hidden="true">→</span></a
@@ -51,9 +51,9 @@ const steps = [
   </div>
 
   <p class="mechanism__intro">
-    Le noyau de la théorie n’impose pas une boucle physique généralisée. Il décrit d’abord une
-    <strong>boucle d’information</strong> : une histoire vécue dans le présent ou le futur est transmise
-    au passé, qui se prépare ensuite à son accomplissement.
+    Le noyau ne postule pas une boucle temporelle générale. Il suit une chronologie du
+    <strong>passé apparent vers le futur qui pourrait avoir produit certaines de ses informations</strong>.
+    Les Ponéglyphes sont le support central ; préscience, communication et transport physique restent séparés.
   </p>
 
   <div class="mechanism__tabs" data-mechanism-tabs>
@@ -94,11 +94,11 @@ const steps = [
   </div>
 
   <p class="mechanism__formula">
-    <span>Le présent produit l’Histoire</span>
+    <span>Passé apparent : information future</span>
     <span aria-hidden="true">→</span>
-    <span>l’Histoire rejoint le passé</span>
+    <span>Présent : événements vécus</span>
     <span aria-hidden="true">→</span>
-    <span>le passé prépare le présent</span>
+    <span>Futur projeté : création de la mémoire</span>
   </p>
 </section>
 

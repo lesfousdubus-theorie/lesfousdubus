@@ -14,26 +14,29 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
-const allChapters = (await getCollection('chapters')).sort((a, b) => a.data.chapter - b.data.chapter);
+const allChapters = (await getCollection('chapters')).sort(
+  (a, b) => a.data.chapter - b.data.chapter,
+);
 const articles = await getCollection('articles', ({ data }) => data.status === 'published');
 const affectedArticles = entry.data.updatedArticles
   .map((id) => articles.find((a) => a.id === id))
   .filter((a): a is NonNullable<typeof a> => Boolean(a));
 const chapterIndex = allChapters.findIndex((c) => c.data.chapter === entry.data.chapter);
 const prevChapter = chapterIndex > 0 ? allChapters[chapterIndex - 1] : null;
-const nextChapter = chapterIndex >= 0 && chapterIndex < allChapters.length - 1 ? allChapters[chapterIndex + 1] : null;
+const nextChapter =
+  chapterIndex >= 0 && chapterIndex < allChapters.length - 1 ? allChapters[chapterIndex + 1] : null;
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
 // Google tronque le <title> autour de 60-65 caractères. « de One Piece » et
 // « : analyse et théorie » coûtaient 33 caractères sans rien apporter : le
 // contexte One Piece est déjà porté par le titre du chapitre et le suffixe de
 // marque. Le mot-clé reste présent dans la meta description et le H1.
-const chapterSeoTitle = `Chapitre ${entry.data.chapter} — ${entry.data.title} | Les Fous du Bus`;
+const chapterSeoTitle =
+  entry.data.seoTitle ?? `Chapitre ${entry.data.chapter} — ${entry.data.title} | Les Fous du Bus`;
 // Le titre ne porte plus « One Piece » (trop long en SERP) : on garantit donc
 // que la description le contient toujours, y compris quand la fiche fournit son
 // propre summary.
 const rawChapterDescription =
-  entry.data.summary ??
-  `${entry.data.title} et son apport à la théorie du Siècle oublié.`;
+  entry.data.summary ?? `${entry.data.title} et son apport à la théorie du Siècle oublié.`;
 const chapterDescription = /one piece/i.test(rawChapterDescription)
   ? rawChapterDescription
   : `Chapitre ${entry.data.chapter} de One Piece — ${rawChapterDescription}`;
@@ -62,7 +65,12 @@ const chapterBreadcrumbLd = {
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Accueil', item: siteUrl + '/' },
     { '@type': 'ListItem', position: 2, name: 'Chapitres', item: siteUrl + '/chapitres/' },
-    { '@type': 'ListItem', position: 3, name: `Chapitre ${entry.data.chapter}`, item: canonicalChapterUrl },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: `Chapitre ${entry.data.chapter}`,
+      item: canonicalChapterUrl,
+    },
   ],
 };
 ---
@@ -80,16 +88,22 @@ const chapterBreadcrumbLd = {
     <div class="chapter-badges">
       <span class="badge-chapter">Chapitre {entry.data.chapter}</span>
       <span class="badge-designation">Synthèse de l'analyse</span>
-      <span class="badge-effect" class:list={[
-        { 'badge-effect--violet': entry.data.effect === 'nouvelle-piste' },
-        { 'badge-effect--gold': entry.data.effect === 'approfondissement' || entry.data.effect === 'modification' },
-        { 'badge-effect--alert': entry.data.effect === 'piste-abandonnee' },
-      ]}>{effectLabel(entry.data.effect)}</span>
+      <span
+        class="badge-effect"
+        class:list={[
+          { 'badge-effect--violet': entry.data.effect === 'nouvelle-piste' },
+          {
+            'badge-effect--gold':
+              entry.data.effect === 'approfondissement' || entry.data.effect === 'modification',
+          },
+          { 'badge-effect--alert': entry.data.effect === 'piste-abandonnee' },
+        ]}>{effectLabel(entry.data.effect)}</span
+      >
     </div>
     <h1>{entry.data.title}</h1>
     <p class="chapter-designation">
-      Cette page est une <strong>synthèse</strong> de la transcription de l'analyse du chapitre. Elle conserve
-      les grands arguments du fichier source, reformulés pour la lecture en ligne.
+      Cette page est une <strong>synthèse</strong> de la transcription de l'analyse du chapitre. Elle
+      conserve les grands arguments du fichier source, reformulés pour la lecture en ligne.
     </p>
   </div>
 
@@ -97,43 +111,57 @@ const chapterBreadcrumbLd = {
     <Content />
   </div>
 
-  {affectedArticles.length > 0 && (
-    <section class="impact-box" aria-labelledby="impact-title">
-      <h3 id="impact-title">Ce que ce chapitre change dans la théorie</h3>
-      <p class="impact-intro">
-        Effet : <strong>{effectLabel(entry.data.effect)}</strong>. Les fiches suivantes sont directement concernées :
-      </p>
-      <ul class="impact-list">
-        {affectedArticles.map((article) => (
-          <li>
-            <a href={`/theorie/${article.id}`}>{article.data.title}</a>
-          </li>
-        ))}
-      </ul>
-      <p class="impact-note">
-        Une hypothèse apparue dans ce chapitre est traitée comme un <strong>développement récent</strong> et
-        n'est jamais présentée comme un acquis de la théorie originale.
-      </p>
-    </section>
-  )}
+  {
+    affectedArticles.length > 0 && (
+      <section class="impact-box" aria-labelledby="impact-title">
+        <h3 id="impact-title">Ce que ce chapitre change dans la théorie</h3>
+        <p class="impact-intro">
+          Effet : <strong>{effectLabel(entry.data.effect)}</strong>. Les fiches suivantes sont
+          directement concernées :
+        </p>
+        <ul class="impact-list">
+          {affectedArticles.map((article) => (
+            <li>
+              <a href={`/theorie/${article.id}`}>{article.data.title}</a>
+            </li>
+          ))}
+        </ul>
+        <p class="impact-note">
+          Une hypothèse apparue dans ce chapitre est traitée comme un{' '}
+          <strong>développement récent</strong> et n'est jamais présentée comme un acquis de la
+          théorie originale.
+        </p>
+      </section>
+    )
+  }
 
   <nav class="chapter-pager" aria-label="Chapitres précédent et suivant">
-    {prevChapter && (
-      <a class="chapter-pager__link chapter-pager__link--prev" href={`/chapitres/${prevChapter.data.chapter}`}>
-        <span class="chapter-pager__dir">← Chapitre {prevChapter.data.chapter}</span>
-        <span class="chapter-pager__title">{prevChapter.data.title}</span>
-      </a>
-    )}
+    {
+      prevChapter && (
+        <a
+          class="chapter-pager__link chapter-pager__link--prev"
+          href={`/chapitres/${prevChapter.data.chapter}`}
+        >
+          <span class="chapter-pager__dir">← Chapitre {prevChapter.data.chapter}</span>
+          <span class="chapter-pager__title">{prevChapter.data.title}</span>
+        </a>
+      )
+    }
     <a class="chapter-pager__link chapter-pager__link--all" href="/chapitres">
       <span class="chapter-pager__dir">Tous</span>
       <span class="chapter-pager__title">Les analyses</span>
     </a>
-    {nextChapter && (
-      <a class="chapter-pager__link chapter-pager__link--next" href={`/chapitres/${nextChapter.data.chapter}`}>
-        <span class="chapter-pager__dir">Chapitre {nextChapter.data.chapter} →</span>
-        <span class="chapter-pager__title">{nextChapter.data.title}</span>
-      </a>
-    )}
+    {
+      nextChapter && (
+        <a
+          class="chapter-pager__link chapter-pager__link--next"
+          href={`/chapitres/${nextChapter.data.chapter}`}
+        >
+          <span class="chapter-pager__dir">Chapitre {nextChapter.data.chapter} →</span>
+          <span class="chapter-pager__title">{nextChapter.data.title}</span>
+        </a>
+      )
+    }
   </nav>
 
   <Footer />
@@ -349,7 +377,9 @@ const chapterBreadcrumbLd = {
     background: var(--bg-main);
     text-decoration: none;
     color: var(--text-main);
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
   }
   a.chapter-pager__link:hover {
     border-color: var(--cyan);
@@ -400,7 +430,11 @@ const chapterBreadcrumbLd = {
     color: var(--text-main);
     text-decoration: none;
     font-size: 13.5px;
-    transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   .nav-link:hover {

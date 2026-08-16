@@ -1,50 +1,45 @@
 ---
-title: "Imu, le créateur terrifié par l'avenir"
-summary: "Imu, souverain caché du monde : la théorie envisage une longévité par le Ope Ope no Mi ou une préscience, et décrit un guetteur qui confond les générations faute de connaître les visages."
-category: "gouvernement-mondial"
-status: "published"
-navigationType: "fiche"
+title: 'Imu face à un avenir qu’il pourrait mal comprendre'
+summary: "Extension révisée : Imu pourrait recevoir des informations, communiquer à travers le temps ou disposer de préscience ; aucune confusion d'identité n'est tenue pour acquise."
+seoTitle: 'Imu face à l’avenir | Les Fous du Bus'
+category: 'gouvernement-mondial'
+status: 'published'
+navigationType: 'fiche'
 sidebarHidden: true
-editorialStatus: "hypothese-secondaire"
-certainty: "elevee"
+editorialStatus: 'extension'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 sources: [1164, 1188]
 order: 64
-parent: "imu-nerona"
+parent: 'imu-nerona'
 ---
 
-## Le Dark Vador de One Piece
+## Point de départ
 
-Imu est le commandant suprême de l'univers, le plus grand méchant. Comme Vador, c'est un être brisé par la peur. Dans la lecture des Fous du Bus, il aurait lu les Ponéglyphes et saurait qu'un jour Joy Boy apparaîtra pour détruire le monde.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## L'ironie tragique
+Imu connaît Joy Boy, Lili, le D. et certains récits des fondateurs. Aux chapitres 1187–1188, Imu appelle Luffy Joy Boy puis se souvient d'un premier Joy Boy distinct. Au chapitre 1190, Imu distingue Roger de Joy Boy.
 
-En voulant empêcher Joy Boy, Imu commet les actes qui le créent. En humiliant des peuples, en éradiquant des races, en brûlant le savoir, il crée exactement ce qu'il redoute : un monde qui a besoin d'être libéré.
+**Sources précises :** chapitres 1084–1086 et 1187–1190.
 
-Comme Anakin qui en tentant de sauver Padmé la tue, Imu échouerait à empêcher ce qu'il redoute : sa répression créerait les conditions mêmes de l'apparition de Joy Boy.
+## Trois sources de connaissance possibles
 
-## Il confond les générations
+<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
-Imu ne connaît pas l'identité de Joy Boy, seulement son nom et ses pouvoirs. Alors il confond :
+Imu pourrait avoir accès à des archives ou Ponéglyphes, recevoir une communication temporelle, ou posséder une forme de préscience. Le site ne tranche pas entre ces branches.
 
-- **Xebec avec Davy Jones** (chapitre 1164) : le père avec le fils
-- **Titi avec Vivi** : la mère avec la fille, toutes deux aux cheveux bleus
-- **Roger avec Joy Boy** : il pensait que Roger était le prédestiné
+## Une ironie politique
 
-## Les paroles révélatrices
+<div class="section-pill section-pill--extension">Extension</div>
 
-Au chapitre 1188, Imu dit à Luffy : « Tu ne peux pas être Joy Boy, car Joy Boy ne serait pas aussi faible. »
+La répression d'Imu peut produire le besoin de libération qu'elle cherche à supprimer. Cette ironie fonctionne sans vision du futur : elle décrit une causalité politique, pas une preuve temporelle.
 
-Il utilise le conditionnel, pas le passé. Il ne dit pas « n'était pas » mais « ne serait pas ». Preuve qu'il n'a jamais rencontré Joy Boy et se base sur des suppositions.
+## Le motif des identités erronées
 
-## La préscience
+<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
-Comme Madame Shirley, Imu pourrait posséder un don de préscience. Shirley voit l'avenir dans une perle d'huître. Imu utilise probablement un dispositif similaire sur Laugh Tale. Les deux personnages se ressemblent physiquement et sont diamétralement opposés : Shirley le yin, Imu le yang.
+Xebec/Davy Jones, Roger/Joy Boy et Vivi/Lili forment un motif visuel possible, à étudier cas par cas. Ni la couleur des cheveux de Lili, ni une confusion Roger/Joy Boy, ni une erreur d'Imu sur Vivi ne sont établies.
 
+## Limites et objections
 
-## Limites et nuances
-
-- **La comparaison avec Dark Vador est un outil de lecture, pas un argument.** Elle éclaire la psychologie prêtée à Imu ; elle ne démontre rien sur le récit d'Oda.
-- **Rien n'établit qu'Imu ait lu les Ponéglyphes.** Sa connaissance de Joy Boy peut venir d'archives du Gouvernement, de témoignages, ou de sa propre expérience s'il est immortel.
-- **L'ironie tragique est une figure narrative séduisante.** Qu'un tyran fabrique son opposant est un ressort classique ; l'observer ici ne prouve pas qu'Imu réagisse à une vision de l'avenir.
-- **La confusion des générations admet des lectures plus simples**, notamment une référence mythologique ou le mépris d'un être qui ne distingue pas ses ennemis.
+Les traductions des chapitres 1188–1190 peuvent évoluer. Aucun dialogue ne prouve qu'Imu n'a jamais rencontré Joy Boy, et aucune capacité de préscience n'est montrée.

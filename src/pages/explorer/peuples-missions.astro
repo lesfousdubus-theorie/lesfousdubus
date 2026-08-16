@@ -5,55 +5,56 @@ import Footer from '@components/Footer.astro';
 interface Peuple {
   nom: string;
   href: string;
-  element: string;
-  mission: string;
-  final: string;
+  manga: string;
+  datation: string;
+  projection: string;
 }
 
 const peuples: Peuple[] = [
-  { nom: 'Hommes-Poissons', href: '/theorie/hommes-poissons', element: 'Poséidon', mission: 'Conserver Noah et attendre le navire', final: 'Noah porte les Hommes-Poissons vers le soleil' },
-  { nom: 'Wa no Kuni', href: '/theorie/wa-no-kuni', element: 'Pluton', mission: 'Graver et protéger les Ponéglyphes', final: 'Ouverture des frontières, Pluton' },
-  { nom: 'Minks (Zou)', href: '/theorie/zou-minks', element: 'Zunesha', mission: 'Garder le secret du siècle', final: 'Zunesha intervient dans la guerre' },
-  { nom: 'Alabasta / Nefertari', href: '/theorie/alabasta', element: 'Ponéglyphe', mission: 'Protéger le Ponéglyphe et la lignée', final: 'Vivi accomplit le rôle de Lili' },
-  { nom: 'Shandias', href: '/theorie/shandora-shandias', element: 'Foi / divinités', mission: 'Transmettre la croyance et le Ponéglyphe', final: 'Foi en Nika matérialisée' },
-  { nom: 'Boucaniers', href: '/theorie/boucaniers', element: 'Nika', mission: 'Transmettre la foi en Nika', final: 'Kuma, dernier témoin' },
-  { nom: 'Ryugu', href: '/theorie/royaume-ryugu', element: 'Poséidon / Noah', mission: 'Attendre la promesse de Joy Boy', final: 'Le serment accompli' },
-  { nom: 'Géants d\'Elbaf', href: '/theorie/elbaf-harley', element: 'Harley / fresque', mission: 'Conserver la prophétie et charpenter', final: 'Galley-La des géants, Pluton' },
+  { nom: 'Hommes-Poissons', href: '/theorie/hommes-poissons', manga: 'Noah et promesse de Joy Boy', datation: 'Promesse historique · date approximative', projection: 'Noah pourrait conduire le peuple vers la surface' },
+  { nom: 'Wa no Kuni', href: '/theorie/wa-no-kuni', manga: 'Gravure Kozuki et Pluton sous Wano', datation: 'Siècle oublié puis transmission familiale', projection: 'Ouverture des frontières et libération de Pluton' },
+  { nom: 'Minks (Zou)', href: '/theorie/zou-minks', manga: 'Road Ponéglyphe gardé sur Zou', datation: 'Conservation attestée au présent', projection: 'Zunesha pourrait participer à l’ouverture de Wano' },
+  { nom: 'Alabasta / Nefertari', href: '/theorie/alabasta', manga: 'Lili liée à la dispersion ; stèle de Pluton protégée', datation: 'Vers −800 puis huit siècles de garde', projection: 'Vivi pourrait accomplir un rôle analogue à Lili' },
+  { nom: 'Shandias', href: '/theorie/shandora-shandias', manga: 'Cloche et Ponéglyphe protégés', datation: 'Mission reçue il y a environ 400 ans', projection: 'Rôle final non établi' },
+  { nom: 'Boucaniers', href: '/theorie/boucaniers', manga: 'Tradition orale de Nika transmise à Kuma', datation: 'Transmission multigénérationnelle non datée', projection: 'La mémoire de Kuma pourrait éclairer la Libération' },
+  { nom: 'Dynastie Ryugu', href: '/theorie/royaume-ryugu', manga: 'Poséidon renaît dans la lignée royale', datation: 'Cycles de plusieurs siècles', projection: 'Shirahoshi pourrait déplacer Noah consciemment' },
+  { nom: 'Géants d\'Elbaf', href: '/theorie/elbaf-harley', manga: 'Harley, fresque et culture de Nika', datation: 'Textes de périodes différentes ou inconnues', projection: 'Charpentiers géants et Pluton restent une extension' },
 ];
 ---
 
 <WikiLayout
   title="Les peuples et leurs missions"
   seoTitle="Peuples de One Piece et leurs missions | Les Fous du Bus"
-  description="Carte des peuples de la théorie : chaque peuple protège un élément, reçoit une mission et joue un rôle dans l'événement final."
+  description="Carte des mémoires et missions de plusieurs peuples : faits du manga, datations indépendantes et projections finales séparées."
   currentPath="/explorer/peuples-missions"
 >
   <div class="page-header">
     <p class="eyebrow">🏰 Peuples</p>
     <h1>Peuples et missions</h1>
     <p class="page-desc">
-      Dans la théorie, chaque peuple de Blue Star reçoit une mission de conservation pendant 800 ans : protéger
-      un élément (une arme, un savoir, une foi) jusqu'au retour de Joy Boy. Cette carte les met en regard.
+      Les peuples ne reçoivent pas tous une mission au même moment vers −800. Cette carte sépare les éléments
+      établis, leur datation propre et les rôles finaux projetés. Une date inconnue n'est pas ramenée artificiellement
+      au Siècle oublié.
     </p>
   </div>
 
-  <div class="table" role="table" aria-label="Peuples, éléments protégés, missions et événement final">
+  <div class="table" role="table" aria-label="Peuples, faits du manga, datations et projections">
     <div class="thead" role="row">
-      <span>Peuple</span><span>Élément protégé</span><span>Mission</span><span>Événement final</span>
+      <span>Peuple</span><span>Manga</span><span>Datation</span><span>Projection</span>
     </div>
     {peuples.map((p) => (
       <div class="trow" role="row">
         <a class="cell cell--peuple" href={p.href}>{p.nom}</a>
-        <span class="cell cell--elem">{p.element}</span>
-        <span class="cell">{p.mission}</span>
-        <span class="cell">{p.final}</span>
+        <span class="cell cell--elem">{p.manga}</span>
+        <span class="cell">{p.datation}</span>
+        <span class="cell">{p.projection}</span>
       </div>
     ))}
   </div>
 
   <p class="note">
-    Cette carte est une visualisation de la théorie : la répartition précise des missions est une lecture
-    des Fous du Bus, pas un schéma canonique fourni par le manga.
+    Manga, datation et projection sont indépendants : une tradition ancienne ne prouve ni une mission reçue vers
+    −800 ni sa participation à la guerre finale.
   </p>
 
   <Footer />

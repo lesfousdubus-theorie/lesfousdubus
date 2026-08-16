@@ -1,55 +1,52 @@
 ---
-title: "Wa no Kuni"
-summary: "Fiche du pays des samouraïs : le clan Kozuki, graveur des Ponéglyphes, les frontières fermées, la prophétie de Toki et l'ouverture annoncée du pays."
-category: "peuples-royaumes"
-status: "published"
-navigationType: "fiche"
+title: 'Wa no Kuni'
+summary: "Fiche révisée de Wano : pays fermé, gardien de Pluton et du savoir Kozuki ; Momonosuke a reporté l'ouverture de ses frontières."
+category: 'peuples-royaumes'
+status: 'published'
+navigationType: 'fiche'
 sources: [818, 819, 963, 967, 972, 1023]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "peuples-royaumes"
+parent: 'peuples-royaumes'
 order: 83
-related: ["peuples-royaumes", "kozuki-toki", "poneglyphes", "shimotsuki-ryuma", "pluton-fiche", "guerre-finale"]
+related:
+  [
+    'peuples-royaumes',
+    'kozuki-toki',
+    'poneglyphes',
+    'shimotsuki-ryuma',
+    'pluton-fiche',
+    'guerre-finale',
+  ]
 ---
 
-## Présentation
+## Le pays fermé
 
-Wa no Kuni est un pays insulaire fermé au monde depuis plus de deux siècles, dirigé par le shogun et peuplé de samouraïs. Il est gouverné historiquement par le clan Kozuki, dont l'héritier actuel est Kozuki Momonosuke.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Ce que le manga établit
+Wano est isolé derrière de hauts murs. Le clan Kozuki a transmis l'écriture des Ponéglyphes. Oden voulait ouvrir le pays avant l'arrivée de Joy Boy.
 
-- Le **clan Kozuki est le clan des graveurs** : ses membres savent tailler et écrire les Ponéglyphes. Cette compétence est unique au monde.
-- Oden Kozuki accompagna Gol D. Roger jusqu'à Laugh Tale et connaissait donc la vérité sur le monde.
-- Dans son journal (chapitre 972), Oden écrit : « Dans un peu plus de 20 ans, une guerre gigantesque capable de séparer les océans éclatera » et « les protagonistes de cette guerre immense vont surgir dans le Nouveau Monde ».
-- Kozuki Toki, épouse d'Oden, envoya les Fourreaux Rouges vingt ans dans le futur grâce au Toki Toki no Mi, et formula une prophétie textuelle annonçant leur retour.
-- Le pays doit s'ouvrir : c'est la volonté d'Oden, reprise par Momonosuke.
-- Un Road Ponéglyphe et l'Arme antique **Pluton** y sont dissimulés.
+**Sources précises :** chapitres 818, 920, 967–968 et 1049–1055.
 
-## Sa mission
+## Les voyageurs de Toki
 
-Ouvrir les frontières du pays le moment venu. C'est la seule mission qui consiste non pas à conserver quelque chose, mais à lever une fermeture.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Son lien avec les Ponéglyphes
+Toki envoie Momonosuke, Kin'emon, Kanjuro, Raizo et Kiku vingt ans plus tard. Hiyori reste à Wano. Après la victoire sur Kaido, Momonosuke devient shogun mais **reporte l'ouverture**.
 
-Wa no Kuni n'abrite pas seulement des Ponéglyphes : il abrite ceux qui savent les fabriquer. C'est le point d'articulation le plus important du dispositif, car sans le clan Kozuki, aucun Ponéglyphe n'existe.
+## Pluton et les murs
 
-## La lecture des Fous du Bus
+<div class="section-pill section-pill--manga">Manga</div>
 
-Si les Ponéglyphes racontent le futur, alors le clan Kozuki en est l'auteur matériel. Momonosuke graverait, à la fin du récit, les pierres que Robin déchiffre depuis le début — dans une langue que Robin aurait elle-même conçue. La prophétie de Toki fournit d'ailleurs le modèle du procédé : elle peut annoncer le retour des Fourreaux Rouges avec exactitude parce que c'est elle qui les a envoyés. Elle est la prophétesse de son propre message.
+Pluton existe sous l'ancien Wano. Faire tomber les murs libérerait l'accès à l'Arme et ouvrirait physiquement le pays.
 
-## Son rôle dans la guerre finale
+## Projection de transmission
 
-Les samouraïs de Wa no Kuni rejoindraient la coalition, et Pluton — dissimulé sous le pays — serait l'une des Armes antiques engagées.
+<div class="section-pill section-pill--projection">Projection</div>
 
-## Limites et nuances
+Sukiyaki pourrait transmettre le savoir de gravure, tandis que Robin pourrait organiser des informations à préserver. Rien n'impose que Momonosuke grave lui-même les pierres ni que Robin conçoive la langue.
 
-- Le journal d'Oden peut relater ce qu'il a appris sur Laugh Tale sans impliquer aucun mécanisme temporel.
-- Le savoir des graveurs Kozuki est présenté comme une tradition ancienne, ce qui contredit l'idée qu'il servirait d'abord dans le futur.
-- La prophétie de Toki concerne vingt ans, pas huit cents : l'échelle n'est pas la même.
+## Limites et objections
 
-## Points encore à expliquer
-
-- Pourquoi le clan Kozuki a perdu le sens de ce qu'il gravait.
-- Comment Pluton est arrivé sous Wa no Kuni, et qui l'y a placé.
-- Ce que le pays doit faire une fois ses frontières ouvertes.
+La date d'ouverture, son déclencheur et l'usage de Pluton restent inconnus. Zunesha + Water Seven → ouverture de Wano demeure une projection détaillée.

@@ -37,7 +37,7 @@ export const siteCategories: SiteCategory[] = [
     label: 'Personnages et identités',
     shortLabel: 'Identités',
     icon: '👥',
-    description: 'Les correspondances proposées entre personnages anciens et modernes.',
+    description: 'Des rapprochements explicites, sans transformer les parallèles en identités.',
     order: 4,
   },
   {
@@ -45,7 +45,7 @@ export const siteCategories: SiteCategory[] = [
     label: 'Armes antiques',
     shortLabel: 'Armes',
     icon: '🔱',
-    description: 'Poséidon, Pluton, Uranus, Noah et leur rôle dans le monde à venir.',
+    description: 'Poséidon, Pluton, Uranus et Noah : faits établis et rôles projetés.',
     order: 5,
   },
   {
@@ -61,7 +61,7 @@ export const siteCategories: SiteCategory[] = [
     label: 'Peuples, royaumes et témoins',
     shortLabel: 'Peuples',
     icon: '🏰',
-    description: 'Les peuples qui protègent une pièce de la mémoire et de la guerre finale.',
+    description: 'Des traditions et missions indépendantes, transmises à des dates différentes.',
     order: 7,
   },
   {
@@ -93,7 +93,7 @@ export const siteCategories: SiteCategory[] = [
     label: 'Guerre finale',
     shortLabel: 'Guerre finale',
     icon: '⚔️',
-    description: 'La coalition, le Déluge, la chute de Red Line et la naissance d’All Blue.',
+    description: 'Guerre annoncée et futurs possibles : coalition, Déluge, Red Line et All Blue.',
     order: 11,
   },
 ];
@@ -124,25 +124,25 @@ export const understandingPaths = [
 export const explorerHighlights = [
   {
     label: 'Frise chronologique',
-    description: 'Du passé apparent au futur qui l’a créé.',
+    description: 'Passé apparent, présent vécu et futurs possibles, sans ordre forcé.',
     href: '/theorie/chronologie',
     icon: '🕰️',
   },
   {
     label: 'Carte mentale',
-    description: 'Toute la chaîne causale en une vue.',
+    description: 'Faits, noyau, extensions, hypothèses et projections en une vue.',
     href: '/explorer/carte-mentale',
     icon: '🧠',
   },
   {
     label: 'Correspondances',
-    description: 'Luffy/Joy Boy, Vivi/Lili, Teach/Davy Jones et les autres liens.',
+    description: 'Relations explicites, objections et niveaux de solidité.',
     href: '/explorer/correspondances',
     icon: '🔗',
   },
   {
     label: 'Carte de Blue Star',
-    description: 'La géographie qui déclenche toute la théorie.',
+    description: 'Géographie établie et hypothèses de mécanisme clairement séparées.',
     href: '/explorer/carte-blue-star',
     icon: '🗺️',
   },

@@ -1,13 +1,22 @@
 ---
-title: "Le Jour du serment"
-summary: "Concept de la théorie : le moment où les promesses du passé (à Ryūgū, aux peuples) sont enfin tenues au présent, point de convergence du retour de Joy Boy et des missions des peuples."
-category: "transmission-memoire"
-status: "published"
-editorialStatus: "canon"
-certainty: "moyenne"
+title: 'Le Jour du serment'
+summary: 'Concept éditorial pour une convergence possible des promesses ; le manga ne synchronise ni toutes les missions ni leur accomplissement.'
+category: 'transmission-memoire'
+status: 'published'
+editorialStatus: 'extension'
+certainty: 'moyenne'
 reviewedUntilChapter: 1190
-navigationType: "fiche"
-related: ["peuples-royaumes", "joy-boy", "hommes-poissons", "royaume-ryugu", "voix-de-joy-boy", "volonte-heritee", "siecle-oublie-present"]
+navigationType: 'fiche'
+related:
+  [
+    'peuples-royaumes',
+    'joy-boy',
+    'hommes-poissons',
+    'royaume-ryugu',
+    'voix-de-joy-boy',
+    'volonte-heritee',
+    'siecle-oublie-present',
+  ]
 sources: [628]
 order: 61
 ---
@@ -26,9 +35,9 @@ La théorie regroupe sous l’expression **Jour du serment** le moment où ces p
 
 - la promesse faite aux Hommes-Poissons (et l’usage de Noah) ;
 - la promesse implicite aux peuples « témoins » qui ont reçu une mission de conservation (voir [Peuples, royaumes et missions](/theorie/peuples-royaumes)) ;
-- la libération générale associée au retour de Joy Boy (Luffy).
+- une libération future autour de Luffy, sans l’identifier personnellement au Joy Boy historique.
 
-Le Jour du serment n’est pas un chapitre isolé : c’est, dans la théorie, le **point de convergence** où les missions de tous les peuples — conserver Noah, transmettre le nom de Nika, garder les Ponéglyphes, attendre — se rejoignent au même moment.
+Le Jour du serment est un **outil de projection**. Les traditions ont des origines différentes et pourraient converger partiellement, sans se réaliser le même jour ni provenir d’un ordre unique.
 
 ## Limites et nuances
 

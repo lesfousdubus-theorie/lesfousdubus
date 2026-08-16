@@ -1,61 +1,36 @@
 ---
-title: "Noah"
-summary: "Fiche consacrée à l'arche Noah : le navire géant conservé par le royaume Ryugu depuis 800 ans, sa liaison au Ponéglyphe de Joy Boy, à Poséidon et au jour du serment."
-category: "armes-antiques"
-status: "published"
-navigationType: "fiche"
+title: 'Noah'
+summary: 'Noah, promesse du Joy Boy historique et pouvoir de Poséidon : faits anciens puis prédiction distincte sur un déplacement futur par Shirahoshi.'
+category: 'armes-antiques'
+status: 'published'
+navigationType: 'fiche'
 sources: [649, 653, 967, 968]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 
 order: 32
 related:
-  [
-    "poseidon-fiche",
-    "shirahoshi",
-    "royaume-ryugu",
-    "joy-boy",
-    "guerre-finale",
-    "armes-antiques",
-  ]
-seoTitle: "Noah One Piece : arche du royaume Ryugu | Les Fous du Bus"
+  ['poseidon-fiche', 'shirahoshi', 'royaume-ryugu', 'joy-boy', 'guerre-finale', 'armes-antiques']
+seoTitle: 'Noah One Piece : arche du royaume Ryugu | Les Fous du Bus'
 ---
-
-## Présentation
-
-Noah est un navire d'une taille démesurée, immobilisé dans le quartier des Hommes-Poissons, au fond de l'île des Hommes-Poissons. Le royaume Ryugu le conserve et le protège depuis 800 ans, sans savoir précisément à quoi il doit servir.
 
 ## Ce que le manga établit
 
-- Noah est un vaisseau gigantesque, largement plus grand que tout navire connu, conservé en l'état depuis des siècles.
-- Le Ponéglyphe de la forêt sous-marine, lu par Nico Robin au chapitre 649, contient un message signé **Joy Boy** : des excuses pour une promesse non tenue, et la demande de préserver Noah **jusqu'au jour du serment**.
-- Seule Poséidon peut mettre Noah en mouvement, en commandant aux rois des mers de le tracter.
-- Shirahoshi endommage involontairement Noah durant l'arc de l'île des Hommes-Poissons ; le navire est ensuite retenu par les rois des mers.
+Noah est une arche gigantesque conservée près de l'île des Hommes-Poissons. Les Rois des Mers la retiennent lorsque Luffy l'endommage et expliquent qu'elle doit être réparée avant le moment venu.
 
-## La lecture des Fous du Bus
+Le Ponéglyphe de la Forêt de la Mer contient les excuses du **Joy Boy historique** à la Poséidon de son époque pour une promesse non tenue. Le texte disponible ne fait pas de Robin ou Momonosuke ses auteurs et ne dit pas que Luffy a déjà écrit cette lettre.
 
-Dans la lecture des Fous du Bus, la chronologie du Ponéglyphe s'inverse. Le message de Joy Boy ne serait pas une lettre d'excuses écrite il y a 800 ans, mais **une demande écrite à la fin du manga** par Luffy — gravée par Momonosuke et Robin, puis transmise vers le passé via le mécanisme de communication temporelle.
+## Lien avec Poséidon
 
-Le raisonnement est le suivant : le seul moyen de sauver l'île des Hommes-Poissons est de disposer de Noah. Mais pour que Noah existe le jour venu, il faut avoir demandé au royaume Ryugu de le construire et de le préserver — huit siècles à l'avance. La signature « Joy Boy » permettrait de rester anonyme et d'éviter d'être repéré par Imu.
+Shirahoshi, actuelle Poséidon, commande aux Rois des Mers qui peuvent déplacer Noah. Roger apprend qu'une nouvelle Poséidon naîtra après son passage ; cela explique au moins une partie de son arrivée « trop tôt » sans coordonnée temporelle cachée.
 
-La promesse serait donc celle du chapitre 653, faite par Luffy et les Mugiwara à Shirahoshi : l'emmener un jour voir le soleil et une véritable forêt à la surface. Oda écrit cinq fois le mot « promesse » sur une seule page de ce chapitre.
+## Projection clôturable
 
-## Arguments principaux
+Noah pourrait être déplacé par Shirahoshi et les Rois des Mers. Une évacuation, une remontée à la surface ou un rôle dans un nouveau Déluge sont des finalités possibles, mais distinctes. Le « jour du serment » est un concept éditorial de convergence et non une date canonique unique.
 
-- **Le folklore du royaume Ryugu repose entièrement sur cette promesse**, et l'arc de l'île des Hommes-Poissons la rejoue à l'identique entre Luffy et Shirahoshi.
-- **La formule « jusqu'au jour du serment »** implique un rendez-vous futur, pas une commémoration.
-- **L'étonnement de Roger au chapitre 967** : le Ponéglyphe de Shandora indique Poséidon sur l'île des Hommes-Poissons, mais Roger ne l'y trouve pas. Shirahoshi naîtra dix ans plus tard. La théorie y voit un anachronisme : la pierre décrit un état futur.
+## Questions ouvertes
 
-## Limites et nuances
-
-- Rien n'établit que Noah ait été construit sur demande : le manga n'en donne ni le commanditaire ni la date.
-- La promesse de 653 peut être une résonance thématique voulue par Oda, sans identité littérale entre les deux scènes.
-- L'usage prévu de Noah — évacuation, arche, arme — n'est jamais précisé.
-
-## Points encore à expliquer
-
-- Qui a effectivement construit Noah, et avec quels moyens.
-- Pourquoi un navire, plutôt qu'une structure fixe, pour un peuple qui vit déjà sous l'eau.
-- Ce que Noah doit transporter le jour du serment : les Hommes-Poissons vers la surface, ou autre chose.
-- Comment un navire immobilisé et endommagé pourra encore servir.
+- Qui a construit Noah et pour quel usage précis ?
+- Quelle promesse le Joy Boy historique n'a-t-il pas tenue ?
+- Comment et quand le navire sera-t-il réparé ?

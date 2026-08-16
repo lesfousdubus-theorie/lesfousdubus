@@ -1,16 +1,16 @@
 ---
-title: "Équipage Rumbar"
+title: 'Équipage Rumbar'
 summary: "Fiche de l'équipage Rumbar : les pirates musiciens qui escortèrent Laboon, leur disparition dans le Triangle Florian et l'enregistrement de Binks no Sake."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
 sources: [486, 487, 488]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "brook"
+parent: 'brook'
 order: 52
-related: ["brook", "binks-no-sake", "volonte-heritee", "dozan"]
+related: ['brook', 'binks-no-sake', 'volonte-heritee', 'dozan']
 ---
 
 ## Présentation
@@ -21,7 +21,7 @@ L'équipage Rumbar était une bande de pirates musiciens, célèbres pour jouer 
 
 - L'équipage recueillit la baleine **Laboon** et l'escorta jusqu'à Reverse Mountain, avant de lui demander de les attendre au Cap des Jumeaux.
 - Empoisonné lors d'un affrontement, l'équipage mourut au complet dans le Triangle Florian.
-- Avant de mourir, ses membres **enregistrèrent *Binks no Sake* sur un Tone Dial**, pour que Laboon puisse l'entendre un jour.
+- Avant de mourir, ses membres **enregistrèrent _Binks no Sake_ sur un Tone Dial**, pour que Laboon puisse l'entendre un jour.
 - Brook, revenu à la vie, mit cinquante ans à retrouver son corps et à rejoindre le Cap des Jumeaux.
 - La promesse faite à Laboon est tenue avec un demi-siècle de retard.
 

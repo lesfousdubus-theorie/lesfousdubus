@@ -1,47 +1,54 @@
 ---
-title: "Le Siècle oublié est le présent : pourquoi tout fonctionne"
-summary: "Le Siècle oublié n'a jamais eu lieu il y a 800 ans. C'est l'histoire que nous lisons depuis le chapitre 1. Les preuves s'accumulent et les parallèles sont trop nombreux pour être des coïncidences."
+title: 'Le présent pourrait créer une partie de la mémoire du Siècle oublié'
+summary: 'Le noyau de la théorie : des informations sur les événements vécus au présent ou dans un futur proche pourraient avoir rejoint le passé et été conservées par les Ponéglyphes.'
 seoTitle: "Siècle oublié One Piece : c'est le présent | Les Fous du Bus"
-category: "histoire-temporalite"
-status: "published"
-navigationType: "fiche"
+category: 'histoire-temporalite'
+status: 'published'
+navigationType: 'fiche'
 sidebarHidden: true
-editorialStatus: "hypothese-centrale"
-certainty: "central"
+editorialStatus: 'theorie-centrale'
+certainty: 'central'
 reviewedUntilChapter: 1190
-parent: "siecle-oublie"
+parent: 'siecle-oublie'
 sources: [1]
 order: 4
 ---
 
-**Résumé** : Le principe fondateur de la théorie du Mont Corvo est d'inverser le vecteur temporel de l'Histoire de *One Piece*. Le Siècle Oublié n'est pas un passé révolu, mais la chronique gravée d'avance des aventures de Luffy et de son équipage.
+## Ce que le manga établit
 
-![Bases de la théorie](/images/threads/les-bases-du-siecle-oublie/img_1.webp)
+<div class="section-pill section-pill--manga">Manga</div>
 
-## 1. L'illusion du passé
-Le récit du Gouvernement Mondial présente les 800 dernières années comme l'après-guerre d'un royaume antique mystérieux. En réalité, le monde vit dans une attente prophétique.
+Vegapunk situe **Joy Boy environ neuf siècles avant le présent**, dans le Royaume antique, et décrit la guerre du Siècle oublié comme une guerre historique ayant submergé le monde d'environ 200 mètres. Le manga ne permet donc plus de soutenir que rien ne s'est passé il y a huit ou neuf siècles.
 
-## 2. Le rôle des Ponéglyphes
-Les steppes indestructibles taillées par le clan Kozuki sont gravées par Nico Robin et envoyées 800 ans en arrière à la fin du récit. Ce que les personnages lisent comme des "légendes" sont les actions que les Mugiwaras viennent d'accomplir.
+**Sources précises :** chapitres 1114 à 1116.
 
-![Les poneglyphes du futur](/images/threads/les-bases-du-siecle-oublie/img_2.webp)
+## La proposition centrale
 
-## 3. Le trio de la boucle
-- **Nico Robin** : la seule capable de traduire et rédiger les messages sur les pierres.
-- **Momonosuke Kozuki** : l'héritier du clan capable de tailler les stèles.
-- **Nefertari Vivi** : la figure de la famille royale dispersant les pierres aux quatre coins des mers.
+<div class="section-pill section-pill--theorie-centrale">Théorie centrale</div>
 
-![Robin Momonosuke Vivi](/images/threads/les-bases-du-siecle-oublie/img_3.webp)
+La théorie révisée est informationnelle : des récits, coordonnées, promesses ou plans produits par les événements du présent et d'un futur possible auraient pu être reçus à une époque antérieure puis fixés sur les Ponéglyphes. Les stèles transmettraient ainsi une mémoire future **sans exiger l'envoi physique du monde entier dans le passé**.
 
-## 4. La préparation des peuples
-Pourquoi envoyer des messages dans le passé ? Pour que les nations (Hommes-Poissons, Géants d'Elbaf, Mink, Wano) construisent les outils nécessaires (Noah, Pluton, frontières fermées) afin d'être prêts le jour J.
+Le paradoxe reste visible :
 
-![L'arche Noah et les hommes poissons](/images/threads/les-bases-du-siecle-oublie/img_4.webp)
+1. **passé apparent** — des sources contiennent peut-être des informations du futur ;
+2. **présent vécu** — Luffy et ses alliés vivent effectivement les événements ;
+3. **futur projeté** — des témoins pourraient créer la mémoire ensuite attribuée au passé.
 
-## Limites et nuances
+## Qui peut lire ou graver ?
 
-- **C'est le postulat de la théorie, non une conclusion démontrée.** Tout le reste du site en dépend ; cette page doit donc être lue comme la position de départ, pas comme une preuve.
-- **Le manga n'a jamais montré d'envoi d'objet ou de message vers le passé.** Le seul déplacement temporel attesté, le Toki Toki no Mi, ne fonctionne que vers le futur.
-- **Les Ponéglyphes sont datés d'environ huit cents ans par des sources internes** (Robin, Vegapunk) ; les considérer comme futurs suppose que ces datations soient erronées ou trompeuses.
-- **L'inversion explique beaucoup, ce qui est aussi sa faiblesse.** Une hypothèse capable d'absorber n'importe quel indice devient difficile à réfuter, donc difficile à confirmer.
-- **Une lecture classique reste possible** : un royaume antique réellement passé, dont l'histoire rime avec le présent parce qu'Oda construit des échos.
+<div class="section-pill section-pill--manga">Manga</div>
+
+Robin sait lire les Ponéglyphes, mais aucun chapitre ne lui attribue le procédé de gravure. Momonosuke n'a pas reçu ce savoir. **Kozuki Sukiyaki**, toujours vivant, maîtrise encore la lecture et la gravure de l'écriture Kozuki au chapitre 1055. Les auteurs et artisans d'un éventuel message futur restent donc à déterminer.
+
+## Mécanismes à ne pas fusionner
+
+<div class="section-pill section-pill--extension">Extension</div>
+
+- **Ponéglyphes et transmission d'informations** : noyau de la théorie.
+- **Communication temporelle** et **préscience** : alternatives pour expliquer ce que Roger ou Imu pourraient savoir.
+- **Harley** : transmission possible d'un récit interprété comme prophétique.
+- **Emeth/BF-39** et **Zoro/Ryuma** : branches de transport physique, beaucoup plus spéculatives.
+
+## Limites et objections
+
+Joy Boy demeure un personnage historique distinct de Luffy. Le Toki Toki no Mi n'a montré qu'un déplacement vers le futur. Aucun chapitre n'a encore montré l'envoi d'informations vers le passé, identifié les rédacteurs des textes futurs ni établi l'ordre interne des événements autour de −900/−800.

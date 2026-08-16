@@ -1,43 +1,37 @@
 ---
-title: "Nefertari Vivi et Nefertari D. Lili"
-summary: "Fiche d'analyse sur la reine Nefertari D. Lili, la princesse Vivi et leur rôle dans la dispersion des Ponéglyphes."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
+title: 'Vivi pourrait accomplir le rôle attribué à Lili'
+summary: "Analyse de la branche Vivi/Lili : faits historiques, parallèles narratifs et hypothèse d'un rôle futur analogue sans identité commune affirmée."
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
 sources: [1085, 1116]
-editorialStatus: "hypothese-secondaire"
-certainty: "elevee"
+editorialStatus: 'extension'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 50
 related: ['lili', 'nefertari-vivi']
 ---
 
-## Les preuves physiques
+## Deux personnages établis
 
-La silhouette de Lili au chapitre 1085 ressemble comme deux gouttes d'eau à Vivi : même coupe, même mèche. Le portrait de la chambre Fleurie (chapitre 1116) montre une femme aux cheveux bleus comme Vivi.
+<div class="section-pill section-pill--manga">Manga</div>
 
-Les Nefertari ont toujours eu les cheveux noirs. Ce n'est que parce que Cobra est tombé amoureux de Titi (mère de Vivi, cheveux bleus) que cette couleur est entrée dans la dynastie.
+Lili appartient à l'époque de la fondation du Gouvernement mondial et est liée à la dispersion historique des Ponéglyphes. Vivi vit au présent, a fui Mary Geoise et demeure portée disparue aux yeux du monde. Ces deux biographies doivent être conservées avant toute interprétation.
 
-## La disparition
+**Sources précises :** chapitres 1084 à 1086 et 1116.
 
-Lili a été invitée à Mary Geoise et n'est jamais revenue. Vivi, après la mort de Cobra, disparaîtra également pour rejoindre les Mugiwara. Le Gorosei ignore ce qui leur est arrivé.
+## Les parallèles
 
-## Koza deviendra roi
+<div class="section-pill section-pill--extension">Extension</div>
 
-Koza, frère adoptif de Vivi, deviendra roi d'Alabasta après avoir été anobli par Cobra avant sa mort. Il sera Nefertari Koza, laissant Vivi libre de réaliser son rêve : prendre la mer.
+Le portrait de Lili ressemble à Vivi ; les deux femmes sont des Nefertari confrontées au pouvoir de Mary Geoise. Ces échos justifient une piste narrative, mais l'image ne certifie pas la couleur des cheveux de Lili et la répétition d'un motif ne prouve pas une identité.
 
-## La dispersion des Ponéglyphes
+## La proposition révisée
 
-Lili a écrit une lettre à sa descendance et dispersé les Ponéglyphes à travers le monde. Vivi fera exactement la même chose à la fin du manga, écrivant elle-même le Rio Ponéglyphe avec Robin et Momonosuke.
+<div class="section-pill section-pill--extension">Extension</div>
 
-L'opening 28 montre Vivi avec les Ponéglyphes qui s'éparpillent derrière elle, suggérant son rôle futur.
+**Vivi pourrait accomplir le rôle attribué à Lili** : protéger ou redistribuer une information décisive, puis devenir une figure dont les actes éclairent les sources du passé. L'identité Vivi = Lili peut subsister comme variante de voyage temporel, mais elle n'est pas le noyau.
 
-L'article de démonstration _Vivi est Lili : la reine qui dispersera les Ponéglyphes_ détaille cette analyse en cinq preuves.
+## Limites et objections
 
-## Limites et nuances
-
-- **La couleur des cheveux est un indice fragile.** Oda l'utilise librement, et la ressemblance entre Lili et Vivi peut relever de la simple hérédité au sein d'une même dynastie.
-- **Deux disparitions ne font pas une identité.** Que Lili n'ait jamais reparu de Mary Geoise et que Vivi ait pris la mer sont des faits sans lien établi.
-- **Le futur prêté à Koza est une hypothèse.** Son anoblissement est attesté ; son accession au trône ne l'est pas.
-- **Aucune scène ne relie Vivi aux Ponéglyphes.** Son rôle dans leur dispersion est déduit du portrait de Lili, non observé.
-- **Le manga parle de Lili au passé** ; en faire une figure future exige que ces mentions soient des reconstructions ultérieures.
+Le manga attribue déjà la dispersion ancienne à Lili. Il n'a confirmé ni retour de Vivi vers le passé, ni identité commune, ni règne futur de Koza, ni disparition définitive de la princesse.

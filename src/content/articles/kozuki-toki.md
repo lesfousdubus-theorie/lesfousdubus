@@ -1,62 +1,38 @@
 ---
-title: "Kozuki Toki"
-summary: "Fiche de Kozuki Toki : porteuse du Toki Toki no Mi, seule utilisatrice attestée d'un pouvoir temporel, autrice d'une prophétie et anomalie centrale de la théorie."
-category: "transmission-memoire"
-status: "published"
-navigationType: "fiche"
+title: 'Kozuki Toki'
+summary: 'Fiche factuelle de Toki : détentrice du Toki Toki no Mi, elle envoie Momonosuke et quatre samouraïs vingt ans dans le futur, tandis que Hiyori reste à Wano.'
+category: 'transmission-memoire'
+status: 'published'
+navigationType: 'fiche'
 sources: [963, 971, 972, 973]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 58
-related: ["communication-temps", "wa-no-kuni", "poneglyphes-futur", "madame-shirley", "fruits-du-demon"]
+related:
+  ['communication-temps', 'wa-no-kuni', 'poneglyphes-futur', 'madame-shirley', 'fruits-du-demon']
 ---
 
-## Présentation
+## Pouvoir du Toki Toki no Mi
 
-Kozuki Toki est l'épouse d'Oden Kozuki et la mère de Momonosuke et Hiyori. Elle porte le **Toki Toki no Mi**, fruit qui permet d'envoyer des personnes vers le futur — jamais vers le passé.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Ce que le manga établit
+Toki est née environ huit cents ans avant le présent et a voyagé à plusieurs reprises vers le futur. Le pouvoir montré ne permet jamais de revenir vers le passé.
 
-- Toki affirme être née il y a environ **800 ans** et avoir voyagé d'époque en époque jusqu'au présent.
-- Son fruit ne fonctionne que dans un sens : vers l'avenir.
-- Elle envoie Momonosuke, Hiyori et les Fourreaux Rouges vingt ans dans le futur, au moment de la mort d'Oden.
-- Elle formule une **prophétie textuelle** annonçant le retour des Fourreaux Rouges vingt ans plus tard, prophétie qui fait trembler Orochi durant deux décennies.
-- Elle meurt vingt ans avant l'arrivée de Luffy à Wa no Kuni.
+**Sources précises :** chapitres 920, 964 et 973.
 
-## Le mécanisme de sa prophétie
+## Le saut de vingt ans
 
-La prophétie de Toki n'est pas une divination : elle annonce avec exactitude un événement **qu'elle provoque elle-même**. Elle est la prophétesse de son propre message. C'est le seul cas du manga où le mécanisme d'une prédiction est entièrement explicité, et il sert de modèle à la lecture que la théorie propose des Ponéglyphes.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## La lecture des Fous du Bus
+Après la mort d'Oden, Toki envoie **Momonosuke, Kin'emon, Kanjuro, Raizo et Kiku** vingt ans dans le futur. Hiyori reste à Wano et est confiée à Kawamatsu.
 
-### Un précédent canonique favorable
+## La prophétie
 
-Avant d'être une objection, Toki est d'abord un **appui**. Elle établit trois choses que le manga assume sans détour :
+<div class="section-pill section-pill--manga">Manga</div>
 
-- le **déplacement temporel existe** dans *One Piece*, et il est officiellement montré, pas suggéré ;
-- une **prophétie textuelle exacte** peut exister sans divination, à condition que son auteur en soit la cause ;
-- un personnage peut **traverser les siècles** et se retrouver à une époque qui n'est pas la sienne.
+Toki annonce que neuf ombres apporteront l'aube dans vingt ans. Cette phrase accompagne un saut temporel planifié ; elle ne démontre pas une capacité à voir tout l'avenir ni à recevoir une information du futur.
 
-Ces trois points sont exactement ce que la théorie postule pour les Ponéglyphes et pour le Harley d'Elbaf. On ne peut donc pas rejeter le principe d'une information circulant entre les époques en le traitant d'invraisemblable : Oda l'a déjà mis en scène, et il en a fait le pivot de tout un arc.
+## Limites et objections
 
-### Mais aussi une anomalie assumée
-
-Cela dit, les Fous du Bus reconnaissent que Toki reste **une anomalie gigantesque** pour leur propre théorie. Une femme qui déclare venir du passé contredit frontalement l'idée que le Siècle oublié soit le présent.
-
-L'hypothèse avancée, formulée comme telle et non comme une conclusion : Toki ne comprendrait pas sa propre origine. Elle pourrait venir d'une époque future, avoir été déplacée dans le passé, puis avoir utilisé son fruit pour revenir progressivement vers son époque d'origine — croyant avoir accompli un bond de 800 ans vers l'avant alors que sa situation serait plus complexe.
-
-Les Fous du Bus reconnaissent explicitement que cette hypothèse « paraît folle » et qu'elle ne repose sur aucune preuve.
-
-## Limites et nuances
-
-- Rien dans le manga ne suggère que Toki se trompe sur son origine. Elle est cohérente et jamais démentie.
-- Son fruit ne permet pas de voyager vers le passé : l'hypothèse suppose un déplacement par un autre moyen, jamais montré.
-- C'est le point où la théorie doit postuler le plus pour préserver sa cohérence, ce que ses auteurs assument (« je sais que cette hypothèse paraît folle »).
-- Le précédent canonique joue dans les deux sens : que le déplacement temporel existe ne prouve pas qu'il ait servi à écrire les Ponéglyphes. Il rend l'hypothèse **recevable**, pas démontrée.
-
-## Points encore à expliquer
-
-- L'origine réelle de Toki et la façon dont elle a obtenu son fruit.
-- Pourquoi elle a traversé les siècles jusqu'à Wa no Kuni précisément.
-- Comment concilier son témoignage avec une histoire tournée vers le présent — question ouverte que la théorie ne résout pas.
+Le lieu de naissance exact de Toki et la raison de son voyage vers Wano restent incomplets. Son Fruit ne fournit pas, à lui seul, le mécanisme inverse exigé par la théorie.

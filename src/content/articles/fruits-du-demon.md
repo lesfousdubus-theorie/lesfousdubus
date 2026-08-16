@@ -1,58 +1,36 @@
 ---
-title: "Fruits du Démon"
-summary: "Fiche des Fruits du Démon : leur fonctionnement, leur répartition chronologique dans le récit et la question de leur existence avant le siècle en cours."
-category: "technologies-pouvoirs"
-status: "published"
-navigationType: "fiche"
+title: 'Fruits du Démon'
+summary: 'Fiche des Fruits du Démon : leur fonctionnement, leur répartition chronologique dans le récit et la question de leur existence avant le siècle en cours.'
+category: 'technologies-pouvoirs'
+status: 'published'
+navigationType: 'fiche'
 sources: [1044, 1114, 1186]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 73
-related: ["zoans", "hito-hito-no-mi-nika", "vegapunk", "kozuki-toki", "imu-nerona"]
+related: ['zoans', 'hito-hito-no-mi-nika', 'vegapunk', 'kozuki-toki', 'imu-nerona']
 ---
-
-## Présentation
-
-Les Fruits du Démon confèrent un pouvoir à celui qui les consomme, au prix de la capacité à nager. Ils se répartissent en trois familles : Paramecia, Logia et Zoan.
 
 ## Ce que le manga établit
 
-- Chaque fruit est unique : sa réapparition ailleurs dans le monde suit la mort de son utilisateur.
-- Le Gorosei nomme le véritable nom du Gomu Gomu no Mi au chapitre 1044 : le **Hito Hito no Mi, modèle Nika**.
-- Vegapunk avance que les Fruits du Démon incarnent des « souhaits d'humanité », des formes de vie idéalisées.
+Les Fruits du Démon confèrent des pouvoirs et retirent la capacité de nager. Ils se répartissent entre Paramecia, Logia et Zoan. Après la mort d'un utilisateur, le pouvoir peut réapparaître dans un autre fruit. Vegapunk propose qu'ils correspondent à des évolutions désirées par l'humanité ; il présente cette idée comme sa théorie.
 
-## Une répartition chronologique remarquable
+## Observation chronologique
 
-L'analyse du chapitre 1186 propose un relevé statistique selon lequel plus de 96 % des Fruits recensés apparaissent durant les 62 dernières années. Ce relevé repose sur un catalogue non officiel et doit être considéré comme un argument analytique, non comme une donnée canonique. Cinq seulement échappent à ce cadre, et aucun n'a été montré en action à une époque antérieure :
+L'analyse du chapitre 1186 note que l'immense majorité des utilisateurs montrés appartient au dernier siècle. Brook, vers −62, parle des Fruits comme de récits peu connus. Ce constat soutient l'hypothèse d'une **diffusion massive récente**.
 
-- le Hito Hito no Mi, modèle Nika ;
-- le pouvoir d'Imu, dont la nature reste inconnue ;
-- le Risu Risu no Mi, modèle Ratatoskr ;
-- le Ryu Ryu no Mi, modèle Nidhogg ;
-- le Toki Toki no Mi de Kozuki Toki.
+Il ne date pas leur création : Toki possède déjà son Fruit à une époque plus ancienne, le modèle Nika est historiquement poursuivi par le Gouvernement et l'absence de porteurs dans un flash-back n'établit pas leur inexistence.
 
-Dans le seul grand flash-back plus ancien — Kalgara et Noland, il y a 400 ans — aucun utilisateur de Fruit du Démon n'apparaît.
+## Hypothèses concurrentes
 
-## La lecture des Fous du Bus
+- les Fruits existaient mais étaient rares ou localisés ;
+- leur circulation s'est accélérée au dernier siècle ;
+- certains modèles ou procédés sont plus récents ;
+- Imu connaît ou influence certains Zoans sans les avoir tous créés.
 
-L'hypothèse avancée : les Fruits du Démon n'existeraient pas depuis toujours, mais auraient été **créés il y a environ un siècle**, peut-être par Imu, dans la Chambre Fleurie, à partir de l'Arbre d'Ève. Les fruits « légendaires » du Siècle oublié ne seraient alors que des légendes, jamais montrées à l'œuvre.
+La Chambre Fleurie, l'Arbre d'Ève et une création par Imu sont des branches spéculatives séparées.
 
-Cette lecture s'appuie aussi sur les paroles de Brook, qui semblent indiquer que les Fruits du Démon relevaient du récit merveilleux à son époque.
+## Contradiction du chapitre 1186
 
-## Limites et nuances
-
-- L'absence de représentation n'est pas une absence d'existence : Oda ne dessine pas systématiquement les utilisateurs des époques anciennes.
-- Le manga présente les Fruits du Démon comme un phénomène naturel ancien, jamais comme une création.
-- L'argument repose sur un décompte de ce qui est montré, c'est-à-dire sur un choix de mise en scène.
-
-## Chapitres clés
-
-- 1186 (analyse statistique et apparition récente des Fruits)
-- 1044 (révélation du nom véritable)
-
-## Points encore à expliquer
-
-- L'origine réelle des Fruits du Démon.
-- Le rôle exact de l'Arbre d'Ève et de la Chambre Fleurie.
-- Pourquoi le Toki Toki no Mi échappe au cadre chronologique.
+Les géants conservent des légendes anciennes liées à certains modèles alors que des propos d'Imu peuvent suggérer une autre origine ou connaissance. Le site affiche cette tension sans choisir automatiquement l'un des récits.

@@ -1,44 +1,34 @@
 ---
-title: "La Chambre Fleurie"
-summary: "La Chambre Fleurie, salle secrète où Imu tranche aux côtés des Gorosei. Dossier séparé de Mary Geoise, centré sur Imu et la branche des Fruits du Démon."
-category: "gouvernement-mondial"
-status: "published"
-editorialStatus: "interpretation"
-certainty: "moyenne"
+title: 'La Chambre Fleurie'
+summary: "Lieu privé de Mary Geoise où Imu apparaît ; faits de mise en scène séparés des lectures sur le pouvoir, les Fruits et l'Arbre d'Ève."
+category: 'gouvernement-mondial'
+status: 'published'
+editorialStatus: 'extension'
+certainty: 'moyenne'
 reviewedUntilChapter: 1190
-parent: "mary-geoise"
-navigationType: "fiche"
-related: ["mary-geoise", "imu-nerona", "gorosei", "fruits-du-demon", "dragons-celestes"]
-sources: [1084, 1085]
+parent: 'mary-geoise'
+navigationType: 'fiche'
+related: ['mary-geoise', 'imu-nerona', 'gorosei', 'fruits-du-demon', 'dragons-celestes']
+sources: [906, 908]
 order: 70
 ---
 
-## Ce que le manga établit
+## Ce que le manga montre
 
-- La **Chambre Fleurie** est une salle secrète du domaine de Mary Geoise où **Imu** se rend pour trancher des décisions, entouré des **Gorosei**.
-- Imu s'y montre dans l'intimité, hors du regard du monde.
-- La salle est le lieu de scènes clés concernant Imu (chapitres 1084, 1085 et suivants).
+La Chambre Fleurie est un espace du château de Pangaea à Mary Geoise où Imu apparaît seul parmi des fleurs et des papillons. C'est là qu'Imu examine des avis de recherche ou portraits avant que le Gorosei ne demande quel nom doit être effacé de l'histoire.
 
-> **Localisation** : le manga ne précise pas formellement où se trouve la Chambre Fleurie par rapport au palais. L'affirmation selon laquelle elle serait « sous le palais » — parfois lue sur certaines représentations — n'est pas établie de façon univoque par les transcriptions. Elle est traitée dans les limites ci-dessous.
+La scène associe ce lieu à l'autorité secrète d'Imu, mais elle ne montre pas le Gorosei installé en permanence dans la pièce et ne décrit pas un centre technique depuis lequel chaque opération est commandée.
 
-## La lecture des Fous du Bus
+## Une mise en scène du pouvoir caché
 
-La Chambre Fleurie est, dans la théorie, le **centre de décision occulte du monde** : l'endroit d'où Imu, hors de toute légitimité, commande au Gorosei et pilote la destruction des îles (Lulusia) et la persécution des peuples.
+Le contraste entre les fleurs, le silence du lieu et les décisions d'effacement souligne le pouvoir invisible d'Imu. Cette lecture est narrative : le fonctionnement quotidien du Gouvernement et la chaîne de décision restent partiellement inconnus.
 
-Elle est également reliée à la **branche des Fruits du Démon** : les analyses récentes sur l'origine possible des fruits (voir [Fruits du Démon](/theorie/fruits-du-demon)) et sur le pouvoir de contrôle d'Imu, le [Domi Reversi](/theorie/domi-reversi), s'inscrivent dans ce lieu de réflexion où Imu pèse les menaces à venir.
+## Extensions séparées
 
-Certaines lectures de la théorie associent la Chambre Fleurie à l'**Arbre d'Ève** ; ce rapprochement n'est pas soutenu tel quel par les sources et reste spéculatif (voir [Mary Geoise](/theorie/mary-geoise)).
+Certaines analyses rapprochent la Chambre Fleurie de l'Arbre d'Ève, de l'origine des Fruits du Démon ou des pouvoirs récents d'Imu. Aucun de ces liens n'est établi par la seule localisation. Le Domi Reversi, la Mother Flame et Uranus doivent être étudiés dans leurs propres dossiers.
 
-## Limites et nuances
+## Limites
 
-- La localisation exacte (sous le palais ?) n'est pas confirmée.
-- Le lien avec l'Arbre d'Ève est une **hypothèse non étayée** par les transcriptions.
-- La dimension « centrale des décisions » est cohérente avec le récit, mais le détail des mécanismes de décision reste montré partiellement.
-
-## Articles liés
-
-- [Mary Geoise](/theorie/mary-geoise)
-- [Imu Nerona](/theorie/imu-nerona)
-- [Gorosei](/theorie/gorosei)
-- [Fruits du Démon](/theorie/fruits-du-demon)
-- [Dragons Célestes](/theorie/dragons-celestes)
+- La cartographie exacte de la pièce dans Pangaea n'est pas donnée.
+- Le lien avec l'Arbre d'Ève n'est pas confirmé.
+- La destruction de Lulusia est décidée dans d'autres scènes ; elle ne doit pas être attribuée matériellement à cette chambre sans preuve.

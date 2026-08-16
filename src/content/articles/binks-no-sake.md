@@ -1,46 +1,42 @@
 ---
-title: "Binks no Sake : le chant qui traverse les âges"
-summary: "Binks no Sake est une chanson populaire dont l'origine reste incertaine. Les chapitres 1183-1184 suggèrent que Brook pourrait en être le compositeur (ou en avoir créé un prototype) et que Dōzan pourrait être un nom d'artiste lié à Brook."
-category: "transmission-memoire"
-status: "published"
-navigationType: "fiche"
-editorialStatus: "interpretation"
-certainty: "moyenne"
+title: 'Binks no Sake'
+summary: "Chanson transmise depuis avant l'ère de Roger ; les affirmations récentes sur Brook, un prototype d'enfance et Dōzan restent provisoires et séparées."
+category: 'transmission-memoire'
+status: 'published'
+navigationType: 'fiche'
+editorialStatus: 'extension'
+certainty: 'moyenne'
 reviewedUntilChapter: 1190
-sources: [1183, 1184]
+sources: [442, 486, 487, 1183, 1184]
 order: 53
-related: ["brook", "equipage-rumbar", "dozan", "volonte-heritee"]
+related: ['brook', 'equipage-rumbar', 'dozan', 'volonte-heritee']
 ---
 
-## La chanson mystérieuse
+## Une chanson antérieure à Roger
 
-Binks no Sake (Le Sake de Binks) est connue de tous les pirates depuis des générations. Personne ne sait qui l'a composée ni quand.
+_Binks no Sake_ est un chant de marins connu de Brook et de l'équipage Rumbar plus de cinquante ans avant le présent. Roger et son équipage le chantent aussi pendant leur voyage. Son auteur, sa date de composition et sa première version ne sont pas identifiés dans le manga publié de longue date.
 
-Brook la connaît depuis son enfance. Il l'a chantée avec l'équipage Rumbar, qui la tenait de transmission orale.
+Brook l'interprète avec les Rumbar lors de leur dernier concert et en conserve l'enregistrement destiné à Laboon.
 
-## Brook et Dōzan
+## Informations récentes à stabiliser
 
-Les chapitres 1183 et 1184 suggèrent que Brook pourrait être Dōzan. Dōzan pourrait être un nom d'artiste.
+Les transcriptions utilisées pour les analyses des chapitres 1183–1184 attribuent à Brook une chanson ou un texte composé pendant son enfance, environ quatre-vingts ans avant le présent. Elles rapprochent également ce passé d'une figure nommée **Dōzan**.
 
-Brook révèle avoir composé une première version des paroles lorsqu'il était enfant (il y a environ 79 ans selon le chapitre 1184). Cela renforce l'hypothèse qu'il pourrait être à l'origine (ou à l'origine d'un prototype) de la chanson.
+Ces détails doivent rester qualifiés de provisoires tant que les formulations et noms de la traduction de référence ne sont pas vérifiés. Une « première version » peut désigner des paroles personnelles, un prototype ou une variante ; elle ne fait pas automatiquement de Brook l'auteur de toute la chanson.
 
-## Points clés des chapitres 1183–1184
+## Hypothèse Brook / Dōzan
 
-- Brook pourrait être Dōzan
-- Dōzan pourrait être un nom d'artiste
-- Brook pourrait avoir composé Binks no Sake (ou un prototype d'enfance)
-- Sa chanson d'enfance pourrait être un prototype
-- Le massacre des Rumbar pourrait être lié aux Chevaliers Divins
-- Imu pourrait croire Dōzan mort
+Brook pourrait avoir utilisé le nom Dōzan ou être lié à cette figure. Une autre possibilité est que Dōzan soit une personne distincte, un nom d'artiste repris ou un personnage de la tradition de Wano.
 
-## La transmission
+Faire circuler la chanson vers le passé constituerait une branche de **transport ou transmission temporelle avancée**, distincte du mécanisme central des Ponéglyphes. Aucun pouvoir montré ne l'impose.
 
-Comme la Volonté du D., Binks no Sake se transmet de génération en génération. Elle unit les pirates à travers les âges et les océans.
+## Mémoire collective
 
-## Le lien avec Joy Boy
+La chanson illustre de manière canonique une mémoire orale traversant les générations. Ses paroles sur le voyage, la mort, le rire et l'aube peuvent résonner avec Joy Boy ou Luffy sans constituer une identité ou une prophétie.
 
-La chanson parle d'un pirate qui rit en affrontant les vagues. C'est exactement l'image de Luffy/Joy Boy. Binks no Sake pourrait être le chant associé à la figure de Joy Boy.
+## Limites
 
-## Limites et nuances
-
-Aucune preuve n'existe d'un voyage dans le temps de Brook, ni d'envoi temporel de la chanson. L'hypothèse reste une piste ouverte autour de l'identité possible Brook/Dōzan et de la composition de la chanson.
+- Brook connaît la chanson avant la mort des Rumbar ; cela n'établit pas son auteur.
+- La nature de son éventuelle composition d'enfance dépend des traductions récentes.
+- Le massacre des Rumbar n'est pas attribué aux Chevaliers Divins dans le canon établi.
+- Aucun voyage vers le passé de Brook ou de la chanson n'est montré.

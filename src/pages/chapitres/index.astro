@@ -28,14 +28,21 @@ const chapitresBreadcrumbLd = {
 };
 ---
 
-<WikiLayout title="Chapitres" seoTitle="Chapitres One Piece : analyses et théorie chapitre par chapitre | Les Fous du Bus" description="Suivez la théorie au fil des chapitres One Piece : analyses, nouvelles pistes, approfondissements et prédictions mises à jour à chaque sortie." image="/og-chapitres.png" currentPath="/chapitres">
+<WikiLayout
+  title="Chapitres"
+  seoTitle="Chapitres One Piece : analyses et théorie | Les Fous du Bus"
+  description="Suivez la théorie au fil des chapitres One Piece : analyses, nouvelles pistes, approfondissements et prédictions mises à jour à chaque sortie."
+  image="/og-chapitres.png"
+  currentPath="/chapitres"
+>
   <script is:inline type="application/ld+json" set:html={JSON.stringify(chapitresJsonLd)} />
   <script is:inline type="application/ld+json" set:html={JSON.stringify(chapitresBreadcrumbLd)} />
   <div class="page-header">
     <div class="text-accentGold font-semibold tracking-widest uppercase text-sm mb-3">Suivi</div>
     <h1>Chapitres</h1>
     <p class="page-desc">
-      Suivez l'évolution de la théorie au fil des chapitres de <em>One Piece</em>. Chaque analyse apporte de nouvelles pistes, des éclaircissements et des correspondances avec le récit.
+      Suivez l'évolution de la théorie au fil des chapitres de <em>One Piece</em>. Chaque analyse
+      apporte de nouvelles pistes, des éclaircissements et des correspondances avec le récit.
     </p>
   </div>
 
@@ -80,10 +87,18 @@ const chapitresBreadcrumbLd = {
         <a href={`/chapitres/${ch.data.chapter}`} class="chapter-item">
           <div class="chapter-item__badges">
             <span class="badge-chapter">Chap {ch.data.chapter}</span>
-            <span class="badge-effect" class:list={[
-              { 'badge-effect--violet': ch.data.effect === 'nouvelle-piste' },
-              { 'badge-effect--gold': ch.data.effect === 'approfondissement' || ch.data.effect === 'modification' },
-            ]}>{effectLabel(ch.data.effect)}</span>
+            <span
+              class="badge-effect"
+              class:list={[
+                { 'badge-effect--violet': ch.data.effect === 'nouvelle-piste' },
+                {
+                  'badge-effect--gold':
+                    ch.data.effect === 'approfondissement' || ch.data.effect === 'modification',
+                },
+              ]}
+            >
+              {effectLabel(ch.data.effect)}
+            </span>
           </div>
           <h3>{ch.data.title}</h3>
           {ch.data.summary && <p class="chapter-item__desc">{ch.data.summary}</p>}
@@ -97,7 +112,10 @@ const chapitresBreadcrumbLd = {
         <span class="badge-effect badge-effect--muted">—</span>
       </div>
       <h3>Aucune analyse disponible pour le chapitre 1185</h3>
-      <p class="chapter-item__desc">Il n'existe pas de transcription source correspondante pour ce chapitre. Ce n'est pas un oubli technique.</p>
+      <p class="chapter-item__desc">
+        Il n'existe pas de transcription source correspondante pour ce chapitre. Ce n'est pas un
+        oubli technique.
+      </p>
     </div>
   </div>
 
@@ -139,7 +157,10 @@ const chapitresBreadcrumbLd = {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
     text-decoration: none;
-    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    transition:
+      border-color 0.25s ease,
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
   }
 
   .nav-card:hover {
@@ -198,7 +219,9 @@ const chapitresBreadcrumbLd = {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
     text-decoration: none;
-    transition: border-color 0.2s ease, transform 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease;
   }
 
   .chapter-item:hover {

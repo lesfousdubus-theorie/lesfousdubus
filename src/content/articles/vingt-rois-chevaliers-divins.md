@@ -1,52 +1,41 @@
 ---
-title: "Les Vingt Rois et les Chevaliers Divins"
-summary: "Article d'analyse rattaché à la fiche Vingt Rois : les vingt familles fondatrices du Gouvernement Mondial pourraient-elles être celles des Chevaliers Divins actuels, déployées comme rois pour reprendre les pays libérés par Joy Boy ?"
-category: "gouvernement-mondial"
-status: "published"
-navigationType: "fiche"
-editorialStatus: "hypothese-secondaire"
-certainty: "moyenne"
+title: 'Les Vingt Rois et les Chevaliers Divins'
+summary: 'Analyse révisée du lien possible entre lignées fondatrices et Chevaliers Divins actuels, sans confondre la coalition historique avec la guerre finale.'
+category: 'gouvernement-mondial'
+status: 'published'
+navigationType: 'fiche'
+editorialStatus: 'extension'
+certainty: 'moyenne'
 reviewedUntilChapter: 1190
 sources: [906, 1170]
 order: 65
-parent: "vingt-rois"
+parent: 'vingt-rois'
 ---
 
-**Résumé** : Le récit officiel transmis par Vegapunk et le Gouvernement Mondial parle d'une coalition de 20 rois ayant vaincu Joy Boy il y a 800 ans. Selon la théorie des Fous du Bus, cette alliance décrit en réalité la bataille finale à venir entre Luffy (Joy Boy) et l'élite du Gouvernement Mondial (Gorosei et Chevaliers Divins).
+## Manga : une coalition historique
 
-![Illustration coalition](/images/threads/coalition-des-20-rois/img_1.webp)
-![Illustration coalition](/images/threads/coalition-des-20-rois/img_2.webp)
-![Illustration coalition](/images/threads/coalition-des-20-rois/img_3.webp)
+Vegapunk situe Joy Boy et le conflit contre les Vingt dans le passé. Les Nefertari appartiennent aux familles fondatrices mais ne s'installent pas à Mary Geoise. Le Gorosei et les Chevaliers Divins appartiennent, eux, à la structure actuelle du pouvoir.
 
-## 1. Ce que nous dit le manga
-À travers les révélations du Professeur Vegapunk sur Egghead, le manga nous enseigne qu'il y a environ 800 ans, un personnage nommé Joy Boy aurait affronté une coalition de 20 rois (les 20 familles fondatrices du Gouvernement Mondial, à l'exception de la famille Nefertari de Alabasta).
+![Illustration de la coalition historique](/images/threads/coalition-des-20-rois/img_1.webp)
+![Illustration des Vingt](/images/threads/coalition-des-20-rois/img_4.webp)
 
-![Ce que le manga nous dit](/images/threads/coalition-des-20-rois/img_4.webp)
+## Extension : la continuité des lignées
 
-## 2. La relecture des Fous du Bus
-Dans notre grille de lecture, le Siècle Oublié ne décrit pas une guerre ancienne enterrée, mais les événements que Luffy et ses alliés provoquent actuellement sous nos yeux. La "coalition des 20 rois" est la représentation future de l'alliance mise en place par Imu pour écraser la rébellion finale.
+Les épées autour du Trône vacant, la place de Garling et les informations provisoires du chapitre 1189 permettent d'explorer un lien entre certaines lignées fondatrices, leurs armes héréditaires et les Chevaliers actuels.
 
-![La vision des fous du bus](/images/threads/coalition-des-20-rois/img_5.webp)
+![Chevaliers Divins et Gorosei](/images/threads/coalition-des-20-rois/img_6.webp)
 
-## 3. Des rois ou des Chevaliers Divins ?
-Une objection fréquente est : *"Ce sont des Chevaliers Divins et des Doyens, pas des rois régissants des nations."* Cependant, les récents développements (notamment la nomination de St. Figarland Garling au sein du Gorosei) montrent que le pouvoir suprême de Mary Geoise est directement issu des lignées nobles fondatrices. Les épées plantées autour du Trône Vide représentent ces 20 familles.
+Cette continuité pourrait fournir à Imu une force politique et militaire pour la guerre finale. Elle ne démontre pas que les descendants **sont** les Vingt du passé, qu'ils seront renvoyés sur vingt trônes, ni que Luffy est personnellement le Joy Boy historique.
 
-![Chevaliers divins et Gorosei](/images/threads/coalition-des-20-rois/img_6.webp)
+## Projection ouverte
 
-## 4. La restitution des épées et le combat final
-Imu semble actuellement "rendre" ou réactiver l'autorité martiale aux descendants de ces 20 familles pour faire face à l'éveil du Nika. La véritable guerre sainte opposera la coalition des figures de Mary Geoise à Luffy et ses alliés.
+Luffy et ses alliés pourraient affronter les forces de Mary Geoise. Gear 5, les Armes antiques et les peuples libérés sont des branches possibles de cette bataille ; aucune composition complète n'est confirmée.
 
-![La guerre sainte](/images/threads/coalition-des-20-rois/img_7.webp)
+![Projection de guerre finale](/images/threads/coalition-des-20-rois/img_7.webp)
 
-## 5. Les armes de Luffy et la matérialisation
-Les anciennes représentations graphiques de Joy Boy le montrent souvent avec des armes ou des objets singuliers. Grâce aux capacités d'imagination illimitée du Gear 5, Luffy est en mesure de matérialiser ce dont il a besoin pour répondre à la coalition.
+## Objections
 
-![Armes de Luffy Gear 5](/images/threads/coalition-des-20-rois/img_8.webp)
-
-## Limites et nuances
-
-- **Le récit de Vegapunk situe explicitement la coalition dans le passé.** L'inverser suppose déjà acquise la thèse du Siècle oublié au présent.
-- **« Vingt rois » n'est pas nécessairement « vingt familles fondatrices ».** L'assimilation est cohérente mais reste une lecture.
-- **Les épées plantées autour du Trône Vide** admettent une valeur symbolique — un serment d'allégeance — sans désigner les porteurs actuels.
-- **La nomination de Garling montre la continuité des lignées nobles**, pas que les Chevaliers Divins soient les vingt rois du récit antique.
-- **Le chapitre 1189 renforce le lien famille/arme mais ne le tranche pas** : il établit des trésors héréditaires, sans dire que chaque chevalier incarne un roi fondateur.
+- Le conflit antique existe indépendamment de tout futur projeté.
+- Les armes héréditaires n'imposent ni vingt détenteurs ni une correspondance un-à-un.
+- La nomination de Garling prouve une continuité de pouvoir, pas une identité temporelle.
+- Les détails de 1189–1190 doivent rester prudents tant que les traductions sont instables.

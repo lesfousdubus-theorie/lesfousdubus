@@ -1,53 +1,37 @@
 ---
-title: "Alabasta"
-summary: "Fiche du royaume d'Alabasta : la famille Nefertari, seule des vingt familles fondatrices à avoir refusé Mary Geoise, la garde des Ponéglyphes et le pavillon de l'aube nouvelle."
-category: "peuples-royaumes"
-status: "published"
-navigationType: "fiche"
+title: 'Alabasta'
+summary: 'Fiche d’Alabasta : faits sur la dynastie Nefertari et le Ponéglyphe, puis projection distincte concernant le rôle futur de Vivi.'
+category: 'peuples-royaumes'
+status: 'published'
+navigationType: 'fiche'
 sources: [218, 628, 906, 1084]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "peuples-royaumes"
+parent: 'peuples-royaumes'
 order: 82
-related: ["peuples-royaumes", "nefertari-vivi", "lili", "vingt-rois", "gouvernement-mondial"]
+related: ['peuples-royaumes', 'nefertari-vivi', 'lili', 'vingt-rois', 'gouvernement-mondial']
 ---
-
-## Présentation
-
-Alabasta est un royaume désertique dirigé par la dynastie Nefertari, dont Nefertari Cobra puis sa fille Vivi. Il occupe une position unique dans l'architecture politique du monde : c'est le seul pays dirigé par une des vingt familles fondatrices du Gouvernement mondial à ne pas s'être installé à Mary Geoise.
 
 ## Ce que le manga établit
 
-- Les **Nefertari** figurent parmi les vingt familles fondatrices, mais refusèrent le statut de Dragon Céleste et restèrent auprès de leur peuple.
-- Alabasta abrite un **Ponéglyphe historique** dans la tombe royale d'Alubarna, que la famille royale garde de génération en génération.
-- Nefertari **D.** Lili, ancêtre de Vivi, porte l'initiale du D. et disparut au moment de la fondation du Gouvernement.
-- Cobra est assassiné à Mary Geoise après avoir posé à Imu la question du nom de Lili (chapitre 1084).
+- Alabasta est gouverné par la dynastie Nefertari. Cobra meurt après avoir interrogé Imu sur Nefertari D. Lili (chapitre 1084).
+- La famille Nefertari faisait partie des Vingt mais n'a pas rejoint Mary Geoise.
+- Un Ponéglyphe gardé dans la tombe royale indique l'emplacement de Pluton.
+- Lili est historiquement liée à la dispersion des Ponéglyphes. Son destin après la fondation du Gouvernement reste inconnu.
 
-## Sa mission
+## Garde historique et projet futur
 
-Protéger les Ponéglyphes et hisser, le moment venu, le pavillon de l'aube nouvelle. Alabasta est ainsi le seul peuple dont la mission comporte à la fois une conservation et un signal.
+La garde du texte d'Alabasta est un fait. En revanche, le site ne transforme pas automatiquement cette garde en « mission finale » reçue vers −800 : l'origine et la formulation de chaque tradition doivent être datées séparément.
 
-## Son lien avec les Ponéglyphes
+La branche Vivi/Lili propose que **Vivi puisse accomplir dans le futur un rôle analogue à celui attribué à Lili**, par exemple en protégeant ou diffusant une information décisive. La ressemblance des deux femmes est un parallèle graphique ; elle n'établit ni identité commune ni voyage temporel.
 
-La famille royale ne se contente pas d'abriter un Ponéglyphe : elle en organise la garde comme une charge héréditaire, en connaissance de cause, tout en étant théoriquement membre du pouvoir qui interdit leur étude. Cette contradiction est l'un des points les plus révélateurs du dispositif.
+## Projection politique
 
-## La lecture des Fous du Bus
+Alabasta pourrait rejoindre une coalition contre le Gouvernement mondial, comme d'autres pays liés à Luffy. Le manga n'a toutefois confirmé ni la composition de cette coalition, ni un pavillon précis servant de signal, ni l'ordre des événements.
 
-La théorie rapproche la silhouette de Lili de celle de Vivi, comme elle rapproche celle de Joy Boy de Luffy ou celle de Ryuma de Zoro. Vivi serait Lili : partie de son époque, elle deviendrait l'ancêtre que l'histoire officielle place 800 ans plus tôt — ce qui expliquerait à la fois le refus des Nefertari de rejoindre Mary Geoise et la panique d'Imu devant la question de Cobra.
+## Questions ouvertes
 
-## Son rôle dans la guerre finale
-
-L'armée d'Alabasta figure parmi les forces libérées par Luffy et rejoindrait la coalition de Joy Boy. Le pavillon de l'aube nouvelle serait le signal de ralliement.
-
-## Limites et nuances
-
-- La ressemblance entre Lili et Vivi repose sur une silhouette de flash-back, dessin volontairement peu détaillé.
-- Le refus des Nefertari est expliqué dans le manga par un attachement à leur peuple, explication qui se suffit à elle-même.
-- Rien n'indique que le pavillon de l'aube nouvelle soit destiné à une guerre.
-
-## Points encore à expliquer
-
-- Ce que Cobra savait exactement, et de qui il le tenait.
-- Pourquoi Imu conserve un portrait de Lili.
-- Ce que signifie précisément « l'aube nouvelle » et qui doit hisser ce pavillon.
+- Quel message complet Lili a-t-elle laissé et qu'est-il advenu d'elle ?
+- Pourquoi Imu réagit-il à son nom ?
+- Quel rôle Vivi choisira-t-elle après la Rêverie ?

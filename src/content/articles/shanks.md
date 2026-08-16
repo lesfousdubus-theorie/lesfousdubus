@@ -1,45 +1,47 @@
 ---
-title: "Shanks"
-summary: "Fiche neutre de Shanks : Empereur, ancien membre de l'équipage de Roger, dépositaire du chapeau de paille et acteur discret des grands équilibres du monde."
-category: "figures-principales"
-status: "published"
-navigationType: "fiche"
-sources: [1, 434, 907, 1054, 1055]
-editorialStatus: "canon"
-certainty: "elevee"
+title: 'Shanks'
+summary: 'Fiche de Shanks : ancien mousse de Roger, Empereur et homme qui confie le chapeau de paille à Luffy ; lectures sur sa connaissance du futur séparées.'
+category: 'figures-principales'
+status: 'published'
+navigationType: 'fiche'
+sources: [1, 434, 580, 907, 1137]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 25
-related: ["luffy", "gol-d-roger", "joy-boy", "gouvernement-mondial"]
-seoTitle: "Shanks One Piece : Empereur et chapeau de Luffy | Les Fous du Bus"
+related: ['luffy', 'gol-d-roger', 'joy-boy', 'gouvernement-mondial']
+seoTitle: 'Shanks One Piece : Empereur et chapeau de Luffy | Les Fous du Bus'
 ---
 
-## Présentation
+## Ancien mousse de Roger
 
-« Le Roux » Shanks est l'un des Empereurs. Ancien mousse de l'équipage de Gol D. Roger, il confia son chapeau de paille à Luffy au début du récit.
+Shanks a navigué enfant avec l'équipage de Gol D. Roger. Il ne se rend pas à Laugh Tale : il reste auprès de Baggy, malade, pendant la dernière étape. Il assiste ensuite à l'exécution de Roger et forme son propre équipage.
 
-## Ce que le manga établit
+Le manga ne révèle pas précisément ce que Roger lui a dit après le voyage ni l'étendue de ce qu'il connaît sur le One Piece.
 
-- Shanks était présent sur le navire de Roger et a assisté à son exécution.
-- Le **chapeau de paille** provient de Roger, qui le tenait lui-même d'ailleurs : c'est un objet transmis de main en main.
-- Shanks a sacrifié un bras pour sauver Luffy et lui a confié le chapeau en lui demandant de le lui rendre devenu grand.
-- Il est reçu à Mary Geoise par le Gorosei au chapitre 907, privilège exceptionnel pour un pirate.
-- Il a une relation ancienne avec Figarland Garling, dont la nature reste ouverte.
-- Il est intervenu pour mettre fin à la guerre au Sommet.
+## Shanks confie le chapeau de paille à Luffy
 
-## La lecture des Fous du Bus
+À Fuchsia, Shanks sauve Luffy, perd un bras puis lui confie le chapeau de paille qu'il portait. Il demande à l'enfant de le lui rendre lorsqu'il sera devenu un grand pirate.
 
-Le chapeau de paille est l'un des objets les plus chargés de la théorie : sa transmission relie Roger, Shanks et Luffy, et un chapeau identique de taille géante est conservé à Mary Geoise. La théorie y voit un fil matériel entre les époques, dans la même logique que les Ponéglyphes ou *Binks no Sake* — un objet qui circule et désigne son porteur.
+Roger avait porté ce même chapeau dans sa jeunesse. La scène établit une transmission symbolique **Roger → Shanks → Luffy** ; elle ne dit pas que l'objet choisit un porteur ou qu'il désigne à lui seul un futur Joy Boy.
 
-La liberté de mouvement de Shanks auprès du Gouvernement reste, elle, inexpliquée.
+## Empereur et arbitre
 
-## Limites et nuances
+Shanks devient l'un des Quatre Empereurs, tente d'empêcher Ace d'affronter Teach et met fin à la guerre de Marineford. À Wano, il repousse Ryokugyu à distance puis affirme qu'il est temps de rechercher le One Piece.
 
-- La transmission du chapeau peut être purement symbolique.
-- L'audience à Mary Geoise peut s'expliquer par une origine familiale que le récit n'a pas encore révélée.
-- Shanks n'a jamais exprimé de position sur le Siècle oublié.
+## Mary Geoise et les Figarland
 
-## Points encore à expliquer
+Au chapitre 907, une personne ressemblant à Shanks rencontre le Gorosei. Les révélations ultérieures sur Figarland Chamrock, son jumeau, imposent de ne plus attribuer automatiquement cette audience à Shanks. L'identité du visiteur doit suivre la clarification explicite du manga.
 
-- Ses origines et son lien avec les Figarland.
-- La raison de son accès à Mary Geoise.
-- Ce qu'il sait exactement du One Piece, ayant atteint Laugh Tale avec Roger.
+Les liens biologiques ou politiques précis de Shanks avec la famille Figarland ne doivent pas être déduits uniquement de la ressemblance.
+
+## Lecture : le fil « Libération »
+
+Le choix de miser sur Luffy, la transmission du chapeau et le vol du Fruit modèle Nika permettent de lire Shanks comme un passeur du fil « Libération ». Cette extension n'établit pas qu'il connaissait toute la chronologie, qu'il avait identifié Luffy comme Joy Boy dès l'enfance ou qu'il suivait un plan reçu du futur.
+
+## Limites
+
+- Shanks n'a pas atteint Laugh Tale avec Roger.
+- Sa connaissance de Nika au moment du vol du Fruit reste incomplète.
+- Le visiteur du chapitre 907 ne doit pas être nommé sans tenir compte de Chamrock.
+- Le chapeau géant de Mary Geoise ressemble à celui de Luffy, mais son histoire demeure inconnue.

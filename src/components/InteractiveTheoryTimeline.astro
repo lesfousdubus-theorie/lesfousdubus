@@ -1,7 +1,9 @@
 ---
 import {
   theoryTimeline,
+  timelineDateCertainty,
   timelineEras,
+  timelineMotifs,
   timelineStatus,
   timelineThreads,
   type TimelineStatus,
@@ -12,6 +14,7 @@ const statusOrder: Array<'all' | TimelineStatus> = [
   'all',
   'canon',
   'central',
+  'extension',
   'hypothese',
   'projection',
 ];
@@ -32,12 +35,20 @@ const seenEras = new Set<string>();
   <div class="chronoscope__topline">
     <div>
       <p class="chronoscope__eyebrow">Chronoscope des Fous du Bus</p>
-      <h2>Du passé apparent au futur qui l’a créé</h2>
+      <h2>Du passé apparent au futur qui pourrait l’avoir créé</h2>
     </div>
     <button class="story-button" type="button" data-story-toggle aria-pressed="false">
       <span class="story-button__icon" aria-hidden="true">▶</span>
       <span data-story-label>Lire la théorie</span>
     </button>
+  </div>
+
+  <div class="paradox-map" aria-label="Schéma permanent du paradoxe chronologique">
+    <span><strong>Passé apparent</strong><small>← informations du futur</small></span>
+    <i aria-hidden="true">→</i>
+    <span><strong>Présent</strong><small>← événements vécus</small></span>
+    <i aria-hidden="true">⇢</i>
+    <span><strong>Futur projeté</strong><small>← création de la mémoire</small></span>
   </div>
 
   <nav class="era-strip" aria-label="Aller à une période de la chronologie">
@@ -70,6 +81,18 @@ const seenEras = new Set<string>();
       }
     </select>
   </label>
+
+  <div class="timeline-uncertainties" aria-label="Incertitudes sur l’ordre des événements">
+    {
+      timelineEras
+        .filter((era) => era.note)
+        .map((era) => (
+          <p>
+            <strong>{era.label} :</strong> {era.note}
+          </p>
+        ))
+    }
+  </div>
 
   <div class="control-deck">
     <div class="status-filters" role="group" aria-label="Filtrer par niveau de certitude">
@@ -159,6 +182,7 @@ const seenEras = new Set<string>();
                 data-era={event.era}
                 data-status={event.status}
                 data-thread={event.thread}
+                data-motif={event.motif}
               >
                 {isEraStart && (
                   <span class="era-flag" aria-hidden="true">
@@ -171,7 +195,10 @@ const seenEras = new Set<string>();
                 <span class="event-node" aria-hidden="true">
                   <i>{event.icon}</i>
                 </span>
-                <time class="event-date">{event.date}</time>
+                <time class="event-date">
+                  <span data-event-date>{event.date}</span>
+                  <small>{timelineDateCertainty[event.dateCertainty]}</small>
+                </time>
 
                 <button
                   class="event-card"
@@ -179,7 +206,19 @@ const seenEras = new Set<string>();
                   data-event-open={event.id}
                   aria-label={`${event.date} — ${event.title}. Ouvrir les détails.`}
                 >
-                  {event.image ? (
+                  {event.segment ? (
+                    <span class="event-card__visual brook-segment">
+                      <span class="brook-segment__heading">
+                        <strong>{event.segment.label}</strong>
+                        <small>{event.segment.range}</small>
+                      </span>
+                      <span class="brook-segment__stops" aria-label="Étapes du parcours de Brook">
+                        {event.segment.stops.map((stop) => (
+                          <span>{stop}</span>
+                        ))}
+                      </span>
+                    </span>
+                  ) : event.image ? (
                     <span class="event-card__visual">
                       <img
                         src={event.image}
@@ -204,10 +243,12 @@ const seenEras = new Set<string>();
                       </span>
                       <span>{timelineThreads[event.thread].shortLabel}</span>
                     </span>
+                    {event.motif && <span class="motif-pill">≠ {timelineMotifs[event.motif]}</span>}
+                    {event.evolution && <span class="evolution-pill">{event.evolution}</span>}
                     <strong>{event.title}</strong>
                     <span class="event-card__summary">{event.summary}</span>
                     <span class="event-card__footer">
-                      <small>{event.chapter ?? 'Source : transcription de la théorie'}</small>
+                      <small>{event.source}</small>
                       <span aria-hidden="true">↗</span>
                     </span>
                   </span>
@@ -217,10 +258,13 @@ const seenEras = new Set<string>();
           })
         }
 
-        <aside class="time-loop" aria-label="La boucle temporelle rejoint le début de la frise">
-          <span class="time-loop__rings" aria-hidden="true">↺</span>
-          <p>La mémoire de l’avenir</p>
-          <strong>La fin recrée le début</strong>
+        <aside
+          class="time-loop"
+          aria-label="Les informations futures pourraient atteindre le passé apparent"
+        >
+          <span class="time-loop__rings" aria-hidden="true">←</span>
+          <p>Transmission de la mémoire</p>
+          <strong>Le futur pourrait avoir créé ce passé</strong>
           <button type="button" data-loop-start>Revenir à −900 ans</button>
         </aside>
       </div>
@@ -274,11 +318,17 @@ const seenEras = new Set<string>();
         >
       ).map(([status, meta]) => (
         <span>
-          <i class={`legend-dot legend-dot--${status}`} aria-hidden="true" />
+          <i class={`legend-line legend-line--${status}`} aria-hidden="true" />
           {meta.label}
         </span>
       ))
     }
+    <span class="legend-motif"><i aria-hidden="true">≠</i> Imu se trompe d’identité</span>
+  </div>
+
+  <div class="date-certainty-key" aria-label="Légende de certitude des dates">
+    <strong>Placement :</strong>
+    {Object.values(timelineDateCertainty).map((label) => <span>{label}</span>)}
   </div>
 
   <p class="sr-only" data-timeline-live aria-live="polite"></p>
@@ -295,17 +345,23 @@ const seenEras = new Set<string>();
         return (
           <article class="timeline-nojs__event">
             <p class="timeline-nojs__meta">
-              {event.date} · {era?.label} · {timelineStatus[event.status].label} ·{' '}
-              {timelineThreads[event.thread].label}
-              {event.chapter ? ` · ${event.chapter}` : ''}
+              {event.date} · {timelineDateCertainty[event.dateCertainty]} · {era?.label} ·{' '}
+              {timelineStatus[event.status].label} · {timelineThreads[event.thread].label} ·{' '}
+              {event.source}
+              {event.motif ? ` · ${timelineMotifs[event.motif]}` : ''}
+              {event.evolution ? ` · ${event.evolution}` : ''}
             </p>
-            <h3>{event.icon} {event.title}</h3>
+            <h3>
+              {event.icon} {event.title}
+            </h3>
             <p>{event.summary}</p>
             <p>{event.detail}</p>
             {event.links.length > 0 && (
               <ul>
                 {event.links.map((link) => (
-                  <li><a href={link.href}>{link.label}</a></li>
+                  <li>
+                    <a href={link.href}>{link.label}</a>
+                  </li>
                 ))}
               </ul>
             )}
@@ -344,9 +400,13 @@ const seenEras = new Set<string>();
             {timelineStatus[event.status].label}
           </span>
           <span>{timelineThreads[event.thread].label}</span>
-          {event.chapter && <span>{event.chapter}</span>}
+          <span>{event.source}</span>
+          {event.motif && <span>≠ {timelineMotifs[event.motif]}</span>}
+          {event.evolution && <span>{event.evolution}</span>}
         </div>
-        <p class="event-detail__date">{event.date}</p>
+        <p class="event-detail__date">
+          {event.date} · {timelineDateCertainty[event.dateCertainty]}
+        </p>
         <div class="event-detail__title-row">
           <span aria-hidden="true">{event.icon}</span>
           <h3 id={`event-detail-title-${event.id}`}>{event.title}</h3>
@@ -443,6 +503,46 @@ const seenEras = new Set<string>();
     letter-spacing: -0.025em;
   }
 
+  .paradox-map {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 9px 12px;
+    border: 1px solid color-mix(in srgb, var(--violet-light) 26%, var(--border-color));
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--bg-secondary) 93%, transparent);
+  }
+
+  .paradox-map span,
+  .paradox-map strong,
+  .paradox-map small {
+    display: block;
+  }
+
+  .paradox-map span {
+    min-width: 0;
+  }
+
+  .paradox-map strong {
+    color: var(--text-main);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .paradox-map small {
+    margin-top: 2px;
+    color: var(--text-muted);
+    font-size: 10px;
+  }
+
+  .paradox-map i {
+    color: var(--accent-gold);
+    font-style: normal;
+  }
+
   .story-button {
     display: inline-flex;
     flex: 0 0 auto;
@@ -509,6 +609,26 @@ const seenEras = new Set<string>();
 
   .mobile-era-select {
     display: none;
+  }
+
+  .timeline-uncertainties {
+    display: grid;
+    gap: 5px;
+    margin: -1px 0 10px;
+    padding: 9px 12px;
+    border-left: 2px solid color-mix(in srgb, var(--accent-gold) 70%, transparent);
+    background: color-mix(in srgb, var(--accent-gold) 5%, transparent);
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .timeline-uncertainties p {
+    margin: 0;
+  }
+
+  .timeline-uncertainties strong {
+    color: var(--text-secondary);
   }
 
   .era-tab:hover,
@@ -855,10 +975,75 @@ const seenEras = new Set<string>();
     position: absolute;
     z-index: 0;
     left: 50%;
-    width: 1px;
+    width: 2px;
     height: 58px;
     background: linear-gradient(var(--thread-color), transparent);
-    opacity: 0.75;
+    opacity: 0.78;
+  }
+
+  .timeline-event[data-status='canon'] .event-connector {
+    width: 2px;
+    background: var(--thread-color);
+  }
+
+  .timeline-event[data-status='central'] .event-connector {
+    width: 4px;
+    background: linear-gradient(var(--thread-color) 70%, transparent);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--thread-color) 46%, transparent);
+    opacity: 0.95;
+  }
+
+  .timeline-event[data-status='hypothese'] .event-connector {
+    width: 2px;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--thread-color) 0 6px,
+      transparent 6px 11px
+    );
+  }
+
+  .timeline-event[data-status='projection'] .event-connector {
+    width: 2px;
+    background: linear-gradient(var(--thread-color), transparent);
+  }
+
+  .timeline-event[data-status='projection'] .event-connector::before,
+  .timeline-event[data-status='projection'] .event-connector::after {
+    position: absolute;
+    bottom: 0;
+    width: 18px;
+    height: 1px;
+    background: var(--thread-color);
+    content: '';
+    opacity: 0.7;
+  }
+
+  .timeline-event[data-status='projection'] .event-connector::before {
+    right: 0;
+    transform: rotate(-28deg);
+    transform-origin: right;
+  }
+
+  .timeline-event[data-status='projection'] .event-connector::after {
+    left: 0;
+    transform: rotate(28deg);
+    transform-origin: left;
+  }
+
+  .timeline-event[data-status='hypothese'] .event-node {
+    border-style: dashed;
+  }
+
+  .timeline-event[data-status='central'] .event-node {
+    border-width: 3px;
+    box-shadow:
+      0 0 0 6px color-mix(in srgb, var(--bg-main) 78%, transparent),
+      0 0 28px color-mix(in srgb, var(--thread-color) 52%, transparent);
+  }
+
+  .timeline-event[data-status='projection'] .event-node {
+    outline: 1px solid color-mix(in srgb, var(--thread-color) 52%, transparent);
+    outline-offset: 4px;
   }
 
   .timeline-event--above .event-connector {
@@ -903,11 +1088,24 @@ const seenEras = new Set<string>();
     position: absolute;
     z-index: 2;
     left: 50%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 2px;
     color: var(--thread-color);
     font-size: 11px;
+    font-style: normal;
     font-weight: 850;
     letter-spacing: 0.02em;
     white-space: nowrap;
+  }
+
+  .event-date small {
+    color: var(--text-muted);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
   }
 
   .timeline-event--above .event-date {
@@ -1011,6 +1209,77 @@ const seenEras = new Set<string>();
       );
   }
 
+  .brook-segment {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    height: 112px;
+    padding: 9px 10px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--thread-color) 15%, var(--bg-main)),
+      var(--bg-main)
+    );
+  }
+
+  .brook-segment__heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    color: var(--text-main);
+  }
+
+  .brook-segment__heading strong {
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+
+  .brook-segment__heading small {
+    color: var(--thread-color);
+    font-size: 9px;
+    font-weight: 800;
+  }
+
+  .brook-segment__stops {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px 7px;
+  }
+
+  .brook-segment__stops::before {
+    position: absolute;
+    top: 6px;
+    right: 5px;
+    left: 5px;
+    height: 1px;
+    background: color-mix(in srgb, var(--thread-color) 55%, transparent);
+    content: '';
+  }
+
+  .brook-segment__stops > span {
+    position: relative;
+    padding-top: 11px;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: 7px;
+    line-height: 1.15;
+    text-align: center;
+    text-overflow: ellipsis;
+  }
+
+  .brook-segment__stops > span::before {
+    position: absolute;
+    top: 3px;
+    left: calc(50% - 3px);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--thread-color);
+    box-shadow: 0 0 5px var(--thread-color);
+    content: '';
+  }
+
   .event-card__body {
     display: flex;
     flex-direction: column;
@@ -1048,11 +1317,43 @@ const seenEras = new Set<string>();
   .status-pill--central {
     color: var(--violet-light);
   }
+  .status-pill--extension {
+    color: color-mix(in srgb, var(--cyan) 58%, var(--accent-gold));
+  }
   .status-pill--hypothese {
     color: var(--accent-gold);
   }
   .status-pill--projection {
     color: #ef86bd;
+  }
+
+  .motif-pill,
+  .evolution-pill {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 8px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .motif-pill {
+    border: 1px solid color-mix(in srgb, #ed86bd 48%, var(--border-color));
+    background: color-mix(in srgb, #ed86bd 8%, transparent);
+    color: #f2a5cf;
+  }
+
+  .evolution-pill {
+    border-left: 2px solid var(--accent-gold);
+    background: color-mix(in srgb, var(--accent-gold) 8%, transparent);
+    color: color-mix(in srgb, var(--accent-gold) 88%, white);
+  }
+
+  .timeline-event[data-motif='confusion-imu'] .event-card {
+    border-left-color: #ed86bd;
+    border-left-width: 3px;
   }
 
   .event-card__body > strong {
@@ -1086,10 +1387,12 @@ const seenEras = new Set<string>();
   }
 
   .event-card__footer small {
+    display: -webkit-box;
     overflow: hidden;
-    font-size: 10px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 9px;
+    line-height: 1.25;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .event-card__footer > span {
@@ -1376,25 +1679,75 @@ const seenEras = new Set<string>();
     gap: 6px;
   }
 
-  .legend-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
+  .legend-line {
+    width: 20px;
+    height: 2px;
     background: currentColor;
-    box-shadow: 0 0 7px currentColor;
+    box-shadow: 0 0 5px currentColor;
   }
 
-  .legend-dot--canon {
+  .legend-line--canon {
     color: var(--cyan);
   }
-  .legend-dot--central {
+  .legend-line--central {
+    height: 4px;
     color: var(--violet-light);
   }
-  .legend-dot--hypothese {
-    color: var(--accent-gold);
+  .legend-line--extension {
+    color: color-mix(in srgb, var(--cyan) 58%, var(--accent-gold));
+    opacity: 0.72;
   }
-  .legend-dot--projection {
+  .legend-line--hypothese {
+    color: var(--accent-gold);
+    background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px);
+    box-shadow: none;
+  }
+  .legend-line--projection {
+    position: relative;
     color: #ef86bd;
+  }
+
+  .legend-line--projection::before,
+  .legend-line--projection::after {
+    position: absolute;
+    right: 0;
+    width: 8px;
+    height: 1px;
+    background: currentColor;
+    content: '';
+    transform-origin: right;
+  }
+
+  .legend-line--projection::before {
+    transform: rotate(28deg);
+  }
+
+  .legend-line--projection::after {
+    transform: rotate(-28deg);
+  }
+
+  .legend-motif i {
+    color: #ed86bd;
+    font-style: normal;
+    font-weight: 900;
+  }
+
+  .date-certainty-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin-top: 7px;
+    color: var(--text-muted);
+    font-size: 9px;
+  }
+
+  .date-certainty-key strong {
+    color: var(--text-secondary);
+  }
+
+  .date-certainty-key span::before {
+    color: var(--accent-gold);
+    content: '◇ ';
   }
 
   .sr-only {
@@ -1620,6 +1973,11 @@ const seenEras = new Set<string>();
       justify-content: center;
     }
 
+    .paradox-map {
+      grid-template-columns: minmax(118px, 1fr) auto minmax(118px, 1fr) auto minmax(132px, 1fr);
+      overflow-x: auto;
+    }
+
     .era-strip {
       display: none;
     }
@@ -1843,7 +2201,7 @@ const seenEras = new Set<string>();
       if (!selected) return;
 
       const selectedDate =
-        selected.querySelector<HTMLElement>('.event-date')?.textContent?.trim() ?? '';
+        selected.querySelector<HTMLElement>('[data-event-date]')?.textContent?.trim() ?? '';
       const selectedTitle =
         selected.querySelector<HTMLElement>('.event-card__body > strong')?.textContent?.trim() ??
         '';

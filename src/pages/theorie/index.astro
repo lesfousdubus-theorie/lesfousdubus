@@ -3,6 +3,7 @@ import Footer from '@components/Footer.astro';
 import WikiLayout from '@layouts/WikiLayout.astro';
 import { getCollection } from 'astro:content';
 import { understandingPaths } from '../../data/siteNavigation';
+import { theoryTimeline } from '../../data/theoryTimeline';
 import { getRecentArticleUpdates } from '@utils/chapter-updates';
 
 const articles = await getCollection('articles', ({ data }) => data.status === 'published');
@@ -13,7 +14,7 @@ const pathIcons = ['⚡', '🧭', '📚'];
 
 <WikiLayout
   title="La théorie"
-  seoTitle="Théorie One Piece : le Siècle oublié est le présent | Les Fous du Bus"
+  seoTitle="Théorie One Piece : passé, présent et futur | Les Fous du Bus"
   description="Choisissez votre niveau de lecture pour comprendre la théorie des Fous du Bus : explication rapide, résumé en 10 points ou démonstration complète."
   currentPath="/theorie"
 >
@@ -63,14 +64,14 @@ const pathIcons = ['⚡', '🧭', '📚'];
       <p class="eyebrow">Après la lecture</p>
       <h2 id="explore-next-title">Passez de la démonstration à l’exploration</h2>
       <p>
-        La frise replace les événements dans l’ordre proposé par la théorie. Les dossiers permettent
-        ensuite d’isoler un personnage, un lieu ou un mécanisme précis.
+        La frise distingue dates établies, périodes approximatives et futurs à ordre ouvert. Les
+        dossiers permettent ensuite d’isoler un personnage, un lieu ou un mécanisme précis.
       </p>
     </div>
     <div class="explore-next__links">
       <a href="/theorie/chronologie"
         ><span aria-hidden="true">🕰️</span><strong>Frise chronologique</strong><small
-          >64 événements reliés</small
+          >{theoryTimeline.length} événements reliés</small
         ></a
       >
       <a href="/dossiers"

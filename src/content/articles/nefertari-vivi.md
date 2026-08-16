@@ -1,27 +1,37 @@
 ---
-title: "Nefertari Vivi"
-summary: "Fiche d'identification de Nefertari Vivi, princesse d'Alabasta, membre honoraire des Chapeaux de Paille et héritière de la volonté de Nefertari D. Lili."
-category: "personnages-identites"
-status: "published"
-navigationType: "fiche"
+title: 'Nefertari Vivi'
+summary: "Fiche factuelle de Nefertari Vivi : princesse d'Alabasta, alliée des Chapeaux de Paille et fugitive après la Rêverie ; son avenir reste ouvert."
+category: 'personnages-identites'
+status: 'published'
+navigationType: 'fiche'
 sources: [1085, 1116]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 48
-related: ["lili-vivi-et-les-poneglyphes"]
+related: ['lili-vivi-et-les-poneglyphes']
 ---
 
-## Présentation canonique
+## Nefertari Vivi au présent
 
-Nefertari Vivi est la princesse du royaume d'Alabasta. Sous le pseudonyme de Miss Wednesday, elle infiltra Baroque Works avant de devenir une alliée et membre honoraire de l'équipage au Chapeau de Paille. Sa ressemblance physique frappante avec la reine Nefertari D. Lili soulève des questions fondamentales sur l'héritage des Nefertari.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Ce que le manga établit
+Vivi est la princesse d'Alabasta et une alliée des Chapeaux de Paille depuis la saga d'Alabasta. Après l'assassinat de Cobra à la Rêverie, elle s'échappe avec Wapol et voyage avec Morgans.
 
-- Vivi est la descendante directe de la lignée royale des Nefertari, l'une des vingt familles fondatrices du Gouvernement Mondial.
-- Le portrait de la Chambre Fleurie au chapitre 1116 montre une femme aux cheveux bleus ressemblant à Vivi.
-- Son père Cobra a été tué par Imu après avoir découvert le secret de la lettre de Lili.
+**Sources précises :** chapitres 216, 1085–1086 et 1116.
 
-## La lecture des Fous du Bus
+## Naissance et lignée
 
-Dans la théorie, Vivi est destinée à reproduire l'acte fondateur de Lili : écrire le Rio Ponéglyphe avec Robin et Momonosuke, puis disperser les Ponéglyphes à travers le monde. L'opening 28 de l'animé montre Vivi avec les Ponéglyphes qui s'éparpillent derrière elle, suggérant son rôle futur dans la transmission de l'histoire.
+<div class="section-pill section-pill--manga">Manga</div>
+
+La chronologie peut établir la **naissance de Nefertari Vivi**. Sa lignée descend de la famille Nefertari, mais le manga ne dit pas qu'elle est littéralement Lili. Un portrait ancien offre une ressemblance qui doit rester une observation séparée.
+
+## Une héritière possible du rôle de Lili
+
+<div class="section-pill section-pill--extension">Extension</div>
+
+Vivi pourrait accomplir un rôle de transmission analogue à celui que l'histoire attribue à Lili. Cette proposition n'impose ni voyage temporel, ni cheveux identiques, ni disparition définitive, ni accession de Koza au trône.
+
+## Limites et objections
+
+La destination de Vivi, sa rencontre avec l'équipage et son rôle dans la guerre finale sont inconnus. La formulation correcte est « Vivi pourrait accomplir le rôle attribué à Lili », pas « Vivi devient Lili ».

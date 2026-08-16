@@ -1,44 +1,40 @@
 ---
-title: "Zoans"
-summary: "Fiche des Fruits du Démon de type Zoan : leur volonté propre, les Zoans mythiques et la question de la conscience des fruits."
-category: "technologies-pouvoirs"
-status: "published"
-navigationType: "fiche"
-sources: [1044, 1114, 1182]
-editorialStatus: "canon"
-certainty: "moyenne"
+title: 'Zoans'
+summary: 'Fiche des Fruits du Démon de type Zoan : transformations animales, éveils, volonté propre évoquée par le Gorosei et hypothèses distinctes sur les mythes.'
+category: 'technologies-pouvoirs'
+status: 'published'
+navigationType: 'fiche'
+sources: [184, 349, 1044, 1069]
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "fruits-du-demon"
+parent: 'fruits-du-demon'
 order: 74
-related: ["fruits-du-demon", "hito-hito-no-mi-nika", "nika", "dieux-one-piece", "vegapunk"]
-seoTitle: "Zoans One Piece : volonté propre et mythiques | Les Fous du Bus"
+related: ['fruits-du-demon', 'hito-hito-no-mi-nika', 'nika', 'dieux-one-piece', 'vegapunk']
+seoTitle: 'Zoans : éveil et volonté propre | Les Fous du Bus'
 ---
 
-## Présentation
+## Transformations animales
 
-Les Zoans sont les Fruits du Démon qui permettent la transformation en animal. Ils se distinguent des deux autres familles par une caractéristique unique : ils possèdent une **volonté propre**.
+Les Zoans sont les Fruits du Démon qui permettent à leur utilisateur de prendre une forme animale et une forme hybride. Ils comprennent des modèles ordinaires, antiques et mythiques. Certains Fruits ont aussi été donnés à des objets grâce à une technique dont le manga n'a pas encore expliqué tous les détails.
 
-## Ce que le manga établit
+## Éveil et volonté
 
-- Vegapunk établit que les Zoans ont une volonté et une conscience rudimentaires ; c'est ce qui permet aux armes inanimées de s'animer lorsqu'on leur fait consommer un fruit.
-- Les **Zoans mythiques** sont les plus rares et les plus puissants, et donnent accès à des créatures légendaires.
-- Le Hito Hito no Mi, modèle Nika est un Zoan mythique de type humain, cas unique dans l'œuvre.
-- Le fruit de Luffy a « fui » le Gouvernement mondial durant des décennies, ce que le Gorosei constate au chapitre 1044.
+Les gardiens de prison d'Impel Down montrent des éveils Zoan, avec une grande endurance mais une personnalité apparemment submergée. À Egghead, Vegapunk distingue les risques d'un éveil qui prend le dessus sur l'esprit.
 
-## La lecture des Fous du Bus
+Au chapitre 1044, le Gorosei affirme que les Zoans possèdent une volonté propre et que le Fruit modèle Nika semble avoir échappé au Gouvernement. Cette formulation ne décrit pas précisément une conscience autonome, un choix volontaire du porteur ou la manière dont un Fruit se déplace.
 
-L'analyse du chapitre 1182 exploite cette volonté propre pour proposer une lecture des dieux shandias : si un Zoan porte en lui une conscience, alors la frontière entre « posséder un pouvoir » et « incarner une figure » devient poreuse. Les dieux vénérés par les peuples ne seraient pas des êtres distincts, mais des porteurs de Zoans mythiques dont la légende a survécu à l'utilisateur.
+## Modèles mythiques
 
-Cette lecture rejoint l'idée générale de la théorie sur la divinisation : un dieu naît du regard que les peuples portent sur un pouvoir.
+Les Zoans mythiques reprennent des créatures ou figures légendaires et peuvent conférer des capacités supplémentaires. Le Hito Hito no Mi, modèle Nika appartient à cette catégorie ; ce n'est pas le seul Zoan humain ni le seul modèle mythique du manga.
 
-## Limites et nuances
+## Extension : mythes et porteurs
 
-- La volonté des Zoans est établie pour animer des objets, pas pour agir sur l'utilisateur ou survivre à sa mort.
-- Le manga ne dit jamais que les dieux des peuples aient été des porteurs de Zoans.
-- L'idée qu'un fruit « choisisse » son porteur reste une formule de Vegapunk, non un mécanisme décrit.
+Le site explore l'idée que certaines figures vénérées aient pu être associées à d'anciens porteurs de Zoans mythiques. Cette hypothèse ne doit pas transformer chaque dieu shandia ou chaque personnage du Harley en Fruit confirmé.
 
-## Points encore à expliquer
+## Limites
 
-- L'origine de la conscience des Zoans.
-- Comment un fruit se déplace pour rejoindre un porteur.
-- Pourquoi seuls les Zoans possèdent cette caractéristique.
+- Le degré et la nature de la « volonté » des Fruits restent inconnus.
+- La technique permettant à un objet de consommer un Fruit n'est pas entièrement détaillée.
+- Rien ne prouve que les divinités des peuples soient toutes des modèles de Zoans.
+- L'origine et la diffusion historique des Fruits du Démon ne sont pas révélées.

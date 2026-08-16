@@ -1,43 +1,37 @@
 ---
-title: "Nico Robin"
-summary: "Fiche neutre de Nico Robin : dernière survivante d'Ohara, seule personne au monde capable de lire les Ponéglyphes, archéologue de l'équipage du Chapeau de Paille."
-category: "figures-principales"
-status: "published"
-navigationType: "fiche"
+title: 'Nico Robin'
+summary: "Fiche de Robin : archéologue capable de lire les Ponéglyphes ; son rôle éventuel dans une transmission future n'inclut pas une capacité canonique à les graver."
+category: 'figures-principales'
+status: 'published'
+navigationType: 'fiche'
 sources: [391, 395, 398, 649, 818]
-editorialStatus: "canon"
-certainty: "elevee"
+editorialStatus: 'manga'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
 order: 27
-related: ["poneglyphes", "poneglyphes-futur", "rio-poneglyphe", "wa-no-kuni", "siecle-oublie"]
+related: ['poneglyphes', 'poneglyphes-futur', 'rio-poneglyphe', 'wa-no-kuni', 'siecle-oublie']
 ---
 
-## Présentation
+## Archéologue d'Ohara
 
-Nico Robin est l'archéologue de l'équipage du Chapeau de Paille et la dernière survivante d'Ohara. Elle est **la seule personne vivante capable de déchiffrer les Ponéglyphes**.
+<div class="section-pill section-pill--manga">Manga</div>
 
-## Ce que le manga établit
+Robin apprend auprès des savants d'Ohara à lire l'écriture des Ponéglyphes. Elle cherche le Rio Ponéglyphe et veut découvrir la véritable histoire. Cette langue existait et était étudiée avant elle.
 
-- Elle a appris le langage antique à Ohara, dans l'Arbre de la Cognition, sous la direction du professeur Clover.
-- Le Gouvernement mondial a détruit Ohara entièrement pour empêcher cette recherche, et l'a poursuivie depuis l'âge de huit ans.
-- Elle a lu le Ponéglyphe de la forêt sous-marine (chapitre 649), celui de Skypiea et plusieurs Road Ponéglyphes.
-- Son objectif est de découvrir le **Rio Ponéglyphe** et la véritable histoire du Siècle oublié.
-- Clover, avant de mourir, affirmait que la clé du mystère résidait dans le **nom du Royaume antique** (chapitre 395).
+**Sources précises :** chapitres 218, 301, 391–395 et 507.
 
-## La lecture des Fous du Bus
+## Ce qu'elle ne sait pas faire
 
-Robin occupe une position singulière dans la théorie : elle serait à la fois la lectrice et l'autrice des textes qu'elle déchiffre. Dans cette lecture, elle demanderait au clan Kozuki de graver l'histoire de Joy Boy dans une langue qu'elle seule pourrait relire, puis ces pierres seraient envoyées vers le passé.
+<div class="section-pill section-pill--manga">Manga</div>
 
-Le « langage antique » serait alors une langue future, ce qui expliquerait pourquoi elle est la seule à le comprendre : elle lirait sa propre écriture.
+Aucun chapitre ne montre Robin tailler une pierre, inventer l'écriture antique ou graver un Ponéglyphe. Le savoir artisanal était transmis par les Kozuki ; Sukiyaki en est le dépositaire vivant connu.
 
-## Limites et nuances
+## Rôle possible dans la théorie
 
-- Robin a appris cette langue de savants d'Ohara qui la connaissaient avant elle : elle n'en est pas l'unique dépositaire historique.
-- Sa capacité s'explique entièrement par sa formation.
-- Rien dans le manga ne suggère qu'elle écrira un jour des Ponéglyphes.
+<div class="section-pill section-pill--extension">Extension</div>
 
-## Points encore à expliquer
+Robin pourrait sélectionner, traduire ou organiser une mémoire des événements futurs. Si une information rejoint le passé, elle pourrait en être une source intellectuelle parmi d'autres, sans être l'artisane des stèles ni la créatrice de la langue.
 
-- L'origine réelle du langage antique et sa transmission jusqu'à Ohara.
-- Le contenu exact du Rio Ponéglyphe.
-- Le nom du Royaume antique et pourquoi il est si dangereux.
+## Limites et objections
+
+Le mécanisme d'une transmission future n'est pas montré et le manga peut donner à Robin un rôle uniquement interprétatif à Laugh Tale.

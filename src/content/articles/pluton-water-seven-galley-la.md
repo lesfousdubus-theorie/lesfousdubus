@@ -1,91 +1,44 @@
 ---
-title: "Pluton, Water Seven et Galley-La"
-summary: "Dossier : comment Water Seven, la Galley-La des géants, Zunesha et Wa no Kuni s'articulent dans la théorie pour révéler Pluton, l'Arme antique transformée en navire."
-category: "armes-antiques"
-status: "published"
-certainty: "hypothese"
+title: 'Pluton, Water Seven et Galley-La'
+summary: "Projection révisée : Pluton existe sous Wano ; Water Seven et Galley-La pourraient contribuer à le transformer, le reconstruire ou l'utiliser lors de l'ouverture des frontières."
+category: 'armes-antiques'
+status: 'published'
+certainty: 'hypothese'
 reviewedUntilChapter: 1190
-parent: "armes-antiques"
-navigationType: "dossier"
-editorialStatus: "hypothese-centrale"
-related: ["pluton-fiche", "zunesha-fiche", "wa-no-kuni", "loki", "poseidon-fiche"]
+parent: 'armes-antiques'
+navigationType: 'dossier'
+editorialStatus: 'projection'
+related: ['pluton-fiche', 'zunesha-fiche', 'wa-no-kuni', 'loki', 'poseidon-fiche']
 sources: [431]
 order: 37
 ---
 
-> Ce dossier est la **lecture des Fous du Bus** de Pluton. La fiche encyclopédique neutre se trouve sur la page [Pluton](/theorie/pluton-fiche) : elle recense ce que le manga établit sans l'interprétation de la théorie.
+## Pluton existe déjà
 
-## La lecture des Fous du Bus en une phrase
+<div class="section-pill section-pill--manga">Manga</div>
 
-Pluton n'est pas un navire coulé dans un passé lointain : c'est **Water Seven elle-même**, transformée en gigantesque vaisseau grâce aux géants charpentiers de la Galley-La, qui prendra la mer pour rejoindre Wa no Kuni et donner naissance à l'Arme antique.
+Sukiyaki confirme au chapitre 1055 que **Pluton se trouve sous l'ancien Wano**. Les plans conservés par les charpentiers de Water Seven permettaient de construire un contrepoids si l'Arme tombait entre de mauvaises mains ; ils ne prouvent pas que l'Arme originale restait à fabriquer.
 
-## Le rêve d'Icebarg
+**Sources précises :** chapitres 399, 431 et 1055.
 
-Au chapitre 431, Icebarg veut transformer **Water Seven en un gigantesque navire** pour protéger l'île d'Aqua Laguna. Franky s'étonne : « Tu veux transformer Water Seven en un gigantesque navire ? »
+## Water Seven → Pluton
 
-Ironiquement, c'est exactement ce qu'est Pluton selon la description canonique : un navire gigantesque capable de détruire des îles. La théorie lit ce rêve comme une **préfiguration de l'Arme** plutôt que comme une simple idée d'ingénieur.
+<div class="section-pill section-pill--projection">Projection</div>
 
-## La Galley-La des géants
+Franky, Icebarg et les charpentiers pourraient utiliser leur savoir pour restaurer, transformer, reproduire ou rendre contrôlable Pluton. Cette relation reste une projection forte, mais sa formulation correcte part de l'existence actuelle de l'Arme.
 
-La **Galley-La** est double dans One Piece :
+## Zunesha + Water Seven → ouverture de Wano
 
-1. la **compagnie de charpentiers** de Water Seven, héritière des plans de Pluton (lignée Icebarg/Franky) ;
-2. la **brigade au grand marteau**, escouade de **géants charpentiers d'Elbaf**.
+<div class="section-pill section-pill--projection">Projection</div>
 
-La théorie unit les deux : l'équipage des géants serait en réalité **l'équipage de Loki**, cryogénisé pour le protéger (voir [Loki](/theorie/loki)). Ces mêmes géants, aperçus congelés à Punk Hazard, rejoindraient Water Seven et la **transformeraient en Pluton**.
+Zunesha peut agir sur les murs extérieurs tandis que des ingénieurs préparent l'accès ou l'usage de Pluton. Cette branche détaillée reste possible sans imposer un ordre unique avec Noah, la Red Line ou le Déluge.
 
-## Le Ponéglyphe d'Alabasta et Wa no Kuni
+## Uranus et Mother Flame
 
-Le Ponéglyphe d'Alabasta indique **Pluton à Wa no Kuni**. Mais Roger ne comprenait pas pourquoi Poséidon n'était pas sur l'île des Hommes-Poissons alors que la pierre le disait — un doute que la théorie applique aussi à Pluton.
+<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
-La lecture : **Pluton n'est pas encore à Wa no Kuni**. Il y sera envoyé plus tard, exactement comme Poséidon.
+L'arme employée par Imu n'est pas nommée Uranus. Imu pourrait employer la Mother Flame pour atteindre la puissance associée à Uranus, alimenter une autre technologie ou reproduire un effet voisin.
 
-## Zunesha et l'ouverture de Wa no Kuni
+## Limites et objections
 
-Water Seven (devenue Pluton) se rendrait à Wa no Kuni accompagnée de **Zunesha**. L'éléphant viderait la cuvette de Wa no Kuni avec sa trompe, permettant notamment de libérer les adversaires retenus dans la chambre magmatique.
-
-La fusion de tous ces éléments créerait « le plus terrible monstre de l'histoire de la construction navale » : **l'Arme Pluton**.
-
-## Le schéma de la théorie
-
-```
-Water Seven ──(plans de la Galley-La)──► navire géant
-Galley-La des géants ──(équipage de Loki)──► charpentiers d'Elbaf
-Zunesha ──► ouverture de Wa no Kuni
-                          │
-                          ▼
-                     PLUTON (Arme antique)
-```
-
-## Mise à jour août 2026 — la coïncidence impossible
-
-Le thread du 08/08/2026 ([@FoudubusTV_](https://x.com/FoudubusTV_/status/2086126492228964579)) apporte deux arguments supplémentaires à cette branche :
-
-### 1. Pourquoi Big Mom n'a jamais retrouvé ces géants ?
-
-Le manga insiste (Big Mom, réseau d'info mondial) : elle n'a jamais retrouvé les géants congelés de la légende Galley-La. Lecture Fous du Bus : **ils n'avaient pas encore été congelés par Loki**, et le nom Galley-La Company n'avait pas encore été créé par Icebarg. L'échec de Big Mom devient un indice temporel, pas une incohérence.
-
-### 2. Confirmation chapitre 1154
-
-Les spoilers 1154 révèlent officiellement l'existence d'une **Galley-La de géants et géants antiques charpentiers**, disparue mystérieusement, et confirment que les corps congelés de Punk Hazard sont bien ces charpentiers. Le lien Ice-Ice Fruit (ancien utilisateur avant Aokiji) est évoqué comme responsable de leur congélation.
-
-Cela renforce l'hypothèse **Loki congèle son propre équipage pour le protéger**, plutôt que défaite par le Gouvernement.
-
-> **Lire le thread complet avec toutes les images originales** : [Galley-La : la coïncidence impossible](/theorie/galley-la-coincidence-impossible)  
-> (15 médias du thread X du 08/08/2026 inclus en haute qualité sur le site)
-
-## Limites et nuances
-
-- Le « rêve d'Icebarg » peut être une simple préoccupation d'ingénieur, sans portée prophétique.
-- L'identification des géants congelés à l'équipage de Loki est une **hypothèse non confirmée**.
-- Le manga ne dit pas que Pluton « sera envoyé » à Wa no Kuni : ce parallèle avec Poséidon est une **déduction de la théorie**.
-- L'intervention de Zunesha à Wa no Kuni n'est pas établie par une source explicite.
-- La piste Big Mom = preuve temporelle est une interprétation, pas une confirmation canonique : Elbaf est une île isolée, difficile d'accès même avec un réseau.
-
-## Articles liés
-
-- [Pluton (fiche canonique)](/theorie/pluton-fiche)
-- [Zunesha](/theorie/zunesha-fiche)
-- [Wa no Kuni](/theorie/wa-no-kuni)
-- [Loki](/theorie/loki)
-- [Poséidon](/theorie/poseidon-fiche)
+La forme de Pluton, son état, son pilote et les conséquences exactes de l'ouverture de Wano restent inconnus. Aucun chapitre n'ordonne Water Seven, Pluton, Wano, Noah et Red Line dans une séquence obligatoire.

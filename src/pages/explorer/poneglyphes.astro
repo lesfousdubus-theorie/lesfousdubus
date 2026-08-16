@@ -13,64 +13,64 @@ interface Step {
 
 const steps: Step[] = [
   {
-    id: 1, title: "Le futur crée l'histoire", subtitle: "Époque de Luffy — la guerre finale",
-    body: "Luffy et ses alliés accomplissent la guerre finale. Le monde est transformé : Red Line détruite, All Blue formée, les peuples libérés. Cette histoire vraie est gravée dans un matériau indestructible, dans une langue qui ne peut être lue que par une seule personne par génération.",
-    position: 'right',
-  },
-  {
-    id: 2, title: "Les Ponéglyphes sont envoyés vers le passé", subtitle: "Mécanisme de transmission temporelle",
-    body: "Les stèles ne voyagent pas physiquement dans le temps. Selon la théorie, les informations qu'elles contiennent sont transmises vers le passé via un mécanisme encore inconnu. Le Toki Toki no Mi, la communication temporelle (ch. 1187-1188) et les technologies du Royaume antique sont des pistes explorées.",
-    position: 'right',
-  },
-  {
-    id: 3, title: "Le passé reçoit le futur", subtitle: "Il y a 800 ans — les stèles apparaissent",
-    body: "Il y a huit siècles, les Ponéglyphes apparaissent dans le monde. Le clan Kozuki de Wa no Kuni est le seul capable de les lire et de les graver. Le monde les prend pour les vestiges d'une civilisation disparue, sans comprendre qu'ils racontent un avenir.",
+    id: 1, title: 'Le passé apparent fixe des textes', subtitle: 'Environ −900 à −800 · ordre interne incertain',
+    body: 'Manga : les Kozuki ont gravé les Ponéglyphes pendant le Siècle oublié et Lili est liée à leur dispersion. Théorie centrale : une partie du contenu pourrait décrire des événements futurs.',
     position: 'left',
   },
   {
-    id: 4, title: "Le Gouvernement mondial efface la mémoire", subtitle: "Le Siècle oublié comme arme de contrôle",
-    body: "Le Gouvernement mondial interdit l'étude des Ponéglyphes et détruit Ohara. Imu, qui a lu les Ponéglyphes, sait que Joy Boy apparaîtra — mais ignore quand et sous quelle identité. Il gouverne dans la peur de l'inévitable.",
+    id: 2, title: 'La longue veille conserve des fragments', subtitle: '−799 à −40 · missions non synchronisées',
+    body: 'Les pierres, promesses et traditions sont protégées à des dates différentes. Ohara les étudie bien plus tard ; le Gouvernement mondial interdit cette recherche. Un règne continu d’Imu reste une hypothèse distincte de l’existence canonique du Gouvernement.',
     position: 'left',
   },
   {
-    id: 5, title: "Le passé prépare le présent", subtitle: "Huit siècles de conservation",
-    body: "Chaque peuple reçoit une mission : Ryugu conserve Noah, Wa no Kuni protège le savoir des stèles, les Minks gardent Zunesha, Alabasta protège le Ponéglyphe des Nefertari, les Shandias veillent sur leur héritage, les Boucaniers transmettent la foi en Nika.",
-    position: 'left',
-  },
-  {
-    id: 6, title: "Le présent accomplit la promesse", subtitle: "Luffy — le point de convergence",
-    body: "Luffy, sans le savoir, accomplit tout ce que les Ponéglyphes ont annoncé. Il devient ce que le monde appelait Joy Boy. Le début (chapitre 1) et la fin (Laugh Tale) se rejoignent. L'histoire que nous lisons est celle que racontent les Ponéglyphes.",
+    id: 3, title: 'Le présent vit les événements', subtitle: 'Époque de Luffy · manga',
+    body: 'Robin lit les textes, les Road Ponéglyphes donnent quatre positions spatiales et Luffy traverse les événements sans se présenter comme Joy Boy. Le présent ne dépend pas d’un voyage physique général.',
     position: 'right',
+  },
+  {
+    id: 4, title: 'Un futur pourrait accomplir les descriptions', subtitle: 'Ordre projeté · futurs multiples',
+    body: 'Laugh Tale, guerre finale, Pluton, Wano, Noah, Red Line et All Blue peuvent appartenir à plusieurs branches. Leur présence et leur ordre ne sont pas encore confirmés.',
+    position: 'right',
+  },
+  {
+    id: 5, title: 'Le futur pourrait créer la mémoire', subtitle: 'Théorie centrale · information seulement',
+    body: 'Le récit vécu pourrait produire l’information qui apparaît dans les sources du passé. La théorie n’exige pas que les Ponéglyphes déjà gravés, ni le Royaume antique entier, voyagent physiquement.',
+    position: 'right',
+  },
+  {
+    id: 6, title: 'Le moyen de réception reste ouvert', subtitle: 'Branches alternatives',
+    body: 'Communication temporelle, préscience et autre dispositif ne sont pas cumulés automatiquement. Les Ponéglyphes restent le support durable central ; Harley, Emeth/BF-39 et Zoro/Ryuma sont des branches plus spéculatives.',
+    position: 'left',
   },
 ];
 
 const poneglyphTypes = [
-  { type: 'Road Ponéglyphes', count: '4', description: "Indiquent les coordonnées de Laugh Tale. Selon la théorie, la quatrième encode une coordonnée temporelle.", href: '/theorie/road-poneglyphes' },
-  { type: 'Rio Ponéglyphe', count: '1', description: "La véritable histoire complète, formée par l'assemblage de tous les Ponéglyphes informatifs.", href: '/theorie/rio-poneglyphe' },
-  { type: 'Ponéglyphes informatifs', count: '~20', description: "Chacun raconte une partie de l'histoire. Nico Robin les collecte pour reconstituer le Rio Ponéglyphe.", href: '/theorie/poneglyphes' },
+  { type: 'Road Ponéglyphes', count: '4', description: 'Quatre coordonnées spatiales dont le croisement localise Laugh Tale. Une fonction temporelle supplémentaire reste hypothétique.', href: '/theorie/road-poneglyphes' },
+  { type: 'Textes historiques et instructions', count: 'plusieurs', description: 'Ils conservent des informations et des indications différentes. Robin les lit ; elle ne sait pas les graver.', href: '/theorie/poneglyphes' },
+  { type: 'Rio Ponéglyphe', count: 'corpus', description: 'La véritable histoire recherchée par Robin, à construire en reliant les textes pertinents jusqu’à Laugh Tale.', href: '/theorie/rio-poneglyphe' },
 ];
 ---
 
 <WikiLayout
-  title="La boucle des Ponéglyphes"
-  seoTitle="Boucle des Ponéglyphes : mémoire du futur | Les Fous du Bus"
-  description="Schéma visuel de la boucle des Ponéglyphes : comment l'histoire du futur devient la mémoire du passé, et comment Luffy accomplit ce que les stèles ont annoncé."
+  title="Le paradoxe des Ponéglyphes"
+  seoTitle="Ponéglyphes : information du futur et mémoire | Les Fous du Bus"
+  description="Schéma du paradoxe : passé apparent, présent vécu et futur qui pourrait créer l’information conservée par les Ponéglyphes."
   currentPath="/explorer/poneglyphes"
 >
   <div class="page-header">
     <p class="eyebrow">📜 Schéma temporel</p>
-    <h1>La boucle des Ponéglyphes</h1>
+    <h1>Le paradoxe des Ponéglyphes</h1>
     <p class="page-desc">
-      Comment des pierres gravées il y a 800 ans racontent-elles une histoire qui ne s'est pas
-      encore produite ? Ce schéma visualise la boucle complète : de la guerre finale au chapitre 1,
-      en passant par la transmission temporelle et la conservation par les peuples.
+      <strong>Passé apparent :</strong> des textes anciens. <strong>Présent vécu :</strong> Luffy et Robin avancent.
+      <strong>Futur projeté :</strong> leurs actes pourraient créer l'information conservée. Le cercle ci-dessous
+      suit cette information ; il ne décrit pas une boucle générale de l'univers ni un transport physique du monde.
     </p>
   </div>
 
   <!-- Central loop diagram -->
   <div class="loop-diagram">
-    <DiagramViewport id="poneglyph-loop" label="Schéma détaillé de la boucle des Ponéglyphes" minWidth={680}>
-    <svg viewBox="0 0 900 900" class="loop-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Schéma circulaire de la boucle des Ponéglyphes">
+    <DiagramViewport id="poneglyph-loop" label="Schéma détaillé du paradoxe des Ponéglyphes" minWidth={680}>
+    <svg viewBox="0 0 900 900" class="loop-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Schéma circulaire du trajet hypothétique de l’information entre futur projeté, passé apparent et présent vécu">
       <defs>
         <linearGradient id="loopGrad" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#5fb9c2" />
@@ -86,28 +86,28 @@ const poneglyphTypes = [
       <circle cx="450" cy="450" r="340" fill="none" stroke="url(#loopGrad)" stroke-width="2" stroke-opacity="0.25" stroke-dasharray="10,6" />
       <!-- Central hub -->
       <circle cx="450" cy="450" r="72" fill="#0e1722" stroke="#5fb9c2" stroke-width="2" filter="url(#loopGlow)" />
-      <text x="450" y="435" text-anchor="middle" fill="#5fb9c2" font-size="13" font-weight="700" font-family="Inter,system-ui,sans-serif">LE PRÉSENT</text>
-      <text x="450" y="455" text-anchor="middle" fill="#f3efe6" font-size="18" font-weight="800" font-family="Inter,system-ui,sans-serif">Luffy</text>
-      <text x="450" y="475" text-anchor="middle" fill="#aeb7c2" font-size="11" font-family="Inter,system-ui,sans-serif">Joy Boy · Nika</text>
+      <text x="450" y="435" text-anchor="middle" fill="#5fb9c2" font-size="13" font-weight="700" font-family="Inter,system-ui,sans-serif">SUPPORT CENTRAL</text>
+      <text x="450" y="455" text-anchor="middle" fill="#f3efe6" font-size="18" font-weight="800" font-family="Inter,system-ui,sans-serif">Ponéglyphes</text>
+      <text x="450" y="475" text-anchor="middle" fill="#aeb7c2" font-size="11" font-family="Inter,system-ui,sans-serif">information conservée</text>
       <!-- Orbital nodes -->
       <circle cx="720" cy="220" r="42" fill="#0e1722" stroke="#e0ab4e" stroke-width="2" filter="url(#loopGlow)" />
       <text x="720" y="215" text-anchor="middle" fill="#e0ab4e" font-size="10" font-weight="700" font-family="Inter,system-ui,sans-serif">FUTUR</text>
-      <text x="720" y="230" text-anchor="middle" fill="#f3efe6" font-size="13" font-weight="700" font-family="Inter,system-ui,sans-serif">Guerre</text>
+      <text x="720" y="230" text-anchor="middle" fill="#f3efe6" font-size="13" font-weight="700" font-family="Inter,system-ui,sans-serif">mémoire créée ?</text>
       <circle cx="800" cy="450" r="38" fill="#0e1722" stroke="#b07cc6" stroke-width="1.5" />
-      <text x="800" y="445" text-anchor="middle" fill="#b07cc6" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">GRAVURE</text>
-      <text x="800" y="460" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">Ponéglyphes</text>
+      <text x="800" y="445" text-anchor="middle" fill="#b07cc6" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">TRANSMISSION ?</text>
+      <text x="800" y="460" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">information seule</text>
       <circle cx="720" cy="680" r="38" fill="#0e1722" stroke="#8899aa" stroke-width="1.5" />
       <text x="720" y="675" text-anchor="middle" fill="#8899aa" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">PASSÉ</text>
-      <text x="720" y="690" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">800 ans</text>
+      <text x="720" y="690" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">réception / gravure</text>
       <circle cx="450" cy="790" r="38" fill="#0e1722" stroke="#8899aa" stroke-width="1.5" />
-      <text x="450" y="785" text-anchor="middle" fill="#8899aa" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">RÉPRESSION</text>
-      <text x="450" y="800" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">Gouv. mondial</text>
+      <text x="450" y="785" text-anchor="middle" fill="#8899aa" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">HISTOIRE</text>
+      <text x="450" y="800" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">dispersion / censure</text>
       <circle cx="180" cy="680" r="38" fill="#0e1722" stroke="#8899aa" stroke-width="1.5" />
-      <text x="180" y="675" text-anchor="middle" fill="#8899aa" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">CONSERVATION</text>
-      <text x="180" y="690" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">Peuples</text>
+      <text x="180" y="675" text-anchor="middle" fill="#8899aa" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">LONGUE VEILLE</text>
+      <text x="180" y="690" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">dates distinctes</text>
       <circle cx="100" cy="450" r="38" fill="#0e1722" stroke="#b07cc6" stroke-width="1.5" />
-      <text x="100" y="445" text-anchor="middle" fill="#b07cc6" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">ATTENTE</text>
-      <text x="100" y="460" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">8 siècles</text>
+      <text x="100" y="445" text-anchor="middle" fill="#b07cc6" font-size="10" font-weight="600" font-family="Inter,system-ui,sans-serif">PRÉSENT VÉCU</text>
+      <text x="100" y="460" text-anchor="middle" fill="#f3efe6" font-size="12" font-family="Inter,system-ui,sans-serif">Luffy · Robin</text>
       <!-- Arrows -->
       <path d="M720,260 A340,340 0 0,1 800,450" fill="none" stroke="#e0ab4e" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#aGold)" />
       <path d="M800,488 A340,340 0 0,1 720,680" fill="none" stroke="#b07cc6" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#aPurple)" />

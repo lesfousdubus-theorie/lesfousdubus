@@ -1,64 +1,44 @@
 ---
 title: "Le Déluge et la création d'All Blue"
-summary: "Le niveau de la mer augmentera de 200m lors de la guerre finale, créant All Blue et permettant à Luffy de devenir le premier pirate à naviguer sur cette mer unique."
-category: "guerre-finale"
-status: "published"
-navigationType: "dossier"
-editorialStatus: "hypothese-centrale"
-certainty: "elevee"
+summary: "La submersion passée de 200 mètres est canonique ; une nouvelle hausse comparable, la destruction de la Red Line et la création d'All Blue restent des projections séparées."
+category: 'guerre-finale'
+status: 'published'
+navigationType: 'dossier'
+editorialStatus: 'projection'
+certainty: 'elevee'
 reviewedUntilChapter: 1190
-parent: "guerre-finale"
+parent: 'guerre-finale'
 sources: [576, 972, 1060, 1113, 1115, 1125, 1146]
 order: 2
-related: ["all-blue"]
+related: ['all-blue']
 ---
 
-**Résumé** : Le message mondial de Vegapunk affirme que le monde s'est effondré sous une montée des eaux de 200 mètres au cours du Siècle Oublié. Selon notre analyse, ce grand cataclysme n'est pas un souvenir du passé mais l'événement cataclysmique imminent qui détruira Red Line et engendrera la mer légendaire : All Blue.
+## La submersion de 200 mètres
 
-![Le deluge](/images/threads/le-deluge-et-all-blue/img_1.webp)
-![Le deluge et les eaux](/images/threads/le-deluge-et-all-blue/img_2.webp)
+<div class="section-pill section-pill--manga">Manga</div>
 
-## 1. L'incohérence des 200 mètres
-Dans le monde de *One Piece*, une immersion sous 200 mètres d'eau reste une profondeur extrêmement superficielle pour la navigation et l'exploration (rappelons que l'île des Hommes-Poissons se trouve à -10 000 mètres). Si un monde entier avait été englouti à seulement 200 mètres, ses cités et vestiges seraient découverts quotidiennement par les pirates et la Marine.
+Vegapunk révèle que le monde du Siècle oublié a été submergé d'environ **200 mètres** par l'emploi des Armes antiques pendant la guerre. Après la destruction de Lulusia, le niveau mondial monte d'environ un mètre.
 
-Le chiffre n'est d'ailleurs pas choisi au hasard : 200 mètres correspond à la limite de la **zone épipélagique**, celle que la lumière du soleil atteint encore. C'est la couche la plus accessible de l'océan, celle que des compagnies de plongée et de fouilles — la Ligue des primates de Montblanc Cricket, entre autres — explorent depuis des années. Or personne, en huit cents ans, n'y a jamais trouvé l'Ancien Royaume. Des vestiges épars, oui ; une civilisation entière, non.
+**Sources précises :** chapitres 1060 et 1114 à 1116.
 
-La théorie en tire une conclusion de méthode : soit le monde antique repose ailleurs, soit il n'y repose **pas encore**.
+## Une nouvelle montée massive
 
-![Montée des eaux 200m](/images/threads/le-deluge-et-all-blue/img_3.webp)
+<div class="section-pill section-pill--projection">Projection</div>
 
-## 2. La grande guerre à venir
-Tous les grands prophètes de l'œuvre — Kozuki Oden, Barbe Blanche, Vegapunk — ont annoncé une guerre totale d'une ampleur inédite. C'est l'utilisation des Armes Antiques (Mother Flame, Uranus, Pluton) durant le conflit présent entre Luffy et le Gouvernement qui va provoquer le véritable effondrement des continents et de Red Line.
+La guerre finale pourrait provoquer une nouvelle hausse comparable, mais le manga ne l'annonce pas comme un résultat obligatoire. La théorie abandonne le calcul « un royaume détruit = un mètre » et le scénario de « 199 tirs » : les phénomènes et leur puissance ne sont pas assez définis.
 
-![Prophétie de la grande guerre](/images/threads/le-deluge-et-all-blue/img_4.webp)
+## All Blue et la Red Line
 
-Kozuki Oden est le plus précis de tous. Au chapitre 972, dans son journal, il écrit que « dans un peu plus de vingt ans, une guerre gigantesque capable de séparer les océans éclatera » et que « les protagonistes de cette guerre immense vont surgir dans le nouveau monde ». Oden a lu le Rio Ponéglyphe : il ne prophétise pas, il rapporte. Et ce qu'il rapporte est daté du présent du récit.
+<div class="section-pill section-pill--projection">Projection</div>
 
-Barbe Blanche (chapitre 576), Vegapunk (chapitre 1115) et Gunko (chapitre 1146) emploient tous le même verbe : cette bataille va **engloutir** le monde.
+La destruction partielle de la Red Line pourrait réunir les mers et créer All Blue. Cette proposition doit rester distincte du Déluge : une submersion, une rupture géographique et la naissance d'une mer commune ne sont pas un seul événement démontré.
 
-## 2 bis. Le déluge a déjà commencé
+## Plusieurs ordres possibles
 
-L'argument le plus concret de cette section est arithmétique. En employant la Mother Flame contre le royaume de **Lulusia**, le Gouvernement mondial a rayé une île de la carte — et fait monter le niveau de la mer d'environ **un mètre**.
+<div class="section-pill section-pill--projection">Projection</div>
 
-Si l'objectif est une élévation de 200 mètres, il reste, dans cette lecture, **199 tirs**. Le déluge annoncé ne serait donc pas un événement futur ponctuel mais un processus **déjà engagé**, dont Lulusia est la première itération. C'est ce que Monkey D. Dragon annonce au chapitre 1125 : petit à petit, l'humanité entière devra faire front pour survivre.
+Water Seven, Pluton, ouverture de Wano, Noah, Red Line et All Blue peuvent se combiner dans plusieurs ordres. Le trait d'une projection ne doit jamais être lu comme la chronologie certaine du manga.
 
-**Réserve** : l'estimation d'un mètre par île est une extrapolation de la théorie, pas une donnée du manga, et rien ne dit que toutes les îles aient le même volume ni que l'effet soit linéaire.
+## Limites et objections
 
-## 3. La promesse de l'Arche Noah
-Pourquoi le peuple des Hommes-Poissons préserve-t-il l'Arche Noah depuis des siècles sous les ordres du Ponéglyphe de la forêt ? Parce que ce navire titanesque n'a pas servi dans le passé : il a été construit par avance pour sauver les habitants lors du Déluge **à venir**, lorsque Poséidon (Shirahoshi) et Luffy accompliront la promesse.
-
-![L'arche Noah](/images/threads/le-deluge-et-all-blue/img_5.webp)
-
-## 4. La création de All Blue
-La destruction des parois mondiales et la montée des eaux qui en découle fusionneront les quatre mers (East Blue, West Blue, North Blue, South Blue) et Grand Line en un seul océan unifié : **All Blue**, le rêve de Sanji.
-
-![Creation de All Blue](/images/threads/le-deluge-et-all-blue/img_6.webp)
-![Effondrement du monde](/images/threads/le-deluge-et-all-blue/img_7.webp)
-
-## Limites et nuances
-
-- **Les 200 mètres peuvent être une approximation de Vegapunk.** Il transmet un message dans l'urgence, à partir de données incomplètes ; l'incohérence relevée peut tenir à sa source plutôt qu'à la chronologie du monde.
-- **Une montée des eaux passée reste défendable.** Huit cents ans de sédimentation, de courants et de reliefs sous-marins peuvent suffire à rendre des vestiges introuvables, sans qu'il faille déplacer le cataclysme dans le futur.
-- **Le décompte des « 199 tirs » suppose beaucoup.** Il faut admettre que Lulusia a fait monter le niveau d'un mètre, que la Mother Flame soit réutilisable à l'identique, et que l'objectif visé soit bien de 200 mètres — trois hypothèses dont aucune n'est établie.
-- **All Blue n'a jamais été présenté comme le produit d'un cataclysme.** Le rêve de Sanji est décrit comme une mer où les poissons des quatre océans se rencontrent ; en faire le résultat d'un déluge mondial est une lecture de la théorie, pas une donnée du manga.
-- **Le calendrier reste indéterminé.** Même en acceptant le processus, rien n'indique qu'il s'achève pendant l'arc final plutôt que sur une échelle de plusieurs siècles.
+Le mécanisme de la hausse passée, l'identité d'Uranus et le rôle futur de la Mother Flame sont inconnus. Une transformation du monde peut aussi suivre un scénario sans nouvelle hausse de 200 mètres.

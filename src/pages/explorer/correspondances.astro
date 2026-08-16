@@ -11,7 +11,8 @@ interface Identity {
 interface Pair {
   id: string;
   description: string;
-  status: 'canon' | 'theorie-noyau' | 'theorie-consequence';
+  status: 'manga' | 'theorie-centrale' | 'extension' | 'hypothese-recente' | 'projection';
+  relation: string;
   modern: Identity;
   legendary: Identity;
   divine?: Identity;
@@ -21,123 +22,117 @@ interface Pair {
 const pairs: Pair[] = [
   {
     id: 'luffy-joy-boy-nika',
-    description:
-      "Trois noms pour un même homme : le garçon de Fusha (Luffy), le nom sous lequel l'Histoire le retiendra (Joy Boy), et le nom sous lequel les croyants le vénèrent (Nika).",
-    status: 'theorie-noyau',
+    description: 'Luffy éveille le Fruit modèle Nika et plusieurs personnages le rapprochent de Joy Boy. Joy Boy reste aussi une personne historique du Royaume antique et Luffy affirme son identité propre.',
+    status: 'extension', relation: 'rapproché de',
     modern: { label: 'Monkey D. Luffy', href: '/theorie/luffy', type: 'moderne' },
     legendary: { label: 'Joy Boy', href: '/theorie/joy-boy', type: 'legendaire' },
     divine: { label: 'Nika', href: '/theorie/nika', type: 'divin' },
-    note: 'Luffy ne devient pas Joy Boy : Joy Boy est le nom que le monde donnera à Luffy après son aventure. Nika est le nom de la foi que les peuples opprimés placent en lui.',
+    note: 'À Elbaf, Imu appelle Luffy « Joy Boy » ; Luffy répond être Monkey D. Luffy. Une future appellation Joy Boy reste une extension, pas une réincarnation établie.',
   },
   {
     id: 'shirahoshi-poseidon',
-    description:
-      "La princesse sirène du royaume Ryugu est l'arme antique Poséidon, capable de commander les Rois des Mers.",
-    status: 'canon',
+    description: 'La princesse sirène est la Poséidon actuelle et commande les Rois des Mers.',
+    status: 'manga', relation: '=',
     modern: { label: 'Shirahoshi', href: '/theorie/shirahoshi', type: 'moderne' },
     legendary: { label: 'Poséidon', href: '/theorie/poseidon-fiche', type: 'legendaire' },
-    note: 'Canon établi par le manga. Shirahoshi est la réincarnation actuelle de Poséidon, un pouvoir qui se transmet dans la lignée royale de Ryugu tous les quelques siècles.',
+    note: 'Identification établie. Son rôle avec Noah, Red Line ou la guerre finale reste projeté.',
   },
   {
     id: 'vivi-lili',
-    description:
-      "La reine d'Alabasta qui refusa Mary Geoise et dispersa les Ponéglyphes. Selon la théorie, Lili pourrait être le nom sous lequel Vivi entrera dans l'Histoire.",
-    status: 'theorie-consequence',
+    description: 'Lili est historiquement liée à la dispersion des Ponéglyphes. Vivi pourrait accomplir dans le futur un rôle analogue, sans être démontrée comme la même personne.',
+    status: 'projection', relation: 'rôle analogue ?',
     modern: { label: 'Nefertari Vivi', href: '/theorie/nefertari-vivi', type: 'moderne' },
     legendary: { label: 'Nefertari D. Lili', href: '/theorie/lili', type: 'legendaire' },
-    note: 'La ressemblance visuelle (cheveux bleus, silhouette au ch. 1085) et le parallèle narratif (disparition après le conseil des rois) sont les principaux indices.',
+    note: 'La ressemblance et les parallèles narratifs ne prouvent ni identité commune, ni cheveux de Lili, ni retour temporel.',
   },
   {
     id: 'teach-davy-jones',
-    description:
-      "Le démon des mers, roi du monde légendaire. Selon la théorie, Davy Jones serait le titre que l'Histoire donnera à Marshall D. Teach.",
-    status: 'theorie-consequence',
+    description: 'Les noms Teach, Xebec et Davy Jones alimentent un motif possible d’erreur d’identité chez Imu.',
+    status: 'hypothese-recente', relation: 'confondu avec ?',
     modern: { label: 'Marshall D. Teach', href: '/theorie/teach', type: 'moderne' },
     legendary: { label: 'Davy Jones', href: '/theorie/davy-jones-fiche', type: 'legendaire' },
-    note: 'Imu aurait confondu Rocks D. Xebec avec Davy Jones sur God Valley — la même mécanique de confusion générationnelle que pour Roger/Joy Boy.',
+    note: 'Branche récente : ni identité ni titre futur ne sont établis.',
+  },
+  {
+    id: 'roger-joy-boy',
+    description: 'Une branche antérieure attribuait une silhouette à Roger jeune et envisageait une confusion Roger/Joy Boy.',
+    status: 'hypothese-recente', relation: '≠ au ch. 1190',
+    modern: { label: 'Gol D. Roger', href: '/theorie/gol-d-roger', type: 'moderne' },
+    legendary: { label: 'Joy Boy', href: '/theorie/joy-boy', type: 'legendaire' },
+    note: 'Le texte disponible du chapitre 1190 montre Imu distinguant Roger de Joy Boy : objection majeure à la confusion simple. La branche reste évolutive, mise à jour au 1188–1190.',
   },
   {
     id: 'zoro-ryuma',
-    description:
-      'Le dieu des lames de Wa no Kuni. La théorie propose que Ryuma soit la légende que les exploits de Zoro auront transmise vers le passé.',
-    status: 'theorie-consequence',
+    description: 'Zoro pourrait accomplir un exploit analogue à Ryuma ; le transport de son corps ou de ses sabres vers le passé est une projection avancée.',
+    status: 'projection', relation: 'pourrait rappeler',
     modern: { label: 'Roronoa Zoro', href: '/theorie/zoro', type: 'moderne' },
     legendary: { label: 'Shimotsuki Ryuma', href: '/theorie/shimotsuki-ryuma', type: 'legendaire' },
-    note: 'Identification plus spéculative que le noyau géographique ou la lecture des Ponéglyphes. Zoro descend du clan Shimotsuki et a déjà affronté un dragon comme Ryuma.',
+    note: 'Zoro a blessé Kaido sur Onigashima. Le corps de Ryuma, Shusui et l’abandon d’autres sabres ne sont pas des faits futurs établis.',
   },
   {
     id: 'brook-dozan',
-    description:
-      'Une piste récente suggère que Brook pourrait avoir composé Binks no Sake sous le nom de Dōzan, expliquant la présence universelle de cette chanson.',
-    status: 'theorie-consequence',
+    description: 'Les chapitres 1183–1184 ouvrent une piste entre Brook, Dōzan et une version ancienne de Binks no Sake.',
+    status: 'hypothese-recente', relation: 'lié à ?',
     modern: { label: 'Brook', href: '/theorie/brook', type: 'moderne' },
     legendary: { label: 'Dōzan', href: '/theorie/dozan', type: 'legendaire' },
-    note: 'Piste ouverte par les chapitres 1183-1184. Binks no Sake aurait été composée dans le futur, puis transmise vers le passé.',
+    note: 'Brook n’est pas certifié Dōzan ni auteur unique de la chanson. Sa chronologie se situe environ entre −80 et −50.',
   },
   {
     id: 'loki-nidhogg',
-    description:
-      "Le prince maudit d'Elbaf et le serpent qui ronge les racines de l'arbre-monde. La théorie lit Nidhogg comme la trace laissée dans la mythologie des géants par ce que Loki fera.",
-    status: 'theorie-consequence',
+    description: 'Loki pourrait inspirer ou accomplir le motif de Nidhogg dans une lecture future de la mythologie d’Elbaf.',
+    status: 'hypothese-recente', relation: 'pourrait devenir',
     modern: { label: 'Loki', href: '/theorie/loki', type: 'moderne' },
     legendary: { label: 'Nidhogg', href: '/theorie/nidhogg-ratatoskr', type: 'legendaire' },
-    note: "Elbaf traite déjà Loki comme une figure démoniaque annoncée par ses propres textes sacrés : la prophétie et l'accusation se confondent.",
+    note: 'L’identité Loki/Nidhogg et le modèle exact de son Fruit restent ouverts.',
   },
   {
     id: 'usopp-louis-arnot',
-    description:
-      "Le corpus sacré d'Elbaf décrit un passé, un présent et un futur. La théorie propose qu'il ait été écrit par Usopp, sous le nom d'auteur Louis Arnot.",
-    status: 'theorie-consequence',
+    description: 'Usopp pourrait écrire ou transmettre un texte associé à Louis Arnot ou au Harley.',
+    status: 'projection', relation: 'pourrait écrire comme',
     modern: { label: 'Usopp', href: '/theorie/elbaf-harley', type: 'moderne' },
     legendary: { label: 'Louis Arnot', href: '/theorie/elbaf-harley', type: 'legendaire' },
-    note: "Le Harley est consultable par les doyens d'Elbaf : ce n'est pas un vestige enfoui mais un texte vivant, ce qui rend possible une rédaction récente projetée vers le passé.",
-  },
-  {
-    id: 'momonosuke-rio-poneglyphe',
-    description:
-      "L'héritier des Kozuki, seul clan capable de graver les Ponéglyphes, et le texte qui rassemble toute l'Histoire vraie.",
-    status: 'theorie-consequence',
-    modern: { label: 'Kozuki Momonosuke', href: '/theorie/momonosuke', type: 'moderne' },
-    legendary: { label: 'Rio Ponéglyphe', href: '/theorie/rio-poneglyphe', type: 'legendaire' },
-    note: "Si le Rio Ponéglyphe est le récit de l'aventure en cours, il faut quelqu'un pour le graver : le dernier Kozuki est le seul à en avoir la compétence.",
+    note: 'Branche distincte du mécanisme central des Ponéglyphes ; aucune identité commune n’est établie.',
   },
   {
     id: 'franky-emeth',
-    description:
-      "Le charpentier des Mugiwaras et le robot géant de l'Ancien Royaume, présenté par la théorie comme son dernier Battle Franky envoyé dans le passé.",
-    status: 'theorie-consequence',
-    modern: { label: 'Franky', href: '/theorie/emeth-futur', type: 'moderne' },
+    description: 'Emeth pourrait être un Battle Franky construit dans le futur puis transporté physiquement, branche plus avancée que la transmission d’information.',
+    status: 'projection', relation: 'BF-39 ?',
+    modern: { label: 'Franky / BF-39', href: '/theorie/emeth-futur', type: 'moderne' },
     legendary: { label: 'Emeth', href: '/theorie/emeth-futur', type: 'legendaire' },
-    note: "Armature, engrenages et épaulières rapprochent Emeth du Franky Shogun ; son énergie autonome est celle qu'aucun savant contemporain ne sait reproduire.",
+    note: 'Manga : le Haki stocké dans Emeth est attribué au Joy Boy historique. Théorie conditionnelle : il pourrait provenir du Luffy de fin d’aventure.',
   },
 ];
 
 const statusLabels: Record<string, string> = {
-  canon: 'Établi par le manga',
-  'theorie-noyau': 'Noyau de la théorie',
-  'theorie-consequence': 'Conséquence de la théorie',
+  manga: 'Manga',
+  'theorie-centrale': 'Théorie centrale',
+  extension: 'Extension',
+  'hypothese-recente': 'Hypothèse récente',
+  projection: 'Projection',
 };
 
 const statusColors: Record<string, string> = {
-  canon: 'var(--cyan)',
-  'theorie-noyau': 'var(--violet-light)',
-  'theorie-consequence': 'var(--accent-gold)',
+  manga: 'var(--cyan)',
+  'theorie-centrale': 'var(--violet-light)',
+  extension: '#8eb5ff',
+  'hypothese-recente': 'var(--accent-gold)',
+  projection: 'var(--alert)',
 };
 ---
 
 <WikiLayout
   title="Correspondances interactives"
   seoTitle="Correspondances : Luffy/Joy Boy, Vivi/Lili | Les Fous du Bus"
-  description="Correspondances interactives de la théorie : qui est qui ? Filtrez Luffy → Joy Boy → Nika, Vivi → Lili, Teach → Davy Jones, Zoro → Ryuma et les autres identités."
+  description="Correspondances interactives : identités établies, parallèles, hypothèses récentes et projections clairement séparées."
   currentPath="/explorer/correspondances"
 >
   <div class="page-header">
     <p class="eyebrow">🔗 Tableau des identités</p>
     <h1>Correspondances proposées par la théorie</h1>
     <p class="page-desc">
-      La théorie propose plusieurs correspondances entre personnages du présent et figures
-      légendaires du passé. Chaque relation est accompagnée d’un niveau de certitude. Luffy ↔ Joy
-      Boy ↔ Nika est au cœur de la théorie.
+      Une flèche ne signifie plus automatiquement « même personne ». Chaque relation précise s'il s'agit d'une
+      identité établie, d'un rapprochement, d'une hypothèse récente ou d'une projection. Le mécanisme central reste
+      la transmission d'information par les Ponéglyphes ; ces correspondances en sont des branches.
     </p>
   </div>
 
@@ -145,11 +140,11 @@ const statusColors: Record<string, string> = {
     <span class="filters__label">Filtrer par niveau</span>
     <div class="filters__buttons" role="group" aria-label="Filtrer les correspondances">
       <button type="button" data-filter="all" aria-pressed="true">Toutes</button>
-      <button type="button" data-filter="canon" aria-pressed="false">Canon</button>
-      <button type="button" data-filter="theorie-noyau" aria-pressed="false">Noyau</button>
-      <button type="button" data-filter="theorie-consequence" aria-pressed="false"
-        >Conséquences</button
-      >
+      <button type="button" data-filter="manga" aria-pressed="false">Manga</button>
+      <button type="button" data-filter="theorie-centrale" aria-pressed="false">Théorie centrale</button>
+      <button type="button" data-filter="extension" aria-pressed="false">Extension</button>
+      <button type="button" data-filter="hypothese-recente" aria-pressed="false">Hypothèse récente</button>
+      <button type="button" data-filter="projection" aria-pressed="false">Projection</button>
     </div>
     <p class="filters__status" role="status" aria-live="polite"></p>
   </div>
@@ -161,11 +156,11 @@ const statusColors: Record<string, string> = {
           <div class="pair__head">
             <h2 class="pair__title">
               <a href={pair.modern.href}>{pair.modern.label}</a>
-              <span class="pair__arrow">→</span>
+              <span class="pair__arrow">{pair.relation}</span>
               <a href={pair.legendary.href}>{pair.legendary.label}</a>
               {pair.divine && (
                 <>
-                  <span class="pair__arrow">→</span>
+                  <span class="pair__arrow">· lié à ·</span>
                   <a href={pair.divine.href}>{pair.divine.label}</a>
                 </>
               )}
@@ -183,16 +178,16 @@ const statusColors: Record<string, string> = {
           <div class="pair__cols">
             <div class="pair__col pair__col--moderne">
               <span class="pair__col-type" style="color:#5fb9c2; border-color:#5fb9c2">
-                Présent du manga
+                Figure de référence
               </span>
               <a href={pair.modern.href} class="pair__col-link">
                 <strong>{pair.modern.label}</strong>
               </a>
             </div>
-            <div class="pair__col-arrow">→</div>
+            <div class="pair__col-arrow">{pair.relation}</div>
             <div class="pair__col pair__col--legendaire">
               <span class="pair__col-type" style="color:#e0ab4e; border-color:#e0ab4e">
-                Nom légendaire
+                Figure comparée
               </span>
               <a href={pair.legendary.href} class="pair__col-link">
                 <strong>{pair.legendary.label}</strong>
@@ -200,7 +195,7 @@ const statusColors: Record<string, string> = {
             </div>
             {pair.divine && (
               <>
-                <div class="pair__col-arrow">→</div>
+                <div class="pair__col-arrow">·</div>
                 <div class="pair__col pair__col--divin">
                   <span class="pair__col-type" style="color:#b07cc6; border-color:#b07cc6">
                     Nom divin / foi
