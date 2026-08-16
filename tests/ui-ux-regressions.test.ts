@@ -53,11 +53,14 @@ describe('régressions UI, UX et accessibilité', () => {
     const theory = read('src/pages/theorie/index.astro');
     const navbar = read('src/components/Navbar.astro');
 
-    expect(global).toContain('--control-size: 44px');
+    expect(global).toContain('--control-size: 38px');
+    expect(global).toContain('--control-size-compact: 34px');
+    expect(global).toContain('--touch-target: 40px');
     expect(global).toContain('--grid-gap: 16px');
     expect(homepage).toContain('repeat(auto-fit, minmax(min(100%, 210px), 1fr))');
     expect(theory).toContain('repeat(auto-fit, minmax(min(100%, 260px), 1fr))');
-    expect(navbar).toContain('height: var(--control-size)');
+    expect(navbar).toContain('--nav-control-size: 36px');
+    expect(navbar).toContain('height: var(--nav-control-size)');
   });
 
   it('synchronise les composants fixes avec les états réels des superpositions', () => {
@@ -88,11 +91,14 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(sidebar).not.toContain('<script>');
   });
 
-  it('conserve le scroll vertical natif autour de la frise', () => {
+  it('conserve le scroll vertical natif et compacte la frise sur écran étroit', () => {
     const timeline = read('src/components/InteractiveTheoryTimeline.astro');
     expect(timeline).not.toContain("viewport.addEventListener(\n      'wheel'");
+    expect(timeline).toContain('touch-action: pan-x pan-y');
     expect(timeline).toContain('data-era-select');
-    expect(timeline).toContain('min-height: 44px');
+    expect(timeline).toContain('@media (max-width: 720px)');
+    expect(timeline).toContain('--rail-y: 470px');
+    expect(timeline).toContain('height: 510px');
   });
 
   it('ne rend plus de barre de recherche dans la navigation latérale', () => {

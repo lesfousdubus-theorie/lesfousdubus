@@ -429,10 +429,10 @@ const canonicalWikiUrl = new URL(
       position: relative;
       z-index: 2;
       display: flex;
-      flex: 0 0 56px;
+      flex: 0 0 52px;
       align-items: center;
       justify-content: space-between;
-      min-height: 56px;
+      min-height: 52px;
       margin: 0 0 12px;
       padding: 8px 14px;
       border-bottom: 1px solid var(--border-color);
@@ -446,8 +446,10 @@ const canonicalWikiUrl = new URL(
     #sidebar-close {
       display: grid;
       place-items: center;
-      width: 44px;
-      height: 44px;
+      width: var(--touch-target);
+      min-width: var(--touch-target);
+      height: var(--touch-target);
+      min-height: var(--touch-target);
       padding: 0;
       border: 1px solid var(--border-color);
       border-radius: var(--border-radius);
@@ -468,7 +470,14 @@ const canonicalWikiUrl = new URL(
     }
 
     .main-content {
-      padding: 22px 16px;
+      padding: 20px 16px 28px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .main-content {
+      padding-right: 12px;
+      padding-left: 12px;
     }
   }
 
@@ -490,9 +499,9 @@ const canonicalWikiUrl = new URL(
     bottom: 24px;
     z-index: 45;
     align-items: center;
-    gap: 8px;
-    min-height: 44px;
-    padding: 10px 16px;
+    gap: 7px;
+    min-height: var(--control-size);
+    padding: 8px 13px;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-full);
     background: var(--bg-secondary);
@@ -530,8 +539,8 @@ const canonicalWikiUrl = new URL(
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 56px;
-    padding: 8px 14px;
+    min-height: 52px;
+    padding: 6px 14px;
     border-bottom: 1px solid var(--border-color);
     font-size: 13px;
     font-weight: 800;
@@ -540,8 +549,10 @@ const canonicalWikiUrl = new URL(
   }
 
   #toc-close {
-    width: 44px;
-    height: 44px;
+    width: var(--touch-target);
+    min-width: var(--touch-target);
+    height: var(--touch-target);
+    min-height: var(--touch-target);
     padding: 0;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);

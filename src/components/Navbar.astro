@@ -331,6 +331,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
 
 <style>
   .navbar {
+    --nav-control-size: 36px;
     height: var(--nav-h);
     min-height: var(--nav-h);
     background-color: color-mix(in srgb, var(--bg-main) 92%, transparent);
@@ -363,7 +364,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
 
   .logo {
     display: flex;
-    min-height: var(--control-size);
+    min-height: var(--nav-control-size);
     align-items: center;
     font-weight: 700;
     font-size: 15px;
@@ -440,8 +441,8 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     font-weight: 500;
     color: var(--text-secondary);
     text-decoration: none;
-    min-height: var(--control-size);
-    padding: 6px 32px 6px 10px;
+    min-height: var(--nav-control-size);
+    padding: 5px 30px 5px 10px;
     border-radius: var(--border-radius-sm);
     display: inline-flex;
     align-items: center;
@@ -473,9 +474,10 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     right: 2px;
     display: grid;
     place-items: center;
-    width: 28px;
-    min-width: 28px;
-    height: var(--control-size);
+    width: 26px;
+    min-width: 26px;
+    min-height: var(--nav-control-size);
+    height: var(--nav-control-size);
     padding: 0;
     border: 0;
     border-radius: var(--border-radius-sm);
@@ -576,8 +578,8 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
 
   .nav-dropdown__link {
     display: block;
-    padding: 10px 12px;
-    min-height: 44px;
+    padding: 7px 10px;
+    min-height: var(--control-size);
     font-size: 13px;
     line-height: 1.4;
     display: flex;
@@ -653,8 +655,10 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     font-size: 18px;
   }
   .global-mobile-nav__header button {
-    width: 44px;
-    height: 44px;
+    width: var(--touch-target);
+    min-width: var(--touch-target);
+    height: var(--touch-target);
+    min-height: var(--touch-target);
     padding: 0;
     border: 1px solid var(--border-color);
     border-radius: 10px;
@@ -676,7 +680,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
   }
   .global-mobile-nav__section {
     display: flex;
-    min-height: 44px;
+    min-height: var(--touch-target);
     align-items: center;
     color: var(--text-main);
     font-weight: 800;
@@ -690,7 +694,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
   .global-mobile-nav__body section div a,
   .global-mobile-nav__help {
     display: flex;
-    min-height: 44px;
+    min-height: var(--touch-target);
     align-items: center;
     color: var(--text-secondary);
     font-size: 13px;
@@ -708,21 +712,25 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
   .nav-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    background: color-mix(in srgb, var(--surface) 48%, transparent);
   }
 
   .search-trigger {
     display: flex;
     align-items: center;
-    gap: 8px;
-    height: var(--control-size);
-    min-height: var(--control-size);
-    padding: 0 10px 0 12px;
-    font-size: 13px;
+    gap: 7px;
+    height: var(--nav-control-size);
+    min-height: var(--nav-control-size);
+    padding: 0 8px 0 10px;
+    font-size: 12.5px;
     color: var(--text-secondary);
-    background-color: color-mix(in srgb, var(--surface) 70%, transparent);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
+    background: transparent;
+    border: 0;
+    border-radius: calc(var(--border-radius-md) - 3px);
     cursor: pointer;
     transition:
       color 0.2s ease,
@@ -733,15 +741,13 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
 
   .search-trigger:hover {
     color: var(--text-main);
-    border-color: color-mix(in srgb, var(--cyan) 40%, var(--border-color));
     background-color: var(--surface);
   }
 
   .search-trigger:focus-visible {
     outline: 2px solid var(--cyan);
-    outline-offset: 2px;
+    outline-offset: 1px;
     color: var(--text-main);
-    border-color: var(--cyan);
     background-color: var(--surface);
   }
 
@@ -759,7 +765,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
   }
 
   .search-shortcut {
-    font-size: 12px;
+    font-size: 10.5px;
     padding: 2px 5px;
     border-radius: 4px;
     background-color: var(--bg-main);
@@ -773,9 +779,11 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
 
   .theme-btn,
   .icon-btn {
-    width: var(--control-size);
-    height: var(--control-size);
-    border-radius: var(--border-radius);
+    width: var(--nav-control-size);
+    min-width: var(--nav-control-size);
+    height: var(--nav-control-size);
+    min-height: var(--nav-control-size);
+    border-radius: calc(var(--border-radius-md) - 3px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -784,7 +792,15 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     border: 1px solid var(--border-color);
     cursor: pointer;
     flex-shrink: 0;
-    transition: all 0.2s ease;
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .theme-btn {
+    border-color: transparent;
+    background: transparent;
   }
 
   .theme-btn:hover,
@@ -792,6 +808,10 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     color: var(--text-main);
     border-color: var(--violet);
     background-color: var(--surface);
+  }
+
+  .theme-btn:hover {
+    border-color: transparent;
   }
 
   /* Theme icons — pure CSS initial state, no FOUC */
@@ -923,6 +943,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
   /* Mobile — compact, balanced icon row, no overflow */
   @media (max-width: 640px) {
     .navbar {
+      --nav-control-size: var(--touch-target);
       padding: 0 12px;
       gap: 8px;
       height: var(--nav-h);
@@ -951,20 +972,20 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     }
 
     .nav-right {
-      gap: 6px;
+      gap: 4px;
       flex-shrink: 0;
     }
 
     .nav-actions {
-      gap: 6px;
+      gap: 2px;
     }
 
     /* Icon-only search button on small screens */
     .search-trigger {
-      width: 44px;
-      height: 44px;
-      min-width: 44px;
-      max-width: 44px;
+      width: var(--nav-control-size);
+      height: var(--nav-control-size);
+      min-width: var(--nav-control-size);
+      max-width: var(--nav-control-size);
       padding: 0;
       justify-content: center;
       gap: 0;
@@ -984,23 +1005,35 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
 
     .theme-btn,
     .icon-btn {
-      width: 44px;
-      height: 44px;
-      min-width: 44px;
+      width: var(--nav-control-size);
+      height: var(--nav-control-size);
+      min-width: var(--nav-control-size);
+      min-height: var(--nav-control-size);
       border-radius: var(--border-radius-sm);
     }
   }
 
   @media (max-width: 400px) {
     .logo-text {
-      max-width: min(38vw, 110px);
+      max-width: min(32vw, 108px);
     }
     .navbar {
       padding: 0 10px;
-      gap: 6px;
+      gap: 5px;
     }
-    .logo-text {
-      display: none;
+  }
+
+  @media (max-width: 360px) {
+    .global-mobile-nav__header {
+      padding: 12px;
+    }
+
+    .global-mobile-nav__body {
+      padding: 10px;
+    }
+
+    .global-mobile-nav__body section div {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 

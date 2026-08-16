@@ -330,9 +330,51 @@ const threadCount = Object.keys(timelineThreads).length;
     }
     .reading-key {
       grid-template-columns: 1fr;
+      margin-top: 34px;
     }
     .page-links {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .page-hero {
+      margin-top: 0;
+      padding: 20px 16px;
+    }
+
+    .page-hero h1 {
+      font-size: clamp(2rem, 11vw, 2.65rem);
+      line-height: 0.98;
+    }
+
+    .page-hero__lead {
+      margin-top: 17px;
+      line-height: 1.58;
+    }
+
+    .page-hero__stats {
+      gap: 6px;
+      margin-top: 22px;
+    }
+
+    .page-hero__stats div {
+      padding: 9px 10px;
+    }
+
+    .how-to {
+      gap: 9px;
+      padding: 12px;
+    }
+
+    .reading-key {
+      gap: 18px;
+      padding: 18px 16px;
+      border-radius: 14px;
+    }
+
+    .page-links a {
+      padding: 13px 14px;
     }
   }
 

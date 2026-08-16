@@ -490,21 +490,22 @@ const badgeColorByEffect = {
   /* ===== CTA BUTTONS ===== */
   .hero-cta {
     display: flex;
-    gap: 12px;
-    margin-top: 28px;
+    gap: 9px;
+    margin-top: 24px;
     flex-wrap: wrap;
   }
 
   .btn-primary {
     display: inline-flex;
+    min-height: 42px;
     align-items: center;
-    gap: 8px;
-    padding: 12px 22px;
+    gap: 7px;
+    padding: 9px 16px;
     background: var(--gradient-border);
     color: var(--bg-main); /* contraste AA >= 4.5:1 sur le dégradé, dans les deux thèmes */
     border-radius: var(--border-radius-md);
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 650;
     text-decoration: none;
     transition: all 0.25s ease;
     box-shadow: 0 2px 12px var(--glow-violet);
@@ -522,15 +523,16 @@ const badgeColorByEffect = {
 
   .btn-secondary {
     display: inline-flex;
+    min-height: 42px;
     align-items: center;
     gap: 6px;
-    padding: 12px 22px;
+    padding: 9px 16px;
     background-color: transparent;
     color: var(--text-main);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-md);
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 550;
     text-decoration: none;
     transition: all 0.25s ease;
   }
@@ -698,7 +700,7 @@ const badgeColorByEffect = {
 
   .more-dossiers summary {
     display: flex;
-    min-height: 44px;
+    min-height: var(--control-size);
     width: fit-content;
     align-items: center;
     margin: 0 auto;
@@ -866,8 +868,8 @@ const badgeColorByEffect = {
 
   @media (max-width: 640px) {
     .hero {
-      margin-bottom: var(--space-7);
-      padding: var(--space-7) var(--space-5) var(--space-6);
+      margin-bottom: var(--space-6);
+      padding: 32px 20px 28px;
     }
     .hero-cta {
       flex-direction: column;
@@ -888,6 +890,12 @@ const badgeColorByEffect = {
     .video-facade__play svg {
       width: 20px;
       height: 20px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .hero {
+      padding: 28px 16px 24px;
     }
   }
 </style>

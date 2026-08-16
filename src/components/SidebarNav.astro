@@ -301,14 +301,14 @@ sections.push(
   }
 
   @media (max-width: 1023px) {
-    .nav-section__summary {
-      min-height: 48px;
+    .nav-section__summary,
+    .sidebar-link {
+      min-height: var(--touch-target);
     }
 
     .sidebar-link {
-      min-height: 44px;
-      padding-top: 11px;
-      padding-bottom: 11px;
+      padding-top: 8px;
+      padding-bottom: 8px;
     }
   }
 
