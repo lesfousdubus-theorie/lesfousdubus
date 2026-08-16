@@ -1,4 +1,4 @@
-export type TimelineStatus = 'canon' | 'central' | 'hypothese' | 'projection';
+export type TimelineStatus = 'canon' | 'central' | 'extension' | 'hypothese' | 'projection';
 
 export type TimelineEra =
   'traces' | 'veille' | 'roger' | 'voyage' | 'present' | 'guerre' | 'aube' | 'retour';
@@ -31,12 +31,14 @@ export const timelineEras: Array<{
   label: string;
   range: string;
   description: string;
+  note?: string;
 }> = [
   {
     id: 'traces',
     label: 'Les traces',
     range: '≈ −900 à −200',
     description: 'Les éléments que le monde prend pour un passé antique.',
+    note: 'Les événements regroupés autour de −900/−800 ne sont pas nécessairement classés dans un ordre relatif confirmé.',
   },
   {
     id: 'veille',
@@ -67,6 +69,7 @@ export const timelineEras: Array<{
     label: 'La guerre finale',
     range: 'Avenir proche',
     description: 'La théorie projette la coalition, le Déluge et les Armes antiques.',
+    note: 'L’ordre des événements de la guerre finale est hypothétique.',
   },
   {
     id: 'aube',
@@ -92,8 +95,9 @@ export const timelineThreads = {
 
 export const timelineStatus = {
   canon: { label: 'Établi dans le manga', shortLabel: 'Manga' },
-  central: { label: 'Noyau de la théorie', shortLabel: 'Théorie' },
-  hypothese: { label: 'Hypothèse à confirmer', shortLabel: 'Hypothèse' },
+  central: { label: 'Noyau de la théorie', shortLabel: 'Noyau' },
+  extension: { label: 'Extension de la théorie', shortLabel: 'Extension' },
+  hypothese: { label: 'Hypothèse récente ou de mécanisme', shortLabel: 'Hypothèse' },
   projection: { label: 'Projection de la fin', shortLabel: 'Projection' },
 } satisfies Record<TimelineStatus, { label: string; shortLabel: string }>;
 
@@ -123,11 +127,11 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'traces',
     thread: 'memoire',
     icon: '⌁',
-    title: 'Des traces du futur atteignent le passé',
+    title: 'Des informations du futur atteignent le passé',
     summary:
-      'La théorie fait commencer la chronologie par ses conséquences : textes, pierres et souvenirs arrivent avant leur création.',
+      'Des informations provenant du futur auraient atteint le passé et auraient été prises pour les vestiges d’une histoire ancienne.',
     detail:
-      'Le point de départ n’est pas une civilisation disparue mais une information déplacée. Les Ponéglyphes, le Harley et certains êtres auraient été envoyés vers des époques anciennes. Le monde les date alors naturellement de neuf siècles, sans pouvoir savoir qu’ils viennent de son avenir.',
+      'Le noyau de la théorie porte d’abord sur l’information. Les Ponéglyphes en constituent le véhicule central : leur contenu décrirait des événements futurs avant leur réalisation. Le Harley, Emeth, Zoro ou d’autres éléments physiques relèvent de branches distinctes et plus spéculatives.',
     status: 'central',
     image: images.origin,
     imageAlt: 'Composition visuelle autour du Siècle oublié et du One Piece',
@@ -135,33 +139,67 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
   },
   {
     id: 'imu-lit-avenir',
-    date: '≈ −900 ans',
+    date: '≈ −900/−800 ans',
     era: 'traces',
     thread: 'figures',
     icon: '◉',
-    title: 'Imu découvre une histoire à empêcher',
+    title: 'Imu apprend une histoire à empêcher',
     summary:
-      'Imu lirait les noms de Joy Boy, Lili, Poséidon et Davy Jones avant même que ces figures n’existent.',
+      'Imu apprendrait l’existence de figures et d’événements futurs qu’il chercherait ensuite à empêcher.',
     detail:
-      'Dans cette lecture, Imu n’est pas témoin d’une ancienne guerre : il devient le gardien anxieux d’une prophétie. Sa peur du Jour du serment le pousse à construire un pouvoir mondial destiné à empêcher l’avenir, mais huit siècles de répression créent précisément le besoin d’un libérateur.',
+      'Dans cette lecture, Imu devient le gardien anxieux d’informations sur Joy Boy, Lili, Poséidon ou Davy Jones. La manière dont ces informations lui parviennent reste incertaine : Ponéglyphes, communication entre époques et préscience demeurent des mécanismes concurrents.',
     status: 'hypothese',
     image: images.imu,
     imageAlt: 'Imu dans la chambre fleurie de Mary Geoise',
-    links: [{ label: 'Imu Nerona', href: '/theorie/imu-nerona' }],
+    links: [{ label: 'Imu face à l’avenir', href: '/theorie/imu-avenir' }],
+  },
+  {
+    id: 'imu-communication-future',
+    date: 'Hypothèse vers −800 ans',
+    era: 'traces',
+    thread: 'memoire',
+    icon: '◌',
+    title: 'Imu pourrait recevoir un appel du futur',
+    summary:
+      'La conversation révélée au chapitre 1188 pourrait relier l’époque d’Imu à celle de Luffy sans déplacement physique généralisé.',
+    detail:
+      'L’analyse 1188 envisage qu’un dispositif mette en relation deux interlocuteurs séparés par les siècles. Imu entendrait depuis le passé une voix venue de Laugh Tale à la fin de l’aventure. Le contexte temporel de la scène n’étant pas donné, cette lecture reste une hypothèse de mécanisme.',
+    status: 'hypothese',
+    chapter: 'Ch. 1188',
+    image: images.imu,
+    imageAlt: 'Imu associé à une possible communication venue du futur',
+    links: [{ label: 'Analyse du chapitre 1188', href: '/chapitres/1188' }],
+  },
+  {
+    id: 'imu-prescience-alternative',
+    date: 'Branche alternative vers −800 ans',
+    era: 'traces',
+    thread: 'memoire',
+    icon: '◉',
+    title: 'La préscience offrirait une autre explication',
+    summary:
+      'Imu pourrait percevoir le futur à la manière de Madame Shirley plutôt que recevoir un message ou un objet envoyé dans le passé.',
+    detail:
+      'Cette branche récente n’annule ni les Ponéglyphes ni la piste de la communication. Elle explique seulement comment Imu pourrait connaître des événements futurs sans en voir clairement les visages, comme Shirley doit interpréter ses visions ambiguës.',
+    status: 'hypothese',
+    chapter: 'Analyse 1188',
+    image: images.imu,
+    imageAlt: 'Imu rapproché de la prescience de Madame Shirley',
+    links: [{ label: 'Préscience et Imu', href: '/theorie/la-prescience-et-imu' }],
   },
   {
     id: 'siecle-oublie-officiel',
-    date: '≈ −800 ans',
+    date: '≈ −900 à −800 ans',
     era: 'traces',
     thread: 'monde',
     icon: '◐',
-    title: 'Le récit officiel du Siècle oublié',
+    title: 'Le récit connu du Siècle oublié',
     summary:
-      'Une civilisation avancée aurait affronté vingt royaumes avant d’être effacée de l’Histoire.',
+      'Une civilisation avancée a combattu les vingt royaumes pendant un siècle effacé de l’Histoire, tandis que le niveau des mers montait de deux cents mètres.',
     detail:
-      'Le manga établit un siècle interdit, une guerre gigantesque et un monde englouti. La théorie conserve ces éléments mais déplace leur cause : les documents anciens décriraient la guerre finale encore à venir, et non une guerre déjà terminée huit siècles auparavant.',
+      'Vegapunk présente Joy Boy comme le premier pirate du Royaume antique et décrit une guerre gigantesque dont les conséquences se prolongent au présent. L’issue morale du conflit demeure inconnue et la recherche sur cette période reste interdite.',
     status: 'canon',
-    chapter: 'Ch. 395, 1115–1116',
+    chapter: 'Ch. 395, 1114–1116',
     image: images.kings,
     imageAlt: 'Silhouettes des familles fondatrices du Gouvernement mondial',
     links: [{ label: 'Le Siècle oublié', href: '/theorie/siecle-oublie' }],
@@ -172,16 +210,32 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'traces',
     thread: 'monde',
     icon: '♜',
-    title: 'Le Gouvernement mondial s’installe',
+    title: 'Le Gouvernement mondial est fondé',
     summary:
-      'Dix-neuf familles montent à Mary Geoise tandis que le Trône vacant masque le règne d’Imu.',
+      'Dix-neuf familles fondatrices s’installent à Mary Geoise et instituent le Trône vacant après le refus des Nefertari.',
     detail:
-      'Cette fondation reste un fait du manga. Pour les Fous du Bus, elle serait la première réponse d’Imu aux informations venues du futur : surveiller les peuples, interdire les recherches et empêcher qu’un candidat devienne le Joy Boy décrit par les pierres.',
+      'Les souverains fondateurs déposent leurs armes devant le Trône vacant pour signifier qu’aucun d’eux ne dominera les autres. La famille Nefertari retourne à Alabasta au lieu de rejoindre les Dragons célestes.',
     status: 'canon',
-    chapter: 'Ch. 907–908',
+    chapter: 'Ch. 907–908, 1084–1085',
     image: images.kings,
     imageAlt: 'Les silhouettes des souverains fondateurs',
     links: [{ label: 'Gouvernement mondial', href: '/theorie/gouvernement-mondial' }],
+  },
+  {
+    id: 'imu-regne-secret',
+    date: 'Hypothèse dès ≈ −800 ans',
+    era: 'traces',
+    thread: 'figures',
+    icon: '♛',
+    title: 'Imu aurait gouverné secrètement depuis la fondation',
+    summary:
+      'Le règne continu d’Imu pendant huit siècles expliquerait que le Trône vacant ait toujours dissimulé la même autorité.',
+    detail:
+      'Le manga révèle le pouvoir actuel d’Imu, mais ne confirme ni son âge ni une présence ininterrompue depuis la fondation. La longévité et le règne ancien d’Imu restent donc une extension interprétative, possiblement liée à l’opération d’immortalité du Ope Ope no Mi.',
+    status: 'extension',
+    image: images.imu,
+    imageAlt: 'Imu assis secrètement sur le Trône vacant',
+    links: [{ label: 'Imu Nerona', href: '/theorie/imu-nerona' }],
   },
   {
     id: 'lili-dispersion',
@@ -189,18 +243,32 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'traces',
     thread: 'memoire',
     icon: '✦',
-    title: 'Lili disperse les Ponéglyphes',
+    title: 'Lili est liée à la dispersion des Ponéglyphes',
     summary:
-      'La reine d’Alabasta refuse Mary Geoise, provoque la dispersion des pierres puis disparaît.',
+      'Nefertari D. Lili refuse de vivre à Mary Geoise, puis disparaît ; Imu associe son erreur à la dispersion historique des pierres.',
     detail:
-      'Le fait est attribué à Nefertari D. Lili. La théorie voit dans son portrait, ses cheveux bleus et sa disparition le futur visage de Vivi. La princesse accomplirait cette mission à la fin du récit avant que les pierres soient renvoyées huit siècles en arrière.',
+      'La lettre de Lili demande à Alabasta de protéger les Ponéglyphes et de hisser le drapeau de l’aube. Le manga relie ainsi son nom à leur dispersion, sans montrer le geste, son mécanisme ni les circonstances exactes de sa disparition.',
     status: 'canon',
     chapter: 'Ch. 1084–1085',
     image: images.lili,
     imageAlt: 'Imu évoquant Vivi dans la chambre fleurie',
-    links: [
-      { label: 'Lili, Vivi et les Ponéglyphes', href: '/theorie/vivi' },
-    ],
+    links: [{ label: 'Lili et les Ponéglyphes', href: '/theorie/lili-vivi-et-les-poneglyphes' }],
+  },
+  {
+    id: 'vivi-dispersion-future',
+    date: 'Lecture future de ≈ −800 ans',
+    era: 'traces',
+    thread: 'memoire',
+    icon: '♕',
+    title: 'La dispersion pourrait être l’action future de Vivi',
+    summary:
+      'La théorie distingue l’association historique à Lili de son mécanisme : Vivi coordonnerait la dispersion à la fin de l’aventure.',
+    detail:
+      'L’identité Vivi–Lili permettrait de lire la disparition de la reine comme la trace anticipée d’un acte futur. Cette branche reste spéculative : le manga n’établit ni cette identité, ni un voyage de Vivi, ni l’envoi des pierres vers le passé.',
+    status: 'extension',
+    image: images.liliStones,
+    imageAlt: 'Vivi rapprochée de Lili et de la dispersion des Ponéglyphes',
+    links: [{ label: 'Vivi et Lili', href: '/theorie/vivi' }],
   },
   {
     id: 'poneglyphes-apparaissent',
@@ -220,15 +288,15 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
   },
   {
     id: 'missions-des-peuples',
-    date: 'Dès −800 ans',
+    date: 'À partir de ≈ −800 ans',
     era: 'traces',
     thread: 'monde',
     icon: '⌖',
-    title: 'Chaque peuple commence sa longue mission',
+    title: 'Les missions des peuples se transmettent',
     summary:
-      'Ryugu garde Noah, Wano se ferme, Zou marche, Elbaf transmet et les Boucaniers entretiennent l’espoir.',
+      'À partir de cette période et durant les siècles suivants, différentes nations conservent chacune une pièce du rendez-vous.',
     detail:
-      'Ces missions paraissent séparées, mais convergent vers le même rendez-vous. La théorie les lit comme un dispositif de préparation : pendant huit siècles, chaque nation conserve une pièce indispensable pour que la coalition de Joy Boy soit prête au Jour du serment.',
+      'La théorie ne suppose pas que la fermeture de Wano, la marche de Zou, les traditions d’Elbaf et toutes les autres missions commencent le même jour. Elle les lit comme des transmissions successives qui convergent vers la coalition de Joy Boy.',
     status: 'central',
     links: [{ label: 'Peuples et royaumes', href: '/theorie/peuples-royaumes' }],
   },
@@ -272,11 +340,11 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '♢',
     title: 'La cloche de Shandora se tait',
     summary:
-      'Kalgara et Noland se promettent de se retrouver au son de la cloche d’or, ajoutant une nouvelle veille au monde.',
+      'Kalgara et Noland se promettent de se retrouver au son de la cloche d’or avant que Shandora soit projetée dans le ciel.',
     detail:
-      'Toutes les promesses ne datent pas de huit siècles. Celle de Shandora montre comment des missions nées à des moments différents peuvent rejoindre la trajectoire de Luffy et préparer une alliance bien plus large que le seul Royaume antique.',
+      'Après la mort de Noland et la disparition de l’île de Jaya dans les nuages, les descendants des Shandias continuent de protéger la cité et sa cloche. Luffy la fait de nouveau résonner quatre siècles plus tard.',
     status: 'canon',
-    chapter: 'Ch. 286–292',
+    chapter: 'Ch. 286–292, 297–299',
     links: [{ label: 'Shandora et les Shandias', href: '/theorie/shandora-shandias' }],
   },
   {
@@ -287,9 +355,9 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '⚙',
     title: 'Emeth attaque Mary Geoise puis s’éteint',
     summary:
-      'Le robot géant apparaît sans origine connue, franchit Red Line et tombe en panne devant le pouvoir mondial.',
+      'Le robot géant franchit Red Line, attaque Mary Geoise et tombe en panne faute d’énergie avant d’être conservé sur Egghead.',
     detail:
-      'Le Gouvernement l’étudie comme une technologie inconnue. Pour la théorie, Emeth n’arrive pas du passé : construit bien plus tard par Franky et les satellites, il aurait été projeté deux cents ans en arrière avec une mission encore incomplète.',
+      'Son origine et sa source d’énergie restent inconnues. Des scientifiques reçoivent l’ordre de le détruire, mais le dissimulent pour l’étudier ; Vegapunk finit par le conserver dans son laboratoire.',
     status: 'canon',
     chapter: 'Ch. 1067, 1125',
     image: images.emeth,
@@ -297,17 +365,107 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     links: [{ label: 'Emeth, robot du futur', href: '/theorie/emeth-futur' }],
   },
   {
+    id: 'brook-premiers-vers',
+    date: '−79 ans',
+    era: 'veille',
+    thread: 'memoire',
+    icon: '♫',
+    title: 'Brook écrit une première version des paroles',
+    summary:
+      'Enfant, Brook écrit une première version de paroles soixante-dix-neuf ans avant le présent, sans revendiquer la chanson complète.',
+    detail:
+      'Le chapitre 1184 situe cette composition soixante-dix-neuf ans avant le présent. Il établit l’ancienneté du geste de Brook, mais ne confirme pas qu’il soit l’auteur de la mélodie ou de la version définitive de la chanson.',
+    status: 'canon',
+    chapter: 'Ch. 1184',
+    links: [{ label: 'Brook', href: '/theorie/brook' }],
+  },
+  {
+    id: 'brook-shuri-chanson',
+    date: '−70 ans',
+    era: 'veille',
+    thread: 'figures',
+    icon: '♬',
+    title: 'La mélodie liée à Binks no Sake précède Roger',
+    summary:
+      'Brook et la princesse Shuri chantent déjà cette mélodie soixante-dix ans avant le présent, bien avant l’âge d’or de Roger.',
+    detail:
+      'Cette scène rattache le passé musical de Brook à une figure royale et montre que la chanson circule depuis plusieurs décennies. Elle ne tranche pas à elle seule l’identité de Dōzan ni l’auteur complet de Binks no Sake.',
+    status: 'canon',
+    chapter: 'Ch. 1184',
+    links: [{ label: 'Binks no Sake', href: '/theorie/binks-no-sake' }],
+  },
+  {
+    id: 'brook-dozan',
+    date: 'Branche autour de −79/−70 ans',
+    era: 'veille',
+    thread: 'figures',
+    icon: '♫',
+    title: 'Brook pourrait être lié à Dōzan',
+    summary:
+      'Les analyses 1183–1184 envisagent que Dōzan soit un nom d’artiste de Brook et que son chant d’enfance ait nourri la légende.',
+    detail:
+      'Le rapprochement repose sur la longévité de Brook, son passé royal et militaire, ainsi que l’origine inconnue de Binks no Sake. Aucun témoignage ni élément physique ne confirme cette identité : il s’agit d’une extension secondaire de la théorie.',
+    status: 'extension',
+    chapter: 'Analyses 1183–1184',
+    links: [{ label: 'Brook pourrait-il être Dōzan ?', href: '/theorie/brook-dozan' }],
+  },
+  {
+    id: 'brook-ignore-fruits',
+    date: '≈ −62 ans',
+    era: 'veille',
+    thread: 'monde',
+    icon: '？',
+    title: 'Brook dit ne pas connaître les Fruits du Démon',
+    summary:
+      'À cette époque, Brook réagit aux Fruits du Démon comme à une rumeur inconnue plutôt que comme à un phénomène familier.',
+    detail:
+      'La scène établit seulement l’ignorance de Brook dans son contexte. Elle ne prouve pas que les Fruits du Démon n’existaient nulle part ailleurs dans le monde ni qu’aucun autre marin ne les connaissait.',
+    status: 'canon',
+    chapter: 'Ch. 1186',
+    links: [{ label: 'Fruits du Démon', href: '/theorie/fruits-du-demon' }],
+  },
+  {
+    id: 'fruits-apparition-recente',
+    date: 'Hypothèse : dernier siècle',
+    era: 'veille',
+    thread: 'monde',
+    icon: '✺',
+    title: 'Les Fruits du Démon pourraient s’être diffusés récemment',
+    summary:
+      'Leur diffusion massive, voire leur apparition, pourrait appartenir au dernier siècle plutôt qu’aux temps les plus anciens.',
+    detail:
+      'L’analyse 1186 combine l’ignorance de Brook et un relevé non officiel où l’immense majorité des fruits connus apparaît dans les soixante-deux dernières années. Une absence de représentation ne prouvant pas une absence d’existence, cette proposition reste une hypothèse récente.',
+    status: 'hypothese',
+    chapter: 'Analyse 1186',
+    links: [{ label: 'Analyse du chapitre 1186', href: '/chapitres/1186' }],
+  },
+  {
+    id: 'rumbar-massacre',
+    date: '≈ −52 ans',
+    era: 'veille',
+    thread: 'figures',
+    icon: '☠',
+    title: 'L’équipage Rumbar disparaît et Brook revient',
+    summary:
+      'Les Rumbar sont mortellement empoisonnés, enregistrent Binks no Sake pour Laboon et Brook revient grâce au Yomi Yomi no Mi.',
+    detail:
+      'Brook met du temps à retrouver son corps, qui n’est plus qu’un squelette, puis reste seul dans le Triangle Florian pendant cinquante ans. Le Tone Dial conserve la dernière interprétation de l’équipage destinée à Laboon.',
+    status: 'canon',
+    chapter: 'Ch. 486–488',
+    links: [{ label: 'L’équipage Rumbar', href: '/theorie/equipage-rumbar' }],
+  },
+  {
     id: 'rocks-cherche-galley-la',
     date: '≈ −40 ans',
     era: 'veille',
     thread: 'figures',
     icon: '◈',
-    title: 'Les Rocks cherchent une Galley-La introuvable',
+    title: 'Les Rocks chercheraient une Galley-La encore inexistante',
     summary:
-      'Une rumeur évoque déjà une armée de géants congelés, alors que l’équipage et la compagnie n’existent pas encore.',
+      'Une rumeur sur une armée de géants congelés est rapprochée d’un équipage et d’une compagnie qui ne portent pas encore ce nom.',
     detail:
-      'La transcription rapproche les géants de Punk Hazard, l’équipage disparu de Loki et la brigade au grand marteau. Leur légende circulerait avant leur formation parce que son récit, comme celui du One Piece, serait venu du futur.',
-    status: 'hypothese',
+      'Cette extension relie les géants de Punk Hazard, l’équipage disparu de Loki et la brigade au grand marteau. La légende de Galley-La aurait précédé sa formation parce que son récit serait, lui aussi, venu du futur.',
+    status: 'extension',
     image: images.galley,
     imageAlt: 'Montage consacré à la Galley-La et aux géants',
     links: [
@@ -320,16 +478,32 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'roger',
     thread: 'memoire',
     icon: '⌁',
-    title: 'Roger atteint Lodestar et fait demi-tour',
+    title: 'Roger atteint Lodestar et comprend que le voyage continue',
     summary:
-      'La dernière île indiquée par les Log Pose ne permet pas de franchir Red Line ni de boucler le monde.',
+      'Après avoir atteint la dernière île indiquée par le Log Pose, Roger découvre l’existence des Ponéglyphes et repart explorer Grand Line.',
     detail:
-      'L’équipage comprend que quatre Road Ponéglyphes sont nécessaires. La théorie interprète la quatrième coordonnée comme le temps : Lodestar serait le bon endroit, mais Laugh Tale serait ce même lieu à la bonne époque.',
+      'L’équipage comprend à Lodestar que les stèles, l’écriture ancienne et la civilisation disparue forment un mystère encore irrésolu. Roger recommence alors son voyage afin d’atteindre la véritable destination finale.',
     status: 'canon',
-    chapter: 'Ch. 968',
+    chapter: 'Ch. 820, 966–968',
     image: images.roger,
     imageAlt: 'Silhouette de Gol D. Roger dans une planche du manga',
     links: [{ label: 'Lodestar', href: '/theorie/lodestar' }],
+  },
+  {
+    id: 'lodestar-geographie',
+    date: 'Lecture de −39 ans',
+    era: 'roger',
+    thread: 'monde',
+    icon: '⌖',
+    title: 'La géographie empêcherait une circumnavigation complète',
+    summary:
+      'Lodestar ne permettrait ni de franchir Red Line ni de refermer le tour du monde dans la géographie actuelle.',
+    detail:
+      'La démonstration géographique des Fous du Bus fait de cette impossibilité le point de départ de l’hypothèse Laugh Tale–Lodestar. Cet obstacle n’est pas formulé comme tel par le manga et reste une extension du raisonnement.',
+    status: 'extension',
+    image: images.roger,
+    imageAlt: 'Roger face à la géographie de la fin de Grand Line',
+    links: [{ label: 'Grand Line', href: '/theorie/grand-line' }],
   },
   {
     id: 'god-valley',
@@ -337,16 +511,32 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'roger',
     thread: 'figures',
     icon: '✹',
-    title: 'God Valley brise les lignées et sauve leurs héritiers',
+    title: 'L’incident de God Valley disperse les Rocks',
     summary:
-      'Rocks affronte le pouvoir, le clan Davy est traqué et Kuma sauve ceux qui porteront encore l’avenir.',
+      'Rocks affronte le pouvoir à God Valley ; Roger et Garp s’allient, tandis que Kuma aide des captifs à fuir la chasse humaine.',
     detail:
-      'La théorie fait de cet incident un carrefour : Imu confondrait Xebec avec Davy Jones, tandis que Kuma permettrait à Teach et à la foi en Nika de survivre. Le pouvoir viserait la mauvaise génération, encore arrivé trop tôt.',
+      'L’affrontement met fin à l’équipage de Rocks et le Gouvernement efface ensuite l’île des cartes. Kuma utilise son pouvoir pour sauver des centaines de personnes et quitter God Valley avec Ginny et Ivankov.',
     status: 'canon',
-    chapter: 'Ch. 957 et récits récents',
+    chapter: 'Ch. 957, 1095–1096, 1164',
     image: images.davy,
-    imageAlt: 'Barbe Noire proclamant que son époque commence',
+    imageAlt: 'God Valley au cœur de l’affrontement entre Rocks et le pouvoir',
     links: [{ label: 'God Valley', href: '/theorie/god-valley' }],
+  },
+  {
+    id: 'god-valley-lignees',
+    date: 'Lecture de −38 ans',
+    era: 'roger',
+    thread: 'figures',
+    icon: '◇',
+    title: 'God Valley deviendrait un carrefour de lignées',
+    summary:
+      'Le clan Davy, Teach, les Figarland et les héritiers sauvés par Kuma sont réunis dans une même lecture narrative de l’incident.',
+    detail:
+      'Cette carte sépare les conséquences théoriques des faits établis. L’identification du territoire au clan Davy et la survie de ses héritiers restent des extensions. Les apports propres aux analyses 1189–1190 devront conserver un audit éditorial distinct.',
+    status: 'extension',
+    image: images.davy,
+    imageAlt: 'Barbe Noire associé aux lignées que la théorie relie à God Valley',
+    links: [{ label: 'Teach et Davy Jones', href: '/theorie/barbe-noire-davy-jones' }],
   },
   {
     id: 'kuma-promet-nika',
@@ -356,11 +546,11 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '✚',
     title: 'Kuma promet de sauver comme Nika',
     summary:
-      'Le jeune Boucanier affirme à Saturne qu’il veut libérer le plus de personnes possible comme le Dieu Soleil.',
+      'Le jeune Boucanier affirme à Saturne qu’il veut libérer le plus de personnes possible, à l’image du Dieu Soleil.',
     detail:
-      'Saturne répond que cette croyance justifie l’éradication des Boucaniers. Pour la théorie, leur véritable crime est l’espoir : tant qu’une seule personne croit en Nika et transmet son nom, l’idée du libérateur ne peut pas mourir.',
+      'Saturne lui répond que son peuple mérite la mort pour avoir transmis cette croyance. Kuma, Ginny et Ivankov s’échappent ensuite de God Valley avec plusieurs centaines de captifs.',
     status: 'canon',
-    chapter: 'Ch. 1095–1102',
+    chapter: 'Ch. 1095–1096',
     links: [{ label: 'Bartholomew Kuma', href: '/theorie/bartholomew-kuma' }],
   },
   {
@@ -371,14 +561,31 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '◎',
     title: 'Roger atteint Laugh Tale et rit',
     summary:
-      'L’équipage découvre toute l’Histoire, regrette l’époque de Joy Boy et comprend être arrivé trop tôt.',
+      'L’équipage découvre le trésor, apprend l’Histoire, nomme l’île Laugh Tale et comprend être arrivé trop tôt.',
     detail:
-      'C’est la scène fondatrice de la théorie. Roger ne regretterait pas un passé révolu : il aurait observé une histoire future liée à Luffy. Laugh Tale devient une double destination, Lodestar dans l’espace et l’époque de Joy Boy dans le temps.',
+      'Roger s’adresse à Joy Boy et dit qu’il aurait aimé vivre à son époque. Après avoir appris la vérité, l’équipage quitte l’île sans agir sur les événements annoncés.',
     status: 'canon',
     chapter: 'Ch. 967–968',
     image: images.roger,
     imageAlt: 'Gol D. Roger associé à la découverte de Laugh Tale',
     links: [{ label: 'Laugh Tale', href: '/theorie/laugh-tale' }],
+  },
+  {
+    id: 'roger-communication-laugh-tale',
+    date: 'Hypothèse vers −25 ans',
+    era: 'roger',
+    thread: 'memoire',
+    icon: '◌',
+    title: 'Roger aurait pu accéder à la même ligne temporelle',
+    summary:
+      'Roger pourrait avoir reçu ou observé depuis Laugh Tale une communication reliant Imu au Joy Boy de la fin de l’aventure.',
+    detail:
+      'L’analyse 1188 ouvre une solution différente du déplacement physique vers le futur. Laugh Tale pourrait permettre de recevoir une voix, une scène ou une information issue d’une autre époque ; le rire et le constat « trop tôt » de Roger conserveraient alors leur sens.',
+    status: 'hypothese',
+    chapter: 'Analyse 1188',
+    image: images.roger,
+    imageAlt: 'Roger découvrant une possible communication temporelle à Laugh Tale',
+    links: [{ label: 'Communication temporelle', href: '/theorie/communication-temps' }],
   },
   {
     id: 'compte-a-rebours-poseidon',
@@ -388,9 +595,9 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '♆',
     title: 'Les Rois des Mers donnent le compte à rebours',
     summary:
-      'Roger apprend qu’une princesse naîtra dans dix ans et rencontrera un autre souverain quinze ans plus tard.',
+      'Roger apprend qu’une princesse naîtra dans dix ans et qu’un autre souverain apparaîtra dans une mer lointaine.',
     detail:
-      'Dix plus quinze conduit exactement à la rencontre de Luffy et Shirahoshi. La pierre de Shandora ne mentait donc pas en plaçant Poséidon à Ryugu : Roger la lisait simplement avant la naissance de l’Arme antique.',
+      'Les Rois des Mers annoncent que les deux souverains se rencontreront un jour et que les baleines se réjouissent de cette échéance. Roger en déduit que la génération attendue viendra après la sienne.',
     status: 'canon',
     chapter: 'Ch. 967–968',
     links: [{ label: 'Poséidon', href: '/theorie/poseidon-fiche' }],
@@ -422,12 +629,28 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '☠',
     title: 'Roger lance la Grande Ère de la piraterie',
     summary:
-      'Son exécution transforme le One Piece en désir collectif et pousse le futur Joy Boy à prendre la mer.',
+      'Son exécution publique et ses dernières paroles transforment le One Piece en désir collectif à l’échelle du monde.',
     detail:
-      'Roger ne crée pas seulement une chasse au trésor. Il fabrique les conditions d’apparition de l’équipage capable de réunir les peuples. En nommant le trésor devant le monde, il empêche aussi le Gouvernement d’en effacer l’idée.',
+      'Roger affirme avoir laissé son trésor quelque part et invite la foule à le chercher. Cette déclaration déclenche une vague mondiale de départs en mer appelée la Grande Ère de la piraterie.',
     status: 'canon',
     chapter: 'Ch. 1',
     links: [{ label: 'L’histoire de One Piece', href: '/theorie/one-piece-histoire' }],
+  },
+  {
+    id: 'execution-prepare-joyboy',
+    date: 'Lecture de −24 ans',
+    era: 'roger',
+    thread: 'joyboy',
+    icon: '↗',
+    title: 'La Grande Ère prépare le départ du futur Joy Boy',
+    summary:
+      'En rendant le trésor impossible à effacer, Roger créerait les conditions qui conduiront Luffy et son équipage jusqu’à lui.',
+    detail:
+      'Cette lecture donne une fonction précise au sacrifice de Roger : il ne provoque pas directement l’apparition de Joy Boy, mais prépare le monde, les équipages et le désir collectif nécessaires au voyage de Luffy.',
+    status: 'central',
+    image: images.roger,
+    imageAlt: 'Roger lançant la génération qui précède le voyage de Luffy',
+    links: [{ label: 'Gol D. Roger', href: '/theorie/gol-d-roger' }],
   },
   {
     id: 'ohara-detruite',
@@ -437,9 +660,9 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '✎',
     title: 'Ohara est détruite, Robin survit',
     summary:
-      'Le Gouvernement brûle la recherche historique mais laisse échapper celle qui pourra lire et écrire la mémoire.',
+      'Le Gouvernement déclenche un Buster Call contre les archéologues ; Nico Robin est la seule chercheuse d’Ohara à s’échapper.',
     detail:
-      'En voulant supprimer la langue antique, le pouvoir place Robin sur le chemin de Luffy. La théorie lui réserve le geste final : rédiger le Rio Ponéglyphe dans une écriture que son enfance à Ohara lui aura elle-même transmise.',
+      'Clover tente de révéler le nom du Royaume antique avant d’être abattu. Saul et Kuzan permettent à Robin de fuir, tandis que les livres jetés dans le lac survivent à l’incendie.',
     status: 'canon',
     chapter: 'Ch. 395–397',
     image: images.ohara,
@@ -447,17 +670,33 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     links: [{ label: 'Clover et Ohara', href: '/theorie/professeur-clover-et-ohara' }],
   },
   {
+    id: 'robin-ecrira-memoire',
+    date: 'Lecture de −22 ans',
+    era: 'roger',
+    thread: 'memoire',
+    icon: '✎',
+    title: 'Robin pourrait écrire la mémoire que le passé lira',
+    summary:
+      'La survivante capable de lire les pierres deviendrait aussi l’une des personnes qui rédigeront le Rio Ponéglyphe à la fin.',
+    detail:
+      'Les Fous du Bus relient la formation de Robin à Ohara au geste final de transmission. Le savoir des Kozuki permettrait la gravure ; Robin rassemblerait et rédigerait l’histoire vécue par l’équipage. Cette fonction n’est pas établie par le manga.',
+    status: 'central',
+    image: images.ohara,
+    imageAlt: 'Robin associée à la future rédaction de la mémoire du monde',
+    links: [{ label: 'Nico Robin', href: '/theorie/nico-robin' }],
+  },
+  {
     id: 'vivi-et-lombre-de-lili',
     date: '≈ −18 ans',
     era: 'roger',
     thread: 'figures',
     icon: '♕',
-    title: 'Vivi naît avec le visage attribué à Lili',
+    title: 'Vivi naît sous le regard qu’Imu réserve à Lili',
     summary:
-      'La nouvelle princesse d’Alabasta possède les cheveux bleus et les traits du portrait conservé par Imu.',
+      'La ressemblance entre Vivi, sa mère Titi et l’image associée à Lili nourrit l’idée qu’Imu confondrait plusieurs générations.',
     detail:
-      'La transcription propose qu’Imu ait d’abord confondu la reine Titi avec Lili, puis reconnu Vivi comme la véritable figure annoncée. La ressemblance devient un indice narratif, mais l’identité Lili–Vivi reste une hypothèse de la théorie.',
-    status: 'hypothese',
+      'La transcription propose qu’Imu ait d’abord pris Titi pour Lili, puis reconnu Vivi comme la figure annoncée. La ressemblance est un indice narratif possible, mais l’identité Lili–Vivi reste une extension secondaire.',
+    status: 'extension',
     image: images.liliStones,
     imageAlt: 'Montage rapprochant Vivi, Lili et les Ponéglyphes',
     links: [{ label: 'Nefertari Vivi', href: '/theorie/nefertari-vivi' }],
@@ -470,11 +709,11 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '♆',
     title: 'Poséidon naît sous le nom de Shirahoshi',
     summary:
-      'La princesse capable de commander les Rois des Mers apparaît exactement au moment annoncé à Roger.',
+      'La princesse sirène capable de commander les Rois des Mers naît dans la période annoncée à l’équipage de Roger.',
     detail:
-      'Poséidon n’est pas une machine antique mais une capacité qui renaît dans une princesse sirène. Son pouvoir sera indispensable pour déplacer Noah et sauver les habitants de Ryugu lorsque Red Line et l’île des Hommes-Poissons seront menacées.',
+      'Shirahoshi hérite d’une capacité qui ne naît que tous les plusieurs siècles au sein de la famille royale de Ryugu. Sa mère Otohime protège son secret jusqu’à sa mort.',
     status: 'canon',
-    chapter: 'Ch. 649–650',
+    chapter: 'Ch. 626, 649–650',
     links: [{ label: 'Shirahoshi', href: '/theorie/shirahoshi' }],
   },
   {
@@ -504,8 +743,8 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     summary:
       'Après la mort d’Harald, le prince quitte Elbaf avec ses soldats, tandis qu’une armée de géants apparaît congelée ailleurs.',
     detail:
-      'La théorie identifie ces géants à ceux de Punk Hazard. Ragnir aurait permis une congélation instantanée destinée à les protéger. Ils deviendraient plus tard l’escouade au grand marteau, future Galley-La de la guerre finale.',
-    status: 'hypothese',
+      'La théorie identifie ces géants à ceux de Punk Hazard. Ragnir aurait permis une congélation instantanée destinée à les protéger. Ils deviendraient ensuite l’escouade au grand marteau associée à la Galley-La de la guerre finale.',
+    status: 'extension',
     image: images.galley,
     imageAlt: 'Indices visuels reliant Loki, les géants et la Galley-La',
     links: [{ label: 'Loki', href: '/theorie/loki' }],
@@ -518,14 +757,32 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '⚒',
     title: 'La Galley-La Company est créée à Water Seven',
     summary:
-      'Icebarg rassemble sept compagnies navales sous un nom identique à celui d’une légendaire brigade de géants.',
+      'Icebarg unifie les sept compagnies de charpentiers de Water Seven au sein d’une entreprise unique appelée Galley-La Company.',
     detail:
-      'Cette coïncidence est centrale dans la transcription. La compagnie humaine et l’équipage de Loki finiraient par fusionner : les meilleurs charpentiers du monde disposeraient enfin de la taille nécessaire pour transformer une île entière en navire.',
+      'Cette fusion met fin aux conflits entre les chantiers et permet à Water Seven de retrouver une activité économique importante. Icebarg devient à la fois le président de la compagnie et le maire de la ville.',
     status: 'canon',
-    chapter: 'Ch. 326',
+    chapter: 'Ch. 326–327',
     image: images.galley,
-    imageAlt: 'Montage sur la Galley-La Company et les géants charpentiers',
+    imageAlt: 'La Galley-La Company et les charpentiers de Water Seven',
     links: [{ label: 'Galley-La', href: '/theorie/galley-la-coincidence-impossible' }],
+  },
+  {
+    id: 'galley-la-nom-geants',
+    date: 'Lecture de −5 ans',
+    era: 'voyage',
+    thread: 'armes',
+    icon: '⚒',
+    title: 'Le nom Galley-La relierait Icebarg à une brigade de géants',
+    summary:
+      'Le nom de la compagnie moderne serait identique à celui d’une légendaire escouade de géants destinée à rejoindre son chantier.',
+    detail:
+      'Cette coïncidence appartient au raisonnement théorique. Les charpentiers humains et les géants de Loki finiraient par unir leurs forces pour transformer une île entière en navire, mais le manga n’établit pas encore ce rapprochement.',
+    status: 'extension',
+    image: images.galley,
+    imageAlt: 'Rapprochement entre la Galley-La Company et une brigade de géants',
+    links: [
+      { label: 'La coïncidence Galley-La', href: '/theorie/galley-la-coincidence-impossible' },
+    ],
   },
   {
     id: 'depart-luffy',
@@ -535,9 +792,9 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '↗',
     title: 'Luffy prend la mer depuis East Blue',
     summary:
-      'Le garçon qui ignore les légendes commence sa traversée linéaire de Grand Line vers le point où la fin rejoint le début.',
+      'À dix-sept ans, Monkey D. Luffy quitte le village de Fuchsia pour devenir Roi des pirates et chercher le One Piece.',
     detail:
-      'Son voyage réveille les pièces préparées pendant des siècles. Dans la théorie, chaque île libérée, chaque promesse et chaque nouvel allié écrivent déjà le Siècle oublié que Robin rassemblera plus tard sur les pierres.',
+      'Il part seul dans une petite embarcation avec le chapeau confié par Shanks. Son premier objectif est de réunir un équipage avant de rejoindre Grand Line.',
     status: 'canon',
     chapter: 'Ch. 1',
     image: images.origin,
@@ -545,17 +802,33 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     links: [{ label: 'Monkey D. Luffy', href: '/theorie/luffy' }],
   },
   {
+    id: 'voyage-luffy-rejoint-commencement',
+    date: 'Lecture du voyage actuel',
+    era: 'voyage',
+    thread: 'joyboy',
+    icon: '⌁',
+    title: 'Son voyage avancerait vers le point où fin et début se rejoignent',
+    summary:
+      'La progression sur Grand Line conduirait Luffy au lieu et au moment où la fin de son aventure peut informer le passé.',
+    detail:
+      'Dans la théorie, chaque île libérée, chaque promesse et chaque nouvel allié écrivent le Siècle oublié que Robin rassemblera plus tard. Cette lecture temporelle ne fait pas partie du fait brut de son départ.',
+    status: 'central',
+    image: images.origin,
+    imageAlt: 'Le voyage de Luffy interprété comme la progression vers la fin de Grand Line',
+    links: [{ label: 'Grand Line', href: '/theorie/grand-line' }],
+  },
+  {
     id: 'doflamingo-rejoue-roi',
     date: '−2 ans → présent',
     era: 'voyage',
     thread: 'figures',
     icon: '♜',
-    title: 'Doflamingo rejoue le roi Donquixote des textes',
+    title: 'Doflamingo rejouerait le roi Donquixote des textes',
     summary:
       'Dressrosa reproduit la même exploitation souterraine des Tontattas attribuée au souverain d’il y a neuf siècles.',
     detail:
-      'Le démon céleste, l’usine cachée et le retour des Riku composent un miroir presque exact. La théorie propose que l’ancien roi cruel ne soit pas un ancêtre : ce serait Doflamingo lui-même devenu sa propre caricature historique.',
-    status: 'hypothese',
+      'Le démon céleste, l’usine cachée et le retour des Riku composent un miroir presque exact. La théorie propose que l’ancien roi cruel ne soit pas un ancêtre, mais Doflamingo lui-même devenu sa propre caricature historique.',
+    status: 'extension',
     links: [
       { label: 'Doflamingo et le roi Donquixote', href: '/theorie/donquixote-roi-antique' },
       { label: 'Les Dragons célestes', href: '/theorie/dragons-celestes' },
@@ -583,14 +856,14 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '⚓',
     title: 'Icebarg rêve de faire flotter Water Seven',
     summary:
-      'Face à Aqua Laguna, le maire veut transformer toute l’île en navire, mais l’ouvrage dépasse la force humaine.',
+      'Face à Aqua Laguna et à l’affaissement de la ville, Icebarg annonce vouloir transformer toute Water Seven en navire.',
     detail:
-      'Pour la théorie, ce projet est déjà le commencement de Pluton. Les géants de la Galley-La apporteront la puissance de construction nécessaire, tandis que Water Seven offrira ses canaux, ses arsenaux et son expérience des vagues.',
+      'Le maire présente ce projet aux habitants après le départ de l’équipage de Luffy. Il reconnaît l’ampleur du chantier, mais choisit cette solution pour permettre à la cité de survivre aux vagues futures.',
     status: 'canon',
     chapter: 'Ch. 431',
     image: images.pluton,
-    imageAlt: 'Indices visuels autour de Water Seven et de Pluton',
-    links: [{ label: 'Pluton et Water Seven', href: '/theorie/pluton-water-seven-galley-la' }],
+    imageAlt: 'Water Seven et le projet de ville flottante d’Icebarg',
+    links: [{ label: 'Water Seven', href: '/theorie/pluton-water-seven-galley-la' }],
   },
   {
     id: 'promesse-shirahoshi',
@@ -614,13 +887,14 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     thread: 'joyboy',
     icon: '☀',
     title: 'Les Tambours de la Libération résonnent',
-    summary: 'Luffy meurt, éveille la forme blanche et Zunesha annonce que Joy Boy est revenu.',
+    summary:
+      'Luffy s’effondre, son cœur repart au rythme des Tambours de la Libération, il éveille sa forme blanche et Zunesha annonce le retour de Joy Boy.',
     detail:
-      'Le manga établit l’éveil de Nika. La théorie place ici la naissance réelle de Joy Boy : Kaido avait défini le libérateur comme celui qui parviendrait à le vaincre. Le titre n’est plus seulement attendu, il commence à être attribué à Luffy.',
+      'Après le coup de Kaido, la voix de Luffy disparaît puis son corps s’éveille sous la forme du Gear 5. Zunesha reconnaît le rythme qu’il associe à Joy Boy, tandis que le Gorosei révèle le nom Nika du fruit.',
     status: 'canon',
-    chapter: 'Ch. 1043–1049',
+    chapter: 'Ch. 1043–1044',
     image: images.origin,
-    imageAlt: 'Le chapeau de paille au centre de la révélation du Siècle oublié',
+    imageAlt: 'Le chapeau de paille au centre de la révélation de Nika',
     links: [{ label: 'Hito Hito no Mi, modèle Nika', href: '/theorie/hito-hito-no-mi-nika' }],
   },
   {
@@ -645,13 +919,13 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     icon: '▼',
     title: 'Lulusia disparaît et la mer monte',
     summary:
-      'Une fraction de Mother Flame alimente une puissance céleste et l’effacement d’une île élève les océans d’un mètre.',
+      'Une fraction de Mother Flame alimente une puissance céleste qui efface Lulusia ; six jours plus tard, les océans montent d’un mètre.',
     detail:
-      'Le manga relie l’énergie de Vegapunk à une arme détenue par Imu. La théorie y voit la naissance moderne d’Uranus : non pas une relique retrouvée, mais une invention que le pouvoir vient seulement d’obtenir.',
+      'Vegapunk confirme qu’une portion de la Mother Flame a été volée et utilisée pour activer une arme. L’attaque ouvre un trou persistant dans l’océan et provoque des séismes dans le monde entier.',
     status: 'canon',
     chapter: 'Ch. 1060, 1089, 1116',
     image: images.deluge,
-    imageAlt: 'Une mer sombre et violente annonçant la montée des eaux',
+    imageAlt: 'Une mer sombre et violente après la disparition de Lulusia',
     links: [{ label: 'Mother Flame', href: '/theorie/mother-flame' }],
   },
   {
@@ -660,15 +934,31 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'present',
     thread: 'memoire',
     icon: '⚙',
-    title: 'Emeth reconnaît Joy Boy en Luffy',
+    title: 'Emeth appelle Luffy « Joy Boy »',
     summary:
-      'Le robot dit être heureux de le revoir, puis croit avoir confondu Luffy avec un ancien ami qui lui ressemble.',
+      'Le robot se dit heureux de revoir Joy Boy, puis comprend que Luffy n’est pas exactement la personne dont il se souvenait.',
     detail:
-      'Dans la théorie, Emeth ne se trompe qu’à moitié : il connaît le Luffy de la fin, mais rencontre celui qui n’est pas encore devenu Joy Boy. Ses souvenirs seraient ceux d’un avenir déjà vécu pour lui.',
-    status: 'central',
+      'Emeth se réveille au son des Tambours de la Libération, parle à Luffy et lui demande son nom. Après avoir entendu « Monkey D. Luffy », il constate une différence avec son ancien ami tout en continuant à l’aider.',
+    status: 'canon',
     chapter: 'Ch. 1120–1122',
     image: images.emeth,
-    imageAlt: 'Le robot Emeth sur Egghead',
+    imageAlt: 'Le robot Emeth parlant à Luffy sur Egghead',
+    links: [{ label: 'Emeth', href: '/theorie/emeth-futur' }],
+  },
+  {
+    id: 'emeth-reconnait-luffy-futur',
+    date: 'Lecture d’Egghead',
+    era: 'present',
+    thread: 'memoire',
+    icon: '⚙',
+    title: 'Emeth reconnaîtrait le Luffy de la fin',
+    summary:
+      'Pour les Fous du Bus, Emeth reconnaîtrait dans le Luffy actuel la version future qu’il connaîtra sous le nom de Joy Boy.',
+    detail:
+      'Le robot ne se tromperait qu’à moitié : ses souvenirs seraient ceux d’un avenir déjà vécu pour lui. Cette extension suppose qu’Emeth ait été construit à la fin de l’aventure avant d’être déplacé deux cents ans dans le passé.',
+    status: 'extension',
+    image: images.emeth,
+    imageAlt: 'Emeth rapprochant le Luffy actuel du Joy Boy de ses souvenirs',
     links: [{ label: 'Emeth, robot du futur', href: '/theorie/emeth-futur' }],
   },
   {
@@ -677,15 +967,15 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'present',
     thread: 'joyboy',
     icon: 'ϟ',
-    title: 'Un Haki venu de la fin sauve Luffy',
+    title: 'Le Haki enfermé pourrait venir de la fin',
     summary:
-      'Emeth défait un nœud qui libère le Haki des Rois de Joy Boy et repousse les Cinq Doyens.',
+      'Le Haki enfermé par Joy Boy dans le nœud d’Emeth pourrait être celui du Luffy de la fin de l’aventure.',
     detail:
-      'La transcription compare cette scène au Patronus du Prisonnier d’Azkaban : Luffy serait sauvé par une puissance qu’il scellera lui-même plus tard. L’effet précède sa cause, sans modifier le passé ; il le complète.',
+      'L’analyse compare la scène au Patronus du Prisonnier d’Azkaban : Luffy serait aidé par une puissance qu’il scellera lui-même plus tard. Le manga établit le Haki de Joy Boy et ses effets, mais pas son identité avec un Haki futur de Luffy.',
     status: 'hypothese',
     chapter: 'Ch. 1122',
     image: images.emethFranky,
-    imageAlt: 'Franky et la technologie associée à Emeth',
+    imageAlt: 'Franky et la technologie associée au nœud de Haki d’Emeth',
     links: [{ label: 'La voix de Joy Boy', href: '/theorie/voix-de-joy-boy' }],
   },
   {
@@ -694,11 +984,11 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'present',
     thread: 'monde',
     icon: '≋',
-    title: 'Vegapunk annonce le Déluge et la guerre inachevée',
+    title: 'Vegapunk révèle le Déluge et une guerre inachevée',
     summary:
-      'Le scientifique révèle un monde ancien sous deux cents mètres d’eau et affirme que la guerre se poursuit encore.',
+      'Le scientifique révèle qu’un ancien monde gît sous deux cents mètres d’eau et affirme que la guerre du Siècle oublié se poursuit.',
     detail:
-      'La théorie prend cette formulation au sens littéral : la bataille du Siècle oublié est toujours d’actualité parce qu’elle n’a pas encore atteint son dénouement. Lulusia n’en serait que la première secousse.',
+      'Vegapunk explique que la montée des eaux fut provoquée par l’usage des Armes antiques et non par une catastrophe naturelle. Il refuse de désigner un camp moralement juste faute de connaître toute la vérité.',
     status: 'canon',
     chapter: 'Ch. 1113–1121',
     image: images.deluge,
@@ -711,30 +1001,30 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'present',
     thread: 'armes',
     icon: '⌘',
-    title: 'Les satellites rejoignent Weatheria',
+    title: 'Les satellites contactent Haredas à Weatheria',
     summary:
-      'Les survivants de Vegapunk retrouvent Haredas, spécialiste des nœuds capables de conserver le vent.',
+      'Les satellites survivants de Vegapunk prennent contact avec Haredas, spécialiste des Weather Nodes de l’île céleste.',
     detail:
-      'Après Egghead, les satellites et le laboratoire de Vegapunk se replient vers Weatheria. Le manga y présente les Weather Nodes, des cordes capables de stocker un phénomène naturel : le même principe que celui employé par Emeth.',
+      'Le contact avec Weatheria et Haredas est montré après l’incident d’Egghead. Les Weather Nodes y stockent et libèrent des phénomènes météorologiques, notamment le vent.',
     status: 'canon',
     chapter: 'Ch. 1125',
     image: images.emethFranky,
-    imageAlt: 'Franky en cyborg, futur constructeur possible d’Emeth',
+    imageAlt: 'Les satellites de Vegapunk avant leur contact avec Weatheria',
     links: [{ label: 'Énergie antique', href: '/theorie/energie-antique' }],
   },
   {
     id: 'haki-node-weatheria',
-    date: 'Présent — après Egghead',
+    date: 'Après Egghead — hypothèse',
     era: 'present',
     thread: 'armes',
     icon: '⚡',
-    title: 'Le Haki Node prépare la reconstruction d’Emeth',
+    title: 'Weatheria pourrait permettre de recréer le nœud de Haki',
     summary:
-      'La technologie des Weather Nodes servirait à sceller le Haki de Luffy et à reconstruire Emeth.',
+      'Les satellites pourraient adapter la technologie des Weather Nodes pour sceller le Haki de Luffy comme dans le nœud d’Emeth.',
     detail:
-      'Pour la transcription, cette destination prépare le Haki Node : la technologie des Weather Nodes remplacerait le vent par le Haki de Luffy. Franky et Lilith pourraient ensuite reconstruire Emeth avec cette arme secrète.',
+      'Cette destination prépare peut-être un Haki Node : le principe de stockage du vent serait appliqué au Haki. Franky, Lilith et les satellites pourraient ensuite intégrer ce dispositif à un nouvel Emeth.',
     status: 'hypothese',
-    chapter: 'Ch. 1125',
+    chapter: 'Analyse du ch. 1125',
     links: [{ label: 'Énergie antique', href: '/theorie/energie-antique' }],
   },
   {
@@ -743,12 +1033,12 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'present',
     thread: 'memoire',
     icon: '✧',
-    title: 'Le Harley décrit des scènes qui se réalisent',
+    title: 'Le Harley décrirait des scènes en train de se réaliser',
     summary:
-      'Le texte sacré et la fresque d’Elbaf annoncent une bête sous l’orage de neige, le Dieu Soleil et une guerre mondiale.',
+      'Le texte sacré et la fresque d’Elbaf sont rapprochés d’une bête sous l’orage, du Dieu Soleil et d’une guerre mondiale actuelle.',
     detail:
-      'La précision des scènes pousse la théorie à y voir un témoignage plutôt qu’une vague prophétie. Usopp, conteur lié aux géants, pourrait en devenir l’auteur sous le nom de plume Louis Arnot et l’envoyer vers le passé.',
-    status: 'hypothese',
+      'La précision perçue des scènes pousse la théorie à y voir un témoignage plutôt qu’une prophétie. Usopp, conteur lié aux géants, pourrait en devenir l’auteur sous le nom de Louis Arnot et transmettre ce récit vers le passé.',
+    status: 'extension',
     chapter: 'Ch. 1138 et suivants',
     image: images.origin,
     imageAlt: 'Composition autour des pièces qui forment l’histoire du monde',
@@ -760,30 +1050,112 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'present',
     thread: 'figures',
     icon: '♢',
-    title: 'Loki prend le visage de Nidhogg',
+    title: 'Loki prendrait le visage de Nidhogg',
     summary:
-      'Le prince possède Ragnir, voyage avec Ratatosk et se transforme en dragon comme le Dieu de la guerre du folklore.',
+      'Le prince, Ragnir et Ratatosk formeraient dans le présent les figures que le folklore d’Elbaf décrit déjà comme anciennes.',
     detail:
-      'La théorie ne voit pas une réincarnation mais la naissance de la légende. Comme Luffy devient Nika par ses actes, Loki deviendrait Nidhogg parce que les géants raconteront plus tard les événements qu’il est en train de vivre.',
-    status: 'hypothese',
+      'Cette extension ne suppose pas une réincarnation : les actes de Loki produiraient la légende de Nidhogg lorsque leur récit serait transmis au passé. Elle reste une branche secondaire de la théorie principale.',
+    status: 'extension',
     image: images.galley,
     imageAlt: 'Indices reliant Loki aux géants de la Galley-La',
     links: [{ label: 'Nidhogg et Ratatoskr', href: '/theorie/nidhogg-ratatoskr' }],
   },
   {
-    id: 'vingt-rois-reviennent',
+    id: 'geants-recits-contradictoires',
     date: 'Présent — Elbaf',
     era: 'present',
     thread: 'monde',
-    icon: '♛',
-    title: 'Les Chevaliers Divins préparent les Vingt Rois',
+    icon: '≠',
+    title: 'Deux récits sur la défaite des géants se contredisent',
     summary:
-      'Les familles fondatrices quittent Mary Geoise pour reprendre les royaumes et opposer leurs armées à celles de Luffy.',
+      'Les affirmations d’Imu sur une défaite des géants huit cents ans plus tôt ne concordent pas avec l’histoire transmise à Elbaf.',
     detail:
-      'La transcription identifie les rois de la guerre antique aux Chevaliers Divins actuels. Garling transformerait les épées d’Imu en souverains afin de reformer la coalition des familles fondatrices dans le présent.',
+      'Le chapitre 1186 juxtapose les paroles d’Imu et les repères historiques connus des géants. La contradiction appartient au texte ; sa cause, en revanche, n’est pas expliquée.',
+    status: 'canon',
+    chapter: 'Ch. 1186',
+    links: [{ label: 'Analyse du chapitre 1186', href: '/chapitres/1186' }],
+  },
+  {
+    id: 'imu-confond-geants-epoque',
+    date: 'Hypothèse au présent',
+    era: 'present',
+    thread: 'memoire',
+    icon: '⌁',
+    title: 'Imu pourrait confondre le présent des géants avec leur passé',
+    summary:
+      'La contradiction historique deviendrait un indice qu’Imu attribue à huit siècles plus tôt des événements qui se produisent maintenant.',
+    detail:
+      'L’analyse 1186 applique ici le renversement général de la théorie : Imu disposerait d’informations exactes mais d’un mauvais cadre temporel. Une erreur, un mensonge politique ou une lacune historique restent toutefois des explications concurrentes.',
     status: 'hypothese',
+    chapter: 'Analyse 1186',
+    links: [{ label: 'Le Siècle oublié est le présent', href: '/theorie/siecle-oublie-present' }],
+  },
+  {
+    id: 'imu-appelle-luffy-joyboy',
+    date: 'Présent — Elbaf',
+    era: 'present',
+    thread: 'joyboy',
+    icon: '☀',
+    title: 'Imu appelle directement Luffy « Joy Boy »',
+    summary:
+      'Luffy rejette ce nom et répond qu’il n’est ni Joy Boy ni Nika, mais Monkey D. Luffy, celui qui deviendra Roi des pirates.',
+    detail:
+      'L’échange oppose le nom qu’Imu projette sur son adversaire à l’identité que Luffy affirme lui-même. La scène ne confirme pas que Luffy accepte Joy Boy comme nom ou comme titre.',
+    status: 'canon',
+    chapter: 'Ch. 1187',
+    image: images.imu,
+    imageAlt: 'Imu s’adressant à Luffy sous le nom de Joy Boy',
+    links: [{ label: 'Analyse du chapitre 1187', href: '/chapitres/1187' }],
+  },
+  {
+    id: 'joyboy-consequence-histoire',
+    date: 'Lecture d’Elbaf',
+    era: 'present',
+    thread: 'joyboy',
+    icon: '∞',
+    title: 'Joy Boy serait une conséquence de huit siècles d’Histoire',
+    summary:
+      'Luffy ne reproduirait pas un héros originel : les promesses, les peuples et les volontés héritées finiraient par produire Joy Boy.',
+    detail:
+      'C’est la conclusion centrale de l’analyse 1187. Luffy refuse d’endosser un nom ancien au présent ; ses actes pourraient néanmoins conduire le monde à le reconnaître ainsi à la fin. Joy Boy devient le résultat de l’Histoire plutôt que son point de départ.',
+    status: 'central',
+    chapter: 'Analyse 1187',
+    image: images.origin,
+    imageAlt: 'Luffy au centre des volontés qui construisent la figure de Joy Boy',
+    links: [{ label: 'Joy Boy', href: '/theorie/joy-boy' }],
+  },
+  {
+    id: 'conversation-imu-joyboy',
+    date: 'Présent — révélation 1188',
+    era: 'present',
+    thread: 'memoire',
+    icon: '◌',
+    title: 'Une conversation sans époque claire est révélée',
+    summary:
+      'Imu et celui qui est présenté comme Joy Boy échangent par un dispositif mystérieux, sans contexte temporel explicitement donné.',
+    detail:
+      'Ni Imu ni son interlocuteur n’identifie clairement l’autre. La scène établit leur échange et son ambiguïté ; elle ne précise ni l’emplacement de Joy Boy, ni la date de la conversation, ni le fonctionnement du dispositif.',
+    status: 'canon',
+    chapter: 'Ch. 1188',
+    image: images.imu,
+    imageAlt: 'Imu au cours d’une conversation dont l’époque reste inconnue',
+    links: [{ label: 'Analyse du chapitre 1188', href: '/chapitres/1188' }],
+  },
+  {
+    id: 'vingt-rois-reviennent',
+    date: 'Présent — branche post-1188',
+    era: 'present',
+    thread: 'monde',
+    icon: '♛',
+    title: 'Les Chevaliers Divins pourraient reformer les Vingt Rois',
+    summary:
+      'Les familles fondatrices et leurs armes actuelles sont rapprochées de la coalition historique des Vingt Rois.',
+    detail:
+      'Cette extension récente identifie les Chevaliers Divins à la version contemporaine des souverains fondateurs. Comme elle dépend d’analyses 1189–1190, elle reste explicitement séparée du noyau vérifié ici jusqu’au chapitre 1188 et demande un audit dédié.',
+    status: 'extension',
+    chapter: 'Analyses 1189–1190 · audit distinct',
     image: images.kings,
-    imageAlt: 'Les familles royales fondatrices réunies',
+    imageAlt: 'Les familles royales fondatrices rapprochées des Chevaliers Divins',
     links: [{ label: 'Les Vingt Rois', href: '/theorie/vingt-rois-chevaliers-divins' }],
   },
   {
@@ -824,11 +1196,11 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'guerre',
     thread: 'armes',
     icon: '☄',
-    title: 'Imu et Mother Flame deviennent Uranus',
+    title: 'Imu pourrait atteindre la puissance associée à Uranus',
     summary:
-      'La puissance céleste obtenue grâce à Vegapunk frappe les royaumes rebelles depuis le ciel.',
+      'Imu pourrait utiliser la Mother Flame pour atteindre ou alimenter la puissance céleste que le monde associera à Uranus.',
     detail:
-      'Uranus ne serait pas une arme réveillée après huit siècles. Mother Flame vient d’être inventée et donnerait à Imu, ou à une machine volante, la capacité moderne d’effacer une île entière. Le scientifique devient malgré lui le créateur de l’Arme antique.',
+      'Le chapitre 1180 n’impose pas qu’Imu et Mother Flame deviennent littéralement l’Arme antique. La projection conserve plusieurs possibilités : Imu peut incarner Uranus, contrôler une machine volante ou seulement employer une puissance qui recevra ensuite ce nom.',
     status: 'projection',
     image: images.imu,
     imageAlt: 'Imu associé à la puissance qui tombe du ciel',
@@ -840,10 +1212,11 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'guerre',
     thread: 'monde',
     icon: '≋',
-    title: 'Le niveau des mers monte jusqu’à deux cents mètres',
-    summary: 'Chaque royaume effacé élève les océans et transforme la guerre en Déluge mondial.',
+    title: 'La guerre pourrait reproduire le Déluge',
+    summary:
+      'La guerre pourrait provoquer une nouvelle montée massive des océans, jusqu’à reproduire le Déluge de deux cents mètres décrit par Vegapunk.',
     detail:
-      'La montée provoquée à Lulusia devient le modèle du désastre. Dragon rassemble l’humanité pour survivre, tandis que les structures construites depuis sept siècles et les navires préparés par les peuples prennent enfin leur sens.',
+      'Lulusia montre qu’une attaque peut faire monter la mer, sans établir une équation répétitive entre chaque royaume effacé et une hausse donnée. La projection porte sur l’effet global de la guerre et de l’usage des Armes antiques.',
     status: 'projection',
     image: images.deluge,
     imageAlt: 'Une mer gigantesque recouvrant le monde',
@@ -871,9 +1244,9 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'guerre',
     thread: 'armes',
     icon: '♜',
-    title: 'Zunesha et Pluton ouvrent Wano',
+    title: 'Zunesha et Water Seven ouvrent Wano',
     summary:
-      'L’éléphant revient vider la cuvette, refroidir le Mont Fuji et permettre la destruction des murailles du pays.',
+      'L’éléphant et l’île-navire devenue Pluton reviennent vider la cuvette, refroidir le Mont Fuji et détruire les murailles du pays.',
     detail:
       'La théorie rapproche les aqueducs de Mokomo et ceux de Water Seven. Les deux structures travailleraient ensemble pour libérer Kaido et Big Mom de la chambre magmatique, ajoutant les géants antiques à la puissance de Pluton.',
     status: 'projection',
@@ -942,6 +1315,23 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     image: images.origin,
     imageAlt: 'Le chapeau de paille comme pièce centrale du monde nouveau',
     links: [{ label: 'Luffy et Joy Boy', href: '/explorer/luffy-joy-boy-nika' }],
+  },
+  {
+    id: 'luffy-repond-imu-laugh-tale',
+    date: 'Projection — à Laugh Tale',
+    era: 'aube',
+    thread: 'memoire',
+    icon: '◌',
+    title: 'Luffy pourrait être celui qui répond à Imu',
+    summary:
+      'Arrivé à Laugh Tale à la fin de son aventure, Luffy pourrait répondre à l’appel entendu huit siècles plus tôt et se présenter comme Joy Boy.',
+    detail:
+      'Cette projection de l’analyse 1188 complète les cartes placées au passé et au présent. Luffy ne dirait plus qu’il deviendra Roi des pirates après avoir accompli ce rêve ; il emploierait le nom par lequel le monde vient de le reconnaître. Le manga ne donne pas encore la solution.',
+    status: 'projection',
+    chapter: 'Analyse 1188',
+    image: images.origin,
+    imageAlt: 'Luffy à Laugh Tale répondant à une communication venue du passé',
+    links: [{ label: 'Analyse du chapitre 1188', href: '/chapitres/1188' }],
   },
   {
     id: 'luffy-devient-joyboy',
@@ -1096,14 +1486,44 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'retour',
     thread: 'memoire',
     icon: '↺',
-    title: 'La mémoire est envoyée vers le passé',
+    title: 'Les informations et les Ponéglyphes atteignent le passé',
     summary:
-      'Ponéglyphes, Harley et certains êtres traversent le temps, mais la mécanique exacte reste volontairement non résolue.',
+      'Le noyau de la théorie propose que la mémoire gravée du futur soit transmise au passé et y devienne le récit du Siècle oublié.',
     detail:
-      'La transcription distingue plusieurs possibilités : déplacement ponctuel, transmission d’informations, communication entre époques ou préscience. La frise montre le résultat de la théorie sans transformer ce mécanisme encore inconnu en certitude.',
-    status: 'hypothese',
+      'Cette carte se limite au mécanisme indispensable : l’information contenue dans les Ponéglyphes précède les événements qu’elle raconte. Elle ne suppose pas que tous les personnages, toutes les technologies ou le monde entier soient déplacés physiquement.',
+    status: 'central',
     image: images.poneglyph,
     imageAlt: 'Un Ponéglyphe portant une écriture qui traverse les siècles',
+    links: [{ label: 'Communication à travers le temps', href: '/theorie/communication-temps' }],
+  },
+  {
+    id: 'harley-vers-passe',
+    date: '↺ Branche : époque inconnue',
+    era: 'retour',
+    thread: 'memoire',
+    icon: '✧',
+    title: 'Le Harley pourrait accompagner la mémoire',
+    summary:
+      'Le récit attribué à Usopp ou Louis Arnot pourrait être transmis à Elbaf avec les informations destinées au passé.',
+    detail:
+      'Cette extension expliquerait pourquoi le texte sacré semble décrire des scènes de la guerre finale. Elle est plus spéculative que le rôle des Ponéglyphes : ni son auteur, ni sa date, ni son mode de transmission ne sont établis.',
+    status: 'extension',
+    image: images.origin,
+    imageAlt: 'Le Harley d’Elbaf associé à une transmission vers le passé',
+    links: [{ label: 'Elbaf et le Harley', href: '/theorie/elbaf-harley' }],
+  },
+  {
+    id: 'transport-physique-limite',
+    date: '↺ Branche physique',
+    era: 'retour',
+    thread: 'memoire',
+    icon: '⌁',
+    title: 'Quelques êtres pourraient être déplacés physiquement',
+    summary:
+      'Emeth ou Zoro pourraient rejoindre une époque antérieure, sans transformer toute la théorie en voyage temporel généralisé.',
+    detail:
+      'Cette hypothèse avancée sert les branches Emeth/BF-39 et Zoro/Ryuma. Son mécanisme reste inconnu, et le Toki Toki no Mi montré dans le manga ne voyage que vers le futur. Elle n’est donc pas nécessaire au noyau informationnel.',
+    status: 'extension',
     links: [{ label: 'Communication à travers le temps', href: '/theorie/communication-temps' }],
   },
   {
@@ -1116,7 +1536,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     summary:
       'Le BF-39 quitte l’époque de Joy Boy et devient le robot incompréhensible découvert deux siècles avant Egghead.',
     detail:
-      'Sa mission, sa corrosion et son erreur de datation forment une boucle fermée. Le Gouvernement pense étudier une antiquité, puis Vegapunk et Franky utilisent ces recherches pour construire précisément la machine qu’ils ont sous les yeux.',
+      'Sa mission, sa corrosion et son erreur de datation formeraient une chaîne de transmission. Le Gouvernement pense étudier une antiquité, puis Vegapunk et Franky utilisent ces recherches pour construire précisément la machine qu’ils ont sous les yeux.',
     status: 'projection',
     image: images.emeth,
     imageAlt: 'Emeth, le robot qui relie le futur au passé',
@@ -1128,12 +1548,12 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'retour',
     thread: 'figures',
     icon: '刀',
-    title: 'La légende de Ryuma est déposée dans le passé',
+    title: 'La légende de Ryuma serait déposée dans le passé',
     summary:
-      'Zoro et Shusui rejoindraient l’ancien Wano, permettant au sabreur de devenir l’ancêtre qu’il admirait sans le savoir.',
+      'Zoro et Shusui rejoindraient l’ancien Wano, permettant au sabreur de devenir la figure qu’il admirait sans le savoir.',
     detail:
-      'C’est l’une des projections physiques les plus spéculatives de la transcription. Elle explique la dépouille de Ryuma, son œil, son sabre et la rencontre de Thriller Bark, mais dépend d’un déplacement temporel dont le mécanisme reste inconnu.',
-    status: 'hypothese',
+      'C’est l’une des extensions physiques les plus spéculatives de la transcription. Elle rapproche la dépouille de Ryuma, son œil, son sabre et la rencontre de Thriller Bark, mais dépend d’un déplacement temporel inconnu.',
+    status: 'extension',
     image: images.zoro,
     imageAlt: 'Zoro et Ryuma représentés côte à côte',
     links: [{ label: 'Ryuma', href: '/theorie/ryuma' }],
@@ -1144,30 +1564,30 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'retour',
     thread: 'monde',
     icon: '⌁',
-    title: 'Le monde nouveau devient le « Royaume antique »',
+    title: 'Le futur pourrait devenir le « Royaume antique » des sources',
     summary:
-      'Les inventions de Vegapunk, Franky et leurs alliés sont prises pour les vestiges d’une civilisation disparue.',
+      'Le monde et les technologies produits à la fin de l’histoire pourraient être ceux que les sources du passé décrivent comme le Royaume antique.',
     detail:
-      'L’avance technologique du Royaume antique s’explique parce qu’elle est réellement future. Le passé reçoit les résultats des inventions modernes, les date selon leur arrivée et bâtit autour d’elles le récit que le Gouvernement cherchera à effacer.',
-    status: 'hypothese',
+      'Il n’est pas nécessaire que le monde futur entier soit expédié vers −900 ans. Le passé pourrait seulement recevoir ses descriptions, ses plans, ses objets ou certaines de ses inventions, puis les interpréter comme les vestiges d’une civilisation disparue.',
+    status: 'extension',
     image: images.origin,
-    imageAlt: 'Le mystère du Siècle oublié assemblé comme un puzzle',
+    imageAlt: 'Le futur technologique interprété par le passé comme le Royaume antique',
     links: [{ label: 'Le Royaume antique', href: '/theorie/royaume-antique' }],
   },
   {
     id: 'laugh-tale-est-lodestar',
-    date: '↺ Le futur devient une destination',
+    date: '↺ Le temps comme destination',
     era: 'retour',
     thread: 'memoire',
     icon: '◎',
-    title: 'Lodestar devient Laugh Tale à l’époque de Luffy',
+    title: 'Laugh Tale pourrait lier Lodestar à une autre époque',
     summary:
-      'Le quatrième Road Ponéglyphe ne donne pas seulement un lieu : il permet à Roger d’atteindre le bon endroit au bon moment.',
+      'Laugh Tale pourrait être liée à Lodestar et à une dimension temporelle ; le rôle exact du quatrième Road Ponéglyphe reste à déterminer.',
     detail:
-      'La chronologie se referme sur son idée centrale. Grand Line fonctionne comme une frise qui entoure un globe : lorsque le voyage arrive au bout, il rencontre son commencement. La question n’est plus seulement « où ? », mais « quand ? ».',
-    status: 'central',
+      'La formulation initiale proposait Lodestar au futur et une quatrième coordonnée temporelle. L’analyse 1188 ajoute une alternative : Roger a peut-être reçu une communication sans déplacement physique. Cette carte devient donc une hypothèse de mécanisme, pas le noyau obligatoire.',
+    status: 'hypothese',
     image: images.roger,
-    imageAlt: 'Roger face au mystère de la destination finale',
+    imageAlt: 'Roger face au mystère temporel de la destination finale',
     links: [{ label: 'Road Ponéglyphes et temps', href: '/explorer/road-poneglyphes-temps' }],
   },
 ];

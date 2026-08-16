@@ -12,6 +12,7 @@ const statusOrder: Array<'all' | TimelineStatus> = [
   'all',
   'canon',
   'central',
+  'extension',
   'hypothese',
   'projection',
 ];
@@ -70,6 +71,18 @@ const seenEras = new Set<string>();
       }
     </select>
   </label>
+
+  <div class="timeline-uncertainties" aria-label="Incertitudes sur l’ordre des événements">
+    {
+      timelineEras
+        .filter((era) => era.note)
+        .map((era) => (
+          <p>
+            <strong>{era.label} :</strong> {era.note}
+          </p>
+        ))
+    }
+  </div>
 
   <div class="control-deck">
     <div class="status-filters" role="group" aria-label="Filtrer par niveau de certitude">
@@ -217,10 +230,13 @@ const seenEras = new Set<string>();
           })
         }
 
-        <aside class="time-loop" aria-label="La boucle temporelle rejoint le début de la frise">
+        <aside
+          class="time-loop"
+          aria-label="La transmission temporelle rejoint le début de la frise"
+        >
           <span class="time-loop__rings" aria-hidden="true">↺</span>
           <p>La mémoire de l’avenir</p>
-          <strong>La fin recrée le début</strong>
+          <strong>Le futur pourrait avoir créé ce passé</strong>
           <button type="button" data-loop-start>Revenir à −900 ans</button>
         </aside>
       </div>
@@ -299,13 +315,17 @@ const seenEras = new Set<string>();
               {timelineThreads[event.thread].label}
               {event.chapter ? ` · ${event.chapter}` : ''}
             </p>
-            <h3>{event.icon} {event.title}</h3>
+            <h3>
+              {event.icon} {event.title}
+            </h3>
             <p>{event.summary}</p>
             <p>{event.detail}</p>
             {event.links.length > 0 && (
               <ul>
                 {event.links.map((link) => (
-                  <li><a href={link.href}>{link.label}</a></li>
+                  <li>
+                    <a href={link.href}>{link.label}</a>
+                  </li>
                 ))}
               </ul>
             )}
@@ -509,6 +529,26 @@ const seenEras = new Set<string>();
 
   .mobile-era-select {
     display: none;
+  }
+
+  .timeline-uncertainties {
+    display: grid;
+    gap: 5px;
+    margin: -1px 0 10px;
+    padding: 9px 12px;
+    border-left: 2px solid color-mix(in srgb, var(--accent-gold) 70%, transparent);
+    background: color-mix(in srgb, var(--accent-gold) 5%, transparent);
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .timeline-uncertainties p {
+    margin: 0;
+  }
+
+  .timeline-uncertainties strong {
+    color: var(--text-secondary);
   }
 
   .era-tab:hover,
@@ -1048,6 +1088,9 @@ const seenEras = new Set<string>();
   .status-pill--central {
     color: var(--violet-light);
   }
+  .status-pill--extension {
+    color: color-mix(in srgb, var(--cyan) 58%, var(--accent-gold));
+  }
   .status-pill--hypothese {
     color: var(--accent-gold);
   }
@@ -1389,6 +1432,9 @@ const seenEras = new Set<string>();
   }
   .legend-dot--central {
     color: var(--violet-light);
+  }
+  .legend-dot--extension {
+    color: color-mix(in srgb, var(--cyan) 58%, var(--accent-gold));
   }
   .legend-dot--hypothese {
     color: var(--accent-gold);

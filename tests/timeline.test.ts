@@ -26,9 +26,70 @@ describe('frise chronologique interactive', () => {
     }
   });
 
-  it('distingue les faits, la théorie, les hypothèses et les projections', () => {
+  it('distingue les faits, le noyau, les extensions, les hypothèses et les projections', () => {
     const statuses = new Set(theoryTimeline.map((event) => event.status));
-    expect(statuses).toEqual(new Set(['canon', 'central', 'hypothese', 'projection']));
+    expect(statuses).toEqual(new Set(['canon', 'central', 'extension', 'hypothese', 'projection']));
+  });
+
+  it('conserve les cartes Manga factuelles et sépare leurs lectures théoriques', () => {
+    const byId = new Map(theoryTimeline.map((event) => [event.id, event]));
+    const expectedStatuses = {
+      'gouvernement-mondial': 'canon',
+      'imu-regne-secret': 'extension',
+      'lili-dispersion': 'canon',
+      'vivi-dispersion-future': 'extension',
+      'roger-lodestar': 'canon',
+      'lodestar-geographie': 'extension',
+      'galley-la-company': 'canon',
+      'galley-la-nom-geants': 'extension',
+      'emeth-reconnait-luffy': 'canon',
+      'emeth-reconnait-luffy-futur': 'extension',
+      'conversation-imu-joyboy': 'canon',
+      'luffy-repond-imu-laugh-tale': 'projection',
+    } as const;
+
+    for (const [id, status] of Object.entries(expectedStatuses)) {
+      expect(byId.get(id)?.status, id).toBe(status);
+    }
+
+    for (const event of theoryTimeline.filter((entry) => entry.status === 'canon')) {
+      const copy = `${event.title} ${event.summary} ${event.detail}`;
+      expect(copy, event.id).not.toMatch(
+        /\b(?:serait|pourrait|auraient|devrait|hypothèse|théorie)\b/i,
+      );
+    }
+  });
+
+  it('intègre les apports 1183–1188 sans les faire passer pour le noyau', () => {
+    const byId = new Map(theoryTimeline.map((event) => [event.id, event]));
+    const required = [
+      'brook-premiers-vers',
+      'brook-dozan',
+      'brook-ignore-fruits',
+      'fruits-apparition-recente',
+      'geants-recits-contradictoires',
+      'imu-confond-geants-epoque',
+      'imu-appelle-luffy-joyboy',
+      'joyboy-consequence-histoire',
+      'conversation-imu-joyboy',
+      'roger-communication-laugh-tale',
+      'luffy-repond-imu-laugh-tale',
+    ];
+
+    for (const id of required) expect(byId.has(id), id).toBe(true);
+    expect(byId.get('brook-dozan')?.status).toBe('extension');
+    expect(byId.get('fruits-apparition-recente')?.status).toBe('hypothese');
+    expect(byId.get('imu-confond-geants-epoque')?.status).toBe('hypothese');
+    expect(byId.get('joyboy-consequence-histoire')?.status).toBe('central');
+  });
+
+  it('place les Ponéglyphes au centre et garde les autres transmissions en branches', () => {
+    const byId = new Map(theoryTimeline.map((event) => [event.id, event]));
+    expect(byId.get('transmission-vers-passe')?.status).toBe('central');
+    expect(byId.get('harley-vers-passe')?.status).toBe('extension');
+    expect(byId.get('transport-physique-limite')?.status).toBe('extension');
+    expect(byId.get('imu-communication-future')?.status).toBe('hypothese');
+    expect(byId.get('imu-prescience-alternative')?.status).toBe('hypothese');
   });
 
   it('fournit un contenu détaillé et au moins un lien pour chaque événement', () => {
@@ -59,5 +120,10 @@ describe('frise chronologique interactive', () => {
     );
     expect(page).toContain('<InteractiveTheoryTimeline />');
     expect(page).toContain('Reconstituée depuis la source');
+    expect(page).toContain(
+      "const canonCount = theoryTimeline.filter((event) => event.status === 'canon').length",
+    );
+    expect(page).toContain('{canonCount} repères canoniques');
+    expect(page).not.toMatch(/parcourez cette boucle/i);
   });
 });
