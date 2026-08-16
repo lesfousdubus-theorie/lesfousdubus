@@ -212,7 +212,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     summary:
       'Des pierres indestructibles guident chaque peuple vers une mission et racontent une histoire interdite.',
     detail:
-      'Leur matériau, leur langue et leur résistance restent inexplicables. Dans la théorie, ce sont des objets futuristes : Robin inventera la langue qu’elle a elle-même apprise et Momonosuke recevra de Sukiyaki le savoir nécessaire pour les tailler.',
+      'Leur matériau, leur langue et leur résistance restent inexplicables. Dans la théorie, ce sont des objets futuristes : Robin et le savoir des Kozuki participeraient à leur rédaction et à leur gravure. L’hypothèse d’une langue inventée par Robin est une déduction séduisante mais non établie par le manga.',
     status: 'central',
     image: images.poneglyph,
     imageAlt: 'Archéologues devant un Ponéglyphe bleu',
@@ -326,6 +326,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     detail:
       'L’équipage comprend que quatre Road Ponéglyphes sont nécessaires. La théorie interprète la quatrième coordonnée comme le temps : Lodestar serait le bon endroit, mais Laugh Tale serait ce même lieu à la bonne époque.',
     status: 'canon',
+    chapter: 'Ch. 968',
     image: images.roger,
     imageAlt: 'Silhouette de Gol D. Roger dans une planche du manga',
     links: [{ label: 'Lodestar', href: '/theorie/lodestar' }],
@@ -447,7 +448,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
   },
   {
     id: 'vivi-et-lombre-de-lili',
-    date: '≈ −20 ans',
+    date: '≈ −18 ans',
     era: 'roger',
     thread: 'figures',
     icon: '♕',
@@ -521,6 +522,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     detail:
       'Cette coïncidence est centrale dans la transcription. La compagnie humaine et l’équipage de Loki finiraient par fusionner : les meilleurs charpentiers du monde disposeraient enfin de la taille nécessaire pour transformer une île entière en navire.',
     status: 'canon',
+    chapter: 'Ch. 326',
     image: images.galley,
     imageAlt: 'Montage sur la Galley-La Company et les géants charpentiers',
     links: [{ label: 'Galley-La', href: '/theorie/galley-la-coincidence-impossible' }],
@@ -779,7 +781,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     summary:
       'Le dernier héritier Davy vise le monde, Mary Geoise et le trône qu’Imu lui refuse depuis des générations.',
     detail:
-      'Barbe Noire accomplirait la promesse de Xebec en renversant le roi caché. Davy Jones ne serait donc pas son ancêtre mais son futur nom de règne, l’autre face de la pièce opposée à Joy Boy.',
+      'Barbe Noire accomplirait la promesse de Xebec en renversant le roi caché. Héritier du clan Davy, il recevrait le titre de Jones — Roi du Monde —, l’autre face de la pièce opposée à Joy Boy.',
     status: 'projection',
     image: images.davy,
     imageAlt: 'Marshall D. Teach proclamant le début de son époque',
@@ -874,7 +876,7 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     summary:
       'Shirahoshi commande les Rois des Mers pour transporter l’arche et faire monter son peuple vers le soleil.',
     detail:
-      'Luffy peut enfin tenir la promesse faite quelques mois plus tôt. La destruction annoncée de l’île des Hommes-Poissons n’est plus un abandon : elle devient l’étape nécessaire pour sauver ses habitants avant la chute de Red Line.',
+      'Luffy pourrait alors tenir la promesse faite quelques mois plus tôt. La destruction annoncée de l’île des Hommes-Poissons ne serait plus un abandon : elle deviendrait l’étape nécessaire pour sauver ses habitants avant la chute de Red Line.',
     status: 'projection',
     links: [{ label: 'L’arche Noah', href: '/theorie/noah' }],
   },
@@ -1031,11 +1033,11 @@ export const theoryTimeline: TheoryTimelineEvent[] = [
     era: 'aube',
     thread: 'memoire',
     icon: '✎',
-    title: 'Robin et Momonosuke écrivent le Rio Ponéglyphe',
+    title: 'Robin et le savoir des Kozuki rédigent le Rio Ponéglyphe',
     summary:
-      'L’archéologue rédige l’histoire vécue par l’équipage et le shogun grave les pierres avec le savoir des Kozuki.',
+      'La théorie propose que Robin et le savoir des Kozuki participent à la rédaction et à la gravure de la mémoire future.',
     detail:
-      'Robin réalise son rêve en découvrant puis en partageant la véritable Histoire. L’ironie temporelle est complète : elle a appris à lire une langue qui deviendra son écriture, et Momonosuke préserve un art nécessaire à la création de ses propres sources.',
+      'La théorie propose que Robin et le savoir des Kozuki puissent participer à la rédaction et à la gravure du Rio Ponéglyphe. Robin rédigerait l’histoire vécue par l’équipage, et le savoir de gravure des Kozuki préserverait cette mémoire. L’idée d’une langue inventée par Robin reste une déduction séduisante mais non établie par le manga.',
     status: 'central',
     image: images.ohara,
     imageAlt: 'Robin et les savants d’Ohara devant la pierre de l’Histoire',
