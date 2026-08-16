@@ -59,8 +59,8 @@ const next = position.next ? { ...position.next, title: titleOf(position.next.sl
 
 <style>
   .parcours {
-    margin: 40px 0 8px;
-    padding-top: 20px;
+    margin: var(--space-7) 0 var(--space-2);
+    padding-top: var(--space-5);
     border-top: 1px solid var(--border-color);
   }
 
@@ -93,9 +93,11 @@ const next = position.next ? { ...position.next, title: titleOf(position.next.sl
 
   .parcours__link {
     display: flex;
+    min-height: 92px;
     flex-direction: column;
-    gap: 4px;
-    padding: 14px 16px;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     text-decoration: none;

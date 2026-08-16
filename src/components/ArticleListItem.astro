@@ -13,57 +13,68 @@ const { badge, badgeColor, title, category, chapter, href, summary } = Astro.pro
 ---
 
 <a href={href} class="article-item">
-  <div class="article-item__accent"></div>
+  <span class="article-item__accent" aria-hidden="true"></span>
   <div class="article-item__body">
     <div class="article-item__main">
-      <span class={`article-item__badge article-item__badge--${badgeColor}`}>
-        {badge}
-      </span>
-      <span class="article-item__title">{title}</span>
+      <span class={`article-item__badge article-item__badge--${badgeColor}`}>{badge}</span>
+      <strong class="article-item__title">{title}</strong>
     </div>
-    {summary && (
-      <p class="article-item__summary">{summary}</p>
-    )}
+    {summary && <p class="article-item__summary">{summary}</p>}
     <div class="article-item__meta">
       <span>{category}</span>
       {chapter && <span class="article-item__dot">•</span>}
       {chapter && <span>Suite au chap. {chapter}</span>}
     </div>
   </div>
-  <div class="article-item__arrow">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-  </div>
+  <span class="article-item__arrow" aria-hidden="true">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg
+    >
+  </span>
 </a>
 
 <style>
   .article-item {
     position: relative;
     display: flex;
+    min-height: 112px;
     align-items: stretch;
-  background-color: var(--bg-main);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  text-decoration: none;
-  transition: all 0.25s ease;
-}
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background-color: var(--bg-main);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      border-color 0.25s ease,
+      background-color 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.25s ease;
+  }
 
   .article-item:hover {
+    border-color: color-mix(in srgb, var(--violet) 45%, var(--border-color));
     background-color: var(--bg-secondary);
-    border-color: color-mix(in srgb, var(--violet) 30%, var(--border-color));
     box-shadow: 0 4px 20px var(--shadow-color);
+    transform: translateY(-2px);
   }
+
   .article-item:focus-visible {
     outline: 2px solid var(--cyan);
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 
   .article-item__accent {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0 auto 0 0;
     width: 3px;
-    height: 100%;
     background: var(--gradient-border);
     opacity: 0;
     transition: opacity 0.25s ease;
@@ -74,56 +85,69 @@ const { badge, badgeColor, title, category, chapter, href, summary } = Astro.pro
   }
 
   .article-item__body {
+    display: grid;
+    min-width: 0;
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 14px 16px 14px 20px;
-    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2) var(--space-5);
+    align-content: center;
+    padding: var(--space-4) var(--space-2) var(--space-4) var(--space-5);
   }
 
   .article-item__main {
     display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-2) var(--space-3);
   }
 
   .article-item__badge {
-    @apply inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium border;
-    font-size: 12px;
+    display: inline-flex;
+    min-height: 26px;
+    flex: 0 0 auto;
+    align-items: center;
+    padding: 3px 9px;
+    border: 1px solid;
+    border-radius: var(--border-radius-full);
+    font-size: 11.5px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
     white-space: nowrap;
-    flex-shrink: 0;
   }
 
   .article-item__badge--cyan {
+    border-color: color-mix(in srgb, var(--cyan) 25%, transparent);
     background-color: color-mix(in srgb, var(--cyan) 12%, transparent);
     color: var(--cyan);
-    border-color: color-mix(in srgb, var(--cyan) 25%, transparent);
   }
 
   .article-item__badge--violet {
+    border-color: color-mix(in srgb, var(--violet) 25%, transparent);
     background-color: color-mix(in srgb, var(--violet) 12%, transparent);
     color: var(--violet-light);
-    border-color: color-mix(in srgb, var(--violet) 25%, transparent);
   }
 
   .article-item__badge--gold {
+    border-color: color-mix(in srgb, var(--accent-gold) 25%, transparent);
     background-color: color-mix(in srgb, var(--accent-gold) 12%, transparent);
     color: var(--accent-gold);
-    border-color: color-mix(in srgb, var(--accent-gold) 25%, transparent);
   }
 
   .article-item__badge--textSecondary {
+    border-color: color-mix(in srgb, var(--text-secondary) 38%, transparent);
     background-color: color-mix(in srgb, var(--text-secondary) 20%, transparent);
     color: var(--text-secondary);
-    border-color: color-mix(in srgb, var(--text-secondary) 38%, transparent);
   }
 
   .article-item__title {
-    font-size: 15px;
-    font-weight: 500;
+    min-width: min(100%, 180px);
     color: var(--text-main);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
     transition: color 0.2s ease;
   }
 
@@ -131,23 +155,32 @@ const { badge, badgeColor, title, category, chapter, href, summary } = Astro.pro
     color: var(--cyan);
   }
 
-  .article-item__meta {
-    font-size: 12.5px;
+  .article-item__summary {
+    display: -webkit-box;
+    grid-column: 1;
+    margin: 0;
+    overflow: hidden;
     color: var(--text-secondary);
-    display: flex;
-    gap: 8px;
-    align-items: center;
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
-  .article-item__summary {
-    font-size: 13px;
+  .article-item__meta {
+    display: flex;
+    grid-column: 2;
+    grid-row: 1 / 3;
+    max-width: 170px;
+    flex-wrap: wrap;
+    align-items: center;
+    align-self: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
     color: var(--text-secondary);
+    font-size: 12.5px;
     line-height: 1.45;
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    text-align: right;
   }
 
   .article-item__dot {
@@ -155,39 +188,41 @@ const { badge, badgeColor, title, category, chapter, href, summary } = Astro.pro
   }
 
   .article-item__arrow {
-    display: none;
+    display: flex;
+    width: var(--control-size);
+    flex: 0 0 var(--control-size);
     align-items: center;
-    padding-right: 16px;
+    justify-content: center;
     color: var(--text-secondary);
-    transition: all 0.2s ease;
+    transition:
+      color 0.2s ease,
+      transform 0.2s ease;
   }
 
   .article-item:hover .article-item__arrow {
     color: var(--cyan);
+    transform: translateX(2px);
   }
 
-  @media (min-width: 768px) {
+  @media (max-width: 680px) {
     .article-item__body {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0;
+      grid-template-columns: minmax(0, 1fr);
+      padding: var(--space-4) var(--space-2) var(--space-4) var(--space-4);
     }
-    .article-item__arrow {
-      display: flex;
-    }
-  }
 
-  @media (max-width: 480px) {
-    .article-item__body {
-      padding: 12px 14px 12px 18px;
-    }
-    .article-item__title {
-      font-size: 14px;
-    }
     .article-item__meta {
-      font-size: 12px;
-      flex-wrap: wrap;
+      grid-column: 1;
+      grid-row: auto;
+      max-width: none;
+      justify-content: flex-start;
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .article-item__arrow {
+      width: 32px;
+      flex-basis: 32px;
     }
   }
 </style>

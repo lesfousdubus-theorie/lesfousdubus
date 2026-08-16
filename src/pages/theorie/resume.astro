@@ -157,7 +157,8 @@ const points = [
   .summary-card p { margin: 0; color: var(--text-secondary); line-height: 1.7; }
   .summary-card small { display: block; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); color: var(--text-muted); }
   .summary__actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 50px; }
-  .summary__actions a { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius); color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600; }
+  .summary__actions a { display: inline-flex; min-height: var(--control-size); align-items: center; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius); color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600; }
+  .summary__actions a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
   .summary__actions .primary { border-color: var(--cyan); color: var(--cyan); }
   @media (max-width: 600px) { .paradox span { display: none; } }
 </style>

@@ -17,7 +17,9 @@ describe('régressions UI, UX et accessibilité', () => {
     expect(layout).toContain('aria-label="Liste des articles"');
     expect(layout).toContain("window.matchMedia('(max-width: 1023px)')");
     expect(layout).not.toContain('sidebar-resizer');
-    expect(layout).not.toContain('sidebar-left-width');
+    expect(layout).toContain('var(--sidebar-left-width)');
+    expect(layout).not.toContain("setProperty('--sidebar-left-width'");
+    expect(layout).not.toContain("localStorage.getItem('sidebar-left-width'");
     expect(layout).not.toContain('sidebar-left-collapsed');
     expect(layout).toContain('aria-controls="toc-drawer"');
   });
@@ -33,6 +35,29 @@ describe('régressions UI, UX et accessibilité', () => {
       "aria-controls={useGlobalMobileMenu ? 'global-mobile-nav' : 'sidebar-left'}",
     );
     expect(layout).not.toMatch(/window\.innerWidth\s*[<>]=?\s*768/);
+  });
+
+  it('replie le sommaire avant que les trois colonnes ne compriment la lecture', () => {
+    const layout = read('src/layouts/WikiLayout.astro');
+    const backToTop = read('src/components/BackToTop.astro');
+
+    expect(layout).toContain("window.matchMedia('(max-width: 1399px)')");
+    expect(layout).toContain('@media (max-width: 1399px)');
+    expect(backToTop).toContain('@media (max-width: 1399px)');
+    expect(layout).toContain('var(--content-max)');
+  });
+
+  it('partage les dimensions tactiles et les grilles adaptatives', () => {
+    const global = read('src/styles/global.css');
+    const homepage = read('src/pages/index.astro');
+    const theory = read('src/pages/theorie/index.astro');
+    const navbar = read('src/components/Navbar.astro');
+
+    expect(global).toContain('--control-size: 44px');
+    expect(global).toContain('--grid-gap: 16px');
+    expect(homepage).toContain('repeat(auto-fit, minmax(min(100%, 210px), 1fr))');
+    expect(theory).toContain('repeat(auto-fit, minmax(min(100%, 260px), 1fr))');
+    expect(navbar).toContain('height: var(--control-size)');
   });
 
   it('synchronise les composants fixes avec les états réels des superpositions', () => {

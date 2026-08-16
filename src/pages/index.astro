@@ -677,20 +677,14 @@ const badgeColorByEffect = {
   /* ===== GRID & LIST ===== */
   .grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+    gap: var(--grid-gap);
+    align-items: stretch;
   }
 
-  @media (min-width: 1024px) {
-    .grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
-  @media (min-width: 641px) and (max-width: 1023px) {
-    .grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
+  .article-list {
+    display: grid;
+    gap: var(--space-3);
   }
 
   .dossiers-footer {
@@ -787,14 +781,16 @@ const badgeColorByEffect = {
 
   .understand-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    gap: var(--grid-gap);
+    margin-bottom: var(--space-6);
   }
 
   .understand-card {
     display: block;
-    padding: 22px;
+    min-height: 184px;
+    height: 100%;
+    padding: var(--card-padding);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
     background: var(--gradient-card);
@@ -869,21 +865,9 @@ const badgeColorByEffect = {
   }
 
   @media (max-width: 640px) {
-    .understand-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .grid {
-      grid-template-columns: 1fr;
-    }
-    .understand-grid {
-      grid-template-columns: 1fr;
-    }
     .hero {
-      margin-bottom: 32px;
-      padding: 28px 20px 24px;
+      margin-bottom: var(--space-7);
+      padding: var(--space-7) var(--space-5) var(--space-6);
     }
     .hero-cta {
       flex-direction: column;

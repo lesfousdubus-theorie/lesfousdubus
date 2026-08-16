@@ -497,8 +497,8 @@ const sortedLetters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'fr
   }
 
   .alpha-link {
-    width: 34px;
-    height: 34px;
+    width: var(--control-size);
+    height: var(--control-size);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -563,6 +563,9 @@ const sortedLetters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'fr
   }
 
   .entry-link {
+    display: inline-flex;
+    min-height: var(--control-size);
+    align-items: center;
     font-size: 13px;
     color: var(--cyan);
     text-decoration: none;
@@ -570,6 +573,10 @@ const sortedLetters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'fr
   }
   .entry-link:hover {
     text-decoration: underline;
+  }
+  .entry-link:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
 
   .badge {

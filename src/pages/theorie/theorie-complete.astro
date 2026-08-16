@@ -585,8 +585,9 @@ const breadcrumbItems = [
   }
   .chapter-nav__item {
     display: flex;
+    min-height: var(--control-size);
     gap: 10px;
-    align-items: baseline;
+    align-items: center;
     padding: 7px;
     border-radius: 7px;
     color: var(--text-secondary);
@@ -596,6 +597,10 @@ const breadcrumbItems = [
   .chapter-nav__item:hover {
     color: var(--cyan);
     background: color-mix(in srgb, var(--cyan) 7%, transparent);
+  }
+  .chapter-nav__item:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
   .chapter-nav__number {
     color: var(--violet-light);
@@ -703,6 +708,8 @@ const breadcrumbItems = [
   .btn-primary,
   .btn-secondary {
     display: inline-flex;
+    min-height: var(--control-size);
+    align-items: center;
     padding: 10px 15px;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -720,6 +727,11 @@ const breadcrumbItems = [
   .btn-secondary:hover {
     transform: translateY(-1px);
     border-color: var(--violet-light);
+  }
+  .btn-primary:focus-visible,
+  .btn-secondary:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
   }
   @media (max-width: 650px) {
     .chapter-nav__grid {

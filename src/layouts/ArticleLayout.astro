@@ -607,16 +607,18 @@ const articleJsonLd = {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
-    margin: 40px 0 24px;
-    padding-top: 24px;
+    gap: var(--space-4);
+    margin: var(--space-5) 0;
+    padding-top: var(--space-5);
     border-top: 1px solid var(--border-color);
   }
 
   .btn-read-nav {
     display: inline-flex;
+    min-height: var(--control-size);
     align-items: center;
-    padding: 10px 18px;
+    justify-content: center;
+    padding: var(--space-2) var(--space-4);
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
@@ -677,9 +679,9 @@ const articleJsonLd = {
   }
 
   .content {
-    margin-top: 32px;
-    line-height: 1.8;
+    margin-top: var(--space-7);
     font-size: 16px;
+    line-height: 1.8;
   }
 
   .content :global(h2) {
@@ -918,10 +920,10 @@ const articleJsonLd = {
      proche du haut du viewport (l'ancien top:-48px pouvait être rogné). */
   #lightbox-close {
     position: fixed;
-    top: max(16px, env(safe-area-inset-top, 0px));
-    right: 16px;
-    width: 40px;
-    height: 40px;
+    top: max(var(--space-4), env(safe-area-inset-top, 0px));
+    right: max(var(--space-4), env(safe-area-inset-right, 0px));
+    width: var(--control-size);
+    height: var(--control-size);
     border-radius: 50%;
     background: var(--surface);
     border: 1px solid var(--border-color);
@@ -1007,9 +1009,9 @@ const articleJsonLd = {
   .article-share {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin: 24px 0 0;
-    padding-top: 16px;
+    gap: var(--space-2);
+    margin: var(--space-6) 0 0;
+    padding-top: var(--space-4);
     border-top: 1px solid var(--border-color);
   }
 
@@ -1024,10 +1026,10 @@ const articleJsonLd = {
 
   .article-share__btn {
     display: inline-flex;
+    width: var(--control-size);
+    height: var(--control-size);
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
     border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
     background: color-mix(in srgb, var(--surface) 50%, transparent);
@@ -1053,15 +1055,16 @@ const articleJsonLd = {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: var(--space-3);
     flex-wrap: wrap;
-    margin: 0 0 8px;
+    margin: 0 0 var(--space-2);
   }
 
   .zen-toggle {
     display: inline-flex;
+    min-height: var(--control-size);
     align-items: center;
-    padding: 6px 12px;
+    padding: var(--space-2) var(--space-3);
     font-size: 12px;
     font-weight: 600;
     border-radius: var(--border-radius-full);

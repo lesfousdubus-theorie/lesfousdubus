@@ -251,14 +251,16 @@ const canonicalWikiUrl = new URL(
 
   .wiki-layout {
     display: grid;
-    grid-template-columns: 272px minmax(0, 1fr) 240px;
+    grid-template-columns:
+      var(--sidebar-left-width) minmax(0, 1fr)
+      var(--sidebar-right-width);
     width: 100%;
     min-width: 0;
     flex: 1;
   }
 
   .wiki-layout--no-toc {
-    grid-template-columns: 272px minmax(0, 1fr);
+    grid-template-columns: var(--sidebar-left-width) minmax(0, 1fr);
   }
 
   .wiki-layout--no-sidebar {
@@ -318,14 +320,14 @@ const canonicalWikiUrl = new URL(
     flex-direction: column;
     width: 100%;
     min-width: 0;
-    max-width: 860px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 32px 40px;
+    padding: var(--page-block-start) var(--page-gutter) var(--space-6);
     overflow-wrap: anywhere;
   }
 
   .main-content--centered {
-    max-width: 860px;
+    max-width: var(--content-max);
   }
 
   .main-content :global(img),
@@ -366,10 +368,12 @@ const canonicalWikiUrl = new URL(
     pointer-events: auto;
   }
 
-  @media (max-width: 1200px) {
+  /* Keep the reading column comfortable: showing the TOC before there is room
+     for all three columns used to compress article text between 1201–1399 px. */
+  @media (max-width: 1399px) {
     .wiki-layout,
     .wiki-layout--no-toc {
-      grid-template-columns: 272px minmax(0, 1fr);
+      grid-template-columns: var(--sidebar-left-width) minmax(0, 1fr);
     }
 
     .sidebar-right {
@@ -453,8 +457,8 @@ const canonicalWikiUrl = new URL(
     }
 
     .main-content {
-      max-width: 860px;
-      padding: 28px 24px;
+      max-width: var(--content-max);
+      padding: 28px 24px var(--space-6);
     }
   }
 
@@ -555,7 +559,7 @@ const canonicalWikiUrl = new URL(
     padding: 18px 16px max(28px, env(safe-area-inset-bottom));
   }
 
-  @media (max-width: 1200px) {
+  @media (max-width: 1399px) {
     .toc-fab {
       display: inline-flex;
     }
@@ -564,7 +568,7 @@ const canonicalWikiUrl = new URL(
   @media (max-width: 640px) {
     .toc-fab {
       right: 16px;
-      bottom: 84px;
+      bottom: max(16px, env(safe-area-inset-bottom));
     }
   }
 
@@ -677,7 +681,7 @@ const canonicalWikiUrl = new URL(
     }
   });
 
-  const tocMedia = window.matchMedia('(max-width: 1200px)');
+  const tocMedia = window.matchMedia('(max-width: 1399px)');
   const tocFab = document.getElementById('toc-fab');
   const tocDrawer = document.getElementById('toc-drawer');
   const tocClose = document.getElementById('toc-close');

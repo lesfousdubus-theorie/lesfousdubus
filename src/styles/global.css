@@ -109,12 +109,26 @@
     --icon-xs: 12px;
     --icon-sm: 16px;
     --icon-md: 20px;
+    /* Base 4 px spacing scale. Components should compose these values rather
+       than introduce one-off gaps that drift between pages. */
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
     --space-4: 16px;
     --space-5: 24px;
     --space-6: 32px;
+    --space-7: 40px;
+    /* Shared dimensions keep controls and page rhythm stable at every
+       breakpoint while retaining the existing visual identity. */
+    --control-size: 44px;
+    --page-gutter: clamp(16px, 3.2vw, 40px);
+    --page-block-start: clamp(22px, 3vw, 32px);
+    --section-gap: clamp(32px, 5vw, 48px);
+    --card-padding: clamp(16px, 2.4vw, 22px);
+    --grid-gap: 16px;
+    --content-max: 920px;
+    --sidebar-left-width: 248px;
+    --sidebar-right-width: 224px;
   }
 
   html {
@@ -349,8 +363,21 @@
 a,
 button,
 input,
+select,
 [role='button'] {
   @apply transition-colors duration-200;
+}
+
+/* Interactive form controls share a reliable touch target. Component styles
+   can still grow beyond it for primary actions and large cards. */
+button,
+input,
+select {
+  min-height: var(--control-size);
+}
+
+button {
+  min-width: var(--control-size);
 }
 
 /* Prevent horizontal overflow globally — critical for mobile slide fix.

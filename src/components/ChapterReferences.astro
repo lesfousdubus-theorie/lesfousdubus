@@ -4,7 +4,8 @@ interface ChapterItem {
   data: {
     chapter: number;
     title: string;
-    effect: 'fondation' | 'approfondissement' | 'nouvelle-piste' | 'modification' | 'piste-abandonnee';
+    effect:
+      'fondation' | 'approfondissement' | 'nouvelle-piste' | 'modification' | 'piste-abandonnee';
     themes: string[];
     updatedArticles: string[];
     summary?: string;
@@ -18,37 +19,53 @@ interface Props {
 const { items } = Astro.props;
 
 const effectLabels: Record<string, { label: string; color: string }> = {
-  'fondation': { label: 'Fondation', color: 'var(--cyan)' },
-  'approfondissement': { label: 'Approfondissement', color: 'var(--accent-gold)' },
+  fondation: { label: 'Fondation', color: 'var(--cyan)' },
+  approfondissement: { label: 'Approfondissement', color: 'var(--accent-gold)' },
   'nouvelle-piste': { label: 'Nouvelle piste', color: 'var(--violet)' },
-  'modification': { label: 'Mise à jour', color: 'var(--accent-gold)' },
+  modification: { label: 'Mise à jour', color: 'var(--accent-gold)' },
   'piste-abandonnee': { label: 'Piste abandonnée', color: 'var(--text-secondary)' },
 };
 ---
 
 <section class="mt-8 mb-8" aria-labelledby="chapter-refs-heading">
-  <h3 id="chapter-refs-heading" class="font-sans text-sm uppercase tracking-wider text-textSecondary mb-4 border-b border-borderColor pb-2">
+  <h3
+    id="chapter-refs-heading"
+    class="font-sans text-sm uppercase tracking-wider text-textSecondary mb-4 border-b border-borderColor pb-2"
+  >
     Chapitres clés
   </h3>
   <div class="flex flex-wrap gap-2">
-    {items.map((item) => {
-      const effect = effectLabels[item.data.effect];
-      return (
-        <a
-          href={`/chapitres/${item.data.chapter}`}
-          class="chapter-badge inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
-          style={{
-            background: `color-mix(in srgb, ${effect.color} 12%, transparent)`,
-            color: effect.color,
-            borderColor: `color-mix(in srgb, ${effect.color} 28%, transparent)`,
-            borderWidth: '1px',
-            borderStyle: 'solid',
-          }}
-        >
-          <span>Ch. {item.data.chapter}</span>
-          <span class="hidden sm:inline">{effect.label}</span>
-        </a>
-      );
-    })}
+    {
+      items.map((item) => {
+        const effect = effectLabels[item.data.effect];
+        return (
+          <a
+            href={`/chapitres/${item.data.chapter}`}
+            class="chapter-badge inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
+            style={{
+              background: `color-mix(in srgb, ${effect.color} 12%, transparent)`,
+              color: effect.color,
+              borderColor: `color-mix(in srgb, ${effect.color} 28%, transparent)`,
+              borderWidth: '1px',
+              borderStyle: 'solid',
+            }}
+          >
+            <span>Ch. {item.data.chapter}</span>
+            <span class="hidden sm:inline">{effect.label}</span>
+          </a>
+        );
+      })
+    }
   </div>
 </section>
+
+<style>
+  .chapter-badge {
+    min-height: var(--control-size);
+  }
+
+  .chapter-badge:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+</style>

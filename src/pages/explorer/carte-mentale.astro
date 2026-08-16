@@ -361,12 +361,13 @@ import Footer from '@components/Footer.astro';
   .mindmap-svg { width: 100%; height: 100%; display: block; }
   .mindmap-controls { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 4px; z-index: 10; }
   .control-btn {
-    width: 34px; height: 34px; border-radius: 8px; background-color: var(--bg-main);
+    width: var(--control-size); height: var(--control-size); border-radius: 8px; background-color: var(--bg-main);
     border: 1px solid var(--border-color); color: var(--text-main); font-size: 16px;
     font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: all 0.15s;
   }
   .control-btn:hover { background-color: var(--surface); border-color: var(--violet); color: var(--cyan); }
+  .control-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
   .mindmap-node:hover { filter: brightness(1.18); }
 
   .textual { margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border-color); }

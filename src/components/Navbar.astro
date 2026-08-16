@@ -362,10 +362,11 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
   }
 
   .logo {
+    display: flex;
+    min-height: var(--control-size);
+    align-items: center;
     font-weight: 700;
     font-size: 15px;
-    display: flex;
-    align-items: center;
     gap: 8px;
     text-decoration: none;
     color: var(--text-main);
@@ -439,7 +440,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     font-weight: 500;
     color: var(--text-secondary);
     text-decoration: none;
-    min-height: 40px;
+    min-height: var(--control-size);
     padding: 6px 32px 6px 10px;
     border-radius: var(--border-radius-sm);
     display: inline-flex;
@@ -474,7 +475,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     place-items: center;
     width: 28px;
     min-width: 28px;
-    height: 40px;
+    height: var(--control-size);
     padding: 0;
     border: 0;
     border-radius: var(--border-radius-sm);
@@ -714,8 +715,8 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     display: flex;
     align-items: center;
     gap: 8px;
-    height: 34px;
-    min-height: 34px;
+    height: var(--control-size);
+    min-height: var(--control-size);
     padding: 0 10px 0 12px;
     font-size: 13px;
     color: var(--text-secondary);
@@ -772,8 +773,8 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
 
   .theme-btn,
   .icon-btn {
-    width: 34px;
-    height: 34px;
+    width: var(--control-size);
+    height: var(--control-size);
     border-radius: var(--border-radius);
     display: flex;
     align-items: center;
