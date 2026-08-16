@@ -11,7 +11,7 @@ describe('présentation du noyau de la théorie', () => {
 
   it('conserve les éléments structurants de la transcription originale', () => {
     expect(summary).toContain('Lodestar à une autre');
-    expect(summary).toContain('Robin et Momonosuke');
+    expect(summary).toContain('Robin et le savoir des Kozuki');
     expect(summary).toContain('One Piece serait cette histoire elle-même');
   });
 

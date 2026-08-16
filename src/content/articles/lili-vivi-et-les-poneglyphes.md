@@ -57,7 +57,7 @@ La théorie propose le mécanisme suivant pour cette dispersion future. Nico Rob
 
 La lettre de Lili, transmise de génération en génération, prendrait alors un sens nouveau. Ce ne serait pas le testament d'une reine morte mais une instruction laissée par Vivi elle-même à ses successeurs : protégez ces pierres, gardez cette mémoire, attendez l'aube. L'opening 28 de l'animé renforce cette lecture en montrant Vivi entourée de Ponéglyphes qui s'envolent et se dispersent derrière elle — une image directe de son rôle futur dans la préservation de la vérité.
 
-## 5. Vivi deviendra la reine d'Alabasta
+## 5. Vivi et le trône d'Alabasta
 
 ![Vivi, future reine](/images/threads/lili-vivi-et-les-poneglyphes/img_6.webp)
 

@@ -23,7 +23,12 @@ const eraFirstEvent = new Map(
 const seenEras = new Set<string>();
 ---
 
-<section class="chronoscope" data-timeline-root data-zoom="normal">
+<section
+  class="chronoscope"
+  data-timeline-root
+  data-zoom="normal"
+  aria-keyshortcuts="ArrowLeft ArrowRight Home End"
+>
   <div class="chronoscope__topline">
     <div>
       <p class="chronoscope__eyebrow">Chronoscope des Fous du Bus</p>
@@ -43,7 +48,7 @@ const seenEras = new Set<string>();
           class="era-tab"
           data-era-target={eraFirstEvent.get(era.id)}
           data-era-button={era.id}
-          aria-current={index === 0 ? 'step' : undefined}
+          aria-current={index === 0 ? 'true' : undefined}
           title={era.description}
         >
           <span>{era.label}</span>
@@ -227,11 +232,14 @@ const seenEras = new Set<string>();
       <span aria-hidden="true">↔</span>
       Glissez la frise ou utilisez les flèches
     </p>
+    <p class="timeline-empty" data-timeline-empty hidden>
+      Aucun événement ne correspond à ces filtres.
+    </p>
   </div>
 
   <div class="timeline-console">
     <div class="timeline-console__current">
-      <span data-current-index>01</span>
+      <span data-current-index>01/{theoryTimeline.length}</span>
       <div>
         <small data-current-date>{theoryTimeline[0].date}</small>
         <strong data-current-title>{theoryTimeline[0].title}</strong>
@@ -275,6 +283,38 @@ const seenEras = new Set<string>();
 
   <p class="sr-only" data-timeline-live aria-live="polite"></p>
 </section>
+
+<noscript>
+  <div class="timeline-nojs">
+    <p class="timeline-nojs__note">
+      Cette frise est interactive. Voici son contenu complet, lisible sans JavaScript.
+    </p>
+    {
+      theoryTimeline.map((event) => {
+        const era = timelineEras.find((item) => item.id === event.era);
+        return (
+          <article class="timeline-nojs__event">
+            <p class="timeline-nojs__meta">
+              {event.date} · {era?.label} · {timelineStatus[event.status].label} ·{' '}
+              {timelineThreads[event.thread].label}
+              {event.chapter ? ` · ${event.chapter}` : ''}
+            </p>
+            <h3>{event.icon} {event.title}</h3>
+            <p>{event.summary}</p>
+            <p>{event.detail}</p>
+            {event.links.length > 0 && (
+              <ul>
+                {event.links.map((link) => (
+                  <li><a href={link.href}>{link.label}</a></li>
+                ))}
+              </ul>
+            )}
+          </article>
+        );
+      })
+    }
+  </div>
+</noscript>
 
 <dialog class="event-dialog" data-event-dialog aria-label="Détail de la chronologie">
   <div class="event-dialog__surface">
@@ -327,6 +367,26 @@ const seenEras = new Set<string>();
 }
 
 <style>
+  /* La frise et sa modale restent en thème sombre quel que soit le thème de la
+     page : les couleurs de fils et de statuts (rose, or, bleu) sont dessinées
+     pour un fond sombre et perdraient leur contraste en thème clair. */
+  .chronoscope,
+  .event-dialog {
+    color-scheme: dark;
+    --bg-main: #0e1722;
+    --bg-secondary: #13202e;
+    --surface: #1c2a3a;
+    --violet: #8091cf;
+    --violet-light: #9face0;
+    --cyan: #5fb9c2;
+    --text-main: #f3efe6;
+    --text-secondary: #aeb7c2;
+    --text-muted: color-mix(in srgb, #aeb7c2 74%, transparent);
+    --accent-gold: #e0ab4e;
+    --border-color: rgba(243, 239, 230, 0.16);
+    --shadow-color: rgba(3, 8, 15, 0.45);
+  }
+
   .chronoscope {
     --card-width: 304px;
     --event-gap: 22px;
@@ -453,7 +513,7 @@ const seenEras = new Set<string>();
 
   .era-tab:hover,
   .era-tab:focus-visible,
-  .era-tab[aria-current='step'] {
+  .era-tab[aria-current='true'] {
     border-color: color-mix(in srgb, var(--violet-light) 65%, var(--border-color));
     background: color-mix(in srgb, var(--violet) 15%, var(--bg-secondary));
   }
@@ -782,7 +842,7 @@ const seenEras = new Set<string>();
     border-left: 2px solid var(--thread-color);
     color: var(--text-main);
     background: color-mix(in srgb, var(--bg-main) 76%, transparent);
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
@@ -844,7 +904,7 @@ const seenEras = new Set<string>();
     z-index: 2;
     left: 50%;
     color: var(--thread-color);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 850;
     letter-spacing: 0.02em;
     white-space: nowrap;
@@ -962,7 +1022,7 @@ const seenEras = new Set<string>();
     justify-content: space-between;
     gap: 8px;
     color: var(--text-muted);
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 750;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -975,7 +1035,7 @@ const seenEras = new Set<string>();
     padding: 3px 7px;
     border: 1px solid currentColor;
     border-radius: var(--border-radius-full);
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 850;
     line-height: 1;
     letter-spacing: 0.04em;
@@ -1010,7 +1070,7 @@ const seenEras = new Set<string>();
     min-height: 39px;
     overflow: hidden;
     color: var(--text-secondary);
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.42;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
@@ -1027,7 +1087,7 @@ const seenEras = new Set<string>();
 
   .event-card__footer small {
     overflow: hidden;
-    font-size: 8px;
+    font-size: 10px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -1124,8 +1184,81 @@ const seenEras = new Set<string>();
     border-radius: var(--border-radius-full);
     background: color-mix(in srgb, var(--bg-main) 82%, transparent);
     color: var(--text-muted);
-    font-size: 8px;
+    font-size: 10px;
     pointer-events: none;
+  }
+
+  .timeline-empty {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 24px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .timeline-empty[hidden] {
+    display: none;
+  }
+
+  .timeline-nojs {
+    margin: 30px 0 46px;
+    padding: 22px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--bg-secondary);
+  }
+
+  .timeline-nojs__note {
+    margin: 0 0 18px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .timeline-nojs__event {
+    padding: 16px 0;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .timeline-nojs__event:first-of-type {
+    border-top: 0;
+  }
+
+  .timeline-nojs__meta {
+    margin: 0 0 6px;
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 750;
+  }
+
+  .timeline-nojs__event h3 {
+    margin: 0 0 8px;
+    font-size: 17px;
+  }
+
+  .timeline-nojs__event p {
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .timeline-nojs__event ul {
+    margin: 8px 0 0;
+    padding-left: 18px;
+  }
+
+  .timeline-nojs__event li {
+    margin-bottom: 4px;
+  }
+
+  .timeline-nojs__event a {
+    color: var(--cyan);
+    text-decoration: none;
   }
 
   .timeline-console {
@@ -1146,14 +1279,16 @@ const seenEras = new Set<string>();
 
   .timeline-console__current > span {
     display: grid;
-    flex: 0 0 38px;
+    flex: 0 0 auto;
     place-items: center;
-    width: 38px;
+    min-width: 44px;
     height: 38px;
+    padding: 0 6px;
     border: 1px solid color-mix(in srgb, var(--cyan) 40%, var(--border-color));
     border-radius: 10px;
     color: var(--cyan);
     font: 850 11px/1 var(--font-sans);
+    white-space: nowrap;
   }
 
   .timeline-console__current div {
@@ -1171,12 +1306,12 @@ const seenEras = new Set<string>();
   .timeline-console__current small {
     margin-bottom: 2px;
     color: var(--cyan);
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 750;
   }
 
   .timeline-console__current strong {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .timeline-scrubber {
@@ -1224,7 +1359,7 @@ const seenEras = new Set<string>();
 
   .timeline-console__count span {
     color: var(--text-muted);
-    font-size: 8px;
+    font-size: 10px;
   }
 
   .timeline-legend {
@@ -1232,7 +1367,7 @@ const seenEras = new Set<string>();
     gap: 8px 14px;
     margin-top: 10px;
     color: var(--text-muted);
-    font-size: 8.5px;
+    font-size: 10px;
   }
 
   .timeline-legend span {
@@ -1307,12 +1442,11 @@ const seenEras = new Set<string>();
     position: sticky;
     z-index: 4;
     top: 12px;
-    float: right;
     display: grid;
     place-items: center;
     width: 44px;
     height: 44px;
-    margin: 12px 12px -56px 0;
+    margin: 12px 12px -56px auto;
     padding: 0;
     border: 1px solid var(--border-color);
     border-radius: 50%;
@@ -1360,7 +1494,7 @@ const seenEras = new Set<string>();
     gap: 7px;
     margin-bottom: 18px;
     color: var(--text-muted);
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .event-detail__meta > span:not(.status-pill) {
@@ -1645,6 +1779,7 @@ const seenEras = new Set<string>();
     const currentTitle = root.querySelector<HTMLElement>('[data-current-title]');
     const visibleCount = root.querySelector<HTMLElement>('[data-visible-count]');
     const live = root.querySelector<HTMLElement>('[data-timeline-live]');
+    const emptyState = root.querySelector<HTMLElement>('[data-timeline-empty]');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let activeStatus = 'all';
@@ -1712,12 +1847,15 @@ const seenEras = new Set<string>();
       const selectedTitle =
         selected.querySelector<HTMLElement>('.event-card__body > strong')?.textContent?.trim() ??
         '';
-      if (currentIndex) currentIndex.textContent = String(index + 1).padStart(2, '0');
+      if (currentIndex)
+        currentIndex.textContent = `${String(index + 1).padStart(2, '0')}/${visible.length}`;
       if (currentDate) currentDate.textContent = selectedDate;
       if (currentTitle) currentTitle.textContent = selectedTitle;
 
       eraButtons.forEach((button) => {
-        button.toggleAttribute('aria-current', button.dataset.eraButton === selected.dataset.era);
+        const isCurrent = button.dataset.eraButton === selected.dataset.era;
+        if (isCurrent) button.setAttribute('aria-current', 'true');
+        else button.removeAttribute('aria-current');
       });
       if (eraSelect && selected.dataset.era) eraSelect.value = selected.dataset.era;
     };
@@ -1737,6 +1875,7 @@ const seenEras = new Set<string>();
 
       const visible = visibleEvents();
       if (visibleCount) visibleCount.textContent = String(visible.length);
+      if (emptyState) emptyState.hidden = visible.length > 0;
       eraButtons.forEach((button) => {
         const hasVisibleEvent = visible.some(
           (event) => event.dataset.era === button.dataset.eraButton,
@@ -1812,9 +1951,15 @@ const seenEras = new Set<string>();
 
     const setZoom = (index: number) => {
       const zooms = ['compact', 'normal', 'large'];
+      const zoomLabels: Record<string, string> = {
+        compact: 'Cartes réduites',
+        normal: 'Cartes en taille normale',
+        large: 'Cartes agrandies',
+      };
       zoomIndex = Math.max(0, Math.min(zooms.length - 1, index));
       const current = visibleEvents()[closestVisibleIndex()];
       root.dataset.zoom = zooms[zoomIndex];
+      if (live) live.textContent = zoomLabels[zooms[zoomIndex]];
       requestAnimationFrame(() => {
         if (current) scrollToEvent(current, false);
         updatePosition();
@@ -1837,6 +1982,8 @@ const seenEras = new Set<string>();
       let index = closestVisibleIndex();
       if (index >= visible.length - 1) index = -1;
       scrollToEvent(visible[index + 1]);
+      // Cadence plus lente pour les personnes sensibles au mouvement.
+      const interval = reducedMotion ? 9000 : 4200;
       storyTimer = window.setInterval(() => {
         index += 1;
         if (index >= visible.length - 1) {
@@ -1844,7 +1991,7 @@ const seenEras = new Set<string>();
           return;
         }
         scrollToEvent(visible[index + 1]);
-      }, 4200);
+      }, interval);
     });
 
     range.addEventListener('input', () => {
@@ -1872,7 +2019,12 @@ const seenEras = new Set<string>();
     viewport.addEventListener('pointerup', stopDragging);
     viewport.addEventListener('pointercancel', stopDragging);
 
-    viewport.addEventListener('keydown', (event) => {
+    // Les flèches fonctionnent dès que le focus est dans la frise (cartes, onglets,
+    // filtres), pas seulement sur la zone de défilement. Les contrôles natifs
+    // (range, select) gardent leur comportement clavier propre.
+    root.addEventListener('keydown', (event) => {
+      const target = event.target as Element;
+      if (target.closest('input, select, textarea')) return;
       if (event.key === 'ArrowRight') jump(1);
       else if (event.key === 'ArrowLeft') jump(-1);
       else if (event.key === 'Home')

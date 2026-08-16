@@ -1,6 +1,6 @@
 ---
 title: "Rio Ponéglyphe"
-summary: "Le message complet formé par la réunion de tous les Ponéglyphes. La théorie propose qu'il soit taillé par Momonosuke, écrit par Robin dans une langue qu'elle inventera, et qu'il raconte l'histoire de Luffy."
+summary: "Le message complet formé par la réunion de tous les Ponéglyphes. La théorie propose qu'il raconte l'histoire de Luffy, et que Robin et le savoir des Kozuki puissent participer à sa rédaction et à sa gravure."
 category: "transmission-memoire"
 status: "published"
 navigationType: "dossier"
