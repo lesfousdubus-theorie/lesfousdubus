@@ -1,180 +1,124 @@
 # Les Fous du Bus
 
-> **Le Siècle oublié est le présent**  
+> **La mémoire de l’avenir**  
 > Wiki éditorial pour la théorie des Fous du Bus sur *One Piece*.
 
 **Statut : V1 publique en développement**  
-Site déployé et largement construit : https://lesfousdubus.sbs
+Site : https://lesfousdubus.sbs
+
+Le site est statique (Astro). Le contenu éditorial vit dans `src/content/`.
 
 ---
 
-## Navigation réelle du site
+## Par où commencer
 
-- **Commencer**
-  - Présentation
-  - Résumé de la théorie
-  - Théorie complète (22 chapitres)
-  - Carte mentale
-  - Lexique essentiel
-
-- **Monde et destinations**
-- **Histoire, temps et Ponéglyphes**
-- **Figures principales**
-- **Personnages et identités**
-- **Armes antiques**
-- **Technologies et pouvoirs**
-- **Peuples, royaumes et témoins**
-- **Dieux et croyances**
-- **Transmission et mémoire**
-- **Gouvernement mondial**
-- **Guerre finale**
-
-- **Chapitres récents**
-  - Analyses chapitre par chapitre
-
-- **Explorer**
-  - Carte mentale, Chronologie, Graphe des correspondances, etc.
-
-- **Aide**
-  - À propos, FAQ, Glossaire, Crédits
+1. [Résumé en 10 points](https://lesfousdubus.sbs/theorie/resume)  
+2. [Frise chronologique](https://lesfousdubus.sbs/theorie/chronologie)  
+3. [Théorie complète](https://lesfousdubus.sbs/theorie/theorie-complete) — 22 chapitres (source éditoriale de vérité)
 
 ---
 
-## Architecture actuelle de la sidebar (structure cible)
+## Navigation
+
+**Barre supérieure :** La théorie · Dossiers · Chapitres · Explorer · Aide
+
+**Sidebar**
 
 ```
 Commencer
 ├── Présentation
 ├── Résumé de la théorie
 ├── Théorie complète
-├── Carte mentale
-└── Lexique essentiel
+├── Frise chronologique
+└── Carte mentale
 
 Monde et destinations
-Histoire, temps et Ponéglyphes
+Histoire et temporalité
 Figures principales
 Personnages et identités
-├── ... 
-├── Princesse Shirahoshi
-└── Rocks D. Xebec
 Armes antiques
 Technologies et pouvoirs
 Peuples, royaumes et témoins
 Dieux et croyances
-├── ...
-└── ↳ Voir Nika   (lien contextuel)
 Transmission et mémoire
 Gouvernement mondial
-├── ...
-├── Chevaliers Divins
-└── ...
 Guerre finale
 
 Chapitres récents
-Aide
+Aide & ressources
+├── À propos
+├── FAQ
+├── Glossaire
+├── Plan du site
+└── Crédits
 ```
 
-**Ajustements seulement** (pas de refonte) :
-- + Princesse Shirahoshi
-- + Rocks D. Xebec
-- + Chevaliers Divins
-- (éventuellement + Gunko)
-
-Nika n’apparaît qu’une fois en tant que fiche principale (Figures principales). Un lien « ↳ Voir Nika » est ajouté dans Dieux et croyances pour éviter le doublon visuel.
+Les fiches de chaque dossier sont générées depuis `src/content/articles/`.  
+Une page canonique par sujet (titre = nom propre). Les analyses se rattachent via `parent`.
 
 ---
 
 ## Principes éditoriaux
 
-- **Une page canonique par sujet** : chaque sujet possède une fiche neutre (intitulé = nom propre). Les thèses de la théorie sont développées dans des dossiers d’analyse rattachés (`parent`).
-- **Système de niveau de certitude** : badges CANON / NOYAU DE LA THÉORIE / CONSÉQUENCE DE LA THÉORIE / HYPOTHÈSE / HYPOTHÈSE RÉCENTE / RÉFUTÉ.
-- **Distinction claire** : Ce que le manga établit ≠ Interprétation ≠ Hypothèse des Fous du Bus.
+- **Une page canonique par sujet.** Les thèses se développent dans des dossiers d’analyse rattachés.
+- **Le texte distingue** ce que le manga établit, ce que la théorie affirme, et ce qui reste une hypothèse. Il n’y a plus de badges de certitude dans l’interface.
+- **Règle de cohérence :** si une fiche contredit la théorie complète, c’est la fiche qu’il faut corriger.
 
 ---
 
-## 22 chapitres de la théorie complète
-
-La page **Théorie complète** est la source éditoriale de vérité (22 chapitres).
-
-Parcours alternatif : 19 dossiers (encyclopédique fiche par fiche).
-
----
-
-## Analyses de chapitres disponibles
+## Analyses de chapitres
 
 - 1180 → Imu / Omen / Mother Flame / Uranus
 - 1181 → Silhouette Joy Boy-Roger + idéologie d’Imu
 - 1182 → Zaza + volonté des Zoans + création des Fruits
 - 1183 → Brook / Dōzan + Chevaliers Divins / Rumbar
 - 1184 → Brook possible compositeur de Binks no Sake
-- 1186 → Fruits du Démon (apparition récente) + géants + Domi Reversi
-- 1187 → Imu appelle Luffy Joy Boy + Luffy refuse + Joy Boy = conséquence
-- 1188 → Préscience + communication entre époques + Roger / Joy Boy + Joy Boy n’est pas un titre
-- 1189 → Imu cloue Luffy à l’Arbre d’Adam + armes des Vingt Rois + Shanks/Loki « Roi du Monde » + Gaban
-- 1190 → Gaban vs Imu + nom de Roger falsifié + Imu admet avoir pris des coïncidences pour le destin
+- 1186 → Fruits du Démon + géants + Domi Reversi
+- 1187 → Imu appelle Luffy Joy Boy + Luffy refuse
+- 1188 → Préscience + communication entre époques
+- 1189 → Arbre d’Adam + armes des Vingt Rois + Gaban
+- 1190 → Gaban vs Imu + nom de Roger falsifié
 
-**1185** : aucune transcription source disponible (géré explicitement).
+**1185** : aucune transcription source (affiché explicitement dans la liste).
 
----
-
-## Explorer — outils déjà disponibles
-
-- Carte mentale
-- Chronologie (La mémoire de l’avenir)
-- Graphe des correspondances (« Qui est qui ? »)
-- Comparaison Luffy / Joy Boy / Nika
-- Schéma des Ponéglyphes
-- Carte Blue Star
-- Peuples et missions
-- Guerre finale (schéma)
-- Fresque d’Elbaf
-- Double chronologie
-- Road Ponéglyphes / temps
-- Pluton
-- Déluge / Red Line / All Blue
-- Omen / Mother Flame / Imu
-
-**Améliorations prévues** (pas de nouvelles pages) :
-- nœuds cliquables
-- légende Canon / Théorie / Spéculation
-- meilleure version mobile
-- chemin sélectionné mis en surbrillance
-- explication inline
-- version HTML lisible sans JS
-- terminologie alignée sur la théorie complète
+Prédictions suivies : `/chapitres/predictions`.
 
 ---
 
-## Fonctionnalités restantes (P2+)
+## Explorer
 
-- Standardisation complète de toutes les fiches (même architecture)
-- Passe « CANON » exhaustive sur chaque section « Ce que le manga établit »
-- Provenance précise des sources dans chaque article
-- Amélioration des outils Explorer (sans en créer de nouveaux)
-- Refonte légère de la page Prédictions (formulaires + statut + indices)
-- Mise à jour systématique via les chapitres (théorie complète = source unique)
+Outils déjà en place : carte mentale, frise, correspondances, Luffy / Joy Boy / Nika, Ponéglyphes, Blue Star, peuples, guerre finale, fresque d’Elbaf, Road Ponéglyphes, Pluton, Déluge / All Blue, Omen / Mother Flame / Imu.
+
+Améliorations prévues (sans nouvelles pages) : mobile, chemin sélectionné, légendes alignées sur la théorie complète.
 
 ---
 
-## SEO / robots / llms
+## Développement
 
-- `public/llms.txt` et `llms-full.txt` générés automatiquement (`npm run llms`)
-- Balises de nature (canon, core-theory, secondary-theory, speculative)
-- Open Graph images générées
-- Robots et sitemap gérés via Astro
+```bash
+npm install
+npm run dev
+npm test
+npm run build
+```
 
----
+| Script | Rôle |
+|---|---|
+| `npm run dev` | Serveur local |
+| `npm test` | Tests unitaires |
+| `npm run validate` | Contrôles de contenu |
+| `npm run llms` | Génère `public/llms.txt` et `llms-full.txt` |
+| `npm run og` | Images Open Graph |
 
-## Processus de mise à jour après chaque chapitre
+Après chaque chapitre One Piece :
 
-1. Créer / mettre à jour la fiche dans `src/content/chapters/XXXX.md`
-2. Renseigner `effect`, `themes`, `updatedArticles`
-3. Mettre à jour les articles concernés
-4. Ajuster la théorie complète si nécessaire
-5. Mettre à jour les prédictions
-6. Régénérer `llms.txt` + rebuild
+1. Créer / mettre à jour `src/content/chapters/XXXX.md` (`effect`, `themes`, `updatedArticles`)
+2. Mettre à jour les articles concernés
+3. Ajuster la théorie complète si nécessaire
+4. Mettre à jour les prédictions
+5. Régénérer `llms.txt` + rebuild
 
-**Règle** : quand une fiche contredit la théorie complète, c’est la fiche qu’il faut corriger.
+SEO : canonical, JSON-LD, RSS, sitemap Astro, Open Graph.
 
 ---
 
@@ -186,7 +130,4 @@ Contenus *One Piece* : droits réservés à Eiichiro Oda, Shueisha et ayants dro
 
 Le code et les textes originaux du site sont sous licence CC0 (sauf éléments One Piece).
 
----
-
-**Pour contribuer** : ouvrir une Issue ou Pull Request.  
-Le site est statique (Astro). Tout le contenu éditorial vit dans `src/content/`.
+**Pour contribuer** : ouvrir une Issue ou une Pull Request.

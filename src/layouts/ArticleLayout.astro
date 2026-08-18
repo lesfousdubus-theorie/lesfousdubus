@@ -80,25 +80,6 @@ const generateBreadcrumb = (path: string): Array<{ label: string; href?: string 
 
 const breadcrumbItems = generateBreadcrumb(currentPath);
 
-// Reading time — improved heuristic: base 150w + 260w per H2 + 120w per H3, /220 wpm
-const computeReadingTime = (headings: any[] | undefined, desc?: string): string | null => {
-  if (!headings || headings.length === 0) {
-    if (desc) {
-      const words = desc.trim().split(/\s+/).length;
-      const mins = Math.max(1, Math.ceil(words / 220));
-      return `${mins} min`;
-    }
-    return null;
-  }
-  const h2 = headings.filter((h: any) => h.depth === 2).length;
-  const h3 = headings.filter((h: any) => h.depth === 3).length;
-  const baseWords = desc ? desc.trim().split(/\s+/).length : 80;
-  const estWords = 150 + baseWords + h2 * 260 + h3 * 120;
-  const mins = Math.max(2, Math.ceil(estWords / 220));
-  return `${mins} min`;
-};
-const readingTime = computeReadingTime(headings, description);
-
 // JSON-LD for Article — enrichi (headline court = H1, description, section, publisher)
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://lesfousdubus.sbs';
 const canonicalArticleUrl = new URL(
@@ -169,36 +150,9 @@ const articleJsonLd = {
   >
     <h1 class="article-title">{title}</h1>
 
-    <ArticleMeta
-      updateChapter={frontmatter.updateChapter}
-      editorialStatus={frontmatter.editorialStatus}
-      certainty={frontmatter.certainty}
-    />
+    <ArticleMeta updateChapter={frontmatter.updateChapter} />
 
     <div class="article-top-meta" data-pagefind-ignore>
-      {
-        readingTime && (
-          <p class="article-reading-time">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <>
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </>
-            </svg>
-            Lecture : ~{readingTime}
-          </p>
-        )
-      }
       <button
         id="zen-toggle"
         class="zen-toggle"
@@ -225,13 +179,6 @@ const articleJsonLd = {
   </article>
 
   <ParcoursNav slug={currentSlug} />
-
-  <!-- Article Reading Continuation Navigation -->
-  <nav class="article-reading-nav" aria-label="Poursuite de lecture">
-    <a href="/theorie" class="btn-read-nav">
-      <span>← Sommaire de la théorie</span>
-    </a>
-  </nav>
 
   {relatedArticles.length > 0 && <RelatedArticles articles={relatedArticles} />}
   {articleChapters.length > 0 && <ChapterReferences items={articleChapters} />}
@@ -595,51 +542,10 @@ const articleJsonLd = {
     margin-bottom: 12px;
     line-height: 1.15;
     letter-spacing: -0.03em;
-    background: var(--gradient-hero);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-main);
   }
 
   /* article-lead supprimé : les summaries restent uniquement en meta/SEO et listes */
-
-  .article-reading-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-4);
-    margin: var(--space-5) 0;
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--border-color);
-  }
-
-  .btn-read-nav {
-    display: inline-flex;
-    min-height: var(--control-size);
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-2) var(--space-4);
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    color: var(--text-main);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-
-  .btn-read-nav:hover {
-    border-color: var(--cyan);
-    color: var(--cyan);
-    transform: translateY(-2px);
-  }
-
-  .btn-read-nav--highlight {
-    background-color: color-mix(in srgb, var(--cyan) 10%, transparent);
-    border-color: color-mix(in srgb, var(--cyan) 30%, transparent);
-    color: var(--cyan);
-  }
 
   .article-sources {
     color: var(--text-secondary);
@@ -665,19 +571,6 @@ const articleJsonLd = {
     color: var(--text-muted);
   }
 
-  .article-reading-time {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin: 0 0 6px;
-  }
-
-  .article-reading-time svg {
-    opacity: 0.6;
-  }
-
   .content {
     margin-top: var(--space-7);
     font-size: 16px;
@@ -694,48 +587,8 @@ const articleJsonLd = {
     display: block;
   }
 
-  /* Le statut global de la fiche indique son niveau dominant ; ces pastilles
-     distinguent les propositions quand un même article mêle faits et théorie. */
   .content :global(.section-pill) {
-    display: inline-block;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 3px 9px;
-    border-radius: 999px;
-    border: 1px solid;
-    margin: -6px 0 18px;
-  }
-
-  .content :global(.section-pill--manga) {
-    color: var(--cyan);
-    border-color: color-mix(in srgb, var(--cyan) 40%, transparent);
-    background: color-mix(in srgb, var(--cyan) 10%, transparent);
-  }
-
-  .content :global(.section-pill--theorie-centrale) {
-    color: var(--accent-gold);
-    border-color: color-mix(in srgb, var(--accent-gold) 40%, transparent);
-    background: color-mix(in srgb, var(--accent-gold) 10%, transparent);
-  }
-
-  .content :global(.section-pill--extension),
-  .content :global(.section-pill--hypothese-recente) {
-    color: var(--violet-light);
-    border-color: color-mix(in srgb, var(--violet) 40%, transparent);
-    background: color-mix(in srgb, var(--violet) 10%, transparent);
-  }
-
-  .content :global(.section-pill--hypothese-recente) {
-    border-style: dashed;
-  }
-
-  .content :global(.section-pill--projection) {
-    color: var(--text-secondary);
-    border-color: color-mix(in srgb, var(--text-secondary) 40%, transparent);
-    border-style: dashed;
-    background: color-mix(in srgb, var(--text-secondary) 8%, transparent);
+    display: none !important;
   }
 
   .content :global(h2::before) {
@@ -798,6 +651,9 @@ const articleJsonLd = {
     background: none;
     cursor: zoom-in;
     max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+    width: auto;
   }
   .content :global(.content-img-zoom:focus-visible) {
     outline: 2px solid var(--cyan);
@@ -988,20 +844,21 @@ const articleJsonLd = {
   }
 
   .lightbox-caption {
-    position: absolute;
-    bottom: -40px;
-    left: 0;
-    right: 0;
+    position: fixed;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: 16px;
+    right: 16px;
     text-align: center;
-    color: var(--text-secondary);
+    color: var(--text-main);
     font-size: 13px;
-    padding: 6px 12px;
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    background: color-mix(in srgb, var(--bg-main) 78%, transparent);
   }
 
   @media (max-width: 768px) {
     .lightbox-caption {
       font-size: 12px;
-      bottom: -32px;
     }
     .lightbox-container img {
       max-height: 75vh;
@@ -1028,8 +885,8 @@ const articleJsonLd = {
 
   .article-share__btn {
     display: inline-flex;
-    width: var(--control-size);
-    height: var(--control-size);
+    width: 32px;
+    height: 32px;
     align-items: center;
     justify-content: center;
     border-radius: var(--border-radius);
@@ -1056,7 +913,7 @@ const articleJsonLd = {
   .article-top-meta {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: var(--space-3);
     flex-wrap: wrap;
     margin: 0 0 var(--space-2);
@@ -1064,9 +921,10 @@ const articleJsonLd = {
 
   .zen-toggle {
     display: inline-flex;
-    min-height: var(--control-size);
+    min-height: 28px;
+    min-width: 0;
     align-items: center;
-    padding: var(--space-2) var(--space-3);
+    padding: 4px 10px;
     font-size: 12px;
     font-weight: 600;
     border-radius: var(--border-radius-full);

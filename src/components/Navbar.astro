@@ -61,10 +61,11 @@ const nav: NavItem[] = [
           { label: 'Figures principales', href: '/dossiers#figures-principales' },
           { label: 'Armes antiques', href: '/dossiers#armes-antiques' },
           { label: 'Technologies et pouvoirs', href: '/dossiers#technologies-pouvoirs' },
-          { label: 'Gouvernement & guerre finale', href: '/dossiers#gouvernement-mondial' },
           { label: 'Peuples, royaumes et témoins', href: '/dossiers#peuples-royaumes' },
           { label: 'Dieux et croyances', href: '/dossiers#dieux-croyances' },
           { label: 'Transmission et mémoire', href: '/dossiers#transmission-memoire' },
+          { label: 'Gouvernement mondial', href: '/dossiers#gouvernement-mondial' },
+          { label: 'Guerre finale', href: '/dossiers#guerre-finale' },
         ],
       },
     ],
@@ -98,6 +99,21 @@ const nav: NavItem[] = [
           { label: 'Chronologie', href: '/theorie/chronologie' },
           { label: 'Correspondances interactives', href: '/explorer/correspondances' },
           { label: 'Schéma des Ponéglyphes', href: '/explorer/poneglyphes' },
+        ],
+      },
+    ],
+  },
+  {
+    label: 'Aide',
+    href: '/aide',
+    groups: [
+      {
+        title: 'Ressources',
+        links: [
+          { label: 'Glossaire', href: '/aide/glossaire' },
+          { label: 'FAQ', href: '/aide/faq' },
+          { label: 'À propos', href: '/aide/a-propos' },
+          { label: 'Plan du site', href: '/aide/plan-du-site' },
         ],
       },
     ],
@@ -201,7 +217,11 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
         <span class="search-shortcut hidden sm:inline">Ctrl K</span>
       </button>
 
-      <button data-theme-toggle class="theme-btn theme-btn--desktop" aria-label="Changer le thème">
+      <button
+        data-theme-toggle
+        class="theme-btn theme-btn--desktop"
+        aria-label="Activer le thème clair"
+      >
         <svg
           class="ico-sun"
           width="17"
@@ -442,7 +462,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     color: var(--text-secondary);
     text-decoration: none;
     min-height: var(--nav-control-size);
-    padding: 5px 30px 5px 10px;
+    padding: 5px 22px 5px 10px;
     border-radius: var(--border-radius-sm);
     display: inline-flex;
     align-items: center;
@@ -474,10 +494,10 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     right: 2px;
     display: grid;
     place-items: center;
-    width: 26px;
-    min-width: 26px;
-    min-height: var(--nav-control-size);
-    height: var(--nav-control-size);
+    width: 22px;
+    min-width: 22px;
+    min-height: 22px;
+    height: 22px;
     padding: 0;
     border: 0;
     border-radius: var(--border-radius-sm);
@@ -579,7 +599,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
   .nav-dropdown__link {
     display: block;
     padding: 7px 10px;
-    min-height: var(--control-size);
+    min-height: 32px;
     font-size: 13px;
     line-height: 1.4;
     display: flex;
@@ -856,7 +876,7 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     }
     .nav-link {
       font-size: 14px;
-      padding: 6px 34px 6px 12px;
+      padding: 6px 24px 6px 12px;
     }
     .nav-links {
       gap: 4px;
@@ -882,8 +902,8 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
       gap: 8px;
     }
     .nav-link {
-      font-size: 13px;
-      padding: 5px 30px 5px 8px;
+      font-size: 12.5px;
+      padding: 5px 20px 5px 6px;
     }
     .search-trigger {
       max-width: 160px;
@@ -1073,6 +1093,12 @@ const isExact = (href: string) => pathname.replace(/\/+$/, '') === href.replace(
     document.querySelectorAll('.ico-moon').forEach((el) => {
       if (theme === 'light') el.classList.remove('hidden');
       else el.classList.add('hidden');
+    });
+    document.querySelectorAll('[data-theme-toggle]').forEach((el) => {
+      el.setAttribute(
+        'aria-label',
+        theme === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre',
+      );
     });
   };
 

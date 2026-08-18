@@ -34,8 +34,9 @@ describe('présentation du noyau de la théorie', () => {
     expect(mechanism).not.toContain('Le Toki Toki no Mi permet une communication vers le passé');
   });
 
-  it('annonce un temps de lecture réaliste sur la page d’accueil', () => {
-    expect(homepage).toContain('8 minutes');
+  it('oriente l’accueil vers le résumé plutôt que vers un temps de lecture', () => {
+    expect(homepage).toContain('/theorie/resume');
+    expect(homepage).not.toContain('10 min');
     expect(homepage).not.toContain('30 secondes');
   });
 });

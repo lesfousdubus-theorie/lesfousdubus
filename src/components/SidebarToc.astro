@@ -39,48 +39,49 @@ const { headings = [] } = Astro.props;
 </nav>
 
 <script>
-  // Highlight active TOC section on scroll
-  (function initTocHighlight() {
+  const initTocHighlight = () => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const tocLinks = document.querySelectorAll('[data-toc-link]');
-    if (tocLinks.length === 0) return;
+    document.querySelectorAll<HTMLElement>('nav.toc').forEach((toc) => {
+      if (toc.dataset.enhanced === 'true') return;
+      toc.dataset.enhanced = 'true';
 
-    const headingIds = Array.from(tocLinks)
-      .map((link) => link.getAttribute('data-slug'))
-      .filter((id): id is string => id !== null);
-    const headings = headingIds
-      .map((id) => document.getElementById(id))
-      .filter(Boolean) as HTMLElement[];
+      const tocLinks = toc.querySelectorAll('[data-toc-link]');
+      if (tocLinks.length === 0) return;
 
-    if (headings.length === 0) return;
+      const headingIds = Array.from(tocLinks)
+        .map((link) => link.getAttribute('data-slug'))
+        .filter((id): id is string => id !== null);
+      const headings = headingIds
+        .map((id) => document.getElementById(id))
+        .filter(Boolean) as HTMLElement[];
 
-    let activeId: string | null = null;
+      if (headings.length === 0) return;
 
-    const setActive = (id: string | null) => {
-      if (id === activeId) return;
-      activeId = id;
-      tocLinks.forEach((link) => {
-        link.classList.toggle('toc__link--active', link.getAttribute('data-slug') === id);
-      });
-    };
+      let activeId: string | null = null;
 
-    if (reduce || !('IntersectionObserver' in window)) {
-      // Fallback: highlight based on scroll position
-      const onScroll = () => {
-        let current: string | null = null;
-        for (const heading of headings) {
-          const rect = heading.getBoundingClientRect();
-          if (rect.top <= 100) {
-            current = heading.id;
-          }
-        }
-        setActive(current);
+      const setActive = (id: string | null) => {
+        if (id === activeId) return;
+        activeId = id;
+        tocLinks.forEach((link) => {
+          link.classList.toggle('toc__link--active', link.getAttribute('data-slug') === id);
+        });
       };
-      window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll();
-    } else {
-      // IntersectionObserver for smooth highlighting
+
+      if (reduce || !('IntersectionObserver' in window)) {
+        const onScroll = () => {
+          let current: string | null = null;
+          for (const heading of headings) {
+            const rect = heading.getBoundingClientRect();
+            if (rect.top <= 100) current = heading.id;
+          }
+          setActive(current);
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+        return;
+      }
+
       const observer = new IntersectionObserver(
         (entries) => {
           const visible = entries
@@ -88,15 +89,16 @@ const { headings = [] } = Astro.props;
             .sort(
               (a, b) => a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top,
             );
-          if (visible.length > 0) {
-            setActive(visible[0].target.id);
-          }
+          if (visible.length > 0) setActive(visible[0].target.id);
         },
         { rootMargin: '-10% 0px -60% 0px', threshold: 0 },
       );
       headings.forEach((h) => observer.observe(h));
-    }
-  })();
+    });
+  };
+
+  initTocHighlight();
+  document.addEventListener('astro:page-load', initTocHighlight);
 </script>
 
 <style>
@@ -186,9 +188,9 @@ const { headings = [] } = Astro.props;
 
     .toc__link {
       display: flex;
-      min-height: var(--control-size);
+      min-height: 32px;
       align-items: center;
-      padding-block: var(--space-2);
+      padding-block: 6px;
       -webkit-line-clamp: initial;
     }
   }

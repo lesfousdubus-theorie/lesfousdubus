@@ -127,6 +127,11 @@ import Footer from '@components/Footer.astro';
     { from: 'laugh-tale', to: 'one-piece-histoire', label: 'trésor' },
   ];
 
+  const isLightTheme = () => document.documentElement.classList.contains('light');
+  const themeColors = () =>
+    isLightTheme()
+      ? { nodeFill: 'rgba(248,245,237,0.96)', nodeText: '#1f1d18', label: '#4a453c' }
+      : { nodeFill: 'rgba(14,23,34,0.92)', nodeText: '#f3efe6', label: '#aeb7c2' };
   const levelColors = {
     manga: '#8899aa',
     'theorie-centrale': '#5fb9c2',
@@ -197,7 +202,7 @@ import Footer from '@components/Footer.astro';
     label.setAttribute('x', mx);
     label.setAttribute('y', my - 8);
     label.setAttribute('text-anchor', 'middle');
-    label.setAttribute('fill', '#aeb7c2');
+    label.setAttribute('fill', themeColors().label);
     label.setAttribute('font-size', '11');
     label.setAttribute('font-family', 'Inter, system-ui, sans-serif');
     label.setAttribute('pointer-events', 'none');
@@ -262,14 +267,14 @@ import Footer from '@components/Footer.astro';
     rect.setAttribute('width', w);
     rect.setAttribute('height', h);
     rect.setAttribute('rx', isMain ? '12' : '8');
-    rect.setAttribute('fill', 'rgba(14,23,34,0.92)');
+    rect.setAttribute('fill', themeColors().nodeFill);
     rect.setAttribute('stroke', color);
     rect.setAttribute('stroke-width', isMain ? '2' : '1.3');
     rect.setAttribute('stroke-opacity', '0.85');
     if (isMain && n.level === 'theorie-centrale') rect.setAttribute('filter', 'url(#glow)');
     g.appendChild(rect);
 
-    addText(g, n.title, n.x, n.y, isMain ? 13 : 10.5, '#f3efe6', isMain);
+    addText(g, n.title, n.x, n.y, isMain ? 13 : 10.5, themeColors().nodeText, isMain);
 
     g.addEventListener('mouseenter', () => {
       rect.setAttribute('stroke-opacity', '1');
