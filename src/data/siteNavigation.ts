@@ -105,7 +105,11 @@ export const understandingPaths = [
     label: 'Résumé en 10 points',
     description: 'Le raisonnement complet dans une version guidée et accessible.',
     href: '/theorie/resume',
-    duration: '10 min',
+  },
+  {
+    label: 'Frise chronologique',
+    description: 'Passé apparent, présent vécu et futurs possibles, sans ordre forcé.',
+    href: '/theorie/chronologie',
   },
   {
     label: 'Frise chronologique',
@@ -117,7 +121,6 @@ export const understandingPaths = [
     label: 'Démonstration complète',
     description: 'Les 22 chapitres, arguments, limites et prolongements de la théorie.',
     href: '/theorie/theorie-complete',
-    duration: '45 min',
   },
 ] as const;
 

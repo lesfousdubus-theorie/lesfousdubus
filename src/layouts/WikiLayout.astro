@@ -169,7 +169,6 @@ const canonicalWikiUrl = new URL(
             data-sidebar-scroll
             role="region"
             aria-label="Liste des articles"
-            tabindex="0"
           >
             <SidebarNav currentPath={currentPath} />
           </div>
@@ -294,7 +293,7 @@ const canonicalWikiUrl = new URL(
     max-height: 100%;
     padding: 20px 14px 32px;
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
     overscroll-behavior-y: contain;
     scrollbar-gutter: stable;
     scrollbar-width: thin;
@@ -446,10 +445,10 @@ const canonicalWikiUrl = new URL(
     #sidebar-close {
       display: grid;
       place-items: center;
-      width: var(--touch-target);
-      min-width: var(--touch-target);
-      height: var(--touch-target);
-      min-height: var(--touch-target);
+      width: 32px;
+      min-width: 32px;
+      height: 32px;
+      min-height: 32px;
       padding: 0;
       border: 1px solid var(--border-color);
       border-radius: var(--border-radius);
@@ -499,9 +498,9 @@ const canonicalWikiUrl = new URL(
     bottom: 24px;
     z-index: 45;
     align-items: center;
-    gap: 7px;
-    min-height: var(--control-size);
-    padding: 8px 13px;
+    gap: 6px;
+    min-height: 32px;
+    padding: 6px 11px;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-full);
     background: var(--bg-secondary);
@@ -549,16 +548,16 @@ const canonicalWikiUrl = new URL(
   }
 
   #toc-close {
-    width: var(--touch-target);
-    min-width: var(--touch-target);
-    height: var(--touch-target);
-    min-height: var(--touch-target);
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    min-height: 32px;
     padding: 0;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     background: var(--surface);
     color: var(--text-main);
-    font-size: 24px;
+    font-size: 20px;
     cursor: pointer;
   }
 

@@ -206,7 +206,7 @@ const lastChapter = chapters.slice().sort((a, b) => b.data.chapter - a.data.chap
 
   .footer__links a {
     display: inline-flex;
-    min-height: var(--control-size);
+    min-height: 0;
     align-items: center;
     font-size: 13px;
     color: var(--text-secondary);
@@ -232,8 +232,8 @@ const lastChapter = chapters.slice().sort((a, b) => b.data.chapter - a.data.chap
   }
 
   .footer__social-link {
-    width: var(--control-size);
-    height: var(--control-size);
+    width: 32px;
+    height: 32px;
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
@@ -262,8 +262,8 @@ const lastChapter = chapters.slice().sort((a, b) => b.data.chapter - a.data.chap
 
   .footer__back-to-top {
     width: auto;
-    min-width: var(--control-size);
-    padding: 0 12px;
+    min-width: 32px;
+    padding: 0 10px;
     gap: 6px;
   }
 

@@ -12,9 +12,9 @@ Le site est statique (Astro). Le contenu éditorial vit dans `src/content/`.
 
 ## Par où commencer
 
-1. [Résumé en 10 points](https://lesfousdubus.sbs/theorie/resume) — ~10 min  
-2. [Frise chronologique](https://lesfousdubus.sbs/theorie/chronologie) — ~10 min  
-3. [Théorie complète](https://lesfousdubus.sbs/theorie/theorie-complete) — ~45 min, 22 chapitres (source éditoriale de vérité)
+1. [Résumé en 10 points](https://lesfousdubus.sbs/theorie/resume)  
+2. [Frise chronologique](https://lesfousdubus.sbs/theorie/chronologie)  
+3. [Théorie complète](https://lesfousdubus.sbs/theorie/theorie-complete) — 22 chapitres (source éditoriale de vérité)
 
 ---
 

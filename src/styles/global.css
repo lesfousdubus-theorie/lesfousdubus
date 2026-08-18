@@ -373,28 +373,18 @@ select,
   @apply transition-colors duration-200;
 }
 
-/* Interactive form controls share a compact baseline. Primary actions can
-   grow beyond it; touch-first screens gain a little more room without forcing
-   desktop icon controls into oversized 44 px squares. */
-button,
+/* Champs de formulaire : hauteur confortable.
+   Les boutons se dimensionnent eux-mêmes — un min-width global
+   transformait chaque icône / caret / pastille en carré 38 px. */
 input:not([type='checkbox']):not([type='radio']):not([type='range']),
 select {
   min-height: var(--control-size);
 }
 
-button {
-  min-width: var(--control-size);
-}
-
 @media (pointer: coarse) {
-  button,
   input:not([type='checkbox']):not([type='radio']):not([type='range']),
   select {
     min-height: var(--touch-target);
-  }
-
-  button {
-    min-width: var(--touch-target);
   }
 }
 
