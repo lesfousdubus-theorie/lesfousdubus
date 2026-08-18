@@ -665,6 +665,25 @@ const canonicalWikiUrl = new URL(
     }
   };
 
+  let swipeStartX: number | null = null;
+  navDrawer?.addEventListener(
+    'touchstart',
+    (event) => {
+      swipeStartX = event.changedTouches[0]?.clientX ?? null;
+    },
+    { passive: true },
+  );
+  navDrawer?.addEventListener(
+    'touchend',
+    (event) => {
+      if (swipeStartX === null || !mobileMedia.matches || !isNavOpen()) return;
+      const delta = (event.changedTouches[0]?.clientX ?? swipeStartX) - swipeStartX;
+      swipeStartX = null;
+      if (delta < -56) setNavOpen(false, true);
+    },
+    { passive: true },
+  );
+
   navToggle?.addEventListener('click', () => setNavOpen(!isNavOpen()));
   navClose?.addEventListener('click', () => setNavOpen(false, true));
   navOverlay?.addEventListener('click', () => setNavOpen(false, true));

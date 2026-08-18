@@ -35,7 +35,7 @@ describe('présentation du noyau de la théorie', () => {
   });
 
   it('annonce un temps de lecture réaliste sur la page d’accueil', () => {
-    expect(homepage).toContain('8 minutes');
+    expect(homepage).toContain('10 min');
     expect(homepage).not.toContain('30 secondes');
   });
 });

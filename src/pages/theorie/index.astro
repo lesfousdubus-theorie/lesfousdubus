@@ -33,7 +33,7 @@ const pathIcons = ['⚡', '🧭', '📚'];
         <li>
           <a
             href={path.href}
-            class:list={['reading-level', { 'reading-level--featured': index === 1 }]}
+            class:list={['reading-level', { 'reading-level--featured': index === 0 }]}
           >
             <span class="reading-level__icon" aria-hidden="true">
               {pathIcons[index]}
@@ -46,9 +46,9 @@ const pathIcons = ['⚡', '🧭', '📚'];
               <p>{path.description}</p>
               <strong>
                 {index === 0
-                  ? 'Découvrir l’idée'
+                  ? 'Commencer ici'
                   : index === 1
-                    ? 'Commencer ici'
+                    ? 'Voir la frise'
                     : 'Lire la démonstration'}{' '}
                 <span aria-hidden="true">→</span>
               </strong>
@@ -126,10 +126,10 @@ const pathIcons = ['⚡', '🧭', '📚'];
   }
   .theory-hero h1 {
     margin: 0;
-    font-size: clamp(2.4rem, 7vw, 5rem);
-    font-weight: 900;
-    line-height: 0.96;
-    letter-spacing: -0.05em;
+    font-size: clamp(2rem, 4.4vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
   }
   .theory-hero h1 em {
     color: var(--cyan);

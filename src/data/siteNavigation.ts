@@ -102,15 +102,15 @@ export const categoryById = new Map(siteCategories.map((category) => [category.i
 
 export const understandingPaths = [
   {
-    label: 'Comprendre en 2 minutes',
-    description: 'Le retournement central, sans entrer dans toutes les preuves.',
-    href: '/',
-    duration: '2 min',
-  },
-  {
     label: 'Résumé en 10 points',
     description: 'Le raisonnement complet dans une version guidée et accessible.',
     href: '/theorie/resume',
+    duration: '10 min',
+  },
+  {
+    label: 'Frise chronologique',
+    description: 'Passé apparent, présent vécu et futurs possibles, sans ordre forcé.',
+    href: '/theorie/chronologie',
     duration: '10 min',
   },
   {

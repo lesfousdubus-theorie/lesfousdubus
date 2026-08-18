@@ -313,7 +313,7 @@
             title.textContent = result.meta?.title || 'Page';
             const excerpt = document.createElement('p');
             excerpt.className = 'search-result-excerpt';
-            excerpt.textContent = String(result.excerpt ?? '').replace(/<[^>]+>/g, ' ');
+            excerpt.innerHTML = String(result.excerpt ?? '').replace(/<(?!\/?mark\b)[^>]*>/gi, '');
             link.append(title, excerpt);
             link.addEventListener('mouseenter', () => setActive(index));
             link.addEventListener('click', () => saveRecent(raw));
@@ -420,7 +420,7 @@
     justify-content: center;
     align-items: flex-start;
     padding: clamp(12px, 8vh, 80px) 12px 16px;
-    background: rgba(7, 2, 10, 0.74);
+    background: color-mix(in srgb, var(--bg-main) 42%, rgba(3, 8, 15, 0.62));
     backdrop-filter: blur(10px);
     overflow-y: auto;
   }
@@ -581,6 +581,13 @@
     color: var(--text-secondary);
     font-size: 13px;
     line-height: 1.5;
+  }
+  .search-result-excerpt :global(mark),
+  .search-result-excerpt mark {
+    padding: 0 2px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--accent-gold) 38%, transparent);
+    color: var(--text-main);
   }
   .search-no-results {
     display: flex;

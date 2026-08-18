@@ -123,6 +123,9 @@
     --control-size: 38px;
     --control-size-compact: 34px;
     --touch-target: 40px;
+    /* Texte posé sur le dégradé d’accent : toujours encre sombre, lisible
+       sur cyan / indigo / corail dans les deux thèmes. */
+    --on-accent: #0c1219;
     --page-gutter: clamp(16px, 3.2vw, 40px);
     --page-block-start: clamp(22px, 3vw, 32px);
     --section-gap: clamp(32px, 5vw, 48px);
@@ -489,6 +492,11 @@ code {
   100% {
     transform: translateX(-240px);
   }
+}
+
+/* Pastilles éditoriales héritées du markdown : masquées, le texte suffit. */
+.section-pill {
+  display: none !important;
 }
 
 /* Skip to content link for accessibility */

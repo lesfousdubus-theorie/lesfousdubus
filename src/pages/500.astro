@@ -18,8 +18,14 @@ import Footer from '@components/Footer.astro';
     </p>
     <div class="error-page__actions">
       <a href="/" class="btn btn-primary">Retour à l'accueil</a>
+      <button type="button" class="btn btn-secondary" data-open-search>Rechercher</button>
       <a href="/theorie/resume" class="btn btn-secondary">Lire le résumé</a>
     </div>
+    <script>
+      document
+        .querySelector('[data-open-search]')
+        ?.addEventListener('click', () => window.dispatchEvent(new Event('openSearch')));
+    </script>
   </div>
   <Footer />
 </WikiLayout>
@@ -69,14 +75,16 @@ import Footer from '@components/Footer.astro';
     gap: 7px;
     padding: 9px 16px;
     border-radius: var(--border-radius);
+    font: inherit;
     font-weight: 500;
+    cursor: pointer;
     transition: all 0.2s ease;
     text-decoration: none;
   }
 
   .btn-primary {
     background: var(--gradient-border);
-    color: var(--bg-main);
+    color: var(--on-accent);
     box-shadow: 0 2px 12px var(--glow-violet);
   }
 

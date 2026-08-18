@@ -7,6 +7,7 @@ import Footer from '@components/Footer.astro';
 import { getCollection } from 'astro:content';
 import { categoryLabel, effectLabel } from '@utils/labels';
 import { getRecentArticleUpdates } from '@utils/chapter-updates';
+import { siteCategories } from '../data/siteNavigation';
 
 // Miniature de la façade vidéo. Priorité à la vignette auto-hébergée
 // (public/images/video-cover.webp, produite par scripts/fetch-video-cover.sh) :
@@ -176,130 +177,49 @@ const badgeColorByEffect = {
 
   <h2 class="section-title">
     <span class="section-title__accent"></span>
-    Dossiers principaux
-  </h2>
-  <div class="grid">
-    <CategoryCard
-      icon="🌍"
-      title="Monde et destinations"
-      description="Blue Star, Grand Line, Laugh Tale, Lodestar : la géographie comme point de départ du raisonnement."
-      href="/dossiers#monde-destinations"
-      count={countByCategory('monde-destinations')}
-    />
-    <CategoryCard
-      icon="📜"
-      title="Histoire et temporalité"
-      description="Siècle oublié, Ponéglyphes et mécanismes concurrents de transmission entre les époques."
-      href="/dossiers#histoire-temporalite"
-      count={countByCategory('histoire-temporalite')}
-    />
-    <CategoryCard
-      icon="🎭"
-      title="Figures principales"
-      description="Luffy, le Joy Boy historique, Nika et Roger : faits, héritages et rapprochements distingués."
-      href="/dossiers#figures-principales"
-      count={countByCategory('figures-principales')}
-    />
-    <CategoryCard
-      icon="👥"
-      title="Personnages et identités"
-      description="Les parallèles et les liens entre personnages anciens et modernes."
-      href="/dossiers#personnages-identites"
-      count={countByCategory('personnages-identites')}
-    />
-    <CategoryCard
-      icon="🔱"
-      title="Armes antiques"
-      description="Poséidon, Pluton, Uranus et Noah : fonctions établies et rôles futurs possibles."
-      href="/dossiers#armes-antiques"
-      count={countByCategory('armes-antiques')}
-    />
-    <CategoryCard
-      icon="⚡"
-      title="Technologies et pouvoirs"
-      description="Vegapunk, Mother Flame, Fruits du Démon, Emeth et les connaissances perdues."
-      href="/dossiers#technologies-pouvoirs"
-      count={countByCategory('technologies-pouvoirs')}
-    />
-  </div>
-
-  <details class="more-dossiers">
-    <summary>Afficher les 5 autres dossiers</summary>
-    <div class="grid grid--more">
-      <CategoryCard
-        icon="🏰"
-        title="Peuples, royaumes et témoins"
-        description="Chaque peuple, sa mission et son rôle dans le dénouement."
-        href="/dossiers#peuples-royaumes"
-        count={countByCategory('peuples-royaumes')}
-      />
-      <CategoryCard
-        icon="🙏"
-        title="Dieux et croyances"
-        description="Nika, le soleil, les divinités et ce que les peuples transmettent."
-        href="/dossiers#dieux-croyances"
-        count={countByCategory('dieux-croyances')}
-      />
-      <CategoryCard
-        icon="🎵"
-        title="Transmission et mémoire"
-        description="Chansons, récits et héritages : comment la mémoire traverse le temps."
-        href="/dossiers#transmission-memoire"
-        count={countByCategory('transmission-memoire')}
-      />
-      <CategoryCard
-        icon="⚖️"
-        title="Gouvernement mondial"
-        description="Imu, Gorosei, Dragons Célestes et la structure du pouvoir mondial."
-        href="/dossiers#gouvernement-mondial"
-        count={countByCategory('gouvernement-mondial')}
-      />
-      <CategoryCard
-        icon="⚔️"
-        title="Guerre finale"
-        description="La Grande Guerre, le Déluge, la destruction de Red Line et la coalition finale."
-        href="/dossiers#guerre-finale"
-        count={countByCategory('guerre-finale')}
-      />
-    </div>
-  </details>
-
-  <div class="dossiers-footer">
-    <a href="/dossiers" class="btn-see-all">Voir tous les dossiers →</a>
-  </div>
-
-  <div class="reading-guide">
-    <span class="reading-guide__icon" aria-hidden="true">💡</span>
-    <span class="reading-guide__text">
-      Les articles distinguent Manga, Théorie centrale, Extension, Hypothèse récente et Projection
-      afin de ne jamais confondre source et interprétation.
-      <a href="/aide/glossaire" class="reading-guide__link">Consultez le glossaire →</a>
-    </span>
-  </div>
-
-  <h2 class="section-title">
-    <span class="section-title__accent"></span>
     Comprendre la théorie
   </h2>
   <div class="understand-grid">
     <a class="understand-card" href="/theorie/resume">
       <span class="understand-step">1</span>
-      <span class="understand-time">8 minutes</span>
+      <span class="understand-time">10 min</span>
       <h3>Le résumé en 10 points</h3>
       <p>La chaîne complète, ses arguments principaux et ce qui reste encore inexpliqué.</p>
     </a>
-    <a class="understand-card" href="/explorer/carte-mentale">
+    <a class="understand-card" href="/theorie/chronologie">
       <span class="understand-step">2</span>
-      <span class="understand-time">5–10 minutes</span>
-      <h3>La carte mentale</h3>
-      <p>Les grandes connexions de la théorie, d'un seul coup d'œil.</p>
+      <span class="understand-time">10 min</span>
+      <h3>La frise chronologique</h3>
+      <p>Passé apparent, présent vécu et futurs possibles, dans l’ordre de la lecture.</p>
     </a>
     <a class="understand-card" href="/theorie/theorie-complete">
       <span class="understand-step">3</span>
-      <span class="understand-time">30–60 minutes</span>
+      <span class="understand-time">45 min</span>
       <h3>La théorie complète</h3>
       <p>La démonstration continue en 22 chapitres, du début à la fin.</p>
     </a>
+  </div>
+
+  <h2 class="section-title">
+    <span class="section-title__accent"></span>
+    Dossiers
+  </h2>
+  <div class="grid">
+    {
+      siteCategories.map((category) => (
+        <CategoryCard
+          icon={category.icon}
+          title={category.label}
+          description={category.description}
+          href={`/dossiers#${category.id}`}
+          count={countByCategory(category.id)}
+        />
+      ))
+    }
+  </div>
+
+  <div class="dossiers-footer">
+    <a href="/dossiers" class="btn-see-all">Voir tous les dossiers →</a>
   </div>
 
   {
@@ -502,7 +422,7 @@ const badgeColorByEffect = {
     gap: 7px;
     padding: 9px 16px;
     background: var(--gradient-border);
-    color: var(--bg-main); /* contraste AA >= 4.5:1 sur le dégradé, dans les deux thèmes */
+    color: var(--on-accent);
     border-radius: var(--border-radius-md);
     font-size: 14px;
     font-weight: 650;
@@ -593,9 +513,9 @@ const badgeColorByEffect = {
     inset: 0;
     background: linear-gradient(
       to top,
-      rgba(7, 2, 10, 0.7) 0%,
-      rgba(7, 2, 10, 0.3) 50%,
-      rgba(7, 2, 10, 0.1) 100%
+      color-mix(in srgb, var(--bg-main) 78%, transparent) 0%,
+      color-mix(in srgb, var(--bg-main) 28%, transparent) 50%,
+      color-mix(in srgb, var(--bg-main) 8%, transparent) 100%
     );
     display: flex;
     flex-direction: column;
@@ -619,9 +539,9 @@ const badgeColorByEffect = {
   .video-facade:hover .video-facade__overlay {
     background: linear-gradient(
       to top,
-      rgba(7, 2, 10, 0.8) 0%,
-      rgba(7, 2, 10, 0.4) 50%,
-      rgba(7, 2, 10, 0.15) 100%
+      color-mix(in srgb, var(--bg-main) 86%, transparent) 0%,
+      color-mix(in srgb, var(--bg-main) 38%, transparent) 50%,
+      color-mix(in srgb, var(--bg-main) 12%, transparent) 100%
     );
   }
 
@@ -646,7 +566,7 @@ const badgeColorByEffect = {
 
   .video-facade__label {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-main);
     font-weight: 500;
   }
 
@@ -694,40 +614,6 @@ const badgeColorByEffect = {
     text-align: center;
   }
 
-  .more-dossiers {
-    margin-top: 16px;
-  }
-
-  .more-dossiers summary {
-    display: flex;
-    min-height: var(--control-size);
-    width: fit-content;
-    align-items: center;
-    margin: 0 auto;
-    padding: 9px 16px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    background: var(--bg-secondary);
-    color: var(--text-main);
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .more-dossiers summary:hover {
-    border-color: var(--cyan);
-    color: var(--cyan);
-  }
-
-  .more-dossiers summary:focus-visible {
-    outline: 2px solid var(--cyan);
-    outline-offset: 2px;
-  }
-
-  .more-dossiers[open] summary {
-    margin-bottom: 16px;
-  }
-
   .btn-see-all {
     display: inline-flex;
     align-items: center;
@@ -748,37 +634,6 @@ const badgeColorByEffect = {
 
   .btn-see-all:active {
     transform: translateY(0) scale(0.98);
-  }
-
-  .reading-guide {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 14px 18px;
-    border: 1px solid var(--border-color);
-    border-left: 3px solid var(--violet);
-    border-radius: var(--border-radius);
-    background: color-mix(in srgb, var(--violet) 5%, transparent);
-    margin-bottom: 8px;
-    font-size: 13.5px;
-    color: var(--text-secondary);
-    line-height: 1.55;
-  }
-
-  .reading-guide__icon {
-    font-size: 18px;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  .reading-guide__link {
-    color: var(--cyan);
-    text-decoration: none;
-    font-weight: 500;
-  }
-
-  .reading-guide__link:hover {
-    text-decoration: underline;
   }
 
   .understand-grid {
@@ -834,7 +689,7 @@ const badgeColorByEffect = {
     border-radius: 50%;
     font-size: 12px;
     font-weight: 700;
-    color: var(--bg-main);
+    color: var(--on-accent);
     background: var(--gradient-border);
     margin-bottom: 10px;
   }
