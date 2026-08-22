@@ -23,27 +23,19 @@ related:
 
 ## Le pays fermé
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Wano est isolé derrière de hauts murs. Le clan Kozuki a transmis l'écriture des Ponéglyphes. Oden voulait ouvrir le pays avant l'arrivée de Joy Boy.
 
 **Sources précises :** chapitres 818, 920, 967–968 et 1049–1055.
 
 ## Les voyageurs de Toki
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Toki envoie Momonosuke, Kin'emon, Kanjuro, Raizo et Kiku vingt ans plus tard. Hiyori reste à Wano. Après la victoire sur Kaido, Momonosuke devient shogun mais **reporte l'ouverture**.
 
 ## Pluton et les murs
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Pluton existe sous l'ancien Wano. Faire tomber les murs libérerait l'accès à l'Arme et ouvrirait physiquement le pays.
 
 ## Projection de transmission
-
-<div class="section-pill section-pill--projection">Projection</div>
 
 Sukiyaki pourrait transmettre le savoir de gravure, tandis que Robin pourrait organiser des informations à préserver. Rien n'impose que Momonosuke grave lui-même les pierres ni que Robin conçoive la langue.
 

@@ -14,23 +14,17 @@ order: 1
 
 ## La guerre ancienne
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Vegapunk décrit une guerre idéologique entre le Royaume antique de Joy Boy et l'alliance qui deviendra le Gouvernement mondial. L'emploi des Armes antiques provoque une hausse des eaux d'environ 200 mètres.
 
 **Sources précises :** chapitres 395 et 1115–1116.
 
 ## La guerre annoncée
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Barbe Blanche annonce qu'après la découverte du One Piece, une immense guerre engloutira le monde. Les révolutionnaires et le Gouvernement sont déjà en conflit au présent.
 
 **Sources précises :** chapitres 576 et 1083.
 
 ## Échos possibles
-
-<div class="section-pill section-pill--extension">Extension</div>
 
 La guerre future peut reproduire, inverser ou compléter des motifs du conflit ancien. Une information future transmise au passé pourrait renforcer ces parallèles sans transformer automatiquement les deux guerres en un seul événement.
 

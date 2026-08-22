@@ -24,27 +24,19 @@ related:
 
 ## L'île atteinte par Roger
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Après Lodestar, Roger recherche les Road Ponéglyphes. Les quatre positions permettent à son équipage d'atteindre l'île finale, qu'il nomme Laugh Tale. L'équipage y découvre la véritable histoire, les Armes antiques et un trésor laissé par Joy Boy.
 
 **Sources précises :** chapitres 966 à 968.
 
 ## Une destination géographique cachée
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Les quatre Road Ponéglyphes définissent un croisement spatial. La difficulté d'accès ne prouve pas que l'île n'existe pas au présent. Red Line n'interdit pas à elle seule une circumnavigation, et Lodestar est la dernière destination du Log Pose, non une prison maritime démontrée.
 
 ## Hypothèse de mécanisme temporel
 
-<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
-
 Laugh Tale pourrait permettre une communication entre époques ou servir de point d'ancrage temporel. Le chapitre 1188 laisse ouvertes une réception vers −800, une branche Roger vers −25 et une réponse future de Luffy. La théorie reste évolutive.
 
 ## Le One Piece
-
-<div class="section-pill section-pill--projection">Projection</div>
 
 Le One Piece pourrait contenir la véritable histoire vécue par Luffy, sous forme de texte, d'enregistrement ou d'information. Son contenu exact n'est pas révélé.
 

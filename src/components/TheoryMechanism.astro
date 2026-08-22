@@ -36,14 +36,16 @@ const steps = [
     text: 'Les textes, promesses et préparatifs peuvent apparaître à des dates différentes, puis guider les héritiers jusqu’au présent. Le futur pourrait ainsi créer une partie de la mémoire attribuée au passé, sans déplacer physiquement le monde entier.',
     status: 'Théorie centrale',
   },
-]
+];
 ---
 
 <section class="mechanism" aria-labelledby="mechanism-title" data-theory-mechanism>
   <div class="mechanism__heading">
     <div>
       <p class="mechanism__eyebrow">Le mécanisme minimal</p>
-      <h2 id="mechanism-title">Comment une information future devient-elle une source du passé ?</h2>
+      <h2 id="mechanism-title">
+        Comment une information future devient-elle une source du passé ?
+      </h2>
     </div>
     <a href="/theorie/chronologie"
       >Voir les mécanismes envisagés <span aria-hidden="true">→</span></a
@@ -52,8 +54,10 @@ const steps = [
 
   <p class="mechanism__intro">
     Le noyau ne postule pas une boucle temporelle générale. Il suit une chronologie du
-    <strong>passé apparent vers le futur qui pourrait avoir produit certaines de ses informations</strong>.
-    Les Ponéglyphes sont le support central ; préscience, communication et transport physique restent séparés.
+    <strong
+      >passé apparent vers le futur qui pourrait avoir produit certaines de ses informations</strong
+    >. Les Ponéglyphes sont le support central ; préscience, communication et transport physique
+    restent séparés.
   </p>
 
   <div class="mechanism__tabs" data-mechanism-tabs>
@@ -85,7 +89,6 @@ const steps = [
           class:list={['mechanism__panel', { 'is-active': index === 0 }]}
           data-mechanism-panel
         >
-          <span class="mechanism__status">{step.status}</span>
           <h3>{step.title}</h3>
           <p>{step.text}</p>
         </article>
@@ -326,19 +329,6 @@ const steps = [
 
   .mechanism:not([data-enhanced='true']) .mechanism__panel + .mechanism__panel {
     margin-top: var(--space-3);
-  }
-
-  .mechanism__status {
-    display: inline-flex;
-    margin-bottom: var(--space-2);
-    padding: 3px 9px;
-    border-radius: var(--border-radius-full);
-    background: color-mix(in srgb, var(--accent-gold) 13%, transparent);
-    color: var(--accent-gold);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
 
   .mechanism__panel h3 {

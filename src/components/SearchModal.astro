@@ -264,6 +264,15 @@
       }
     };
 
+    const resultTypeLabel = (url: string) => {
+      if (url.startsWith('/chapitres/')) return 'Chapitre';
+      if (url.startsWith('/explorer/')) return 'Explorer';
+      if (url.startsWith('/dossiers/')) return 'Dossiers';
+      if (url.startsWith('/aide/')) return 'Aide';
+      if (url.startsWith('/theorie/')) return 'Fiche';
+      return 'Page';
+    };
+
     const runSearch = async () => {
       if (!input || !results) return;
       const raw = input.value.trim();
@@ -308,13 +317,16 @@
             link.className = 'search-result-link';
             link.setAttribute('role', 'option');
             link.setAttribute('aria-selected', 'false');
+            const meta = document.createElement('span');
+            meta.className = 'search-result-meta';
+            meta.textContent = resultTypeLabel(result.url || '');
             const title = document.createElement('strong');
             title.className = 'search-result-title';
             title.textContent = result.meta?.title || 'Page';
             const excerpt = document.createElement('p');
             excerpt.className = 'search-result-excerpt';
             excerpt.innerHTML = String(result.excerpt ?? '').replace(/<(?!\/?mark\b)[^>]*>/gi, '');
-            link.append(title, excerpt);
+            link.append(meta, title, excerpt);
             link.addEventListener('mouseenter', () => setActive(index));
             link.addEventListener('click', () => saveRecent(raw));
             item.append(link);
@@ -567,6 +579,19 @@
     background: color-mix(in srgb, var(--violet) 14%, transparent);
     box-shadow: inset 3px 0 var(--cyan);
   }
+  .search-result-meta {
+    display: inline-flex;
+    margin-bottom: 5px;
+    padding: 2px 7px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-full);
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
   .search-result-title {
     display: block;
     margin-bottom: 4px;

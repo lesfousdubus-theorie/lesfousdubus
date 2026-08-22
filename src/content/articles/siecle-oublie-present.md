@@ -16,15 +16,11 @@ order: 4
 
 ## Ce que le manga établit
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Vegapunk situe **Joy Boy environ neuf siècles avant le présent**, dans le Royaume antique, et décrit la guerre du Siècle oublié comme une guerre historique ayant submergé le monde d'environ 200 mètres. Le manga ne permet donc plus de soutenir que rien ne s'est passé il y a huit ou neuf siècles.
 
 **Sources précises :** chapitres 1114 à 1116.
 
 ## La proposition centrale
-
-<div class="section-pill section-pill--theorie-centrale">Théorie centrale</div>
 
 La théorie révisée est informationnelle : des récits, coordonnées, promesses ou plans produits par les événements du présent et d'un futur possible auraient pu être reçus à une époque antérieure puis fixés sur les Ponéglyphes. Les stèles transmettraient ainsi une mémoire future **sans exiger l'envoi physique du monde entier dans le passé**.
 
@@ -36,13 +32,9 @@ Le paradoxe reste visible :
 
 ## Qui peut lire ou graver ?
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Robin sait lire les Ponéglyphes, mais aucun chapitre ne lui attribue le procédé de gravure. Momonosuke n'a pas reçu ce savoir. **Kozuki Sukiyaki**, toujours vivant, maîtrise encore la lecture et la gravure de l'écriture Kozuki au chapitre 1055. Les auteurs et artisans d'un éventuel message futur restent donc à déterminer.
 
 ## Mécanismes à ne pas fusionner
-
-<div class="section-pill section-pill--extension">Extension</div>
 
 - **Ponéglyphes et transmission d'informations** : noyau de la théorie.
 - **Communication temporelle** et **préscience** : alternatives pour expliquer ce que Roger ou Imu pourraient savoir.

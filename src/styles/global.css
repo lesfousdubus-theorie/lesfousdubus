@@ -484,11 +484,6 @@ code {
   }
 }
 
-/* Pastilles éditoriales héritées du markdown : masquées, le texte suffit. */
-.section-pill {
-  display: none !important;
-}
-
 /* Skip to content link for accessibility */
 .skip-link {
   position: absolute;

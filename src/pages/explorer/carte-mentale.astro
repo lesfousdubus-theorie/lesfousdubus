@@ -3,92 +3,180 @@ import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
 ---
 
-<WikiLayout title="Carte mentale" seoTitle="Carte mentale One Piece : la chaîne causale | Les Fous du Bus" description="Carte mentale éditoriale : faits du manga, transmission future centrale, extensions, hypothèses récentes et projections finales séparées." image="/og-carte-mentale.png" currentPath="/explorer/carte-mentale">
+<WikiLayout
+  title="Carte mentale"
+  seoTitle="Carte mentale One Piece : la chaîne causale | Les Fous du Bus"
+  description="Carte mentale éditoriale : faits du manga, transmission future centrale, extensions, hypothèses récentes et projections finales séparées."
+  image="/og-carte-mentale.png"
+  currentPath="/explorer/carte-mentale"
+>
   <div class="page-header">
     <div class="eyebrow">🧠 Carte causale</div>
     <h1>Carte mentale de la théorie</h1>
     <p class="page-desc">
-      La carte distingue les faits de leurs lectures et n'impose pas une seule fin. Chaque nœud renvoie vers
-      sa fiche :
-      <span class="legend"><span class="dot dot--manga"></span> Manga</span>
-      <span class="legend"><span class="dot dot--central"></span> Théorie centrale</span>
-      <span class="legend"><span class="dot dot--extension"></span> Extension</span>
-      <span class="legend"><span class="dot dot--hypothese"></span> Hypothèse récente</span>
-      <span class="legend"><span class="dot dot--projection"></span> Projection</span>
-    </p>
+      La carte distingue les faits de leurs lectures et n'impose pas une seule fin. Chaque nœud
+      renvoie vers Manga
+    </p> Théorie centrale
+  </div> Extension</WikiLayout
+> Hypothèse récente Projection
+
+<!-- Mind map container -->
+<div class="mindmap-wrapper" id="mindmap-wrapper">
+  <div class="mindmap-controls">
+    <button id="zoom-in" class="control-btn" aria-label="Zoom avant">+</button>
+    <button id="zoom-out" class="control-btn" aria-label="Zoom arrière">−</button>
+    <button id="zoom-reset" class="control-btn" aria-label="Réinitialiser">⟲</button>
   </div>
+  <svg
+    id="mindmap-svg"
+    viewBox="0 0 1400 900"
+    class="mindmap-svg"
+    preserveAspectRatio="xMidYMid meet"
+    role="group"
+    aria-label="Carte causale interactive de la théorie. Chaque nœud ouvre une fiche détaillée."
+  >
+    <defs>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"></feGaussianBlur>
+        <feMerge>
+          <feMergeNode in="blur"></feMergeNode>
+          <feMergeNode in="SourceGraphic"></feMergeNode>
+        </feMerge>
+      </filter>
+      <marker
+        id="arrow"
+        viewBox="0 0 10 10"
+        refX="9"
+        refY="5"
+        markerWidth="6"
+        markerHeight="6"
+        orient="auto-start-reverse"
+      >
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+      </marker>
+    </defs>
+    <g id="connections"></g>
+    <g id="nodes"></g>
+  </svg>
+</div>
 
-  <!-- Mind map container -->
-  <div class="mindmap-wrapper" id="mindmap-wrapper">
-    <div class="mindmap-controls">
-      <button id="zoom-in" class="control-btn" aria-label="Zoom avant">+</button>
-      <button id="zoom-out" class="control-btn" aria-label="Zoom arrière">−</button>
-      <button id="zoom-reset" class="control-btn" aria-label="Réinitialiser">⟲</button>
-    </div>
-    <svg
-      id="mindmap-svg"
-      viewBox="0 0 1400 900"
-      class="mindmap-svg"
-      preserveAspectRatio="xMidYMid meet"
-      role="group"
-      aria-label="Carte causale interactive de la théorie. Chaque nœud ouvre une fiche détaillée."
-    >
-      <defs>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
-        </marker>
-      </defs>
-      <g id="connections"></g>
-      <g id="nodes"></g>
-    </svg>
-  </div>
+<!-- Version textuelle de la carte causale -->
+<section class="textual" aria-label="Version textuelle de la carte causale">
+  <h2>La chaîne causale, de la géographie au trésor</h2>
+  <ol class="chain">
+    <li>
+      <a href="/theorie/blue-star"><strong>Blue Star</strong></a> — Manga : Red Line et Grand Line divisent
+      les mers. Red Line ne suffit pas à rendre la circumnavigation impossible.
+    </li>
+    <li>
+      <a href="/theorie/lodestar"><strong>Roger et Lodestar</strong></a> — Manga : Lodestar est la dernière
+      destination du Log Pose ; Roger y comprend qu'une île manque et atteint ensuite Laugh Tale.
+    </li>
+    <li>
+      <a href="/theorie/road-poneglyphes"><strong>Quatre coordonnées spatiales</strong></a> — Manga :
+      leur croisement localise Laugh Tale. Une fonction temporelle de Laugh Tale ou du quatrième texte
+      reste une hypothèse séparée.
+    </li>
+    <li>
+      <a href="/theorie/poneglyphes"><strong>Les Ponéglyphes</strong></a> — support central durable. Théorie
+      : une partie de leur contenu pourrait provenir d'informations futures ; Robin les lit mais ne les
+      grave pas.
+    </li>
+    <li>
+      <a href="/theorie/siecle-oublie"
+        ><strong>Passé apparent / présent vécu / futur créateur</strong></a
+      > — le Siècle oublié et Joy Boy sont historiques dans le manga ; la théorie ajoute que leurs sources
+      pourraient décrire des événements à venir.
+    </li>
+    <li>
+      <a href="/theorie/royaume-antique"><strong>Le Royaume antique</strong></a> — extension : le futur
+      pourrait être décrit par les sources du passé, sans envoyer physiquement un monde entier huit siècles
+      en arrière.
+    </li>
+    <li>
+      <a href="/theorie/joy-boy"><strong>Libération</strong></a> — Luffy, le Joy Boy historique et le
+      mythe de Nika convergent thématiquement. Une future appellation Joy Boy reste une extension ; Luffy
+      garde son identité.
+    </li>
+    <li>
+      <a href="/theorie/peuples-royaumes"><strong>Peuples, mémoires et Armes</strong></a> — leurs traditions
+      et missions ne commencent pas toutes vers −800. Poséidon et Pluton sont identifiés ; Uranus reste
+      inconnu.
+    </li>
+    <li>
+      <a href="/theorie/imu-nerona"><strong>Imu</strong></a> — le Gouvernement mondial est canonique ;
+      un règne personnel continu depuis −800 est hypothétique. Archives, communication future et préscience
+      restent des moyens concurrents.
+    </li>
+    <li>
+      <a href="/theorie/guerre-finale"><strong>Futurs possibles</strong></a> — Water Seven/Pluton, ouverture
+      de Wano, Noah, Red Line et Déluge sont des branches. Aucun ordre total n'est confirmé.
+    </li>
+    <li>
+      <a href="/theorie/one-piece-histoire"
+        ><strong>Le One Piece pourrait contenir la véritable histoire vécue par Luffy</strong></a
+      > — projection, pas définition canonique du trésor.
+    </li>
+  </ol>
+</section>
 
-  <!-- Version textuelle de la carte causale -->
-  <section class="textual" aria-label="Version textuelle de la carte causale">
-    <h2>La chaîne causale, de la géographie au trésor</h2>
-    <ol class="chain">
-      <li><a href="/theorie/blue-star"><strong>Blue Star</strong></a> — Manga : Red Line et Grand Line divisent les mers. Red Line ne suffit pas à rendre la circumnavigation impossible.</li>
-      <li><a href="/theorie/lodestar"><strong>Roger et Lodestar</strong></a> — Manga : Lodestar est la dernière destination du Log Pose ; Roger y comprend qu'une île manque et atteint ensuite Laugh Tale.</li>
-      <li><a href="/theorie/road-poneglyphes"><strong>Quatre coordonnées spatiales</strong></a> — Manga : leur croisement localise Laugh Tale. Une fonction temporelle de Laugh Tale ou du quatrième texte reste une hypothèse séparée.</li>
-      <li><a href="/theorie/poneglyphes"><strong>Les Ponéglyphes</strong></a> — support central durable. Théorie : une partie de leur contenu pourrait provenir d'informations futures ; Robin les lit mais ne les grave pas.</li>
-      <li><a href="/theorie/siecle-oublie"><strong>Passé apparent / présent vécu / futur créateur</strong></a> — le Siècle oublié et Joy Boy sont historiques dans le manga ; la théorie ajoute que leurs sources pourraient décrire des événements à venir.</li>
-      <li><a href="/theorie/royaume-antique"><strong>Le Royaume antique</strong></a> — extension : le futur pourrait être décrit par les sources du passé, sans envoyer physiquement un monde entier huit siècles en arrière.</li>
-      <li><a href="/theorie/joy-boy"><strong>Libération</strong></a> — Luffy, le Joy Boy historique et le mythe de Nika convergent thématiquement. Une future appellation Joy Boy reste une extension ; Luffy garde son identité.</li>
-      <li><a href="/theorie/peuples-royaumes"><strong>Peuples, mémoires et Armes</strong></a> — leurs traditions et missions ne commencent pas toutes vers −800. Poséidon et Pluton sont identifiés ; Uranus reste inconnu.</li>
-      <li><a href="/theorie/imu-nerona"><strong>Imu</strong></a> — le Gouvernement mondial est canonique ; un règne personnel continu depuis −800 est hypothétique. Archives, communication future et préscience restent des moyens concurrents.</li>
-      <li><a href="/theorie/guerre-finale"><strong>Futurs possibles</strong></a> — Water Seven/Pluton, ouverture de Wano, Noah, Red Line et Déluge sont des branches. Aucun ordre total n'est confirmé.</li>
-      <li><a href="/theorie/one-piece-histoire"><strong>Le One Piece pourrait contenir la véritable histoire vécue par Luffy</strong></a> — projection, pas définition canonique du trésor.</li>
-    </ol>
-  </section>
-
-  <Footer />
-</WikiLayout>
+<Footer />
 
 <script>
   // @ts-nocheck
   // ─── Causal chain data ──────────────────────────────────────
   // Left-to-right flowing causal path, organized in "lanes" that zig-zag
   // vertically to fill the SVG width nicely.
-  const W = 1400, H = 900;
+  const W = 1400,
+    H = 900;
 
   // 11 main nodes in order, each with {slug, title, color, certainty, size}
   const chain = [
     { slug: 'blue-star', title: 'Blue Star', level: 'manga', x: 120, y: 200 },
     { slug: 'laugh-tale', title: 'Lodestar puis\nLaugh Tale', level: 'manga', x: 270, y: 380 },
     { slug: 'road-poneglyphes', title: '4 coordonnées\nspatiales', level: 'manga', x: 420, y: 200 },
-    { slug: 'poneglyphes', title: 'Ponéglyphes :\nsupport central', level: 'theorie-centrale', x: 560, y: 380 },
-    { slug: 'siecle-oublie', title: 'Informations\ndu futur ?', level: 'theorie-centrale', x: 700, y: 200 },
-    { slug: 'royaume-antique', title: 'Sources décrivant\nle futur', level: 'extension', x: 840, y: 380 },
-    { slug: 'joy-boy', title: 'Libération : Luffy /\nJoy Boy / Nika', level: 'extension', x: 980, y: 200 },
-    { slug: 'peuples-royaumes', title: 'Mémoires, peuples\n& Armes', level: 'extension', x: 1120, y: 380 },
-    { slug: 'imu-nerona', title: 'Imu : moyen\nd’information ?', level: 'hypothese-recente', x: 980, y: 600 },
+    {
+      slug: 'poneglyphes',
+      title: 'Ponéglyphes :\nsupport central',
+      level: 'theorie-centrale',
+      x: 560,
+      y: 380,
+    },
+    {
+      slug: 'siecle-oublie',
+      title: 'Informations\ndu futur ?',
+      level: 'theorie-centrale',
+      x: 700,
+      y: 200,
+    },
+    {
+      slug: 'royaume-antique',
+      title: 'Sources décrivant\nle futur',
+      level: 'extension',
+      x: 840,
+      y: 380,
+    },
+    {
+      slug: 'joy-boy',
+      title: 'Libération : Luffy /\nJoy Boy / Nika',
+      level: 'extension',
+      x: 980,
+      y: 200,
+    },
+    {
+      slug: 'peuples-royaumes',
+      title: 'Mémoires, peuples\n& Armes',
+      level: 'extension',
+      x: 1120,
+      y: 380,
+    },
+    {
+      slug: 'imu-nerona',
+      title: 'Imu : moyen\nd’information ?',
+      level: 'hypothese-recente',
+      x: 980,
+      y: 600,
+    },
     { slug: 'guerre-finale', title: 'Futurs possibles', level: 'projection', x: 700, y: 700 },
     { slug: 'all-blue', title: 'One Piece /\nAll Blue ?', level: 'projection', x: 420, y: 600 },
   ];
@@ -96,26 +184,145 @@ import Footer from '@components/Footer.astro';
   // Sub-nodes branching off a main node
   const subs = [
     { parent: 'laugh-tale', slug: 'lodestar', title: 'Lodestar', x: 220, y: 510, level: 'manga' },
-    { parent: 'laugh-tale', slug: 'one-piece-histoire', title: 'One Piece', x: 330, y: 510, level: 'projection' },
-    { parent: 'poneglyphes', slug: 'rio-poneglyphe', title: 'Rio Ponéglyphe', x: 510, y: 510, level: 'extension' },
-    { parent: 'poneglyphes', slug: 'communication-temps', title: 'Communication\ntemporelle ?', x: 610, y: 520, level: 'hypothese-recente' },
-    { parent: 'siecle-oublie', slug: 'professeur-clover-et-ohara', title: 'Clover & Ohara', x: 650, y: 90, level: 'manga' },
-    { parent: 'royaume-antique', slug: 'vegapunk', title: 'Vegapunk', x: 790, y: 510, level: 'manga' },
-    { parent: 'royaume-antique', slug: 'energie-antique', title: 'Énergie antique', x: 890, y: 520, level: 'extension' },
+    {
+      parent: 'laugh-tale',
+      slug: 'one-piece-histoire',
+      title: 'One Piece',
+      x: 330,
+      y: 510,
+      level: 'projection',
+    },
+    {
+      parent: 'poneglyphes',
+      slug: 'rio-poneglyphe',
+      title: 'Rio Ponéglyphe',
+      x: 510,
+      y: 510,
+      level: 'extension',
+    },
+    {
+      parent: 'poneglyphes',
+      slug: 'communication-temps',
+      title: 'Communication\ntemporelle ?',
+      x: 610,
+      y: 520,
+      level: 'hypothese-recente',
+    },
+    {
+      parent: 'siecle-oublie',
+      slug: 'professeur-clover-et-ohara',
+      title: 'Clover & Ohara',
+      x: 650,
+      y: 90,
+      level: 'manga',
+    },
+    {
+      parent: 'royaume-antique',
+      slug: 'vegapunk',
+      title: 'Vegapunk',
+      x: 790,
+      y: 510,
+      level: 'manga',
+    },
+    {
+      parent: 'royaume-antique',
+      slug: 'energie-antique',
+      title: 'Énergie antique',
+      x: 890,
+      y: 520,
+      level: 'extension',
+    },
     { parent: 'joy-boy', slug: 'nika', title: 'Nika', x: 1020, y: 90, level: 'manga' },
     { parent: 'joy-boy', slug: 'luffy', title: 'Luffy', x: 930, y: 90, level: 'manga' },
-    { parent: 'peuples-royaumes', slug: 'armes-antiques', title: 'Armes antiques', x: 1210, y: 510, level: 'extension' },
-    { parent: 'peuples-royaumes', slug: 'poseidon-fiche', title: 'Poséidon', x: 1120, y: 520, level: 'manga' },
-    { parent: 'peuples-royaumes', slug: 'pluton-fiche', title: 'Pluton sous Wano', x: 1280, y: 400, level: 'manga' },
-    { parent: 'peuples-royaumes', slug: 'zunesha-fiche', title: 'Zunesha', x: 1280, y: 280, level: 'manga' },
-    { parent: 'peuples-royaumes', slug: 'wa-no-kuni', title: 'Ouverture de Wano ?', x: 1280, y: 520, level: 'projection' },
-    { parent: 'imu-nerona', slug: 'gouvernement-mondial', title: 'Gouvernement mondial', x: 870, y: 620, level: 'manga' },
-    { parent: 'imu-nerona', slug: 'vingt-rois', title: 'Vingt Rois', x: 1080, y: 690, level: 'manga' },
-    { parent: 'imu-nerona', slug: 'la-prescience-et-imu', title: 'Préscience ?', x: 1050, y: 520, level: 'hypothese-recente' },
-    { parent: 'guerre-finale', slug: 'deluge-all-blue', title: 'Nouveau Déluge ?', x: 570, y: 780, level: 'projection' },
-    { parent: 'guerre-finale', slug: 'red-line', title: 'Ouverture de\nRed Line ?', x: 780, y: 790, level: 'projection' },
+    {
+      parent: 'peuples-royaumes',
+      slug: 'armes-antiques',
+      title: 'Armes antiques',
+      x: 1210,
+      y: 510,
+      level: 'extension',
+    },
+    {
+      parent: 'peuples-royaumes',
+      slug: 'poseidon-fiche',
+      title: 'Poséidon',
+      x: 1120,
+      y: 520,
+      level: 'manga',
+    },
+    {
+      parent: 'peuples-royaumes',
+      slug: 'pluton-fiche',
+      title: 'Pluton sous Wano',
+      x: 1280,
+      y: 400,
+      level: 'manga',
+    },
+    {
+      parent: 'peuples-royaumes',
+      slug: 'zunesha-fiche',
+      title: 'Zunesha',
+      x: 1280,
+      y: 280,
+      level: 'manga',
+    },
+    {
+      parent: 'peuples-royaumes',
+      slug: 'wa-no-kuni',
+      title: 'Ouverture de Wano ?',
+      x: 1280,
+      y: 520,
+      level: 'projection',
+    },
+    {
+      parent: 'imu-nerona',
+      slug: 'gouvernement-mondial',
+      title: 'Gouvernement mondial',
+      x: 870,
+      y: 620,
+      level: 'manga',
+    },
+    {
+      parent: 'imu-nerona',
+      slug: 'vingt-rois',
+      title: 'Vingt Rois',
+      x: 1080,
+      y: 690,
+      level: 'manga',
+    },
+    {
+      parent: 'imu-nerona',
+      slug: 'la-prescience-et-imu',
+      title: 'Préscience ?',
+      x: 1050,
+      y: 520,
+      level: 'hypothese-recente',
+    },
+    {
+      parent: 'guerre-finale',
+      slug: 'deluge-all-blue',
+      title: 'Nouveau Déluge ?',
+      x: 570,
+      y: 780,
+      level: 'projection',
+    },
+    {
+      parent: 'guerre-finale',
+      slug: 'red-line',
+      title: 'Ouverture de\nRed Line ?',
+      x: 780,
+      y: 790,
+      level: 'projection',
+    },
     { parent: 'guerre-finale', slug: 'noah', title: 'Noah', x: 840, y: 760, level: 'projection' },
-    { parent: 'all-blue', slug: 'binks-no-sake', title: 'Binks no Sake', x: 300, y: 720, level: 'hypothese-recente' },
+    {
+      parent: 'all-blue',
+      slug: 'binks-no-sake',
+      title: 'Binks no Sake',
+      x: 300,
+      y: 720,
+      level: 'hypothese-recente',
+    },
     { parent: 'blue-star', slug: 'grand-line', title: 'Grand Line', x: 70, y: 90, level: 'manga' },
     { parent: 'blue-star', slug: 'red-line', title: 'Red Line', x: 170, y: 90, level: 'manga' },
   ];
@@ -147,10 +354,11 @@ import Footer from '@components/Footer.astro';
 
   const nodePos = {};
   const allNodes = [...chain, ...subs];
-  allNodes.forEach(n => nodePos[n.slug] = { x: n.x, y: n.y });
+  allNodes.forEach((n) => (nodePos[n.slug] = { x: n.x, y: n.y }));
 
   function drawPath(x1, y1, x2, y2, color, dashed = false, opacity = 0.45, arrow = false) {
-    const dx = x2 - x1, dy = y2 - y1;
+    const dx = x2 - x1,
+      dy = y2 - y1;
     const mx1 = x1 + dx * 0.5;
     const my1 = y1 + dy * 0.15;
     const mx2 = x1 + dx * 0.5;
@@ -169,8 +377,10 @@ import Footer from '@components/Footer.astro';
 
   function drawStraight(x1, y1, x2, y2, color, dashed = false, opacity = 0.45) {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    path.setAttribute('x1', x1); path.setAttribute('y1', y1);
-    path.setAttribute('x2', x2); path.setAttribute('y2', y2);
+    path.setAttribute('x1', x1);
+    path.setAttribute('y1', y1);
+    path.setAttribute('x2', x2);
+    path.setAttribute('y2', y2);
     path.setAttribute('stroke', color);
     path.setAttribute('stroke-width', '1.5');
     path.setAttribute('stroke-opacity', String(opacity));
@@ -192,7 +402,8 @@ import Footer from '@components/Footer.astro';
     'issues possibles',
   ];
   for (let i = 0; i < chain.length - 1; i++) {
-    const a = chain[i], b = chain[i+1];
+    const a = chain[i],
+      b = chain[i + 1];
     const uncertain = b.level === 'hypothese-recente' || b.level === 'projection';
     drawPath(a.x, a.y, b.x, b.y, levelColors[b.level] || '#8899aa', uncertain, 0.55, true);
     // Add label at midpoint
@@ -212,15 +423,16 @@ import Footer from '@components/Footer.astro';
   // La carte ne referme pas une boucle générale : les futurs restent ouverts.
 
   // Draw sub-node connections
-  subs.forEach(s => {
+  subs.forEach((s) => {
     const p = nodePos[s.parent];
     if (!p) return;
     drawStraight(p.x, p.y, s.x, s.y, levelColors[s.level] || '#8899aa', false, 0.35);
   });
 
   // Draw cross-links
-  crossLinks.forEach(l => {
-    const a = nodePos[l.from], b = nodePos[l.to];
+  crossLinks.forEach((l) => {
+    const a = nodePos[l.from],
+      b = nodePos[l.to];
     if (a && b) drawPath(a.x, a.y, b.x, b.y, '#8899aa', true, 0.22);
   });
 
@@ -257,13 +469,13 @@ import Footer from '@components/Footer.astro';
 
     const color = levelColors[n.level] || '#8899aa';
     const lines = n.title.split('\n');
-    const maxLen = Math.max(...lines.map(l => l.length));
+    const maxLen = Math.max(...lines.map((l) => l.length));
     const w = isMain ? Math.max(110, maxLen * 8.5 + 30) : Math.max(75, maxLen * 7 + 22);
     const h = isMain ? lines.length * 19 + 22 : lines.length * 16 + 18;
 
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('x', n.x - w/2);
-    rect.setAttribute('y', n.y - h/2);
+    rect.setAttribute('x', n.x - w / 2);
+    rect.setAttribute('y', n.y - h / 2);
     rect.setAttribute('width', w);
     rect.setAttribute('height', h);
     rect.setAttribute('rx', isMain ? '12' : '8');
@@ -293,7 +505,9 @@ import Footer from '@components/Footer.astro';
       rect.setAttribute('stroke-opacity', '0.85');
       rect.setAttribute('stroke-width', isMain ? '2' : '1.3');
     });
-    const navigate = () => { window.location.href = `/theorie/${n.slug}`; };
+    const navigate = () => {
+      window.location.href = `/theorie/${n.slug}`;
+    };
     g.addEventListener('click', navigate);
     g.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -305,50 +519,129 @@ import Footer from '@components/Footer.astro';
     nodesGroup.appendChild(g);
   }
 
-  subs.forEach(s => makeNode(s, false));
-  chain.forEach(c => makeNode(c, true));
+  subs.forEach((s) => makeNode(s, false));
+  chain.forEach((c) => makeNode(c, true));
 
   // ─── Zoom & Pan ──────────────────────────────────────────────
-  let scale = 1, panX = 0, panY = 0, isPanning = false, startX = 0, startY = 0;
-  const minScale = 0.4, maxScale = 2.5;
+  let scale = 1,
+    panX = 0,
+    panY = 0,
+    isPanning = false,
+    startX = 0,
+    startY = 0;
+  const minScale = 0.4,
+    maxScale = 2.5;
   function updateViewBox() {
-    const w = W / scale, h = H / scale;
-    const x = (W - w)/2 + panX;
-    const y = (H - h)/2 + panY;
+    const w = W / scale,
+      h = H / scale;
+    const x = (W - w) / 2 + panX;
+    const y = (H - h) / 2 + panY;
     svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
   }
-  document.getElementById('zoom-in').addEventListener('click', () => { scale = Math.min(maxScale, scale * 1.25); updateViewBox(); });
-  document.getElementById('zoom-out').addEventListener('click', () => { scale = Math.max(minScale, scale / 1.25); updateViewBox(); });
-  document.getElementById('zoom-reset').addEventListener('click', () => { scale = 1; panX = 0; panY = 0; updateViewBox(); });
+  document.getElementById('zoom-in').addEventListener('click', () => {
+    scale = Math.min(maxScale, scale * 1.25);
+    updateViewBox();
+  });
+  document.getElementById('zoom-out').addEventListener('click', () => {
+    scale = Math.max(minScale, scale / 1.25);
+    updateViewBox();
+  });
+  document.getElementById('zoom-reset').addEventListener('click', () => {
+    scale = 1;
+    panX = 0;
+    panY = 0;
+    updateViewBox();
+  });
 
   const wrapper = document.getElementById('mindmap-wrapper');
-  wrapper.addEventListener('wheel', (e) => { e.preventDefault(); scale = Math.max(minScale, Math.min(maxScale, scale * (e.deltaY < 0 ? 1.08 : 0.93))); updateViewBox(); }, { passive: false });
+  wrapper.addEventListener(
+    'wheel',
+    (e) => {
+      e.preventDefault();
+      scale = Math.max(minScale, Math.min(maxScale, scale * (e.deltaY < 0 ? 1.08 : 0.93)));
+      updateViewBox();
+    },
+    { passive: false },
+  );
 
   svg.addEventListener('mousedown', (e) => {
     if (e.target.closest('.mindmap-node')) return;
-    isPanning = true; startX = e.clientX; startY = e.clientY; svg.style.cursor = 'grabbing';
+    isPanning = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    svg.style.cursor = 'grabbing';
   });
   window.addEventListener('mousemove', (e) => {
     if (!isPanning) return;
-    panX -= (e.clientX - startX)/scale; panY -= (e.clientY - startY)/scale;
-    startX = e.clientX; startY = e.clientY; updateViewBox();
+    panX -= (e.clientX - startX) / scale;
+    panY -= (e.clientY - startY) / scale;
+    startX = e.clientX;
+    startY = e.clientY;
+    updateViewBox();
   });
-  window.addEventListener('mouseup', () => { isPanning = false; svg.style.cursor = 'grab'; });
+  window.addEventListener('mouseup', () => {
+    isPanning = false;
+    svg.style.cursor = 'grab';
+  });
   svg.style.cursor = 'grab';
 </script>
 
 <style>
-  .page-header { margin-bottom: 24px; }
-  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
-  .page-header h1 { font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700; margin: 0 0 12px; line-height: 1.2; }
-  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 820px; line-height: 1.6; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
-  .legend { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-secondary); }
-  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-  .dot--manga { background: #8899aa; }
-  .dot--central { background: #5fb9c2; }
-  .dot--extension { background: #8eb5ff; }
-  .dot--hypothese { background: #b07cc6; }
-  .dot--projection { background: #e0ab4e; }
+  .page-header {
+    margin-bottom: 24px;
+  }
+  .eyebrow {
+    color: var(--violet-light);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .page-header h1 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    margin: 0 0 12px;
+    line-height: 1.2;
+  }
+  .page-desc {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 820px;
+    line-height: 1.6;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+  }
+  .legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+  }
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot--manga {
+    background: #8899aa;
+  }
+  .dot--central {
+    background: #5fb9c2;
+  }
+  .dot--extension {
+    background: #8eb5ff;
+  }
+  .dot--hypothese {
+    background: #b07cc6;
+  }
+  .dot--projection {
+    background: #e0ab4e;
+  }
 
   .mindmap-wrapper {
     position: relative;
@@ -363,26 +656,83 @@ import Footer from '@components/Footer.astro';
     user-select: none;
     -webkit-user-select: none;
   }
-  .mindmap-svg { width: 100%; height: 100%; display: block; }
-  .mindmap-controls { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 4px; z-index: 10; }
+  .mindmap-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .mindmap-controls {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10;
+  }
   .control-btn {
-    width: var(--control-size); height: var(--control-size); border-radius: 8px; background-color: var(--bg-main);
-    border: 1px solid var(--border-color); color: var(--text-main); font-size: 16px;
-    font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    width: var(--control-size);
+    height: var(--control-size);
+    border-radius: 8px;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.15s;
   }
-  .control-btn:hover { background-color: var(--surface); border-color: var(--violet); color: var(--cyan); }
-  .control-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-  .mindmap-node:hover { filter: brightness(1.18); }
+  .control-btn:hover {
+    background-color: var(--surface);
+    border-color: var(--violet);
+    color: var(--cyan);
+  }
+  .control-btn:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+  .mindmap-node:hover {
+    filter: brightness(1.18);
+  }
 
-  .textual { margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border-color); }
-  .textual h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 18px; }
-  .chain { padding-left: 1.2rem; display: flex; flex-direction: column; gap: 10px; color: var(--text-secondary); line-height: 1.65; font-size: 0.98rem; }
-  .chain a { color: var(--cyan); text-decoration: none; }
-  .chain a:hover { text-decoration: underline; }
-  .chain strong { color: var(--text-main); }
+  .textual {
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border-color);
+  }
+  .textual h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  .chain {
+    padding-left: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    font-size: 0.98rem;
+  }
+  .chain a {
+    color: var(--cyan);
+    text-decoration: none;
+  }
+  .chain a:hover {
+    text-decoration: underline;
+  }
+  .chain strong {
+    color: var(--text-main);
+  }
 
   @media (max-width: 768px) {
-    .mindmap-wrapper { aspect-ratio: auto; height: 55vh; max-height: none; }
+    .mindmap-wrapper {
+      aspect-ratio: auto;
+      height: 55vh;
+      max-height: none;
+    }
   }
 </style>

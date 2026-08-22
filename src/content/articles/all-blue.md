@@ -13,21 +13,15 @@ order: 7
 
 ## Le rêve de Sanji
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 All Blue est la mer légendaire où se rencontreraient les poissons des quatre mers. Sanji la cherche depuis son enfance.
 
 **Sources précises :** chapitres 56 et 68.
 
 ## Une création future possible
 
-<div class="section-pill section-pill--projection">Projection</div>
-
 Une rupture de la Red Line pourrait relier plusieurs bassins et créer All Blue. Une nouvelle submersion massive pourrait modifier ce résultat, mais le manga ne dit ni qu'All Blue n'existe pas encore, ni qu'un Déluge de 200 mètres la créera nécessairement.
 
 ## Scénarios distincts
-
-<div class="section-pill section-pill--projection">Projection</div>
 
 Red Line, Pluton, Poséidon, Noah et Water Seven peuvent intervenir dans plusieurs ordres. La naissance d'All Blue doit avoir son propre critère observable, distinct de la chute du Gouvernement mondial et de la hausse des eaux.
 

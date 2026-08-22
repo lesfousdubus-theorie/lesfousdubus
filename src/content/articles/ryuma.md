@@ -14,21 +14,15 @@ related: ['zoro']
 
 ## Ryuma et son dragon
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Ryuma est le samouraï de Wano surnommé le Dieu de la Lame. Sa légende retient qu'il a abattu un dragon **au-dessus de la capitale des Fleurs**. Son corps et Shusui sont volés puis utilisés par Moria.
 
 **Sources précises :** chapitres 450 à 467 et 937 ; récit _Monsters_.
 
 ## Ce que Zoro a accompli
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Zoro vainc à Thriller Bark le zombie qui porte le corps de Ryuma et reçoit Shusui. À Wano, il restitue Shusui et reçoit Enma. Il blesse Kaido et lui laisse une cicatrice **sur Onigashima**, pas au-dessus de la capitale des Fleurs.
 
 ## Une extension vers l'ancien Wano
-
-<div class="section-pill section-pill--extension">Extension</div>
 
 Zoro pourrait être envoyé dans l'ancien Wano et contribuer à la légende attribuée à Ryuma. Cette branche pourrait rapprocher œil, sabre, dépouille et répétition des duels, mais elle dépend d'un transport physique vers le passé que le manga n'a pas montré.
 

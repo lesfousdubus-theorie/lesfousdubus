@@ -15,21 +15,15 @@ related: ['fruits-du-demon', 'zoans', 'nika', 'luffy', 'joy-boy']
 
 ## Nom et classification
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Le Fruit mangé par Luffy est le **Hito Hito no Mi, modèle Nika**, un Zoan mythique. Le Gouvernement mondial a dissimulé son nom sous celui de Gomu Gomu no Mi.
 
 **Sources précises :** chapitres 1, 1044 et 1046.
 
 ## Éveil : Gear 5
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Après l'éveil à Wano, Luffy nomme sa forme **Gear 5**. Son corps conserve ses propriétés élastiques avec une liberté accrue, et son cœur bat au rythme des Tambours de la Libération.
 
 ## Quatre notions distinctes
-
-<div class="section-pill section-pill--manga">Manga</div>
 
 - **Nika** : figure mythique ancienne ;
 - **modèle Nika** : identité du Fruit ;
@@ -37,8 +31,6 @@ Après l'éveil à Wano, Luffy nomme sa forme **Gear 5**. Son corps conserve ses
 - **Monkey D. Luffy** : personne qui a mangé le Fruit.
 
 ## Hypothèse de diffusion récente
-
-<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
 L'ignorance de Brook envers les Fruits vers −62 peut suggérer une diffusion massive récente ou seulement une connaissance inégale selon les régions. Les références anciennes d'Imu et des géants au chapitre 1186 empêchent d'en faire une conclusion générale.
 

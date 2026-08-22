@@ -170,6 +170,27 @@ const canonicalWikiUrl = new URL(
             role="region"
             aria-label="Liste des articles"
           >
+            <div class="sidebar-mobile-tools" data-pagefind-ignore>
+              <nav class="sidebar-global-links" aria-label="Sections principales">
+                <a href="/theorie">Théorie</a>
+                <a href="/dossiers">Dossiers</a>
+                <a href="/chapitres">Chapitres</a>
+                <a href="/explorer">Explorer</a>
+                <a href="/aide">Aide</a>
+              </nav>
+              <label class="sidebar-filter">
+                <span>Filtrer les fiches</span>
+                <input
+                  id="sidebar-filter"
+                  type="search"
+                  autocomplete="off"
+                  placeholder="Joy Boy, Imu, Ponéglyphes…"
+                />
+              </label>
+              <p class="sidebar-filter-empty" id="sidebar-filter-empty" hidden>
+                Aucun lien ne correspond à cette recherche.
+              </p>
+            </div>
             <SidebarNav currentPath={currentPath} />
           </div>
         </aside>
@@ -310,7 +331,8 @@ const canonicalWikiUrl = new URL(
     border-left: 1px solid var(--border-color);
   }
 
-  .sidebar-mobile-header {
+  .sidebar-mobile-header,
+  .sidebar-mobile-tools {
     display: none;
   }
 
@@ -440,6 +462,73 @@ const canonicalWikiUrl = new URL(
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.06em;
+    }
+
+    .sidebar-mobile-tools {
+      display: grid;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-global-links {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .sidebar-global-links a {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-md);
+      background: var(--surface);
+      color: var(--text-main);
+      font-size: 12.5px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .sidebar-global-links a:focus-visible,
+    .sidebar-filter input:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+
+    .sidebar-filter {
+      display: grid;
+      gap: 6px;
+    }
+
+    .sidebar-filter span {
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-filter input {
+      width: 100%;
+      min-height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-md);
+      background: var(--bg-main);
+      color: var(--text-main);
+      font: inherit;
+      font-size: 14px;
+    }
+
+    .sidebar-filter-empty {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.45;
     }
 
     #sidebar-close {
@@ -618,6 +707,38 @@ const canonicalWikiUrl = new URL(
   const navBackground = document.querySelectorAll(
     '.navbar .nav-left, .navbar .nav-center, .navbar .nav-actions',
   );
+  const sidebarFilter = document.getElementById('sidebar-filter');
+  const sidebarFilterEmpty = document.getElementById('sidebar-filter-empty');
+
+  const normalizeFilterText = (value) =>
+    value
+      .toLocaleLowerCase('fr')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+  const applySidebarFilter = () => {
+    if (!navDrawer || !sidebarFilter) return;
+    const query = normalizeFilterText(sidebarFilter.value.trim());
+    let visibleCount = 0;
+
+    navDrawer.querySelectorAll('.nav-section').forEach((section) => {
+      const details = section;
+      let sectionHasMatch = false;
+
+      details.querySelectorAll('li').forEach((item) => {
+        const linkText = normalizeFilterText(item.textContent || '');
+        const match = !query || linkText.includes(query);
+        item.hidden = !match;
+        sectionHasMatch ||= match;
+        if (match && query) visibleCount += 1;
+      });
+
+      details.hidden = Boolean(query) && !sectionHasMatch;
+      if (query && sectionHasMatch) details.open = true;
+    });
+
+    if (sidebarFilterEmpty) sidebarFilterEmpty.hidden = !query || visibleCount > 0;
+  };
 
   const isNavOpen = () => navDrawer?.classList.contains('is-open') ?? false;
   const setInert = (elements, inert) => {
@@ -682,6 +803,8 @@ const canonicalWikiUrl = new URL(
     },
     { passive: true },
   );
+
+  sidebarFilter?.addEventListener('input', applySidebarFilter);
 
   navToggle?.addEventListener('click', () => setNavOpen(!isNavOpen()));
   navClose?.addEventListener('click', () => setNavOpen(false, true));

@@ -13,21 +13,15 @@ order: 51
 
 ## Le mécanisme géographique
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Chaque Road Ponéglyphe contient une position. **Les quatre positions**, reliées sur une carte, permettent de déterminer le point de croisement où se trouve Laugh Tale. Une représentation à trois sommets ne suffit pas à rendre ce mécanisme canonique.
 
 **Sources précises :** chapitres 818, 967 et 1057.
 
 ## Positions connues et inconnues
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Au cours du récit, les Chapeaux de Paille obtiennent les copies des Road Ponéglyphes de Zou, Whole Cake Island et Wano. Le quatrième était autrefois sur l'île des Hommes-Poissons à l'époque de Roger ; sa position actuelle n'est pas confirmée.
 
 ## Une éventuelle fonction temporelle
-
-<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
 La théorie explore un rôle supplémentaire : Laugh Tale pourrait combiner destination physique et mécanisme de communication. Après le chapitre 1188, cette piste ne doit plus être figée en « quatrième coordonnée temporelle ». Roger peut avoir reçu une information sans déplacement physique, et le quatrième texte peut conserver un rôle encore inconnu.
 

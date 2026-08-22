@@ -24,19 +24,13 @@ order: 57
 
 ## Une branche, pas tout le mécanisme
 
-<div class="section-pill section-pill--extension">Extension</div>
-
 Le noyau exige seulement que des **informations futures** atteignent le passé et soient conservées, notamment par les Ponéglyphes. Une conversation directe à travers le temps est une explication possible, pas un fait ni une boucle générale.
 
 ## Le chapitre 1188
 
-<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
-
 Le souvenir d'une conversation entre Imu et Joy Boy ne fournit pas un contexte temporel entièrement clair. Une réception future vers −800, une branche Roger vers −25 ou une réponse future de Luffy à Laugh Tale restent possibles.
 
 ## Trois mécanismes à séparer
-
-<div class="section-pill section-pill--extension">Extension</div>
 
 - **Ponéglyphes** : support durable d'une information reçue ;
 - **communication temporelle** : échange entre deux époques ;

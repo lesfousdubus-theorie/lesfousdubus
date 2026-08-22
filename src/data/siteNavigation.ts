@@ -112,12 +112,6 @@ export const understandingPaths = [
     href: '/theorie/chronologie',
   },
   {
-    label: 'Frise chronologique',
-    description: 'Passé apparent, présent vécu et futurs possibles, sans ordre forcé.',
-    href: '/theorie/chronologie',
-    duration: '10 min',
-  },
-  {
     label: 'Démonstration complète',
     description: 'Les 22 chapitres, arguments, limites et prolongements de la théorie.',
     href: '/theorie/theorie-complete',

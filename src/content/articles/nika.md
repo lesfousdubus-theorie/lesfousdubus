@@ -25,27 +25,19 @@ related:
 
 ## Le mythe de Nika
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Who's-Who rapporte le culte d'un « Dieu du Soleil » nommé Nika, libérateur espéré par des esclaves. Kuma et les Buccaneers transmettent aussi cette croyance. Le mythe est donc antérieur à l'éveil moderne de Luffy.
 
 **Sources précises :** chapitres 1018, 1044, 1096 et 1117.
 
 ## Le nom du Fruit
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Le Fruit longtemps appelé Gomu Gomu no Mi est le **Hito Hito no Mi, modèle Nika**, un Zoan mythique. Le Gorosei dit que son éveil donne au corps une liberté accrue et que le Gouvernement cherche à le récupérer depuis huit cents ans.
 
 ## Gear 5 et Luffy
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 **Gear 5** désigne la forme éveillée observée chez Luffy. Luffy reste Monkey D. Luffy et ne se présente pas comme Nika. Nika est un modèle mythique et une image de libération, pas un nouveau nom personnel automatiquement imposé au porteur.
 
 ## Interprétation
-
-<div class="section-pill section-pill--extension">Extension</div>
 
 Le fil « Libération » relie Nika, Joy Boy, Kuma, Kaido, Shanks et la volonté héritée. Luffy peut donner une réalité nouvelle au symbole sans être l'origine historique du mythe.
 

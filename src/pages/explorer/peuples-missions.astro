@@ -11,14 +11,62 @@ interface Peuple {
 }
 
 const peuples: Peuple[] = [
-  { nom: 'Hommes-Poissons', href: '/theorie/hommes-poissons', manga: 'Noah et promesse de Joy Boy', datation: 'Promesse historique · date approximative', projection: 'Noah pourrait conduire le peuple vers la surface' },
-  { nom: 'Wa no Kuni', href: '/theorie/wa-no-kuni', manga: 'Gravure Kozuki et Pluton sous Wano', datation: 'Siècle oublié puis transmission familiale', projection: 'Ouverture des frontières et libération de Pluton' },
-  { nom: 'Minks (Zou)', href: '/theorie/zou-minks', manga: 'Road Ponéglyphe gardé sur Zou', datation: 'Conservation attestée au présent', projection: 'Zunesha pourrait participer à l’ouverture de Wano' },
-  { nom: 'Alabasta / Nefertari', href: '/theorie/alabasta', manga: 'Lili liée à la dispersion ; stèle de Pluton protégée', datation: 'Vers −800 puis huit siècles de garde', projection: 'Vivi pourrait accomplir un rôle analogue à Lili' },
-  { nom: 'Shandias', href: '/theorie/shandora-shandias', manga: 'Cloche et Ponéglyphe protégés', datation: 'Mission reçue il y a environ 400 ans', projection: 'Rôle final non établi' },
-  { nom: 'Boucaniers', href: '/theorie/boucaniers', manga: 'Tradition orale de Nika transmise à Kuma', datation: 'Transmission multigénérationnelle non datée', projection: 'La mémoire de Kuma pourrait éclairer la Libération' },
-  { nom: 'Dynastie Ryugu', href: '/theorie/royaume-ryugu', manga: 'Poséidon renaît dans la lignée royale', datation: 'Cycles de plusieurs siècles', projection: 'Shirahoshi pourrait déplacer Noah consciemment' },
-  { nom: 'Géants d\'Elbaf', href: '/theorie/elbaf-harley', manga: 'Harley, fresque et culture de Nika', datation: 'Textes de périodes différentes ou inconnues', projection: 'Charpentiers géants et Pluton restent une extension' },
+  {
+    nom: 'Hommes-Poissons',
+    href: '/theorie/hommes-poissons',
+    manga: 'Noah et promesse de Joy Boy',
+    datation: 'Promesse historique · date approximative',
+    projection: 'Noah pourrait conduire le peuple vers la surface',
+  },
+  {
+    nom: 'Wa no Kuni',
+    href: '/theorie/wa-no-kuni',
+    manga: 'Gravure Kozuki et Pluton sous Wano',
+    datation: 'Siècle oublié puis transmission familiale',
+    projection: 'Ouverture des frontières et libération de Pluton',
+  },
+  {
+    nom: 'Minks (Zou)',
+    href: '/theorie/zou-minks',
+    manga: 'Road Ponéglyphe gardé sur Zou',
+    datation: 'Conservation attestée au présent',
+    projection: 'Zunesha pourrait participer à l’ouverture de Wano',
+  },
+  {
+    nom: 'Alabasta / Nefertari',
+    href: '/theorie/alabasta',
+    manga: 'Lili liée à la dispersion ; stèle de Pluton protégée',
+    datation: 'Vers −800 puis huit siècles de garde',
+    projection: 'Vivi pourrait accomplir un rôle analogue à Lili',
+  },
+  {
+    nom: 'Shandias',
+    href: '/theorie/shandora-shandias',
+    manga: 'Cloche et Ponéglyphe protégés',
+    datation: 'Mission reçue il y a environ 400 ans',
+    projection: 'Rôle final non établi',
+  },
+  {
+    nom: 'Boucaniers',
+    href: '/theorie/boucaniers',
+    manga: 'Tradition orale de Nika transmise à Kuma',
+    datation: 'Transmission multigénérationnelle non datée',
+    projection: 'La mémoire de Kuma pourrait éclairer la Libération',
+  },
+  {
+    nom: 'Dynastie Ryugu',
+    href: '/theorie/royaume-ryugu',
+    manga: 'Poséidon renaît dans la lignée royale',
+    datation: 'Cycles de plusieurs siècles',
+    projection: 'Shirahoshi pourrait déplacer Noah consciemment',
+  },
+  {
+    nom: "Géants d'Elbaf",
+    href: '/theorie/elbaf-harley',
+    manga: 'Harley, fresque et culture de Nika',
+    datation: 'Textes de périodes différentes ou inconnues',
+    projection: 'Charpentiers géants et Pluton restent une extension',
+  },
 ];
 ---
 
@@ -32,57 +80,136 @@ const peuples: Peuple[] = [
     <p class="eyebrow">🏰 Peuples</p>
     <h1>Peuples et missions</h1>
     <p class="page-desc">
-      Les peuples ne reçoivent pas tous une mission au même moment vers −800. Cette carte sépare les éléments
-      établis, leur datation propre et les rôles finaux projetés. Une date inconnue n'est pas ramenée artificiellement
-      au Siècle oublié.
+      Les peuples ne reçoivent pas tous une mission au même moment vers −800. Cette carte sépare les
+      éléments établis, leur datation propre et les rôles finaux projetés. Une date inconnue n'est
+      pas ramenée artificiellement au Siècle oublié.
     </p>
   </div>
 
   <div class="table" role="table" aria-label="Peuples, faits du manga, datations et projections">
     <div class="thead" role="row">
-      <span>Peuple</span><span>Manga</span><span>Datation</span><span>Projection</span>
+      <span>Peuple</span><span>Élément</span><span>Datation</span><span>Rôle possible</span>
     </div>
-    {peuples.map((p) => (
-      <div class="trow" role="row">
-        <a class="cell cell--peuple" href={p.href}>{p.nom}</a>
-        <span class="cell cell--elem">{p.manga}</span>
-        <span class="cell">{p.datation}</span>
-        <span class="cell">{p.projection}</span>
-      </div>
-    ))}
+    {
+      peuples.map((p) => (
+        <div class="trow" role="row">
+          <a class="cell cell--peuple" href={p.href}>
+            {p.nom}
+          </a>
+          <span class="cell cell--elem">{p.manga}</span>
+          <span class="cell">{p.datation}</span>
+          <span class="cell">{p.projection}</span>
+        </div>
+      ))
+    }
   </div>
 
   <p class="note">
-    Manga, datation et projection sont indépendants : une tradition ancienne ne prouve ni une mission reçue vers
-    −800 ni sa participation à la guerre finale.
+    Élément, datation et rôle possible sont indépendants : une tradition ancienne ne fixe ni une
+    mission reçue vers −800 ni sa participation à la guerre finale.
   </p>
 
   <Footer />
 </WikiLayout>
 
 <style>
-  .page-header { margin-bottom: 32px; }
-  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
-  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
-  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 780px; line-height: 1.65; }
+  .page-header {
+    margin-bottom: 32px;
+  }
+  .eyebrow {
+    color: var(--violet-light);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .page-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 800;
+    margin: 0 0 12px;
+    line-height: 1.15;
+  }
+  .page-desc {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 780px;
+    line-height: 1.65;
+  }
 
-  .table { border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); overflow: hidden; margin: 24px 0 16px; }
-  .thead, .trow { display: grid; grid-template-columns: 1.2fr 1fr 1.4fr 1.4fr; }
-  .thead { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); }
-  .thead span { padding: 12px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
-  .trow { border-bottom: 1px solid var(--border-color); }
-  .trow:last-child { border-bottom: none; }
-  .trow:hover { background: var(--bg-secondary); }
-  .cell { padding: 14px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; display: flex; align-items: center; }
-  .cell--peuple { color: var(--cyan); font-weight: 600; text-decoration: none; }
-  .cell--peuple:hover { text-decoration: underline; }
-  .cell--elem { color: var(--violet-light); font-weight: 600; }
-  .note { font-size: 12.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
+  .table {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    margin: 24px 0 16px;
+  }
+  .thead,
+  .trow {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1.4fr 1.4fr;
+  }
+  .thead {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+  }
+  .thead span {
+    padding: 12px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+  .trow {
+    border-bottom: 1px solid var(--border-color);
+  }
+  .trow:last-child {
+    border-bottom: none;
+  }
+  .trow:hover {
+    background: var(--bg-secondary);
+  }
+  .cell {
+    padding: 14px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+  }
+  .cell--peuple {
+    color: var(--cyan);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .cell--peuple:hover {
+    text-decoration: underline;
+  }
+  .cell--elem {
+    color: var(--violet-light);
+    font-weight: 600;
+  }
+  .note {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.5;
+  }
 
   @media (max-width: 760px) {
-    .thead { display: none; }
-    .trow { grid-template-columns: 1fr; gap: 2px; padding: 12px; }
-    .cell { padding: 4px 0; }
-    .cell--peuple { font-size: 15px; }
+    .thead {
+      display: none;
+    }
+    .trow {
+      grid-template-columns: 1fr;
+      gap: 2px;
+      padding: 12px;
+    }
+    .cell {
+      padding: 4px 0;
+    }
+    .cell--peuple {
+      font-size: 15px;
+    }
   }
 </style>

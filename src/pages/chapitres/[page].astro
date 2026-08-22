@@ -9,7 +9,9 @@ const confidenceLabel = (value: 'elevee' | 'moyenne' | 'faible') =>
   ({ elevee: 'élevée', moyenne: 'moyenne', faible: 'faible' })[value];
 
 export async function getStaticPaths() {
-  return ['derniere-analyse', 'toutes-les-analyses', 'predictions', 'modifications'].map((page) => ({ params: { page } }));
+  return ['derniere-analyse', 'toutes-les-analyses', 'predictions', 'modifications'].map(
+    (page) => ({ params: { page } }),
+  );
 }
 
 const page = Astro.params.page!;
@@ -20,10 +22,26 @@ const latest = chapters[0];
 const updated = getRecentArticleUpdates(articles, chapters);
 
 const config = {
-  'derniere-analyse': { title: 'Dernière analyse', icon: '📖', description: "Le dernier chapitre analysé et les articles qu'il a fait évoluer." },
-  'toutes-les-analyses': { title: 'Toutes les analyses', icon: '📚', description: 'Toutes les analyses publiées, de la plus récente à la plus ancienne.' },
-  predictions: { title: 'Prédictions et hypothèses suivies', icon: '🔮', description: 'Les prédictions et hypothèses suivies par la théorie, et leur statut actuel.' },
-  modifications: { title: 'Modifications', icon: '📋', description: 'Les articles dont la lecture a été actualisée au fil des chapitres.' },
+  'derniere-analyse': {
+    title: 'Dernière analyse',
+    icon: '📖',
+    description: "Le dernier chapitre analysé et les articles qu'il a fait évoluer.",
+  },
+  'toutes-les-analyses': {
+    title: 'Toutes les analyses',
+    icon: '📚',
+    description: 'Toutes les analyses publiées, de la plus récente à la plus ancienne.',
+  },
+  predictions: {
+    title: 'Scénarios suivis',
+    icon: '🔮',
+    description: 'Les pistes suivies par la théorie et leur état actuel.',
+  },
+  modifications: {
+    title: 'Modifications',
+    icon: '📋',
+    description: 'Les articles dont la lecture a été actualisée au fil des chapitres.',
+  },
 }[page]!;
 ---
 
@@ -34,60 +52,312 @@ const config = {
     <p>{config.description}</p>
   </header>
 
-  {page === 'derniere-analyse' && latest && (
-    <section class="feature-card">
-      <p class="eyebrow">Chapitre {latest.data.chapter} · {effectLabel(latest.data.effect)}</p>
-      <h2>{latest.data.title}</h2>
-      {latest.data.summary && <p>{latest.data.summary}</p>}
-      <a class="button" href={`/chapitres/${latest.data.chapter}`}>Lire l’analyse du chapitre {latest.data.chapter} →</a>
-      {latest.data.updatedArticles.length > 0 && (
-        <><h3>Articles concernés</h3><ul class="link-list">{latest.data.updatedArticles.map((id) => {
-          const article = articles.find((item) => item.id === id);
-          return article && <li><a href={`/theorie/${article.id}`}>{article.data.title}</a></li>;
-        })}</ul></>
-      )}
-    </section>
-  )}
+  {
+    page === 'derniere-analyse' && latest && (
+      <section class="feature-card">
+        <p class="eyebrow">
+          Chapitre {latest.data.chapter} · {effectLabel(latest.data.effect)}
+        </p>
+        <h2>{latest.data.title}</h2>
+        {latest.data.summary && <p>{latest.data.summary}</p>}
+        <a class="button" href={`/chapitres/${latest.data.chapter}`}>
+          Lire l’analyse du chapitre {latest.data.chapter} →
+        </a>
+        {latest.data.updatedArticles.length > 0 && (
+          <>
+            <h3>Articles concernés</h3>
+            <ul class="link-list">
+              {latest.data.updatedArticles.map((id) => {
+                const article = articles.find((item) => item.id === id);
+                return (
+                  article && (
+                    <li>
+                      <a href={`/theorie/${article.id}`}>{article.data.title}</a>
+                    </li>
+                  )
+                );
+              })}
+            </ul>
+          </>
+        )}
+      </section>
+    )
+  }
 
-  {page === 'toutes-les-analyses' && <section class="cards">{chapters.map((chapter) => (
-    <a class="card" href={`/chapitres/${chapter.data.chapter}`}><span>Chapitre {chapter.data.chapter}</span><h2>{chapter.data.title}</h2><p>{effectLabel(chapter.data.effect)}{chapter.data.summary ? ` · ${chapter.data.summary}` : ''}</p></a>
-  ))}</section>}
+  {
+    page === 'toutes-les-analyses' && (
+      <section class="cards">
+        {chapters.map((chapter) => (
+          <a class="card" href={`/chapitres/${chapter.data.chapter}`}>
+            <span>Chapitre {chapter.data.chapter}</span>
+            <h2>{chapter.data.title}</h2>
+            <p>
+              {effectLabel(chapter.data.effect)}
+              {chapter.data.summary ? ` · ${chapter.data.summary}` : ''}
+            </p>
+          </a>
+        ))}
+      </section>
+    )
+  }
 
-  {page === 'predictions' && <section class="cards">{predictions.sort((a, b) => b.data.depositedAtChapter - a.data.depositedAtChapter).map((prediction) => (
-    <article class="card prediction-card">
-      <span>Statut : {predictionStatusLabel(prediction.data.status)}{prediction.data.confidence ? ` · confiance ${confidenceLabel(prediction.data.confidence)}` : ''}</span>
-      <h2>{prediction.data.title}</h2>
-      <p class="prediction-statement">{prediction.data.statement}</p>
-      <p class="prediction-deposit">Dépôt immuable au chapitre {prediction.data.depositedAtChapter}{prediction.data.chapter ? ` · observée jusqu’au chapitre ${prediction.data.chapter}` : ''}</p>
-      {prediction.data.statusNote && <p class="prediction-note">{prediction.data.statusNote}</p>}
-      <dl class="prediction-details">
-        <dt>Critère observable de clôture</dt><dd>{prediction.data.observableCriterion}</dd>
-        {prediction.data.indices && (<><dt>Indices lors du suivi</dt><dd>{prediction.data.indices}</dd></>)}
-        {prediction.data.refuterait && (<><dt>Cas de réfutation</dt><dd>{prediction.data.refuterait}</dd></>)}
-        <dt>Sources primaires</dt><dd>{prediction.data.primarySource}</dd>
-        {prediction.data.outcome && (<><dt>Résultat enregistré{prediction.data.resolvedAtChapter ? ` au chapitre ${prediction.data.resolvedAtChapter}` : ''}</dt><dd>{prediction.data.outcome}</dd></>)}
-      </dl>
-      {prediction.data.revisionHistory.length > 0 && (
-        <details class="prediction-history">
-          <summary>Historique de suivi</summary>
-          <ol>{prediction.data.revisionHistory.map((entry) => <li><strong>Chapitre {entry.chapter}</strong> — {entry.change}</li>)}</ol>
-        </details>
-      )}
-      <div class="article-links">{prediction.data.articles.map((id) => { const article = articles.find((item) => item.id === id); return article && <a href={`/theorie/${id}`}>{article.data.title}</a>; })}</div>
-    </article>
-  ))}</section>}
+  {
+    page === 'predictions' && (
+      <section class="cards">
+        {predictions
+          .sort((a, b) => b.data.depositedAtChapter - a.data.depositedAtChapter)
+          .map((prediction) => (
+            <article class="card prediction-card">
+              <span>
+                Statut : {predictionStatusLabel(prediction.data.status)}
+                {prediction.data.confidence
+                  ? ` · confiance ${confidenceLabel(prediction.data.confidence)}`
+                  : ''}
+              </span>
+              <h2>{prediction.data.title}</h2>
+              <p class="prediction-statement">{prediction.data.statement}</p>
+              <p class="prediction-deposit">
+                Dépôt immuable au chapitre {prediction.data.depositedAtChapter}
+                {prediction.data.chapter
+                  ? ` · observée jusqu’au chapitre ${prediction.data.chapter}`
+                  : ''}
+              </p>
+              {prediction.data.statusNote && (
+                <p class="prediction-note">{prediction.data.statusNote}</p>
+              )}
+              <dl class="prediction-details">
+                <dt>Critère observable de clôture</dt>
+                <dd>{prediction.data.observableCriterion}</dd>
+                {prediction.data.indices && (
+                  <>
+                    <dt>Indices lors du suivi</dt>
+                    <dd>{prediction.data.indices}</dd>
+                  </>
+                )}
+                {prediction.data.refuterait && (
+                  <>
+                    <dt>Cas de réfutation</dt>
+                    <dd>{prediction.data.refuterait}</dd>
+                  </>
+                )}
+                <dt>Sources primaires</dt>
+                <dd>{prediction.data.primarySource}</dd>
+                {prediction.data.outcome && (
+                  <>
+                    <dt>
+                      Résultat enregistré
+                      {prediction.data.resolvedAtChapter
+                        ? ` au chapitre ${prediction.data.resolvedAtChapter}`
+                        : ''}
+                    </dt>
+                    <dd>{prediction.data.outcome}</dd>
+                  </>
+                )}
+              </dl>
+              {prediction.data.revisionHistory.length > 0 && (
+                <details class="prediction-history">
+                  <summary>Historique de suivi</summary>
+                  <ol>
+                    {prediction.data.revisionHistory.map((entry) => (
+                      <li>
+                        <strong>Chapitre {entry.chapter}</strong> — {entry.change}
+                      </li>
+                    ))}
+                  </ol>
+                </details>
+              )}
+              <div class="article-links">
+                {prediction.data.articles.map((id) => {
+                  const article = articles.find((item) => item.id === id);
+                  return article && <a href={`/theorie/${id}`}>{article.data.title}</a>;
+                })}
+              </div>
+            </article>
+          ))}
+      </section>
+    )
+  }
 
-  {page === 'modifications' && (
-    <>
-      <p class="section-note">« Mis à jour au chapitre X » indique le dernier chapitre qui a fait évoluer l'article. L'ensemble du corpus a été relu jusqu'au chapitre {latest.data.chapter}.</p>
-      <section class="cards">{updated.map(({ article, chapter }) => (
-        <a class="card" href={`/theorie/${article.id}`}><span>Mis à jour au chapitre {chapter}</span><h2>{article.data.title}</h2><p>{article.data.summary}</p></a>
-      ))}</section>
-    </>
-  )}
+  {
+    page === 'modifications' && (
+      <>
+        <p class="section-note">
+          « Mis à jour au chapitre X » indique le dernier chapitre qui a fait évoluer l'article.
+          L'ensemble du corpus a été relu jusqu'au chapitre {latest.data.chapter}.
+        </p>
+        <section class="cards">
+          {updated.map(({ article, chapter }) => (
+            <a class="card" href={`/theorie/${article.id}`}>
+              <span>Mis à jour au chapitre {chapter}</span>
+              <h2>{article.data.title}</h2>
+              <p>{article.data.summary}</p>
+            </a>
+          ))}
+        </section>
+      </>
+    )
+  }
   <Footer />
 </WikiLayout>
 
 <style>
-.page-header{max-width:720px;margin-bottom:36px}.icon{font-size:2.5rem;display:block;margin-bottom:8px}.page-header h1{font-size:clamp(1.8rem,4vw,2.5rem);margin:0 0 12px}.page-header p,.feature-card>p,.card p{color:var(--text-secondary);line-height:1.6}.feature-card,.card{background:var(--gradient-card);border:1px solid var(--border-color);border-radius:var(--border-radius-lg);padding:22px}.feature-card{margin-bottom:28px}.feature-card h2,.card h2{font-size:1.2rem;margin:8px 0}.feature-card h3{font-size:1rem;margin:24px 0 8px}.eyebrow,.card>span{font-size:.78rem;font-weight:700;letter-spacing:.04em;color:var(--cyan);text-transform:uppercase}.cards{display:grid;gap:14px}.card{text-decoration:none;color:var(--text-main);transition:transform .2s,border-color .2s}.card:hover{border-color:var(--cyan);transform:translateY(-2px)}small{color:var(--text-secondary)}.button,.article-links a,.link-list a{display:inline-flex;min-height:var(--control-size);align-items:center;color:var(--cyan);text-decoration:none}.button{margin-top:10px;padding:9px 14px;border:1px solid var(--cyan);border-radius:7px}.link-list{padding-left:18px}.article-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:.9rem}.prediction-statement{font-size:1.02rem;color:var(--text-main)!important}.prediction-deposit{display:inline-flex;margin:0 0 14px!important;padding:5px 8px;border:1px solid color-mix(in srgb,var(--cyan) 45%,transparent);border-radius:6px;font-size:.78rem;line-height:1.4;color:var(--cyan)!important}.prediction-note{font-size:.9rem;font-style:italic;color:var(--text-secondary);margin:0 0 12px}.prediction-details{margin:12px 0 0;display:grid;gap:6px}.prediction-details dt{font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-secondary)}.prediction-details dd{margin:0 0 8px;font-size:.92rem;line-height:1.55;color:var(--text-secondary)}.prediction-history{margin-top:10px;color:var(--text-secondary);font-size:.86rem}.prediction-history summary{display:inline-flex;min-height:var(--control-size);align-items:center;cursor:pointer;color:var(--cyan);font-weight:600}.card:focus-visible,.button:focus-visible,.article-links a:focus-visible,.link-list a:focus-visible,.prediction-history summary:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}.prediction-history ol{padding-left:20px;line-height:1.55}.section-note{max-width:720px;margin:0 0 18px;font-size:.85rem;color:var(--text-muted);line-height:1.5}
+  .page-header {
+    max-width: 720px;
+    margin-bottom: 36px;
+  }
+  .icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .page-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    margin: 0 0 12px;
+  }
+  .page-header p,
+  .feature-card > p,
+  .card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .feature-card,
+  .card {
+    background: var(--gradient-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 22px;
+  }
+  .feature-card {
+    margin-bottom: 28px;
+  }
+  .feature-card h2,
+  .card h2 {
+    font-size: 1.2rem;
+    margin: 8px 0;
+  }
+  .feature-card h3 {
+    font-size: 1rem;
+    margin: 24px 0 8px;
+  }
+  .eyebrow,
+  .card > span {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+  .cards {
+    display: grid;
+    gap: 14px;
+  }
+  .card {
+    text-decoration: none;
+    color: var(--text-main);
+    transition:
+      transform 0.2s,
+      border-color 0.2s;
+  }
+  .card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-2px);
+  }
+  small {
+    color: var(--text-secondary);
+  }
+  .button,
+  .article-links a,
+  .link-list a {
+    display: inline-flex;
+    min-height: var(--control-size);
+    align-items: center;
+    color: var(--cyan);
+    text-decoration: none;
+  }
+  .button {
+    margin-top: 10px;
+    padding: 9px 14px;
+    border: 1px solid var(--cyan);
+    border-radius: 7px;
+  }
+  .link-list {
+    padding-left: 18px;
+  }
+  .article-links {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    font-size: 0.9rem;
+  }
+  .prediction-statement {
+    font-size: 1.02rem;
+    color: var(--text-main) !important;
+  }
+  .prediction-deposit {
+    display: inline-flex;
+    margin: 0 0 14px !important;
+    padding: 5px 8px;
+    border: 1px solid color-mix(in srgb, var(--cyan) 45%, transparent);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--cyan) !important;
+  }
+  .prediction-note {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--text-secondary);
+    margin: 0 0 12px;
+  }
+  .prediction-details {
+    margin: 12px 0 0;
+    display: grid;
+    gap: 6px;
+  }
+  .prediction-details dt {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .prediction-details dd {
+    margin: 0 0 8px;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+  .prediction-history {
+    margin-top: 10px;
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+  }
+  .prediction-history summary {
+    display: inline-flex;
+    min-height: var(--control-size);
+    align-items: center;
+    cursor: pointer;
+    color: var(--cyan);
+    font-weight: 600;
+  }
+  .card:focus-visible,
+  .button:focus-visible,
+  .article-links a:focus-visible,
+  .link-list a:focus-visible,
+  .prediction-history summary:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+  }
+  .prediction-history ol {
+    padding-left: 20px;
+    line-height: 1.55;
+  }
+  .section-note {
+    max-width: 720px;
+    margin: 0 0 18px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
 </style>

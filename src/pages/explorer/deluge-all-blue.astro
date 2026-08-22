@@ -13,49 +13,57 @@ import Footer from '@components/Footer.astro';
     <p class="eyebrow">🌊 Transformation du monde</p>
     <h1>Du déluge à All Blue</h1>
     <p class="page-desc">
-      Vegapunk annonce que le monde va sombrer (ch. 1113), puis explique qu'une catastrophe ancienne a élevé
-      la mer d'environ <strong>200 mètres</strong> (ch. 1115). Une nouvelle hausse comparable, la chute de Red Line
-      et All Blue sont des projections distinctes : le schéma ne leur impose pas un ordre certain.
+      Vegapunk annonce que le monde va sombrer (ch. 1113), puis explique qu'une catastrophe ancienne
+      a élevé la mer d'environ <strong>200 mètres</strong> (ch. 1115). Une nouvelle hausse comparable,
+      la chute de Red Line et All Blue sont des projections distinctes : le schéma ne leur impose pas
+      un ordre certain.
     </p>
   </div>
 
-  <div class="flow" role="img"
-    aria-label="Schéma du déluge : submersion passée de 200 mètres établie, puis branches projetées sans ordre certain pour une nouvelle montée, Red Line et All Blue">
+  <div
+    class="flow"
+    role="img"
+    aria-label="Schéma du déluge : submersion passée de 200 mètres établie, puis branches projetées sans ordre certain pour une nouvelle montée, Red Line et All Blue"
+  >
     <div class="stage stage--canon">
-      <span class="tag tag--canon">Manga</span>
       <h2>Submersion ancienne : environ 200 mètres</h2>
-      <p>Vegapunk décrit au chapitre 1115 une catastrophe du Siècle oublié qui a englouti les anciens continents. Au chapitre 1113, il annonce que le monde va sombrer.</p>
+      <p>
+        Vegapunk décrit au chapitre 1115 une catastrophe du Siècle oublié qui a englouti les anciens
+        continents. Au chapitre 1113, il annonce que le monde va sombrer.
+      </p>
     </div>
     <div class="arrow">↕ branches possibles · ordre inconnu ↕</div>
     <div class="stage stage--interp">
-      <span class="tag tag--interp">Projection</span>
       <h2>Nouvelle montée massive</h2>
-      <p>Une catastrophe future pourrait reproduire une hausse comparable aux 200 mètres anciens. Le manga ne fixe encore ni l'amplitude future ni une série de hausses identiques.</p>
+      <p>
+        Une catastrophe future pourrait reproduire une hausse comparable aux 200 mètres anciens. Le
+        manga ne fixe encore ni l'amplitude future ni une série de hausses identiques.
+      </p>
     </div>
     <div class="stage stage--interp">
-      <span class="tag tag--interp">Projection</span>
       <h2>Ouverture ou destruction de Red Line</h2>
-      <p>Le continent rouge pourrait être percé pendant la guerre finale. Le manga ne dit pas encore quelle force agirait ni si cet événement précède ou suit la montée des eaux.</p>
+      <p>
+        Le continent rouge pourrait être percé pendant la guerre finale. Le manga ne dit pas encore
+        quelle force agirait ni si cet événement précède ou suit la montée des eaux.
+      </p>
     </div>
     <div class="stage stage--result">
-      <span class="tag tag--result">Projection</span>
       <h2>All Blue pourrait apparaître</h2>
-      <p>Une nouvelle communication entre les mers pourrait accomplir le rêve de Sanji. All Blue peut dépendre de Red Line sans être une conséquence automatique du Déluge.</p>
+      <p>
+        Une nouvelle communication entre les mers pourrait accomplir le rêve de Sanji. All Blue peut
+        dépendre de Red Line sans être une conséquence automatique du Déluge.
+      </p>
     </div>
   </div>
 
   <div class="note-box">
     <p>
-      <strong>À distinguer :</strong> les 200 mètres décrivent la submersion passée. Une nouvelle hausse comparable,
-      Red Line et All Blue sont des futurs possibles, sans chaîne causale encore établie. « Un royaume détruit =
-      une hausse répétée » n'est pas retenu. Voir <a href="/theorie/deluge-all-blue">la fiche Déluge et All Blue</a>.
+      <strong>À distinguer :</strong> les 200 mètres décrivent la submersion passée. Une nouvelle hausse
+      comparable, Red Line et All Blue sont des futurs possibles, sans chaîne causale encore établie.
+      « Un royaume détruit = une hausse répétée » n'est pas retenu. Voir <a
+        href="/theorie/deluge-all-blue">la fiche Déluge et All Blue</a
+      >.
     </p>
-  </div>
-
-  <div class="legend">
-    <span><i class="dot" style="background:var(--cyan)"></i> Manga · submersion passée</span>
-    <span><i class="dot" style="background:var(--violet-light)"></i> Projection · futur possible</span>
-    <span><i class="dot" style="background:var(--accent-gold)"></i> Projection géographique</span>
   </div>
 
   <div class="linked">
@@ -70,34 +78,131 @@ import Footer from '@components/Footer.astro';
 </WikiLayout>
 
 <style>
-  .page-header { margin-bottom: 28px; }
-  .eyebrow { color: var(--violet-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
-  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
-  .page-desc { font-size: 15px; color: var(--text-secondary); max-width: 780px; line-height: 1.65; }
-  .page-desc strong { color: var(--text-main); }
+  .page-header {
+    margin-bottom: 28px;
+  }
+  .eyebrow {
+    color: var(--violet-light);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .page-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 800;
+    margin: 0 0 12px;
+    line-height: 1.15;
+  }
+  .page-desc {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 780px;
+    line-height: 1.65;
+  }
+  .page-desc strong {
+    color: var(--text-main);
+  }
 
-  .flow { display: flex; flex-direction: column; gap: 8px; margin: 24px 0 20px; }
-  .stage { position: relative; padding: 18px 20px 16px; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: var(--gradient-card); }
-  .stage h2 { font-size: 15px; margin: 22px 0 4px; }
-  .stage p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin: 0; }
-  .stage--canon { border-left: 3px solid var(--cyan); }
-  .stage--interp { border-left: 3px solid var(--violet); }
-  .stage--result { border-left: 3px solid var(--accent-gold); }
-  .stage--result h2 { color: var(--accent-gold); }
-  .tag { position: absolute; top: 12px; left: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; border: 1px solid; }
-  .tag--canon { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 40%, transparent); }
-  .tag--interp { color: var(--violet-light); border-color: color-mix(in srgb, var(--violet) 40%, transparent); }
-  .tag--result { color: var(--accent-gold); border-color: color-mix(in srgb, var(--accent-gold) 40%, transparent); }
-  .arrow { text-align: center; color: var(--text-muted); font-size: 1.1rem; line-height: 1; padding: 2px 0; }
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 24px 0 20px;
+  }
+  .stage {
+    position: relative;
+    padding: 18px 20px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--gradient-card);
+  }
+  .stage h2 {
+    font-size: 15px;
+    margin: 22px 0 4px;
+  }
+  .stage p {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .stage--canon {
+    border-left: 3px solid var(--cyan);
+  }
+  .stage--interp {
+    border-left: 3px solid var(--violet);
+  }
+  .stage--result {
+    border-left: 3px solid var(--accent-gold);
+  }
+  .stage--result h2 {
+    color: var(--accent-gold);
+  }
+  .arrow {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 2px 0;
+  }
 
-  .note-box { padding: 18px; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-gold); border-radius: var(--border-radius-lg); background: var(--bg-secondary); margin-bottom: 20px; }
-  .note-box p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
-  .note-box strong { color: var(--text-main); }
-  .note-box a { color: var(--cyan); }
-  .legend { display: flex; flex-wrap: wrap; gap: 18px; padding: 12px 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
-  .legend span { display: inline-flex; align-items: center; gap: 7px; }
-  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-  .linked { display: flex; flex-wrap: wrap; gap: 12px; }
-  .linked a { color: var(--cyan); text-decoration: none; font-size: 14px; font-weight: 500; }
-  .linked a:hover { text-decoration: underline; }
+  .note-box {
+    padding: 18px;
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--accent-gold);
+    border-radius: var(--border-radius-lg);
+    background: var(--bg-secondary);
+    margin-bottom: 20px;
+  }
+  .note-box p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+  }
+  .note-box strong {
+    color: var(--text-main);
+  }
+  .note-box a {
+    color: var(--cyan);
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .linked {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .linked a {
+    color: var(--cyan);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .linked a:hover {
+    text-decoration: underline;
+  }
 </style>
