@@ -24,8 +24,6 @@ Lors de la séquence où Emeth entend la voix de Joy Boy, l’anime confie cette
 
 ## La lecture des Fous du Bus
 
-<div class="section-pill section-pill--hypothese">Indice de mise en scène</div>
-
 La théorie y voit un clin d’œil cohérent avec le fil « Libération » : **Luffy pourrait recevoir ou accomplir une fonction associée à Joy Boy**. Le rapprochement vocal rend sensible une continuité narrative entretenue par les tambours de la libération, la réaction d’Emeth et la volonté héritée, sans effacer le Joy Boy historique.
 
 Il faut néanmoins conserver la bonne hiérarchie des preuves : un choix de casting est un **indice éditorial**, pas une preuve diégétique. Il soutient une lecture ; il ne permet pas de conclure seul.

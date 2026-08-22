@@ -31,14 +31,6 @@ const latestChapter = chapters.sort((a, b) => b.data.chapter - a.data.chapter)[0
 const recentArticleUpdates = getRecentArticleUpdates(articles, chapters, 4);
 const countByCategory = (cat: string) =>
   articles.filter((a: any) => a.data.category === cat).length;
-
-const badgeColorByEffect = {
-  fondation: 'cyan',
-  approfondissement: 'gold',
-  'nouvelle-piste': 'violet',
-  modification: 'gold',
-  'piste-abandonnee': 'textSecondary',
-} as const;
 ---
 
 <WikiLayout
@@ -92,8 +84,8 @@ const badgeColorByEffect = {
         >
         Lire le résumé (10 points)
       </a>
-      <a href="/theorie/theorie-complete" class="btn-secondary">
-        Théorie complète
+      <a href="/theorie/chronologie" class="btn-secondary">
+        Frise chronologique
         <svg
           width="14"
           height="14"
@@ -105,15 +97,41 @@ const badgeColorByEffect = {
           stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg
         >
       </a>
-      {
-        latestChapter && (
-          <a href={`/chapitres/${latestChapter.data.chapter}`} class="btn-secondary">
-            Dernier chapitre analysé
-          </a>
-        )
-      }
+      <a href="/theorie/theorie-complete" class="btn-secondary">Théorie complète</a>
     </div>
+  </div>
 
+  <h2 class="section-title">
+    <span class="section-title__accent"></span>
+    Comprendre la théorie
+  </h2>
+  <div class="understand-grid">
+    <a class="understand-card" href="/theorie/resume">
+      <span class="understand-step">1</span>
+      <h3>Le résumé en 10 points</h3>
+      <p>La chaîne complète, ses arguments principaux et ce qui reste encore inexpliqué.</p>
+    </a>
+    <a class="understand-card" href="/theorie/chronologie">
+      <span class="understand-step">2</span>
+      <h3>La frise chronologique</h3>
+      <p>Passé apparent, présent vécu et futurs possibles, dans l’ordre de la lecture.</p>
+    </a>
+    <a class="understand-card" href="/theorie/theorie-complete">
+      <span class="understand-step">3</span>
+      <h3>La théorie complète</h3>
+      <p>La démonstration continue en 22 chapitres, du début à la fin.</p>
+    </a>
+  </div>
+
+  <section class="video-section" aria-labelledby="video-section-title">
+    <div class="video-section__header">
+      <p class="video-section__eyebrow">Présentation vidéo</p>
+      <h2 id="video-section-title">Voir la théorie en images</h2>
+      <p>
+        La vidéo complète le parcours de lecture : commencez par le résumé si vous voulez d’abord
+        comprendre la structure.
+      </p>
+    </div>
     <div class="video-facade" id="video-facade">
       <img
         id="video-facade__img"
@@ -162,7 +180,7 @@ const badgeColorByEffect = {
       };
       document.getElementById('video-facade__trigger')?.addEventListener('click', loadVideo);
     </script>
-  </div>
+  </section>
 
   {
     latestChapter && (
@@ -174,28 +192,6 @@ const badgeColorByEffect = {
       />
     )
   }
-
-  <h2 class="section-title">
-    <span class="section-title__accent"></span>
-    Comprendre la théorie
-  </h2>
-  <div class="understand-grid">
-    <a class="understand-card" href="/theorie/resume">
-      <span class="understand-step">1</span>
-      <h3>Le résumé en 10 points</h3>
-      <p>La chaîne complète, ses arguments principaux et ce qui reste encore inexpliqué.</p>
-    </a>
-    <a class="understand-card" href="/theorie/chronologie">
-      <span class="understand-step">2</span>
-      <h3>La frise chronologique</h3>
-      <p>Passé apparent, présent vécu et futurs possibles, dans l’ordre de la lecture.</p>
-    </a>
-    <a class="understand-card" href="/theorie/theorie-complete">
-      <span class="understand-step">3</span>
-      <h3>La théorie complète</h3>
-      <p>La démonstration continue en 22 chapitres, du début à la fin.</p>
-    </a>
-  </div>
 
   <h2 class="section-title">
     <span class="section-title__accent"></span>
@@ -234,20 +230,14 @@ const badgeColorByEffect = {
   </h2>
   <div class="article-list">
     {
-      recentArticleUpdates.map(({ article, chapter }) => {
-        const chapterEntry = chapters.find((entry) => entry.data.chapter === chapter);
-        const effect = chapterEntry?.data.effect ?? 'modification';
-        return (
-          <ArticleListItem
-            badge={effectLabel(effect)}
-            badgeColor={badgeColorByEffect[effect]}
-            title={article.data.title}
-            category={categoryLabel(article.data.category)}
-            href={`/theorie/${article.id}`}
-            summary={article.data.summary}
-          />
-        );
-      })
+      recentArticleUpdates.map(({ article }) => (
+        <ArticleListItem
+          title={article.data.title}
+          category={categoryLabel(article.data.category)}
+          href={`/theorie/${article.id}`}
+          summary={article.data.summary}
+        />
+      ))
     }
   </div>
 
@@ -422,7 +412,7 @@ const badgeColorByEffect = {
     color: var(--on-accent);
     border-radius: var(--border-radius-md);
     font-size: 14px;
-    font-weight: 650;
+    font-weight: 600;
     text-decoration: none;
     transition: all 0.25s ease;
     box-shadow: 0 2px 12px var(--glow-violet);
@@ -449,7 +439,7 @@ const badgeColorByEffect = {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-md);
     font-size: 14px;
-    font-weight: 550;
+    font-weight: 500;
     text-decoration: none;
     transition: all 0.25s ease;
   }
@@ -474,6 +464,40 @@ const badgeColorByEffect = {
   }
 
   /* ===== VIDEO FACADE ===== */
+  .video-section {
+    margin: var(--space-6) 0 48px;
+    padding: clamp(18px, 3vw, 28px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-xl);
+    background: color-mix(in srgb, var(--bg-secondary) 78%, transparent);
+  }
+
+  .video-section__header {
+    max-width: 680px;
+    margin-bottom: var(--space-4);
+  }
+
+  .video-section__eyebrow {
+    margin: 0 0 7px;
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .video-section h2 {
+    margin: 0 0 8px;
+    font-size: clamp(1.35rem, 3vw, 1.8rem);
+  }
+
+  .video-section p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
   .video-facade {
     position: relative;
     width: 100%;
@@ -481,7 +505,7 @@ const badgeColorByEffect = {
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid var(--border-color);
-    margin-top: 32px;
+    margin-top: 0;
     cursor: pointer;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     transition:

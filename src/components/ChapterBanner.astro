@@ -17,9 +17,6 @@ const { chapter, title, effect, href } = Astro.props;
         Chap {chapter}
       </span>
       <span class="chapter-banner__title">{title}</span>
-      <span class="chapter-banner__badge-effect">
-        {effect}
-      </span>
     </div>
     <span class="chapter-banner__link">
       Voir l'analyse
@@ -114,17 +111,6 @@ const { chapter, title, effect, href } = Astro.props;
 
   .chapter-banner:hover .chapter-banner__title {
     color: var(--cyan);
-  }
-
-  .chapter-banner__badge-effect {
-    @apply inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium border;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background-color: color-mix(in srgb, var(--violet) 12%, transparent);
-    color: var(--violet-light);
-    border-color: color-mix(in srgb, var(--violet) 30%, transparent);
-    white-space: nowrap;
   }
 
   .chapter-banner__link {

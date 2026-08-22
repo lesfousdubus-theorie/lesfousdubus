@@ -115,7 +115,7 @@ const sections = [
     points: [
       'Nika est un nom mythique ancien ; Hito Hito no Mi, modèle Nika est le nom du Fruit.',
       "Gear 5 est l'éveil observé chez Luffy, qui continue de se présenter comme Monkey D. Luffy.",
-      "Brook dit ne pas connaître les Fruits vers −62, tandis que les géants et Imu évoquent des savoirs plus anciens : c'est une tension, pas une preuve décisive.",
+      "Brook dit ne pas connaître les Fruits vers −62, tandis que les géants et Imu évoquent des savoirs plus anciens : c'est une tension, pas une conclusion décisive.",
     ],
   },
   {
@@ -227,7 +227,7 @@ const sections = [
     points: [
       'Son pouvoir et la renaissance cyclique de Poséidon sont établis.',
       "Roger apprend qu'elle naîtra dix ans plus tard et grandira ensuite.",
-      'Noah, Red Line et All Blue doivent rester des prédictions séparées.',
+      'Noah, Red Line et All Blue doivent rester des pistes séparées.',
     ],
   },
   {
@@ -385,9 +385,7 @@ const breadcrumbItems = [
         > — sans imposer une boucle temporelle générale.
       </p>
       <div class="theory-hero__meta">
-        <span>22 chapitres</span><span>·</span><span>5 niveaux de preuve</span><span>·</span><span
-          >Théorie centrale révisable</span
-        >
+        <span>22 chapitres</span><span>·</span><span>Théorie révisable</span>
       </div>
     </header>
 
@@ -398,14 +396,6 @@ const breadcrumbItems = [
       <span>Présent : événements vécus</span>
       <span aria-hidden="true">→</span>
       <span>Futur projeté : création possible de la mémoire</span>
-    </aside>
-
-    <aside class="status-key" aria-label="Niveaux éditoriaux">
-      <span class="status-key__item status-key__item--manga">Manga</span>
-      <span class="status-key__item status-key__item--theorie-centrale">Théorie centrale</span>
-      <span class="status-key__item status-key__item--extension">Extension</span>
-      <span class="status-key__item status-key__item--hypothese-recente">Hypothèse récente</span>
-      <span class="status-key__item status-key__item--projection">Projection</span>
     </aside>
 
     <nav class="chapter-nav" aria-label="Chapitres de la théorie">
@@ -434,7 +424,6 @@ const breadcrumbItems = [
                 {section.icon}
               </span>
               <div>
-                <p class={`theory-section__status status-${section.level}`}>{section.levelLabel}</p>
                 <h2>{section.title}</h2>
               </div>
             </div>
@@ -511,60 +500,6 @@ const breadcrumbItems = [
     font-size: 12px;
   }
   .paradox-card,
-  .status-key {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 20px 0;
-    padding: 16px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    background: var(--bg-secondary);
-    color: var(--text-secondary);
-    font-size: 13px;
-  }
-  .paradox-card {
-    border-left: 3px solid var(--accent-gold);
-  }
-  .paradox-card strong {
-    width: 100%;
-    color: var(--text-main);
-    text-align: center;
-  }
-  .status-key__item,
-  .theory-section__status {
-    border: 1px solid currentColor;
-    border-radius: 999px;
-    padding: 3px 9px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .status-key__item--manga,
-  .status-manga {
-    color: var(--cyan);
-  }
-  .status-key__item--theorie-centrale,
-  .status-theorie-centrale {
-    color: var(--accent-gold);
-  }
-  .status-key__item--extension,
-  .status-extension {
-    color: var(--violet-light);
-  }
-  .status-key__item--hypothese-recente,
-  .status-hypothese-recente {
-    color: var(--violet-light);
-    border-style: dashed;
-  }
-  .status-key__item--projection,
-  .status-projection {
-    color: var(--text-secondary);
-    border-style: dashed;
-  }
   .chapter-nav {
     margin: 36px 0;
     padding: 24px;
@@ -654,10 +589,6 @@ const breadcrumbItems = [
     background: color-mix(in srgb, var(--violet) 12%, transparent);
     color: var(--violet-light);
     font-size: 20px;
-  }
-  .theory-section__status {
-    display: inline-block;
-    margin: 0 0 8px;
   }
   .theory-section h2 {
     margin: 0;

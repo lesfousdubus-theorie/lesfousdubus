@@ -16,27 +16,19 @@ seoTitle: 'Emeth One Piece : robot géant venu du futur | Les Fous du Bus'
 
 ## Emeth dans le manga
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Emeth est un robot associé au Royaume antique. Il attaque Mary Geoise environ deux cents ans avant le présent, reste ensuite inactif puis se réveille à Egghead au rythme des Tambours de la Libération. Un nœud libère un Haki qu'Emeth attribue à Joy Boy.
 
 **Sources précises :** chapitres 1065 et 1111–1122.
 
 ## Le Haki stocké
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Dans la lecture directe, le Haki appartient au Joy Boy historique connu d'Emeth. La théorie explore une autre possibilité : il **pourrait être celui du Luffy de fin d'aventure**, transmis à Emeth avant un déplacement temporel. Cette proposition doit rester au conditionnel.
 
 ## Emeth/BF-39
 
-<div class="section-pill section-pill--extension">Extension</div>
-
 La ressemblance avec les Battle Franky, l'énergie incomprise et les nœuds de Weatheria permettent d'imaginer un dernier modèle construit ou complété dans le futur. « BF-39 », Franky constructeur et saut vers −200 sont des éléments théoriques, pas des noms canoniques.
 
 ## Une branche physique séparée
-
-<div class="section-pill section-pill--extension">Extension</div>
 
 Emeth est une hypothèse de **transport d'objet**. Elle n'est pas nécessaire au mécanisme central, qui porte sur la transmission d'informations et leur conservation par les Ponéglyphes.
 

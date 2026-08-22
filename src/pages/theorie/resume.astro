@@ -18,7 +18,7 @@ const points = [
     status: 'Théorie centrale',
     kind: 'core',
     title: 'Des informations futures pourraient être devenues des sources du passé',
-    text: "La théorie ne pose pas une boucle générale. Elle suit un passé apparent contenant des informations futures, le présent où les événements sont vécus et un futur projeté qui pourrait créer cette mémoire.",
+    text: 'La théorie ne pose pas une boucle générale. Elle suit un passé apparent contenant des informations futures, le présent où les événements sont vécus et un futur projeté qui pourrait créer cette mémoire.',
     source: 'Synthèse théorique, mise à jour au chapitre 1190',
   },
   {
@@ -34,7 +34,7 @@ const points = [
     status: 'Hypothèse récente',
     kind: 'recent',
     title: 'Le moyen de transmission reste ouvert',
-    text: "Une communication temporelle, une forme de préscience ou une information fixée dans le passé sont des branches alternatives. Harley, Emeth et Zoro ne sont pas nécessaires au noyau.",
+    text: 'Une communication temporelle, une forme de préscience ou une information fixée dans le passé sont des branches alternatives. Harley, Emeth et Zoro ne sont pas nécessaires au noyau.',
     source: 'Chapitre 1188 et branches de la théorie',
   },
   {
@@ -42,7 +42,7 @@ const points = [
     status: 'Manga',
     kind: 'manga',
     title: 'Roger atteint Laugh Tale après Lodestar et arrive trop tôt',
-    text: "Lodestar est la dernière île indiquée par le Log Pose. Les quatre Road Ponéglyphes donnent quatre positions spatiales dont le croisement désigne Laugh Tale ; une coordonnée temporelle demeure hypothétique.",
+    text: 'Lodestar est la dernière île indiquée par le Log Pose. Les quatre Road Ponéglyphes donnent quatre positions spatiales dont le croisement désigne Laugh Tale ; une coordonnée temporelle demeure hypothétique.',
     source: 'Chapitres 966–968',
   },
   {
@@ -74,7 +74,7 @@ const points = [
     status: 'Extensions',
     kind: 'extension',
     title: 'Les ressemblances de personnages restent des branches',
-    text: "Vivi pourrait accomplir le rôle attribué à Lili ; Zoro pourrait prolonger la légende de Ryuma. Loki/Nidhogg, Emeth/BF-39 et Usopp/Louis Arnot restent séparés et révisables.",
+    text: 'Vivi pourrait accomplir le rôle attribué à Lili ; Zoro pourrait prolonger la légende de Ryuma. Loki/Nidhogg, Emeth/BF-39 et Usopp/Louis Arnot restent séparés et révisables.',
     source: 'Branches Vivi/Lili, Zoro/Ryuma, Loki, Emeth et Usopp',
   },
   {
@@ -82,7 +82,7 @@ const points = [
     status: 'Projection',
     kind: 'projection',
     title: 'La guerre finale possède plusieurs ordres possibles',
-    text: "Water Seven, Pluton, ouverture de Wano, Noah, Red Line et All Blue ne forment pas encore une séquence certaine. Le One Piece pourrait contenir la véritable histoire vécue par Luffy, mais son contenu reste inconnu.",
+    text: 'Water Seven, Pluton, ouverture de Wano, Noah, Red Line et All Blue ne forment pas encore une séquence certaine. Le One Piece pourrait contenir la véritable histoire vécue par Luffy, mais son contenu reste inconnu.',
     source: 'Chapitres 576 et 967–968 ; projection théorique',
   },
 ];
@@ -93,14 +93,21 @@ const points = [
   description="Résumé révisé : faits du manga, théorie centrale, extensions, hypothèses récentes et projections clairement séparés."
   currentPath="/theorie/resume"
 >
-  <Breadcrumb items={[{ label: 'Accueil', href: '/' }, { label: 'La théorie', href: '/theorie' }, { label: 'Résumé' }]} />
+  <Breadcrumb
+    items={[
+      { label: 'Accueil', href: '/' },
+      { label: 'La théorie', href: '/theorie' },
+      { label: 'Résumé' },
+    ]}
+  />
 
   <article class="summary" data-pagefind-body>
     <header class="summary__hero">
       <p class="summary__eyebrow">Version courte · état au chapitre 1190</p>
       <h1>La théorie en 10 points</h1>
       <p>
-        Le fil central porte sur une <strong>transmission d’informations</strong> conservées par les Ponéglyphes. Les faits, extensions et futurs possibles gardent chacun leur niveau de preuve.
+        Le fil central porte sur une <strong>transmission d’informations</strong> conservées par les Ponéglyphes.
+        Les faits, extensions et futurs possibles gardent chacun leur contexte de lecture.
       </p>
     </header>
 
@@ -115,17 +122,20 @@ const points = [
     <TheoryMechanism />
 
     <ol class="summary__list">
-      {points.map((point) => (
-        <li class={`summary-card summary-card--${point.kind}`}>
-          <div class="summary-card__top">
-            <span class="summary-card__number">{point.number}</span>
-            <span class="summary-card__status">{point.status}</span>
-          </div>
-          <h2>{point.title}</h2>
-          <p>{point.text}</p>
-          <small><strong>Source :</strong> {point.source}</small>
-        </li>
-      ))}
+      {
+        points.map((point) => (
+          <li class={`summary-card summary-card--${point.kind}`}>
+            <div class="summary-card__top">
+              <span class="summary-card__number">{point.number}</span>
+            </div>
+            <h2>{point.title}</h2>
+            <p>{point.text}</p>
+            <small>
+              <strong>Source :</strong> {point.source}
+            </small>
+          </li>
+        ))
+      }
     </ol>
 
     <nav class="summary__actions" aria-label="Poursuivre la lecture">
@@ -138,27 +148,128 @@ const points = [
 </WikiLayout>
 
 <style>
-  .summary { max-width: 840px; margin: 0 auto; }
-  .summary__hero { padding: 38px 0 24px; text-align: center; }
-  .summary__eyebrow { color: var(--violet-light); font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-  .summary__hero h1 { margin: 8px 0 14px; font-size: clamp(2rem, 5vw, 3rem); }
-  .summary__hero > p:last-child { max-width: 670px; margin: 0 auto; color: var(--text-secondary); line-height: 1.7; }
-  .paradox { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 8px 0 28px; padding: 15px; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-gold); border-radius: var(--border-radius-lg); background: var(--bg-secondary); color: var(--text-secondary); font-size: 12px; }
-  .summary__list { display: grid; gap: 16px; margin: 34px 0; padding: 0; list-style: none; }
-  .summary-card { padding: 22px 24px; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: color-mix(in srgb, var(--surface) 58%, transparent); }
-  .summary-card--manga { border-left: 3px solid var(--cyan); }
-  .summary-card--core { border-left: 3px solid var(--accent-gold); }
-  .summary-card--extension, .summary-card--recent { border-left: 3px solid var(--violet); }
-  .summary-card--projection { border-left: 3px dashed var(--text-muted); }
-  .summary-card__top { display: flex; align-items: center; gap: 10px; }
-  .summary-card__number { color: var(--text-muted); font-family: var(--font-mono); font-size: 12px; }
-  .summary-card__status { padding: 3px 8px; border: 1px solid currentColor; border-radius: 999px; color: var(--violet-light); font-size: 10px; font-weight: 700; text-transform: uppercase; }
-  .summary-card h2 { margin: 12px 0 8px; color: var(--text-main); font-size: 1.2rem; }
-  .summary-card p { margin: 0; color: var(--text-secondary); line-height: 1.7; }
-  .summary-card small { display: block; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); color: var(--text-muted); }
-  .summary__actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 50px; }
-  .summary__actions a { display: inline-flex; min-height: var(--control-size); align-items: center; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius); color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600; }
-  .summary__actions a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
-  .summary__actions .primary { border-color: var(--cyan); color: var(--cyan); }
-  @media (max-width: 600px) { .paradox span { display: none; } }
+  .summary {
+    max-width: 840px;
+    margin: 0 auto;
+  }
+  .summary__hero {
+    padding: 38px 0 24px;
+    text-align: center;
+  }
+  .summary__eyebrow {
+    color: var(--violet-light);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .summary__hero h1 {
+    margin: 8px 0 14px;
+    font-size: clamp(2rem, 5vw, 3rem);
+  }
+  .summary__hero > p:last-child {
+    max-width: 670px;
+    margin: 0 auto;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .paradox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 8px 0 28px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--accent-gold);
+    border-radius: var(--border-radius-lg);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+  .summary__list {
+    display: grid;
+    gap: 16px;
+    margin: 34px 0;
+    padding: 0;
+    list-style: none;
+  }
+  .summary-card {
+    padding: 22px 24px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: color-mix(in srgb, var(--surface) 58%, transparent);
+  }
+  .summary-card--manga {
+    border-left: 3px solid var(--cyan);
+  }
+  .summary-card--core {
+    border-left: 3px solid var(--accent-gold);
+  }
+  .summary-card--extension,
+  .summary-card--recent {
+    border-left: 3px solid var(--violet);
+  }
+  .summary-card--projection {
+    border-left: 3px dashed var(--text-muted);
+  }
+  .summary-card__top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .summary-card__number {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .summary-card h2 {
+    margin: 12px 0 8px;
+    color: var(--text-main);
+    font-size: 1.2rem;
+  }
+  .summary-card p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .summary-card small {
+    display: block;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-muted);
+  }
+  .summary__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 28px 0 50px;
+  }
+  .summary__actions a {
+    display: inline-flex;
+    min-height: var(--control-size);
+    align-items: center;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .summary__actions a:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+  }
+  .summary__actions .primary {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+  @media (max-width: 600px) {
+    .paradox span {
+      display: none;
+    }
+  }
 </style>

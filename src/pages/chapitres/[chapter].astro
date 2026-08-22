@@ -2,7 +2,6 @@
 import WikiLayout from '@layouts/WikiLayout.astro';
 import Footer from '@components/Footer.astro';
 import { getCollection, render } from 'astro:content';
-import { effectLabel } from '@utils/labels';
 
 export async function getStaticPaths() {
   const chapters = await getCollection('chapters');
@@ -88,17 +87,6 @@ const chapterBreadcrumbLd = {
     <div class="chapter-badges">
       <span class="badge-chapter">Chapitre {entry.data.chapter}</span>
       <span class="badge-designation">Synthèse de l'analyse</span>
-      <span
-        class="badge-effect"
-        class:list={[
-          { 'badge-effect--violet': entry.data.effect === 'nouvelle-piste' },
-          {
-            'badge-effect--gold':
-              entry.data.effect === 'approfondissement' || entry.data.effect === 'modification',
-          },
-          { 'badge-effect--alert': entry.data.effect === 'piste-abandonnee' },
-        ]}>{effectLabel(entry.data.effect)}</span
-      >
     </div>
     <h1>{entry.data.title}</h1>
     <p class="chapter-designation">
@@ -115,10 +103,7 @@ const chapterBreadcrumbLd = {
     affectedArticles.length > 0 && (
       <section class="impact-box" aria-labelledby="impact-title">
         <h3 id="impact-title">Ce que ce chapitre change dans la théorie</h3>
-        <p class="impact-intro">
-          Effet : <strong>{effectLabel(entry.data.effect)}</strong>. Les fiches suivantes sont
-          directement concernées :
-        </p>
+        <p class="impact-intro">Les fiches suivantes sont directement concernées :</p>
         <ul class="impact-list">
           {affectedArticles.map((article) => (
             <li>
@@ -126,11 +111,6 @@ const chapterBreadcrumbLd = {
             </li>
           ))}
         </ul>
-        <p class="impact-note">
-          Une hypothèse apparue dans ce chapitre est traitée comme un{' '}
-          <strong>développement récent</strong> et n'est jamais présentée comme un acquis de la
-          théorie originale.
-        </p>
       </section>
     )
   }
@@ -191,15 +171,6 @@ const chapterBreadcrumbLd = {
     letter-spacing: 0.5px;
   }
 
-  .badge-effect {
-    font-size: 12.5px;
-    font-weight: 500;
-    padding: 4px 9px;
-    border-radius: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
   .badge-designation {
     font-size: 12.5px;
     font-weight: 500;
@@ -250,33 +221,6 @@ const chapterBreadcrumbLd = {
     color: var(--cyan);
     text-decoration: underline;
     text-underline-offset: 2px;
-  }
-
-  .impact-note {
-    font-size: 12.5px;
-    color: var(--text-secondary);
-    font-style: italic;
-    margin: 0;
-    border-top: 1px solid var(--border-color);
-    padding-top: 10px;
-  }
-
-  .badge-effect--violet {
-    background-color: color-mix(in srgb, var(--violet) 10%, transparent);
-    color: var(--violet-light);
-    border: 1px solid color-mix(in srgb, var(--violet) 30%, transparent);
-  }
-
-  .badge-effect--gold {
-    background-color: color-mix(in srgb, var(--accent-gold) 10%, transparent);
-    color: var(--accent-gold);
-    border: 1px solid color-mix(in srgb, var(--accent-gold) 20%, transparent);
-  }
-
-  .badge-effect--alert {
-    background-color: color-mix(in srgb, var(--alert) 10%, transparent);
-    color: var(--alert);
-    border: 1px solid color-mix(in srgb, var(--alert) 30%, transparent);
   }
 
   .chapter-header h1 {

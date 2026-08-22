@@ -16,21 +16,15 @@ related:
 
 ## La dispersion ancienne
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Imu relie la présence mondiale des Ponéglyphes à l'« erreur » de Nefertari D. Lili. Sa lettre porte le D. et demande de protéger ou diffuser les textes. Ce rôle historique ne doit pas être retiré à Lili.
 
 **Sources précises :** chapitres 1084 à 1086 et 1116.
 
 ## Les échos avec Vivi
 
-<div class="section-pill section-pill--extension">Extension</div>
-
 Vivi et Lili appartiennent à la même dynastie, se heurtent au pouvoir de Mary Geoise et présentent une ressemblance graphique. Le portrait ne prouve pas la couleur des cheveux de Lili. Les disparitions ne sont pas équivalentes : celle de Lili demeure un mystère ancien, tandis que le lecteur sait où Vivi se trouve après la Rêverie.
 
 ## Proposition révisée
-
-<div class="section-pill section-pill--extension">Extension</div>
 
 Vivi pourrait **accomplir le rôle attribué à Lili** dans le futur en aidant à diffuser la véritable histoire ou à protéger les Ponéglyphes. Une transmission vers le passé pourrait ensuite donner aux sources anciennes leur contenu ; l'identité commune ne serait qu'une variante plus spéculative.
 

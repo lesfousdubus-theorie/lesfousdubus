@@ -15,27 +15,19 @@ related: ['peuples-royaumes', 'zunesha-fiche', 'poneglyphes', 'guerre-finale', '
 
 ## Zou et son Road Ponéglyphe
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Zou est une cité mink installée sur le dos de Zunesha. Elle protège l'un des quatre Road Ponéglyphes. Le texte contient une position : le fait que la stèle se déplace avec Zunesha ne transforme pas cette coordonnée en date.
 
 **Sources précises :** chapitres 802, 818–821 et 1037.
 
 ## Zunesha
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Zunesha marche depuis des siècles en punition d'un crime inconnu et ne peut agir librement sans ordre. Momonosuke peut l'entendre et lui commander d'attaquer Jack. À Wano, Zunesha reconnaît les Tambours de la Libération puis repart quand l'ouverture est reportée.
 
 ## Destination et mission
 
-<div class="section-pill section-pill--extension">Extension</div>
-
 La théorie propose que Zunesha participe plus tard à l'ouverture de Wano ou au déplacement de Pluton. Les Minks peuvent rejoindre la coalition de libération, mais aucune destination finale précise de Zunesha n'est donnée.
 
 ## Laugh Tale
-
-<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
 Une relation entre Zou, Lodestar et un mécanisme temporel de Laugh Tale reste possible. Elle ne remplace pas la règle canonique des **quatre positions spatiales** des Road Ponéglyphes.
 

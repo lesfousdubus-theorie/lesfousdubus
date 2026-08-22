@@ -16,21 +16,15 @@ related: ['mother-flame', 'omen', 'imu-nerona', 'armes-antiques', 'vegapunk']
 
 ## Ce que le manga établit
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Uranus est le nom de la troisième Arme antique, aux côtés de Poséidon et Pluton. Sa forme, sa localisation, son porteur et ses capacités ne sont pas révélés.
 
 **Sources précises :** chapitres 650, 1060 et 1086.
 
 ## Lulusia et la Mother Flame
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Une arme volante détruit Lulusia après que York a fourni une portion de Mother Flame au Gouvernement. Le manga n'appelle pas cette arme Uranus et ne dit pas qu'Imu est une Arme antique.
 
 ## Hypothèses ouvertes
-
-<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
 Imu pourrait employer la Mother Flame pour **atteindre la puissance associée à Uranus**, alimenter l'Arme elle-même ou activer une technologie différente. Ces branches doivent rester concurrentes.
 

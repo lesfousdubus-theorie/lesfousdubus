@@ -4,20 +4,9 @@ import {
   timelineDateCertainty,
   timelineEras,
   timelineMotifs,
-  timelineStatus,
   timelineThreads,
-  type TimelineStatus,
   type TimelineThread,
 } from '../data/theoryTimeline';
-
-const statusOrder: Array<'all' | TimelineStatus> = [
-  'all',
-  'canon',
-  'central',
-  'extension',
-  'hypothese',
-  'projection',
-];
 
 const eraFirstEvent = new Map(
   timelineEras.map((era) => [era.id, theoryTimeline.find((event) => event.era === era.id)?.id]),
@@ -95,21 +84,6 @@ const seenEras = new Set<string>();
   </div>
 
   <div class="control-deck">
-    <div class="status-filters" role="group" aria-label="Filtrer par niveau de certitude">
-      {
-        statusOrder.map((status) => (
-          <button
-            type="button"
-            class:list={['filter-chip', { 'is-active': status === 'all' }]}
-            data-status-filter={status}
-            aria-pressed={status === 'all' ? 'true' : 'false'}
-          >
-            {status === 'all' ? 'Toute la frise' : timelineStatus[status].shortLabel}
-          </button>
-        ))
-      }
-    </div>
-
     <div class="control-deck__right">
       <label class="thread-select">
         <span>Fil narratif</span>
@@ -238,9 +212,6 @@ const seenEras = new Set<string>();
 
                   <span class="event-card__body">
                     <span class="event-card__meta">
-                      <span class:list={['status-pill', `status-pill--${event.status}`]}>
-                        {timelineStatus[event.status].shortLabel}
-                      </span>
                       <span>{timelineThreads[event.thread].shortLabel}</span>
                     </span>
                     {event.motif && <span class="motif-pill">≠ {timelineMotifs[event.motif]}</span>}
@@ -310,27 +281,7 @@ const seenEras = new Set<string>();
     </div>
   </div>
 
-  <div class="timeline-legend" aria-label="Légende des niveaux de lecture">
-    {
-      (
-        Object.entries(timelineStatus) as Array<
-          [TimelineStatus, (typeof timelineStatus)[TimelineStatus]]
-        >
-      ).map(([status, meta]) => (
-        <span>
-          <i class={`legend-line legend-line--${status}`} aria-hidden="true" />
-          {meta.label}
-        </span>
-      ))
-    }
-    <span class="legend-motif"><i aria-hidden="true">≠</i> Imu se trompe d’identité</span>
-  </div>
-
-  <div class="date-certainty-key" aria-label="Légende de certitude des dates">
-    <strong>Placement :</strong>
-    {Object.values(timelineDateCertainty).map((label) => <span>{label}</span>)}
-  </div>
-
+  <p class="sr-only">Imu se trompe d’identité</p>
   <p class="sr-only" data-timeline-live aria-live="polite"></p>
 </section>
 
@@ -346,8 +297,7 @@ const seenEras = new Set<string>();
           <article class="timeline-nojs__event">
             <p class="timeline-nojs__meta">
               {event.date} · {timelineDateCertainty[event.dateCertainty]} · {era?.label} ·{' '}
-              {timelineStatus[event.status].label} · {timelineThreads[event.thread].label} ·{' '}
-              {event.source}
+              {timelineThreads[event.thread].label} · {event.source}
               {event.motif ? ` · ${timelineMotifs[event.motif]}` : ''}
               {event.evolution ? ` · ${event.evolution}` : ''}
             </p>
@@ -396,9 +346,6 @@ const seenEras = new Set<string>();
           </figure>
         )}
         <div class="event-detail__meta">
-          <span class={`status-pill status-pill--${event.status}`}>
-            {timelineStatus[event.status].label}
-          </span>
           <span>{timelineThreads[event.thread].label}</span>
           <span>{event.source}</span>
           {event.motif && <span>≠ {timelineMotifs[event.motif]}</span>}
@@ -492,7 +439,7 @@ const seenEras = new Set<string>();
     margin: 0 0 4px;
     color: var(--cyan);
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 800;
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }
@@ -598,7 +545,7 @@ const seenEras = new Set<string>();
   .era-tab span {
     color: var(--text-main);
     font-size: 11px;
-    font-weight: 780;
+    font-weight: 800;
   }
 
   .era-tab small {
@@ -699,7 +646,7 @@ const seenEras = new Set<string>();
     gap: 7px;
     color: var(--text-muted);
     font-size: 11px;
-    font-weight: 750;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -1097,7 +1044,7 @@ const seenEras = new Set<string>();
     color: var(--thread-color);
     font-size: 11px;
     font-style: normal;
-    font-weight: 850;
+    font-weight: 800;
     letter-spacing: 0.02em;
     white-space: nowrap;
   }
@@ -1294,7 +1241,7 @@ const seenEras = new Set<string>();
     gap: 8px;
     color: var(--text-muted);
     font-size: 10px;
-    font-weight: 750;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -1307,7 +1254,7 @@ const seenEras = new Set<string>();
     border: 1px solid currentColor;
     border-radius: var(--border-radius-full);
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 800;
     line-height: 1;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -1435,7 +1382,7 @@ const seenEras = new Set<string>();
     margin: 0 0 4px;
     color: #f58ac8;
     font-size: 9px;
-    font-weight: 850;
+    font-weight: 800;
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
@@ -1537,7 +1484,7 @@ const seenEras = new Set<string>();
     margin: 0 0 6px;
     color: var(--cyan);
     font-size: 11px;
-    font-weight: 750;
+    font-weight: 700;
   }
 
   .timeline-nojs__event h3 {
@@ -1612,7 +1559,7 @@ const seenEras = new Set<string>();
     margin-bottom: 2px;
     color: var(--cyan);
     font-size: 10px;
-    font-weight: 750;
+    font-weight: 700;
   }
 
   .timeline-console__current strong {
@@ -1864,7 +1811,7 @@ const seenEras = new Set<string>();
     margin: 0 0 8px;
     color: var(--cyan);
     font-size: 11px;
-    font-weight: 850;
+    font-weight: 800;
   }
 
   .event-detail__title-row {
@@ -1882,7 +1829,7 @@ const seenEras = new Set<string>();
     border-radius: 12px;
     background: color-mix(in srgb, var(--cyan) 8%, var(--bg-main));
     color: var(--cyan);
-    font-weight: 850;
+    font-weight: 800;
   }
 
   .event-detail h3 {
@@ -1928,7 +1875,7 @@ const seenEras = new Set<string>();
     background: var(--surface);
     color: var(--text-main);
     font-size: 10px;
-    font-weight: 750;
+    font-weight: 700;
     text-decoration: none;
   }
 
@@ -2040,7 +1987,7 @@ const seenEras = new Set<string>();
       margin-bottom: 10px;
       color: var(--text-muted);
       font-size: 11px;
-      font-weight: 750;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }

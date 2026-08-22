@@ -15,21 +15,15 @@ related: ['poseidon-fiche', 'shirahoshi', 'noah', 'madame-shirley', 'hommes-pois
 
 ## Shirahoshi est Poséidon
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Poséidon est une capacité héréditaire qui renaît chez une princesse sirène capable de commander les Rois des Mers. Dans l'époque actuelle, cette princesse est Shirahoshi.
 
 **Sources précises :** chapitres 626 et 647–649.
 
 ## Ce que Roger apprend
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Roger entend les Rois des Mers annoncer que la souveraine naîtra dans dix ans et grandira ensuite. L'équipage comprend qu'il est arrivé trop tôt. Le Ponéglyphe de la Forêt de la Mer contient surtout les excuses de Joy Boy envers la Poséidon de son époque ; il ne dit pas simplement que Shirahoshi est déjà présente.
 
 ## Rôle futur possible
-
-<div class="section-pill section-pill--projection">Projection</div>
 
 Shirahoshi pourrait commander les Rois des Mers pendant le conflit final et contribuer au déplacement de Noah ou à une évacuation. Noah, destruction de la Red Line et création d'All Blue restent des propositions atomiques séparées.
 

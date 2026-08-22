@@ -27,15 +27,11 @@ related:
 
 ## Le Joy Boy historique
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Le chapitre 1115 situe Joy Boy **environ neuf cents ans avant le présent**, dans le Royaume antique. Vegapunk le décrit avec un corps extensible comparable au dieu Nika et le présente comme le premier homme appelé « pirate ». Joy Boy a laissé une promesse non tenue à l'île des Hommes-Poissons ; Roger découvre son histoire à Laugh Tale.
 
 **Sources précises :** chapitres 628, 967–968, 1115 et 1122.
 
 ## Luffy, Nika et le retour annoncé
-
-<div class="section-pill section-pill--manga">Manga</div>
 
 À Wano, Zunesha dit que Joy Boy est revenu en entendant les Tambours de la Libération lors de l'éveil du Fruit de Luffy. Le Hito Hito no Mi, modèle Nika explique le corps et le rythme de Gear 5. Ces associations ne changent pas le nom personnel de Luffy.
 
@@ -43,15 +39,11 @@ Le chapitre 1115 situe Joy Boy **environ neuf cents ans avant le présent**, dan
 
 ## Une fonction de libération héritée
 
-<div class="section-pill section-pill--extension">Extension</div>
-
 La théorie conserve un parallèle fort : Luffy pourrait accomplir la promesse et recevoir à son tour le titre ou le symbole de Joy Boy. Ce rôle serait la **conséquence de huit siècles d'héritages convergents** — Nika, Kuma, Kaido, Shanks, Zunesha et volonté héritée — plutôt que l'origine reproduite d'une identité unique.
 
 Une communication future pourrait encore expliquer certains propos reçus à l'époque ancienne, mais elle ne supprime pas l'existence canonique du Joy Boy historique.
 
 ## Joy Boy n'est pas le nom du Fruit
-
-<div class="section-pill section-pill--manga">Manga</div>
 
 Il faut séparer : **Joy Boy**, personnage historique ; **Nika**, figure mythique ; **Hito Hito no Mi, modèle Nika**, Fruit ; **Gear 5**, forme éveillée ; **Monkey D. Luffy**, identité personnelle du héros.
 

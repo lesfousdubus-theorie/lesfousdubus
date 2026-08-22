@@ -13,21 +13,15 @@ order: 4
 
 ## Dernière destination du Log Pose
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Lodestar est l'île terminale atteinte en suivant les indications normales du Log Pose. Roger y comprend pour la première fois l'existence des Ponéglyphes, de leur écriture et d'une île supplémentaire à trouver.
 
 **Sources précises :** chapitres 820 et 966–967.
 
 ## Ce que sa géographie ne prouve pas
 
-<div class="section-pill section-pill--manga">Manga</div>
-
 Le manga ne confirme pas que Lodestar se trouve exactement à l'intersection de Grand Line et Red Line, qu'il est impossible d'en repartir par mer ni qu'elle est Laugh Tale à une autre époque.
 
 ## Point d'ancrage possible
-
-<div class="section-pill section-pill--hypothese-recente">Hypothèse récente</div>
 
 Lodestar pourrait être liée au mécanisme de Laugh Tale ou à une communication temporelle. C'est une piste révisable après le chapitre 1188, séparée du fait canonique du voyage de Roger.
 
