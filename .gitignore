@@ -17,6 +17,8 @@
 
 # production
 /build
+/.open-next/
+cloudflare-env.d.ts
 
 # misc
 .DS_Store
