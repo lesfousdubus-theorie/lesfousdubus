@@ -6,6 +6,15 @@ export const metadata: Metadata = {
   title: "La Théorie des Fous du Bus — Voyage 3D dans One Piece",
   description:
     "Monte dans le bus au chapeau de paille, roule à travers les îles de One Piece et regarde la théorie des Fous du Bus pendant le voyage.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    apple: "/favicon.png",
+    shortcut: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {
