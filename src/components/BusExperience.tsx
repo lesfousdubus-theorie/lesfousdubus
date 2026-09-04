@@ -61,6 +61,7 @@ export default function BusExperience() {
   const [zone, setZone] = useState(0);
   const [daylight, setDaylight] = useState(1);
   const [timeOfDay, setTimeOfDay] = useState(0.2);
+  const [manualDayNight, setManualDayNight] = useState<"day" | "night" | null>(null);
 
   const toastTimeout = useRef<NodeJS.Timeout | null>(null);
   const worldRef = useRef<WorldState>({ daylight: 1, timeOfDay: 0.2, zone: 0, scroll: 0 });
@@ -68,6 +69,13 @@ export default function BusExperience() {
   // Références pour les phares automatiques jour / nuit
   const prevIsNight = useRef(false);
   const manualHeadlightsRef = useRef<boolean | null>(null);
+
+  const toggleDayNight = useCallback(() => {
+    setManualDayNight(() => {
+      const currentlyNight = daylight < 0.4;
+      return currentlyNight ? "day" : "night";
+    });
+  }, [daylight]);
 
   // Affiche une notification festive
   const showToast = useCallback((text: string, sub?: string, badge?: string) => {
@@ -263,9 +271,8 @@ export default function BusExperience() {
     setTimeout(() => setHornVisible(false), 900);
   }, []);
 
-  // Référence pour le temps de lecture de la vidéo pour synchroniser petite TV et plein écran
+  // Référence pour le temps de lecture de la vidéo pour synchroniser la lecture
   const currentTimeRef = useRef(0);
-  const [fullscreenStartSeconds, setFullscreenStartSeconds] = useState(0);
 
   // Écoute les événements du lecteur YouTube pour garder le temps courant synchronisé
   useEffect(() => {
@@ -290,49 +297,27 @@ export default function BusExperience() {
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
-    if (isFullscreen || Boolean(document.fullscreenElement)) {
-      if (document.fullscreenElement && document.exitFullscreen) {
+    const primaryIframe = document.getElementById("tv-primary-iframe") as HTMLIFrameElement | null;
+    if (document.fullscreenElement) {
+      if (document.exitFullscreen) {
         try {
           await document.exitFullscreen();
         } catch {
           // ignore
         }
       }
-      setIsFullscreen(false);
-      // Synchroniser le temps sur le lecteur TV 3D
+    } else if (primaryIframe) {
       try {
-        const primaryIframe = document.getElementById("tv-primary-iframe") as HTMLIFrameElement;
-        if (primaryIframe?.contentWindow) {
-          primaryIframe.contentWindow.postMessage(
-            JSON.stringify({
-              event: "command",
-              func: "seekTo",
-              args: [currentTimeRef.current, true],
-            }),
-            "*",
-          );
-          if (isPlaying) {
-            primaryIframe.contentWindow.postMessage(
-              JSON.stringify({ event: "command", func: "playVideo", args: [] }),
-              "*",
-            );
-          }
-        }
-      } catch {
-        // ignore
-      }
-    } else {
-      setFullscreenStartSeconds(Math.max(0, Math.floor(currentTimeRef.current)));
-      setIsFullscreen(true);
-      try {
-        if (document.documentElement.requestFullscreen) {
-          await document.documentElement.requestFullscreen();
+        if (primaryIframe.requestFullscreen) {
+          await primaryIframe.requestFullscreen();
+        } else if ((primaryIframe as any).webkitRequestFullscreen) {
+          await (primaryIframe as any).webkitRequestFullscreen();
         }
       } catch {
         // ignore
       }
     }
-  }, [isFullscreen, isPlaying]);
+  }, []);
 
   const togglePlayPause = useCallback(() => {
     setIsPlaying((p) => !p);
@@ -373,9 +358,6 @@ export default function BusExperience() {
 
   const effectiveCount = count ?? 0;
   const numRows = computeNumRows(effectiveCount);
-  const hours = Math.floor(((timeOfDay + 0.25) % 1) * 24);
-  const minutes = Math.floor(((((timeOfDay + 0.25) % 1) * 24) % 1) * 60);
-  const clock = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
   const currentZone = ZONES[zone] ?? ZONES[0];
   const busy = phase === "entering" || phase === "exiting";
 
@@ -395,7 +377,8 @@ export default function BusExperience() {
         onTogglePlay={togglePlayPause}
         onStop={handleStop}
         onToggleFullscreen={toggleFullscreen}
-        isMutedForFullscreen={isFullscreen}
+        isMutedForFullscreen={false}
+        modeOverride={manualDayNight}
       />
 
       {/* ---------- TOAST NOTIFICATION DYNAMIQUE (ALLONGEMENT DU BUS) ---------- */}
@@ -416,67 +399,62 @@ export default function BusExperience() {
       )}
 
       {/* ---------- HUD ---------- */}
-      {/* Titre + zone */}
-      <div className="pointer-events-none absolute left-4 top-4 z-50 max-w-[60vw]">
-        <h1 className="font-black uppercase leading-none tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,0.55)] text-[clamp(1.4rem,3.2vw,2.6rem)]">
-          <span className="text-[#ffd23f]">La Théorie</span> <span className="text-white">des Fous du Bus</span>
+      {/* Titre + zone (Responsive mobile) */}
+      <div className="pointer-events-none absolute left-3 sm:left-4 top-3 sm:top-4 z-50 max-w-[50vw] sm:max-w-[60vw]">
+        <h1 className="font-black uppercase leading-[1.08] tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,0.55)] text-sm sm:text-2xl md:text-3xl">
+          <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
+          <span className="text-white">des Fous du Bus</span>
         </h1>
-        <p className="mt-1 text-xs font-semibold uppercase tracking-[0.25em] text-white/80 drop-shadow md:text-sm">
-          Un voyage One Piece jusqu&apos;à Laugh Tale
+        <p className="mt-0.5 sm:mt-1 text-[9px] sm:text-xs font-bold uppercase tracking-[0.14em] text-[#ffd23f] drop-shadow md:text-sm">
+          LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
         </p>
-        <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/40 px-3 py-1.5 backdrop-blur-md">
-          <span className="text-lg">🧭</span>
+        <div className="mt-1.5 sm:mt-2.5 inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/20 bg-black/45 px-2 sm:px-3 py-0.5 sm:py-1.5 backdrop-blur-md">
+          <span className="text-xs sm:text-base">🧭</span>
           <div className="leading-tight">
-            <div className="text-sm font-bold">{currentZone.name}</div>
-            <div className="text-[10px] uppercase tracking-wider text-white/70">{currentZone.subtitle}</div>
+            <div className="text-[11px] sm:text-sm font-bold">{currentZone.name}</div>
+            <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/70">{currentZone.subtitle}</div>
           </div>
         </div>
       </div>
 
       {/* Compteur de passagers & Infos rangées du bus (100% réel, calculé selon la DB) */}
-      <div className="absolute right-4 top-4 z-50 flex items-center gap-3 rounded-2xl border border-[#ffd23f]/40 bg-black/60 px-4 py-2.5 shadow-lg backdrop-blur-md">
-        <span className="text-2xl">🚌</span>
+      <div className="absolute right-3 sm:right-4 top-3 sm:top-4 z-50 flex items-center gap-1.5 sm:gap-3 rounded-2xl border border-[#ffd23f]/40 bg-black/60 px-2.5 sm:px-4 py-1 sm:py-2.5 shadow-lg backdrop-blur-md">
+        <span className="text-lg sm:text-2xl">🚌</span>
         <div className="leading-tight">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ffd23f]">
-              Passagers montés
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="text-[8px] sm:text-[10px] font-semibold uppercase tracking-[0.15em] text-[#ffd23f]">
+              Passagers
             </span>
-            <span className="rounded-full bg-white/15 px-1.5 py-0.2 text-[9px] font-bold text-white/90">
-              {numRows} rangées
+            <span className="rounded-full bg-white/15 px-1 sm:px-1.5 py-0.2 text-[8px] sm:text-[9px] font-bold text-white/90">
+              {numRows} r.
             </span>
           </div>
-          <div className="text-xl font-black tabular-nums text-white">
+          <div className="text-base sm:text-xl font-black tabular-nums text-white">
             {effectiveCount.toLocaleString("fr-FR")}
           </div>
         </div>
       </div>
 
-      {/* Jour / nuit */}
-      <div className="pointer-events-none absolute bottom-4 left-4 z-50 flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-sm backdrop-blur-md">
-        <span className="text-lg">{isNight ? "🌙" : daylight < 0.75 ? "🌇" : "☀️"}</span>
-        <span className="font-mono font-semibold tabular-nums">{clock}</span>
-        <span className="text-white/60">{isNight ? "Nuit sur Grand Line" : "Jour sur Grand Line"}</span>
-        {isNight && !headlights && phase === "outside" && (
-          <span className="ml-1 animate-pulse text-[#ffd23f]">— allume les phares !</span>
-        )}
-      </div>
-
-      {/* Aide */}
-      <div className="pointer-events-none absolute bottom-4 right-4 z-50 hidden max-w-xs rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-[11px] leading-relaxed text-white/75 backdrop-blur-md md:block">
-        {phase === "inside" ? (
-          <>
-            <b className="text-white">Glisse</b> pour tourner la tête à 360° et voir les passagers.
-            <br />
-            Utilise les boutons <b className="text-white">« Rangée »</b> pour te déplacer dans l&apos;allée.
-          </>
+      {/* Bouton interactif Jour / Nuit (synchronisé avec la vraie vie par défaut, toggle manuel à tout moment) */}
+      <button
+        type="button"
+        onClick={toggleDayNight}
+        title={isNight ? "Passer en mode Jour" : "Passer en mode Nuit"}
+        className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 z-50 flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/25 bg-black/65 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-lg backdrop-blur-md transition hover:bg-black/85 hover:border-[#ffd23f]/60 active:scale-95 cursor-pointer"
+      >
+        {isNight ? (
+          <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+          </svg>
         ) : (
-          <>
-            <b className="text-white">Glisse</b> pour tourner autour du bus extensible.
-            <br />
-            Raccourcis : <b className="text-white">H</b> klaxon · <b className="text-white">L</b> phares
-          </>
+          <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="12" r="5" />
+            <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
         )}
-      </div>
+        <span>{isNight ? "Nuit" : "Jour"}</span>
+        <span className="text-white/50 text-[10px] sm:text-xs">· Changer</span>
+      </button>
 
       {/* Klaxon visuel */}
       {hornVisible && (
@@ -487,33 +465,67 @@ export default function BusExperience() {
         </div>
       )}
 
-      {/* Navigation entre les rangées quand on est à l'intérieur */}
+      {/* Navigation entre les rangées & Zoom quand on est à l'intérieur */}
       {phase === "inside" && (
-        <div className="absolute top-20 right-4 z-50 flex items-center gap-1 rounded-2xl border border-white/20 bg-black/60 px-3 py-1.5 shadow-lg backdrop-blur-md">
-          <button
-            type="button"
-            onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
-            disabled={seatRow <= 0}
-            className="rounded-lg bg-white/10 px-2 py-1 text-xs font-bold text-white transition hover:bg-white/25 disabled:opacity-30"
-          >
-            ◀
-          </button>
-          <span className="px-2 text-xs font-bold">
-            Rangée <span className="text-[#ffd23f]">{seatRow + 1}</span>/{numRows}
-          </span>
-          <button
-            type="button"
-            onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
-            disabled={seatRow >= numRows - 1}
-            className="rounded-lg bg-white/10 px-2 py-1 text-xs font-bold text-white transition hover:bg-white/25 disabled:opacity-30"
-          >
-            ▶
-          </button>
+        <div className="absolute top-[4.5rem] sm:top-20 right-3 sm:right-4 z-50 flex flex-col items-end gap-1.5 sm:gap-2">
+          {/* Déplacement dans l'allée */}
+          <div className="flex items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-lg backdrop-blur-md">
+            <button
+              type="button"
+              onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
+              disabled={seatRow <= 0}
+              className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95"
+              title="Rangée précédente"
+            >
+              ◀
+            </button>
+            <span className="px-1.5 sm:px-2 text-xs font-bold whitespace-nowrap">
+              Rangée <span className="text-[#ffd23f]">{seatRow + 1}</span>/{numRows}
+            </span>
+            <button
+              type="button"
+              onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
+              disabled={seatRow >= numRows - 1}
+              className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95"
+              title="Rangée suivante"
+            >
+              ▶
+            </button>
+          </div>
+
+          {/* Contrôles de zoom */}
+          <div className="flex items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-lg backdrop-blur-md">
+            <span className="text-[11px] sm:text-xs font-bold text-white/80 mr-1">🔍 Zoom</span>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom", { detail: -7 }))}
+              className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-0.5 text-xs font-black text-white transition hover:bg-white/25 active:scale-95"
+              title="Zoomer (+)"
+            >
+              +
+            </button>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom", { detail: +7 }))}
+              className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-0.5 text-xs font-black text-white transition hover:bg-white/25 active:scale-95"
+              title="Dézoomer (−)"
+            >
+              −
+            </button>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom-reset"))}
+              className="rounded-lg bg-white/10 px-1.5 sm:px-2 py-0.5 text-[10px] font-bold text-white/60 transition hover:bg-white/25 active:scale-95"
+              title="Réinitialiser zoom"
+            >
+              Reset
+            </button>
+          </div>
         </div>
       )}
 
       {/* Barre de boutons principale */}
-      <div className="absolute bottom-16 left-1/2 z-[110] flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 px-3 md:bottom-6 max-w-full">
+      <div className="absolute bottom-16 sm:bottom-6 left-1/2 z-[110] flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 max-w-[95vw] sm:max-w-xl">
         {phase === "outside" || phase === "entering" ? (
           <>
             <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
@@ -553,27 +565,6 @@ export default function BusExperience() {
           </>
         )}
       </div>
-
-      {/* Lecteur plein écran synchronisé (avec contrôles YouTube complets : qualité, timeline scrub, etc.) */}
-      {isFullscreen && (
-        <div id="tv-fullscreen-modal" className="fixed inset-0 z-[100] bg-black">
-          <iframe
-            className="h-full w-full"
-            src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=0&controls=1&enablejsapi=1&rel=0&start=${fullscreenStartSeconds}`}
-            title="La théorie des Fous du Bus"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-            allowFullScreen
-            style={{ border: 0, width: "100%", height: "100%" }}
-          />
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            className="absolute right-4 top-4 z-50 rounded-full border border-white/25 bg-black/70 px-4 py-2 text-sm font-bold text-white shadow-xl backdrop-blur-md transition hover:bg-black/90 active:scale-95"
-          >
-            ✕ Sortir du plein écran
-          </button>
-        </div>
-      )}
     </div>
   );
 }

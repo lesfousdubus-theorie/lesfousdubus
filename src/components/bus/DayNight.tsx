@@ -7,6 +7,7 @@ import { DAY_LENGTH, type WorldState } from "./constants";
 
 interface Props {
   worldRef: React.RefObject<WorldState>;
+  modeOverride?: "day" | "night" | null;
 }
 
 const DAY_SKY = new THREE.Color("#79c2ff");
@@ -21,7 +22,7 @@ function smoothstep(a: number, b: number, x: number) {
   return t * t * (3 - 2 * t);
 }
 
-export default function DayNight({ worldRef }: Props) {
+export default function DayNight({ worldRef, modeOverride }: Props) {
   const sun = useRef<THREE.DirectionalLight>(null);
   const sunMesh = useRef<THREE.Mesh>(null);
   const moonMesh = useRef<THREE.Mesh>(null);
@@ -29,6 +30,10 @@ export default function DayNight({ worldRef }: Props) {
   const hemi = useRef<THREE.HemisphereLight>(null);
   const starsMat = useRef<THREE.PointsMaterial>(null);
   const starsRef = useRef<THREE.Points>(null);
+
+  // Position du soleil lissée pour permettre des transitions douces lors du clic Jour/Nuit
+  const curSunY = useRef(0.85);
+  const curSunX = useRef(0.1);
 
   const skyColor = useMemo(() => new THREE.Color(), []);
   const fogColor = useMemo(() => new THREE.Color(), []);
@@ -51,17 +56,49 @@ export default function DayNight({ worldRef }: Props) {
     return g;
   }, []);
 
-  useFrame((state) => {
-    // On démarre en plein jour (t = 0.2)
-    const t = ((state.clock.elapsedTime / DAY_LENGTH) + 0.2) % 1;
-    const angle = t * Math.PI * 2;
-    const sunY = Math.sin(angle);
-    const sunX = Math.cos(angle);
+  useFrame((state, dt) => {
+    let targetSunY = 0.85;
+    let targetSunX = 0.1;
+
+    if (modeOverride === "day") {
+      targetSunY = 0.85;
+      targetSunX = 0.1;
+    } else if (modeOverride === "night") {
+      targetSunY = -0.75;
+      targetSunX = 0.4;
+    } else {
+      // Heure locale réelle dans la vraie vie
+      const now = new Date();
+      const realHour = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+
+      // Lever du soleil ~06:45, Coucher ~20:45
+      if (realHour >= 6.75 && realHour <= 20.75) {
+        const dayProgress = (realHour - 6.75) / (20.75 - 6.75); // 0 -> 1
+        const angle = dayProgress * Math.PI;
+        targetSunY = Math.sin(angle);
+        targetSunX = -Math.cos(angle);
+      } else {
+        const nightHours = realHour > 20.75 ? realHour - 20.75 : realHour + (24 - 20.75);
+        const nightProgress = nightHours / 10.0;
+        const angle = nightProgress * Math.PI;
+        targetSunY = -Math.sin(angle);
+        targetSunX = Math.cos(angle);
+      }
+    }
+
+    // Interpolation fluide vers la cible (transition douce au clic ou au fil des secondes)
+    curSunY.current += (targetSunY - curSunY.current) * Math.min(1, dt * 2.8);
+    curSunX.current += (targetSunX - curSunX.current) * Math.min(1, dt * 2.8);
+
+    const sunY = curSunY.current;
+    const sunX = curSunX.current;
     const daylight = smoothstep(-0.12, 0.25, sunY);
     const dusk = 1 - Math.min(1, Math.abs(sunY) / 0.22); // proche de l'horizon
 
-    worldRef.current.daylight = daylight;
-    worldRef.current.timeOfDay = t;
+    if (worldRef.current) {
+      worldRef.current.daylight = daylight;
+      worldRef.current.timeOfDay = (sunX + 1) / 2;
+    }
 
     skyColor.copy(NIGHT_SKY).lerp(DAY_SKY, daylight);
     skyColor.lerp(DUSK_SKY, dusk * 0.7 * (0.3 + daylight));
@@ -72,7 +109,7 @@ export default function DayNight({ worldRef }: Props) {
     else state.scene.background = skyColor.clone();
     if (state.scene.fog) state.scene.fog.color.copy(fogColor);
 
-    // La nuit, la "lune" éclaire depuis l'autre côté : on garde une source au-dessus de l'horizon
+    // La nuit, la lune éclaire depuis l'autre côté : source maintenue au-dessus de l'horizon
     const lightX = daylight > 0.05 ? sunX : -sunX;
     const lightY = daylight > 0.05 ? Math.max(sunY, 0.12) : Math.max(-sunY, 0.12);
     const sunPos = new THREE.Vector3(lightX * 60, lightY * 60, -25);

@@ -983,7 +983,7 @@ export default function Bus({
               </mesh>
             ) : null}
 
-            {/* TV 0 : Lecteur principal (avec audio et contrôles Stop, Play/Pause et Plein écran épurés) */}
+            {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels) */}
             {isPrimary && tvOn && (
               <Html
                 transform
@@ -1016,173 +1016,12 @@ export default function Bus({
                     id="tv-primary-iframe"
                     width="560"
                     height="315"
-                    src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&disablekb=1&fs=0&playsinline=1`}
+                    src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&enablejsapi=1&fs=1&playsinline=1`}
                     title="La théorie des Fous du Bus"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                     allowFullScreen
                     style={{ border: 0, display: "block", width: "100%", height: "100%" }}
                   />
-
-                  {/* Bandeau de masquage supérieur 100% opaque (cache titre YouTube, avatar, liens de partage et rémunération) */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: "58px",
-                      background: "#050811",
-                      borderBottom: "1px solid rgba(255, 210, 63, 0.25)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "0 14px",
-                      pointerEvents: "auto",
-                      zIndex: 10,
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "14px" }}>📺</span>
-                      <span style={{ color: "#ffd23f", fontSize: "12px", fontWeight: "900", letterSpacing: "1px" }}>
-                        LES FOUS DU BUS · TV MUGIWARA
-                      </span>
-                    </div>
-                    <span style={{ color: "#e2e8f0", fontSize: "11px", fontWeight: "bold", background: "rgba(255,255,255,0.15)", padding: "2px 8px", borderRadius: "10px" }}>
-                      EN DIRECT
-                    </span>
-                  </div>
-
-                  {/* Cache inférieur droit pour masquer le watermark "Watch on YouTube" */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      right: 0,
-                      width: "140px",
-                      height: "54px",
-                      background: "#000000",
-                      pointerEvents: "auto",
-                      zIndex: 10,
-                    }}
-                  />
-
-                  {/* Zone cliquable sur toute la vidéo pour basculer lecture / pause */}
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTogglePlay?.();
-                    }}
-                    style={{
-                      position: "absolute",
-                      top: "58px",
-                      bottom: "54px",
-                      left: 0,
-                      right: 0,
-                      zIndex: 15,
-                      cursor: "pointer",
-                    }}
-                  />
-
-                  {/* Contrôles épurés sur la petite TV : Play/Pause, Stop et Plein écran */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: "54px",
-                      background: "linear-gradient(to top, rgba(0,0,0,0.98) 0%, rgba(5,8,17,0.92) 100%)",
-                      borderTop: "1.5px solid rgba(255, 210, 63, 0.3)",
-                      zIndex: 20,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "0 14px",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      {/* Bouton Play/Pause */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTogglePlay?.();
-                        }}
-                        title={isPlaying ? "Mettre en pause" : "Lancer la lecture"}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          background: isPlaying ? "rgba(25, 32, 58, 0.95)" : "#ffd23f",
-                          color: isPlaying ? "#ffd23f" : "#0d2190",
-                          border: "1.5px solid #ffd23f",
-                          borderRadius: "20px",
-                          padding: "7px 16px",
-                          fontSize: "13px",
-                          fontWeight: "900",
-                          cursor: "pointer",
-                          boxShadow: "0 2px 10px rgba(0,0,0,0.6)",
-                        }}
-                      >
-                        <span style={{ fontSize: "14px" }}>{isPlaying ? "⏸" : "▶"}</span>
-                        <span>{isPlaying ? "Pause" : "Play"}</span>
-                      </button>
-
-                      {/* Bouton Stop */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onStop?.();
-                        }}
-                        title="Arrêter et revenir au début"
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          background: "rgba(25, 32, 58, 0.9)",
-                          color: "#ffffff",
-                          border: "1.5px solid rgba(255,255,255,0.35)",
-                          borderRadius: "20px",
-                          padding: "7px 14px",
-                          fontSize: "13px",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-                        }}
-                      >
-                        <span style={{ color: "#ef4444", fontSize: "12px" }}>⏹</span>
-                        <span>Stop</span>
-                      </button>
-                    </div>
-
-                    {/* Bouton Plein écran synchronisé sur la TV */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleFullscreen?.();
-                      }}
-                      title="Passer en plein écran"
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        background: "rgba(255, 210, 63, 0.18)",
-                        color: "#ffd23f",
-                        border: "1.5px solid #ffd23f",
-                        borderRadius: "20px",
-                        padding: "7px 16px",
-                        fontSize: "13px",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-                      }}
-                    >
-                      <span>⛶</span>
-                      <span>Plein écran</span>
-                    </button>
-                  </div>
                 </div>
               </Html>
             )}
@@ -1195,7 +1034,7 @@ export default function Bus({
                 position={[0, 0, 0.052]}
                 scale={0.00225}
                 style={{
-                  pointerEvents: "auto",
+                  pointerEvents: "none",
                   userSelect: "none",
                   backfaceVisibility: "hidden",
                 }}
@@ -1216,162 +1055,11 @@ export default function Bus({
                     className="secondary-tv-iframe"
                     width="560"
                     height="315"
-                    src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&disablekb=1&fs=0&playsinline=1`}
+                    src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&playsinline=1`}
                     title={`TV ${idx + 1}`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     style={{ border: 0, display: "block", width: "100%", height: "100%" }}
                   />
-                  {/* Masque supérieur */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: "58px",
-                      background: "#050811",
-                      borderBottom: "1px solid rgba(255, 210, 63, 0.25)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "0 14px",
-                      pointerEvents: "none",
-                      zIndex: 10,
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "14px" }}>📺</span>
-                      <span style={{ color: "#ffd23f", fontSize: "12px", fontWeight: "900", letterSpacing: "1px" }}>
-                        RELAIS ALLÉE · TV {idx + 1}
-                      </span>
-                    </div>
-                    <span style={{ color: "#e2e8f0", fontSize: "11px", fontWeight: "bold", background: "rgba(255,255,255,0.15)", padding: "2px 8px", borderRadius: "10px" }}>
-                      SYNCHRO
-                    </span>
-                  </div>
-
-                  {/* Cache inférieur droit watermark */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      right: 0,
-                      width: "140px",
-                      height: "54px",
-                      background: "#000000",
-                      pointerEvents: "none",
-                      zIndex: 10,
-                    }}
-                  />
-
-                  {/* Shield cliquable */}
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTogglePlay?.();
-                    }}
-                    style={{
-                      position: "absolute",
-                      top: "58px",
-                      bottom: "54px",
-                      left: 0,
-                      right: 0,
-                      zIndex: 15,
-                      cursor: "pointer",
-                    }}
-                  />
-
-                  {/* Barre de contrôles sur écran secondaire */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: "54px",
-                      background: "linear-gradient(to top, rgba(0,0,0,0.98) 0%, rgba(5,8,17,0.92) 100%)",
-                      borderTop: "1.5px solid rgba(255, 210, 63, 0.3)",
-                      zIndex: 20,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "0 14px",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTogglePlay?.();
-                        }}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          background: isPlaying ? "rgba(25, 32, 58, 0.95)" : "#ffd23f",
-                          color: isPlaying ? "#ffd23f" : "#0d2190",
-                          border: "1.5px solid #ffd23f",
-                          borderRadius: "20px",
-                          padding: "7px 16px",
-                          fontSize: "13px",
-                          fontWeight: "900",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <span>{isPlaying ? "⏸" : "▶"}</span>
-                        <span>{isPlaying ? "Pause" : "Play"}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onStop?.();
-                        }}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          background: "rgba(25, 32, 58, 0.9)",
-                          color: "#ffffff",
-                          border: "1.5px solid rgba(255,255,255,0.35)",
-                          borderRadius: "20px",
-                          padding: "7px 14px",
-                          fontSize: "13px",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <span style={{ color: "#ef4444" }}>⏹</span>
-                        <span>Stop</span>
-                      </button>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleFullscreen?.();
-                      }}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        background: "rgba(255, 210, 63, 0.18)",
-                        color: "#ffd23f",
-                        border: "1.5px solid #ffd23f",
-                        borderRadius: "20px",
-                        padding: "7px 16px",
-                        fontSize: "13px",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <span>⛶</span>
-                      <span>Plein écran</span>
-                    </button>
-                  </div>
                 </div>
               </Html>
             )}

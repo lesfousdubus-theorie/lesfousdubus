@@ -36,6 +36,11 @@ export default function CameraRig({
     active: false,
   });
   const look = useRef({ yaw: 0, pitch: 0, targetYaw: 0, targetPitch: 0, dragging: false, lastX: 0, lastY: 0 });
+  const targetFovRef = useRef(55);
+  const currentFovRef = useRef(55);
+  const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const pinchStartDistRef = useRef<number | null>(null);
+  const pinchStartFovRef = useRef<number>(55);
   const phaseRef = useRef<Phase>(phase);
   const arrivedRef = useRef(onArrived);
   useEffect(() => {
@@ -104,19 +109,46 @@ export default function CameraRig({
     }
   }, [phase, camera, activeEyePos]);
 
-  // Contrôles "tourner la tête" à l'intérieur (souris / tactile / clavier)
+  // Contrôles "tourner la tête" & Zoom à l'intérieur (souris / tactile / clavier / molette)
   useEffect(() => {
     const el = gl.domElement;
     const l = look.current;
+    const pointers = activePointersRef.current;
+
     const down = (e: PointerEvent) => {
       if (phaseRef.current !== "inside") return;
-      l.dragging = true;
-      l.lastX = e.clientX;
-      l.lastY = e.clientY;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (pointers.size === 1) {
+        l.dragging = true;
+        l.lastX = e.clientX;
+        l.lastY = e.clientY;
+      } else if (pointers.size === 2) {
+        // Début du pincement tactile à 2 doigts (pinch-to-zoom)
+        l.dragging = false;
+        const pts = Array.from(pointers.values());
+        pinchStartDistRef.current = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        pinchStartFovRef.current = targetFovRef.current;
+      }
       el.setPointerCapture?.(e.pointerId);
     };
+
     const move = (e: PointerEvent) => {
-      if (!l.dragging || phaseRef.current !== "inside") return;
+      if (phaseRef.current !== "inside") return;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (pointers.size === 2 && pinchStartDistRef.current !== null && pinchStartDistRef.current > 0) {
+        // Pinch-to-zoom actif
+        const pts = Array.from(pointers.values());
+        const curDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        if (curDist > 0) {
+          const ratio = pinchStartDistRef.current / curDist;
+          targetFovRef.current = THREE.MathUtils.clamp(pinchStartFovRef.current * ratio, 22, 75);
+        }
+        return;
+      }
+
+      if (!l.dragging) return;
       const dx = e.clientX - l.lastX;
       const dy = e.clientY - l.lastY;
       l.lastX = e.clientX;
@@ -124,9 +156,30 @@ export default function CameraRig({
       l.targetYaw -= dx * 0.0045;
       l.targetPitch = THREE.MathUtils.clamp(l.targetPitch - dy * 0.0035, -0.9, 0.9);
     };
-    const up = () => {
-      l.dragging = false;
+
+    const up = (e: PointerEvent) => {
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) {
+        pinchStartDistRef.current = null;
+      }
+      if (pointers.size === 0) {
+        l.dragging = false;
+      } else if (pointers.size === 1) {
+        const remaining = Array.from(pointers.values())[0];
+        l.lastX = remaining.x;
+        l.lastY = remaining.y;
+        l.dragging = true;
+      }
     };
+
+    // Zoom molette de la souris
+    const wheel = (e: WheelEvent) => {
+      if (phaseRef.current !== "inside") return;
+      e.preventDefault();
+      const delta = e.deltaY * 0.04;
+      targetFovRef.current = THREE.MathUtils.clamp(targetFovRef.current + delta, 22, 75);
+    };
+
     const key = (e: KeyboardEvent) => {
       if (phaseRef.current !== "inside") return;
       const step = 0.15;
@@ -134,18 +187,42 @@ export default function CameraRig({
       if (e.key === "ArrowRight" || e.key === "d") l.targetYaw -= step;
       if (e.key === "ArrowUp") l.targetPitch = Math.min(0.9, l.targetPitch + step);
       if (e.key === "ArrowDown") l.targetPitch = Math.max(-0.9, l.targetPitch - step);
+      // Touches + / - pour zoomer
+      if (e.key === "+" || e.key === "=") {
+        targetFovRef.current = Math.max(22, targetFovRef.current - 5);
+      }
+      if (e.key === "-" || e.key === "_") {
+        targetFovRef.current = Math.min(75, targetFovRef.current + 5);
+      }
     };
+
+    // Écoute des événements de boutons d'interface utilisateur pour le zoom
+    const onCustomZoom = (e: Event) => {
+      const detail = ((e as CustomEvent).detail as number) ?? 0;
+      targetFovRef.current = THREE.MathUtils.clamp(targetFovRef.current + detail, 22, 75);
+    };
+    const onCustomZoomReset = () => {
+      targetFovRef.current = 55;
+    };
+
     el.addEventListener("pointerdown", down);
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
+    el.addEventListener("wheel", wheel, { passive: false });
     window.addEventListener("keydown", key);
+    window.addEventListener("bus-zoom", onCustomZoom);
+    window.addEventListener("bus-zoom-reset", onCustomZoomReset);
+
     return () => {
       el.removeEventListener("pointerdown", down);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", up);
+      el.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", key);
+      window.removeEventListener("bus-zoom", onCustomZoom);
+      window.removeEventListener("bus-zoom-reset", onCustomZoomReset);
     };
   }, [gl]);
 
@@ -153,6 +230,23 @@ export default function CameraRig({
     const a = anim.current;
     const p = phaseRef.current;
     const cam = state.camera;
+
+    // Gestion du FOV (zoom)
+    if (cam instanceof THREE.PerspectiveCamera) {
+      if (p === "inside") {
+        currentFovRef.current += (targetFovRef.current - currentFovRef.current) * Math.min(1, dt * 10);
+        cam.fov = currentFovRef.current;
+        cam.updateProjectionMatrix();
+      } else {
+        targetFovRef.current = 55;
+        if (Math.abs(cam.fov - 55) > 0.05) {
+          currentFovRef.current += (55 - currentFovRef.current) * Math.min(1, dt * 6);
+          cam.fov = currentFovRef.current;
+          cam.updateProjectionMatrix();
+        }
+      }
+    }
+
     if ((p === "entering" || p === "exiting") && a.active) {
       a.t = Math.min(1, a.t + dt / TRANSITION_TIME);
       const s = a.t * a.t * (3 - 2 * a.t);

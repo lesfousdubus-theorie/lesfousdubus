@@ -24,6 +24,7 @@ interface SceneProps {
   onStop?: () => void;
   onToggleFullscreen?: () => void;
   isMutedForFullscreen?: boolean;
+  modeOverride?: "day" | "night" | null;
 }
 
 export default function Scene({
@@ -41,6 +42,7 @@ export default function Scene({
   onStop,
   onToggleFullscreen,
   isMutedForFullscreen = false,
+  modeOverride,
 }: SceneProps) {
   // Calcul géométrique de la cabine pour la caméra
   const numRows = useMemo(() => computeNumRows(passengerCount), [passengerCount]);
@@ -60,7 +62,7 @@ export default function Scene({
       gl={{ antialias: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
     >
-      <DayNight worldRef={worldRef} />
+      <DayNight worldRef={worldRef} modeOverride={modeOverride} />
       <Suspense fallback={null}>
         <Bus
           headlights={headlights}

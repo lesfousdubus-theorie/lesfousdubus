@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "La Théorie des Fous du Bus — Voyage 3D dans One Piece",
+  title: "La Théorie des Fous du Bus — Le siècle oublié est le présent",
   description:
-    "Monte dans le bus au chapeau de paille, roule à travers les îles de One Piece et regarde la théorie des Fous du Bus pendant le voyage.",
+    "Le siècle oublié est le présent ! Monte dans le bus au chapeau de paille, roule à travers les îles de One Piece et découvre la théorie des Fous du Bus.",
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png", sizes: "192x192" },
