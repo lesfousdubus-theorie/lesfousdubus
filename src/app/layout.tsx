@@ -8,12 +8,11 @@ export const metadata: Metadata = {
     "Monte dans le bus au chapeau de paille, roule à travers les îles de One Piece et regarde la théorie des Fous du Bus pendant le voyage.",
   icons: {
     icon: [
+      { url: "/favicon.png", type: "image/png", sizes: "192x192" },
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon.png", type: "image/png" },
     ],
     apple: "/favicon.png",
-    shortcut: "/favicon.ico",
+    shortcut: "/favicon.png",
   },
 };
 
