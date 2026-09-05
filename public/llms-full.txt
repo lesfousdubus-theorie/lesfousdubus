@@ -1,0 +1,148 @@
+# Les Fous du Bus — Index complet
+
+> Index généré automatiquement de tous les articles publiés.
+Les balises entre crochets indiquent la nature : manga, theorie-centrale, extension, hypothese-recente ou projection.
+
+## Monde et destinations
+
+- [Blue Star](https://lesfousdubus.sbs/theorie/blue-star) : Blue Star désigne le monde principal de One Piece ; son relief, ses mers et la submersion révélée par Vegapunk sont séparés des scénarios futurs du site. [manga]
+- [Grand Line](https://lesfousdubus.sbs/theorie/grand-line) : Fiche d'identification de Grand Line, la mer linéaire qui traverse Blue Star en coupant le monde en deux, axe central de la route des pirates. [manga]
+- [Red Line](https://lesfousdubus.sbs/theorie/red-line) : Le continent qui ceinture Blue Star : faits géographiques, lieux majeurs et projection distincte concernant une éventuelle rupture lors de la guerre finale. [manga]
+- [Lodestar](https://lesfousdubus.sbs/theorie/lodestar) : Lodestar est la dernière île du Grand Line — et le bon endroit de Laugh Tale, à la mauvaise époque. C’est là que Roger a fait demi-tour avec les Road Ponéglyphes. [theorie-centrale]
+- [Laugh Tale](https://lesfousdubus.sbs/theorie/laugh-tale) : Laugh Tale n’existe pas, plus précisément elle n’existe pas encore : ce n’est pas une île qu’il faut trouver, c’est une époque à laquelle il faut arriver. [theorie-centrale]
+- [Le One Piece est l’histoire de Luffy](https://lesfousdubus.sbs/theorie/one-piece-histoire) : Le One Piece n’est pas un objet que Roger a trouvé : c’est l’histoire que nous lisons depuis le tome 1. Elle sera complétée à la fin du manga, quand la conclusion rencontrera l’introduction. [theorie-centrale]
+- [All Blue](https://lesfousdubus.sbs/theorie/all-blue) : Le rêve de Sanji peut être lié à une transformation des mers ; destruction de la Red Line, Déluge et intervention des Armes antiques restent des projections séparées. [projection]
+- [God Valley](https://lesfousdubus.sbs/theorie/god-valley) : God Valley : l’incident, Davy Jones, les Figarland et Teach. [extension]
+
+## Histoire, temps et Ponéglyphes
+
+- [Siècle oublié](https://lesfousdubus.sbs/theorie/siecle-oublie) : Le Siècle oublié est le présent : la grande histoire effacée de l’histoire n’a jamais eu lieu, elle se produit maintenant, et les Ponéglyphes en sont la mémoire venue du futur. [theorie-centrale]
+- [Le Royaume antique](https://lesfousdubus.sbs/theorie/royaume-antique) : Le Royaume antique est une civilisation historique de l'époque de Joy Boy ; la théorie propose seulement que certaines sources du passé puissent décrire des informations ou technologies futures. [theorie-centrale]
+- [Ponéglyphes](https://lesfousdubus.sbs/theorie/poneglyphes) : Les Ponéglyphes sont indestructibles depuis 800 ans parce qu’ils sont faits d’un matériau qui n’existe pas encore : ce sont la mémoire de l’avenir, une lettre du futur envoyée dans le passé. [theorie-centrale]
+
+## Figures principales
+
+- [Bartholomew Kuma](https://lesfousdubus.sbs/theorie/bartholomew-kuma) : Histoire canonique de Kuma : foi en Nika, protection de Bonney, transformation par Vegapunk et sauvegarde finale du Sunny, sans causalité théorique ajoutée. [manga]
+- [Kaido](https://lesfousdubus.sbs/theorie/kaido) : Fiche de Kaido : Empereur de Wano, rapport à King et déclaration selon laquelle Joy Boy sera celui qui le vaincra ; interprétations séparées. [manga]
+- [Gol D. Roger](https://lesfousdubus.sbs/theorie/gol-d-roger) : Gol D. Roger a voyagé dans le temps, dans le futur : il a trouvé le One Piece il y a 25 ans et a compris que le Siècle oublié n’était pas encore arrivé. [theorie-centrale]
+- [Monkey D. Luffy](https://lesfousdubus.sbs/theorie/luffy) : Luffy n’est pas en train de chercher le One Piece : il est en train de l’écrire. Joy Boy est son nom de règne, Nika son nom divin — et depuis le chapitre 1, il écrit le Siècle oublié. [theorie-centrale]
+- [Nika](https://lesfousdubus.sbs/theorie/nika) : Nika, le dieu de la liberté, n’a jamais existé : il n’existe que parce que les gens y croient. Et les gens y croient parce que c’est Monkey D. Luffy. [theorie-centrale]
+- [Joy Boy](https://lesfousdubus.sbs/theorie/joy-boy) : Joy Boy est le premier pirate de l’histoire — et il n’a jamais vécu il y a 900 ans. Il est Monkey D. Luffy, dont le monde entier portera le nom de règne. [theorie-centrale]
+- [Kuma et la foi en Nika](https://lesfousdubus.sbs/theorie/kuma-foi-nika) : Kuma n’a jamais eu la preuve que Nika existait — et pourtant il l’a cherché toute sa vie, et il l’a trouvé. Sa foi a fait exister le dieu : Luffy est Nika parce que Kuma y a cru. [theorie-centrale]
+- [Le D. pourrait-il renvoyer à Davy ?](https://lesfousdubus.sbs/theorie/signification-d) : La signification du D. reste inconnue. Imu falsifie le nom de Gol D. Roger. [hypothese-recente]
+- [Shanks](https://lesfousdubus.sbs/theorie/shanks) : Fiche de Shanks : ancien mousse de Roger, Empereur et homme qui confie le chapeau de paille à Luffy ; lectures sur sa connaissance du futur séparées. [manga]
+- [Nico Robin](https://lesfousdubus.sbs/theorie/nico-robin) : Fiche de Robin : archéologue capable de lire les Ponéglyphes ; son rôle éventuel dans une transmission future n'inclut pas une capacité canonique à les graver. [manga]
+- [Kozuki Momonosuke](https://lesfousdubus.sbs/theorie/momonosuke) : Fiche révisée de Momonosuke : voyageur envoyé vingt ans vers le futur, shogun de Wano et interlocuteur de Zunesha ; il a reporté l'ouverture des frontières. [manga]
+- [Scopper Gaban](https://lesfousdubus.sbs/theorie/scopper-gaban) : Scopper Gaban a atteint Laugh Tale avec Roger ; ses connaissances et réactions récentes ne permettent pas de supposer que le Rio Ponéglyphe détaille toute institution. [manga]
+
+## Personnages et identités
+
+- [De Xebec à Teach : la lignée de Davy](https://lesfousdubus.sbs/theorie/davy-jones) : Imu appelle Xebec « Davy Jones » — la méprise du père et du fils. Le clan Davy a survécu au massacre de God Valley, et le dernier est en route vers le Trône vacant. [theorie-centrale]
+- [Princesse Shirahoshi](https://lesfousdubus.sbs/theorie/shirahoshi) : Fiche d'analyse sur la princesse Sirène du Royaume Ryūgū et l'incarnation de l'Arme Antique Poséidon. [manga]
+- [Marshall D. Teach](https://lesfousdubus.sbs/theorie/teach) : Fiche de Teach : Barbe Noire devient Davy Jones. Imu prend Xebec pour cette même figure. [manga]
+- [Davy Jones](https://lesfousdubus.sbs/theorie/davy-jones-fiche) : Davy Jones, « l’ancien roi du monde », n’a jamais régné — pas encore. Il est Marshall D. Teach, Barbe Noire, fils de Rocks D. Xebec, qui prendra le Trône vacant. [theorie-centrale]
+- [Rocks D. Xebec](https://lesfousdubus.sbs/theorie/rocks-xebec) : Fiche canonique neutre sur Rocks D. Xebec, capitaine des Rocks Pirates, figure centrale de God Valley et de l'histoire récente du monde. [manga]
+- [Teach et Davy Jones : les preuves](https://lesfousdubus.sbs/theorie/barbe-noire-davy-jones) : Hachinosu, le Saber of Xebec, l’ambition « le monde » et la méprise d’Imu : les pièces qui montrent que Teach est le successeur de Davy Jones. [theorie-centrale]
+- [Shimotsuki Ryuma](https://lesfousdubus.sbs/theorie/shimotsuki-ryuma) : Ryuma, le Dieu de la Lame, a tranché un dragon au-dessus de la capitale des Fleurs. Ce dragon, c’était Kaido sur Onigashima — et le samouraï borgne est Roronoa Zoro. [theorie-centrale]
+- [Roronoa Zoro](https://lesfousdubus.sbs/theorie/zoro) : Fiche d'analyse consacrée au sabreur des Chapeaux de Paille, à la lignée Shimotsuki et à son lien avec Ryuma. [manga]
+- [Zoro est Ryuma : l’accomplissement de la légende](https://lesfousdubus.sbs/theorie/ryuma) : Zoro a tranché Kaido au-dessus de la capitale des Fleurs, il a reçu Shusui des mains de Ryuma sur Thriller Bark, et il est le dernier Shimotsuki : le dieu de la lame est en train de devenir sa propre légende. [theorie-centrale]
+- [Nefertari Vivi](https://lesfousdubus.sbs/theorie/nefertari-vivi) : Fiche factuelle de Nefertari Vivi : princesse d'Alabasta, alliée des Chapeaux de Paille et fugitive après la Rêverie ; son avenir reste ouvert. [manga]
+- [Nefertari D. Lili](https://lesfousdubus.sbs/theorie/lili) : Lili est la seule reine qui n’a pas plié le genou. Elle a dispersé les Ponéglyphes pour préparer le monde au jour du serment — et elle est Nefertari Vivi. [theorie-centrale]
+- [Vivi est Lili : la dispersion des Ponéglyphes](https://lesfousdubus.sbs/theorie/vivi) : Même silhouette, même mèche, mêmes cheveux bleus dans l’anime, même disparition sur Mary Geoise, même transmission du pouvoir : Vivi accomplira le rôle de Lili et dispersera les Ponéglyphes. [theorie-centrale]
+- [Brook](https://lesfousdubus.sbs/theorie/brook) : Fiche chronologique de Brook : enfance et musique, passé royal, Rumbar, ignorance des Fruits, massacre et retour à la vie entre environ −80 et −50. [manga]
+- [Équipage Rumbar](https://lesfousdubus.sbs/theorie/equipage-rumbar) : Fiche de l'équipage Rumbar : les pirates musiciens qui escortèrent Laboon, leur disparition dans le Triangle Florian et l'enregistrement de Binks no Sake. [manga]
+- [Dōzan](https://lesfousdubus.sbs/theorie/dozan) : Nom évoqué dans les développements récents autour de Wano, de Brook et de Binks no Sake ; identité, époque et fonction restent à confirmer. [hypothese-recente]
+- [Vivi pourrait accomplir le rôle attribué à Lili](https://lesfousdubus.sbs/theorie/lili-vivi-et-les-poneglyphes) : Lili disperse les Ponéglyphes. Vivi accomplit le rôle de Lili. [extension]
+- [Gunko](https://lesfousdubus.sbs/theorie/gunko) : Fiche canonique neutre sur Gunko, membre des Chevaliers Divins, et son rôle dans les analyses récentes autour de Brook. [manga]
+- [Loki](https://lesfousdubus.sbs/theorie/loki) : Loki, le prince maudit d’Elbaf, possède Ragnir et l’écureuil Ratatoskr, et apparaît sous un orage de neige : il est Nidhogg, le dieu de la guerre du folklore d’Elbaf. [theorie-centrale]
+- [Doflamingo est l’ancien roi Donquixote](https://lesfousdubus.sbs/theorie/donquixote-roi-antique) : La silhouette du chapitre 726, « un véritable démon », le manteau à plumes et les Tontattas en esclavage : l’ancien roi de Dressrosa décrit par les livres du Siècle oublié, c’est Doflamingo. [theorie-centrale]
+
+## Armes antiques
+
+- [Armes antiques](https://lesfousdubus.sbs/theorie/armes-antiques) : Fiche consacrée aux Armes antiques (Poséidon, Pluton, Uranus) : ce que le manga établit, leurs liens respectifs aux peuples, la lecture des Fous du Bus sur leur rôle dans la guerre finale et les limites. [extension]
+- [Uranus](https://lesfousdubus.sbs/theorie/uranus) : Uranus, l’Arme du ciel, n’est pas une arme antique : c’est la Mother Flame, créée par Vegapunk et volée par le Gouvernement. L’arme qui a frappé Lulusia vole au-dessus des nuages : c’est Imu. [theorie-centrale]
+- [Noah](https://lesfousdubus.sbs/theorie/noah) : Noah, promesse du Joy Boy historique et pouvoir de Poséidon : faits anciens puis prédiction distincte sur un déplacement futur par Shirahoshi. [manga]
+- [Pluton](https://lesfousdubus.sbs/theorie/pluton-fiche) : Pluton est un navire. Water Seven, avec les géants de la Galley-La, deviendra l’île-navire capable de détruire des îles en un seul coup — et d’ouvrir les frontières de Wano. [theorie-centrale]
+- [Poséidon](https://lesfousdubus.sbs/theorie/poseidon-fiche) : Poséidon est une princesse sirène qui commande les Rois des Mers. La rencontre avec Joy Boy n’a pas eu lieu il y a 800 ans : elle a eu lieu il y a quelques mois, dans la tour de Noah. Poséidon est Shirahoshi. [theorie-centrale]
+- [Poséidon](https://lesfousdubus.sbs/theorie/poseidon) : Poséidon renaît en Shirahoshi et commande les Rois des Mers ; sa future intervention avec Noah reste une prédiction distincte. [manga]
+- [Pluton, Water Seven et Galley-La](https://lesfousdubus.sbs/theorie/pluton-water-seven-galley-la) : Pluton existe sous Wano. Water Seven et Galley-La remettent l’Arme en service à l’ouverture des frontières. [projection]
+- [Galley-La](https://lesfousdubus.sbs/theorie/galley-la-coincidence-impossible) : La Galley-La n’a jamais existé il y a 800 ans. L’escouade de géants charpentiers au grand marteau, c’est l’équipage de Loki, cryogénisé à Punk Hazard — et les créateurs de Pluton. [theorie-centrale]
+
+## Technologies et pouvoirs
+
+- [Vegapunk](https://lesfousdubus.sbs/theorie/vegapunk) : Fiche du docteur Vegapunk : le plus grand scientifique du monde, son message à l'humanité, ses six satellites et son annonce de la submersion du monde. [manga]
+- [Emeth](https://lesfousdubus.sbs/theorie/emeth-futur) : Emeth n’est pas un robot antique : il vient du futur. C’est le Battle Franky 39, construit par Franky avec les satellites de Vegapunk, qui a voyagé 200 ans dans le passé. [theorie-centrale]
+- [Mother Flame](https://lesfousdubus.sbs/theorie/mother-flame) : Mother Flame, créée par Vegapunk, alimente la puissance céleste d’Imu associée à Uranus. [manga]
+- [L'énergie antique](https://lesfousdubus.sbs/theorie/energie-antique) : Énergie du Royaume antique, Emeth et Mother Flame : faits séparés puis extension conditionnelle sur une circulation technologique entre les époques. [extension]
+- [Fruits du Démon](https://lesfousdubus.sbs/theorie/fruits-du-demon) : Fiche des Fruits du Démon : leur fonctionnement, leur répartition chronologique dans le récit et la question de leur existence avant le siècle en cours. [manga]
+- [Zoans](https://lesfousdubus.sbs/theorie/zoans) : Fiche des Fruits du Démon de type Zoan : transformations animales, éveils et volonté propre évoquée par le Gorosei. [manga]
+- [Hito Hito no Mi, modèle Nika](https://lesfousdubus.sbs/theorie/hito-hito-no-mi-nika) : Fiche factuelle du Fruit de Luffy : Zoan mythique modèle Nika, anciennement dissimulé sous le nom Gomu Gomu no Mi, dont Gear 5 est l'éveil. [manga]
+- [Omen : une étiquette pour le pouvoir d'Imu](https://lesfousdubus.sbs/theorie/omen) : L’Omen d’Imu, amplifié par la Mother Flame, frappe Lulusia et atteint la puissance associée à Uranus. [hypothese-recente]
+- [Domi Reversi](https://lesfousdubus.sbs/theorie/domi-reversi) : Pouvoir récent attribué à Imu dans les transcriptions du chapitre 1186 ; effets observés, terminologie provisoire et lecture historique sont distingués. [hypothese-recente]
+
+## Peuples, royaumes et témoins
+
+- [Shandora et les Shandias](https://lesfousdubus.sbs/theorie/shandora-shandias) : Histoire canonique de Shandora, du peuple shandia et de la protection de son Ponéglyphe ; liens futurs et divinités restent des lectures séparées. [manga]
+- [Hommes-Poissons et Sirènes](https://lesfousdubus.sbs/theorie/hommes-poissons) : Histoire, discriminations et espoirs du peuple de Ryūgū ; Poséidon, Noah et la promesse de Joy Boy sont décrits sans leur attribuer une mission collective non confirmée. [manga]
+- [Lunariens](https://lesfousdubus.sbs/theorie/lunariens) : Fiche canonique des Lunariens : peuple ancien de Red Line, capacités connues et témoignage limité de King, sans mission collective envers Joy Boy affirmée. [manga]
+- [Peuples, royaumes et missions](https://lesfousdubus.sbs/theorie/peuples-royaumes) : Traditions, promesses et missions des peuples : faits et datations indépendantes, puis projections possibles vers la guerre finale. [extension]
+- [Royaume Ryugu](https://lesfousdubus.sbs/theorie/royaume-ryugu) : Ryūgū conserve Noah, une promesse du Joy Boy historique et la lignée de Poséidon ; leur accomplissement futur reste ouvert. [manga]
+- [Alabasta](https://lesfousdubus.sbs/theorie/alabasta) : Fiche d’Alabasta : faits sur la dynastie Nefertari et le Ponéglyphe, puis projection distincte concernant le rôle futur de Vivi. [manga]
+- [Wa no Kuni](https://lesfousdubus.sbs/theorie/wa-no-kuni) : Fiche révisée de Wano : pays fermé, gardien de Pluton et du savoir Kozuki ; Momonosuke a reporté l'ouverture de ses frontières. [manga]
+- [Zou et les Minks](https://lesfousdubus.sbs/theorie/zou-minks) : Fiche de Zou et des Minks : gardiens d'un Road Ponéglyphe sur le dos de Zunesha ; leur rôle futur et la peine de l'éléphant restent ouverts. [manga]
+- [Boucaniers](https://lesfousdubus.sbs/theorie/boucaniers) : Fiche du peuple des Boucaniers : porteurs du culte de Nika, transmetteurs d'une foi de génération en génération, et lignée dont est issu Bartholomew Kuma. [manga]
+- [Zunesha](https://lesfousdubus.sbs/theorie/zunesha-fiche) : Zunesha : faits sur son lien au Joy Boy historique et branche projetée concernant l’ouverture de Wano, sans origine future affirmée. [extension]
+- [Le Harley pourrait-il décrire un futur ?](https://lesfousdubus.sbs/theorie/elbaf-harley) : Le Harley décrit des scènes en train de se réaliser. Usopp l’écrit sous le nom de Louis Arnot. [hypothese-recente]
+- [Les quatre ponts du Gouvernement mondial (Tequila Wolf, Bourbon, Vodka, Rum)](https://lesfousdubus.sbs/theorie/tequila-wolf) : Les quatre ponts du Gouvernement servent dans le monde submergé par le Déluge. [hypothese-recente]
+
+## Dieux et croyances
+
+- [Les dieux de One Piece](https://lesfousdubus.sbs/theorie/dieux-one-piece) : Dossier sur les usages du mot dieu : croyances, titres politiques, modèles de Fruits. Les dieux sont des conséquences, pas des origines. [extension]
+- [Divinités shandias](https://lesfousdubus.sbs/theorie/divinites-shandias) : Les quatre divinités invoquées par les Shandias et leurs rapprochements possibles avec Nika, Zaza et le Harley, sans identification automatique. [extension]
+- [Zaza](https://lesfousdubus.sbs/theorie/zaza) : Zaza : nom rapporté dans les chapitres récents, rapprochement provisoire avec la déesse de la pluie shandia et lectures de la fresque d'Elbaf. [hypothese-recente]
+- [La fresque d'Elbaf](https://lesfousdubus.sbs/theorie/fresque-elbaf) : Annotation critique de la fresque d’Elbaf : éléments visibles, Harley et interprétations futures sont distingués. [extension]
+- [Nidhogg et Ratatoskr](https://lesfousdubus.sbs/theorie/nidhogg-ratatoskr) : Nidhogg et Ratatoskr : noms nordiques rapportés dans les chapitres récents et rapprochements provisoires avec Loki, les Zoans et le Harley. [extension]
+
+## Transmission et mémoire
+
+- [Road Ponéglyphes](https://lesfousdubus.sbs/theorie/road-poneglyphes) : Les quatre Road Ponéglyphes donnent quatre coordonnées : latitude, longitude, altitude — et, pour le quatrième, le temps. Leur croisement désigne Laugh Tale. [theorie-centrale]
+- [La volonté héritée](https://lesfousdubus.sbs/theorie/volonte-heritee) : Transmission humaine et narrative à travers les générations ; sa convergence possible vers Luffy reste distincte d'une identité avec Joy Boy ou d'un voyage temporel. [extension]
+- [Binks no Sake](https://lesfousdubus.sbs/theorie/binks-no-sake) : Chanson transmise depuis avant l'ère de Roger ; les affirmations récentes sur Brook, un prototype d'enfance et Dōzan restent provisoires et séparées. [extension]
+- [Le Professeur Clover et les pionniers d'Ohara](https://lesfousdubus.sbs/theorie/professeur-clover-et-ohara) : Clover, Olvia, Robin et Vegapunk transmettent la recherche de la véritable histoire. Une partie de cette histoire vient du futur. [extension]
+- [Rio Ponéglyphe](https://lesfousdubus.sbs/theorie/rio-poneglyphe) : Le Rio Ponéglyphe est le récit complet obtenu en reliant les textes historiques ; la théorie explore l'ajout d'informations futures sans attribuer langue ou gravure à Robin. [theorie-centrale]
+- [Communication à travers le temps](https://lesfousdubus.sbs/theorie/communication-temps) : L’information circule entre les époques. Les Ponéglyphes la conservent ; Imu reçoit un appel du futur. [hypothese-recente]
+- [Kozuki Toki](https://lesfousdubus.sbs/theorie/kozuki-toki) : Fiche factuelle de Toki : détentrice du Toki Toki no Mi, elle envoie Momonosuke et quatre samouraïs vingt ans dans le futur, tandis que Hiyori reste à Wano. [manga]
+- [Madame Shirley](https://lesfousdubus.sbs/theorie/madame-shirley) : Voyante de l'île des Hommes-Poissons : ses prédictions établissent un précédent de perception du futur, sans attribuer le même pouvoir à Imu. [hypothese-recente]
+- [La voix de Joy Boy](https://lesfousdubus.sbs/theorie/voix-de-joy-boy) : Le choix d’Urara Takano, ancienne voix de Luffy, pour interpréter Joy Boy est un indice de mise en scène remarquable. Il nourrit la lecture des Fous du Bus sans constituer une confirmation narrative. [extension]
+- [Le Jour du serment](https://lesfousdubus.sbs/theorie/jour-du-serment) : Concept éditorial pour une convergence possible des promesses ; le manga ne synchronise ni toutes les missions ni leur accomplissement. [extension]
+
+## Gouvernement mondial
+
+- [Gouvernement mondial](https://lesfousdubus.sbs/theorie/gouvernement-mondial) : Fiche du Gouvernement mondial, fondé par les Vingt Royaumes. Imu gouverne depuis la fondation. [manga]
+- [Imu Nerona](https://lesfousdubus.sbs/theorie/imu-nerona) : Imu est le seul personnage du manga à savoir que le Siècle oublié n’a jamais existé. Il a déchiffré les Ponéglyphes, craint le jour du serment, fondé le Gouvernement — et créé exactement ce qu’il redoutait. [theorie-centrale]
+- [Vingt Rois](https://lesfousdubus.sbs/theorie/vingt-rois) : Les Vingt souverains fondateurs du Gouvernement mondial. Leurs lignées deviennent les Chevaliers Divins de la guerre finale. [extension]
+- [Les Vingt Rois et les Chevaliers Divins](https://lesfousdubus.sbs/theorie/vingt-rois-chevaliers-divins) : Les Vingt Rois qui affrontèrent Joy Boy il y a « 900 ans » sont les familles fondatrices — et leurs héritiers actuels, ce sont les Chevaliers Divins et le Gorosei. [theorie-centrale]
+- [Gorosei](https://lesfousdubus.sbs/theorie/gorosei) : Fiche des Cinq Doyens : la direction visible du Gouvernement mondial, leur agenouillement devant Imu, leurs pouvoirs et les limites de leur savoir. [manga]
+- [Chevaliers Divins](https://lesfousdubus.sbs/theorie/chevaliers-divins) : Force actuelle de Mary Geoise. Les Chevaliers Divins sont les lignées des Vingt Rois. [extension]
+- [Dragons Célestes](https://lesfousdubus.sbs/theorie/dragons-celestes) : Fiche des Dragons Célestes : les descendants des dix-neuf familles fondatrices installées à Mary Geoise, leur statut et le cas des Nefertari. [manga]
+- [Mary Geoise](https://lesfousdubus.sbs/theorie/mary-geoise) : Fiche de Mary Geoise : la capitale du monde au sommet de Red Line, le Trône Vide, l'escalier des vingt rois et la Chambre Fleurie. [manga]
+- [La Chambre Fleurie](https://lesfousdubus.sbs/theorie/chambre-fleurie) : Lieu privé de Mary Geoise où Imu apparaît ; faits de mise en scène séparés des lectures sur le pouvoir, les Fruits et l'Arbre d'Ève. [extension]
+
+## Guerre finale
+
+- [Une guerre mondiale pourrait éclater](https://lesfousdubus.sbs/theorie/guerre-finale) : La poursuite du conflit mondial est annoncée ; camps, Armes antiques, montée des eaux, Red Line, Noah et All Blue restent des futurs possibles à ordre ouvert. [projection]
+- [La grande guerre du Siècle oublié](https://lesfousdubus.sbs/theorie/grande-guerre) : La guerre ancienne et la submersion de 200 mètres sont des faits historiques rapportés ; la guerre mondiale future annoncée par Barbe Blanche est un conflit distinct jusqu'à preuve du contraire. [manga]
+- [Le Déluge et la création d'All Blue](https://lesfousdubus.sbs/theorie/deluge-all-blue) : La grande guerre d’il y a 800 ans est toujours d’actualité : le Déluge n’est pas encore arrivé. L’incident de Lulusia a déjà monté la mer d’un mètre — il en reste 199. Puis viendra la destruction de la Red Line et la création d’All Blue. [theorie-centrale]
+
+## Dernières analyses
+
+- [Chapitre 1190 : Celui dont la mort ferait le bonheur de tous — lecture provisoire](https://lesfousdubus.sbs/chapitres/1190) — approfondissement
+- [Chapitre 1189 : Le Roi du Monde — lecture provisoire](https://lesfousdubus.sbs/chapitres/1189) — approfondissement
+- [Chapitre 1188 : Conversation entre Imu et Joy Boy : contexte temporel ouvert](https://lesfousdubus.sbs/chapitres/1188) — nouvelle piste
+- [Chapitre 1187 : Imu appelle Luffy « Joy Boy »](https://lesfousdubus.sbs/chapitres/1187) — approfondissement
+- [Chapitre 1186 : Les Fruits du Démon et l’histoire des géants](https://lesfousdubus.sbs/chapitres/1186) — nouvelle piste
+- [Chapitre 1184 : Brook et Binks no Sake](https://lesfousdubus.sbs/chapitres/1184) — nouvelle piste
+- [Chapitre 1183 : Brook, Dōzan et la transmission par le chant](https://lesfousdubus.sbs/chapitres/1183) — nouvelle piste
+- [Chapitre 1182 : Zaza, volonté des Zoans et création des Fruits](https://lesfousdubus.sbs/chapitres/1182) — nouvelle piste
+- [Chapitre 1181 : Silhouette attribuable à Roger jeune et idéologie d’Imu](https://lesfousdubus.sbs/chapitres/1181) — approfondissement
+- [Chapitre 1180 : Imu, Omen, Mother Flame et Uranus](https://lesfousdubus.sbs/chapitres/1180) — nouvelle piste

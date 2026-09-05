@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Scene from "./bus/Scene";
-import { ZONES } from "./bus/World";
 import { computeNumRows } from "./bus/Passengers";
 import { YOUTUBE_ID, type Phase, type WorldState } from "./bus/constants";
 import { playDing, playHorn, playStretch } from "@/lib/horn";
+import TheoryModal from "./TheoryModal";
 
 interface ToastMessage {
   id: number;
@@ -33,6 +33,7 @@ export default function BusExperience() {
   });
   const [isPlaying, setIsPlaying] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showTheoryModal, setShowTheoryModal] = useState(false);
 
   // Compteur initial démarre à 0 si la base est vide (le bus est vide au début)
   const [count, setCount] = useState<number | null>(() => {
@@ -358,7 +359,6 @@ export default function BusExperience() {
 
   const effectiveCount = count ?? 0;
   const numRows = computeNumRows(effectiveCount);
-  const currentZone = ZONES[zone] ?? ZONES[0];
   const busy = phase === "entering" || phase === "exiting";
 
   return (
@@ -408,12 +408,16 @@ export default function BusExperience() {
         <p className="mt-0.5 sm:mt-1 text-[9px] sm:text-xs font-bold uppercase tracking-[0.14em] text-[#ffd23f] drop-shadow md:text-sm">
           LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
         </p>
-        <div className="mt-1.5 sm:mt-2.5 inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/20 bg-black/45 px-2 sm:px-3 py-0.5 sm:py-1.5 backdrop-blur-md">
-          <span className="text-xs sm:text-base">🧭</span>
-          <div className="leading-tight">
-            <div className="text-[11px] sm:text-sm font-bold">{currentZone.name}</div>
-            <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/70">{currentZone.subtitle}</div>
-          </div>
+        <div className="mt-2 sm:mt-3">
+          <button
+            type="button"
+            onClick={() => setShowTheoryModal(true)}
+            className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/60 px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:bg-[#ffd23f] hover:text-[#0d2190] hover:border-white active:scale-95 cursor-pointer"
+            title="Découvrir la théorie des Fous du Bus"
+          >
+            <span>📜</span>
+            <span>La Théorie</span>
+          </button>
         </div>
       </div>
 
@@ -528,6 +532,9 @@ export default function BusExperience() {
       <div className="absolute bottom-16 sm:bottom-6 left-1/2 z-[110] flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 max-w-[95vw] sm:max-w-xl">
         {phase === "outside" || phase === "entering" ? (
           <>
+            <HudButton onClick={() => setShowTheoryModal(true)} icon="📜" disabled={busy}>
+              Théorie
+            </HudButton>
             <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
               {headlights ? "Éteindre" : "Phares"}
             </HudButton>
@@ -545,6 +552,9 @@ export default function BusExperience() {
           </>
         ) : (
           <>
+            <HudButton onClick={() => setShowTheoryModal(true)} icon="📜" disabled={busy}>
+              Théorie
+            </HudButton>
             <HudButton onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy}>
               {tvOn ? "Éteindre la TV" : "Allumer la TV"}
             </HudButton>
@@ -565,6 +575,9 @@ export default function BusExperience() {
           </>
         )}
       </div>
+
+      {/* Modal interactif complet de la théorie des Fous du Bus */}
+      <TheoryModal isOpen={showTheoryModal} onClose={() => setShowTheoryModal(false)} />
     </div>
   );
 }

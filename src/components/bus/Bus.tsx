@@ -6,6 +6,7 @@ import { useFrame } from "@react-three/fiber";
 import { Html, useTexture } from "@react-three/drei";
 import {
   makeDashboardTexture,
+  makeGraffitiTexture,
   makeLabelTexture,
   makeLicensePlateTexture,
   makeTvScreenTexture,
@@ -60,6 +61,13 @@ export default function Bus({
     if (!Array.isArray(tex)) {
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
       tex.repeat.set(1, 1);
+      tex.colorSpace = THREE.SRGBColorSpace;
+    }
+  });
+
+  // Logo officiel Le Mont Corvo
+  const montCorvoTex = useTexture("/textures/montcorvo.png", (tex) => {
+    if (!Array.isArray(tex)) {
       tex.colorSpace = THREE.SRGBColorSpace;
     }
   });
@@ -389,6 +397,79 @@ export default function Bus({
   const dashTex = useMemo(() => makeDashboardTexture(), []);
   const licensePlateTex = useMemo(() => makeLicensePlateTexture(), []);
 
+  // Textures de slogans de la théorie tagués sur le bus
+  const tagSiecleTex = useMemo(
+    () =>
+      makeGraffitiTexture({
+        text: "LE SIÈCLE OUBLIÉ EST LE PRÉSENT",
+        sub: "LA VÉRITÉ S'ÉCRIT MAINTENANT",
+        color: "#ffd23f",
+        stroke: "#000000",
+        angle: -0.035,
+      }),
+    [],
+  );
+
+  const tagJoyBoyTex = useMemo(
+    () =>
+      makeGraffitiTexture({
+        text: "JOY BOY = LUFFY",
+        sub: "LIBÉRATEUR DU MONDE 👑",
+        color: "#ffffff",
+        stroke: "#92400e",
+        angle: 0.04,
+      }),
+    [],
+  );
+
+  const tagLaughTaleTex = useMemo(
+    () =>
+      makeGraffitiTexture({
+        text: "LAUGH TALE ➜ DANS LE FUTUR",
+        sub: "ROGER ÉTAIT EN AVANCE !",
+        color: "#38bdf8",
+        stroke: "#0c4a6e",
+        angle: -0.03,
+      }),
+    [],
+  );
+
+  const tagPoneglyphesTex = useMemo(
+    () =>
+      makeGraffitiTexture({
+        text: "PONÉGLYPHES = MÉMOIRE DU FUTUR",
+        sub: "GRAVÉS PAR ROBIN & KOZUKI",
+        color: "#a3e635",
+        stroke: "#14532d",
+        angle: 0.03,
+      }),
+    [],
+  );
+
+  const tagDavyJonesTex = useMemo(
+    () =>
+      makeGraffitiTexture({
+        text: "DAVY JONES = BARBE NOIRE",
+        sub: "LA MÉPRISE D'IMU",
+        color: "#f87171",
+        stroke: "#450a0a",
+        angle: -0.04,
+      }),
+    [],
+  );
+
+  const tagAllBlueTex = useMemo(
+    () =>
+      makeGraffitiTexture({
+        text: "ALL BLUE EXISTERA !",
+        sub: "DESTRUCTION DE RED LINE",
+        color: "#38bdf8",
+        stroke: "#0369a1",
+        angle: 0.025,
+      }),
+    [],
+  );
+
   const primaryIframeRef = useRef<HTMLIFrameElement | null>(null);
 
   // Synchronisation du volume audio : 100% à l'intérieur, 25% "de loin" à l'extérieur, 0% si éteinte ou plein écran actif
@@ -552,6 +633,91 @@ export default function Bus({
               <meshStandardMaterial map={sideLabel} roughness={0.4} />
             </mesh>
           )}
+
+          {/* Slogans de la théorie tagués au pochoir / spray sur les flancs du bus */}
+          {sx < 0 ? (
+            <>
+              {/* Côté gauche (face à la caméra par défaut) */}
+              <mesh
+                position={[sx * 1.352, 0.98, -1.3]}
+                rotation={[0, -Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[3.1, 0.76]} />
+                <meshStandardMaterial
+                  map={tagSiecleTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.4}
+                />
+              </mesh>
+              <mesh
+                position={[sx * 1.352, 0.99, -3.7]}
+                rotation={[0, -Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[1.9, 0.62]} />
+                <meshStandardMaterial
+                  map={tagJoyBoyTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.4}
+                />
+              </mesh>
+              {numRows >= 6 && (
+                <mesh
+                  position={[sx * 1.352, 0.98, 2.7]}
+                  rotation={[0, -Math.PI / 2, 0]}
+                >
+                  <planeGeometry args={[2.7, 0.66]} />
+                  <meshStandardMaterial
+                    map={tagLaughTaleTex}
+                    transparent
+                    depthWrite={false}
+                    polygonOffset
+                    polygonOffsetFactor={-1}
+                    roughness={0.4}
+                  />
+                </mesh>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Côté droit */}
+              <mesh
+                position={[sx * 1.352, 0.98, -1.6]}
+                rotation={[0, Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[2.9, 0.72]} />
+                <meshStandardMaterial
+                  map={tagPoneglyphesTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.4}
+                />
+              </mesh>
+              {numRows >= 5 && (
+                <mesh
+                  position={[sx * 1.352, 0.98, 1.6]}
+                  rotation={[0, Math.PI / 2, 0]}
+                >
+                  <planeGeometry args={[2.6, 0.65]} />
+                  <meshStandardMaterial
+                    map={tagDavyJonesTex}
+                    transparent
+                    depthWrite={false}
+                    polygonOffset
+                    polygonOffsetFactor={-1}
+                    roughness={0.4}
+                  />
+                </mesh>
+              )}
+            </>
+          )}
           {/* Grands rétroviseurs incurvés (restent à l'avant) */}
           <mesh material={mats.body} position={[sx * 1.62, 2.42, -4.35]}>
             <boxGeometry args={[0.15, 0.44, 0.28]} />
@@ -640,6 +806,19 @@ export default function Bus({
           <planeGeometry args={[1.8, 0.38]} />
           <meshStandardMaterial map={sideLabel} roughness={0.3} />
         </mesh>
+
+        {/* Tag graffiti arrière : ALL BLUE EXISTERA ! */}
+        <mesh position={[0, 1.22, 0.046]}>
+          <planeGeometry args={[2.2, 0.62]} />
+          <meshStandardMaterial
+            map={tagAllBlueTex}
+            transparent
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={-1}
+            roughness={0.4}
+          />
+        </mesh>
       </group>
 
       {/* ---------- Toit et plancher extensibles ---------- */}
@@ -672,6 +851,24 @@ export default function Bus({
           <boxGeometry args={[1.05, 0.035, 0.02]} />
         </mesh>
       ))}
+
+      {/* Logo emblème officiel Le Mont Corvo à l'avant du bus */}
+      <group position={[0, 1.33, -6.01]}>
+        {/* Cerclage chromé d'emblème */}
+        <mesh material={mats.chrome} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.26, 0.26, 0.025, 32]} />
+        </mesh>
+        {/* Disque avec le logo pirate Le Mont Corvo */}
+        <mesh position={[0, 0, -0.016]}>
+          <circleGeometry args={[0.24, 32]} />
+          <meshStandardMaterial
+            map={montCorvoTex}
+            roughness={0.2}
+            metalness={0.1}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      </group>
       {/* Pare-chocs chromé massif */}
       <mesh material={mats.chrome} castShadow position={[0, 0.6, -6.05]}>
         <boxGeometry args={[2.7, 0.28, 0.3]} />
@@ -959,9 +1156,8 @@ export default function Bus({
 
             {/* Écran TV 3D :
                 - Quand la télé est éteinte : affiche l'écran éteint en veille
-                - Quand la télé est allumée et qu'on est à l'extérieur : affiche l'écran allumé lumineux
-                - Quand la télé est allumée et qu'on est à l'intérieur : aucun fond 3D (le fond gris disparaît complètement pour laisser place à la vidéo) */}
-            {!tvOn ? (
+                - Quand la télé est allumée : aucun fond 3D (la vidéo YouTube reste active et visible en 3D en permanence) */}
+            {!tvOn && (
               <mesh position={[0, 0, 0.047]}>
                 <planeGeometry args={[1.26, 0.72]} />
                 <meshStandardMaterial
@@ -971,19 +1167,9 @@ export default function Bus({
                   emissiveIntensity={0.25}
                 />
               </mesh>
-            ) : phase !== "inside" ? (
-              <mesh position={[0, 0, 0.047]}>
-                <planeGeometry args={[1.26, 0.72]} />
-                <meshStandardMaterial
-                  map={tvOnTex}
-                  emissive="#ffffff"
-                  emissiveMap={tvOnTex}
-                  emissiveIntensity={1.0}
-                />
-              </mesh>
-            ) : null}
+            )}
 
-            {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels) */}
+            {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels, toujours visible en 3D même dehors) */}
             {isPrimary && tvOn && (
               <Html
                 transform
@@ -993,7 +1179,7 @@ export default function Bus({
                 style={{
                   pointerEvents: phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
                   userSelect: "none",
-                  opacity: phase === "inside" && !isMutedForFullscreen ? 1 : 0.001,
+                  opacity: !isMutedForFullscreen ? 1 : 0.001,
                   backfaceVisibility: "hidden",
                   transition: "opacity 0.2s ease",
                 }}
@@ -1027,7 +1213,7 @@ export default function Bus({
             )}
 
             {/* TV 1, 2, ... : Écrans secondaires dans l'allée (vidéo synchronisée, mute=1) */}
-            {!isPrimary && tvOn && phase === "inside" && !isMutedForFullscreen && (
+            {!isPrimary && tvOn && !isMutedForFullscreen && (
               <Html
                 transform
                 distanceFactor={400}

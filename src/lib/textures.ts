@@ -371,3 +371,106 @@ export function makeTvScreenTexture(isOn = false): THREE.CanvasTexture {
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
 }
+
+export interface GraffitiOptions {
+  text: string;
+  width?: number;
+  height?: number;
+  color?: string;
+  stroke?: string;
+  angle?: number;
+  sub?: string;
+}
+
+/** Crée une texture de tag / graffiti street art pour le bus */
+export function makeGraffitiTexture({
+  text,
+  width = 1024,
+  height = 256,
+  color = "#ffd23f",
+  stroke = "#000000",
+  angle = -0.04,
+  sub,
+}: GraffitiOptions): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const c = canvas.getContext("2d")!;
+
+  c.clearRect(0, 0, width, height);
+
+  c.save();
+  c.translate(width / 2, height / 2);
+  c.rotate(angle);
+
+  const mainY = sub ? -22 : 0;
+
+  // Typographie grasse impact style graffiti
+  c.font = "900 78px Impact, 'Arial Black', sans-serif";
+  c.textAlign = "center";
+  c.textBaseline = "middle";
+
+  // 1. Halo spray extérieur (effet bombe aérosol)
+  c.shadowColor = stroke;
+  c.shadowBlur = 16;
+  c.lineWidth = 14;
+  c.strokeStyle = stroke;
+  c.strokeText(text, 0, mainY);
+
+  // 2. Contour net
+  c.shadowBlur = 4;
+  c.lineWidth = 8;
+  c.strokeText(text, 0, mainY);
+
+  // 3. Remplissage éclatant
+  c.shadowBlur = 0;
+  c.fillStyle = color;
+  c.fillText(text, 0, mainY);
+
+  // 4. Éclats et gouttelettes de bombe de peinture (spray spatter)
+  c.fillStyle = color;
+  const seed = text.length;
+  for (let i = 0; i < 20; i++) {
+    const gx = ((i * 59 + seed * 17) % (width * 0.84)) - (width * 0.42);
+    const gy = mainY + (((i * 37 + seed * 13) % 70) - 35);
+    const r = (i % 3) + 1.2;
+    c.beginPath();
+    c.arc(gx, gy, r, 0, Math.PI * 2);
+    c.fill();
+  }
+
+  // 5. Coulures de peinture verticales (drips)
+  for (let d = 0; d < 4; d++) {
+    const dx = ((d * 210 + seed * 47) % (width * 0.7)) - (width * 0.35);
+    const dy = mainY + 36;
+    const dlen = 20 + ((d * 17) % 25);
+    c.beginPath();
+    c.moveTo(dx, dy);
+    c.lineTo(dx + 1.5, dy + dlen);
+    c.lineWidth = 3.5;
+    c.strokeStyle = color;
+    c.stroke();
+    // Goutte suspendue
+    c.beginPath();
+    c.arc(dx + 1.5, dy + dlen + 2.5, 2.5, 0, Math.PI * 2);
+    c.fill();
+  }
+
+  // 6. Sous-texte tagué
+  if (sub) {
+    c.font = "bold 36px 'Arial Black', Impact, sans-serif";
+    c.fillStyle = "#ffffff";
+    c.strokeStyle = "#000000";
+    c.lineWidth = 6;
+    c.strokeText(sub, 0, 38);
+    c.fillText(sub, 0, 38);
+  }
+
+  c.restore();
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
