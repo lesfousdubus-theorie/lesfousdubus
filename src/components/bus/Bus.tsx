@@ -1231,7 +1231,7 @@ function BusTvUnit({
       {isPrimary && (
         <Html
           transform
-          occlude="blending"
+          zIndexRange={[10, 0]}
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
@@ -1299,7 +1299,7 @@ function BusTvUnit({
       {!isPrimary && (
         <Html
           transform
-          occlude="blending"
+          zIndexRange={[10, 0]}
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}

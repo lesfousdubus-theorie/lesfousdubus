@@ -490,238 +490,240 @@ export default function BusExperience() {
         modeOverride={manualDayNight}
       />
 
-      {/* ---------- TOAST NOTIFICATION DYNAMIQUE (ALLONGEMENT DU BUS) ---------- */}
-      {toast && (
-        <div className="pointer-events-none absolute left-1/2 top-20 z-50 -translate-x-1/2 animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="flex items-center gap-3 rounded-2xl border border-[#ffd23f] bg-black/80 px-5 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md">
-            {toast.badge && (
-              <span className="rounded-md bg-[#ffd23f] px-2 py-0.5 text-xs font-black text-[#0d2190]">
-                {toast.badge}
+      {/* ---------- HUD & INTERFACE UTILISATEUR (GARANTI TOUJOURS AU PREMIER PLAN Z-INDEX) ---------- */}
+      <div className="pointer-events-none fixed inset-0 z-[99999] select-none">
+        {/* Toast notification dynamique (allongement du bus) */}
+        {toast && (
+          <div className="pointer-events-none absolute left-1/2 top-20 z-50 -translate-x-1/2 animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="flex items-center gap-3 rounded-2xl border border-[#ffd23f] bg-black/80 px-5 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md">
+              {toast.badge && (
+                <span className="rounded-md bg-[#ffd23f] px-2 py-0.5 text-xs font-black text-[#0d2190]">
+                  {toast.badge}
+                </span>
+              )}
+              <div>
+                <div className="text-base font-black text-white">{toast.text}</div>
+                {toast.sub && <div className="text-xs text-[#ffd23f] font-semibold">{toast.sub}</div>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Titre + zone (Responsive mobile) */}
+        <div className="pointer-events-none absolute left-3 sm:left-4 top-3 sm:top-4 max-w-[50vw] sm:max-w-[60vw]">
+          <h1 className="font-black uppercase leading-[1.08] tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,0.55)] text-sm sm:text-2xl md:text-3xl">
+            <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
+            <span className="text-white">des Fous du Bus</span>
+          </h1>
+          <p className="mt-0.5 sm:mt-1 text-[9px] sm:text-xs font-bold uppercase tracking-[0.14em] text-[#ffd23f] drop-shadow md:text-sm">
+            LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
+          </p>
+          <div className="mt-2 sm:mt-3">
+            <button
+              type="button"
+              onClick={() => setShowTheoryModal(true)}
+              className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/60 px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:bg-[#ffd23f] hover:text-[#0d2190] hover:border-white active:scale-95 cursor-pointer"
+              title="Découvrir la théorie des Fous du Bus"
+            >
+              <span>📜</span>
+              <span>La Théorie</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Compteur de passagers & Infos rangées du bus (100% réel, calculé selon la DB) */}
+        <div className="pointer-events-auto absolute right-3 sm:right-4 top-3 sm:top-4 flex items-center gap-1.5 sm:gap-3 rounded-2xl border border-[#ffd23f]/40 bg-black/60 px-2.5 sm:px-4 py-1 sm:py-2.5 shadow-lg backdrop-blur-md">
+          <span className="text-lg sm:text-2xl">🚌</span>
+          <div className="leading-tight">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-[8px] sm:text-[10px] font-semibold uppercase tracking-[0.15em] text-[#ffd23f]">
+                Passagers
               </span>
-            )}
-            <div>
-              <div className="text-base font-black text-white">{toast.text}</div>
-              {toast.sub && <div className="text-xs text-[#ffd23f] font-semibold">{toast.sub}</div>}
+              <span className="rounded-full bg-white/15 px-1 sm:px-1.5 py-0.2 text-[8px] sm:text-[9px] font-bold text-white/90">
+                {numRows} r.
+              </span>
+            </div>
+            <div className="text-base sm:text-xl font-black tabular-nums text-white">
+              {effectiveCount.toLocaleString("fr-FR")}
             </div>
           </div>
         </div>
-      )}
 
-      {/* ---------- HUD ---------- */}
-      {/* Titre + zone (Responsive mobile) */}
-      <div className="pointer-events-none absolute left-3 sm:left-4 top-3 sm:top-4 z-50 max-w-[50vw] sm:max-w-[60vw]">
-        <h1 className="font-black uppercase leading-[1.08] tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,0.55)] text-sm sm:text-2xl md:text-3xl">
-          <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
-          <span className="text-white">des Fous du Bus</span>
-        </h1>
-        <p className="mt-0.5 sm:mt-1 text-[9px] sm:text-xs font-bold uppercase tracking-[0.14em] text-[#ffd23f] drop-shadow md:text-sm">
-          LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
-        </p>
-        <div className="mt-2 sm:mt-3">
-          <button
-            type="button"
-            onClick={() => setShowTheoryModal(true)}
-            className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/60 px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:bg-[#ffd23f] hover:text-[#0d2190] hover:border-white active:scale-95 cursor-pointer"
-            title="Découvrir la théorie des Fous du Bus"
-          >
-            <span>📜</span>
-            <span>La Théorie</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Compteur de passagers & Infos rangées du bus (100% réel, calculé selon la DB) */}
-      <div className="absolute right-3 sm:right-4 top-3 sm:top-4 z-50 flex items-center gap-1.5 sm:gap-3 rounded-2xl border border-[#ffd23f]/40 bg-black/60 px-2.5 sm:px-4 py-1 sm:py-2.5 shadow-lg backdrop-blur-md">
-        <span className="text-lg sm:text-2xl">🚌</span>
-        <div className="leading-tight">
-          <div className="flex items-center gap-1 sm:gap-2">
-            <span className="text-[8px] sm:text-[10px] font-semibold uppercase tracking-[0.15em] text-[#ffd23f]">
-              Passagers
-            </span>
-            <span className="rounded-full bg-white/15 px-1 sm:px-1.5 py-0.2 text-[8px] sm:text-[9px] font-bold text-white/90">
-              {numRows} r.
-            </span>
-          </div>
-          <div className="text-base sm:text-xl font-black tabular-nums text-white">
-            {effectiveCount.toLocaleString("fr-FR")}
-          </div>
-        </div>
-      </div>
-
-      {/* Bouton interactif Jour / Nuit (synchronisé avec la vraie vie par défaut, toggle manuel à tout moment) */}
-      <button
-        type="button"
-        onClick={toggleDayNight}
-        title={isNight ? "Passer en mode Jour" : "Passer en mode Nuit"}
-        className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 z-50 flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/25 bg-black/65 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-lg backdrop-blur-md transition hover:bg-black/85 hover:border-[#ffd23f]/60 active:scale-95 cursor-pointer"
-      >
-        {isNight ? (
-          <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
-          </svg>
-        ) : (
-          <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="12" r="5" />
-            <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        )}
-        <span>{isNight ? "Nuit" : "Jour"}</span>
-        <span className="text-white/50 text-[10px] sm:text-xs">· Changer</span>
-      </button>
-
-      {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
-      <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 z-50 flex items-center gap-1 sm:gap-1.5 rounded-full border border-white/25 bg-black/65 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm shadow-lg backdrop-blur-md">
+        {/* Bouton interactif Jour / Nuit */}
         <button
           type="button"
-          onClick={decelerateBus}
-          disabled={speedMultiplier <= 0.3}
-          aria-label="Ralentir le bus"
-          className="flex items-center gap-1 rounded-full bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95 disabled:opacity-30 cursor-pointer"
-          title="Ralentir le bus (Touche - ou Flèche Bas)"
+          onClick={toggleDayNight}
+          title={isNight ? "Passer en mode Jour" : "Passer en mode Nuit"}
+          className="pointer-events-auto absolute bottom-3 sm:bottom-4 left-3 sm:left-4 flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/25 bg-black/65 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-lg backdrop-blur-md transition hover:bg-black/85 hover:border-[#ffd23f]/60 active:scale-95 cursor-pointer"
         >
-          <span>🐢</span>
-          <span>Ralentir</span>
+          {isNight ? (
+            <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+            </svg>
+          ) : (
+            <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="12" r="5" />
+              <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          )}
+          <span>{isNight ? "Nuit" : "Jour"}</span>
+          <span className="text-white/50 text-[10px] sm:text-xs">· Changer</span>
         </button>
 
-        <div className="flex items-center gap-1 px-1 sm:px-1.5 font-black tabular-nums">
-          <span
-            className={
-              speedMultiplier >= 2.0
-                ? "text-[#ffd23f]"
-                : speedMultiplier <= 0.5
-                  ? "text-[#38bdf8]"
-                  : "text-white"
-            }
+        {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
+        <div className="pointer-events-auto absolute bottom-3 sm:bottom-4 right-3 sm:right-4 flex items-center gap-1 sm:gap-1.5 rounded-full border border-white/25 bg-black/65 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm shadow-lg backdrop-blur-md">
+          <button
+            type="button"
+            onClick={decelerateBus}
+            disabled={speedMultiplier <= 0.3}
+            aria-label="Ralentir le bus"
+            className="flex items-center gap-1 rounded-full bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95 disabled:opacity-30 cursor-pointer"
+            title="Ralentir le bus (Touche - ou Flèche Bas)"
           >
-            {speedMultiplier.toFixed(1)}x
-          </span>
-          {speedMultiplier >= 2.0 && (
-            <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[8px] sm:text-[9px] font-black uppercase text-[#0d2190]">
-              Boost
+            <span>🐢</span>
+            <span>Ralentir</span>
+          </button>
+
+          <div className="flex items-center gap-1 px-1 sm:px-1.5 font-black tabular-nums">
+            <span
+              className={
+                speedMultiplier >= 2.0
+                  ? "text-[#ffd23f]"
+                  : speedMultiplier <= 0.5
+                    ? "text-[#38bdf8]"
+                    : "text-white"
+              }
+            >
+              {speedMultiplier.toFixed(1)}x
             </span>
+            {speedMultiplier >= 2.0 && (
+              <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[8px] sm:text-[9px] font-black uppercase text-[#0d2190]">
+                Boost
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={accelerateBus}
+            disabled={speedMultiplier >= 3.0}
+            aria-label="Accélérer le bus"
+            className="flex items-center gap-1 rounded-full bg-[#ffd23f]/25 px-2 sm:px-2.5 py-1 text-xs font-black text-[#ffd23f] transition hover:bg-[#ffd23f]/40 active:scale-95 disabled:opacity-30 cursor-pointer"
+            title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
+          >
+            <span>⚡</span>
+            <span>Accélérer</span>
+          </button>
+        </div>
+
+        {/* Klaxon visuel */}
+        {hornVisible && (
+          <div className="pointer-events-none absolute left-1/2 top-[38%] -translate-x-1/2 animate-bounce">
+            <span className="rotate-[-6deg] inline-block rounded-2xl bg-[#ffd23f] px-6 py-3 text-4xl font-black text-[#0d2190] shadow-[0_8px_0_#b8860b] md:text-6xl">
+              TUUUT !!
+            </span>
+          </div>
+        )}
+
+        {/* Navigation entre les rangées & Zoom quand on est à l'intérieur */}
+        {phase === "inside" && (
+          <div className="pointer-events-auto absolute top-[4.5rem] sm:top-20 right-3 sm:right-4 flex flex-col items-end gap-1.5 sm:gap-2">
+            {/* Déplacement dans l'allée */}
+            <div className="flex items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-lg backdrop-blur-md">
+              <button
+                type="button"
+                onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
+                disabled={seatRow <= 0}
+                className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer"
+                title="Rangée précédente"
+              >
+                ◀
+              </button>
+              <span className="px-1.5 sm:px-2 text-xs font-bold whitespace-nowrap">
+                Rangée <span className="text-[#ffd23f]">{seatRow + 1}</span>/{numRows}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
+                disabled={seatRow >= numRows - 1}
+                className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer"
+                title="Rangée suivante"
+              >
+                ▶
+              </button>
+            </div>
+
+            {/* Contrôles de zoom */}
+            <div className="flex items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-lg backdrop-blur-md">
+              <span className="text-[11px] sm:text-xs font-bold text-white/80 mr-1">🔍 Zoom</span>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom", { detail: -7 }))}
+                className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-0.5 text-xs font-black text-white transition hover:bg-white/25 active:scale-95 cursor-pointer"
+                title="Zoomer (+)"
+              >
+                +
+              </button>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom", { detail: +7 }))}
+                className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-0.5 text-xs font-black text-white transition hover:bg-white/25 active:scale-95 cursor-pointer"
+                title="Dézoomer (−)"
+              >
+                −
+              </button>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom-reset"))}
+                className="rounded-lg bg-white/10 px-1.5 sm:px-2 py-0.5 text-[10px] font-bold text-white/60 transition hover:bg-white/25 active:scale-95 cursor-pointer"
+                title="Réinitialiser zoom"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Barre de boutons principale */}
+        <div className="pointer-events-auto absolute bottom-16 md:bottom-6 left-1/2 flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 max-w-[95vw] sm:max-w-xl">
+          {phase === "outside" || phase === "entering" ? (
+            <>
+              <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
+                {headlights ? "Éteindre" : "Phares"}
+              </HudButton>
+              <HudButton onClick={honk} icon="📯" disabled={busy}>
+                Klaxonner
+              </HudButton>
+              <HudButton onClick={enterBus} primary icon="🚪" disabled={busy}>
+                {phase === "entering" ? "Installation…" : "Entrer dans le bus"}
+              </HudButton>
+            </>
+          ) : (
+            <>
+              <HudButton onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy}>
+                {tvOn ? "Éteindre la TV" : "Allumer la TV"}
+              </HudButton>
+              {tvOn && (
+                <HudButton onClick={toggleFullscreen} active={isFullscreen} icon="⛶" disabled={busy}>
+                  {isFullscreen ? "Sortir du plein écran" : "Plein écran"}
+                </HudButton>
+              )}
+              <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
+                {headlights ? "Éteindre" : "Phares"}
+              </HudButton>
+              <HudButton onClick={honk} icon="📯" disabled={busy}>
+                Klaxon
+              </HudButton>
+              <HudButton onClick={exitBus} primary icon="🏝️" disabled={busy}>
+                {phase === "exiting" ? "Descente…" : "Sortir du bus"}
+              </HudButton>
+            </>
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={accelerateBus}
-          disabled={speedMultiplier >= 3.0}
-          aria-label="Accélérer le bus"
-          className="flex items-center gap-1 rounded-full bg-[#ffd23f]/25 px-2 sm:px-2.5 py-1 text-xs font-black text-[#ffd23f] transition hover:bg-[#ffd23f]/40 active:scale-95 disabled:opacity-30 cursor-pointer"
-          title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
-        >
-          <span>⚡</span>
-          <span>Accélérer</span>
-        </button>
+        {/* Modal interactif complet de la théorie des Fous du Bus */}
+        <TheoryModal isOpen={showTheoryModal} onClose={() => setShowTheoryModal(false)} />
       </div>
-
-      {/* Klaxon visuel */}
-      {hornVisible && (
-        <div className="pointer-events-none absolute left-1/2 top-[38%] z-50 -translate-x-1/2 animate-bounce">
-          <span className="rotate-[-6deg] inline-block rounded-2xl bg-[#ffd23f] px-6 py-3 text-4xl font-black text-[#0d2190] shadow-[0_8px_0_#b8860b] md:text-6xl">
-            TUUUT !!
-          </span>
-        </div>
-      )}
-
-      {/* Navigation entre les rangées & Zoom quand on est à l'intérieur */}
-      {phase === "inside" && (
-        <div className="absolute top-[4.5rem] sm:top-20 right-3 sm:right-4 z-50 flex flex-col items-end gap-1.5 sm:gap-2">
-          {/* Déplacement dans l'allée */}
-          <div className="flex items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-lg backdrop-blur-md">
-            <button
-              type="button"
-              onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
-              disabled={seatRow <= 0}
-              className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95"
-              title="Rangée précédente"
-            >
-              ◀
-            </button>
-            <span className="px-1.5 sm:px-2 text-xs font-bold whitespace-nowrap">
-              Rangée <span className="text-[#ffd23f]">{seatRow + 1}</span>/{numRows}
-            </span>
-            <button
-              type="button"
-              onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
-              disabled={seatRow >= numRows - 1}
-              className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95"
-              title="Rangée suivante"
-            >
-              ▶
-            </button>
-          </div>
-
-          {/* Contrôles de zoom */}
-          <div className="flex items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-lg backdrop-blur-md">
-            <span className="text-[11px] sm:text-xs font-bold text-white/80 mr-1">🔍 Zoom</span>
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom", { detail: -7 }))}
-              className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-0.5 text-xs font-black text-white transition hover:bg-white/25 active:scale-95"
-              title="Zoomer (+)"
-            >
-              +
-            </button>
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom", { detail: +7 }))}
-              className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-0.5 text-xs font-black text-white transition hover:bg-white/25 active:scale-95"
-              title="Dézoomer (−)"
-            >
-              −
-            </button>
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom-reset"))}
-              className="rounded-lg bg-white/10 px-1.5 sm:px-2 py-0.5 text-[10px] font-bold text-white/60 transition hover:bg-white/25 active:scale-95"
-              title="Réinitialiser zoom"
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Barre de boutons principale */}
-      <div className="absolute bottom-16 md:bottom-6 left-1/2 z-[110] flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 max-w-[95vw] sm:max-w-xl">
-        {phase === "outside" || phase === "entering" ? (
-          <>
-            <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
-              {headlights ? "Éteindre" : "Phares"}
-            </HudButton>
-            <HudButton onClick={honk} icon="📯" disabled={busy}>
-              Klaxonner
-            </HudButton>
-            <HudButton onClick={enterBus} primary icon="🚪" disabled={busy}>
-              {phase === "entering" ? "Installation…" : "Entrer dans le bus"}
-            </HudButton>
-          </>
-        ) : (
-          <>
-            <HudButton onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy}>
-              {tvOn ? "Éteindre la TV" : "Allumer la TV"}
-            </HudButton>
-            {tvOn && (
-              <HudButton onClick={toggleFullscreen} active={isFullscreen} icon="⛶" disabled={busy}>
-                {isFullscreen ? "Sortir du plein écran" : "Plein écran"}
-              </HudButton>
-            )}
-            <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
-              {headlights ? "Éteindre" : "Phares"}
-            </HudButton>
-            <HudButton onClick={honk} icon="📯" disabled={busy}>
-              Klaxon
-            </HudButton>
-            <HudButton onClick={exitBus} primary icon="🏝️" disabled={busy}>
-              {phase === "exiting" ? "Descente…" : "Sortir du bus"}
-            </HudButton>
-          </>
-        )}
-      </div>
-
-      {/* Modal interactif complet de la théorie des Fous du Bus */}
-      <TheoryModal isOpen={showTheoryModal} onClose={() => setShowTheoryModal(false)} />
     </div>
   );
 }
@@ -742,7 +744,7 @@ function HudButton({
   disabled?: boolean;
 }) {
   const base =
-    "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60";
+    "pointer-events-auto inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer";
   const look = primary
     ? "bg-[#ffd23f] text-[#0d2190] hover:bg-[#ffe066] shadow-[0_5px_0_#b8860b] active:shadow-none active:translate-y-1"
     : active
