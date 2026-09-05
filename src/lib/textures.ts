@@ -405,8 +405,15 @@ export function makeGraffitiTexture({
 
   const mainY = sub ? -22 : 0;
 
-  // Typographie grasse impact style graffiti
-  c.font = "900 78px Impact, 'Arial Black', sans-serif";
+  // Typographie grasse impact style graffiti avec dimensionnement dynamique
+  let fontSize = 78;
+  c.font = `900 ${fontSize}px Impact, 'Arial Black', sans-serif`;
+  const measured = c.measureText(text).width;
+  const maxTextW = width * 0.9;
+  if (measured > maxTextW) {
+    fontSize = Math.max(32, Math.floor((fontSize * maxTextW) / measured));
+    c.font = `900 ${fontSize}px Impact, 'Arial Black', sans-serif`;
+  }
   c.textAlign = "center";
   c.textBaseline = "middle";
 

@@ -18,11 +18,56 @@ export interface FAQItem {
   answer: string;
 }
 
+export const SIMPLE_EXPLANATION = {
+  headline: "La Théorie en 30 secondes : Tout s'écrit maintenant !",
+  intro: "Pourquoi le Gouvernement Mondial cache-t-il le Siècle Oublié ? Parce qu'il ne s'est JAMAIS déroulé dans le passé : il se passe sous nos yeux !",
+  points: [
+    {
+      icon: "⏳",
+      title: "Le Siècle Oublié est le Présent",
+      text: "L'histoire effacée il y a 800 ans n'est pas une guerre ancienne : c'est notre présent, celui que nous lisons depuis le chapitre 1 avec Luffy.",
+    },
+    {
+      icon: "👑",
+      title: "Joy Boy, c'est Luffy",
+      text: "Joy Boy n'est pas un héros mort dans l'antiquité. C'est le titre politique et historique que le monde unifié donnera à Luffy après la libération finale.",
+    },
+    {
+      icon: "📜",
+      title: "Les Ponéglyphes viennent du futur",
+      text: "Indestructibles parce que faits d'une matière inconnue dans le passé. Rédigés par Robin et sculptés par les Kozuki, ils sont envoyés dans le temps pour guider l'équipage.",
+    },
+    {
+      icon: "🗺️",
+      title: "Laugh Tale est une question de temps",
+      text: "Laugh Tale n'est pas cachée sur une carte : elle était inaccessible dans le temps ! Roger a ri parce qu'il était 25 ans trop tôt, avant que Joy Boy ne naisse.",
+    },
+  ],
+  comparison: [
+    {
+      myth: "Le Siècle Oublié est une guerre terminée il y a 800 ans.",
+      reality: "Le Siècle Oublié est la grande guerre actuelle que Luffy mène contre le Gouvernement Mondial.",
+    },
+    {
+      myth: "Joy Boy est un roi antique disparu qui a échoué.",
+      reality: "Joy Boy est le nom que portera Luffy une fois le monde libéré de l'oppression d'Imu.",
+    },
+    {
+      myth: "Laugh Tale est une île introuvable dans l'océan.",
+      reality: "Laugh Tale est une coordonnée temporelle : Roger est arrivé trop tôt, Luffy arrivera au moment parfait.",
+    },
+    {
+      myth: "Davy Jones est une vieille légende de pirates.",
+      reality: "Davy Jones est le nom historique que recevra Barbe Noire dans sa chute contre Joy Boy.",
+    },
+  ],
+};
+
 export const CENTRAL_THESIS = {
   title: "Le Siècle Oublié est le Présent",
-  subtitle: "L'histoire effacée il y a 800 ans n'a jamais eu lieu dans le passé : elle s'écrit sous nos yeux depuis le chapitre 1.",
+  subtitle: "L'histoire effacée il y a 800 ans n'a jamais eu lieu dans le passé : elle s'écrit sous nos yeux depuis le départ de Fushia.",
   overview:
-    "Et si l'Histoire de One Piece n'était pas une archéologie du passé, mais la chronique d'un futur envoyé pour sauver le monde ? Selon la Théorie des Fous du Bus, le grand vide de 100 ans n'est pas une guerre oubliée qui s'est déroulée il y a 800 ans : c'est l'époque actuelle que nous lisons depuis le départ de Luffy de Fushia. Les Ponéglyphes sont des messages venus de l'avenir, et Laugh Tale est le point temporel où le destin de Luffy rencontre la légende de Joy Boy.",
+    "Et si le plus grand secret de One Piece était sous nos yeux depuis 25 ans ? La Théorie des Fous du Bus démontre que le manga ne raconte pas l'archéologie d'un monde disparu, mais l'écriture en direct du Siècle Oublié. Luffy est Joy Boy, les Ponéglyphes sont des balises temporelles envoyées par les Mugiwaras, et Laugh Tale est le point de convergence où passé, présent et futur ne font plus qu'un.",
   quotes: [
     {
       author: "Gol D. Roger",

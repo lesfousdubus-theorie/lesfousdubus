@@ -210,6 +210,7 @@ export default function CameraRig({
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
     el.addEventListener("wheel", wheel, { passive: false });
+    window.addEventListener("wheel", wheel, { passive: false });
     window.addEventListener("keydown", key);
     window.addEventListener("bus-zoom", onCustomZoom);
     window.addEventListener("bus-zoom-reset", onCustomZoomReset);
@@ -220,6 +221,7 @@ export default function CameraRig({
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", up);
       el.removeEventListener("wheel", wheel);
+      window.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", key);
       window.removeEventListener("bus-zoom", onCustomZoom);
       window.removeEventListener("bus-zoom-reset", onCustomZoomReset);

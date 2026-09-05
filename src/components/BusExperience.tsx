@@ -25,12 +25,7 @@ export default function BusExperience() {
   const [headlights, setHeadlights] = useState(false);
   const [hornPulse, setHornPulse] = useState(0);
   const [hornVisible, setHornVisible] = useState(false);
-  const [tvOn, setTvOn] = useState(() => {
-    if (typeof window !== "undefined") {
-      return new URLSearchParams(window.location.search).get("phase") === "inside";
-    }
-    return false;
-  });
+  const [tvOn, setTvOn] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showTheoryModal, setShowTheoryModal] = useState(false);
@@ -532,9 +527,6 @@ export default function BusExperience() {
       <div className="absolute bottom-16 sm:bottom-6 left-1/2 z-[110] flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 max-w-[95vw] sm:max-w-xl">
         {phase === "outside" || phase === "entering" ? (
           <>
-            <HudButton onClick={() => setShowTheoryModal(true)} icon="📜" disabled={busy}>
-              Théorie
-            </HudButton>
             <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
               {headlights ? "Éteindre" : "Phares"}
             </HudButton>
@@ -552,9 +544,6 @@ export default function BusExperience() {
           </>
         ) : (
           <>
-            <HudButton onClick={() => setShowTheoryModal(true)} icon="📜" disabled={busy}>
-              Théorie
-            </HudButton>
             <HudButton onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy}>
               {tvOn ? "Éteindre la TV" : "Allumer la TV"}
             </HudButton>

@@ -4,6 +4,7 @@ import { useEffect, useState, useId, useCallback } from "react";
 import {
   CENTRAL_THESIS,
   CORE_PILLARS,
+  SIMPLE_EXPLANATION,
   THEORY_CHAPTERS,
   THEORY_FAQ,
   type TheoryChapter,
@@ -137,17 +138,71 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
           {/* 1. ONGLET THÈSE */}
           {activeTab === "thesis" && (
             <div className="space-y-6">
-              <div className="rounded-2xl border border-[#ffd23f]/30 bg-[#ffd23f]/5 p-4 sm:p-5">
-                <span className="rounded-full bg-[#ffd23f] px-2.5 py-0.5 text-xs font-black uppercase text-[#0d2190]">
-                  Thèse Centrale
+              {/* Résumé express en 30 secondes */}
+              <div className="rounded-2xl border-2 border-[#ffd23f] bg-gradient-to-br from-[#ffd23f]/15 to-[#0c1322] p-4 sm:p-6 shadow-[0_0_30px_rgba(255,210,63,0.2)]">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xl">⚡</span>
+                  <span className="rounded-md bg-[#ffd23f] px-2.5 py-0.5 text-xs font-black uppercase text-[#0d2190]">
+                    L&apos;Essentiel en 30 secondes
+                  </span>
+                </div>
+                <h3 className="text-lg sm:text-2xl font-black text-white">
+                  {SIMPLE_EXPLANATION.headline}
+                </h3>
+                <p className="mt-1 text-xs sm:text-sm font-semibold text-[#ffd23f]">
+                  {SIMPLE_EXPLANATION.intro}
+                </p>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {SIMPLE_EXPLANATION.points.map((pt, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-xl border border-[#ffd23f]/30 bg-black/50 p-3.5 flex items-start gap-3"
+                    >
+                      <span className="text-2xl flex-shrink-0">{pt.icon}</span>
+                      <div>
+                        <div className="font-black text-sm text-[#ffd23f]">{pt.title}</div>
+                        <p className="mt-0.5 text-xs sm:text-[13px] text-white/90 leading-snug">{pt.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Ce que le monde croit vs La Vérité temporelle */}
+              <div>
+                <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#ffd23f] mb-3 flex items-center gap-2">
+                  <span>⚖️</span>
+                  <span>Ce que dit le Gouvernement vs La Réalité temporelle</span>
+                </h4>
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  {SIMPLE_EXPLANATION.comparison.map((item, idx) => (
+                    <div key={idx} className="rounded-xl border border-white/15 bg-black/40 p-3.5 space-y-2">
+                      <div className="flex items-start gap-2 text-xs sm:text-sm text-red-400">
+                        <span className="font-black">❌ Illusion :</span>
+                        <span className="text-white/75">{item.myth}</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-xs sm:text-sm text-[#ffd23f] border-t border-white/10 pt-2">
+                        <span className="font-black">✔️ Vérité :</span>
+                        <span className="text-white font-medium">{item.reality}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Thèse centrale détaillée */}
+              <div className="rounded-2xl border border-white/15 bg-white/5 p-4 sm:p-5">
+                <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-black uppercase text-white/80">
+                  Dossier Théorique
                 </span>
-                <h3 className="mt-2 text-lg sm:text-2xl font-black text-white">
+                <h3 className="mt-2 text-base sm:text-xl font-black text-white">
                   {CENTRAL_THESIS.title}
                 </h3>
-                <p className="mt-1 text-xs sm:text-sm font-bold text-[#ffd23f]">
+                <p className="mt-0.5 text-xs sm:text-sm font-bold text-[#ffd23f]">
                   {CENTRAL_THESIS.subtitle}
                 </p>
-                <p className="mt-3 text-xs sm:text-sm text-white/90">
+                <p className="mt-2.5 text-xs sm:text-sm text-white/85">
                   {CENTRAL_THESIS.overview}
                 </p>
               </div>

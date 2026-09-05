@@ -401,7 +401,7 @@ export default function Bus({
   const tagSiecleTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "LE SIÈCLE OUBLIÉ EST LE PRÉSENT",
+        text: "LE SIÈCLE OUBLIÉ, LE PRÉSENT",
         sub: "LA VÉRITÉ S'ÉCRIT MAINTENANT",
         color: "#ffd23f",
         stroke: "#000000",
@@ -410,14 +410,14 @@ export default function Bus({
     [],
   );
 
-  const tagJoyBoyTex = useMemo(
+  const tagBarbeNoireTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "JOY BOY = LUFFY",
-        sub: "LIBÉRATEUR DU MONDE 👑",
-        color: "#ffffff",
-        stroke: "#92400e",
-        angle: 0.04,
+        text: "BARBE NOIRE ET DAVID JONES, LUFFY, ENIES ET JOY BOY",
+        sub: "LA VÉRITÉ SUR LE MONDE",
+        color: "#f87171",
+        stroke: "#450a0a",
+        angle: 0.02,
       }),
     [],
   );
@@ -425,7 +425,7 @@ export default function Bus({
   const tagLaughTaleTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "LAUGH TALE ➜ DANS LE FUTUR",
+        text: "LAUGH TALE EST UNE QUESTION DE TEMPS",
         sub: "ROGER ÉTAIT EN AVANCE !",
         color: "#38bdf8",
         stroke: "#0c4a6e",
@@ -437,23 +437,11 @@ export default function Bus({
   const tagPoneglyphesTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "PONÉGLYPHES = MÉMOIRE DU FUTUR",
-        sub: "GRAVÉS PAR ROBIN & KOZUKI",
+        text: "LES PONÉGLYPHES VIENNENT DU FUTUR",
+        sub: "LA MÉMOIRE DE L'AVENIR",
         color: "#a3e635",
         stroke: "#14532d",
         angle: 0.03,
-      }),
-    [],
-  );
-
-  const tagDavyJonesTex = useMemo(
-    () =>
-      makeGraffitiTexture({
-        text: "DAVY JONES = BARBE NOIRE",
-        sub: "LA MÉPRISE D'IMU",
-        color: "#f87171",
-        stroke: "#450a0a",
-        angle: -0.04,
       }),
     [],
   );
@@ -492,14 +480,17 @@ export default function Bus({
       return;
     }
 
-    const targetVolume = phase === "inside" ? 100 : 25;
+    const isInsideOrEntering = phase === "inside" || phase === "entering";
+    const targetVolume = isInsideOrEntering ? 100 : 25;
     const iframe = primaryIframeRef.current;
     if (iframe?.contentWindow) {
       try {
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "unMute", args: [] }),
-          "*",
-        );
+        if (isInsideOrEntering) {
+          iframe.contentWindow.postMessage(
+            JSON.stringify({ event: "command", func: "unMute", args: [] }),
+            "*",
+          );
+        }
         iframe.contentWindow.postMessage(
           JSON.stringify({ event: "command", func: "setVolume", args: [targetVolume] }),
           "*",
@@ -634,15 +625,15 @@ export default function Bus({
             </mesh>
           )}
 
-          {/* Slogans de la théorie tagués au pochoir / spray sur les flancs du bus */}
+          {/* Slogans de la théorie tagués au pochoir / spray sur les flancs du bus (en dessous de la bande jaune) */}
           {sx < 0 ? (
             <>
               {/* Côté gauche (face à la caméra par défaut) */}
               <mesh
-                position={[sx * 1.352, 0.98, -1.3]}
+                position={[sx * 1.358, 0.78, -1.2]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.1, 0.76]} />
+                <planeGeometry args={[3.2, 0.46]} />
                 <meshStandardMaterial
                   map={tagSiecleTex}
                   transparent
@@ -653,12 +644,12 @@ export default function Bus({
                 />
               </mesh>
               <mesh
-                position={[sx * 1.352, 0.99, -3.7]}
+                position={[sx * 1.358, 0.78, -3.5]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[1.9, 0.62]} />
+                <planeGeometry args={[2.2, 0.46]} />
                 <meshStandardMaterial
-                  map={tagJoyBoyTex}
+                  map={tagLaughTaleTex}
                   transparent
                   depthWrite={false}
                   polygonOffset
@@ -668,12 +659,12 @@ export default function Bus({
               </mesh>
               {numRows >= 6 && (
                 <mesh
-                  position={[sx * 1.352, 0.98, 2.7]}
+                  position={[sx * 1.358, 0.78, 2.7]}
                   rotation={[0, -Math.PI / 2, 0]}
                 >
-                  <planeGeometry args={[2.7, 0.66]} />
+                  <planeGeometry args={[3.4, 0.46]} />
                   <meshStandardMaterial
-                    map={tagLaughTaleTex}
+                    map={tagBarbeNoireTex}
                     transparent
                     depthWrite={false}
                     polygonOffset
@@ -687,10 +678,10 @@ export default function Bus({
             <>
               {/* Côté droit */}
               <mesh
-                position={[sx * 1.352, 0.98, -1.6]}
+                position={[sx * 1.358, 0.78, -1.6]}
                 rotation={[0, Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.9, 0.72]} />
+                <planeGeometry args={[3.0, 0.46]} />
                 <meshStandardMaterial
                   map={tagPoneglyphesTex}
                   transparent
@@ -702,12 +693,12 @@ export default function Bus({
               </mesh>
               {numRows >= 5 && (
                 <mesh
-                  position={[sx * 1.352, 0.98, 1.6]}
+                  position={[sx * 1.358, 0.78, 1.8]}
                   rotation={[0, Math.PI / 2, 0]}
                 >
-                  <planeGeometry args={[2.6, 0.65]} />
+                  <planeGeometry args={[3.4, 0.46]} />
                   <meshStandardMaterial
-                    map={tagDavyJonesTex}
+                    map={tagBarbeNoireTex}
                     transparent
                     depthWrite={false}
                     polygonOffset
@@ -852,14 +843,14 @@ export default function Bus({
         </mesh>
       ))}
 
-      {/* Logo emblème officiel Le Mont Corvo à l'avant du bus */}
-      <group position={[0, 1.33, -6.01]}>
+      {/* Logo emblème officiel Le Mont Corvo à l'avant du bus (surélevé au-dessus de la grille d'aération) */}
+      <group position={[0, 1.48, -6.05]}>
         {/* Cerclage chromé d'emblème */}
         <mesh material={mats.chrome} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.26, 0.26, 0.025, 32]} />
         </mesh>
         {/* Disque avec le logo pirate Le Mont Corvo */}
-        <mesh position={[0, 0, -0.016]}>
+        <mesh position={[0, 0, -0.018]}>
           <circleGeometry args={[0.24, 32]} />
           <meshStandardMaterial
             map={montCorvoTex}
@@ -1081,10 +1072,14 @@ export default function Bus({
 
       {/* PASSAGERS NAKAMA ASSIS DANS LE BUS */}
       <Passengers
-        passengerCount={passengerCount}
+        passengerCount={
+          phase === "inside" || phase === "entering"
+            ? Math.max(0, passengerCount - 1)
+            : passengerCount
+        }
         numRows={numRows}
         hornPulse={hornPulse}
-        reservedRow={reservedRow}
+        reservedRow={phase === "inside" || phase === "entering" ? reservedRow : -1}
       />
 
       {/* Poste de conduite avec volant et tableau de bord */}
@@ -1129,129 +1124,245 @@ export default function Bus({
         </mesh>
       </group>
 
-      {/* ---------- TÉLÉVISIONS DU BUS (Une à l'avant + une toutes les 4 rangées) ---------- */}
-      {tvPositions.map((pos, idx) => {
-        const isPrimary = idx === 0;
-        return (
-          <group
-            key={`tv-${idx}-${pos[2]}`}
-            position={pos}
-            onClick={(e: any) => {
-              e.stopPropagation();
-              onToggleTv?.();
+      {/* ---------- TÉLÉVISIONS DU BUS (Une à l'avant + une toutes les 5 rangées) ---------- */}
+      {tvPositions.map((pos, idx) => (
+        <BusTvUnit
+          key={`tv-${idx}-${pos[2]}`}
+          pos={pos}
+          idx={idx}
+          tvOn={tvOn}
+          phase={phase}
+          isPrimary={idx === 0}
+          onToggleTv={onToggleTv}
+          onTogglePlay={onTogglePlay}
+          onToggleFullscreen={onToggleFullscreen}
+          isMutedForFullscreen={isMutedForFullscreen}
+          rearWallZ={rearWallZ}
+          mats={mats}
+          tvOffTex={tvOffTex}
+          primaryIframeRef={primaryIframeRef}
+        />
+      ))}
+    </group>
+  );
+}
+
+interface BusTvUnitProps {
+  pos: [number, number, number];
+  idx: number;
+  tvOn: boolean;
+  phase: "outside" | "entering" | "inside" | "exiting";
+  isPrimary: boolean;
+  onToggleTv?: () => void;
+  onTogglePlay?: () => void;
+  onToggleFullscreen?: () => void;
+  isMutedForFullscreen: boolean;
+  rearWallZ: number;
+  mats: Record<string, THREE.Material>;
+  tvOffTex: THREE.CanvasTexture;
+  primaryIframeRef: React.RefObject<HTMLIFrameElement | null>;
+}
+
+function BusTvUnit({
+  pos,
+  idx,
+  tvOn,
+  phase,
+  isPrimary,
+  onToggleTv,
+  onTogglePlay,
+  onToggleFullscreen,
+  isMutedForFullscreen,
+  rearWallZ,
+  mats,
+  tvOffTex,
+  primaryIframeRef,
+}: BusTvUnitProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useFrame(({ camera }) => {
+    if (!containerRef.current) return;
+
+    // 1. Culling arrière (Backface culling) : la TV fait face à +Z (l'intérieur de la cabine)
+    // Si la caméra est derrière le plan de l'écran, masquer immédiatement la vidéo
+    const camZ = camera.position.z;
+    const camY = camera.position.y;
+    const tvZ = pos[2];
+    const tvY = pos[1];
+    const isFacing = camZ - tvZ > 0.06;
+
+    // 2. Occlusion 3D quand la caméra est à l'extérieur
+    let isOccluded = false;
+    if (phase === "outside") {
+      // Au-dessus du toit : le plafond du bus masque totalement la TV
+      if (camY > 3.05) isOccluded = true;
+      // En dessous des vitres : la carrosserie basse masque la TV
+      else if (camY < 1.70) isOccluded = true;
+      // Devant la cabine : le capot avant masque l'écran
+      else if (camZ < -4.4) isOccluded = true;
+      // Derrière le bus : la paroi arrière masque l'écran
+      else if (camZ > rearWallZ + 0.15) isOccluded = true;
+      // Ligne de visée coupant le toit
+      else if (camY > tvY) {
+        const tRoof = (3.15 - tvY) / (camY - tvY);
+        if (tRoof > 0 && tRoof < 1) {
+          const zAtRoof = tvZ + tRoof * (camZ - tvZ);
+          if (zAtRoof >= -4.6 && zAtRoof <= rearWallZ) isOccluded = true;
+        }
+      }
+    }
+
+    const shouldShow = isFacing && !isOccluded && !isMutedForFullscreen && tvOn;
+    const targetDisplay = shouldShow ? "block" : "none";
+    if (containerRef.current.style.display !== targetDisplay) {
+      containerRef.current.style.display = targetDisplay;
+    }
+  });
+
+  return (
+    <group
+      key={`tv-${idx}-${pos[2]}`}
+      position={pos}
+      onClick={(e: any) => {
+        e.stopPropagation();
+        onToggleTv?.();
+      }}
+    >
+      {/* Cadre de la télévision */}
+      <mesh material={mats.dark} castShadow>
+        <boxGeometry args={[1.36, 0.82, 0.08]} />
+      </mesh>
+      {/* Dos opaque de la télévision pour empêcher toute transparence par l'arrière */}
+      <mesh material={mats.dark} position={[0, 0, -0.041]}>
+        <planeGeometry args={[1.34, 0.8]} />
+      </mesh>
+      {/* Bordure dorée One Piece */}
+      <mesh material={mats.yellow} position={[0, 0, 0.041]}>
+        <boxGeometry args={[1.34, 0.8, 0.01]} />
+      </mesh>
+      {/* Support de fixation au plafond */}
+      <mesh material={mats.seatFrame} position={[0, 0.52, -0.08]}>
+        <boxGeometry args={[0.12, 0.38, 0.12]} />
+      </mesh>
+
+      {/* Écran TV éteint si tvOn === false */}
+      {!tvOn && (
+        <mesh position={[0, 0, 0.047]}>
+          <planeGeometry args={[1.26, 0.72]} />
+          <meshStandardMaterial
+            map={tvOffTex}
+            emissive="#ffffff"
+            emissiveMap={tvOffTex}
+            emissiveIntensity={0.25}
+          />
+        </mesh>
+      )}
+
+      {/* TV 0 : Lecteur principal (avec audio et contrôles) */}
+      {isPrimary && (
+        <Html
+          transform
+          distanceFactor={400}
+          position={[0, 0, 0.052]}
+          scale={0.00225}
+          style={{
+            userSelect: "none",
+            backfaceVisibility: "hidden",
+            pointerEvents: phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
+          }}
+        >
+          <div
+            ref={containerRef}
+            id="tv-frame"
+            style={{
+              position: "relative",
+              width: 560,
+              height: 315,
+              background: "#000000",
+              borderRadius: "8px",
+              overflow: "hidden",
+              boxShadow: "0 0 24px rgba(255, 210, 63, 0.35)",
+              border: "2px solid #1a1d26",
             }}
           >
-            {/* Cadre de la télévision */}
-            <mesh material={mats.dark} castShadow>
-              <boxGeometry args={[1.36, 0.82, 0.08]} />
-            </mesh>
-            {/* Bordure dorée One Piece */}
-            <mesh material={mats.yellow} position={[0, 0, 0.041]}>
-              <boxGeometry args={[1.34, 0.8, 0.01]} />
-            </mesh>
-            {/* Support de fixation au plafond */}
-            <mesh material={mats.seatFrame} position={[0, 0.52, -0.08]}>
-              <boxGeometry args={[0.12, 0.38, 0.12]} />
-            </mesh>
+            {/* Overlay transparent interactif pour capturer le zoom molette & clics */}
+            <div
+              onWheel={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.dispatchEvent(
+                  new CustomEvent("bus-zoom", { detail: e.deltaY * 0.04 })
+                );
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onTogglePlay?.();
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                onToggleFullscreen?.();
+              }}
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 10,
+                cursor: "pointer",
+              }}
+              title="Cliquer : lecture/pause · Double-clic : plein écran · Molette : zoomer"
+            />
+            <iframe
+              ref={primaryIframeRef}
+              id="tv-primary-iframe"
+              width="560"
+              height="315"
+              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0&enablejsapi=1&fs=1&playsinline=1`}
+              title="La théorie des Fous du Bus"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+              allowFullScreen
+              style={{ border: 0, display: "block", width: "100%", height: "100%" }}
+            />
+          </div>
+        </Html>
+      )}
 
-            {/* Écran TV 3D :
-                - Quand la télé est éteinte : affiche l'écran éteint en veille
-                - Quand la télé est allumée : aucun fond 3D (la vidéo YouTube reste active et visible en 3D en permanence) */}
-            {!tvOn && (
-              <mesh position={[0, 0, 0.047]}>
-                <planeGeometry args={[1.26, 0.72]} />
-                <meshStandardMaterial
-                  map={tvOffTex}
-                  emissive="#ffffff"
-                  emissiveMap={tvOffTex}
-                  emissiveIntensity={0.25}
-                />
-              </mesh>
-            )}
-
-            {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels, toujours visible en 3D même dehors) */}
-            {isPrimary && tvOn && (
-              <Html
-                transform
-                distanceFactor={400}
-                position={[0, 0, 0.052]}
-                scale={0.00225}
-                style={{
-                  pointerEvents: phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
-                  userSelect: "none",
-                  opacity: !isMutedForFullscreen ? 1 : 0.001,
-                  backfaceVisibility: "hidden",
-                  transition: "opacity 0.2s ease",
-                }}
-              >
-                <div
-                  id="tv-frame"
-                  style={{
-                    position: "relative",
-                    width: 560,
-                    height: 315,
-                    background: "#000000",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 0 24px rgba(255, 210, 63, 0.35)",
-                    border: "2px solid #1a1d26",
-                  }}
-                >
-                  <iframe
-                    ref={primaryIframeRef}
-                    id="tv-primary-iframe"
-                    width="560"
-                    height="315"
-                    src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&enablejsapi=1&fs=1&playsinline=1`}
-                    title="La théorie des Fous du Bus"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                    allowFullScreen
-                    style={{ border: 0, display: "block", width: "100%", height: "100%" }}
-                  />
-                </div>
-              </Html>
-            )}
-
-            {/* TV 1, 2, ... : Écrans secondaires dans l'allée (vidéo synchronisée, mute=1) */}
-            {!isPrimary && tvOn && !isMutedForFullscreen && (
-              <Html
-                transform
-                distanceFactor={400}
-                position={[0, 0, 0.052]}
-                scale={0.00225}
-                style={{
-                  pointerEvents: "none",
-                  userSelect: "none",
-                  backfaceVisibility: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    position: "relative",
-                    width: 560,
-                    height: 315,
-                    background: "#000000",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 0 24px rgba(255, 210, 63, 0.35)",
-                    border: "2px solid #1a1d26",
-                  }}
-                >
-                  <iframe
-                    className="secondary-tv-iframe"
-                    width="560"
-                    height="315"
-                    src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&playsinline=1`}
-                    title={`TV ${idx + 1}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    style={{ border: 0, display: "block", width: "100%", height: "100%" }}
-                  />
-                </div>
-              </Html>
-            )}
-          </group>
-        );
-      })}
+      {/* TV 1, 2, ... : Écrans secondaires dans l'allée */}
+      {!isPrimary && (
+        <Html
+          transform
+          distanceFactor={400}
+          position={[0, 0, 0.052]}
+          scale={0.00225}
+          style={{
+            pointerEvents: "none",
+            userSelect: "none",
+            backfaceVisibility: "hidden",
+          }}
+        >
+          <div
+            ref={containerRef}
+            style={{
+              position: "relative",
+              width: 560,
+              height: 315,
+              background: "#000000",
+              borderRadius: "8px",
+              overflow: "hidden",
+              boxShadow: "0 0 24px rgba(255, 210, 63, 0.35)",
+              border: "2px solid #1a1d26",
+            }}
+          >
+            <iframe
+              className="secondary-tv-iframe"
+              width="560"
+              height="315"
+              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&playsinline=1`}
+              title={`TV ${idx + 1}`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              style={{ border: 0, display: "block", width: "100%", height: "100%" }}
+            />
+          </div>
+        </Html>
+      )}
     </group>
   );
 }
