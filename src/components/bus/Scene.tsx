@@ -24,6 +24,7 @@ interface SceneProps {
   onStop?: () => void;
   onToggleFullscreen?: () => void;
   isMutedForFullscreen?: boolean;
+  hasEntered?: boolean;
   modeOverride?: "day" | "night" | null;
 }
 
@@ -42,6 +43,7 @@ export default function Scene({
   onStop,
   onToggleFullscreen,
   isMutedForFullscreen = false,
+  hasEntered = false,
   modeOverride,
 }: SceneProps) {
   // Calcul géométrique de la cabine pour la caméra
@@ -78,6 +80,7 @@ export default function Scene({
           onStop={onStop}
           onToggleFullscreen={onToggleFullscreen}
           isMutedForFullscreen={isMutedForFullscreen}
+          hasEntered={hasEntered}
         />
       </Suspense>
       <World worldRef={worldRef} />

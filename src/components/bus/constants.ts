@@ -21,4 +21,6 @@ export interface WorldState {
   timeOfDay: number; // 0..1
   zone: number;
   scroll: number;
+  speedMultiplier: number; // Vitesse de déplacement du bus
 }
+

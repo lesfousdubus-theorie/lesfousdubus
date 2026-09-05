@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Scene from "./bus/Scene";
 import { computeNumRows } from "./bus/Passengers";
 import { YOUTUBE_ID, type Phase, type WorldState } from "./bus/constants";
-import { playDing, playHorn, playStretch } from "@/lib/horn";
+import { playDing, playHorn, playStretch, playBoost } from "@/lib/horn";
 import TheoryModal from "./TheoryModal";
 
 interface ToastMessage {
@@ -26,9 +26,38 @@ export default function BusExperience() {
   const [hornPulse, setHornPulse] = useState(0);
   const [hornVisible, setHornVisible] = useState(false);
   const [tvOn, setTvOn] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
+
+  // La vidéo ne doit PAS commencer tant qu'on n'est pas rentré dans le bus
+  const [hasEntered, setHasEntered] = useState(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search).get("phase");
+      if (p === "inside") return true;
+    }
+    return false;
+  });
+  const [isPlaying, setIsPlaying] = useState(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search).get("phase");
+      if (p === "inside") return true;
+    }
+    return false;
+  });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showTheoryModal, setShowTheoryModal] = useState(false);
+
+  // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
+  const [speedMultiplier, setSpeedMultiplier] = useState(() => {
+    if (typeof window !== "undefined") {
+      const b = new URLSearchParams(window.location.search).get("boost");
+      if (b === "1" || b === "true") return 2.5;
+      const s = new URLSearchParams(window.location.search).get("speed");
+      if (s) {
+        const parsed = parseFloat(s);
+        if (!Number.isNaN(parsed) && parsed > 0) return Math.min(3.0, Math.max(0.3, parsed));
+      }
+    }
+    return 1.0;
+  });
 
   // Compteur initial démarre à 0 si la base est vide (le bus est vide au début)
   const [count, setCount] = useState<number | null>(() => {
@@ -60,7 +89,13 @@ export default function BusExperience() {
   const [manualDayNight, setManualDayNight] = useState<"day" | "night" | null>(null);
 
   const toastTimeout = useRef<NodeJS.Timeout | null>(null);
-  const worldRef = useRef<WorldState>({ daylight: 1, timeOfDay: 0.2, zone: 0, scroll: 0 });
+  const worldRef = useRef<WorldState>({
+    daylight: 1,
+    timeOfDay: 0.2,
+    zone: 0,
+    scroll: 0,
+    speedMultiplier: 1.0,
+  });
 
   // Références pour les phares automatiques jour / nuit
   const prevIsNight = useRef(false);
@@ -82,6 +117,54 @@ export default function BusExperience() {
       setToast((cur) => (cur?.id === id ? null : cur));
     }, 2800);
   }, []);
+
+  // Synchronise en continu la vitesse du bus avec le moteur 3D
+  useEffect(() => {
+    worldRef.current.speedMultiplier = speedMultiplier;
+  }, [speedMultiplier]);
+
+  // Détection du mode boost via l'URL (?boost=1)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const b = new URLSearchParams(window.location.search).get("boost");
+      if (b === "1" || b === "true") {
+        playBoost();
+        const timer = setTimeout(() => {
+          showToast("🚀 Mode Boost activé !", "Le bus file à pleine allure vers Laugh Tale !", "⚡ BOOST");
+        }, 120);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [showToast]);
+
+  // Faire accélérer le bus (jusqu'à 3.0x max)
+  const accelerateBus = useCallback(() => {
+    setSpeedMultiplier((cur) => {
+      const next = Math.min(3.0, Math.round((cur + 0.5) * 10) / 10);
+      if (next >= 2.5) {
+        playBoost();
+        showToast("🚀 TURBO BOOST !", `Vitesse ${next}x : Plein gaz vers Laugh Tale !`, "⚡ BOOST");
+      } else {
+        playDing();
+        showToast("Accélération !", `Vitesse du bus augmentée à ${next}x`, "⚡ VITESSE");
+      }
+      return next;
+    });
+  }, [showToast]);
+
+  // Faire ralentir le bus (jusqu'à 0.3x min)
+  const decelerateBus = useCallback(() => {
+    setSpeedMultiplier((cur) => {
+      const next = Math.max(0.3, Math.round((cur - 0.5) * 10) / 10);
+      playDing();
+      if (next <= 0.5) {
+        showToast("Ralentissement", `Vitesse ralentie à ${next}x (croisière tranquille)`, "🐢 VITESSE");
+      } else {
+        showToast("Ralentissement", `Vitesse du bus réduite à ${next}x`, "🐢 VITESSE");
+      }
+      return next;
+    });
+  }, [showToast]);
 
   // Récupération initiale du nombre réel de passagers depuis l'API
   useEffect(() => {
@@ -200,6 +283,7 @@ export default function BusExperience() {
   // Entrer dans le bus : incrémente la DB (+1) et active la TV
   const enterBus = useCallback(async () => {
     if (phase !== "outside") return;
+    setHasEntered(true);
     setPhase("entering");
     setTvOn(true);
     setIsPlaying(true);
@@ -339,18 +423,47 @@ export default function BusExperience() {
     }
   }, []);
 
-  // Raccourcis clavier (H = klaxon, L = phares, Escape = quitter plein écran)
+  // Raccourcis clavier (H = klaxon, L = phares, +/↑ = accélérer, -/↓ = ralentir, B = boost, Escape = quitter plein écran)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Évite les raccourcis si l'utilisateur est dans un input (recherche du modal)
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+
       if (e.key === "h" || e.key === "H") honk();
       if (e.key === "l" || e.key === "L") toggleHeadlights();
+      if (e.key === "+" || e.key === "=" || e.key === "ArrowUp") {
+        e.preventDefault();
+        accelerateBus();
+      }
+      if (e.key === "-" || e.key === "_" || e.key === "ArrowDown") {
+        e.preventDefault();
+        decelerateBus();
+      }
+      if (e.key === "b" || e.key === "B") {
+        setSpeedMultiplier((cur) => {
+          if (cur < 2.0) {
+            playBoost();
+            showToast("🚀 TURBO BOOST !", "Vitesse 2.5x enclenchée !", "⚡ BOOST");
+            return 2.5;
+          } else {
+            playDing();
+            showToast("Vitesse Normale", "Retour à 1.0x", "🚌 VITESSE");
+            return 1.0;
+          }
+        });
+      }
       if (e.key === "Escape" && isFullscreen) {
         setIsFullscreen(false);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [honk, toggleHeadlights, isFullscreen]);
+  }, [honk, toggleHeadlights, isFullscreen, accelerateBus, decelerateBus, showToast]);
 
   const effectiveCount = count ?? 0;
   const numRows = computeNumRows(effectiveCount);
@@ -373,6 +486,7 @@ export default function BusExperience() {
         onStop={handleStop}
         onToggleFullscreen={toggleFullscreen}
         isMutedForFullscreen={false}
+        hasEntered={hasEntered}
         modeOverride={manualDayNight}
       />
 
@@ -455,6 +569,52 @@ export default function BusExperience() {
         <span className="text-white/50 text-[10px] sm:text-xs">· Changer</span>
       </button>
 
+      {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
+      <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 z-50 flex items-center gap-1 sm:gap-1.5 rounded-full border border-white/25 bg-black/65 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm shadow-lg backdrop-blur-md">
+        <button
+          type="button"
+          onClick={decelerateBus}
+          disabled={speedMultiplier <= 0.3}
+          aria-label="Ralentir le bus"
+          className="flex items-center gap-1 rounded-full bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95 disabled:opacity-30 cursor-pointer"
+          title="Ralentir le bus (Touche - ou Flèche Bas)"
+        >
+          <span>🐢</span>
+          <span>Ralentir</span>
+        </button>
+
+        <div className="flex items-center gap-1 px-1 sm:px-1.5 font-black tabular-nums">
+          <span
+            className={
+              speedMultiplier >= 2.0
+                ? "text-[#ffd23f]"
+                : speedMultiplier <= 0.5
+                  ? "text-[#38bdf8]"
+                  : "text-white"
+            }
+          >
+            {speedMultiplier.toFixed(1)}x
+          </span>
+          {speedMultiplier >= 2.0 && (
+            <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[8px] sm:text-[9px] font-black uppercase text-[#0d2190]">
+              Boost
+            </span>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={accelerateBus}
+          disabled={speedMultiplier >= 3.0}
+          aria-label="Accélérer le bus"
+          className="flex items-center gap-1 rounded-full bg-[#ffd23f]/25 px-2 sm:px-2.5 py-1 text-xs font-black text-[#ffd23f] transition hover:bg-[#ffd23f]/40 active:scale-95 disabled:opacity-30 cursor-pointer"
+          title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
+        >
+          <span>⚡</span>
+          <span>Accélérer</span>
+        </button>
+      </div>
+
       {/* Klaxon visuel */}
       {hornVisible && (
         <div className="pointer-events-none absolute left-1/2 top-[38%] z-50 -translate-x-1/2 animate-bounce">
@@ -524,7 +684,7 @@ export default function BusExperience() {
       )}
 
       {/* Barre de boutons principale */}
-      <div className="absolute bottom-16 sm:bottom-6 left-1/2 z-[110] flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 max-w-[95vw] sm:max-w-xl">
+      <div className="absolute bottom-16 md:bottom-6 left-1/2 z-[110] flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 max-w-[95vw] sm:max-w-xl">
         {phase === "outside" || phase === "entering" ? (
           <>
             <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
@@ -533,11 +693,6 @@ export default function BusExperience() {
             <HudButton onClick={honk} icon="📯" disabled={busy}>
               Klaxonner
             </HudButton>
-            {tvOn && (
-              <HudButton onClick={() => setTvOn(false)} icon="📺" disabled={busy}>
-                Éteindre la TV
-              </HudButton>
-            )}
             <HudButton onClick={enterBus} primary icon="🚪" disabled={busy}>
               {phase === "entering" ? "Installation…" : "Entrer dans le bus"}
             </HudButton>

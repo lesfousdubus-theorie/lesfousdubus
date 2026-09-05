@@ -28,6 +28,7 @@ interface BusProps {
   onStop?: () => void;
   onToggleFullscreen?: () => void;
   isMutedForFullscreen?: boolean;
+  hasEntered?: boolean;
 }
 
 const BLUE = "#154ddb";
@@ -50,6 +51,7 @@ export default function Bus({
   onStop,
   onToggleFullscreen,
   isMutedForFullscreen = false,
+  hasEntered = false,
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
   const hat = useRef<THREE.Group>(null);
@@ -397,24 +399,24 @@ export default function Bus({
   const dashTex = useMemo(() => makeDashboardTexture(), []);
   const licensePlateTex = useMemo(() => makeLicensePlateTexture(), []);
 
-  // Textures de slogans de la théorie tagués sur le bus
+  // Les 5 phrases exactes de la théorie taguées sur le bus
+  // 1. Le siècle oublié c'est le présent
   const tagSiecleTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "LE SIÈCLE OUBLIÉ, LE PRÉSENT",
-        sub: "LA VÉRITÉ S'ÉCRIT MAINTENANT",
+        text: "LE SIÈCLE OUBLIÉ C'EST LE PRÉSENT",
         color: "#ffd23f",
         stroke: "#000000",
-        angle: -0.035,
+        angle: -0.03,
       }),
     [],
   );
 
+  // 2. Barbe Noire est Davy Jones
   const tagBarbeNoireTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "BARBE NOIRE ET DAVID JONES, LUFFY, ENIES ET JOY BOY",
-        sub: "LA VÉRITÉ SUR LE MONDE",
+        text: "BARBE NOIRE EST DAVY JONES",
         color: "#f87171",
         stroke: "#450a0a",
         angle: 0.02,
@@ -422,38 +424,38 @@ export default function Bus({
     [],
   );
 
-  const tagLaughTaleTex = useMemo(
+  // 3. Luffy est Nika et Joy Boy
+  const tagLuffyNikaTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "LAUGH TALE EST UNE QUESTION DE TEMPS",
-        sub: "ROGER ÉTAIT EN AVANCE !",
-        color: "#38bdf8",
-        stroke: "#0c4a6e",
-        angle: -0.03,
+        text: "LUFFY EST NIKA ET JOY BOY",
+        color: "#fef08a",
+        stroke: "#78350f",
+        angle: -0.02,
       }),
     [],
   );
 
+  // 4. Les ponéglyphes viennent du futur
   const tagPoneglyphesTex = useMemo(
     () =>
       makeGraffitiTexture({
         text: "LES PONÉGLYPHES VIENNENT DU FUTUR",
-        sub: "LA MÉMOIRE DE L'AVENIR",
         color: "#a3e635",
         stroke: "#14532d",
-        angle: 0.03,
+        angle: 0.025,
       }),
     [],
   );
 
-  const tagAllBlueTex = useMemo(
+  // 5. Tout est une question de timing
+  const tagTimingTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "ALL BLUE EXISTERA !",
-        sub: "DESTRUCTION DE RED LINE",
+        text: "TOUT EST UNE QUESTION DE TIMING",
         color: "#38bdf8",
-        stroke: "#0369a1",
-        angle: 0.025,
+        stroke: "#0c4a6e",
+        angle: -0.025,
       }),
     [],
   );
@@ -461,14 +463,21 @@ export default function Bus({
   const primaryIframeRef = useRef<HTMLIFrameElement | null>(null);
 
   // Synchronisation du volume audio : 100% à l'intérieur, 25% "de loin" à l'extérieur, 0% si éteinte ou plein écran actif
+  // La vidéo ne doit PAS démarrer tant que l'utilisateur n'est pas rentré dans le bus (hasEntered === false)
   useEffect(() => {
-    if (!tvOn || isMutedForFullscreen) {
+    if (!tvOn || isMutedForFullscreen || !hasEntered) {
       if (primaryIframeRef.current?.contentWindow) {
         try {
           primaryIframeRef.current.contentWindow.postMessage(
             JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
             "*",
           );
+          if (!hasEntered) {
+            primaryIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: "command", func: "seekTo", args: [0, true] }),
+              "*",
+            );
+          }
           primaryIframeRef.current.contentWindow.postMessage(
             JSON.stringify({ event: "command", func: "setVolume", args: [0] }),
             "*",
@@ -510,11 +519,11 @@ export default function Bus({
         // ignore
       }
     }
-  }, [tvOn, phase, isPlaying, isMutedForFullscreen]);
+  }, [tvOn, phase, isPlaying, isMutedForFullscreen, hasEntered]);
 
-  // Synchronisation play/pause sur les télés secondaires de l'allée
+  // Synchronisation play/pause sur les télés secondaires de l'allée (uniquement après entrée)
   useEffect(() => {
-    if (!tvOn || isMutedForFullscreen) return;
+    if (!tvOn || isMutedForFullscreen || !hasEntered) return;
     try {
       const iframes = document.querySelectorAll<HTMLIFrameElement>(".secondary-tv-iframe");
       iframes.forEach((ifr) => {
@@ -530,7 +539,7 @@ export default function Bus({
     } catch {
       // ignore
     }
-  }, [isPlaying, tvOn, isMutedForFullscreen]);
+  }, [isPlaying, tvOn, isMutedForFullscreen, hasEntered]);
 
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
@@ -539,15 +548,17 @@ export default function Bus({
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime;
 
-    // Roulis, tangage et rebond d'extension dynamique du minibus
+    const mult = worldRef.current?.speedMultiplier ?? 1.0;
+
+    // Roulis, tangage et rebond d'extension dynamique du minibus (adapté à la vitesse)
     if (group.current) {
       const sinceStretch = (performance.now() - stretchRef.current) / 1000;
       const stretchBounce =
         sinceStretch < 0.9 ? Math.sin(sinceStretch * 20) * (0.9 - sinceStretch) * 0.05 : 0;
 
       group.current.position.y =
-        Math.sin(t * 8.5) * 0.014 + Math.sin(t * 2.1) * 0.008 + stretchBounce;
-      group.current.rotation.z = Math.sin(t * 1.6) * 0.0035;
+        (Math.sin(t * 8.5 * mult) * 0.014 + Math.sin(t * 2.1) * 0.008) * Math.min(1.4, Math.max(0.7, mult)) + stretchBounce;
+      group.current.rotation.z = Math.sin(t * 1.6 * mult) * 0.0035;
     }
 
     // Animation du chapeau : inclinaison fidèle à l'illustration (relevé vers l'avant) + oscillation au klaxon
@@ -559,9 +570,9 @@ export default function Bus({
       hat.current.rotation.z = HAT_BASE_ROT[2] + Math.sin(t * 0.8) * 0.006;
     }
 
-    // Rotation des roues du bus
+    // Rotation des roues du bus adaptée à la vitesse de défilement
     wheels.current.forEach((w) => {
-      if (w) w.rotation.x -= dt * 12;
+      if (w) w.rotation.x -= dt * 12 * mult;
     });
 
     // Éclairage intérieur doux et constant de jour comme de nuit
@@ -625,15 +636,31 @@ export default function Bus({
             </mesh>
           )}
 
-          {/* Slogans de la théorie tagués au pochoir / spray sur les flancs du bus (en dessous de la bande jaune) */}
+          {/* Slogans de la théorie tagués au pochoir / spray sur les flancs du bus */}
           {sx < 0 ? (
             <>
-              {/* Côté gauche (face à la caméra par défaut) */}
+              {/* Côté gauche (face à la caméra par défaut) - Les 5 phrases sont toutes visibles sans condition */}
+              {/* 5. Tout est une question de timing (palier haut avant) */}
               <mesh
-                position={[sx * 1.358, 0.78, -1.2]}
+                position={[sx * 1.352, 1.55, -2.8]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.2, 0.46]} />
+                <planeGeometry args={[2.1, 0.38]} />
+                <meshStandardMaterial
+                  map={tagTimingTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.4}
+                />
+              </mesh>
+              {/* 1. Le siècle oublié c'est le présent (palier bas avant) */}
+              <mesh
+                position={[sx * 1.352, 0.78, -2.5]}
+                rotation={[0, -Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[2.2, 0.44]} />
                 <meshStandardMaterial
                   map={tagSiecleTex}
                   transparent
@@ -643,13 +670,14 @@ export default function Bus({
                   roughness={0.4}
                 />
               </mesh>
+              {/* 2. Barbe Noire est Davy Jones (palier bas milieu) */}
               <mesh
-                position={[sx * 1.358, 0.78, -3.5]}
+                position={[sx * 1.352, 0.78, -0.45]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.2, 0.46]} />
+                <planeGeometry args={[1.9, 0.44]} />
                 <meshStandardMaterial
-                  map={tagLaughTaleTex}
+                  map={tagBarbeNoireTex}
                   transparent
                   depthWrite={false}
                   polygonOffset
@@ -657,31 +685,27 @@ export default function Bus({
                   roughness={0.4}
                 />
               </mesh>
-              {numRows >= 6 && (
-                <mesh
-                  position={[sx * 1.358, 0.78, 2.7]}
-                  rotation={[0, -Math.PI / 2, 0]}
-                >
-                  <planeGeometry args={[3.4, 0.46]} />
-                  <meshStandardMaterial
-                    map={tagBarbeNoireTex}
-                    transparent
-                    depthWrite={false}
-                    polygonOffset
-                    polygonOffsetFactor={-1}
-                    roughness={0.4}
-                  />
-                </mesh>
-              )}
-            </>
-          ) : (
-            <>
-              {/* Côté droit */}
+              {/* 3. Luffy est Nika et Joy Boy (palier bas arrière) */}
               <mesh
-                position={[sx * 1.358, 0.78, -1.6]}
-                rotation={[0, Math.PI / 2, 0]}
+                position={[sx * 1.352, 0.78, 1.45]}
+                rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.0, 0.46]} />
+                <planeGeometry args={[1.9, 0.44]} />
+                <meshStandardMaterial
+                  map={tagLuffyNikaTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.4}
+                />
+              </mesh>
+              {/* 4. Les ponéglyphes viennent du futur (palier haut arrière) */}
+              <mesh
+                position={[sx * 1.352, 1.55, 3.5]}
+                rotation={[0, -Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[2.0, 0.38]} />
                 <meshStandardMaterial
                   map={tagPoneglyphesTex}
                   transparent
@@ -691,22 +715,85 @@ export default function Bus({
                   roughness={0.4}
                 />
               </mesh>
-              {numRows >= 5 && (
-                <mesh
-                  position={[sx * 1.358, 0.78, 1.8]}
-                  rotation={[0, Math.PI / 2, 0]}
-                >
-                  <planeGeometry args={[3.4, 0.46]} />
-                  <meshStandardMaterial
-                    map={tagBarbeNoireTex}
-                    transparent
-                    depthWrite={false}
-                    polygonOffset
-                    polygonOffsetFactor={-1}
-                    roughness={0.4}
-                  />
-                </mesh>
-              )}
+            </>
+          ) : (
+            <>
+              {/* Côté droit - Les 5 phrases sont également toutes visibles */}
+              {/* 4. Les ponéglyphes viennent du futur (palier haut avant) */}
+              <mesh
+                position={[sx * 1.352, 1.55, -2.8]}
+                rotation={[0, Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[2.0, 0.38]} />
+                <meshStandardMaterial
+                  map={tagPoneglyphesTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.4}
+                />
+              </mesh>
+              {/* 3. Luffy est Nika et Joy Boy (palier bas avant) */}
+              <mesh
+                position={[sx * 1.352, 0.78, -2.5]}
+                rotation={[0, Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[1.9, 0.44]} />
+                <meshStandardMaterial
+                  map={tagLuffyNikaTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.4}
+                />
+              </mesh>
+              {/* 1. Le siècle oublié c'est le présent (palier bas milieu) */}
+              <mesh
+                position={[sx * 1.352, 0.78, -0.45]}
+                rotation={[0, Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[2.2, 0.44]} />
+                <meshStandardMaterial
+                  map={tagSiecleTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.4}
+                />
+              </mesh>
+              {/* 2. Barbe Noire est Davy Jones (palier bas arrière) */}
+              <mesh
+                position={[sx * 1.352, 0.78, 1.45]}
+                rotation={[0, Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[1.9, 0.44]} />
+                <meshStandardMaterial
+                  map={tagBarbeNoireTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.4}
+                />
+              </mesh>
+              {/* 5. Tout est une question de timing (palier haut arrière) */}
+              <mesh
+                position={[sx * 1.352, 1.55, 3.5]}
+                rotation={[0, Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[2.1, 0.38]} />
+                <meshStandardMaterial
+                  map={tagTimingTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.4}
+                />
+              </mesh>
             </>
           )}
           {/* Grands rétroviseurs incurvés (restent à l'avant) */}
@@ -798,11 +885,11 @@ export default function Bus({
           <meshStandardMaterial map={sideLabel} roughness={0.3} />
         </mesh>
 
-        {/* Tag graffiti arrière : ALL BLUE EXISTERA ! */}
+        {/* Tag graffiti arrière : TOUT EST UNE QUESTION DE TIMING */}
         <mesh position={[0, 1.22, 0.046]}>
-          <planeGeometry args={[2.2, 0.62]} />
+          <planeGeometry args={[2.3, 0.58]} />
           <meshStandardMaterial
-            map={tagAllBlueTex}
+            map={tagTimingTex}
             transparent
             depthWrite={false}
             polygonOffset
@@ -1137,6 +1224,7 @@ export default function Bus({
           onTogglePlay={onTogglePlay}
           onToggleFullscreen={onToggleFullscreen}
           isMutedForFullscreen={isMutedForFullscreen}
+          hasEntered={hasEntered}
           rearWallZ={rearWallZ}
           mats={mats}
           tvOffTex={tvOffTex}
@@ -1157,6 +1245,7 @@ interface BusTvUnitProps {
   onTogglePlay?: () => void;
   onToggleFullscreen?: () => void;
   isMutedForFullscreen: boolean;
+  hasEntered?: boolean;
   rearWallZ: number;
   mats: Record<string, THREE.Material>;
   tvOffTex: THREE.CanvasTexture;
@@ -1173,6 +1262,7 @@ function BusTvUnit({
   onTogglePlay,
   onToggleFullscreen,
   isMutedForFullscreen,
+  hasEntered,
   rearWallZ,
   mats,
   tvOffTex,
@@ -1268,7 +1358,7 @@ function BusTvUnit({
           style={{
             userSelect: "none",
             backfaceVisibility: "hidden",
-            pointerEvents: phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
+            pointerEvents: hasEntered && phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
           }}
         >
           <div
@@ -1315,7 +1405,7 @@ function BusTvUnit({
               id="tv-primary-iframe"
               width="560"
               height="315"
-              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0&enablejsapi=1&fs=1&playsinline=1`}
+              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=0&mute=1&controls=1&modestbranding=1&rel=0&enablejsapi=1&fs=1&playsinline=1`}
               title="La théorie des Fous du Bus"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
@@ -1355,7 +1445,7 @@ function BusTvUnit({
               className="secondary-tv-iframe"
               width="560"
               height="315"
-              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&playsinline=1`}
+              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=0&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&playsinline=1`}
               title={`TV ${idx + 1}`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               style={{ border: 0, display: "block", width: "100%", height: "100%" }}

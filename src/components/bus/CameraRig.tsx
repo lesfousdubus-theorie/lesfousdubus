@@ -109,6 +109,19 @@ export default function CameraRig({
     }
   }, [phase, camera, activeEyePos]);
 
+  // Fallback de sécurité : garantit la fin de la transition même si requestAnimationFrame est suspendu/throttlé
+  useEffect(() => {
+    if (phase === "entering" || phase === "exiting") {
+      const fallbackTimer = setTimeout(() => {
+        if (anim.current.active) {
+          anim.current.active = false;
+          arrivedRef.current(phase === "entering" ? "inside" : "outside");
+        }
+      }, (TRANSITION_TIME + 0.3) * 1000);
+      return () => clearTimeout(fallbackTimer);
+    }
+  }, [phase]);
+
   // Contrôles "tourner la tête" & Zoom à l'intérieur (souris / tactile / clavier / molette)
   useEffect(() => {
     const el = gl.domElement;

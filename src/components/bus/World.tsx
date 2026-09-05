@@ -539,7 +539,8 @@ export default function World({ worldRef }: WorldProps) {
   const dashes = useMemo(() => Array.from({ length: 48 }, (_, i) => i * 10), []);
 
   useFrame((state, dt) => {
-    const scroll = (worldRef.current?.scroll ?? 0) + dt * WORLD_SPEED;
+    const mult = worldRef.current?.speedMultiplier ?? 1.0;
+    const scroll = (worldRef.current?.scroll ?? 0) + dt * WORLD_SPEED * mult;
     if (worldRef.current) worldRef.current.scroll = scroll;
 
     // Défilement des décors
