@@ -306,6 +306,7 @@ export default function CameraRig({
     <OrbitControls
       ref={controls}
       makeDefault
+      domElement={gl.domElement.parentElement ?? gl.domElement}
       enabled={phase === "outside"}
       target={[0, 1.9, orbitTargetZ]}
       minDistance={5}

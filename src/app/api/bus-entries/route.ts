@@ -5,23 +5,59 @@ import { busEntries } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
 
-// Le bus démarre vide (0 passagers) si la DB n'a pas encore d'entrées
+const KV_TOTAL_KEY = "bus_passengers_total";
+const KV_VISITOR_PREFIX = "bus_visitor:";
+
+// Mémoire locale de secours (au cas où ni KV ni DB ne sont disponibles)
 let inMemoryCount = 0;
 
-async function getCount() {
-  if (!db) return inMemoryCount;
+async function getCloudflareKV() {
   try {
-    const [row] = await db.select({ value: count() }).from(busEntries);
-    return Number(row?.value ?? inMemoryCount);
-  } catch (error) {
-    console.error("DB getCount error:", error);
-    return inMemoryCount;
+    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+    const ctx = await getCloudflareContext({ async: true });
+    return ctx?.env?.KV_BUS ?? null;
+  } catch {
+    return null;
   }
+}
+
+async function getPersistedCount(): Promise<number> {
+  // 1. Essayer Cloudflare KV (persistance Cloudflare)
+  try {
+    const kv = await getCloudflareKV();
+    if (kv) {
+      const val = await kv.get(KV_TOTAL_KEY);
+      if (val !== null) {
+        const parsed = parseInt(val, 10);
+        if (!isNaN(parsed)) {
+          inMemoryCount = Math.max(inMemoryCount, parsed);
+          return parsed;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Cloudflare KV get error:", err);
+  }
+
+  // 2. Essayer Postgres DB si configuré
+  if (db) {
+    try {
+      const [row] = await db.select({ value: count() }).from(busEntries);
+      const val = Number(row?.value ?? inMemoryCount);
+      inMemoryCount = Math.max(inMemoryCount, val);
+      return val;
+    } catch (error) {
+      console.error("DB getCount error:", error);
+    }
+  }
+
+  // 3. Fallback mémoire
+  return inMemoryCount;
 }
 
 export async function GET() {
   try {
-    const total = await getCount();
+    const total = await getPersistedCount();
     return NextResponse.json({ count: total });
   } catch (error) {
     console.error("GET /api/bus-entries error:", error);
@@ -32,25 +68,54 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     let visitorId: string | null = null;
+    let amount = 1;
 
     try {
       const body = (await request.json()) as {
         visitorId?: string;
+        amount?: number;
       };
       visitorId = body?.visitorId ?? null;
+      if (typeof body?.amount === "number" && body.amount > 0 && body.amount <= 10) {
+        amount = body.amount;
+      }
     } catch {
-      // pas de body valide, visiteur anonyme
+      // Body absent ou invalide, montant par défaut = 1
     }
 
-    // Chaque montée réelle ajoute strictement 1 personne
+    let nextCount = (await getPersistedCount()) + amount;
+    inMemoryCount = nextCount;
+
+    // 1. Sauvegarder dans Cloudflare KV
+    try {
+      const kv = await getCloudflareKV();
+      if (kv) {
+        await kv.put(KV_TOTAL_KEY, String(nextCount));
+        if (visitorId) {
+          await kv.put(`${KV_VISITOR_PREFIX}${visitorId}`, new Date().toISOString(), {
+            expirationTtl: 60 * 60 * 24 * 365,
+          });
+        }
+      }
+    } catch (kvErr) {
+      console.error("Cloudflare KV put error:", kvErr);
+    }
+
+    // 2. Sauvegarder dans Postgres DB si actif
     if (db) {
-      await db.insert(busEntries).values({ visitorId });
-    } else {
-      inMemoryCount += 1;
+      try {
+        await db.insert(busEntries).values({ visitorId });
+        const [row] = await db.select({ value: count() }).from(busEntries);
+        if (row?.value) {
+          nextCount = Number(row.value);
+          inMemoryCount = nextCount;
+        }
+      } catch (dbErr) {
+        console.error("DB insert error:", dbErr);
+      }
     }
 
-    const total = await getCount();
-    return NextResponse.json({ count: total });
+    return NextResponse.json({ count: nextCount });
   } catch (error) {
     console.error("POST /api/bus-entries error:", error);
     inMemoryCount += 1;

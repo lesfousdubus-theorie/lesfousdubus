@@ -446,33 +446,48 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
 
 export const THEORY_FAQ: FAQItem[] = [
   {
-    question: "Qu'est-ce que la Théorie des Fous du Bus ?",
+    question: "D'où vient ce site et qui sont les Fous du Bus ?",
     answer:
-      "C'est la thèse selon laquelle le Siècle Oublié de One Piece ne s'est pas déroulé il y a 800 ans dans un passé lointain, mais se déroule en direct dans le présent depuis le chapitre 1. Les Ponéglyphes sont des stèles venues du futur, Joy Boy est le nom de règne de Luffy, et Laugh Tale est une époque (Lodestar dans le futur).",
+      "Ce site est né de la passion pour la théorie révolutionnaire diffusée par Le Mont Corvo : « Le Siècle Oublié est le Présent ». Les « Fous du Bus », ce sont tous les nakamas et passionnés de One Piece qui ont décidé de monter à bord de cette aventure intellectuelle et collective, convaincus que l'histoire effacée il y a 800 ans s'écrit en réalité sous nos yeux depuis le départ de Fushia avec Luffy.",
+  },
+  {
+    question: "Quel est le but de ce site ?",
+    answer:
+      "Le but du site est d'offrir un véritable quartier général animé et interactif à toutes les personnes qui rejoignent la théorie des Fous du Bus. Plutôt qu'un long article statique, ce site donne vie à la théorie à travers une expérience animée : un bus filant sur Grand Line, une télévision à bord qui diffuse la vidéo explicative du Mont Corvo, des graffitis porteurs des thèses clés et un convoi qui grandit à chaque nouveau nakama.",
+  },
+  {
+    question: "Pourquoi un bus qui s'allonge en direct ?",
+    answer:
+      "Le bus coiffé du chapeau de paille est le symbole même de la communauté des Fous du Bus. À chaque fois qu'un visiteur monte dans le bus, il devient officiellement un passager enregistré, et de nouvelles rangées de sièges se créent en direct pour accueillir tout le monde dans ce grand voyage vers Laugh Tale.",
+  },
+  {
+    question: "Qu'est-ce que la Théorie des Fous du Bus en résumé ?",
+    answer:
+      "C'est la thèse selon laquelle le Siècle Oublié de One Piece ne s'est pas déroulé il y a 800 ans dans un passé lointain, mais se déroule en direct dans le présent depuis le chapitre 1. Les Ponéglyphes sont des stèles venues du futur, Joy Boy est le nom de règne que portera Luffy, et Laugh Tale est une coordonnée temporelle (Lodestar dans le futur).",
   },
   {
     question: "Pourquoi Roger était-il arrivé 'trop tôt' de 25 ans ?",
     answer:
-      "Parce que Laugh Tale n'est pas une coordonnée géographique mais temporelle. Roger est arrivé physiquement sur la dernière île (Lodestar), mais 25 ans avant la naissance et l'éveil du libérateur Joy Boy (Luffy). Il a donc découvert l'histoire sans pouvoir accomplir le serment.",
+      "Parce que Laugh Tale n'est pas une île inaccessible dans l'espace, mais dans le temps. Roger est arrivé physiquement sur la dernière île (Lodestar), mais 25 ans avant la naissance et l'éveil du libérateur Joy Boy (Luffy). Il a donc découvert l'histoire sans pouvoir accomplir la promesse.",
   },
   {
     question: "Pourquoi aucune arme ne peut détruire un Ponéglyphe ?",
     answer:
-      "Les stèles sont indestructibles depuis 800 ans car elles ont été façonnées dans le futur, avec une technologie et des matériaux qui n'existent pas encore à cette époque. C'est la mémoire inviolable de l'avenir envoyée dans le passé par Nefertari Lili et sculptée par Kozuki Momonosuke.",
+      "Les stèles sont indestructibles depuis 800 ans car elles ont été façonnées dans le futur, avec un matériau et un savoir qui n'existent pas encore à cette époque. C'est la mémoire inviolable de l'avenir envoyée dans le passé par Nefertari Lili et sculptée par Kozuki Momonosuke.",
   },
   {
     question: "Comment Barbe Noire est-il lié à Davy Jones ?",
     answer:
-      "Davy Jones n'est pas un corsaire antique mais le titre maudit que l'histoire donnera à Marshall D. Teach après sa tentative sanglante de renverser l'ordre mondial et de prendre le Trône Vacant. Imu confond les actions du père (Rocks D. Xebec) et celles du fils (Teach).",
+      "Davy Jones n'est pas un marin légendaire antique mais le titre maudit que l'histoire donnera à Marshall D. Teach après sa tentative sanglante de renverser l'ordre mondial et de prendre le Trône Vacant. Imu confond les actions du père (Rocks D. Xebec) et celles du fils (Teach).",
   },
   {
     question: "Qu'est-ce que le trésor One Piece selon cette théorie ?",
     answer:
-      "Le One Piece est l'histoire même de Luffy, le récit de son aventure et de la libération du monde que Roger a lu en riant ('He Laughed'). C'est l'histoire complète qui boucle la causalité du manga, de la première page à la dernière.",
+      "Le One Piece est le récit complet de l'aventure de Luffy consigné à la fin des temps, que Roger a lu en riant aux larmes ('He Laughed'). C'est l'histoire complète qui boucle la causalité du manga, du chapitre 1 jusqu'à la libération finale.",
   },
   {
-    question: "Quel rôle joue le bus dans cette aventure ?",
+    question: "Comment naîtra All Blue à la fin du manga ?",
     answer:
-      "Le bus au chapeau de paille symbolise le rassemblement de tous les lecteurs et nakamas à travers le monde. À chaque nouveau visiteur, le bus accueille un nouveau passager et s'allonge en direct, filant sur Grand Line à la poursuite du Siècle Oublié et de Laugh Tale !",
+      "All Blue n'existe pas encore. Il naîtra lors de la guerre finale de l'effondrement de Red Line et de Mary Geoise provoqué par les Armes Antiques, réunissant North, South, East et West Blue en un océan universel et sans frontières.",
   },
 ];

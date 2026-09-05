@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useState, useId, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   CENTRAL_THESIS,
   CORE_PILLARS,
   SIMPLE_EXPLANATION,
-  THEORY_CHAPTERS,
   THEORY_FAQ,
-  type TheoryChapter,
 } from "@/lib/theory-data";
 import { YOUTUBE_ID } from "./bus/constants";
 
@@ -18,10 +16,7 @@ interface TheoryModalProps {
 
 export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"thesis" | "chapters" | "video" | "faq">("thesis");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedChapter, setSelectedChapter] = useState<TheoryChapter | null>(null);
-  const searchInputId = useId();
+  const [activeTab, setActiveTab] = useState<"thesis" | "video" | "faq">("thesis");
 
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalOpen;
 
@@ -36,7 +31,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
   // Écoute de l'événement global pour ouvrir le modal depuis n'importe quel composant
   useEffect(() => {
     const handleOpenEvent = (e: Event) => {
-      const customEvent = e as CustomEvent<{ tab?: "thesis" | "chapters" | "video" | "faq" }>;
+      const customEvent = e as CustomEvent<{ tab?: "thesis" | "video" | "faq" }>;
       if (customEvent.detail?.tab) {
         setActiveTab(customEvent.detail.tab);
       }
@@ -60,13 +55,6 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
   }, [isOpen, handleClose]);
 
   if (!isOpen) return null;
-
-  const filteredChapters = THEORY_CHAPTERS.filter(
-    (ch) =>
-      ch.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ch.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ch.keyPoints.some((kp) => kp.toLowerCase().includes(searchQuery.toLowerCase())),
-  );
 
   return (
     <div
@@ -105,31 +93,25 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
           </button>
         </div>
 
-        {/* Barre d'onglets */}
+        {/* Barre d'onglets : 3 onglets simples */}
         <div className="flex border-b border-white/10 bg-black/20 px-3 sm:px-6 overflow-x-auto no-scrollbar gap-1 sm:gap-2 py-2">
           <TabButton
             active={activeTab === "thesis"}
             onClick={() => setActiveTab("thesis")}
             icon="⚡"
-            label="La Thèse"
-          />
-          <TabButton
-            active={activeTab === "chapters"}
-            onClick={() => setActiveTab("chapters")}
-            icon="📚"
-            label={`22 Chapitres (${THEORY_CHAPTERS.length})`}
+            label="La Théorie"
           />
           <TabButton
             active={activeTab === "video"}
             onClick={() => setActiveTab("video")}
             icon="📺"
-            label="Vidéo Officielle"
+            label="Vidéo du Mont Corvo"
           />
           <TabButton
             active={activeTab === "faq"}
             onClick={() => setActiveTab("faq")}
             icon="❓"
-            label="FAQ & Preuves"
+            label="FAQ & Origine"
           />
         </div>
 
@@ -251,120 +233,30 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
             </div>
           )}
 
-          {/* 2. ONGLET LES 22 CHAPITRES */}
-          {activeTab === "chapters" && (
-            <div className="space-y-4">
-              {/* Barre de recherche */}
-              <div className="relative">
-                <input
-                  id={searchInputId}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher un chapitre, un personnage, un mot-clé (ex: Joy Boy, Roger, Uranus)..."
-                  className="w-full rounded-xl border border-white/20 bg-black/40 px-4 py-2.5 text-xs sm:text-sm text-white placeholder-white/40 focus:border-[#ffd23f] focus:outline-none"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/60 hover:text-white"
-                  >
-                    Effacer
-                  </button>
-                )}
-              </div>
-
-              {/* Liste filtrée */}
-              <div className="space-y-2.5">
-                {filteredChapters.length === 0 ? (
-                  <div className="p-8 text-center text-white/60 text-sm">
-                    Aucun chapitre trouvé pour « {searchQuery} ».
-                  </div>
-                ) : (
-                  filteredChapters.map((ch) => {
-                    const isExpanded = selectedChapter?.id === ch.id;
-                    return (
-                      <div
-                        key={ch.id}
-                        className={`rounded-xl border transition ${
-                          isExpanded
-                            ? "border-[#ffd23f] bg-black/60 shadow-lg"
-                            : "border-white/10 bg-white/5 hover:border-white/25"
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setSelectedChapter(isExpanded ? null : ch)}
-                          className="w-full text-left p-3 sm:p-4 flex items-start justify-between gap-3 cursor-pointer"
-                        >
-                          <div className="flex items-start gap-3">
-                            <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#ffd23f]/20 text-[#ffd23f] text-xs font-black">
-                              {ch.number}
-                            </span>
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-bold text-sm sm:text-base text-white">
-                                  {ch.title}
-                                </h4>
-                                <span className="rounded px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase bg-white/10 text-white/80">
-                                  {ch.badge}
-                                </span>
-                              </div>
-                              <p className="mt-1 text-xs text-white/75 line-clamp-2">
-                                {ch.summary}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="text-white/40 text-sm font-bold flex-shrink-0">
-                            {isExpanded ? "▲" : "▼"}
-                          </span>
-                        </button>
-
-                        {isExpanded && (
-                          <div className="px-4 pb-4 pt-1 border-t border-white/10 text-xs sm:text-sm space-y-3 animate-in fade-in duration-150">
-                            <div>
-                              <div className="font-bold text-[#ffd23f] uppercase text-[10px] tracking-wider mb-1">
-                                Arguments clés
-                              </div>
-                              <ul className="list-disc list-inside space-y-1 text-white/90">
-                                {ch.keyPoints.map((kp, i) => (
-                                  <li key={i}>{kp}</li>
-                                ))}
-                              </ul>
-                            </div>
-                            {ch.mangaReferences && (
-                              <div className="pt-2 border-t border-white/5 text-[11px] text-white/60">
-                                <span className="font-bold text-[#ffd23f]">Références Manga : </span>
-                                {ch.mangaReferences}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* 3. ONGLET VIDÉO OFFICIELLE */}
+          {/* 2. ONGLET VIDÉO DU MONT CORVO */}
           {activeTab === "video" && (
             <div className="space-y-4">
               <div className="rounded-2xl border border-white/15 bg-black/50 p-4 sm:p-5">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="rounded-md bg-[#ffd23f] px-2.5 py-0.5 text-xs font-black uppercase text-[#0d2190]">
+                    Le Mont Corvo
+                  </span>
+                  <span className="text-xs font-semibold text-white/70">
+                    Vidéo fondatrice de la théorie
+                  </span>
+                </div>
                 <h3 className="text-base sm:text-lg font-black text-[#ffd23f]">
-                  Démonstration Vidéo : Le Siècle Oublié est le Présent
+                  Démonstration Vidéo : Le Siècle Oublié est le Présent par Le Mont Corvo
                 </h3>
                 <p className="mt-1 text-xs sm:text-sm text-white/80">
-                  Découvrez la présentation complète et visuelle de la théorie des Fous du Bus, détaillant les 22 chapitres et les révélations du manga jusqu&apos;aux derniers scans.
+                  Découvrez la vidéo complète et passionnante du Mont Corvo qui a lancé la grande théorie des Fous du Bus. Une démonstration magistrale reliant les mystères de Joy Boy, Laugh Tale, les Ponéglyphes et le destin de Luffy.
                 </p>
 
                 {/* Iframe vidéo YouTube */}
                 <div className="mt-4 aspect-video w-full overflow-hidden rounded-xl border border-white/20 bg-black">
                   <iframe
                     src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?rel=0&modestbranding=1`}
-                    title="La Théorie des Fous du Bus — Vidéo Officielle"
+                    title="La Théorie des Fous du Bus — Vidéo Officielle Le Mont Corvo"
                     className="w-full h-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
@@ -373,7 +265,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10">
                   <span className="text-xs text-white/60">
-                    Vidéo officielle de la théorie · Disponible également sur la TV 3D dans le bus
+                    Vidéo officielle du Mont Corvo · Disponible également sur la TV dans le bus
                   </span>
                   <a
                     href={`https://www.youtube.com/watch?v=${YOUTUBE_ID}`}
@@ -389,11 +281,11 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
             </div>
           )}
 
-          {/* 4. ONGLET FAQ & PREUVES */}
+          {/* 3. ONGLET FAQ & ORIGINE */}
           {activeTab === "faq" && (
             <div className="space-y-3">
               <p className="text-xs sm:text-sm text-white/70 mb-2">
-                Les réponses claires aux questions les plus fréquentes sur la chronologie, Joy Boy et le dénouement de One Piece.
+                Origine du site, raison d&apos;être du convoi animé et réponses aux questions fondamentales sur la théorie des Fous du Bus.
               </p>
               {THEORY_FAQ.map((faq, idx) => (
                 <details

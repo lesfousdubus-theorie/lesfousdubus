@@ -231,9 +231,9 @@ export default function Bus({
     };
   }, [strawMap]);
 
-  // Position et orientation de base du chapeau (perché sur la cabine avec inclinaison Mugiwara)
-  const HAT_BASE_POS: [number, number, number] = useMemo(() => [-0.04, 3.43, -3.55], []);
-  const HAT_BASE_ROT: [number, number, number] = useMemo(() => [-0.05, 0.05, -0.19], []);
+  // Position et orientation de base du chapeau (droit et centré sur le toit du bus)
+  const HAT_BASE_POS: [number, number, number] = useMemo(() => [0, 3.40, -3.55], []);
+  const HAT_BASE_ROT: [number, number, number] = useMemo(() => [0, 0, 0], []);
 
   // Chapeau de paille de Luffy (Véritables proportions Mugiwara)
   const { hatGeo, ribbonGeo } = useMemo(() => {
@@ -561,13 +561,13 @@ export default function Bus({
       group.current.rotation.z = Math.sin(t * 1.6 * mult) * 0.0035;
     }
 
-    // Animation du chapeau : inclinaison fidèle à l'illustration (relevé vers l'avant) + oscillation au klaxon
+    // Animation du chapeau : droit sur le bus avec oscillation dynamique au klaxon
     if (hat.current) {
       const since = (performance.now() - hornPulse) / 1000;
-      const wobble = since < 0.9 ? Math.sin(since * 28) * (0.9 - since) * 0.04 : 0;
-      hat.current.rotation.x = HAT_BASE_ROT[0] + Math.sin(t * 1.2) * 0.008 + wobble;
-      hat.current.rotation.y = HAT_BASE_ROT[1];
-      hat.current.rotation.z = HAT_BASE_ROT[2] + Math.sin(t * 0.8) * 0.006;
+      const wobble = since < 0.9 ? Math.sin(since * 28) * (0.9 - since) * 0.03 : 0;
+      hat.current.rotation.x = wobble;
+      hat.current.rotation.y = 0;
+      hat.current.rotation.z = 0;
     }
 
     // Rotation des roues du bus adaptée à la vitesse de défilement
@@ -637,9 +637,9 @@ export default function Bus({
           )}
 
           {/* Slogans de la théorie tagués au pochoir / spray sur les flancs du bus */}
-          {sx < 0 ? (
+          {sx < 0 && (
             <>
-              {/* Côté gauche (face à la caméra par défaut) - Les 5 phrases sont toutes visibles sans condition */}
+              {/* Côté gauche (face à la caméra par défaut) - Chaque phrase est écrite une seule fois sur le bus */}
               {/* 5. Tout est une question de timing (palier haut avant) */}
               <mesh
                 position={[sx * 1.352, 1.55, -2.8]}
@@ -708,85 +708,6 @@ export default function Bus({
                 <planeGeometry args={[2.0, 0.38]} />
                 <meshStandardMaterial
                   map={tagPoneglyphesTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-1}
-                  roughness={0.4}
-                />
-              </mesh>
-            </>
-          ) : (
-            <>
-              {/* Côté droit - Les 5 phrases sont également toutes visibles */}
-              {/* 4. Les ponéglyphes viennent du futur (palier haut avant) */}
-              <mesh
-                position={[sx * 1.352, 1.55, -2.8]}
-                rotation={[0, Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[2.0, 0.38]} />
-                <meshStandardMaterial
-                  map={tagPoneglyphesTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-1}
-                  roughness={0.4}
-                />
-              </mesh>
-              {/* 3. Luffy est Nika et Joy Boy (palier bas avant) */}
-              <mesh
-                position={[sx * 1.352, 0.78, -2.5]}
-                rotation={[0, Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[1.9, 0.44]} />
-                <meshStandardMaterial
-                  map={tagLuffyNikaTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-1}
-                  roughness={0.4}
-                />
-              </mesh>
-              {/* 1. Le siècle oublié c'est le présent (palier bas milieu) */}
-              <mesh
-                position={[sx * 1.352, 0.78, -0.45]}
-                rotation={[0, Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[2.2, 0.44]} />
-                <meshStandardMaterial
-                  map={tagSiecleTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-1}
-                  roughness={0.4}
-                />
-              </mesh>
-              {/* 2. Barbe Noire est Davy Jones (palier bas arrière) */}
-              <mesh
-                position={[sx * 1.352, 0.78, 1.45]}
-                rotation={[0, Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[1.9, 0.44]} />
-                <meshStandardMaterial
-                  map={tagBarbeNoireTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-1}
-                  roughness={0.4}
-                />
-              </mesh>
-              {/* 5. Tout est une question de timing (palier haut arrière) */}
-              <mesh
-                position={[sx * 1.352, 1.55, 3.5]}
-                rotation={[0, Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[2.1, 0.38]} />
-                <meshStandardMaterial
-                  map={tagTimingTex}
                   transparent
                   depthWrite={false}
                   polygonOffset
@@ -883,19 +804,6 @@ export default function Bus({
         <mesh position={[0, 2.3, -0.06]} rotation={[0, Math.PI, 0]}>
           <planeGeometry args={[1.8, 0.38]} />
           <meshStandardMaterial map={sideLabel} roughness={0.3} />
-        </mesh>
-
-        {/* Tag graffiti arrière : TOUT EST UNE QUESTION DE TIMING */}
-        <mesh position={[0, 1.22, 0.046]}>
-          <planeGeometry args={[2.3, 0.58]} />
-          <meshStandardMaterial
-            map={tagTimingTex}
-            transparent
-            depthWrite={false}
-            polygonOffset
-            polygonOffsetFactor={-1}
-            roughness={0.4}
-          />
         </mesh>
       </group>
 
@@ -1078,11 +986,12 @@ export default function Bus({
         </group>
       ))}
 
-      {/* ---------- CHAPEAU DE PAILLE DE LUFFY (PROPORTIONS MUGIWARA) ---------- */}
+      {/* ---------- CHAPEAU DE PAILLE DE LUFFY (AGRANDI ET DROIT) ---------- */}
       <group
         ref={hat}
         position={HAT_BASE_POS}
         rotation={HAT_BASE_ROT}
+        scale={[1.35, 1.35, 1.35]}
       >
         {/* Chapeau de Luffy complet et continu */}
         <mesh geometry={hatGeo} material={mats.straw} castShadow receiveShadow />
@@ -1263,46 +1172,16 @@ function BusTvUnit({
   onToggleFullscreen,
   isMutedForFullscreen,
   hasEntered,
-  rearWallZ,
   mats,
   tvOffTex,
   primaryIframeRef,
 }: BusTvUnitProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useFrame(({ camera }) => {
+  useFrame(() => {
     if (!containerRef.current) return;
-
-    // 1. Culling arrière (Backface culling) : la TV fait face à +Z (l'intérieur de la cabine)
-    // Si la caméra est derrière le plan de l'écran, masquer immédiatement la vidéo
-    const camZ = camera.position.z;
-    const camY = camera.position.y;
-    const tvZ = pos[2];
-    const tvY = pos[1];
-    const isFacing = camZ - tvZ > 0.06;
-
-    // 2. Occlusion 3D quand la caméra est à l'extérieur
-    let isOccluded = false;
-    if (phase === "outside") {
-      // Au-dessus du toit : le plafond du bus masque totalement la TV
-      if (camY > 3.05) isOccluded = true;
-      // En dessous des vitres : la carrosserie basse masque la TV
-      else if (camY < 1.70) isOccluded = true;
-      // Devant la cabine : le capot avant masque l'écran
-      else if (camZ < -4.4) isOccluded = true;
-      // Derrière le bus : la paroi arrière masque l'écran
-      else if (camZ > rearWallZ + 0.15) isOccluded = true;
-      // Ligne de visée coupant le toit
-      else if (camY > tvY) {
-        const tRoof = (3.15 - tvY) / (camY - tvY);
-        if (tRoof > 0 && tRoof < 1) {
-          const zAtRoof = tvZ + tRoof * (camZ - tvZ);
-          if (zAtRoof >= -4.6 && zAtRoof <= rearWallZ) isOccluded = true;
-        }
-      }
-    }
-
-    const shouldShow = isFacing && !isOccluded && !isMutedForFullscreen && tvOn;
+    // La TV reste tout le temps allumée tant que tvOn est actif, sauf si plein écran modal
+    const shouldShow = tvOn && !isMutedForFullscreen;
     const targetDisplay = shouldShow ? "block" : "none";
     if (containerRef.current.style.display !== targetDisplay) {
       containerRef.current.style.display = targetDisplay;
@@ -1352,6 +1231,7 @@ function BusTvUnit({
       {isPrimary && (
         <Html
           transform
+          occlude="blending"
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
@@ -1419,6 +1299,7 @@ function BusTvUnit({
       {!isPrimary && (
         <Html
           transform
+          occlude="blending"
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}

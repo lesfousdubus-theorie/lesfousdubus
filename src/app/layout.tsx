@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     "Nika",
     "Imu Nerona",
     "Mother Flame",
-    "One Piece théorie 3D",
+    "Théorie One Piece Fous du Bus",
     "Grand Line",
     "Red Line",
   ],

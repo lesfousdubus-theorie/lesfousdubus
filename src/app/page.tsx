@@ -139,7 +139,7 @@ export default function HomePage() {
           </h1>
           <p className="mt-2 text-white/90">{CENTRAL_THESIS.overview}</p>
           <p className="mt-4 font-bold">
-            Activez JavaScript pour vivre l&apos;expérience 3D interactive du bus sur Grand Line !
+            Activez JavaScript pour vivre l&apos;expérience interactive du bus sur Grand Line !
           </p>
         </div>
       </noscript>

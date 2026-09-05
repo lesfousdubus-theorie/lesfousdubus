@@ -61,7 +61,7 @@ export default function Scene({
       shadows
       dpr={[1, 1.6]}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: 2000 }}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
+      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
     >
       <DayNight worldRef={worldRef} modeOverride={modeOverride} />

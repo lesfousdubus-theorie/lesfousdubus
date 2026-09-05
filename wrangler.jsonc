@@ -8,6 +8,12 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "kv_namespaces": [
+    {
+      "binding": "KV_BUS",
+      "id": "bus_counter_kv"
+    }
+  ],
   "observability": {
     "enabled": true
   }

@@ -1,7 +1,7 @@
 # Les Fous du Bus — La Théorie One Piece
 
 > Site officiel de la théorie One Piece des Fous du Bus : « Le Siècle Oublié est le présent ».
-> Expérience interactive 3D et démonstration complète de la thèse chronologique et narrative de One Piece.
+> Expérience interactive et démonstration complète de la thèse chronologique et narrative de One Piece.
 > URL : https://lesfousdubus.sbs/
 
 ## Thèse Centrale : Le Siècle Oublié est le Présent
@@ -46,4 +46,4 @@ L'Histoire que nous lisons est celle que les Ponéglyphes racontent. L'erreur fo
 ## Vidéo Officielle et Ressources
 
 - **Vidéo de démonstration YouTube** : https://www.youtube.com/watch?v=SgJ25zjMJyo
-- **Expérience interactive 3D du Bus** : https://lesfousdubus.sbs/
+- **Expérience interactive du Bus** : https://lesfousdubus.sbs/

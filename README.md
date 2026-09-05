@@ -1,4 +1,4 @@
-# 🚌 Les Fous du Bus · L'Expérience 3D One Piece
+# 🚌 Les Fous du Bus · L'Expérience One Piece
 
 > *Bienvenue à bord du minibus pirate le plus fou de Grand Line, en route vers Laugh Tale !*
 
@@ -6,7 +6,7 @@
 
 ## 🏴‍☠️ Qu'est-ce que c'est ?
 
-**Les Fous du Bus** est une expérience interactive en 3D accessible directement depuis votre navigateur. Elle célèbre la grande théorie de la communauté One Piece : **« Le Siècle Oublié est le Présent ! »**.
+**Les Fous du Bus** est une expérience interactive accessible directement depuis votre navigateur. Elle célèbre la grande théorie de la communauté One Piece : **« Le Siècle Oublié est le Présent ! »**.
 
 Vous découvrez un minibus orné du célèbre chapeau de paille géant de Monkey D. Luffy, voyageant le long de la route de Grand Line à travers des paysages mythiques (le désert d'Alabasta, les canaux de Water Seven, les îles célestes de Skypiea, les cerisiers du Pays des Wa et les neiges de Drum).
 
@@ -19,7 +19,7 @@ Cliquez sur le gros bouton jaune **« Entrer dans le bus »** pour vous asseoir 
 - Le bus accueille les vrais visiteurs du site en direct : chaque nouvel arrivant ajoute un passager assis !
 - Lorsque de nouveaux passagers arrivent, **le bus s'allonge automatiquement** sous vos yeux pour faire de la place à tout le monde.
 
-### 📺 2. Regarder la vidéo sur la télé 3D du bus
+### 📺 2. Regarder la vidéo sur la télé du bus
 - Tant que vous êtes dehors à admirer le bus, la vidéo reste en pause.
 - **Dès que vous montez dans le bus**, la télévision suspendue au plafond s'allume et lance automatiquement la vidéo de la théorie avec le son à bord !
 - Vous pouvez cliquer sur l'écran pour mettre en pause ou passer en **Plein écran** à tout moment. Si vous descendez du bus, le son reste doucement audible au loin.
@@ -31,7 +31,7 @@ En bas à droite de l'écran, vous disposez de deux boutons pour régler la vite
 - **Astuce bonus** : accédez directement à `/boost` dans votre navigateur pour démarrer l'aventure à pleine vitesse !
 
 ### 🎨 4. Les 5 phrases cultes taguées sur la carrosserie
-Tournez autour du bus pour admirer les cinq slogans de la théorie tagués au spray sur les flancs et à l'arrière :
+Tournez autour du bus pour admirer les cinq slogans de la théorie tagués au spray sur la carrosserie :
 1. **« Le siècle oublié c'est le présent »**
 2. **« Barbe Noire est Davy Jones »**
 3. **« Luffy est Nika et Joy Boy »**
@@ -46,7 +46,7 @@ Tournez autour du bus pour admirer les cinq slogans de la théorie tagués au sp
 Un cycle jour/nuit automatique fait voyager le bus du grand soleil jusqu'à la nuit étoilée. Vous pouvez aussi changer manuellement entre **Jour** et **Nuit** d'un simple clic sur le bouton en bas à gauche.
 
 ### 📜 7. Découvrir le dossier complet de la théorie
-Cliquez sur le bouton **« 📜 La Théorie »** en haut à gauche pour ouvrir le grand dossier officiel expliquant toute la thèse, les 6 piliers et la liste des chapitres avec leurs arguments détaillés.
+Cliquez sur le bouton **« 📜 La Théorie »** en haut à gauche pour ouvrir le dossier complet expliquant la thèse centrale, la vidéo du Mont Corvo et la FAQ sur l'origine du site et du convoi des Fous du Bus.
 
 ---
 
