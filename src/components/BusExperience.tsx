@@ -280,13 +280,11 @@ export default function BusExperience() {
     };
   }, []);
 
-  // Entrer dans le bus : incrémente la DB (+1) et active la TV
+  // Entrer dans le bus : incrémente la DB (+1)
   const enterBus = useCallback(async () => {
     if (phase !== "outside") return;
     setHasEntered(true);
     setPhase("entering");
-    setTvOn(true);
-    setIsPlaying(true);
     playDing();
 
     // Vérifie si le visiteur a déjà validé sa montée dans cette session de navigation
@@ -688,26 +686,32 @@ export default function BusExperience() {
         <div className="pointer-events-auto absolute bottom-16 md:bottom-6 left-1/2 flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 max-w-[95vw] sm:max-w-xl">
           {phase === "outside" || phase === "entering" ? (
             <>
+              <HudButton onClick={() => setShowTheoryModal(true)} icon="📜" disabled={busy}>
+                Théorie
+              </HudButton>
               <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
                 {headlights ? "Éteindre" : "Phares"}
               </HudButton>
               <HudButton onClick={honk} icon="📯" disabled={busy}>
                 Klaxonner
               </HudButton>
+              {tvOn && (
+                <HudButton onClick={() => setTvOn(false)} icon="📺" disabled={busy}>
+                  Éteindre la TV
+                </HudButton>
+              )}
               <HudButton onClick={enterBus} primary icon="🚪" disabled={busy}>
                 {phase === "entering" ? "Installation…" : "Entrer dans le bus"}
               </HudButton>
             </>
           ) : (
             <>
+              <HudButton onClick={() => setShowTheoryModal(true)} icon="📜" disabled={busy}>
+                Théorie
+              </HudButton>
               <HudButton onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy}>
                 {tvOn ? "Éteindre la TV" : "Allumer la TV"}
               </HudButton>
-              {tvOn && (
-                <HudButton onClick={toggleFullscreen} active={isFullscreen} icon="⛶" disabled={busy}>
-                  {isFullscreen ? "Sortir du plein écran" : "Plein écran"}
-                </HudButton>
-              )}
               <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
                 {headlights ? "Éteindre" : "Phares"}
               </HudButton>

@@ -252,48 +252,21 @@ export function makeTvScreenTexture(isOn = false): THREE.CanvasTexture {
   const c = canvas.getContext("2d")!;
 
   if (!isOn) {
-    // Écran éteint : verre noir brillant avec Jolly Roger éteint
+    // Écran éteint : dalle noire et élégante de verre sombre éteint, sans miniature ni texte
     const grad = c.createLinearGradient(0, 0, w, h);
-    grad.addColorStop(0, "#080b18");
-    grad.addColorStop(1, "#12172b");
+    grad.addColorStop(0, "#05070c");
+    grad.addColorStop(0.5, "#090c15");
+    grad.addColorStop(1, "#030408");
     c.fillStyle = grad;
     c.fillRect(0, 0, w, h);
 
-    // Reflet vitre diagonale
+    // Reflet diagonal très subtil typique d'une dalle d'écran éteinte
     const refGrad = c.createLinearGradient(0, 0, w, h);
-    refGrad.addColorStop(0, "rgba(255,255,255,0.06)");
-    refGrad.addColorStop(0.4, "rgba(255,255,255,0.02)");
-    refGrad.addColorStop(1, "rgba(0,0,0,0.3)");
+    refGrad.addColorStop(0, "rgba(255,255,255,0.035)");
+    refGrad.addColorStop(0.35, "rgba(255,255,255,0.01)");
+    refGrad.addColorStop(1, "rgba(0,0,0,0.5)");
     c.fillStyle = refGrad;
     c.fillRect(0, 0, w, h);
-
-    // Jolly Roger discret
-    c.fillStyle = "rgba(255,255,255,0.2)";
-    c.beginPath();
-    c.arc(w / 2, h / 2 - 20, 36, 0, Math.PI * 2);
-    c.fill();
-    c.fillStyle = "#080b18";
-    c.beginPath();
-    c.arc(w / 2 - 12, h / 2 - 24, 7, 0, Math.PI * 2);
-    c.arc(w / 2 + 12, h / 2 - 24, 7, 0, Math.PI * 2);
-    c.fill();
-
-    // Chapeau de Luffy
-    c.fillStyle = "rgba(235, 175, 50, 0.4)";
-    c.beginPath();
-    c.ellipse(w / 2, h / 2 - 50, 42, 14, 0, 0, Math.PI * 2);
-    c.fill();
-    c.fillStyle = "rgba(215, 30, 35, 0.5)";
-    c.fillRect(w / 2 - 30, h / 2 - 60, 60, 8);
-
-    c.fillStyle = "rgba(255,255,255,0.4)";
-    c.font = "bold 26px Impact, 'Arial Black', sans-serif";
-    c.textAlign = "center";
-    c.fillText("LES FOUS DU BUS", w / 2, h / 2 + 48);
-
-    c.fillStyle = "rgba(255, 210, 63, 0.7)";
-    c.font = "bold 16px Arial, sans-serif";
-    c.fillText("▶ Appuie sur « Allumer la TV »", w / 2, h / 2 + 82);
   } else {
     // Écran allumé : diffusion animée de la théorie
     const grad = c.createLinearGradient(0, 0, w, h);

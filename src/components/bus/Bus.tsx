@@ -395,7 +395,6 @@ export default function Bus({
   );
 
   const tvOffTex = useMemo(() => makeTvScreenTexture(false), []);
-  const tvOnTex = useMemo(() => makeTvScreenTexture(true), []);
   const dashTex = useMemo(() => makeDashboardTexture(), []);
   const licensePlateTex = useMemo(() => makeLicensePlateTexture(), []);
 
@@ -504,6 +503,14 @@ export default function Bus({
           JSON.stringify({ event: "command", func: "setVolume", args: [targetVolume] }),
           "*",
         );
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "unloadModule", args: ["captions"] }),
+          "*",
+        );
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
+          "*",
+        );
         if (isPlaying) {
           iframe.contentWindow.postMessage(
             JSON.stringify({ event: "command", func: "playVideo", args: [] }),
@@ -533,6 +540,14 @@ export default function Bus({
             func: isPlaying ? "playVideo" : "pauseVideo",
             args: [],
           }),
+          "*",
+        );
+        ifr.contentWindow?.postMessage(
+          JSON.stringify({ event: "command", func: "unloadModule", args: ["captions"] }),
+          "*",
+        );
+        ifr.contentWindow?.postMessage(
+          JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
           "*",
         );
       });
@@ -607,7 +622,7 @@ export default function Bus({
             </mesh>
           ))}
           {/* Vitres teintées continues extensibles */}
-          <mesh material={mats.glass} position={[sx * 1.3, 2.25, cabinCenterZ]}>
+          <mesh material={mats.glass} position={[sx * 1.3, 2.25, cabinCenterZ]} raycast={() => null}>
             <boxGeometry args={[0.02, 1.0, cabinLength]} />
           </mesh>
           {/* Bandes décoratives jaunes */}
@@ -750,7 +765,7 @@ export default function Bus({
       <mesh material={mats.bodyDark} position={[0, 2.25, -4.6]}>
         <boxGeometry args={[0.05, 1.02, 0.08]} />
       </mesh>
-      <mesh material={mats.glass} position={[0, 2.25, -4.6]}>
+      <mesh material={mats.glass} position={[0, 2.25, -4.6]} raycast={() => null}>
         <boxGeometry args={[2.3, 1.0, 0.02]} />
       </mesh>
       {/* Essuie-glaces */}
@@ -783,7 +798,7 @@ export default function Bus({
         <mesh material={mats.body} castShadow position={[0, 2.975, 0]}>
           <boxGeometry args={[2.6, 0.45, 0.08]} />
         </mesh>
-        <mesh material={mats.glass} position={[0, 2.25, 0]}>
+        <mesh material={mats.glass} position={[0, 2.25, 0]} raycast={() => null}>
           <boxGeometry args={[2.3, 1.0, 0.02]} />
         </mesh>
         <mesh material={mats.chrome} position={[0, 0.65, 0.1]}>
@@ -1168,8 +1183,6 @@ function BusTvUnit({
   phase,
   isPrimary,
   onToggleTv,
-  onTogglePlay,
-  onToggleFullscreen,
   isMutedForFullscreen,
   hasEntered,
   mats,
@@ -1180,7 +1193,6 @@ function BusTvUnit({
 
   useFrame(() => {
     if (!containerRef.current) return;
-    // La TV reste tout le temps allumée tant que tvOn est actif, sauf si plein écran modal
     const shouldShow = tvOn && !isMutedForFullscreen;
     const targetDisplay = shouldShow ? "block" : "none";
     if (containerRef.current.style.display !== targetDisplay) {
@@ -1214,24 +1226,26 @@ function BusTvUnit({
         <boxGeometry args={[0.12, 0.38, 0.12]} />
       </mesh>
 
-      {/* Écran TV éteint si tvOn === false */}
+      {/* Écran TV éteint si tvOn === false : verre noir éteint, sans miniature ni texte */}
       {!tvOn && (
         <mesh position={[0, 0, 0.047]}>
           <planeGeometry args={[1.26, 0.72]} />
           <meshStandardMaterial
             map={tvOffTex}
-            emissive="#ffffff"
-            emissiveMap={tvOffTex}
-            emissiveIntensity={0.25}
+            color="#080a10"
+            roughness={0.25}
+            metalness={0.8}
+            emissive="#000000"
+            emissiveIntensity={0}
           />
         </mesh>
       )}
 
-      {/* TV 0 : Lecteur principal (avec audio et contrôles) */}
-      {isPrimary && (
+      {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels, masqué par la carrosserie/toit en orbite externe) */}
+      {isPrimary && tvOn && (
         <Html
           transform
-          zIndexRange={[10, 0]}
+          occlude
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
@@ -1239,6 +1253,8 @@ function BusTvUnit({
             userSelect: "none",
             backfaceVisibility: "hidden",
             pointerEvents: hasEntered && phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
+            opacity: !isMutedForFullscreen ? 1 : 0.001,
+            transition: "opacity 0.2s ease",
           }}
         >
           <div
@@ -1255,37 +1271,12 @@ function BusTvUnit({
               border: "2px solid #1a1d26",
             }}
           >
-            {/* Overlay transparent interactif pour capturer le zoom molette & clics */}
-            <div
-              onWheel={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.dispatchEvent(
-                  new CustomEvent("bus-zoom", { detail: e.deltaY * 0.04 })
-                );
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onTogglePlay?.();
-              }}
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                onToggleFullscreen?.();
-              }}
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 10,
-                cursor: "pointer",
-              }}
-              title="Cliquer : lecture/pause · Double-clic : plein écran · Molette : zoomer"
-            />
             <iframe
               ref={primaryIframeRef}
               id="tv-primary-iframe"
               width="560"
               height="315"
-              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=0&mute=1&controls=1&modestbranding=1&rel=0&enablejsapi=1&fs=1&playsinline=1`}
+              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&enablejsapi=1&fs=1&playsinline=1&cc_load_policy=0&cc_lang_pref=none&iv_load_policy=3`}
               title="La théorie des Fous du Bus"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
@@ -1296,10 +1287,10 @@ function BusTvUnit({
       )}
 
       {/* TV 1, 2, ... : Écrans secondaires dans l'allée */}
-      {!isPrimary && (
+      {!isPrimary && tvOn && !isMutedForFullscreen && (
         <Html
           transform
-          zIndexRange={[10, 0]}
+          occlude
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
@@ -1326,7 +1317,7 @@ function BusTvUnit({
               className="secondary-tv-iframe"
               width="560"
               height="315"
-              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=0&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&playsinline=1`}
+              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&playsinline=1&cc_load_policy=0&cc_lang_pref=none&iv_load_policy=3`}
               title={`TV ${idx + 1}`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               style={{ border: 0, display: "block", width: "100%", height: "100%" }}
