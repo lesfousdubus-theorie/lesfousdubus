@@ -1185,18 +1185,70 @@ function BusTvUnit({
   onToggleTv,
   isMutedForFullscreen,
   hasEntered,
+  rearWallZ,
   mats,
   tvOffTex,
   primaryIframeRef,
 }: BusTvUnitProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useFrame(() => {
+  useFrame(({ camera }) => {
     if (!containerRef.current) return;
-    const shouldShow = tvOn && !isMutedForFullscreen;
-    const targetDisplay = shouldShow ? "block" : "none";
-    if (containerRef.current.style.display !== targetDisplay) {
-      containerRef.current.style.display = targetDisplay;
+
+    // 1. Si la TV est éteinte ou en plein écran modal -> masquer
+    if (!tvOn || isMutedForFullscreen) {
+      if (containerRef.current.style.display !== "none") {
+        containerRef.current.style.display = "none";
+      }
+      return;
+    }
+
+    // 2. Détection d'orientation : l'écran fait face à l'arrière du bus (+Z)
+    // Si la caméra est située en avant de l'écran (z < pos[2] + 0.04), on regarde le dos de la TV.
+    // La vidéo DOIT être totalement masquée par le dos de la TV et le support au plafond !
+    const isBehindTv = camera.position.z < (pos[2] + 0.04);
+    if (isBehindTv) {
+      if (containerRef.current.style.display !== "none") {
+        containerRef.current.style.display = "none";
+      }
+      return;
+    }
+
+    // 3. Si la caméra est à l'extérieur : masquage par les composants solides du bus
+    if (phase === "outside") {
+      // Au-dessus du toit du bus (toit = 3.0, caméra au-dessus)
+      if (camera.position.y > 2.92) {
+        if (containerRef.current.style.display !== "none") {
+          containerRef.current.style.display = "none";
+        }
+        return;
+      }
+
+      // En dessous de la ceinture de vitres (carrosserie bleue)
+      if (camera.position.y < 1.72) {
+        if (containerRef.current.style.display !== "none") {
+          containerRef.current.style.display = "none";
+        }
+        return;
+      }
+
+      // À l'arrière du bus (derrière la paroi arrière)
+      if (camera.position.z > rearWallZ + 0.25) {
+        const isOutsideRearWindow =
+          Math.abs(camera.position.x) > 1.15 ||
+          camera.position.y > 2.78 ||
+          camera.position.y < 1.82;
+        if (isOutsideRearWindow) {
+          if (containerRef.current.style.display !== "none") {
+            containerRef.current.style.display = "none";
+          }
+          return;
+        }
+      }
+    }
+
+    if (containerRef.current.style.display !== "block") {
+      containerRef.current.style.display = "block";
     }
   });
 
@@ -1213,17 +1265,18 @@ function BusTvUnit({
       <mesh material={mats.dark} castShadow>
         <boxGeometry args={[1.36, 0.82, 0.08]} />
       </mesh>
-      {/* Dos opaque de la télévision pour empêcher toute transparence par l'arrière */}
-      <mesh material={mats.dark} position={[0, 0, -0.041]}>
+      {/* Dos opaque noir de la télévision */}
+      <mesh position={[0, 0, -0.041]}>
         <planeGeometry args={[1.34, 0.8]} />
+        <meshStandardMaterial color="#0c1017" roughness={0.7} side={THREE.DoubleSide} />
       </mesh>
       {/* Bordure dorée One Piece */}
       <mesh material={mats.yellow} position={[0, 0, 0.041]}>
         <boxGeometry args={[1.34, 0.8, 0.01]} />
       </mesh>
-      {/* Support de fixation au plafond */}
+      {/* Support de fixation au plafond bien visible et robuste */}
       <mesh material={mats.seatFrame} position={[0, 0.52, -0.08]}>
-        <boxGeometry args={[0.12, 0.38, 0.12]} />
+        <boxGeometry args={[0.16, 0.45, 0.16]} />
       </mesh>
 
       {/* Écran TV éteint si tvOn === false : verre noir éteint, sans miniature ni texte */}
@@ -1241,11 +1294,10 @@ function BusTvUnit({
         </mesh>
       )}
 
-      {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels, masqué par la carrosserie/toit en orbite externe) */}
+      {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels) */}
       {isPrimary && tvOn && (
         <Html
           transform
-          occlude
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
@@ -1280,7 +1332,7 @@ function BusTvUnit({
               title="La théorie des Fous du Bus"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
-              style={{ border: 0, display: "block", width: "100%", height: "100%" }}
+              style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden" }}
             />
           </div>
         </Html>
@@ -1290,7 +1342,6 @@ function BusTvUnit({
       {!isPrimary && tvOn && !isMutedForFullscreen && (
         <Html
           transform
-          occlude
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
@@ -1320,7 +1371,7 @@ function BusTvUnit({
               src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&playsinline=1&cc_load_policy=0&cc_lang_pref=none&iv_load_policy=3`}
               title={`TV ${idx + 1}`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              style={{ border: 0, display: "block", width: "100%", height: "100%" }}
+              style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden" }}
             />
           </div>
         </Html>

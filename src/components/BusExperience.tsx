@@ -25,7 +25,7 @@ export default function BusExperience() {
   const [headlights, setHeadlights] = useState(false);
   const [hornPulse, setHornPulse] = useState(0);
   const [hornVisible, setHornVisible] = useState(false);
-  const [tvOn, setTvOn] = useState(true);
+  const [tvOn, setTvOn] = useState(false);
 
   // La vidéo ne doit PAS commencer tant qu'on n'est pas rentré dans le bus
   const [hasEntered, setHasEntered] = useState(() => {
@@ -280,11 +280,13 @@ export default function BusExperience() {
     };
   }, []);
 
-  // Entrer dans le bus : incrémente la DB (+1)
+  // Entrer dans le bus : incrémente la DB (+1) et allume la TV
   const enterBus = useCallback(async () => {
     if (phase !== "outside") return;
     setHasEntered(true);
     setPhase("entering");
+    setTvOn(true);
+    setIsPlaying(true);
     playDing();
 
     // Vérifie si le visiteur a déjà validé sa montée dans cette session de navigation
