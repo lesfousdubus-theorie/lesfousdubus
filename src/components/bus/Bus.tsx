@@ -632,106 +632,93 @@ export default function Bus({
           <mesh material={mats.yellow} position={[sx * 1.345, 1.08, cabinCenterZ]}>
             <boxGeometry args={[0.02, 0.07, cabinLength]} />
           </mesh>
-          {/* Panneau latéral "Les fous du bus" */}
-          <mesh
-            position={[sx * 1.35, 1.6, 0.8]}
-            rotation={[0, sx > 0 ? Math.PI / 2 : -Math.PI / 2, 0]}
-          >
-            <planeGeometry args={[3.4, 0.55]} />
-            <meshStandardMaterial map={sideLabel} roughness={0.4} />
-          </mesh>
-          {/* Si le bus est très allongé, deuxième affiche latérale vers l'arrière */}
-          {numRows >= 10 && (
-            <mesh
-              position={[sx * 1.35, 1.6, rearWallZ - 2.6]}
-              rotation={[0, sx > 0 ? Math.PI / 2 : -Math.PI / 2, 0]}
-            >
-              <planeGeometry args={[3.4, 0.55]} />
-              <meshStandardMaterial map={sideLabel} roughness={0.4} />
-            </mesh>
-          )}
-
-          {/* Slogans de la théorie tagués au pochoir / spray sur les flancs du bus */}
-          {sx < 0 && (
+          
+          {/* Slogans de la théorie tagués en grand style graffiti street art : 3 phrases à gauche, 2 phrases à droite */}
+          {sx < 0 ? (
             <>
-              {/* Côté gauche (face à la caméra par défaut) - Chaque phrase est écrite une seule fois sur le bus */}
-              {/* 5. Tout est une question de timing (palier haut avant) */}
+              {/* CÔTÉ GAUCHE (3 phrases grandes et artistiques) */}
+              {/* 1. Le siècle oublié c'est le présent (avant gauche) */}
               <mesh
-                position={[sx * 1.352, 1.55, -2.8]}
+                position={[sx * 1.352, 1.42, -2.7]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.1, 0.38]} />
-                <meshStandardMaterial
-                  map={tagTimingTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-1}
-                  roughness={0.4}
-                />
-              </mesh>
-              {/* 1. Le siècle oublié c'est le présent (palier bas avant) */}
-              <mesh
-                position={[sx * 1.352, 0.78, -2.5]}
-                rotation={[0, -Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[2.2, 0.44]} />
+                <planeGeometry args={[2.7, 0.72]} />
                 <meshStandardMaterial
                   map={tagSiecleTex}
                   transparent
                   depthWrite={false}
                   polygonOffset
-                  polygonOffsetFactor={-1}
+                  polygonOffsetFactor={-2}
                   roughness={0.4}
                 />
               </mesh>
-              {/* 2. Barbe Noire est Davy Jones (palier bas milieu) */}
+              {/* 2. Barbe Noire est Davy Jones (milieu gauche) */}
               <mesh
-                position={[sx * 1.352, 0.78, -0.45]}
+                position={[sx * 1.352, 1.42, 0.0]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[1.9, 0.44]} />
+                <planeGeometry args={[2.5, 0.70]} />
                 <meshStandardMaterial
                   map={tagBarbeNoireTex}
                   transparent
                   depthWrite={false}
                   polygonOffset
-                  polygonOffsetFactor={-1}
+                  polygonOffsetFactor={-2}
                   roughness={0.4}
                 />
               </mesh>
-              {/* 3. Luffy est Nika et Joy Boy (palier bas arrière) */}
+              {/* 3. Luffy est Nika et Joy Boy (arrière gauche) */}
               <mesh
-                position={[sx * 1.352, 0.78, 1.45]}
+                position={[sx * 1.352, 1.42, 2.7]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[1.9, 0.44]} />
+                <planeGeometry args={[2.5, 0.70]} />
                 <meshStandardMaterial
                   map={tagLuffyNikaTex}
                   transparent
                   depthWrite={false}
                   polygonOffset
-                  polygonOffsetFactor={-1}
+                  polygonOffsetFactor={-2}
                   roughness={0.4}
                 />
               </mesh>
-              {/* 4. Les ponéglyphes viennent du futur (palier haut arrière) */}
+            </>
+          ) : (
+            <>
+              {/* CÔTÉ DROIT (2 phrases grandes et artistiques) */}
+              {/* 4. Les ponéglyphes viennent du futur (avant/milieu droit) */}
               <mesh
-                position={[sx * 1.352, 1.55, 3.5]}
-                rotation={[0, -Math.PI / 2, 0]}
+                position={[sx * 1.352, 1.42, -1.5]}
+                rotation={[0, Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.0, 0.38]} />
+                <planeGeometry args={[3.6, 0.85]} />
                 <meshStandardMaterial
                   map={tagPoneglyphesTex}
                   transparent
                   depthWrite={false}
                   polygonOffset
-                  polygonOffsetFactor={-1}
+                  polygonOffsetFactor={-2}
+                  roughness={0.4}
+                />
+              </mesh>
+              {/* 5. Tout est une question de timing (milieu/arrière droit) */}
+              <mesh
+                position={[sx * 1.352, 1.42, 2.4]}
+                rotation={[0, Math.PI / 2, 0]}
+              >
+                <planeGeometry args={[3.4, 0.82]} />
+                <meshStandardMaterial
+                  map={tagTimingTex}
+                  transparent
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-2}
                   roughness={0.4}
                 />
               </mesh>
             </>
           )}
+
           {/* Grands rétroviseurs incurvés (restent à l'avant) */}
           <mesh material={mats.body} position={[sx * 1.62, 2.42, -4.35]}>
             <boxGeometry args={[0.15, 0.44, 0.28]} />
@@ -1294,18 +1281,21 @@ function BusTvUnit({
         </mesh>
       )}
 
-      {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels) */}
-      {isPrimary && tvOn && (
+      {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels, reste chargé en mémoire) */}
+      {isPrimary && hasEntered && (
         <Html
           transform
+          occlude="blending"
+          geometry={<planeGeometry args={[1.26, 0.71]} />}
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
           style={{
             userSelect: "none",
             backfaceVisibility: "hidden",
-            pointerEvents: hasEntered && phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
-            opacity: !isMutedForFullscreen ? 1 : 0.001,
+            pointerEvents: tvOn && phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
+            opacity: tvOn && !isMutedForFullscreen ? 1 : 0,
+            display: tvOn ? "block" : "none",
             transition: "opacity 0.2s ease",
           }}
         >
@@ -1339,9 +1329,11 @@ function BusTvUnit({
       )}
 
       {/* TV 1, 2, ... : Écrans secondaires dans l'allée */}
-      {!isPrimary && tvOn && !isMutedForFullscreen && (
+      {!isPrimary && hasEntered && tvOn && !isMutedForFullscreen && (
         <Html
           transform
+          occlude="blending"
+          geometry={<planeGeometry args={[1.26, 0.71]} />}
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
@@ -1349,6 +1341,7 @@ function BusTvUnit({
             pointerEvents: "none",
             userSelect: "none",
             backfaceVisibility: "hidden",
+            display: tvOn ? "block" : "none",
           }}
         >
           <div

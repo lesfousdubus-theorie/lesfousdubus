@@ -185,9 +185,12 @@ export default function CameraRig({
       }
     };
 
-    // Zoom molette de la souris
+    // Zoom molette de la souris (uniquement sur la scène 3D, jamais dans un modal)
     const wheel = (e: WheelEvent) => {
       if (phaseRef.current !== "inside") return;
+      if ((e.target as HTMLElement)?.closest?.("[role='dialog'], [data-modal], .overflow-y-auto")) {
+        return;
+      }
       e.preventDefault();
       const delta = e.deltaY * 0.04;
       targetFovRef.current = THREE.MathUtils.clamp(targetFovRef.current + delta, 22, 75);
@@ -195,6 +198,9 @@ export default function CameraRig({
 
     const key = (e: KeyboardEvent) => {
       if (phaseRef.current !== "inside") return;
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") {
+        return;
+      }
       const step = 0.15;
       if (e.key === "ArrowLeft" || e.key === "q" || e.key === "a") l.targetYaw += step;
       if (e.key === "ArrowRight" || e.key === "d") l.targetYaw -= step;
@@ -223,7 +229,6 @@ export default function CameraRig({
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
     el.addEventListener("wheel", wheel, { passive: false });
-    window.addEventListener("wheel", wheel, { passive: false });
     window.addEventListener("keydown", key);
     window.addEventListener("bus-zoom", onCustomZoom);
     window.addEventListener("bus-zoom-reset", onCustomZoomReset);
@@ -234,7 +239,6 @@ export default function CameraRig({
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", up);
       el.removeEventListener("wheel", wheel);
-      window.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", key);
       window.removeEventListener("bus-zoom", onCustomZoom);
       window.removeEventListener("bus-zoom-reset", onCustomZoomReset);

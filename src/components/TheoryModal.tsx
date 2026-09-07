@@ -61,22 +61,27 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
       role="dialog"
       aria-modal="true"
       aria-labelledby="theory-modal-title"
-      className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6 md:p-8 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="pointer-events-auto fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-6 md:p-8 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
       onClick={handleClose}
+      onWheel={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
     >
       <div
-        className="relative flex flex-col w-full max-w-4xl max-h-[90dvh] bg-[#0c1322]/95 border border-[#ffd23f]/40 rounded-2xl sm:rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden text-white"
+        className="relative flex flex-col w-full max-w-4xl max-h-[90dvh] bg-[#0c1322]/95 border border-[#ffd23f]/40 rounded-2xl sm:rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden text-white select-text"
         onClick={(e) => e.stopPropagation()}
+        onWheel={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
-        {/* En-tête du modal */}
-        <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3.5 sm:py-4 bg-black/40">
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <span className="text-xl sm:text-2xl">📜</span>
+        {/* En-tête du modal avec espacement généreux */}
+        <div className="flex items-center justify-between border-b border-white/10 px-6 sm:px-8 py-4 sm:py-5 bg-black/40">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <span className="text-2xl sm:text-3xl">📜</span>
             <div>
-              <h2 id="theory-modal-title" className="text-base sm:text-xl font-black uppercase tracking-wide text-[#ffd23f]">
+              <h2 id="theory-modal-title" className="text-lg sm:text-2xl font-black uppercase tracking-wide text-[#ffd23f]">
                 La Théorie des Fous du Bus
               </h2>
-              <p className="text-[10px] sm:text-xs text-white/70 font-semibold uppercase tracking-wider">
+              <p className="text-xs sm:text-sm text-white/70 font-semibold uppercase tracking-wider mt-0.5">
                 Le Siècle Oublié est le Présent · Dossier Officiel
               </p>
             </div>
@@ -85,7 +90,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
             type="button"
             onClick={handleClose}
             aria-label="Fermer le modal"
-            className="rounded-full bg-white/10 hover:bg-white/20 active:scale-95 p-1.5 sm:p-2 text-white/80 hover:text-white transition cursor-pointer"
+            className="rounded-full bg-white/10 hover:bg-white/20 active:scale-95 p-2 sm:p-2.5 text-white/80 hover:text-white transition cursor-pointer"
           >
             <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -93,8 +98,8 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
           </button>
         </div>
 
-        {/* Barre d'onglets : 3 onglets simples */}
-        <div className="flex border-b border-white/10 bg-black/20 px-3 sm:px-6 overflow-x-auto no-scrollbar gap-1 sm:gap-2 py-2">
+        {/* Barre d'onglets spacieuse et aérée */}
+        <div className="flex border-b border-white/10 bg-black/30 px-6 sm:px-8 py-3 sm:py-4 overflow-x-auto no-scrollbar gap-2 sm:gap-4 items-center">
           <TabButton
             active={activeTab === "thesis"}
             onClick={() => setActiveTab("thesis")}
@@ -115,14 +120,14 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
           />
         </div>
 
-        {/* Contenu de l'onglet actif */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 text-sm sm:text-base leading-relaxed">
+        {/* Contenu de l'onglet actif avec marges aérées et défilement fluide */}
+        <div className="flex-1 overflow-y-auto overscroll-contain p-6 sm:p-8 md:p-10 space-y-8 text-sm sm:text-base leading-relaxed">
           {/* 1. ONGLET THÈSE */}
           {activeTab === "thesis" && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* Résumé express en 30 secondes */}
-              <div className="rounded-2xl border-2 border-[#ffd23f] bg-gradient-to-br from-[#ffd23f]/15 to-[#0c1322] p-4 sm:p-6 shadow-[0_0_30px_rgba(255,210,63,0.2)]">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="rounded-3xl border-2 border-[#ffd23f]/70 bg-gradient-to-br from-[#ffd23f]/15 to-[#0c1322] p-6 sm:p-8 shadow-[0_0_35px_rgba(255,210,63,0.25)] space-y-4">
+                <div className="flex items-center gap-2.5 mb-1">
                   <span className="text-xl">⚡</span>
                   <span className="rounded-md bg-[#ffd23f] px-2.5 py-0.5 text-xs font-black uppercase text-[#0d2190]">
                     L&apos;Essentiel en 30 secondes
@@ -343,13 +348,13 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition cursor-pointer active:scale-95 ${
+      className={`flex items-center gap-2.5 px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm font-black whitespace-nowrap transition cursor-pointer active:scale-95 ${
         active
-          ? "bg-[#ffd23f] text-[#0d2190] shadow-md shadow-[#ffd23f]/20"
-          : "text-white/80 hover:text-white hover:bg-white/10"
+          ? "bg-[#ffd23f] text-[#0c1322] shadow-lg shadow-[#ffd23f]/30 scale-[1.02]"
+          : "bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20"
       }`}
     >
-      <span>{icon}</span>
+      <span className="text-base sm:text-lg">{icon}</span>
       <span>{label}</span>
     </button>
   );

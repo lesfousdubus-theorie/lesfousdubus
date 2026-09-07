@@ -355,14 +355,14 @@ export interface GraffitiOptions {
   sub?: string;
 }
 
-/** Crée une texture de tag / graffiti street art pour le bus */
+/** Crée une texture de tag / graffiti street art authentique et haute résolution pour le bus */
 export function makeGraffitiTexture({
   text,
-  width = 1024,
-  height = 256,
+  width = 1536,
+  height = 384,
   color = "#ffd23f",
-  stroke = "#000000",
-  angle = -0.04,
+  stroke = "#0c1322",
+  angle = -0.035,
   sub,
 }: GraffitiOptions): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
@@ -376,81 +376,93 @@ export function makeGraffitiTexture({
   c.translate(width / 2, height / 2);
   c.rotate(angle);
 
-  const mainY = sub ? -22 : 0;
+  const mainY = sub ? -30 : -5;
 
-  // Typographie grasse impact style graffiti avec dimensionnement dynamique
-  let fontSize = 78;
+  // Typographie graffiti puissante et grasse
+  let fontSize = 110;
   c.font = `900 ${fontSize}px Impact, 'Arial Black', sans-serif`;
   const measured = c.measureText(text).width;
-  const maxTextW = width * 0.9;
+  const maxTextW = width * 0.92;
   if (measured > maxTextW) {
-    fontSize = Math.max(32, Math.floor((fontSize * maxTextW) / measured));
+    fontSize = Math.max(48, Math.floor((fontSize * maxTextW) / measured));
     c.font = `900 ${fontSize}px Impact, 'Arial Black', sans-serif`;
   }
   c.textAlign = "center";
   c.textBaseline = "middle";
 
-  // 1. Halo spray extérieur (effet bombe aérosol)
+  // 1. Halo spray aérosol diffus externe (effet bombe de peinture murale)
   c.shadowColor = stroke;
-  c.shadowBlur = 16;
+  c.shadowBlur = 28;
+  c.lineWidth = 26;
+  c.strokeStyle = stroke;
+  c.strokeText(text, 0, mainY);
+
+  // 2. Deuxième couche de contour net et tranchant
+  c.shadowColor = "rgba(0,0,0,0.8)";
+  c.shadowBlur = 8;
   c.lineWidth = 14;
   c.strokeStyle = stroke;
   c.strokeText(text, 0, mainY);
 
-  // 2. Contour net
-  c.shadowBlur = 4;
-  c.lineWidth = 8;
-  c.strokeText(text, 0, mainY);
-
-  // 3. Remplissage éclatant
+  // 3. Remplissage éclatant couleur vive
   c.shadowBlur = 0;
   c.fillStyle = color;
   c.fillText(text, 0, mainY);
 
-  // 4. Éclats et gouttelettes de bombe de peinture (spray spatter)
+  // 4. Reflet intérieur brillant sur le haut des lettres
+  c.save();
+  c.beginPath();
+  c.rect(-width / 2, mainY - fontSize * 0.5, width, fontSize * 0.4);
+  c.clip();
+  c.fillStyle = "rgba(255, 255, 255, 0.4)";
+  c.fillText(text, 0, mainY);
+  c.restore();
+
+  // 5. Éclats et gouttelettes de bombe de peinture (spray spatter)
   c.fillStyle = color;
-  const seed = text.length;
-  for (let i = 0; i < 20; i++) {
-    const gx = ((i * 59 + seed * 17) % (width * 0.84)) - (width * 0.42);
-    const gy = mainY + (((i * 37 + seed * 13) % 70) - 35);
-    const r = (i % 3) + 1.2;
+  const seed = text.length * 13;
+  for (let i = 0; i < 35; i++) {
+    const gx = ((i * 83 + seed * 29) % (width * 0.88)) - (width * 0.44);
+    const gy = mainY + (((i * 47 + seed * 19) % 110) - 55);
+    const r = (i % 4) * 1.3 + 1.5;
     c.beginPath();
     c.arc(gx, gy, r, 0, Math.PI * 2);
     c.fill();
   }
 
-  // 5. Coulures de peinture verticales (drips)
-  for (let d = 0; d < 4; d++) {
-    const dx = ((d * 210 + seed * 47) % (width * 0.7)) - (width * 0.35);
-    const dy = mainY + 36;
-    const dlen = 20 + ((d * 17) % 25);
+  // 6. Coulures de peinture verticales avec gouttes suspendues (graffiti drips)
+  const numDrips = 6;
+  for (let d = 0; d < numDrips; d++) {
+    const dx = ((d * 240 + seed * 43) % (width * 0.8)) - (width * 0.4);
+    const dy = mainY + fontSize * 0.4;
+    const dlen = 30 + ((d * 29 + seed) % 55);
     c.beginPath();
     c.moveTo(dx, dy);
-    c.lineTo(dx + 1.5, dy + dlen);
-    c.lineWidth = 3.5;
+    c.lineTo(dx + 2, dy + dlen);
+    c.lineWidth = 4.5;
     c.strokeStyle = color;
     c.stroke();
     // Goutte suspendue
     c.beginPath();
-    c.arc(dx + 1.5, dy + dlen + 2.5, 2.5, 0, Math.PI * 2);
+    c.arc(dx + 2, dy + dlen + 4, 3.8, 0, Math.PI * 2);
     c.fill();
   }
 
-  // 6. Sous-texte tagué
+  // 7. Sous-texte tagué optionnel
   if (sub) {
-    c.font = "bold 36px 'Arial Black', Impact, sans-serif";
+    c.font = "bold 44px 'Arial Black', Impact, sans-serif";
     c.fillStyle = "#ffffff";
-    c.strokeStyle = "#000000";
-    c.lineWidth = 6;
-    c.strokeText(sub, 0, 38);
-    c.fillText(sub, 0, 38);
+    c.strokeStyle = stroke;
+    c.lineWidth = 8;
+    c.strokeText(sub, 0, 50);
+    c.fillText(sub, 0, 50);
   }
 
   c.restore();
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
+  tex.anisotropy = 16;
   return tex;
 }
 

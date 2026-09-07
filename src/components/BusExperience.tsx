@@ -24,7 +24,6 @@ export default function BusExperience() {
   });
   const [headlights, setHeadlights] = useState(false);
   const [hornPulse, setHornPulse] = useState(0);
-  const [hornVisible, setHornVisible] = useState(false);
   const [tvOn, setTvOn] = useState(false);
 
   // La vidéo ne doit PAS commencer tant qu'on n'est pas rentré dans le bus
@@ -347,8 +346,6 @@ export default function BusExperience() {
   const honk = useCallback(() => {
     playHorn();
     setHornPulse(performance.now());
-    setHornVisible(true);
-    setTimeout(() => setHornVisible(false), 900);
   }, []);
 
   // Référence pour le temps de lecture de la vidéo pour synchroniser la lecture
@@ -616,16 +613,7 @@ export default function BusExperience() {
           </button>
         </div>
 
-        {/* Klaxon visuel */}
-        {hornVisible && (
-          <div className="pointer-events-none absolute left-1/2 top-[38%] -translate-x-1/2 animate-bounce">
-            <span className="rotate-[-6deg] inline-block rounded-2xl bg-[#ffd23f] px-6 py-3 text-4xl font-black text-[#0d2190] shadow-[0_8px_0_#b8860b] md:text-6xl">
-              TUUUT !!
-            </span>
-          </div>
-        )}
-
-        {/* Navigation entre les rangées & Zoom quand on est à l'intérieur */}
+        {/* Navigation entre les rangées quand on est à l'intérieur */}
         {phase === "inside" && (
           <div className="pointer-events-auto absolute top-[4.5rem] sm:top-20 right-3 sm:right-4 flex flex-col items-end gap-1.5 sm:gap-2">
             {/* Déplacement dans l'allée */}
@@ -652,35 +640,6 @@ export default function BusExperience() {
                 ▶
               </button>
             </div>
-
-            {/* Contrôles de zoom */}
-            <div className="flex items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-lg backdrop-blur-md">
-              <span className="text-[11px] sm:text-xs font-bold text-white/80 mr-1">🔍 Zoom</span>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom", { detail: -7 }))}
-                className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-0.5 text-xs font-black text-white transition hover:bg-white/25 active:scale-95 cursor-pointer"
-                title="Zoomer (+)"
-              >
-                +
-              </button>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom", { detail: +7 }))}
-                className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-0.5 text-xs font-black text-white transition hover:bg-white/25 active:scale-95 cursor-pointer"
-                title="Dézoomer (−)"
-              >
-                −
-              </button>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent("bus-zoom-reset"))}
-                className="rounded-lg bg-white/10 px-1.5 sm:px-2 py-0.5 text-[10px] font-bold text-white/60 transition hover:bg-white/25 active:scale-95 cursor-pointer"
-                title="Réinitialiser zoom"
-              >
-                Reset
-              </button>
-            </div>
           </div>
         )}
 
@@ -688,9 +647,6 @@ export default function BusExperience() {
         <div className="pointer-events-auto absolute bottom-16 md:bottom-6 left-1/2 flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 max-w-[95vw] sm:max-w-xl">
           {phase === "outside" || phase === "entering" ? (
             <>
-              <HudButton onClick={() => setShowTheoryModal(true)} icon="📜" disabled={busy}>
-                Théorie
-              </HudButton>
               <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
                 {headlights ? "Éteindre" : "Phares"}
               </HudButton>
@@ -708,9 +664,6 @@ export default function BusExperience() {
             </>
           ) : (
             <>
-              <HudButton onClick={() => setShowTheoryModal(true)} icon="📜" disabled={busy}>
-                Théorie
-              </HudButton>
               <HudButton onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy}>
                 {tvOn ? "Éteindre la TV" : "Allumer la TV"}
               </HudButton>
@@ -726,10 +679,10 @@ export default function BusExperience() {
             </>
           )}
         </div>
-
-        {/* Modal interactif complet de la théorie des Fous du Bus */}
-        <TheoryModal isOpen={showTheoryModal} onClose={() => setShowTheoryModal(false)} />
       </div>
+
+      {/* Modal interactif complet de la théorie des Fous du Bus */}
+      <TheoryModal isOpen={showTheoryModal} onClose={() => setShowTheoryModal(false)} />
     </div>
   );
 }

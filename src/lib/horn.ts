@@ -13,8 +13,30 @@ function getCtx(): AudioContext | null {
   return ctx;
 }
 
-/** Synthétise un klaxon de bus à deux tons (sans fichier audio). */
-export function playHorn(duration = 0.7) {
+let hornAudio: HTMLAudioElement | null = null;
+
+/** Joue le klaxon officiel One Piece (Luffy Eyecatcher - Grand Line). */
+export function playHorn() {
+  if (typeof window === "undefined") return;
+  try {
+    if (!hornAudio) {
+      hornAudio = new Audio("/sounds/horn.mp3");
+      hornAudio.volume = 0.9;
+    }
+    hornAudio.currentTime = 0;
+    const playPromise = hornAudio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        playSynthHorn();
+      });
+    }
+  } catch {
+    playSynthHorn();
+  }
+}
+
+/** Synthétise un klaxon de bus à deux tons en fallback. */
+export function playSynthHorn(duration = 0.7) {
   const audio = getCtx();
   if (!audio) return;
   const now = audio.currentTime;
