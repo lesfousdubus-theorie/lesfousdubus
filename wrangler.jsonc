@@ -8,6 +8,14 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "d1_databases": [
+    {
+      "binding": "DB_BUS",
+      "database_name": "lesfousdubus-passengers",
+      "database_id": "c971b308-65fd-45ba-a7f7-4d0aece26496",
+      "migrations_dir": "migrations"
+    }
+  ],
   "observability": {
     "enabled": true
   }

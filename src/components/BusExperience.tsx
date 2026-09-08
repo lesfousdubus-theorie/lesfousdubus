@@ -167,8 +167,11 @@ export default function BusExperience() {
 
   // Récupération initiale du nombre réel de passagers depuis l'API
   useEffect(() => {
-    fetch("/api/bus-entries")
-      .then((r) => r.json())
+    fetch("/api/bus-entries", { cache: "no-store" })
+      .then((r) => {
+        if (!r.ok) throw new Error("Passenger counter unavailable");
+        return r.json();
+      })
       .then((d: { count: number }) => setCount(d.count))
       .catch(() => setCount(0));
   }, []);
@@ -177,7 +180,7 @@ export default function BusExperience() {
   useEffect(() => {
     const poll = async () => {
       try {
-        const r = await fetch("/api/bus-entries");
+        const r = await fetch("/api/bus-entries", { cache: "no-store" });
         if (!r.ok) return;
         const d = (await r.json()) as { count: number };
         setCount((prev) => {
@@ -279,7 +282,7 @@ export default function BusExperience() {
     };
   }, []);
 
-  // Entrer dans le bus : incrémente la DB (+1) et allume la TV
+  // Entrer dans le bus : enregistre ce visiteur une seule fois dans D1 et allume la TV
   const enterBus = useCallback(async () => {
     if (phase !== "outside") return;
     setHasEntered(true);
@@ -288,48 +291,42 @@ export default function BusExperience() {
     setIsPlaying(true);
     playDing();
 
-    // Vérifie si le visiteur a déjà validé sa montée dans cette session de navigation
-    const sessionKey = "fdb-has-entered-bus";
-    const alreadyEntered = typeof window !== "undefined" && Boolean(sessionStorage.getItem(sessionKey));
+    let visitorId = "";
+    try {
+      visitorId = localStorage.getItem("fdb-visitor") ?? crypto.randomUUID();
+      localStorage.setItem("fdb-visitor", visitorId);
+    } catch {
+      visitorId = crypto.randomUUID();
+    }
 
-    if (!alreadyEntered) {
-      if (typeof window !== "undefined") {
-        try {
-          sessionStorage.setItem(sessionKey, "1");
-        } catch {
-          // ignore
-        }
-      }
+    try {
+      const r = await fetch("/api/bus-entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ visitorId }),
+      });
+      if (!r.ok) throw new Error("Passenger registration failed");
 
-      let visitorId = "";
-      try {
-        visitorId = localStorage.getItem("fdb-visitor") ?? crypto.randomUUID();
-        localStorage.setItem("fdb-visitor", visitorId);
-      } catch {
-        visitorId = "anon";
-      }
+      const d = (await r.json()) as { count: number; added: boolean };
+      const prevRows = computeNumRows(count ?? 0);
+      const nextRows = computeNumRows(d.count);
 
-      try {
-        const r = await fetch("/api/bus-entries", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ visitorId, amount: 1 }),
-        });
-        const d = (await r.json()) as { count: number };
-        const prevRows = computeNumRows(count ?? 0);
-        const nextRows = computeNumRows(d.count);
-        if (nextRows > prevRows) {
-          playStretch();
-          showToast("Bienvenue à bord !", "Le bus s'allonge pour t'accueillir !", "🚌 EXTENSION");
-        } else {
-          showToast("Bienvenue à bord !", "Tu es maintenant assis dans le bus !", "🎉 NAKAMA");
-        }
-        setCount(d.count);
-      } catch {
-        setCount((c) => (c ?? 0) + 1);
+      if (!d.added) {
+        showToast("Bon retour à bord !", "Tu reprends ta place dans le bus !", "🚌 NAKAMA");
+      } else if (nextRows > prevRows) {
+        playStretch();
+        showToast("Bienvenue à bord !", "Le bus s'allonge pour t'accueillir !", "🚌 EXTENSION");
+      } else {
+        showToast("Bienvenue à bord !", "Tu es maintenant assis dans le bus !", "🎉 NAKAMA");
       }
-    } else {
-      showToast("Bon retour à bord !", "Tu reprends ta place dans le bus !", "🚌 NAKAMA");
+      setCount(d.count);
+    } catch {
+      showToast(
+        "Bienvenue à bord !",
+        "Le compteur se resynchronisera dès que Cloudflare répondra.",
+        "⏳ SYNCHRO",
+      );
     }
   }, [phase, count, showToast]);
 
