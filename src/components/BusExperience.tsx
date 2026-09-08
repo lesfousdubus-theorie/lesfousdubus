@@ -14,6 +14,15 @@ interface ToastMessage {
   badge?: string;
 }
 
+const THEORY_START_DATE = Date.UTC(2024, 4, 26);
+
+function getTheoryAgeInDays(): number {
+  const today = new Date();
+  const todayAtMidnight = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+
+  return Math.max(0, Math.floor((todayAtMidnight - THEORY_START_DATE) / 86_400_000));
+}
+
 export default function BusExperience() {
   const [phase, setPhase] = useState<Phase>(() => {
     if (typeof window !== "undefined") {
@@ -43,6 +52,7 @@ export default function BusExperience() {
   });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showTheoryModal, setShowTheoryModal] = useState(false);
+  const [theoryAgeInDays] = useState(getTheoryAgeInDays);
 
   // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
   const [speedMultiplier, setSpeedMultiplier] = useState(() => {
@@ -525,7 +535,7 @@ export default function BusExperience() {
           </div>
         </div>
 
-        {/* Compteur de passagers & Infos rangées du bus (100% réel, calculé selon la DB) */}
+        {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
         <div className="pointer-events-auto absolute right-3 sm:right-4 top-3 sm:top-4 flex items-center gap-1.5 sm:gap-3 rounded-2xl border border-[#ffd23f]/40 bg-black/60 px-2.5 sm:px-4 py-1 sm:py-2.5 shadow-lg backdrop-blur-md">
           <span className="text-lg sm:text-2xl">🚌</span>
           <div className="leading-tight">
@@ -539,6 +549,15 @@ export default function BusExperience() {
             </div>
             <div className="text-base sm:text-xl font-black tabular-nums text-white">
               {effectiveCount.toLocaleString("fr-FR")}
+            </div>
+          </div>
+          <div className="border-l border-white/20 pl-2 sm:pl-3 leading-tight" title="La théorie existe depuis le 26 mai 2024">
+            <div className="text-[8px] sm:text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffd23f]">
+              Théorie depuis
+            </div>
+            <div className="text-base sm:text-xl font-black tabular-nums text-white">
+              {theoryAgeInDays.toLocaleString("fr-FR")}
+              <span className="ml-1 text-[9px] sm:text-xs font-bold uppercase text-white/70">jours</span>
             </div>
           </div>
         </div>
