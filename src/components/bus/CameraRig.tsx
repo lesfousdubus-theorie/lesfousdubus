@@ -124,7 +124,9 @@ export default function CameraRig({
 
   // Contrôles "tourner la tête" & Zoom à l'intérieur (souris / tactile / clavier / molette)
   useEffect(() => {
-    const el = gl.domElement;
+    // Html avec occlusion "blending" désactive les événements du canvas.
+    // Son conteneur reste la surface stable, déjà utilisée par OrbitControls.
+    const el = gl.domElement.parentElement ?? gl.domElement;
     const l = look.current;
     const pointers = activePointersRef.current;
 

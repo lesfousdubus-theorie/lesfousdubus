@@ -1126,7 +1126,6 @@ export default function Bus({
           onToggleFullscreen={onToggleFullscreen}
           isMutedForFullscreen={isMutedForFullscreen}
           hasEntered={hasEntered}
-          rearWallZ={rearWallZ}
           mats={mats}
           tvOffTex={tvOffTex}
           primaryIframeRef={primaryIframeRef}
@@ -1147,7 +1146,6 @@ interface BusTvUnitProps {
   onToggleFullscreen?: () => void;
   isMutedForFullscreen: boolean;
   hasEntered?: boolean;
-  rearWallZ: number;
   mats: Record<string, THREE.Material>;
   tvOffTex: THREE.CanvasTexture;
   primaryIframeRef: React.RefObject<HTMLIFrameElement | null>;
@@ -1162,7 +1160,6 @@ function BusTvUnit({
   onToggleTv,
   isMutedForFullscreen,
   hasEntered,
-  rearWallZ,
   mats,
   tvOffTex,
   primaryIframeRef,
@@ -1191,39 +1188,9 @@ function BusTvUnit({
       return;
     }
 
-    // 3. Si la caméra est à l'extérieur : masquage par les composants solides du bus
-    if (phase === "outside") {
-      // Au-dessus du toit du bus (toit = 3.0, caméra au-dessus)
-      if (camera.position.y > 2.92) {
-        if (containerRef.current.style.display !== "none") {
-          containerRef.current.style.display = "none";
-        }
-        return;
-      }
-
-      // En dessous de la ceinture de vitres (carrosserie bleue)
-      if (camera.position.y < 1.72) {
-        if (containerRef.current.style.display !== "none") {
-          containerRef.current.style.display = "none";
-        }
-        return;
-      }
-
-      // À l'arrière du bus (derrière la paroi arrière)
-      if (camera.position.z > rearWallZ + 0.25) {
-        const isOutsideRearWindow =
-          Math.abs(camera.position.x) > 1.15 ||
-          camera.position.y > 2.78 ||
-          camera.position.y < 1.82;
-        if (isOutsideRearWindow) {
-          if (containerRef.current.style.display !== "none") {
-            containerRef.current.style.display = "none";
-          }
-          return;
-        }
-      }
-    }
-
+    // L'occlusion "blending" effectue la découpe réelle, pixel par pixel :
+    // la carrosserie, le toit et les piliers masquent la vidéo, tandis que les
+    // vitres transparentes (depthWrite: false) la laissent visible.
     if (containerRef.current.style.display !== "block") {
       containerRef.current.style.display = "block";
     }
