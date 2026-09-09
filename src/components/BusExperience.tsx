@@ -1,11 +1,13 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Scene from "./bus/Scene";
 import { computeNumRows } from "./bus/Passengers";
 import { YOUTUBE_ID, type Phase, type WorldState } from "./bus/constants";
 import { playDing, playHorn, playStretch, playBoost } from "@/lib/horn";
-import TheoryModal from "./TheoryModal";
+
+const TheoryModal = dynamic(() => import("./TheoryModal"), { ssr: false });
 
 interface ToastMessage {
   id: number;
@@ -92,9 +94,7 @@ export default function BusExperience() {
   });
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  const [zone, setZone] = useState(0);
-  const [daylight, setDaylight] = useState(1);
-  const [timeOfDay, setTimeOfDay] = useState(0.2);
+  const [isNight, setIsNight] = useState(false);
   const [manualDayNight, setManualDayNight] = useState<"day" | "night" | null>(null);
 
   const toastTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -111,11 +111,9 @@ export default function BusExperience() {
   const manualHeadlightsRef = useRef<boolean | null>(null);
 
   const toggleDayNight = useCallback(() => {
-    setManualDayNight(() => {
-      const currentlyNight = daylight < 0.4;
-      return currentlyNight ? "day" : "night";
-    });
-  }, [daylight]);
+    setManualDayNight(isNight ? "day" : "night");
+    setIsNight((night) => !night);
+  }, [isNight]);
 
   // Affiche une notification festive
   const showToast = useCallback((text: string, sub?: string, badge?: string) => {
@@ -166,7 +164,7 @@ export default function BusExperience() {
 
   // Récupération initiale du nombre réel de passagers depuis l'API
   useEffect(() => {
-    fetch("/api/bus-entries", { cache: "no-store" })
+    fetch("/api/bus-entries")
       .then((r) => {
         if (!r.ok) throw new Error("Passenger counter unavailable");
         return r.json();
@@ -175,11 +173,15 @@ export default function BusExperience() {
       .catch(() => setCount(0));
   }, []);
 
-  // Synchronisation en direct : polling pour voir monter les nouveaux passagers et le bus s'allonger
+  // Synchronisation en direct, ralentie et suspendue quand l'onglet est masqué.
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    let stopped = false;
+
     const poll = async () => {
+      if (stopped || document.hidden) return;
       try {
-        const r = await fetch("/api/bus-entries", { cache: "no-store" });
+        const r = await fetch("/api/bus-entries");
         if (!r.ok) return;
         const d = (await r.json()) as { count: number };
         setCount((prev) => {
@@ -209,20 +211,38 @@ export default function BusExperience() {
       }
     };
 
-    const interval = setInterval(poll, 3500);
-    return () => clearInterval(interval);
+    const schedule = () => {
+      if (timeout) clearTimeout(timeout);
+      if (!document.hidden) {
+        timeout = setTimeout(async () => {
+          await poll();
+          schedule();
+        }, 10_000);
+      }
+    };
+    const refresh = () => {
+      if (!document.hidden) void poll();
+      schedule();
+    };
+
+    schedule();
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      stopped = true;
+      if (timeout) clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
+    };
   }, [showToast]);
 
-  // Synchronise l'état du monde (zone, jour/nuit) et automatise l'allumage des phares la nuit
+  // Ne remonte vers React que le changement jour/nuit, pas les valeurs 3D à chaque tick.
   useEffect(() => {
     const id = setInterval(() => {
-      const { zone: curZone, daylight: curDaylight, timeOfDay: curTime } = worldRef.current;
-      setZone(curZone);
-      setDaylight(curDaylight);
-      setTimeOfDay(curTime);
-
+      const curDaylight = worldRef.current.daylight;
       const curIsNight = curDaylight < 0.4;
       if (curIsNight !== prevIsNight.current) {
+        setIsNight(curIsNight);
         if (curIsNight) {
           // Passage automatique en mode nuit : allumage des phares
           setHeadlights(true);
@@ -236,11 +256,9 @@ export default function BusExperience() {
         }
         prevIsNight.current = curIsNight;
       }
-    }, 400);
+    }, 1000);
     return () => clearInterval(id);
   }, []);
-
-  const isNight = daylight < 0.4;
 
   const toggleHeadlights = useCallback(() => {
     setHeadlights((prev) => {

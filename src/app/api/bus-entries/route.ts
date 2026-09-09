@@ -3,7 +3,11 @@ import type { CloudflareD1Database } from "@/types/cloudflare";
 
 export const dynamic = "force-dynamic";
 
-const JSON_HEADERS = {
+const READ_HEADERS = {
+  "Cache-Control": "public, max-age=5, s-maxage=5, stale-while-revalidate=10",
+};
+
+const WRITE_HEADERS = {
   "Cache-Control": "no-store, max-age=0",
 };
 
@@ -30,12 +34,12 @@ export async function GET() {
     const database = await getPassengerDatabase();
     const count = await readPassengerCount(database);
 
-    return Response.json({ count }, { headers: JSON_HEADERS });
+    return Response.json({ count }, { headers: READ_HEADERS });
   } catch (error) {
     console.error("GET /api/bus-entries error:", error);
     return Response.json(
       { error: "Le compteur des passagers est temporairement indisponible." },
-      { status: 503, headers: JSON_HEADERS },
+      { status: 503, headers: WRITE_HEADERS },
     );
   }
 }
@@ -48,7 +52,7 @@ export async function POST(request: Request) {
     if (!/^[a-zA-Z0-9-]{8,128}$/.test(visitorId)) {
       return Response.json(
         { error: "Identifiant visiteur invalide." },
-        { status: 400, headers: JSON_HEADERS },
+        { status: 400, headers: WRITE_HEADERS },
       );
     }
 
@@ -61,13 +65,13 @@ export async function POST(request: Request) {
 
     return Response.json(
       { count, added: (insertion.meta.changes ?? 0) > 0 },
-      { headers: JSON_HEADERS },
+      { headers: WRITE_HEADERS },
     );
   } catch (error) {
     console.error("POST /api/bus-entries error:", error);
     return Response.json(
       { error: "Impossible d'enregistrer ce passager pour le moment." },
-      { status: 503, headers: JSON_HEADERS },
+      { status: 503, headers: WRITE_HEADERS },
     );
   }
 }

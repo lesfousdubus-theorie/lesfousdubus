@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 
@@ -353,24 +353,71 @@ export default function Passengers({
 }: PassengersProps) {
   const seats = useMemo(() => getSeatPositions(numRows, reservedRow), [numRows, reservedRow]);
 
-  // Nombre de passagers visibles à bord
-  const visibleCount = Math.min(Math.max(0, passengerCount), seats.length);
+  const occupiedSeats = useMemo(
+    () => seats.slice(0, Math.min(Math.max(0, passengerCount), seats.length)),
+    [passengerCount, seats],
+  );
+  const detailed = useMemo(() => {
+    if (occupiedSeats.length <= 24) return occupiedSeats.map((seat, index) => ({ seat, index }));
+    return occupiedSeats
+      .map((seat, index) => ({ seat, index }))
+      .sort((a, b) => Math.abs(a.seat.row - reservedRow) - Math.abs(b.seat.row - reservedRow))
+      .slice(0, 24);
+  }, [occupiedSeats, reservedRow]);
+  const simplified = useMemo(() => {
+    const detailedIndices = new Set(detailed.map(({ index }) => index));
+    const remaining = occupiedSeats
+      .map((seat, index) => ({ seat, index }))
+      .filter(({ index }) => !detailedIndices.has(index));
+    if (remaining.length <= 160) return remaining;
+    return Array.from({ length: 160 }, (_, i) => remaining[Math.floor((i * remaining.length) / 160)]);
+  }, [detailed, occupiedSeats]);
 
   return (
     <group>
-      {seats.slice(0, visibleCount).map((seat, i) => {
-        const archetype = NAKAMA_ROSTER[i % NAKAMA_ROSTER.length];
+      <SimplifiedPassengers passengers={simplified} />
+      {detailed.map(({ seat, index }) => {
+        const archetype = NAKAMA_ROSTER[index % NAKAMA_ROSTER.length];
         return (
           <Passenger
-            key={`p-${i}-${archetype.id}`}
+            key={`p-${index}-${archetype.id}`}
             seat={seat}
-            index={i}
+            index={index}
             archetype={archetype}
             hornPulse={hornPulse}
           />
         );
       })}
     </group>
+  );
+}
+
+function SimplifiedPassengers({ passengers }: { passengers: Array<{ seat: SeatInfo; index: number }> }) {
+  const bodies = useRef<THREE.InstancedMesh>(null);
+  const heads = useRef<THREE.InstancedMesh>(null);
+  useLayoutEffect(() => {
+    const matrix = new THREE.Matrix4();
+    passengers.forEach(({ seat }, index) => {
+      matrix.makeTranslation(seat.x, 1.35, seat.z + 0.12);
+      bodies.current?.setMatrixAt(index, matrix);
+      matrix.makeTranslation(seat.x, 1.82, seat.z + 0.14);
+      heads.current?.setMatrixAt(index, matrix);
+    });
+    if (bodies.current) bodies.current.instanceMatrix.needsUpdate = true;
+    if (heads.current) heads.current.instanceMatrix.needsUpdate = true;
+  }, [passengers]);
+  if (passengers.length === 0) return null;
+  return (
+    <>
+      <instancedMesh ref={bodies} args={[undefined, undefined, passengers.length]}>
+        <capsuleGeometry args={[0.16, 0.35, 4, 8]} />
+        <meshStandardMaterial color="#314ba5" roughness={0.7} />
+      </instancedMesh>
+      <instancedMesh ref={heads} args={[undefined, undefined, passengers.length]}>
+        <sphereGeometry args={[0.13, 8, 8]} />
+        <meshStandardMaterial color="#d9a27e" roughness={0.7} />
+      </instancedMesh>
+    </>
   );
 }
 
@@ -425,27 +472,27 @@ function Passenger({
     <group ref={group} position={[seat.x, 0, seat.z]}>
       {/* ---------- JAMBES ASSISES & PIEDS ---------- */}
       {/* Bassin posé sur le coussin du siège */}
-      <mesh material={mats.pants} position={[0, 1.15, 0.12]} castShadow>
+      <mesh material={mats.pants} position={[0, 1.15, 0.12]}>
         <boxGeometry args={[0.34, 0.14, 0.28]} />
       </mesh>
 
       {/* Cuisses horizontales allant vers l'avant */}
       {[-0.09, 0.09].map((lx) => (
-        <mesh key={lx} material={mats.pants} position={[lx, 1.15, -0.06]} castShadow>
+        <mesh key={lx} material={mats.pants} position={[lx, 1.15, -0.06]}>
           <boxGeometry args={[0.13, 0.12, 0.32]} />
         </mesh>
       ))}
 
       {/* Mollets verticaux descendant vers le sol */}
       {[-0.09, 0.09].map((lx) => (
-        <mesh key={lx} material={mats.pants} position={[lx, 0.88, -0.21]} castShadow>
+        <mesh key={lx} material={mats.pants} position={[lx, 0.88, -0.21]}>
           <boxGeometry args={[0.12, 0.42, 0.12]} />
         </mesh>
       ))}
 
       {/* Chaussures posées au sol */}
       {[-0.09, 0.09].map((lx) => (
-        <mesh key={lx} material={mats.shoes} position={[lx, 0.65, -0.24]} castShadow>
+        <mesh key={lx} material={mats.shoes} position={[lx, 0.65, -0.24]}>
           <boxGeometry args={[0.13, 0.08, 0.2]} />
         </mesh>
       ))}
@@ -453,7 +500,7 @@ function Passenger({
       {/* ---------- TORSE & BRAS ---------- */}
       <group ref={torsoGroup} position={[0, 1.42, 0.14]}>
         {/* Buste adossé au dossier */}
-        <mesh material={mats.shirt} rotation={[-0.05, 0, 0]} castShadow>
+        <mesh material={mats.shirt} rotation={[-0.05, 0, 0]}>
           <boxGeometry args={[0.34, 0.4, 0.22]} />
         </mesh>
 
@@ -473,7 +520,6 @@ function Passenger({
               material={mats.shirt}
               position={[0, -0.1, 0]}
               rotation={[0.25, 0, ai === 0 ? -0.15 : 0.15]}
-              castShadow
             >
               <cylinderGeometry args={[0.05, 0.045, 0.24, 8]} />
             </mesh>
@@ -482,7 +528,6 @@ function Passenger({
               material={mats.skin}
               position={[0, -0.22, -0.12]}
               rotation={[-0.8, 0, 0]}
-              castShadow
             >
               <cylinderGeometry args={[0.045, 0.04, 0.24, 8]} />
             </mesh>
@@ -498,7 +543,7 @@ function Passenger({
       {/* ---------- TÊTE & VISAGE ANIMÉ ---------- */}
       <group ref={headGroup} position={[0, 1.82, 0.14]}>
         {/* Tête */}
-        <mesh material={mats.skin} castShadow>
+        <mesh material={mats.skin}>
           <boxGeometry args={[0.22, 0.24, 0.2]} />
         </mesh>
 

@@ -3,11 +3,12 @@
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import { DAY_LENGTH, type WorldState } from "./constants";
+import { type WorldState } from "./constants";
 
 interface Props {
   worldRef: React.RefObject<WorldState>;
   modeOverride?: "day" | "night" | null;
+  lowPower?: boolean;
 }
 
 const DAY_SKY = new THREE.Color("#79c2ff");
@@ -22,7 +23,7 @@ function smoothstep(a: number, b: number, x: number) {
   return t * t * (3 - 2 * t);
 }
 
-export default function DayNight({ worldRef, modeOverride }: Props) {
+export default function DayNight({ worldRef, modeOverride, lowPower = false }: Props) {
   const sun = useRef<THREE.DirectionalLight>(null);
   const sunMesh = useRef<THREE.Mesh>(null);
   const moonMesh = useRef<THREE.Mesh>(null);
@@ -37,6 +38,7 @@ export default function DayNight({ worldRef, modeOverride }: Props) {
 
   const skyColor = useMemo(() => new THREE.Color(), []);
   const fogColor = useMemo(() => new THREE.Color(), []);
+  const sunPosition = useMemo(() => new THREE.Vector3(), []);
 
   const starGeo = useMemo(() => {
     const n = 1800;
@@ -112,9 +114,9 @@ export default function DayNight({ worldRef, modeOverride }: Props) {
     // La nuit, la lune éclaire depuis l'autre côté : source maintenue au-dessus de l'horizon
     const lightX = daylight > 0.05 ? sunX : -sunX;
     const lightY = daylight > 0.05 ? Math.max(sunY, 0.12) : Math.max(-sunY, 0.12);
-    const sunPos = new THREE.Vector3(lightX * 60, lightY * 60, -25);
+    sunPosition.set(lightX * 60, lightY * 60, -25);
     if (sun.current) {
-      sun.current.position.copy(sunPos);
+      sun.current.position.copy(sunPosition);
       sun.current.intensity = 0.15 + daylight * 2.6;
       sun.current.color.set(daylight <= 0.05 ? "#9fb4ff" : dusk > 0.3 ? "#ffcf9a" : "#ffffff");
     }
@@ -142,8 +144,8 @@ export default function DayNight({ worldRef, modeOverride }: Props) {
         position={[30, 50, -25]}
         intensity={2.5}
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={lowPower ? 1024 : 1536}
+        shadow-mapSize-height={lowPower ? 1024 : 1536}
         shadow-camera-left={-18}
         shadow-camera-right={18}
         shadow-camera-top={18}

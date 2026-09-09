@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html, useTexture } from "@react-three/drei";
@@ -70,8 +70,8 @@ export default function Bus({
   const wheels = useRef<THREE.Mesh[]>([]);
   const interiorLights = useRef<THREE.PointLight[]>([]);
 
-  // Texture paille haute résolution
-  const strawMap = useTexture("/textures/straw.jpg", (tex) => {
+  // Texture paille WebP optimisée pour le petit chapeau à l'écran
+  const strawMap = useTexture("/textures/straw.webp", (tex) => {
     if (!Array.isArray(tex)) {
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
       tex.repeat.set(1, 1);
@@ -95,11 +95,13 @@ export default function Bus({
     [numRows],
   );
 
-  // Positions des télévisions : TV frontale à z = -4.2. Si le bus est allongé (> 6 rangées), une TV supplémentaire toutes les 5 rangées
+  // Une TV principale réelle et au maximum 8 rappels visuels légers dans les très longs bus.
   const tvPositions = useMemo(() => {
     const arr: [number, number, number][] = [TV_POSITION.toArray() as [number, number, number]];
     if (numRows > 6) {
-      for (let r = 6; r < numRows; r += 5) {
+      const totalSecondary = Math.ceil((numRows - 6) / 5);
+      const stride = Math.max(5, Math.ceil((numRows - 6) / Math.min(8, totalSecondary)));
+      for (let r = 6; r < numRows && arr.length <= 8; r += stride) {
         const tvZ = -2.6 + (r - 0.25) * 1.2;
         arr.push([0, 2.55, tvZ]);
       }
@@ -123,7 +125,7 @@ export default function Bus({
 
   // Points lumineux de plafond répartis le long de l'habitacle
   const interiorLightZs = useMemo(() => {
-    const count = Math.max(3, Math.ceil(cabinLength / 3.4));
+    const count = Math.min(5, Math.max(3, Math.ceil(cabinLength / 3.4)));
     const start = -2.5;
     const end = rearWallZ - 1.2;
     const step = (end - start) / (count - 1);
@@ -407,6 +409,7 @@ export default function Bus({
   );
 
   const tvOffTex = useMemo(() => makeTvScreenTexture(false), []);
+  const tvOnTex = useMemo(() => makeTvScreenTexture(true), []);
   const dashTex = useMemo(() => makeDashboardTexture(), []);
   const licensePlateTex = useMemo(() => makeLicensePlateTexture(), []);
 
@@ -551,34 +554,6 @@ export default function Bus({
     }
   }, [tvOn, phase, isPlaying, isMutedForFullscreen, hasEntered]);
 
-  // Synchronisation play/pause sur les télés secondaires de l'allée (uniquement après entrée)
-  useEffect(() => {
-    if (!tvOn || isMutedForFullscreen || !hasEntered) return;
-    try {
-      const iframes = document.querySelectorAll<HTMLIFrameElement>(".secondary-tv-iframe");
-      iframes.forEach((ifr) => {
-        ifr.contentWindow?.postMessage(
-          JSON.stringify({
-            event: "command",
-            func: isPlaying ? "playVideo" : "pauseVideo",
-            args: [],
-          }),
-          "*",
-        );
-        ifr.contentWindow?.postMessage(
-          JSON.stringify({ event: "command", func: "unloadModule", args: ["captions"] }),
-          "*",
-        );
-        ifr.contentWindow?.postMessage(
-          JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
-          "*",
-        );
-      });
-    } catch {
-      // ignore
-    }
-  }, [isPlaying, tvOn, isMutedForFullscreen, hasEntered]);
-
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
   const rightTarget = useRef<THREE.Object3D>(null);
@@ -638,12 +613,6 @@ export default function Bus({
           <mesh material={mats.body} castShadow position={[sx * 1.3, 2.975, cabinCenterZ]}>
             <boxGeometry args={[0.08, 0.45, cabinLength]} />
           </mesh>
-          {/* Piliers de vitres adaptatifs */}
-          {PILLARS.map((z) => (
-            <mesh key={z} material={mats.bodyDark} position={[sx * 1.3, 2.25, z]}>
-              <boxGeometry args={[0.08, 1.02, 0.1]} />
-            </mesh>
-          ))}
           {/* Vitres teintées continues extensibles */}
           <mesh material={mats.glass} position={[sx * 1.3, 2.25, cabinCenterZ]} raycast={() => null}>
             <boxGeometry args={[0.02, 1.0, cabinLength]} />
@@ -759,6 +728,8 @@ export default function Bus({
           </mesh>
         </group>
       ))}
+
+      <PillarInstances positions={PILLARS} material={mats.bodyDark} />
 
       {/* Face avant : pare-brise panoramique */}
       <mesh material={mats.body} castShadow position={[0, 1.125, -4.6]}>
@@ -1071,25 +1042,8 @@ export default function Bus({
         </group>
       ))}
 
-      {/* Sièges passagers avec sellerie rouge confortable pour TOUTES les rangées */}
-      {SEAT_ROWS.map((z) =>
-        [-0.72, 0.72].map((x) => (
-          <group key={`${z}${x}`} position={[x, 0, z]}>
-            <mesh material={mats.seat} position={[0, 1.05, 0]} castShadow>
-              <boxGeometry args={[0.95, 0.15, 0.7]} />
-            </mesh>
-            <mesh material={mats.seat} position={[0, 1.38, 0.33]} castShadow>
-              <boxGeometry args={[0.95, 0.58, 0.12]} />
-            </mesh>
-            <mesh material={mats.seatFrame} position={[0, 0.82, 0]}>
-              <boxGeometry args={[0.85, 0.36, 0.6]} />
-            </mesh>
-            <mesh material={mats.seatFrame} position={[0, 1.70, 0.33]}>
-              <boxGeometry args={[0.95, 0.05, 0.08]} />
-            </mesh>
-          </group>
-        )),
-      )}
+      {/* Les sièges gardent leur quantité exacte mais partagent quatre draw calls. */}
+      <SeatInstances rows={SEAT_ROWS} seatMaterial={mats.seat} frameMaterial={mats.seatFrame} />
 
       {/* PASSAGERS NAKAMA ASSIS DANS LE BUS */}
       <Passengers
@@ -1146,26 +1100,137 @@ export default function Bus({
       </group>
 
       {/* ---------- TÉLÉVISIONS DU BUS (Une à l'avant + une toutes les 5 rangées) ---------- */}
-      {tvPositions.map((pos, idx) => (
-        <BusTvUnit
-          key={`tv-${idx}-${pos[2]}`}
+      <BusTvUnit
+        pos={tvPositions[0]}
+        idx={0}
+        tvOn={tvOn}
+        phase={phase}
+        isPrimary
+        onToggleTv={onToggleTv}
+        isPlaying={isPlaying}
+        onTogglePlay={onTogglePlay}
+        onStop={onStop}
+        onToggleFullscreen={onToggleFullscreen}
+        isMutedForFullscreen={isMutedForFullscreen}
+        hasEntered={hasEntered}
+        mats={mats}
+        tvOffTex={tvOffTex}
+        primaryIframeRef={primaryIframeRef}
+      />
+      {tvPositions.slice(1).map((pos) => (
+        <SecondaryTvUnit
+          key={`secondary-tv-${pos[2]}`}
           pos={pos}
-          idx={idx}
-          tvOn={tvOn}
-          phase={phase}
-          isPrimary={idx === 0}
+          tvOn={tvOn && hasEntered && !isMutedForFullscreen}
           onToggleTv={onToggleTv}
-          isPlaying={isPlaying}
-          onTogglePlay={onTogglePlay}
-          onStop={onStop}
-          onToggleFullscreen={onToggleFullscreen}
-          isMutedForFullscreen={isMutedForFullscreen}
-          hasEntered={hasEntered}
           mats={mats}
           tvOffTex={tvOffTex}
-          primaryIframeRef={primaryIframeRef}
+          tvOnTex={tvOnTex}
         />
       ))}
+    </group>
+  );
+}
+
+function PillarInstances({ positions, material }: { positions: number[]; material: THREE.Material }) {
+  const ref = useRef<THREE.InstancedMesh>(null);
+  useLayoutEffect(() => {
+    if (!ref.current) return;
+    const matrix = new THREE.Matrix4();
+    let index = 0;
+    for (const x of [-1.3, 1.3]) {
+      for (const z of positions) {
+        matrix.makeTranslation(x, 2.25, z);
+        ref.current.setMatrixAt(index++, matrix);
+      }
+    }
+    ref.current.instanceMatrix.needsUpdate = true;
+  }, [positions]);
+  return (
+    <instancedMesh ref={ref} args={[undefined, undefined, positions.length * 2]} material={material}>
+      <boxGeometry args={[0.08, 1.02, 0.1]} />
+    </instancedMesh>
+  );
+}
+
+function SeatInstances({
+  rows,
+  seatMaterial,
+  frameMaterial,
+}: {
+  rows: number[];
+  seatMaterial: THREE.Material;
+  frameMaterial: THREE.Material;
+}) {
+  const cushion = useRef<THREE.InstancedMesh>(null);
+  const back = useRef<THREE.InstancedMesh>(null);
+  const base = useRef<THREE.InstancedMesh>(null);
+  const headrest = useRef<THREE.InstancedMesh>(null);
+  useLayoutEffect(() => {
+    const refs = [cushion, back, base, headrest];
+    const offsets = [[1.05, 0], [1.38, 0.33], [0.82, 0], [1.7, 0.33]];
+    const matrix = new THREE.Matrix4();
+    refs.forEach((meshRef, part) => {
+      if (!meshRef.current) return;
+      let index = 0;
+      for (const z of rows) {
+        for (const x of [-0.72, 0.72]) {
+          matrix.makeTranslation(x, offsets[part][0], z + offsets[part][1]);
+          meshRef.current.setMatrixAt(index++, matrix);
+        }
+      }
+      meshRef.current.instanceMatrix.needsUpdate = true;
+    });
+  }, [rows]);
+  const count = rows.length * 2;
+  return (
+    <>
+      <instancedMesh ref={cushion} args={[undefined, undefined, count]} material={seatMaterial} castShadow>
+        <boxGeometry args={[0.95, 0.15, 0.7]} />
+      </instancedMesh>
+      <instancedMesh ref={back} args={[undefined, undefined, count]} material={seatMaterial} castShadow>
+        <boxGeometry args={[0.95, 0.58, 0.12]} />
+      </instancedMesh>
+      <instancedMesh ref={base} args={[undefined, undefined, count]} material={frameMaterial}>
+        <boxGeometry args={[0.85, 0.36, 0.6]} />
+      </instancedMesh>
+      <instancedMesh ref={headrest} args={[undefined, undefined, count]} material={frameMaterial}>
+        <boxGeometry args={[0.95, 0.05, 0.08]} />
+      </instancedMesh>
+    </>
+  );
+}
+
+function SecondaryTvUnit({
+  pos,
+  tvOn,
+  onToggleTv,
+  mats,
+  tvOffTex,
+  tvOnTex,
+}: {
+  pos: [number, number, number];
+  tvOn: boolean;
+  onToggleTv?: () => void;
+  mats: Record<string, THREE.Material>;
+  tvOffTex: THREE.CanvasTexture;
+  tvOnTex: THREE.CanvasTexture;
+}) {
+  return (
+    <group position={pos} onClick={(event: any) => { event.stopPropagation(); onToggleTv?.(); }}>
+      <mesh material={mats.dark} castShadow><boxGeometry args={[1.36, 0.82, 0.08]} /></mesh>
+      <mesh material={mats.yellow} position={[0, 0, 0.041]}><boxGeometry args={[1.34, 0.8, 0.01]} /></mesh>
+      <mesh material={mats.seatFrame} position={[0, 0.52, -0.08]}><boxGeometry args={[0.16, 0.45, 0.16]} /></mesh>
+      <mesh position={[0, 0, 0.052]}>
+        <planeGeometry args={[1.26, 0.71]} />
+        <meshStandardMaterial
+          map={tvOn ? tvOnTex : tvOffTex}
+          emissiveMap={tvOn ? tvOnTex : undefined}
+          emissive={tvOn ? "#ffffff" : "#000000"}
+          emissiveIntensity={tvOn ? 0.8 : 0}
+          roughness={0.3}
+        />
+      </mesh>
     </group>
   );
 }
@@ -1390,48 +1455,6 @@ function BusTvUnit({
         </Html>
       )}
 
-      {/* TV 1, 2, ... : Écrans secondaires dans l'allée */}
-      {!isPrimary && hasEntered && tvOn && !isMutedForFullscreen && (
-        <Html
-          transform
-          occlude="blending"
-          zIndexRange={[10, 0]}
-          geometry={<planeGeometry args={[1.26, 0.71]} />}
-          distanceFactor={400}
-          position={[0, 0, 0.052]}
-          scale={0.00225}
-          style={{
-            pointerEvents: "none",
-            userSelect: "none",
-            backfaceVisibility: "hidden",
-            display: tvOn ? "block" : "none",
-          }}
-        >
-          <div
-            ref={containerRef}
-            style={{
-              position: "relative",
-              width: 560,
-              height: 315,
-              background: "#000000",
-              borderRadius: "8px",
-              overflow: "hidden",
-              boxShadow: "0 0 24px rgba(255, 210, 63, 0.35)",
-              border: "2px solid #1a1d26",
-            }}
-          >
-            <iframe
-              className="secondary-tv-iframe"
-              width="560"
-              height="315"
-              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&disablekb=1&fs=0&playsinline=1&cc_load_policy=0&cc_lang_pref=none&iv_load_policy=3`}
-              title={`TV ${idx + 1}`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden" }}
-            />
-          </div>
-        </Html>
-      )}
     </group>
   );
 }

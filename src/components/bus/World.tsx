@@ -68,7 +68,7 @@ function buildProps(): PropDef[] {
   const out: PropDef[] = [];
   for (let z = 0; z < 5; z++) {
     const types = ZONE_PROPS[z];
-    const count = z === 2 ? 38 : 34;
+    const count = z === 2 ? 24 : 22;
     for (let i = 0; i < count; i++) {
       const side = rnd() > 0.5 ? 1 : -1;
       const type = types[Math.floor(rnd() * types.length)];
@@ -534,7 +534,8 @@ export default function World({ worldRef }: WorldProps) {
   const props = useMemo(() => buildProps(), []);
   const propRefs = useRef<(THREE.Group | null)[]>([]);
   const zoneRefs = useRef<(THREE.Group | null)[]>([]);
-  const dashRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const dashRef = useRef<THREE.InstancedMesh>(null);
+  const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
   const oceanMat = useRef<THREE.MeshStandardMaterial>(null);
   const dashes = useMemo(() => Array.from({ length: 48 }, (_, i) => i * 10), []);
 
@@ -549,6 +550,7 @@ export default function World({ worldRef }: WorldProps) {
       if (!g) continue;
       const z = (((props[i].base + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
       g.position.z = z;
+      g.visible = z > -180 && z < 110;
     }
 
     // Défilement des îles
@@ -563,10 +565,11 @@ export default function World({ worldRef }: WorldProps) {
 
     // Défilement des lignes blanches du pont
     for (let i = 0; i < dashes.length; i++) {
-      const m = dashRefs.current[i];
-      if (!m) continue;
-      m.position.z = ((((dashes[i] + scroll) % 480) + 480) % 480) - 400;
+      const z = ((((dashes[i] + scroll) % 480) + 480) % 480) - 400;
+      dashMatrix.makeTranslation(0, 0.038, z);
+      dashRef.current?.setMatrixAt(i, dashMatrix);
     }
+    if (dashRef.current) dashRef.current.instanceMatrix.needsUpdate = true;
 
     // Calcul de la zone active
     const baseAtBus = (((-WINDOW_START - scroll) % LOOP) + LOOP) % LOOP;
@@ -641,18 +644,10 @@ export default function World({ worldRef }: WorldProps) {
       ))}
 
       {/* Ligne médiane discontinue animée */}
-      {dashes.map((d, i) => (
-        <mesh
-          key={d}
-          ref={(el: any) => {
-            dashRefs.current[i] = el;
-          }}
-          position={[0, 0.038, 0]}
-        >
-          <boxGeometry args={[0.22, 0.02, 3.2]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.7} />
-        </mesh>
-      ))}
+      <instancedMesh ref={dashRef} args={[undefined, undefined, dashes.length]}>
+        <boxGeometry args={[0.22, 0.02, 3.2]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.7} />
+      </instancedMesh>
 
       {/* Décors 3D enrichis des mondes */}
       {props.map((p, i) => (
