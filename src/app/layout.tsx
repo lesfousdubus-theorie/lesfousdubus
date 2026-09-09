@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     "Laugh Tale",
     "Ponéglyphes mémoire de l'avenir",
     "Roger trop tôt",
-    "Davy Jones Barbe Noire",
+    "Davy D. Jones Barbe Noire",
     "Armes Antiques",
     "All Blue",
     "Eiichiro Oda",

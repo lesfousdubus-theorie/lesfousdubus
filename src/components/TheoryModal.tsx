@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import {
   CENTRAL_THESIS,
   CORE_PILLARS,
+  FULL_THEORY_SECTIONS,
   SIMPLE_EXPLANATION,
   THEORY_FAQ,
 } from "@/lib/theory-data";
@@ -131,6 +132,22 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
           {/* 1. ONGLET THÈSE */}
           {activeTab === "thesis" && (
             <div className="mx-auto max-w-[1040px] space-y-10">
+              <aside className="flex flex-col gap-4 rounded-2xl border border-[#38bdf8]/20 bg-[#38bdf8]/[0.06] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                <div>
+                  <div className="text-xs font-black uppercase tracking-[0.12em] text-[#7dd3fc]">
+                    Le concept du site
+                  </div>
+                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/75 sm:text-[15px]">
+                    Ce site est un projet créé pour le fun autour de la théorie du Mont Corvo.
+                    Ici, on ne se contente pas de dire qu&apos;on y croit : on monte réellement dans
+                    le bus. Chaque nouveau passager rejoint le compteur et agrandit le convoi.
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full border border-[#38bdf8]/25 bg-black/20 px-4 py-2 text-xs font-black uppercase text-[#7dd3fc]">
+                  🚌 Tous à bord
+                </span>
+              </aside>
+
               {/* Résumé express en 30 secondes */}
               <section className="space-y-5 rounded-2xl border border-[#ffd23f]/20 border-l-4 border-l-[#ffd23f] bg-[#ffd23f]/[0.065] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.16)] sm:p-7 lg:p-8">
                 <div className="flex flex-wrap items-center gap-2.5">
@@ -241,6 +258,48 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                   ))}
                 </div>
               </div>
+
+              <section>
+                <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-black uppercase tracking-[0.12em] text-[#ffd23f]">
+                      La transcription complète
+                    </div>
+                    <h4 className="mt-1 text-xl font-black text-white sm:text-2xl">
+                      La théorie en 22 étapes
+                    </h4>
+                  </div>
+                  <span className="text-xs text-white/45">Touchez une étape pour lire son résumé</span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {FULL_THEORY_SECTIONS.map((section, idx) => (
+                    <details
+                      key={section.title}
+                      className="group rounded-xl border border-white/[0.08] bg-white/[0.025] p-4 transition open:border-[#ffd23f]/25 open:bg-[#ffd23f]/[0.04] sm:p-5"
+                    >
+                      <summary className="flex cursor-pointer list-none items-start gap-3 select-none">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-black/25 text-base">
+                          {section.icon}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[10px] font-black uppercase tracking-wider text-white/35">
+                            Étape {idx + 1}
+                          </span>
+                          <span className="mt-0.5 block text-sm font-bold leading-snug text-white group-open:text-[#ffd23f]">
+                            {section.title}
+                          </span>
+                        </span>
+                        <span className="mt-2 text-xs text-white/35 transition-transform group-open:rotate-180">
+                          ▼
+                        </span>
+                      </summary>
+                      <p className="mt-4 border-t border-white/[0.08] pt-4 text-sm leading-7 text-white/70">
+                        {section.summary}
+                      </p>
+                    </details>
+                  ))}
+                </div>
+              </section>
             </div>
           )}
 

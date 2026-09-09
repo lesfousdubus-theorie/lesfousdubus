@@ -2,7 +2,7 @@ import BusClient from "@/components/BusClient";
 import {
   CENTRAL_THESIS,
   CORE_PILLARS,
-  THEORY_CHAPTERS,
+  FULL_THEORY_SECTIONS,
   THEORY_FAQ,
 } from "@/lib/theory-data";
 import { YOUTUBE_ID } from "@/components/bus/constants";
@@ -60,32 +60,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Les 22 chapitres détaillés */}
+        {/* Les 22 axes issus de la transcription complète */}
         <section className="mt-8">
           <h2 className="text-xl font-bold text-[#ffd23f]">
-            Démonstration Complète en 22 Chapitres
+            La Théorie Complète en 22 Étapes
           </h2>
           <div className="space-y-6 mt-4">
-            {THEORY_CHAPTERS.map((ch) => (
-              <section key={ch.id} id={ch.id} className="border-b border-white/10 pb-4">
+            {FULL_THEORY_SECTIONS.map((section, index) => (
+              <section key={section.title} className="border-b border-white/10 pb-4">
                 <h3 className="font-bold text-base text-white">
-                  Chapitre {ch.number} : {ch.title}
+                  Étape {index + 1} : {section.icon} {section.title}
                 </h3>
-                <span className="text-xs uppercase font-bold text-[#ffd23f]">[{ch.badge}]</span>
-                <p className="mt-1 text-sm text-white/80">{ch.summary}</p>
-                <div className="mt-2">
-                  <strong className="text-xs text-white/90">Points clés :</strong>
-                  <ul className="list-disc list-inside text-xs text-white/75 space-y-0.5 mt-1">
-                    {ch.keyPoints.map((kp, idx) => (
-                      <li key={idx}>{kp}</li>
-                    ))}
-                  </ul>
-                </div>
-                {ch.mangaReferences && (
-                  <p className="mt-1 text-xs text-white/60">
-                    <strong>Références canoniques :</strong> {ch.mangaReferences}
-                  </p>
-                )}
+                <p className="mt-1 text-sm text-white/80">{section.summary}</p>
               </section>
             ))}
           </div>

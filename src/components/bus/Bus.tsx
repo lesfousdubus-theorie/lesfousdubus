@@ -428,11 +428,11 @@ export default function Bus({
     [],
   );
 
-  // 2. Barbe Noire est Davy Jones
+  // 2. Barbe Noire est Davy D. Jones
   const tagBarbeNoireTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "BARBE NOIRE EST\nDAVY JONES",
+        text: "BARBE NOIRE EST\nDAVY D. JONES",
         height: 256,
         color: "#f7d6e0",
         stroke: "#3b0a2a",
@@ -644,7 +644,7 @@ export default function Bus({
                   roughness={0.4}
                 />
               </mesh>
-              {/* 2. Barbe Noire est Davy Jones (milieu gauche) */}
+              {/* 2. Barbe Noire est Davy D. Jones (milieu gauche) */}
               <mesh
                 position={[sx * 1.352, 1.36, 0.0]}
                 rotation={[0, -Math.PI / 2, 0]}

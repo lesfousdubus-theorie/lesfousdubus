@@ -19,55 +19,55 @@ export interface FAQItem {
 }
 
 export const SIMPLE_EXPLANATION = {
-  headline: "La Théorie en 30 secondes : Tout s'écrit maintenant !",
-  intro: "Pourquoi le Gouvernement Mondial cache-t-il le Siècle Oublié ? Parce qu'il ne s'est JAMAIS déroulé dans le passé : il se passe sous nos yeux !",
+  headline: "Et si le Siècle Oublié n'avait pas encore eu lieu ?",
+  intro: "La théorie des Fous du Bus propose que la grande guerre racontée par les Ponéglyphes soit celle que Luffy et ses alliés sont sur le point de vivre.",
   points: [
     {
       icon: "⏳",
       title: "Le Siècle Oublié est le Présent",
-      text: "L'histoire effacée il y a 800 ans n'est pas une guerre ancienne : c'est notre présent, celui que nous lisons depuis le chapitre 1 avec Luffy.",
+      text: "Les figures attribuées à un passé vieux de 800 ans seraient les personnages actuels, en train d'écrire l'histoire qui deviendra ensuite une légende.",
     },
     {
       icon: "👑",
-      title: "Joy Boy, c'est Luffy",
-      text: "Joy Boy n'est pas un héros mort dans l'antiquité. C'est le titre politique et historique que le monde unifié donnera à Luffy après la libération finale.",
+      title: "Luffy deviendrait Joy Boy et Nika",
+      text: "Joy Boy et Nika ne seraient pas deux héros antiques distincts : ces noms désigneraient Luffy lorsqu'il libérera le monde et créera le One Piece.",
     },
     {
       icon: "📜",
       title: "Les Ponéglyphes viennent du futur",
-      text: "Indestructibles parce que faits d'une matière inconnue dans le passé. Rédigés par Robin et sculptés par les Kozuki, ils sont envoyés dans le temps pour guider l'équipage.",
+      text: "Robin et Momonosuke les rédigeraient à la fin de l'aventure, puis ils seraient envoyés 800 ans dans le passé pour préparer le monde au jour du serment.",
     },
     {
       icon: "🗺️",
-      title: "Laugh Tale est une question de temps",
-      text: "Laugh Tale n'est pas cachée sur une carte : elle était inaccessible dans le temps ! Roger a ri parce qu'il était 25 ans trop tôt, avant que Joy Boy ne naisse.",
+      title: "Laugh Tale serait Lodestar dans le futur",
+      text: "Le quatrième Road Ponéglyphe indiquerait une date. Roger aurait atteint le bon lieu, mais 25 ans trop tôt pour rencontrer l'époque de Luffy.",
     },
   ],
   comparison: [
     {
       myth: "Le Siècle Oublié est une guerre terminée il y a 800 ans.",
-      reality: "Le Siècle Oublié est la grande guerre actuelle que Luffy mène contre le Gouvernement Mondial.",
+      reality: "La grande guerre annoncée serait encore à venir et opposerait la coalition de Luffy au Gouvernement Mondial.",
     },
     {
       myth: "Joy Boy est un roi antique disparu qui a échoué.",
-      reality: "Joy Boy est le nom que portera Luffy une fois le monde libéré de l'oppression d'Imu.",
+      reality: "Joy Boy serait le nom par lequel Luffy entrera dans l'histoire après avoir vaincu Kaido puis libéré le monde.",
     },
     {
       myth: "Laugh Tale est une île introuvable dans l'océan.",
-      reality: "Laugh Tale est une coordonnée temporelle : Roger est arrivé trop tôt, Luffy arrivera au moment parfait.",
+      reality: "Laugh Tale serait Lodestar à la bonne époque : le quatrième Road Ponéglyphe donnerait la coordonnée temporelle.",
     },
     {
-      myth: "Davy Jones est une vieille légende de pirates.",
-      reality: "Davy Jones est le nom historique que recevra Barbe Noire dans sa chute contre Joy Boy.",
+      myth: "Davy D. Jones est seulement une vieille légende de pirates.",
+      reality: "Barbe Noire, dernier du clan Davy, deviendrait Davy D. Jones en tentant de prendre le Trône Vacant.",
     },
   ],
 };
 
 export const CENTRAL_THESIS = {
   title: "Le Siècle Oublié est le Présent",
-  subtitle: "L'histoire effacée il y a 800 ans n'a jamais eu lieu dans le passé : elle s'écrit sous nos yeux depuis le départ de Fushia.",
+  subtitle: "La grande guerre attribuée au passé serait encore à venir ; seuls les Ponéglyphes effectueraient le voyage vers le passé.",
   overview:
-    "Et si le plus grand secret de One Piece était sous nos yeux depuis 25 ans ? La Théorie des Fous du Bus démontre que le manga ne raconte pas l'archéologie d'un monde disparu, mais l'écriture en direct du Siècle Oublié. Luffy est Joy Boy, les Ponéglyphes sont des balises temporelles envoyées par les Mugiwaras, et Laugh Tale est le point de convergence où passé, présent et futur ne font plus qu'un.",
+    "La Théorie des Fous du Bus imagine que le manga raconte la naissance des légendes du Siècle Oublié. Luffy deviendrait Joy Boy et Nika, Teach deviendrait Davy D. Jones, Vivi deviendrait Lili et les armes dites antiques seraient créées à notre époque. À la fin, Robin et Momonosuke consigneraient cette histoire sur les Ponéglyphes avant leur envoi 800 ans dans le passé. Il ne s'agirait donc pas d'une boucle où les personnages repartent vivre la guerre : seuls les messages de pierre remonteraient le temps.",
   quotes: [
     {
       author: "Gol D. Roger",
@@ -93,44 +93,180 @@ export const CORE_PILLARS = [
     title: "Laugh Tale n'existe pas encore",
     subtitle: "Une coordonnée temporelle, non spatiale",
     description:
-      "Laugh Tale n'est pas une île cachée qu'il suffit de repérer avec un compas : c'est Lodestar dans le futur. Roger est arrivé 25 ans trop tôt car Joy Boy n'était pas encore né. Le 4e Road Ponéglyphe indique le temps.",
+      "Laugh Tale ne serait pas une autre île cachée après Lodestar, mais Lodestar dans le futur. Le quatrième Road Ponéglyphe donnerait la date nécessaire, ce qui expliquerait pourquoi Roger est arrivé trop tôt.",
   },
   {
     icon: "📜",
     title: "Les Ponéglyphes : mémoire de l'avenir",
     subtitle: "Des stèles forgées dans le futur",
     description:
-      "Indestructibles depuis 800 ans parce qu'elles sont faites d'un matériau qui n'existe pas encore à cette époque. Rédigées par Nico Robin, sculptées par le clan Kozuki (Momonosuke) et dispersées par Nefertari Lili / Vivi.",
+      "Robin écrirait le récit, Momonosuke le graverait et Vivi le disperserait. Envoyées 800 ans dans le passé, les stèles prépareraient les peuples au jour du serment sans renvoyer les héros eux-mêmes dans le temps.",
   },
   {
     icon: "👑",
     title: "Joy Boy = Monkey D. Luffy",
     subtitle: "Le nom de règne du libérateur",
     description:
-      "Joy Boy n'a jamais vécu il y a 900 ans. C'est le titre politique et historique que le monde unifié donnera à Luffy après la chute du Gouvernement Mondial. Nika est son éveil divin, Luffy son nom de naissance.",
+      "Joy Boy et Nika seraient deux noms de la légende que Luffy est en train de devenir. Sa victoire sur Kaido marque, dans la théorie, la naissance de Joy Boy et l'éveil du guerrier libérateur.",
   },
   {
     icon: "⚔️",
     title: "Les Armes Antiques sont modernes",
     subtitle: "Poséidon, Pluton et Uranus",
     description:
-      "Poséidon est Shirahoshi (la promesse de Joy Boy a eu lieu dans le présent à l'île des Hommes-Poissons). Pluton est l'île-navire Water Seven / sous Wano. Uranus est la force céleste manipulée par Imu grâce à la Mother Flame de Vegapunk.",
+      "Poséidon serait Shirahoshi ; Pluton naîtrait de Water Seven, de la Galley-La, de Zunesha et de Wano ; Uranus serait Imu utilisant la Mother Flame créée par Vegapunk.",
   },
   {
     icon: "🏴‍☠️",
-    title: "Davy Jones = Marshall D. Teach",
-    subtitle: "La méprise d'Imu sur la lignée de Barbe Noire",
+    title: "Davy D. Jones = Marshall D. Teach",
+    subtitle: "Le dernier survivant du clan Davy",
     description:
-      "Davy Jones n'est pas un mythe du passé, mais le titre infâme que l'histoire donnera à Barbe Noire lorsqu'il cherchera à renverser le monde. Imu confond Rocks D. Xebec et son héritier Teach.",
+      "Teach aurait survécu au massacre de son clan à God Valley. En renversant Imu et en prenant le Trône Vacant, il accomplirait la promesse de sa lignée et deviendrait le roi du monde connu sous le nom de Davy D. Jones.",
   },
   {
     icon: "🌊",
     title: "Le Déluge et All Blue",
     subtitle: "La destruction de Red Line et l'océan unique",
     description:
-      "La submersion du monde de 200m ne s'est pas arrêtée : elle s'accélère avec les tirs d'Uranus. Lors de la guerre finale, la destruction de Red Line créera All Blue, l'océan universel où Luffy réalisera le premier tour du monde.",
+      "La grande guerre ferait monter les eaux de 200 mètres. La destruction de Red Line réunirait alors les quatre mers en All Blue, où Luffy deviendrait le premier pirate à prendre cette nouvelle mer.",
   },
 ];
+
+/** Les 22 axes de la transcription complète, résumés sans les présenter comme du canon. */
+export const FULL_THEORY_SECTIONS = [
+  {
+    icon: "🧭",
+    title: "Laugh Tale : le bon lieu, mais dans le futur",
+    summary:
+      "Laugh Tale serait Lodestar à une autre époque. Trois Road Ponéglyphes suffiraient à situer une île dans l'espace ; le quatrième fournirait la coordonnée temporelle qui manquait à Roger, arrivé 25 ans trop tôt.",
+  },
+  {
+    icon: "👑",
+    title: "Joy Boy serait Monkey D. Luffy",
+    summary:
+      "Joy Boy ne serait pas un héros disparu, mais la légende que Luffy devient. Sa victoire sur Kaido marque sa naissance symbolique, avant la libération du monde et la création du One Piece.",
+  },
+  {
+    icon: "☀️",
+    title: "Nika, Joy Boy et Luffy ne feraient qu'un",
+    summary:
+      "La foi des peuples opprimés aurait donné corps au dieu libérateur. Luffy deviendrait Nika parce que les hommes croient en lui, de la même façon que le One Piece continue d'exister parce que son nom et sa promesse sont transmis.",
+  },
+  {
+    icon: "🧜‍♀️",
+    title: "Poséidon serait Shirahoshi",
+    summary:
+      "La promesse de Joy Boy serait celle faite par Luffy et son équipage à Shirahoshi : l'emmener à la surface. Le Ponéglyphe demanderait au royaume Ryugu de construire et protéger Noah jusqu'au jour du serment.",
+  },
+  {
+    icon: "🏴‍☠️",
+    title: "Barbe Noire deviendrait Davy D. Jones",
+    summary:
+      "Teach serait le dernier survivant du clan Davy, sauvé à God Valley. En renversant Imu et en prenant le Trône Vacant, il accomplirait la promesse de sa lignée et deviendrait le roi du monde appelé Davy D. Jones.",
+  },
+  {
+    icon: "🌺",
+    title: "Nefertari Vivi deviendrait Lili",
+    summary:
+      "Vivi quitterait le trône d'Alabasta pour reprendre la mer, tandis que Koza gouvernerait le royaume. Elle disperserait ensuite les Ponéglyphes et écrirait à ses ancêtres de les protéger jusqu'à l'aube nouvelle.",
+  },
+  {
+    icon: "🤖",
+    title: "Emeth viendrait du futur",
+    summary:
+      "Le géant de fer serait une création future de Franky et Vegapunk. Envoyé dans le passé, il emporterait un nœud contenant le Haki que Luffy développera plus tard, ce qui expliquerait pourquoi Imu reconnaît le Haki de Joy Boy.",
+  },
+  {
+    icon: "⚔️",
+    title: "Zoro deviendrait Ryuma",
+    summary:
+      "Après être devenu le meilleur sabreur, Zoro retournerait à Wano, reprendrait Shusui et entrerait dans la légende sous le nom de Ryuma. La théorie relie notamment son apparence, sa lignée Shimotsuki et sa blessure infligée au dragon Kaido.",
+  },
+  {
+    icon: "🦩",
+    title: "Le roi Donquixote serait Doflamingo",
+    summary:
+      "Le tyran des récits vieux de 900 ans reproduit précisément le système de Doflamingo : les Tontattas travaillent en secret pendant que Dressrosa profite de leur esclavage. L'histoire présente serait devenue celle de l'ancien roi.",
+  },
+  {
+    icon: "📜",
+    title: "Robin écrirait le Rio Ponéglyphe",
+    summary:
+      "Robin découvrirait qu'elle étudie sa propre écriture. Elle composerait le récit, Momonosuke apprendrait à le graver dans un alliage encore inconnu, puis les stèles repartiraient seules 800 ans dans le passé.",
+  },
+  {
+    icon: "👒",
+    title: "Le chapeau géant appartiendrait à Emeth",
+    summary:
+      "À l'image d'Ace offrant un chapeau à Oars Jr., Luffy et Usopp fabriqueraient un chapeau de paille géant pour Emeth. Perdu lors de son arrivée à Mary Geoise 200 ans plus tôt, il aurait été conservé par Imu.",
+  },
+  {
+    icon: "📖",
+    title: "Usopp écrirait le Halley",
+    summary:
+      "Le texte prophétique et la fresque d'Elbaf raconteraient la guerre à venir. Sous le nom de Louis Arnot, Usopp serait l'auteur du Halley et du culte de Nika, devenant enfin le grand guerrier qui inspire les géants.",
+  },
+  {
+    icon: "🐉",
+    title: "Loki deviendrait Nidhogg",
+    summary:
+      "Loki réunit les attributs du dieu de la guerre d'Elbaf : la forme de dragon, le marteau Ragnir et Ratatosk. Comme Luffy avec Nika, il deviendrait lui-même la figure mythologique décrite par son peuple.",
+  },
+  {
+    icon: "🌊",
+    title: "Le Déluge serait encore à venir",
+    summary:
+      "La guerre finale annoncée par Vegapunk, Oden, Barbe Blanche et les géants ferait monter les eaux de 200 mètres. Les immenses ponts construits par le Gouvernement seraient une préparation à cette catastrophe connue d'Imu.",
+  },
+  {
+    icon: "🐟",
+    title: "Sanji contribuerait à créer All Blue",
+    summary:
+      "La destruction de Red Line réunirait North, South, East et West Blue. All Blue n'aurait donc jamais été trouvé parce qu'il n'existe pas encore ; Sanji et les Mugiwara participeraient à sa naissance.",
+  },
+  {
+    icon: "🔨",
+    title: "La Galley-La serait l'équipage de Loki",
+    summary:
+      "L'escouade des géants au grand marteau n'aurait pas encore existé à l'époque de Rocks. Les guerriers de Loki, protégés dans la glace, rejoindraient plus tard la Galley-La Company pour construire l'arme Pluton.",
+  },
+  {
+    icon: "🚢",
+    title: "Pluton serait une création collective",
+    summary:
+      "Water Seven deviendrait un navire géant avec l'aide de la Galley-La, de Loki et des charpentiers d'Elbaf. Zunesha ouvrirait ensuite Wano : l'ensemble formerait le terrible navire de guerre annoncé par les plans de Pluton.",
+  },
+  {
+    icon: "🔥",
+    title: "Vegapunk aurait créé l'énergie d'Uranus",
+    summary:
+      "Mother Flame serait une invention moderne détournée par le Gouvernement. Uranus pourrait être Imu lui-même utilisant cette énergie pour frapper depuis le ciel, ce qui expliquerait pourquoi cette puissance n'a pas été employée auparavant.",
+  },
+  {
+    icon: "👁️",
+    title: "Imu enquêterait sur un futur annoncé",
+    summary:
+      "Imu connaîtrait les noms inscrits sur les Ponéglyphes sans connaître encore leurs visages ni leur génération. Il aurait ainsi confondu Xebec avec Davy D. Jones et la mère de Vivi avec Lili avant d'identifier ses suspects actuels.",
+  },
+  {
+    icon: "♟️",
+    title: "Les Vingt Rois seraient les Chevaliers Divins",
+    summary:
+      "Les Chevaliers Divins seraient envoyés reprendre les royaumes de leurs familles fondatrices et devenir les vingt rois de la guerre. Leur coalition affronterait les peuples libérés réunis autour de Joy Boy.",
+  },
+  {
+    icon: "🐘",
+    title: "Zunesha se souviendrait du futur",
+    summary:
+      "Comme Emeth, Zunesha pourrait avoir rencontré Luffy dans le futur avant d'être envoyé dans le passé et condamné à marcher. La transcription reconnaît ici que le mécanisme exact reste volontairement inexpliqué.",
+  },
+  {
+    icon: "📚",
+    title: "Le One Piece serait l'histoire que nous lisons",
+    summary:
+      "Le trésor serait le récit complet des aventures, des rencontres et de la libération menée par Luffy. Roger n'aurait lu que cette histoire avant qu'elle arrive ; la révélation finale donnerait alors envie de reprendre le manga depuis le tome 1.",
+  },
+] as const;
 
 export const THEORY_CHAPTERS: TheoryChapter[] = [
   {
@@ -234,9 +370,9 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
   {
     id: "davy-jones",
     number: 8,
-    title: "Davy Jones est Barbe Noire",
+    title: "Davy D. Jones serait Barbe Noire",
     summary:
-      "Davy Jones n'est pas un marin légendaire d'il y a 800 ans : c'est Marshall D. Teach. Imu confond Rocks D. Xebec et son fils Teach en les associant au même titre historique maudit.",
+      "Marshall D. Teach serait le dernier survivant du clan Davy et deviendrait Davy D. Jones après avoir renversé Imu pour prendre le Trône Vacant.",
     badge: "Thèse centrale",
     keyPoints: [
       "Le Davy Back Fight sur Long Ring Long Land annonce les règles du jeu pirate originel.",
@@ -433,7 +569,7 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
     number: 22,
     title: "Conclusion : Depuis le chapitre 1, on lit le Siècle Oublié",
     summary:
-      "L'œuvre d'Eiichiro Oda forme la plus vertigineuse boucle causale de l'histoire du manga : quand Luffy atteindra la fin de son voyage, il scellera pour l'éternité la légende de Joy Boy.",
+      "La fin de l'œuvre recontextualiserait toute l'aventure : Luffy et ses alliés deviendraient les légendes du Siècle Oublié, puis leur histoire serait envoyée dans le passé sur les Ponéglyphes.",
     badge: "Thèse centrale",
     keyPoints: [
       "Chaque île traversée est un maillon de la chaîne qui libère le monde du mensonge millénaire.",
@@ -448,12 +584,12 @@ export const THEORY_FAQ: FAQItem[] = [
   {
     question: "D'où vient ce site et qui sont les Fous du Bus ?",
     answer:
-      "Ce site est né de la passion pour la théorie révolutionnaire diffusée par Le Mont Corvo : « Le Siècle Oublié est le Présent ». Les « Fous du Bus », ce sont tous les nakamas et passionnés de One Piece qui ont décidé de monter à bord de cette aventure intellectuelle et collective, convaincus que l'histoire effacée il y a 800 ans s'écrit en réalité sous nos yeux depuis le départ de Fushia avec Luffy.",
+      "Ce site est un projet créé pour le fun autour de la théorie diffusée par Le Mont Corvo : « Le Siècle Oublié est le Présent ». Les « Fous du Bus » sont les personnes qui choisissent de monter à bord pour participer à la théorie, qu'elles y croient déjà ou qu'elles veuillent simplement suivre l'aventure.",
   },
   {
     question: "Quel est le but de ce site ?",
     answer:
-      "Le but du site est d'offrir un véritable quartier général animé et interactif à toutes les personnes qui rejoignent la théorie des Fous du Bus. Plutôt qu'un long article statique, ce site donne vie à la théorie à travers une expérience animée : un bus filant sur Grand Line, une télévision à bord qui diffuse la vidéo explicative du Mont Corvo, des graffitis porteurs des thèses clés et un convoi qui grandit à chaque nouveau nakama.",
+      "Le but est de transformer la blague du « bus de la théorie » en expérience interactive. En cliquant pour entrer, le visiteur monte réellement dans le bus, rejoint le compteur partagé et fait grandir le véhicule. La télévision permet ensuite de regarder la vidéo complète du Mont Corvo à bord.",
   },
   {
     question: "Pourquoi un bus qui s'allonge en direct ?",
@@ -476,9 +612,9 @@ export const THEORY_FAQ: FAQItem[] = [
       "Les stèles sont indestructibles depuis 800 ans car elles ont été façonnées dans le futur, avec un matériau et un savoir qui n'existent pas encore à cette époque. C'est la mémoire inviolable de l'avenir envoyée dans le passé par Nefertari Lili et sculptée par Kozuki Momonosuke.",
   },
   {
-    question: "Comment Barbe Noire est-il lié à Davy Jones ?",
+    question: "Comment Barbe Noire est-il lié à Davy D. Jones ?",
     answer:
-      "Davy Jones n'est pas un marin légendaire antique mais le titre maudit que l'histoire donnera à Marshall D. Teach après sa tentative sanglante de renverser l'ordre mondial et de prendre le Trône Vacant. Imu confond les actions du père (Rocks D. Xebec) et celles du fils (Teach).",
+      "Selon la théorie, Teach est le dernier survivant du clan Davy après God Valley. Imu aurait confondu Rocks D. Xebec avec la figure annoncée sur les Ponéglyphes, alors que c'est son fils Teach qui accomplirait la promesse de la lignée : renverser Imu, prendre le Trône Vacant et devenir Davy D. Jones.",
   },
   {
     question: "Qu'est-ce que le trésor One Piece selon cette théorie ?",

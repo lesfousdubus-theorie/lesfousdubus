@@ -7,7 +7,7 @@ export const SITE_URL = "https://lesfousdubus.sbs";
 export const SITE_NAME = "Les Fous du Bus — La Théorie One Piece";
 export const THEORY_TITLE = "La Théorie des Fous du Bus — Le Siècle Oublié est le Présent";
 export const THEORY_DESCRIPTION =
-  "La théorie One Piece ultime des Fous du Bus : Le Siècle Oublié n'a jamais eu lieu dans le passé, il se produit en direct depuis le chapitre 1. Laugh Tale est dans le futur, Joy Boy est Monkey D. Luffy, les Ponéglyphes sont la mémoire de l'avenir, et Davy Jones est Barbe Noire.";
+  "La théorie One Piece des Fous du Bus : le Siècle Oublié serait le présent, Laugh Tale se situerait dans le futur, Joy Boy serait Monkey D. Luffy, les Ponéglyphes porteraient la mémoire de l'avenir et Barbe Noire deviendrait Davy D. Jones.";
 
 export const websiteJsonLd = {
   "@context": "https://schema.org",
@@ -130,10 +130,10 @@ export const faqJsonLd = {
     },
     {
       "@type": "Question",
-      name: "Quel est le lien entre Barbe Noire (Marshall D. Teach) et Davy Jones ?",
+      name: "Quel est le lien entre Barbe Noire et Davy D. Jones ?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Davy Jones n'est pas un ancêtre mythologique mais le titre historique maudit que le monde et Imu donneront à Marshall D. Teach après sa tentative d'usurpation du Trône Vacant.",
+        text: "Selon la théorie, Marshall D. Teach est le dernier survivant du clan Davy et deviendrait Davy D. Jones en renversant Imu pour prendre le Trône Vacant.",
       },
     },
     {
