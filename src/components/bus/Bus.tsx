@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type CSSProperties } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html, useTexture } from "@react-three/drei";
@@ -36,6 +36,18 @@ const DARK_BLUE = "#0a2a85";
 const YELLOW = "#ffbf18";
 const CHROME = "#eaf0fa";
 const DARK = "#12141a";
+
+const tvControlStyle: CSSProperties = {
+  border: "1px solid rgba(255, 210, 63, 0.7)",
+  borderRadius: 999,
+  background: "rgba(7, 12, 25, 0.88)",
+  color: "#ffffff",
+  padding: "7px 12px",
+  font: "700 12px system-ui, sans-serif",
+  lineHeight: 1,
+  cursor: "pointer",
+  boxShadow: "0 3px 12px rgba(0, 0, 0, 0.45)",
+};
 
 export default function Bus({
   headlights,
@@ -404,6 +416,10 @@ export default function Bus({
     () =>
       makeGraffitiTexture({
         text: "LE SIÈCLE OUBLIÉ\nC'EST LE PRÉSENT",
+        height: 256,
+        color: "#fff1a8",
+        stroke: "#071952",
+        accent: "#ef3340",
         angle: -0.03,
       }),
     [],
@@ -414,7 +430,11 @@ export default function Bus({
     () =>
       makeGraffitiTexture({
         text: "BARBE NOIRE EST\nDAVY JONES",
-        angle: 0.02,
+        height: 256,
+        color: "#f7d6e0",
+        stroke: "#3b0a2a",
+        accent: "#ff9f1c",
+        angle: 0.045,
       }),
     [],
   );
@@ -424,7 +444,11 @@ export default function Bus({
     () =>
       makeGraffitiTexture({
         text: "LUFFY EST NIKA\nET JOY BOY",
-        angle: -0.02,
+        height: 256,
+        color: "#ffdc4a",
+        stroke: "#34145f",
+        accent: "#22d3ee",
+        angle: -0.055,
       }),
     [],
   );
@@ -434,7 +458,11 @@ export default function Bus({
     () =>
       makeGraffitiTexture({
         text: "LES PONÉGLYPHES\nVIENNENT DU FUTUR",
-        angle: 0.025,
+        height: 256,
+        color: "#baf7d0",
+        stroke: "#053d33",
+        accent: "#ff6b35",
+        angle: 0.06,
       }),
     [],
   );
@@ -444,7 +472,11 @@ export default function Bus({
     () =>
       makeGraffitiTexture({
         text: "TOUT EST UNE QUESTION\nDE TIMING",
-        angle: -0.025,
+        height: 256,
+        color: "#bde7ff",
+        stroke: "#071f5c",
+        accent: "#ff4da6",
+        angle: -0.045,
       }),
     [],
   );
@@ -452,7 +484,8 @@ export default function Bus({
   const primaryIframeRef = useRef<HTMLIFrameElement | null>(null);
 
   // Synchronisation du volume audio : 100% à l'intérieur, 25% "de loin" à l'extérieur, 0% si éteinte ou plein écran actif
-  // La vidéo ne doit PAS démarrer tant que l'utilisateur n'est pas rentré dans le bus (hasEntered === false)
+  // Le lecteur est monté dès l'arrivée pour précharger la vidéo, mais reste en pause
+  // et muet tant que l'utilisateur n'est pas entré dans le bus.
   useEffect(() => {
     if (!tvOn || isMutedForFullscreen || !hasEntered) {
       if (primaryIframeRef.current?.contentWindow) {
@@ -629,10 +662,10 @@ export default function Bus({
               {/* CÔTÉ GAUCHE (3 phrases grandes et artistiques) */}
               {/* 1. Le siècle oublié c'est le présent (avant gauche) */}
               <mesh
-                position={[sx * 1.352, 1.12, -2.7]}
+                position={[sx * 1.352, 1.36, -2.7]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.7, 0.9]} />
+                <planeGeometry args={[2.7, 0.44]} />
                 <meshStandardMaterial
                   map={tagSiecleTex}
                   transparent
@@ -644,10 +677,10 @@ export default function Bus({
               </mesh>
               {/* 2. Barbe Noire est Davy Jones (milieu gauche) */}
               <mesh
-                position={[sx * 1.352, 1.12, 0.0]}
+                position={[sx * 1.352, 1.36, 0.0]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.5, 0.88]} />
+                <planeGeometry args={[2.5, 0.44]} />
                 <meshStandardMaterial
                   map={tagBarbeNoireTex}
                   transparent
@@ -659,10 +692,10 @@ export default function Bus({
               </mesh>
               {/* 3. Luffy est Nika et Joy Boy (arrière gauche) */}
               <mesh
-                position={[sx * 1.352, 1.12, 2.7]}
+                position={[sx * 1.352, 1.36, 2.7]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.5, 0.88]} />
+                <planeGeometry args={[2.5, 0.44]} />
                 <meshStandardMaterial
                   map={tagLuffyNikaTex}
                   transparent
@@ -678,10 +711,10 @@ export default function Bus({
               {/* CÔTÉ DROIT (2 phrases grandes et artistiques) */}
               {/* 4. Les ponéglyphes viennent du futur (avant/milieu droit) */}
               <mesh
-                position={[sx * 1.352, 1.12, -1.5]}
+                position={[sx * 1.352, 1.36, -1.5]}
                 rotation={[0, Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.6, 0.92]} />
+                <planeGeometry args={[3.6, 0.44]} />
                 <meshStandardMaterial
                   map={tagPoneglyphesTex}
                   transparent
@@ -693,10 +726,10 @@ export default function Bus({
               </mesh>
               {/* 5. Tout est une question de timing (milieu/arrière droit) */}
               <mesh
-                position={[sx * 1.352, 1.12, 2.4]}
+                position={[sx * 1.352, 1.36, 2.4]}
                 rotation={[0, Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.4, 0.92]} />
+                <planeGeometry args={[3.4, 0.44]} />
                 <meshStandardMaterial
                   map={tagTimingTex}
                   transparent
@@ -776,7 +809,7 @@ export default function Bus({
           <boxGeometry args={[2.6, 0.45, 0.08]} />
         </mesh>
         <mesh material={mats.glass} position={[0, 2.25, 0]} raycast={() => null}>
-          <boxGeometry args={[2.3, 1.0, 0.02]} />
+          <boxGeometry args={[2.56, 1.04, 0.02]} />
         </mesh>
         <mesh material={mats.chrome} position={[0, 0.65, 0.1]}>
           <boxGeometry args={[2.7, 0.28, 0.25]} />
@@ -1122,7 +1155,9 @@ export default function Bus({
           phase={phase}
           isPrimary={idx === 0}
           onToggleTv={onToggleTv}
+          isPlaying={isPlaying}
           onTogglePlay={onTogglePlay}
+          onStop={onStop}
           onToggleFullscreen={onToggleFullscreen}
           isMutedForFullscreen={isMutedForFullscreen}
           hasEntered={hasEntered}
@@ -1142,7 +1177,9 @@ interface BusTvUnitProps {
   phase: "outside" | "entering" | "inside" | "exiting";
   isPrimary: boolean;
   onToggleTv?: () => void;
+  isPlaying: boolean;
   onTogglePlay?: () => void;
+  onStop?: () => void;
   onToggleFullscreen?: () => void;
   isMutedForFullscreen: boolean;
   hasEntered?: boolean;
@@ -1158,6 +1195,10 @@ function BusTvUnit({
   phase,
   isPrimary,
   onToggleTv,
+  isPlaying,
+  onTogglePlay,
+  onStop,
+  onToggleFullscreen,
   isMutedForFullscreen,
   hasEntered,
   mats,
@@ -1169,10 +1210,11 @@ function BusTvUnit({
   useFrame(({ camera }) => {
     if (!containerRef.current) return;
 
-    // 1. Si la TV est éteinte ou en plein écran modal -> masquer
+    // 1. Si la TV est éteinte ou en plein écran modal -> masquer sans démonter
+    // l'iframe, afin qu'elle reste prête à reprendre immédiatement.
     if (!tvOn || isMutedForFullscreen) {
-      if (containerRef.current.style.display !== "none") {
-        containerRef.current.style.display = "none";
+      if (containerRef.current.style.visibility !== "hidden") {
+        containerRef.current.style.visibility = "hidden";
       }
       return;
     }
@@ -1182,8 +1224,8 @@ function BusTvUnit({
     // La vidéo DOIT être totalement masquée par le dos de la TV et le support au plafond !
     const isBehindTv = camera.position.z < (pos[2] + 0.04);
     if (isBehindTv) {
-      if (containerRef.current.style.display !== "none") {
-        containerRef.current.style.display = "none";
+      if (containerRef.current.style.visibility !== "hidden") {
+        containerRef.current.style.visibility = "hidden";
       }
       return;
     }
@@ -1191,8 +1233,8 @@ function BusTvUnit({
     // L'occlusion "blending" effectue la découpe réelle, pixel par pixel :
     // la carrosserie, le toit et les piliers masquent la vidéo, tandis que les
     // vitres transparentes (depthWrite: false) la laissent visible.
-    if (containerRef.current.style.display !== "block") {
-      containerRef.current.style.display = "block";
+    if (containerRef.current.style.visibility !== "visible") {
+      containerRef.current.style.visibility = "visible";
     }
   });
 
@@ -1239,10 +1281,10 @@ function BusTvUnit({
       )}
 
       {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels, reste chargé en mémoire) */}
-      {isPrimary && hasEntered && (
+      {isPrimary && (
         <Html
           transform
-          occlude="blending"
+          occlude={tvOn && !isMutedForFullscreen ? "blending" : undefined}
           zIndexRange={[10, 0]}
           geometry={<planeGeometry args={[1.26, 0.71]} />}
           distanceFactor={400}
@@ -1253,7 +1295,7 @@ function BusTvUnit({
             backfaceVisibility: "hidden",
             pointerEvents: tvOn && phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
             opacity: tvOn && !isMutedForFullscreen ? 1 : 0,
-            display: tvOn ? "block" : "none",
+            visibility: tvOn ? "visible" : "hidden",
             transition: "opacity 0.2s ease",
           }}
         >
@@ -1269,6 +1311,7 @@ function BusTvUnit({
               overflow: "hidden",
               boxShadow: "0 0 24px rgba(255, 210, 63, 0.35)",
               border: "2px solid #1a1d26",
+              visibility: tvOn && !isMutedForFullscreen ? "visible" : "hidden",
             }}
           >
             <iframe
@@ -1276,12 +1319,73 @@ function BusTvUnit({
               id="tv-primary-iframe"
               width="560"
               height="315"
-              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&enablejsapi=1&fs=1&playsinline=1&cc_load_policy=0&cc_lang_pref=none&iv_load_policy=3`}
+              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=0&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&fs=1&playsinline=1&cc_load_policy=0&cc_lang_pref=none&iv_load_policy=3`}
               title="La théorie des Fous du Bus"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
-              style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden" }}
+              style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden", pointerEvents: "none" }}
             />
+            {/* Une iframe externe capture la molette. Cette couche rend toute la TV
+                transparente aux gestes caméra, puis expose des commandes dédiées. */}
+            <div
+              aria-label="Zone de contrôle de la caméra devant la télévision"
+              style={{ position: "absolute", inset: 0, zIndex: 2, cursor: "grab" }}
+              onWheel={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                window.dispatchEvent(new CustomEvent("bus-zoom", { detail: event.deltaY * 0.04 }));
+              }}
+            />
+            <div
+              role="group"
+              aria-label="Commandes de la télévision"
+              style={{
+                position: "absolute",
+                left: 12,
+                right: 12,
+                bottom: 10,
+                zIndex: 3,
+                display: "flex",
+                justifyContent: "center",
+                gap: 8,
+                pointerEvents: "auto",
+              }}
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onTogglePlay?.();
+                }}
+                aria-label={isPlaying ? "Mettre la vidéo en pause" : "Lire la vidéo"}
+                style={tvControlStyle}
+              >
+                {isPlaying ? "Ⅱ Pause" : "▶ Lecture"}
+              </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onStop?.();
+                }}
+                aria-label="Arrêter et remettre la vidéo au début"
+                style={tvControlStyle}
+              >
+                ■ Stop
+              </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onToggleFullscreen?.();
+                }}
+                aria-label="Afficher la vidéo en plein écran"
+                style={tvControlStyle}
+              >
+                ⛶ Plein écran
+              </button>
+            </div>
           </div>
         </Html>
       )}

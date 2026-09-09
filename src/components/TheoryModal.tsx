@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   CENTRAL_THESIS,
   CORE_PILLARS,
@@ -17,6 +17,7 @@ interface TheoryModalProps {
 export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"thesis" | "video" | "faq">("thesis");
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalOpen;
 
@@ -54,6 +55,11 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleClose]);
 
+  // Chaque onglet commence au début du dossier, même après une longue lecture.
+  useEffect(() => {
+    contentRef.current?.scrollTo({ top: 0 });
+  }, [activeTab]);
+
   if (!isOpen) return null;
 
   return (
@@ -61,27 +67,26 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
       role="dialog"
       aria-modal="true"
       aria-labelledby="theory-modal-title"
-      className="pointer-events-auto fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-6 md:p-8 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="pointer-events-auto fixed inset-0 z-[999999] flex items-center justify-center bg-black/80 p-0 backdrop-blur-md animate-in fade-in duration-200 sm:p-4 lg:p-8"
       onClick={handleClose}
       onWheel={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
     >
       <div
-        className="relative flex flex-col w-full max-w-4xl max-h-[90dvh] bg-[#0c1322]/95 border border-[#ffd23f]/40 rounded-2xl sm:rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden text-white select-text"
+        className="relative flex h-dvh w-full max-w-5xl flex-col overflow-hidden bg-[#0c1322]/97 text-white shadow-[0_0_50px_rgba(0,0,0,0.8)] select-text sm:h-auto sm:max-h-[92dvh] sm:rounded-2xl sm:border sm:border-[#ffd23f]/35"
         onClick={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
-        {/* En-tête du modal avec espacement généreux */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 sm:px-8 py-4 sm:py-5 bg-black/40">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <span className="text-2xl sm:text-3xl">📜</span>
-            <div>
-              <h2 id="theory-modal-title" className="text-lg sm:text-2xl font-black uppercase tracking-wide text-[#ffd23f]">
+        <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-black/40 px-4 py-3.5 sm:px-6 sm:py-4 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <span className="text-xl sm:text-2xl" aria-hidden="true">📜</span>
+            <div className="min-w-0">
+              <h2 id="theory-modal-title" className="truncate text-base font-black uppercase tracking-wide text-[#ffd23f] sm:text-xl">
                 La Théorie des Fous du Bus
               </h2>
-              <p className="text-xs sm:text-sm text-white/70 font-semibold uppercase tracking-wider mt-0.5">
+              <p className="mt-0.5 truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-white/60 sm:text-xs">
                 Le Siècle Oublié est le Présent · Dossier Officiel
               </p>
             </div>
@@ -90,7 +95,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
             type="button"
             onClick={handleClose}
             aria-label="Fermer le modal"
-            className="rounded-full bg-white/10 hover:bg-white/20 active:scale-95 p-2 sm:p-2.5 text-white/80 hover:text-white transition cursor-pointer"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/20 hover:text-white active:scale-95 cursor-pointer"
           >
             <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -98,8 +103,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
           </button>
         </div>
 
-        {/* Barre d'onglets spacieuse et aérée */}
-        <div className="flex border-b border-white/10 bg-black/30 px-6 sm:px-8 py-3 sm:py-4 overflow-x-auto no-scrollbar gap-2 sm:gap-4 items-center">
+        <div role="tablist" aria-label="Sections de la théorie" className="flex items-stretch gap-1 overflow-x-auto border-b border-white/10 bg-black/30 px-2 py-2 no-scrollbar sm:px-6 lg:px-8">
           <TabButton
             active={activeTab === "thesis"}
             onClick={() => setActiveTab("thesis")}
@@ -120,13 +124,12 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
           />
         </div>
 
-        {/* Contenu de l'onglet actif avec marges aérées et défilement fluide */}
-        <div className="flex-1 overflow-y-auto overscroll-contain p-6 sm:p-8 md:p-10 space-y-8 text-sm sm:text-base leading-relaxed">
+        <div ref={contentRef} className="flex-1 overflow-y-auto overscroll-contain px-4 py-5 text-sm leading-relaxed sm:px-7 sm:py-7 sm:text-base lg:px-10 lg:py-8">
           {/* 1. ONGLET THÈSE */}
           {activeTab === "thesis" && (
-            <div className="space-y-8">
+            <div className="mx-auto max-w-3xl space-y-7">
               {/* Résumé express en 30 secondes */}
-              <div className="rounded-3xl border-2 border-[#ffd23f]/70 bg-gradient-to-br from-[#ffd23f]/15 to-[#0c1322] p-6 sm:p-8 shadow-[0_0_35px_rgba(255,210,63,0.25)] space-y-4">
+              <section className="space-y-4 border-l-2 border-[#ffd23f] bg-[#ffd23f]/[0.07] px-4 py-4 sm:px-6 sm:py-5">
                 <div className="flex items-center gap-2.5 mb-1">
                   <span className="text-xl">⚡</span>
                   <span className="rounded-md bg-[#ffd23f] px-2.5 py-0.5 text-xs font-black uppercase text-[#0d2190]">
@@ -140,11 +143,11 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                   {SIMPLE_EXPLANATION.intro}
                 </p>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="mt-4 divide-y divide-white/10 border-y border-white/10 sm:grid sm:grid-cols-2 sm:divide-x sm:divide-y-0">
                   {SIMPLE_EXPLANATION.points.map((pt, idx) => (
                     <div
                       key={idx}
-                      className="rounded-xl border border-[#ffd23f]/30 bg-black/50 p-3.5 flex items-start gap-3"
+                      className="flex items-start gap-3 px-2 py-3.5 sm:px-4"
                     >
                       <span className="text-2xl flex-shrink-0">{pt.icon}</span>
                       <div>
@@ -154,7 +157,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
 
               {/* Ce que le monde croit vs La Vérité temporelle */}
               <div>
@@ -162,14 +165,14 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                   <span>⚖️</span>
                   <span>Ce que dit le Gouvernement vs La Réalité temporelle</span>
                 </h4>
-                <div className="grid gap-2.5 sm:grid-cols-2">
+                <div className="divide-y divide-white/10 border-y border-white/10">
                   {SIMPLE_EXPLANATION.comparison.map((item, idx) => (
-                    <div key={idx} className="rounded-xl border border-white/15 bg-black/40 p-3.5 space-y-2">
+                    <div key={idx} className="grid gap-2 py-3.5 sm:grid-cols-2 sm:gap-5">
                       <div className="flex items-start gap-2 text-xs sm:text-sm text-red-400">
                         <span className="font-black">❌ Illusion :</span>
                         <span className="text-white/75">{item.myth}</span>
                       </div>
-                      <div className="flex items-start gap-2 text-xs sm:text-sm text-[#ffd23f] border-t border-white/10 pt-2">
+                      <div className="flex items-start gap-2 border-t border-white/10 pt-2 text-xs text-[#ffd23f] sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0 sm:text-sm">
                         <span className="font-black">✔️ Vérité :</span>
                         <span className="text-white font-medium">{item.reality}</span>
                       </div>
@@ -179,7 +182,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
               </div>
 
               {/* Thèse centrale détaillée */}
-              <div className="rounded-2xl border border-white/15 bg-white/5 p-4 sm:p-5">
+              <section className="border-y border-white/10 py-5">
                 <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-black uppercase text-white/80">
                   Dossier Théorique
                 </span>
@@ -192,18 +195,18 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                 <p className="mt-2.5 text-xs sm:text-sm text-white/85">
                   {CENTRAL_THESIS.overview}
                 </p>
-              </div>
+              </section>
 
               {/* Citations clés du manga */}
               <div>
                 <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white/60 mb-3">
                   Citations canoniques fondatrices
                 </h4>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="divide-y divide-white/10 border-y border-white/10 sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0">
                   {CENTRAL_THESIS.quotes.map((q, idx) => (
                     <blockquote
                       key={idx}
-                      className="rounded-xl border border-white/10 bg-black/40 p-3 sm:p-4 flex flex-col justify-between"
+                      className="flex flex-col justify-between px-3 py-4 sm:px-4"
                     >
                       <p className="italic text-xs sm:text-sm text-white/80">« {q.text} »</p>
                       <footer className="mt-3 pt-2 border-t border-white/10 text-[11px] font-bold text-[#ffd23f]">
@@ -219,11 +222,11 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                 <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white/60 mb-3">
                   Les 6 Piliers Fondamentaux
                 </h4>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="divide-y divide-white/10 border-y border-white/10">
                   {CORE_PILLARS.map((p, idx) => (
                     <div
                       key={idx}
-                      className="rounded-xl border border-white/10 bg-white/5 p-3.5 sm:p-4 hover:border-[#ffd23f]/40 transition"
+                      className="py-4 transition hover:bg-white/[0.03] sm:px-2"
                     >
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className="text-lg">{p.icon}</span>
@@ -240,8 +243,8 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
 
           {/* 2. ONGLET VIDÉO DU MONT CORVO */}
           {activeTab === "video" && (
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-white/15 bg-black/50 p-4 sm:p-5">
+            <div className="mx-auto max-w-3xl space-y-4">
+              <div className="border-y border-white/15 bg-black/25 py-4 sm:px-5 sm:py-5">
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="rounded-md bg-[#ffd23f] px-2.5 py-0.5 text-xs font-black uppercase text-[#0d2190]">
                     Le Mont Corvo
@@ -288,7 +291,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
 
           {/* 3. ONGLET FAQ & ORIGINE */}
           {activeTab === "faq" && (
-            <div className="space-y-3">
+            <div className="mx-auto max-w-3xl space-y-3">
               <p className="text-xs sm:text-sm text-white/70 mb-2">
                 Origine du site, raison d&apos;être du convoi animé et réponses aux questions fondamentales sur la théorie des Fous du Bus.
               </p>
@@ -316,7 +319,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
         </div>
 
         {/* Pied de page du modal */}
-        <div className="flex items-center justify-between border-t border-white/10 px-4 sm:px-6 py-3 bg-black/40 text-[11px] sm:text-xs text-white/60">
+        <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-black/40 px-4 py-2.5 text-[10px] text-white/60 sm:px-6 sm:text-xs lg:px-8">
           <div>
             Site officiel : <span className="text-[#ffd23f] font-bold">lesfousdubus.sbs</span>
           </div>
@@ -348,14 +351,17 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-2.5 px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm font-black whitespace-nowrap transition cursor-pointer active:scale-95 ${
+      role="tab"
+      aria-selected={active}
+      aria-label={label}
+      className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2.5 text-[11px] font-black transition cursor-pointer active:scale-[0.98] sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
         active
-          ? "bg-[#ffd23f] text-[#0c1322] shadow-lg shadow-[#ffd23f]/30 scale-[1.02]"
-          : "bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20"
+          ? "bg-[#ffd23f] text-[#0c1322] shadow-md shadow-[#ffd23f]/20"
+          : "text-white/65 hover:bg-white/10 hover:text-white"
       }`}
     >
-      <span className="text-base sm:text-lg">{icon}</span>
-      <span>{label}</span>
+      <span className="text-sm sm:text-base" aria-hidden="true">{icon}</span>
+      <span className="hidden min-[390px]:inline">{label}</span>
     </button>
   );
 }

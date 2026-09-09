@@ -35,7 +35,7 @@ export default function BusExperience() {
   const [hornPulse, setHornPulse] = useState(0);
   const [tvOn, setTvOn] = useState(false);
 
-  // La vidéo ne doit PAS commencer tant qu'on n'est pas rentré dans le bus
+  // Le lecteur est préchargé dès l'arrivée, mais reste en pause et invisible avant l'entrée.
   const [hasEntered, setHasEntered] = useState(() => {
     if (typeof window !== "undefined") {
       const p = new URLSearchParams(window.location.search).get("phase");
@@ -132,19 +132,15 @@ export default function BusExperience() {
     worldRef.current.speedMultiplier = speedMultiplier;
   }, [speedMultiplier]);
 
-  // Détection du mode boost via l'URL (?boost=1)
+  // Détection du mode boost via l'URL (?boost=1), sans notification intrusive.
   useEffect(() => {
     if (typeof window !== "undefined") {
       const b = new URLSearchParams(window.location.search).get("boost");
       if (b === "1" || b === "true") {
         playBoost();
-        const timer = setTimeout(() => {
-          showToast("🚀 Mode Boost activé !", "Le bus file à pleine allure vers Laugh Tale !", "⚡ BOOST");
-        }, 120);
-        return () => clearTimeout(timer);
       }
     }
-  }, [showToast]);
+  }, []);
 
   // Faire accélérer le bus (jusqu'à 3.0x max)
   const accelerateBus = useCallback(() => {
@@ -152,28 +148,21 @@ export default function BusExperience() {
       const next = Math.min(3.0, Math.round((cur + 0.5) * 10) / 10);
       if (next >= 2.5) {
         playBoost();
-        showToast("🚀 TURBO BOOST !", `Vitesse ${next}x : Plein gaz vers Laugh Tale !`, "⚡ BOOST");
       } else {
         playDing();
-        showToast("Accélération !", `Vitesse du bus augmentée à ${next}x`, "⚡ VITESSE");
       }
       return next;
     });
-  }, [showToast]);
+  }, []);
 
   // Faire ralentir le bus (jusqu'à 0.3x min)
   const decelerateBus = useCallback(() => {
     setSpeedMultiplier((cur) => {
       const next = Math.max(0.3, Math.round((cur - 0.5) * 10) / 10);
       playDing();
-      if (next <= 0.5) {
-        showToast("Ralentissement", `Vitesse ralentie à ${next}x (croisière tranquille)`, "🐢 VITESSE");
-      } else {
-        showToast("Ralentissement", `Vitesse du bus réduite à ${next}x`, "🐢 VITESSE");
-      }
       return next;
     });
-  }, [showToast]);
+  }, []);
 
   // Récupération initiale du nombre réel de passagers depuis l'API
   useEffect(() => {
@@ -452,11 +441,9 @@ export default function BusExperience() {
         setSpeedMultiplier((cur) => {
           if (cur < 2.0) {
             playBoost();
-            showToast("🚀 TURBO BOOST !", "Vitesse 2.5x enclenchée !", "⚡ BOOST");
             return 2.5;
           } else {
             playDing();
-            showToast("Vitesse Normale", "Retour à 1.0x", "🚌 VITESSE");
             return 1.0;
           }
         });
@@ -467,7 +454,7 @@ export default function BusExperience() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [honk, toggleHeadlights, isFullscreen, accelerateBus, decelerateBus, showToast]);
+  }, [honk, toggleHeadlights, isFullscreen, accelerateBus, decelerateBus]);
 
   const effectiveCount = count ?? 0;
   const numRows = computeNumRows(effectiveCount);
@@ -495,10 +482,11 @@ export default function BusExperience() {
       />
 
       {/* ---------- HUD & INTERFACE UTILISATEUR (GARANTI TOUJOURS AU PREMIER PLAN Z-INDEX) ---------- */}
-      <div
-        className="pointer-events-none fixed inset-0 isolate select-none"
-        style={{ zIndex: 2147483647 }}
-      >
+      {!showTheoryModal && (
+        <div
+          className="pointer-events-none fixed inset-0 isolate select-none"
+          style={{ zIndex: 2147483647 }}
+        >
         {/* Toast notification dynamique (allongement du bus) */}
         {toast && (
           <div className="pointer-events-none absolute left-1/2 top-20 z-50 -translate-x-1/2 animate-in fade-in slide-in-from-top-4 duration-300">
@@ -698,7 +686,8 @@ export default function BusExperience() {
             </>
           )}
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Modal interactif complet de la théorie des Fous du Bus */}
       <TheoryModal isOpen={showTheoryModal} onClose={() => setShowTheoryModal(false)} />
