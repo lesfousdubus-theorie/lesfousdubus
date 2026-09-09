@@ -495,7 +495,10 @@ export default function BusExperience() {
       />
 
       {/* ---------- HUD & INTERFACE UTILISATEUR (GARANTI TOUJOURS AU PREMIER PLAN Z-INDEX) ---------- */}
-      <div className="pointer-events-none fixed inset-0 z-[99999] select-none">
+      <div
+        className="pointer-events-none fixed inset-0 isolate select-none"
+        style={{ zIndex: 2147483647 }}
+      >
         {/* Toast notification dynamique (allongement du bus) */}
         {toast && (
           <div className="pointer-events-none absolute left-1/2 top-20 z-50 -translate-x-1/2 animate-in fade-in slide-in-from-top-4 duration-300">

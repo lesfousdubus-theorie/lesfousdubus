@@ -351,17 +351,19 @@ export interface GraffitiOptions {
   height?: number;
   color?: string;
   stroke?: string;
+  accent?: string;
   angle?: number;
   sub?: string;
 }
 
-/** Crée une texture de tag / graffiti street art authentique et haute résolution pour le bus */
+/** Crée un lettrage peint, lisible de loin et cohérent avec la livrée du bus. */
 export function makeGraffitiTexture({
   text,
   width = 1536,
-  height = 384,
-  color = "#ffd23f",
-  stroke = "#0c1322",
+  height = 512,
+  color = "#fff3b0",
+  stroke = "#06164a",
+  accent = "#e52b38",
   angle = -0.035,
   sub,
 }: GraffitiOptions): THREE.CanvasTexture {
@@ -375,87 +377,80 @@ export function makeGraffitiTexture({
   c.save();
   c.translate(width / 2, height / 2);
   c.rotate(angle);
+  c.transform(1, 0, -0.12, 1, 0, 0);
 
-  const mainY = sub ? -30 : -5;
+  const lines = text.split("\n").slice(0, 2);
+  let fontSize = lines.length > 1 ? 132 : 176;
+  const fontFamily = "'Arial Narrow', 'Trebuchet MS', sans-serif";
+  const setFont = () => {
+    c.font = `italic 900 ${fontSize}px ${fontFamily}`;
+  };
+  setFont();
 
-  // Typographie graffiti puissante et grasse
-  let fontSize = 110;
-  c.font = `900 ${fontSize}px Impact, 'Arial Black', sans-serif`;
-  const measured = c.measureText(text).width;
-  const maxTextW = width * 0.92;
+  const maxTextW = width * 0.86;
+  const measured = Math.max(...lines.map((line) => c.measureText(line).width));
   if (measured > maxTextW) {
-    fontSize = Math.max(48, Math.floor((fontSize * maxTextW) / measured));
-    c.font = `900 ${fontSize}px Impact, 'Arial Black', sans-serif`;
+    fontSize = Math.max(78, Math.floor((fontSize * maxTextW) / measured));
+    setFont();
   }
   c.textAlign = "center";
   c.textBaseline = "middle";
 
-  // 1. Halo spray aérosol diffus externe (effet bombe de peinture murale)
-  c.shadowColor = stroke;
-  c.shadowBlur = 28;
-  c.lineWidth = 26;
-  c.strokeStyle = stroke;
-  c.strokeText(text, 0, mainY);
+  const lineHeight = fontSize * 0.88;
+  const firstY = lines.length > 1 ? -lineHeight / 2 : -10;
 
-  // 2. Deuxième couche de contour net et tranchant
-  c.shadowColor = "rgba(0,0,0,0.8)";
-  c.shadowBlur = 8;
+  lines.forEach((line, index) => {
+    const y = firstY + index * lineHeight;
+
+    // Ombre rouge décalée façon affiche sérigraphiée.
+    c.lineJoin = "round";
+    c.strokeStyle = stroke;
+    c.lineWidth = 28;
+    c.strokeText(line, 13, y + 15);
+    c.fillStyle = accent;
+    c.fillText(line, 13, y + 15);
+
+    // Trait principal crème, fortement détouré pour rester lisible en mouvement.
+    c.strokeStyle = stroke;
+    c.lineWidth = 15;
+    c.strokeText(line, 0, y);
+    c.fillStyle = color;
+    c.fillText(line, 0, y);
+
+    c.strokeStyle = "rgba(255,255,255,0.55)";
+    c.lineWidth = 2;
+    c.strokeText(line, -2, y - 2);
+  });
+
+  // Coup de pinceau qui signe le tag sans gêner les lettres.
+  const underlineY = firstY + (lines.length - 1) * lineHeight + fontSize * 0.58;
+  c.strokeStyle = accent;
+  c.lineCap = "round";
   c.lineWidth = 14;
-  c.strokeStyle = stroke;
-  c.strokeText(text, 0, mainY);
-
-  // 3. Remplissage éclatant couleur vive
-  c.shadowBlur = 0;
-  c.fillStyle = color;
-  c.fillText(text, 0, mainY);
-
-  // 4. Reflet intérieur brillant sur le haut des lettres
-  c.save();
   c.beginPath();
-  c.rect(-width / 2, mainY - fontSize * 0.5, width, fontSize * 0.4);
-  c.clip();
-  c.fillStyle = "rgba(255, 255, 255, 0.4)";
-  c.fillText(text, 0, mainY);
-  c.restore();
+  c.moveTo(-width * 0.34, underlineY);
+  c.bezierCurveTo(-width * 0.08, underlineY + 22, width * 0.18, underlineY - 18, width * 0.35, underlineY + 4);
+  c.stroke();
 
-  // 5. Éclats et gouttelettes de bombe de peinture (spray spatter)
-  c.fillStyle = color;
-  const seed = text.length * 13;
-  for (let i = 0; i < 35; i++) {
-    const gx = ((i * 83 + seed * 29) % (width * 0.88)) - (width * 0.44);
-    const gy = mainY + (((i * 47 + seed * 19) % 110) - 55);
-    const r = (i % 4) * 1.3 + 1.5;
+  // Quelques éclaboussures contrôlées : assez pour le geste peint, sans brouiller le texte.
+  const seed = text.length * 17;
+  c.fillStyle = accent;
+  for (let i = 0; i < 18; i++) {
+    const gx = ((i * 97 + seed * 23) % (width * 0.82)) - width * 0.41;
+    const gy = ((i * 61 + seed * 11) % (height * 0.72)) - height * 0.36;
     c.beginPath();
-    c.arc(gx, gy, r, 0, Math.PI * 2);
+    c.arc(gx, gy, 2 + (i % 3) * 1.5, 0, Math.PI * 2);
     c.fill();
   }
 
-  // 6. Coulures de peinture verticales avec gouttes suspendues (graffiti drips)
-  const numDrips = 6;
-  for (let d = 0; d < numDrips; d++) {
-    const dx = ((d * 240 + seed * 43) % (width * 0.8)) - (width * 0.4);
-    const dy = mainY + fontSize * 0.4;
-    const dlen = 30 + ((d * 29 + seed) % 55);
-    c.beginPath();
-    c.moveTo(dx, dy);
-    c.lineTo(dx + 2, dy + dlen);
-    c.lineWidth = 4.5;
-    c.strokeStyle = color;
-    c.stroke();
-    // Goutte suspendue
-    c.beginPath();
-    c.arc(dx + 2, dy + dlen + 4, 3.8, 0, Math.PI * 2);
-    c.fill();
-  }
-
-  // 7. Sous-texte tagué optionnel
+  // Sous-texte optionnel.
   if (sub) {
-    c.font = "bold 44px 'Arial Black', Impact, sans-serif";
+    c.font = `900 42px ${fontFamily}`;
     c.fillStyle = "#ffffff";
     c.strokeStyle = stroke;
-    c.lineWidth = 8;
-    c.strokeText(sub, 0, 50);
-    c.fillText(sub, 0, 50);
+    c.lineWidth = 7;
+    c.strokeText(sub, 0, height * 0.39);
+    c.fillText(sub, 0, height * 0.39);
   }
 
   c.restore();
@@ -465,4 +460,3 @@ export function makeGraffitiTexture({
   tex.anisotropy = 16;
   return tex;
 }
-

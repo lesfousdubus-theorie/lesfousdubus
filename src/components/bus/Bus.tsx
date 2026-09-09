@@ -403,9 +403,7 @@ export default function Bus({
   const tagSiecleTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "LE SIÈCLE OUBLIÉ C'EST LE PRÉSENT",
-        color: "#ffd23f",
-        stroke: "#000000",
+        text: "LE SIÈCLE OUBLIÉ\nC'EST LE PRÉSENT",
         angle: -0.03,
       }),
     [],
@@ -415,9 +413,7 @@ export default function Bus({
   const tagBarbeNoireTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "BARBE NOIRE EST DAVY JONES",
-        color: "#f87171",
-        stroke: "#450a0a",
+        text: "BARBE NOIRE EST\nDAVY JONES",
         angle: 0.02,
       }),
     [],
@@ -427,9 +423,7 @@ export default function Bus({
   const tagLuffyNikaTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "LUFFY EST NIKA ET JOY BOY",
-        color: "#fef08a",
-        stroke: "#78350f",
+        text: "LUFFY EST NIKA\nET JOY BOY",
         angle: -0.02,
       }),
     [],
@@ -439,9 +433,7 @@ export default function Bus({
   const tagPoneglyphesTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "LES PONÉGLYPHES VIENNENT DU FUTUR",
-        color: "#a3e635",
-        stroke: "#14532d",
+        text: "LES PONÉGLYPHES\nVIENNENT DU FUTUR",
         angle: 0.025,
       }),
     [],
@@ -451,9 +443,7 @@ export default function Bus({
   const tagTimingTex = useMemo(
     () =>
       makeGraffitiTexture({
-        text: "TOUT EST UNE QUESTION DE TIMING",
-        color: "#38bdf8",
-        stroke: "#0c4a6e",
+        text: "TOUT EST UNE QUESTION\nDE TIMING",
         angle: -0.025,
       }),
     [],
@@ -625,11 +615,11 @@ export default function Bus({
           <mesh material={mats.glass} position={[sx * 1.3, 2.25, cabinCenterZ]} raycast={() => null}>
             <boxGeometry args={[0.02, 1.0, cabinLength]} />
           </mesh>
-          {/* Bandes décoratives jaunes */}
-          <mesh material={mats.yellow} position={[sx * 1.345, 1.32, cabinCenterZ]}>
+          {/* Bandes jaunes qui encadrent les tags sans jamais les recouvrir */}
+          <mesh material={mats.yellow} position={[sx * 1.345, 1.68, cabinCenterZ]}>
             <boxGeometry args={[0.02, 0.14, cabinLength]} />
           </mesh>
-          <mesh material={mats.yellow} position={[sx * 1.345, 1.08, cabinCenterZ]}>
+          <mesh material={mats.yellow} position={[sx * 1.345, 0.57, cabinCenterZ]}>
             <boxGeometry args={[0.02, 0.07, cabinLength]} />
           </mesh>
           
@@ -639,10 +629,10 @@ export default function Bus({
               {/* CÔTÉ GAUCHE (3 phrases grandes et artistiques) */}
               {/* 1. Le siècle oublié c'est le présent (avant gauche) */}
               <mesh
-                position={[sx * 1.352, 1.42, -2.7]}
+                position={[sx * 1.352, 1.12, -2.7]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.7, 0.72]} />
+                <planeGeometry args={[2.7, 0.9]} />
                 <meshStandardMaterial
                   map={tagSiecleTex}
                   transparent
@@ -654,10 +644,10 @@ export default function Bus({
               </mesh>
               {/* 2. Barbe Noire est Davy Jones (milieu gauche) */}
               <mesh
-                position={[sx * 1.352, 1.42, 0.0]}
+                position={[sx * 1.352, 1.12, 0.0]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.5, 0.70]} />
+                <planeGeometry args={[2.5, 0.88]} />
                 <meshStandardMaterial
                   map={tagBarbeNoireTex}
                   transparent
@@ -669,10 +659,10 @@ export default function Bus({
               </mesh>
               {/* 3. Luffy est Nika et Joy Boy (arrière gauche) */}
               <mesh
-                position={[sx * 1.352, 1.42, 2.7]}
+                position={[sx * 1.352, 1.12, 2.7]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.5, 0.70]} />
+                <planeGeometry args={[2.5, 0.88]} />
                 <meshStandardMaterial
                   map={tagLuffyNikaTex}
                   transparent
@@ -688,10 +678,10 @@ export default function Bus({
               {/* CÔTÉ DROIT (2 phrases grandes et artistiques) */}
               {/* 4. Les ponéglyphes viennent du futur (avant/milieu droit) */}
               <mesh
-                position={[sx * 1.352, 1.42, -1.5]}
+                position={[sx * 1.352, 1.12, -1.5]}
                 rotation={[0, Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.6, 0.85]} />
+                <planeGeometry args={[3.6, 0.92]} />
                 <meshStandardMaterial
                   map={tagPoneglyphesTex}
                   transparent
@@ -703,10 +693,10 @@ export default function Bus({
               </mesh>
               {/* 5. Tout est une question de timing (milieu/arrière droit) */}
               <mesh
-                position={[sx * 1.352, 1.42, 2.4]}
+                position={[sx * 1.352, 1.12, 2.4]}
                 rotation={[0, Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.4, 0.82]} />
+                <planeGeometry args={[3.4, 0.92]} />
                 <meshStandardMaterial
                   map={tagTimingTex}
                   transparent
@@ -1286,6 +1276,7 @@ function BusTvUnit({
         <Html
           transform
           occlude="blending"
+          zIndexRange={[10, 0]}
           geometry={<planeGeometry args={[1.26, 0.71]} />}
           distanceFactor={400}
           position={[0, 0, 0.052]}
@@ -1333,6 +1324,7 @@ function BusTvUnit({
         <Html
           transform
           occlude="blending"
+          zIndexRange={[10, 0]}
           geometry={<planeGeometry args={[1.26, 0.71]} />}
           distanceFactor={400}
           position={[0, 0, 0.052]}
