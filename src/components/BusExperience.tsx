@@ -711,7 +711,11 @@ export default function BusExperience() {
         )}
 
         {/* Barre de boutons principale */}
-        <div className="pointer-events-auto absolute bottom-16 left-1/2 flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 sm:max-w-2xl sm:gap-2 max-w-[95vw]">
+        <div
+          className={`pointer-events-auto absolute left-1/2 flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 sm:max-w-2xl sm:gap-2 max-w-[95vw] ${
+            phase === "outside" || phase === "entering" ? "bottom-3 sm:bottom-4" : "bottom-16"
+          }`}
+        >
           {phase === "outside" || phase === "entering" ? (
             <>
               <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
