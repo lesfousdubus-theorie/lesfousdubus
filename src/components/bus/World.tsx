@@ -63,6 +63,16 @@ function mulberry32(a: number) {
   };
 }
 
+function weatherForLandscape(zone: number, visit: number): WorldState["weather"] {
+  const value = mulberry32((visit + 2048) * 7919 + zone * 104729)();
+
+  if (zone === 4) return value < 0.78 ? "snow" : value < 0.9 ? "rain" : "clear";
+  if (zone === 1) return value < 0.62 ? "rain" : value < 0.68 ? "snow" : "clear";
+  if (zone === 3) return value < 0.34 ? "rain" : value < 0.5 ? "snow" : "clear";
+  if (zone === 2) return value < 0.25 ? "rain" : value < 0.35 ? "snow" : "clear";
+  return value < 0.12 ? "rain" : "clear";
+}
+
 function buildProps(): PropDef[] {
   const rnd = mulberry32(2026);
   const out: PropDef[] = [];
@@ -537,6 +547,7 @@ export default function World({ worldRef }: WorldProps) {
   const dashRef = useRef<THREE.InstancedMesh>(null);
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
   const oceanMat = useRef<THREE.MeshStandardMaterial>(null);
+  const activeWeatherKey = useRef("");
   const dashes = useMemo(() => Array.from({ length: 48 }, (_, i) => i * 10), []);
 
   useFrame((state, dt) => {
@@ -574,7 +585,19 @@ export default function World({ worldRef }: WorldProps) {
     // Calcul de la zone active
     const baseAtBus = (((-WINDOW_START - scroll) % LOOP) + LOOP) % LOOP;
     if (worldRef.current) {
-      worldRef.current.zone = Math.floor(baseAtBus / ZONE_LEN) % 5;
+      const zone = Math.floor(baseAtBus / ZONE_LEN) % 5;
+      const visit = Math.floor((-WINDOW_START - scroll) / LOOP);
+      const weather = weatherForLandscape(zone, visit);
+      const weatherKey = `${visit}:${zone}:${weather}`;
+      if (weatherKey !== activeWeatherKey.current) {
+        activeWeatherKey.current = weatherKey;
+        worldRef.current.weatherIntensity = 0;
+      }
+      worldRef.current.zone = zone;
+      worldRef.current.weather = weather;
+      const targetIntensity = weather === "clear" ? 0 : weather === "rain" ? 0.9 : 0.72;
+      worldRef.current.weatherIntensity +=
+        (targetIntensity - worldRef.current.weatherIntensity) * Math.min(1, dt * 0.65);
     }
 
     // Ondulation de l'océan de Grand Line

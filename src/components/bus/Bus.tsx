@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html, useTexture } from "@react-three/drei";
@@ -23,10 +23,6 @@ interface BusProps {
   onToggleTv?: () => void;
   passengerCount?: number;
   reservedRow?: number;
-  isPlaying?: boolean;
-  onTogglePlay?: () => void;
-  onStop?: () => void;
-  onToggleFullscreen?: () => void;
   isMutedForFullscreen?: boolean;
   hasEntered?: boolean;
 }
@@ -37,18 +33,6 @@ const YELLOW = "#ffbf18";
 const CHROME = "#eaf0fa";
 const DARK = "#12141a";
 
-const tvControlStyle: CSSProperties = {
-  border: "1px solid rgba(255, 210, 63, 0.7)",
-  borderRadius: 999,
-  background: "rgba(7, 12, 25, 0.88)",
-  color: "#ffffff",
-  padding: "7px 12px",
-  font: "700 12px system-ui, sans-serif",
-  lineHeight: 1,
-  cursor: "pointer",
-  boxShadow: "0 3px 12px rgba(0, 0, 0, 0.45)",
-};
-
 export default function Bus({
   headlights,
   hornPulse,
@@ -58,10 +42,6 @@ export default function Bus({
   onToggleTv,
   passengerCount = 0,
   reservedRow = 3,
-  isPlaying = true,
-  onTogglePlay,
-  onStop,
-  onToggleFullscreen,
   isMutedForFullscreen = false,
   hasEntered = false,
 }: BusProps) {
@@ -69,6 +49,12 @@ export default function Bus({
   const hat = useRef<THREE.Group>(null);
   const wheels = useRef<THREE.Mesh[]>([]);
   const interiorLights = useRef<THREE.PointLight[]>([]);
+  const leftWiper = useRef<THREE.Group>(null);
+  const rightWiper = useRef<THREE.Group>(null);
+  const reducedMotion = useMemo(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
 
   // Texture paille WebP optimisée pour le petit chapeau à l'écran
   const strawMap = useTexture("/textures/straw.webp", (tex) => {
@@ -486,27 +472,30 @@ export default function Bus({
 
   const primaryIframeRef = useRef<HTMLIFrameElement | null>(null);
 
-  // Synchronisation du volume audio : 100% à l'intérieur, 25% "de loin" à l'extérieur, 0% si éteinte ou plein écran actif
+  const previousTvOn = useRef(false);
+
+  // La mise sous tension lance ou met en pause le lecteur. Une fois allumée,
+  // lecture, pause, volume et plein écran restent contrôlés par l'interface YouTube.
   // Le lecteur est monté dès l'arrivée pour précharger la vidéo, mais reste en pause
   // et muet tant que l'utilisateur n'est pas entré dans le bus.
   useEffect(() => {
+    const iframe = primaryIframeRef.current;
+    const wasOn = previousTvOn.current;
+    previousTvOn.current = tvOn;
+
     if (!tvOn || isMutedForFullscreen || !hasEntered) {
-      if (primaryIframeRef.current?.contentWindow) {
+      if (iframe?.contentWindow) {
         try {
-          primaryIframeRef.current.contentWindow.postMessage(
+          iframe.contentWindow.postMessage(
             JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
             "*",
           );
           if (!hasEntered) {
-            primaryIframeRef.current.contentWindow.postMessage(
+            iframe.contentWindow.postMessage(
               JSON.stringify({ event: "command", func: "seekTo", args: [0, true] }),
               "*",
             );
           }
-          primaryIframeRef.current.contentWindow.postMessage(
-            JSON.stringify({ event: "command", func: "setVolume", args: [0] }),
-            "*",
-          );
         } catch {
           // ignore
         }
@@ -514,37 +503,15 @@ export default function Bus({
       return;
     }
 
-    const isInsideOrEntering = phase === "inside" || phase === "entering";
-    const targetVolume = isInsideOrEntering ? 100 : 25;
-    const iframe = primaryIframeRef.current;
     if (iframe?.contentWindow) {
       try {
-        if (isInsideOrEntering) {
+        if (!wasOn) {
           iframe.contentWindow.postMessage(
             JSON.stringify({ event: "command", func: "unMute", args: [] }),
             "*",
           );
-        }
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "setVolume", args: [targetVolume] }),
-          "*",
-        );
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "unloadModule", args: ["captions"] }),
-          "*",
-        );
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
-          "*",
-        );
-        if (isPlaying) {
           iframe.contentWindow.postMessage(
             JSON.stringify({ event: "command", func: "playVideo", args: [] }),
-            "*",
-          );
-        } else {
-          iframe.contentWindow.postMessage(
-            JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
             "*",
           );
         }
@@ -552,7 +519,7 @@ export default function Bus({
         // ignore
       }
     }
-  }, [tvOn, phase, isPlaying, isMutedForFullscreen, hasEntered]);
+  }, [tvOn, isMutedForFullscreen, hasEntered]);
 
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
@@ -573,6 +540,15 @@ export default function Bus({
         (Math.sin(t * 8.5 * mult) * 0.014 + Math.sin(t * 2.1) * 0.008) * Math.min(1.4, Math.max(0.7, mult)) + stretchBounce;
       group.current.rotation.z = Math.sin(t * 1.6 * mult) * 0.0035;
     }
+
+    const rainStrength = worldRef.current?.weather === "rain"
+      ? worldRef.current.weatherIntensity
+      : 0;
+    const sweep = !reducedMotion && rainStrength > 0.08
+      ? Math.sin(t * (5.5 + rainStrength * 3.5)) * 0.72
+      : 0;
+    if (leftWiper.current) leftWiper.current.rotation.z = 0.58 + sweep;
+    if (rightWiper.current) rightWiper.current.rotation.z = -0.58 + sweep;
 
     // Animation du chapeau : droit sur le bus avec oscillation dynamique au klaxon
     if (hat.current) {
@@ -750,16 +726,16 @@ export default function Bus({
         <boxGeometry args={[2.3, 1.0, 0.02]} />
       </mesh>
       {/* Essuie-glaces */}
-      {[-0.55, 0.55].map((x) => (
-        <mesh
-          key={x}
-          material={mats.dark}
-          position={[x, 1.95, -4.66]}
-          rotation={[0, 0, x > 0 ? 0.48 : 0.58]}
-        >
+      <group ref={leftWiper} position={[-0.55, 1.94, -4.66]} rotation={[0, 0, 0.58]}>
+        <mesh material={mats.dark} position={[0, 0.31, 0]}>
           <boxGeometry args={[0.035, 0.62, 0.02]} />
         </mesh>
-      ))}
+      </group>
+      <group ref={rightWiper} position={[0.55, 1.94, -4.66]} rotation={[0, 0, -0.58]}>
+        <mesh material={mats.dark} position={[0, 0.31, 0]}>
+          <boxGeometry args={[0.035, 0.62, 0.02]} />
+        </mesh>
+      </group>
       {/* Girouette de destination lumineuse */}
       <mesh position={[0, 2.98, -4.65]}>
         <planeGeometry args={[2.1, 0.32]} />
@@ -1107,12 +1083,7 @@ export default function Bus({
         phase={phase}
         isPrimary
         onToggleTv={onToggleTv}
-        isPlaying={isPlaying}
-        onTogglePlay={onTogglePlay}
-        onStop={onStop}
-        onToggleFullscreen={onToggleFullscreen}
         isMutedForFullscreen={isMutedForFullscreen}
-        hasEntered={hasEntered}
         mats={mats}
         tvOffTex={tvOffTex}
         primaryIframeRef={primaryIframeRef}
@@ -1242,12 +1213,7 @@ interface BusTvUnitProps {
   phase: "outside" | "entering" | "inside" | "exiting";
   isPrimary: boolean;
   onToggleTv?: () => void;
-  isPlaying: boolean;
-  onTogglePlay?: () => void;
-  onStop?: () => void;
-  onToggleFullscreen?: () => void;
   isMutedForFullscreen: boolean;
-  hasEntered?: boolean;
   mats: Record<string, THREE.Material>;
   tvOffTex: THREE.CanvasTexture;
   primaryIframeRef: React.RefObject<HTMLIFrameElement | null>;
@@ -1260,12 +1226,7 @@ function BusTvUnit({
   phase,
   isPrimary,
   onToggleTv,
-  isPlaying,
-  onTogglePlay,
-  onStop,
-  onToggleFullscreen,
   isMutedForFullscreen,
-  hasEntered,
   mats,
   tvOffTex,
   primaryIframeRef,
@@ -1384,73 +1345,12 @@ function BusTvUnit({
               id="tv-primary-iframe"
               width="560"
               height="315"
-              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=0&mute=1&controls=0&modestbranding=1&rel=0&enablejsapi=1&fs=1&playsinline=1&cc_load_policy=0&cc_lang_pref=none&iv_load_policy=3`}
+              src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?autoplay=0&mute=1&controls=1&rel=0&enablejsapi=1&fs=1&playsinline=1&iv_load_policy=3`}
               title="La théorie des Fous du Bus"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
-              style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden", pointerEvents: "none" }}
+              style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden", pointerEvents: "auto" }}
             />
-            {/* Une iframe externe capture la molette. Cette couche rend toute la TV
-                transparente aux gestes caméra, puis expose des commandes dédiées. */}
-            <div
-              aria-label="Zone de contrôle de la caméra devant la télévision"
-              style={{ position: "absolute", inset: 0, zIndex: 2, cursor: "grab" }}
-              onWheel={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                window.dispatchEvent(new CustomEvent("bus-zoom", { detail: event.deltaY * 0.04 }));
-              }}
-            />
-            <div
-              role="group"
-              aria-label="Commandes de la télévision"
-              style={{
-                position: "absolute",
-                left: 12,
-                right: 12,
-                bottom: 10,
-                zIndex: 3,
-                display: "flex",
-                justifyContent: "center",
-                gap: 8,
-                pointerEvents: "auto",
-              }}
-              onPointerDown={(event) => event.stopPropagation()}
-            >
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onTogglePlay?.();
-                }}
-                aria-label={isPlaying ? "Mettre la vidéo en pause" : "Lire la vidéo"}
-                style={tvControlStyle}
-              >
-                {isPlaying ? "Ⅱ Pause" : "▶ Lecture"}
-              </button>
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onStop?.();
-                }}
-                aria-label="Arrêter et remettre la vidéo au début"
-                style={tvControlStyle}
-              >
-                ■ Stop
-              </button>
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onToggleFullscreen?.();
-                }}
-                aria-label="Afficher la vidéo en plein écran"
-                style={tvControlStyle}
-              >
-                ⛶ Plein écran
-              </button>
-            </div>
           </div>
         </Html>
       )}

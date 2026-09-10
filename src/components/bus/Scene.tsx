@@ -5,6 +5,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import Bus from "./Bus";
 import World from "./World";
 import DayNight from "./DayNight";
+import Weather from "./Weather";
 import CameraRig from "./CameraRig";
 import { computeNumRows } from "./Passengers";
 import { DEFAULT_CAMERA_POS, type Phase, type WorldState } from "./constants";
@@ -19,10 +20,6 @@ interface SceneProps {
   onToggleTv?: () => void;
   passengerCount?: number;
   currentSeatRow?: number;
-  isPlaying?: boolean;
-  onTogglePlay?: () => void;
-  onStop?: () => void;
-  onToggleFullscreen?: () => void;
   isMutedForFullscreen?: boolean;
   hasEntered?: boolean;
   modeOverride?: "day" | "night" | null;
@@ -57,10 +54,6 @@ export default function Scene({
   onToggleTv,
   passengerCount = 0,
   currentSeatRow = 3,
-  isPlaying = true,
-  onTogglePlay,
-  onStop,
-  onToggleFullscreen,
   isMutedForFullscreen = false,
   hasEntered = false,
   modeOverride,
@@ -91,6 +84,7 @@ export default function Scene({
     >
       <FrameScheduler fps={lowPower ? 30 : 45} />
       <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} />
+      <Weather worldRef={worldRef} lowPower={lowPower} />
       <Suspense fallback={null}>
         <Bus
           headlights={headlights}
@@ -101,10 +95,6 @@ export default function Scene({
           onToggleTv={onToggleTv}
           passengerCount={passengerCount}
           reservedRow={clampedRow}
-          isPlaying={isPlaying}
-          onTogglePlay={onTogglePlay}
-          onStop={onStop}
-          onToggleFullscreen={onToggleFullscreen}
           isMutedForFullscreen={isMutedForFullscreen}
           hasEntered={hasEntered}
         />

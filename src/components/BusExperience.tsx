@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Scene from "./bus/Scene";
 import { computeNumRows } from "./bus/Passengers";
-import { YOUTUBE_ID, type Phase, type WorldState } from "./bus/constants";
+import { type Phase, type WorldState } from "./bus/constants";
 import { playDing, playHorn, playStretch, playBoost } from "@/lib/horn";
 
 const TheoryModal = dynamic(() => import("./TheoryModal"), { ssr: false });
@@ -45,14 +45,6 @@ export default function BusExperience() {
     }
     return false;
   });
-  const [isPlaying, setIsPlaying] = useState(() => {
-    if (typeof window !== "undefined") {
-      const p = new URLSearchParams(window.location.search).get("phase");
-      if (p === "inside") return true;
-    }
-    return false;
-  });
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [showTheoryModal, setShowTheoryModal] = useState(false);
   const [theoryAgeInDays] = useState(getTheoryAgeInDays);
 
@@ -104,6 +96,8 @@ export default function BusExperience() {
     zone: 0,
     scroll: 0,
     speedMultiplier: 1.0,
+    weather: "clear",
+    weatherIntensity: 0,
   });
 
   // Références pour les phares automatiques jour / nuit
@@ -268,26 +262,6 @@ export default function BusExperience() {
     });
   }, []);
 
-  // Écoute des changements de plein écran pour garder une synchronisation bidirectionnelle parfaite
-  useEffect(() => {
-    const handleFsChange = () => {
-      const fs = Boolean(
-        document.fullscreenElement ||
-          (document as any).webkitFullscreenElement ||
-          (document as any).mozFullScreenElement,
-      );
-      setIsFullscreen(fs);
-    };
-    document.addEventListener("fullscreenchange", handleFsChange);
-    document.addEventListener("webkitfullscreenchange", handleFsChange);
-    document.addEventListener("mozfullscreenchange", handleFsChange);
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFsChange);
-      document.removeEventListener("webkitfullscreenchange", handleFsChange);
-      document.removeEventListener("mozfullscreenchange", handleFsChange);
-    };
-  }, []);
-
   // Empêche tout scroll de la page
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -305,7 +279,6 @@ export default function BusExperience() {
     setHasEntered(true);
     setPhase("entering");
     setTvOn(true);
-    setIsPlaying(true);
     playDing();
 
     let visitorId = "";
@@ -350,7 +323,6 @@ export default function BusExperience() {
   // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
   const exitBus = useCallback(() => {
     if (phase !== "inside") return;
-    setIsFullscreen(false);
     setPhase("exiting");
     playDing();
   }, [phase]);
@@ -362,79 +334,7 @@ export default function BusExperience() {
     setHornPulse(performance.now());
   }, []);
 
-  // Référence pour le temps de lecture de la vidéo pour synchroniser la lecture
-  const currentTimeRef = useRef(0);
-
-  // Écoute les événements du lecteur YouTube pour garder le temps courant synchronisé
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-        if (data && data.event === "infoDelivery" && data.info) {
-          if (typeof data.info.currentTime === "number") {
-            currentTimeRef.current = data.info.currentTime;
-          }
-          if (typeof data.info.playerState === "number") {
-            if (data.info.playerState === 1) setIsPlaying(true);
-            else if (data.info.playerState === 2 || data.info.playerState === 0) setIsPlaying(false);
-          }
-        }
-      } catch {
-        // ignore
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
-
-  const toggleFullscreen = useCallback(async () => {
-    const primaryIframe = document.getElementById("tv-primary-iframe") as HTMLIFrameElement | null;
-    if (document.fullscreenElement) {
-      if (document.exitFullscreen) {
-        try {
-          await document.exitFullscreen();
-        } catch {
-          // ignore
-        }
-      }
-    } else if (primaryIframe) {
-      try {
-        if (primaryIframe.requestFullscreen) {
-          await primaryIframe.requestFullscreen();
-        } else if ((primaryIframe as any).webkitRequestFullscreen) {
-          await (primaryIframe as any).webkitRequestFullscreen();
-        }
-      } catch {
-        // ignore
-      }
-    }
-  }, []);
-
-  const togglePlayPause = useCallback(() => {
-    setIsPlaying((p) => !p);
-  }, []);
-
-  const handleStop = useCallback(() => {
-    setIsPlaying(false);
-    currentTimeRef.current = 0;
-    try {
-      const iframes = document.querySelectorAll<HTMLIFrameElement>("iframe");
-      iframes.forEach((ifr) => {
-        ifr.contentWindow?.postMessage(
-          JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
-          "*",
-        );
-        ifr.contentWindow?.postMessage(
-          JSON.stringify({ event: "command", func: "seekTo", args: [0, true] }),
-          "*",
-        );
-      });
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  // Raccourcis clavier (H = klaxon, L = phares, +/↑ = accélérer, -/↓ = ralentir, B = boost, Escape = quitter plein écran)
+  // Raccourcis clavier (H = klaxon, L = phares, +/↑ = accélérer, -/↓ = ralentir, B = boost)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // Évite les raccourcis si l'utilisateur est dans un input (recherche du modal)
@@ -466,13 +366,10 @@ export default function BusExperience() {
           }
         });
       }
-      if (e.key === "Escape" && isFullscreen) {
-        setIsFullscreen(false);
-      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [honk, toggleHeadlights, isFullscreen, accelerateBus, decelerateBus]);
+  }, [honk, toggleHeadlights, accelerateBus, decelerateBus]);
 
   const effectiveCount = count ?? 0;
   const numRows = computeNumRows(effectiveCount);
@@ -490,10 +387,6 @@ export default function BusExperience() {
         onToggleTv={() => setTvOn((v) => !v)}
         passengerCount={effectiveCount}
         currentSeatRow={seatRow}
-        isPlaying={isPlaying}
-        onTogglePlay={togglePlayPause}
-        onStop={handleStop}
-        onToggleFullscreen={toggleFullscreen}
         isMutedForFullscreen={false}
         hasEntered={hasEntered}
         modeOverride={manualDayNight}
