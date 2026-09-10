@@ -17,6 +17,7 @@ interface ToastMessage {
 }
 
 const THEORY_START_DATE = Date.UTC(2024, 4, 26);
+const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
 
 function getTheoryAgeInDays(): number {
   const today = new Date();
@@ -137,7 +138,7 @@ export default function BusExperience() {
   // Faire accélérer le bus (jusqu'à 3.0x max)
   const accelerateBus = useCallback(() => {
     setSpeedMultiplier((cur) => {
-      const next = Math.min(3.0, Math.round((cur + 0.5) * 10) / 10);
+      const next = SPEED_STEPS.find((speed) => speed > cur + 0.001) ?? SPEED_STEPS.at(-1)!;
       if (next >= 2.5) {
         playBoost();
       } else {
@@ -150,7 +151,7 @@ export default function BusExperience() {
   // Faire ralentir le bus (jusqu'à 0.3x min)
   const decelerateBus = useCallback(() => {
     setSpeedMultiplier((cur) => {
-      const next = Math.max(0.3, Math.round((cur - 0.5) * 10) / 10);
+      const next = SPEED_STEPS.findLast((speed) => speed < cur - 0.001) ?? SPEED_STEPS[0];
       playDing();
       return next;
     });
@@ -492,14 +493,14 @@ export default function BusExperience() {
             onClick={decelerateBus}
             disabled={speedMultiplier <= 0.3}
             aria-label="Ralentir le bus"
-            className="flex items-center gap-1 rounded-full bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95 disabled:opacity-30 cursor-pointer"
+            className="flex w-[76px] items-center justify-center gap-1 rounded-full bg-white/10 px-2 py-1 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:px-2.5"
             title="Ralentir le bus (Touche - ou Flèche Bas)"
           >
             <span>🐢</span>
             <span>Ralentir</span>
           </button>
 
-          <div className="flex items-center gap-1 px-1 sm:px-1.5 font-black tabular-nums">
+          <div className="flex w-[68px] shrink-0 items-center justify-center gap-1 px-1 font-black tabular-nums sm:w-[76px] sm:px-1.5">
             <span
               className={
                 speedMultiplier >= 2.0
@@ -523,7 +524,7 @@ export default function BusExperience() {
             onClick={accelerateBus}
             disabled={speedMultiplier >= 3.0}
             aria-label="Accélérer le bus"
-            className="flex items-center gap-1 rounded-full bg-[#ffd23f]/25 px-2 sm:px-2.5 py-1 text-xs font-black text-[#ffd23f] transition hover:bg-[#ffd23f]/40 active:scale-95 disabled:opacity-30 cursor-pointer"
+            className="flex w-[76px] items-center justify-center gap-1 rounded-full bg-[#ffd23f]/25 px-2 py-1 text-xs font-black text-[#ffd23f] transition hover:bg-[#ffd23f]/40 active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:px-2.5"
             title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
           >
             <span>⚡</span>

@@ -816,15 +816,19 @@ export default function Bus({
         <mesh material={mats.chrome} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.26, 0.26, 0.025, 32]} />
         </mesh>
-        {/* Disque avec le logo pirate Le Mont Corvo */}
+        {/* Fond sombre de l'emblème puis logo réduit pour ne pas être rogné par le disque. */}
         <mesh position={[0, 0, -0.018]} rotation={[0, Math.PI, 0]}>
           <circleGeometry args={[0.24, 32]} />
           <meshStandardMaterial
-            map={montCorvoTex}
+            color="#101214"
             roughness={0.2}
             metalness={0.1}
             side={THREE.DoubleSide}
           />
+        </mesh>
+        <mesh position={[0, 0, -0.033]} rotation={[0, Math.PI, 0]}>
+          <planeGeometry args={[0.36, 0.36]} />
+          <meshStandardMaterial map={montCorvoTex} roughness={0.2} metalness={0.1} />
         </mesh>
       </group>
       {/* Pare-chocs chromé massif */}
