@@ -918,7 +918,7 @@ export default function BusExperience() {
               Mettre un commentaire
             </HudButton>
           </div>
-          <div className="grid w-full grid-cols-4 items-center gap-1.5 sm:gap-2">
+          <div className="grid w-full grid-cols-[1.25fr_1fr_0.82fr_1.08fr] items-center gap-1.5 sm:gap-2">
             <HudButton className="min-w-0 w-full px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy || !controlsReady || !interiorControlsVisible}>
               {tvOn ? "Éteindre la TV" : "Allumer la TV"}
             </HudButton>
