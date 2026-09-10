@@ -712,8 +712,10 @@ export default function BusExperience() {
 
         {/* Barre de boutons principale */}
         <div
-          className={`pointer-events-auto absolute left-1/2 flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 sm:max-w-2xl sm:gap-2 max-w-[95vw] ${
-            phase === "outside" || phase === "entering" ? "bottom-3 sm:bottom-4" : "bottom-16"
+          className={`pointer-events-auto absolute flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 sm:max-w-2xl sm:gap-2 max-w-[95vw] ${
+            phase === "outside" || phase === "entering"
+              ? "bottom-3 left-1/2 sm:bottom-4 md:left-[calc(50%-4.75rem)]"
+              : "bottom-16 left-1/2"
           }`}
         >
           {phase === "outside" || phase === "entering" ? (
