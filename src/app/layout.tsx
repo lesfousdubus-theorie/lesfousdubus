@@ -31,7 +31,6 @@ export const metadata: Metadata = {
     "Roger trop tôt",
     "Davy D. Jones Barbe Noire",
     "Armes Antiques",
-    "All Blue",
     "Eiichiro Oda",
     "Mont Corvo",
     "Emeth",

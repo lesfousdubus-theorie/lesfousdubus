@@ -67,7 +67,6 @@ export const articleJsonLd = {
     { "@type": "Thing", name: "Siècle Oublié" },
     { "@type": "Thing", name: "Laugh Tale" },
     { "@type": "Thing", name: "Ponéglyphes" },
-    { "@type": "Thing", name: "All Blue" },
   ],
 };
 
@@ -109,7 +108,7 @@ export const faqJsonLd = {
       name: "Pourquoi Gol D. Roger est-il arrivé 'trop tôt' de 25 ans à Laugh Tale ?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Selon la théorie, Laugh Tale n'est pas une île cachée dans l'espace mais un point précis dans le temps. C'est Lodestar dans le futur. Roger et son équipage sont arrivés au bon endroit mais 25 ans trop tôt, car Joy Boy (Monkey D. Luffy) n'était pas encore né pour accomplir le serment.",
+        text: "Selon la théorie, Laugh Tale n'est pas une île cachée dans l'espace mais un point précis dans le temps. C'est Roadstar dans le futur. Roger et son équipage sont arrivés au bon endroit mais 25 ans trop tôt, car Joy Boy (Monkey D. Luffy) n'était pas encore né pour accomplir le serment.",
       },
     },
     {
@@ -134,14 +133,6 @@ export const faqJsonLd = {
       acceptedAnswer: {
         "@type": "Answer",
         text: "Selon la théorie, Marshall D. Teach est le dernier survivant du clan Davy et deviendrait Davy D. Jones en renversant Imu pour prendre le Trône Vacant.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Comment naîtra All Blue selon la théorie ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "All Blue n'existe pas encore. Il sera créé lors de la guerre finale par la destruction de Red Line grâce aux Armes Antiques, réunissant North Blue, South Blue, East Blue et West Blue en un océan unique et sans barrières.",
       },
     },
   ],

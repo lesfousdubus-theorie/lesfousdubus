@@ -36,6 +36,11 @@ interface PassengerRow {
   comment: string | null;
 }
 
+interface PassengerManifestRow {
+  seat_index: number;
+  display_name: string | null;
+}
+
 function toPassengerProfile(row: PassengerRow, includeComment = false): PassengerProfile | null {
   if (!row.display_name) return null;
   return {
@@ -67,11 +72,15 @@ export async function GET(request: Request) {
 
       const row = await database
         .prepare(
-          `SELECT rowid - 1 AS seat_index, display_name, comment
-           FROM bus_entries
-           WHERE rowid = ? AND display_name IS NOT NULL`,
+          `WITH ordered AS (
+             SELECT ROW_NUMBER() OVER (ORDER BY rowid) - 1 AS seat_index, display_name, comment
+             FROM bus_entries
+           )
+           SELECT seat_index, display_name, comment
+           FROM ordered
+           WHERE seat_index = ? AND display_name IS NOT NULL`,
         )
-        .bind(seatIndex + 1)
+        .bind(seatIndex)
         .first<PassengerRow>();
       const passenger = row ? toPassengerProfile(row, true) : null;
 
@@ -81,16 +90,54 @@ export async function GET(request: Request) {
     }
 
     const wantsProfiles = url.searchParams.get("profiles") === "1";
+    const wantsManifest = url.searchParams.get("manifest") === "1";
+
+    if (wantsManifest) {
+      const from = Math.max(0, Number.parseInt(url.searchParams.get("from") ?? "0", 10) || 0);
+      const limit = Math.min(100, Math.max(1, Number.parseInt(url.searchParams.get("limit") ?? "60", 10) || 60));
+      const rows = await database
+        .prepare(
+          `WITH ordered AS (
+             SELECT ROW_NUMBER() OVER (ORDER BY rowid) - 1 AS seat_index, display_name
+             FROM bus_entries
+           )
+           SELECT seat_index, display_name
+           FROM ordered
+           ORDER BY seat_index ASC
+           LIMIT ? OFFSET ?`,
+        )
+        .bind(limit, from)
+        .all<PassengerManifestRow>();
+      const passengers = rows.results.map((row) => ({
+        seatIndex: Number(row.seat_index),
+        displayName: row.display_name || null,
+      }));
+      const count = await readPassengerCount(database);
+
+      return Response.json(
+        {
+          count,
+          passengers,
+          nextFrom: from + passengers.length,
+          hasMore: from + passengers.length < count,
+        },
+        { headers: WRITE_HEADERS },
+      );
+    }
 
     if (wantsProfiles) {
       const from = Math.max(0, Number.parseInt(url.searchParams.get("from") ?? "0", 10) || 0);
       const limit = Math.min(48, Math.max(1, Number.parseInt(url.searchParams.get("limit") ?? "32", 10) || 32));
       const rows = await database
         .prepare(
-          `SELECT rowid - 1 AS seat_index, display_name, NULL AS comment
-           FROM bus_entries
-           WHERE rowid > ? AND rowid <= ? AND display_name IS NOT NULL
-           ORDER BY rowid ASC`,
+          `WITH ordered AS (
+             SELECT ROW_NUMBER() OVER (ORDER BY rowid) - 1 AS seat_index, display_name
+             FROM bus_entries
+           )
+           SELECT seat_index, display_name, NULL AS comment
+           FROM ordered
+           WHERE seat_index >= ? AND seat_index < ? AND display_name IS NOT NULL
+           ORDER BY seat_index ASC`,
         )
         .bind(from, from + limit)
         .all<PassengerRow>();
@@ -164,7 +211,11 @@ export async function POST(request: Request) {
 
     const passengerRow = await database
       .prepare(
-        "SELECT rowid - 1 AS seat_index, display_name, NULL AS comment FROM bus_entries WHERE visitor_id = ?",
+        `WITH ordered AS (
+           SELECT ROW_NUMBER() OVER (ORDER BY rowid) - 1 AS seat_index, visitor_id, display_name
+           FROM bus_entries
+         )
+         SELECT seat_index, display_name, NULL AS comment FROM ordered WHERE visitor_id = ?`,
       )
       .bind(visitorId)
       .first<PassengerRow>();
@@ -180,6 +231,52 @@ export async function POST(request: Request) {
     console.error("POST /api/bus-entries error:", error);
     return Response.json(
       { error: "Impossible d'enregistrer ce passager pour le moment." },
+      { status: 503, headers: WRITE_HEADERS },
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const body = (await request.json()) as { visitorId?: unknown };
+    const visitorId = typeof body.visitorId === "string" ? body.visitorId.trim() : "";
+
+    if (!/^[a-zA-Z0-9-]{8,128}$/.test(visitorId)) {
+      return Response.json(
+        { error: "Identifiant visiteur invalide." },
+        { status: 400, headers: WRITE_HEADERS },
+      );
+    }
+
+    const database = await getPassengerDatabase();
+    const existing = await database
+      .prepare(
+        `WITH ordered AS (
+           SELECT ROW_NUMBER() OVER (ORDER BY rowid) - 1 AS seat_index, visitor_id
+           FROM bus_entries
+         )
+         SELECT seat_index FROM ordered WHERE visitor_id = ?`,
+      )
+      .bind(visitorId)
+      .first<{ seat_index: number }>();
+    const deletion = await database
+      .prepare("DELETE FROM bus_entries WHERE visitor_id = ?")
+      .bind(visitorId)
+      .run();
+    const count = await readPassengerCount(database);
+
+    return Response.json(
+      {
+        count,
+        removed: (deletion.meta.changes ?? 0) > 0,
+        seatIndex: existing ? Number(existing.seat_index) : null,
+      },
+      { headers: WRITE_HEADERS },
+    );
+  } catch (error) {
+    console.error("DELETE /api/bus-entries error:", error);
+    return Response.json(
+      { error: "Impossible de quitter définitivement le bus pour le moment." },
       { status: 503, headers: WRITE_HEADERS },
     );
   }

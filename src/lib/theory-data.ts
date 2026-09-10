@@ -39,7 +39,7 @@ export const SIMPLE_EXPLANATION = {
     },
     {
       icon: "🗺️",
-      title: "Laugh Tale serait Lodestar dans le futur",
+      title: "Laugh Tale serait Roadstar dans le futur",
       text: "Le quatrième Road Ponéglyphe indiquerait une date. Roger aurait atteint le bon lieu, mais 25 ans trop tôt pour rencontrer l'époque de Luffy.",
     },
   ],
@@ -54,7 +54,7 @@ export const SIMPLE_EXPLANATION = {
     },
     {
       myth: "Laugh Tale est une île introuvable dans l'océan.",
-      reality: "Laugh Tale serait Lodestar à la bonne époque : le quatrième Road Ponéglyphe donnerait la coordonnée temporelle.",
+      reality: "Laugh Tale serait Roadstar à la bonne époque : le quatrième Road Ponéglyphe donnerait la coordonnée temporelle.",
     },
     {
       myth: "Davy D. Jones est seulement une vieille légende de pirates.",
@@ -96,7 +96,7 @@ export const CORE_PILLARS = [
     title: "Laugh Tale n'existe pas encore",
     subtitle: "Une coordonnée temporelle, non spatiale",
     description:
-      "Laugh Tale ne serait pas une autre île cachée après Lodestar, mais Lodestar dans le futur. Le quatrième Road Ponéglyphe donnerait la date nécessaire, ce qui expliquerait pourquoi Roger est arrivé trop tôt.",
+      "Laugh Tale ne serait pas une autre île cachée après Roadstar, mais Roadstar dans le futur. Le quatrième Road Ponéglyphe donnerait la date nécessaire, ce qui expliquerait pourquoi Roger est arrivé trop tôt.",
   },
   {
     icon: "📜",
@@ -128,20 +128,20 @@ export const CORE_PILLARS = [
   },
   {
     icon: "🌊",
-    title: "Le Déluge et All Blue",
-    subtitle: "La destruction de Red Line et l'océan unique",
+    title: "Le Déluge serait encore à venir",
+    subtitle: "Une conséquence de la guerre future",
     description:
-      "La grande guerre ferait monter les eaux de 200 mètres. La destruction de Red Line réunirait alors les quatre mers en All Blue, où Luffy deviendrait le premier pirate à prendre cette nouvelle mer.",
+      "La grande guerre ferait monter les eaux de 200 mètres. Cette catastrophe annoncée par Vegapunk serait donc un événement à venir, et non la trace d'une guerre déjà terminée il y a huit siècles.",
   },
 ];
 
-/** Les 22 axes de la transcription complète, résumés sans les présenter comme du canon. */
+/** Les 21 axes de la transcription complète, résumés sans les présenter comme du canon. */
 export const FULL_THEORY_SECTIONS = [
   {
     icon: "🧭",
     title: "Laugh Tale : le bon lieu, mais dans le futur",
     summary:
-      "Laugh Tale serait Lodestar à une autre époque. Trois Road Ponéglyphes suffiraient à situer une île dans l'espace ; le quatrième fournirait la coordonnée temporelle qui manquait à Roger, arrivé 25 ans trop tôt.",
+      "Laugh Tale serait Roadstar à une autre époque. Trois Road Ponéglyphes suffiraient à situer une île dans l'espace ; le quatrième fournirait la coordonnée temporelle qui manquait à Roger, arrivé 25 ans trop tôt.",
   },
   {
     icon: "👑",
@@ -222,12 +222,6 @@ export const FULL_THEORY_SECTIONS = [
       "La guerre finale annoncée par Vegapunk, Oden, Barbe Blanche et les géants ferait monter les eaux de 200 mètres. Les immenses ponts construits par le Gouvernement seraient une préparation à cette catastrophe connue d'Imu.",
   },
   {
-    icon: "🐟",
-    title: "Sanji contribuerait à créer All Blue",
-    summary:
-      "La destruction de Red Line réunirait North, South, East et West Blue. All Blue n'aurait donc jamais été trouvé parce qu'il n'existe pas encore ; Sanji et les Mugiwara participeraient à sa naissance.",
-  },
-  {
     icon: "🔨",
     title: "La Galley-La serait l'équipage de Loki",
     summary:
@@ -305,10 +299,10 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
     number: 3,
     title: "Laugh Tale n'existe pas encore",
     summary:
-      "Laugh Tale n'est pas une île inaccessible dans l'espace, c'est une époque. C'est Lodestar dans le futur. Roger est arrivé 25 ans trop tôt car Joy Boy n'était pas encore né.",
+      "Laugh Tale n'est pas une île inaccessible dans l'espace, c'est une époque. C'est Roadstar dans le futur. Roger est arrivé 25 ans trop tôt car Joy Boy n'était pas encore né.",
     badge: "Thèse centrale",
     keyPoints: [
-      "Lodestar est le point culminant de la navigation sur Grand Line.",
+      "Roadstar est le point culminant de la navigation sur Grand Line.",
       "Roger comprend à Laugh Tale qu'il est en avance sur le temps : 'Nous sommes arrivés trop tôt'.",
       "Le 4e Road Ponéglyphe donne la coordonnée temporelle indispensable pour synchroniser l'arrivée.",
     ],
@@ -483,22 +477,8 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
     mangaReferences: "Chapitres 1089, 1113, 1114",
   },
   {
-    id: "all-blue",
-    number: 16,
-    title: "All Blue sera créé à la fin",
-    summary:
-      "Le rêve de Sanji n'est pas un lieu secret déjà existant : All Blue naîtra de l'effondrement de Red Line et de Mary Geoise, réunissant les quatre mers du globe en un océan infini.",
-    badge: "Projection",
-    keyPoints: [
-      "La destruction d'Enies Lobby et de Mary Geoise brise l'anneau rocheux artificiel de Red Line.",
-      "La rencontre des faunes marines d'East, West, North et South Blue crée la mer légendaire de Sanji.",
-      "Luffy réalise la première circumnavigation libre du monde sans frontières.",
-    ],
-    mangaReferences: "Chapitres 69, 610, 649",
-  },
-  {
     id: "vingt-rois",
-    number: 17,
+    number: 16,
     title: "Les Vingt Rois sont les Chevaliers Divins",
     summary:
       "Les 20 familles fondatrices de Mary Geoise n'ont jamais été des alliés bienveillants : elles forment la caste militaire suprême des Chevaliers Divins dirigée par les Figarland.",
@@ -512,7 +492,7 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
   },
   {
     id: "imu",
-    number: 18,
+    number: 17,
     title: "Imu, celui qui sait",
     summary:
       "Imu Nerona est conscient que les écrits sur les Ponéglyphes annoncent sa défaite future. Il traque désespérément chaque indice venu de l'avenir pour retarder sa chute inéluctable.",
@@ -526,7 +506,7 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
   },
   {
     id: "peuples",
-    number: 19,
+    number: 18,
     title: "Zunesha et les missions des peuples",
     summary:
       "Zunesha, les Shandias, les Hommes-Poissons et le clan Kozuki n'ont pas échoué dans le passé : ils gardent fidèlement leur poste en attendant la toute première venue de Joy Boy.",
@@ -540,7 +520,7 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
   },
   {
     id: "one-piece",
-    number: 20,
+    number: 19,
     title: "Le One Piece est l'histoire de Luffy",
     summary:
       "Le One Piece n'est pas un simple tas d'or ou une arme matérielle : c'est le récit complet de l'aventure de Luffy depuis le premier tome, consigné à la fin du monde.",
@@ -554,7 +534,7 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
   },
   {
     id: "lecture",
-    number: 21,
+    number: 20,
     title: "Les quatre niveaux d'analyse de la théorie",
     summary:
       "Pour maintenir une rigueur éditoriale absolue, la théorie distingue quatre statuts : les faits établis du manga, la théorie centrale, les extensions thématiques et les projections futures.",
@@ -563,13 +543,13 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
       "Faits canoniques : tout ce qui est explicitement validé dans les pages dessinées par Oda.",
       "Théorie centrale : le cœur de la thèse des Fous du Bus (Siècle Oublié = Présent, Joy Boy = Luffy).",
       "Extensions : hypothèses complémentaires sur les personnages secondaires et les pouvoirs.",
-      "Projections : scénarios sur la conclusion de la guerre finale et l'avènement d'All Blue.",
+      "Projections : scénarios sur la conclusion de la guerre finale et ses conséquences temporelles.",
     ],
     mangaReferences: "Guides SBS, Vivre Cards, Tomes 1 à 110",
   },
   {
     id: "conclusion",
-    number: 22,
+    number: 21,
     title: "Conclusion : Depuis le chapitre 1, on lit le Siècle Oublié",
     summary:
       "La fin de l'œuvre recontextualiserait toute l'aventure : Luffy et ses alliés deviendraient les légendes du Siècle Oublié, puis leur histoire serait envoyée dans le passé sur les Ponéglyphes.",
@@ -595,19 +575,14 @@ export const THEORY_FAQ: FAQItem[] = [
       "Le but est de donner vie à une véritable théorie de One Piece dans une expérience interactive créée pour le fun. En cliquant pour entrer, le visiteur monte réellement dans le bus, rejoint le compteur partagé et fait grandir le véhicule. La télévision permet ensuite de regarder la vidéo complète du Mont Corvo à bord.",
   },
   {
-    question: "Pourquoi un bus qui s'allonge en direct ?",
-    answer:
-      "Le bus coiffé du chapeau de paille est le symbole même de la communauté des Fous du Bus. À chaque fois qu'un visiteur monte dans le bus, il devient officiellement un passager enregistré, et de nouvelles rangées de sièges se créent en direct pour accueillir tout le monde dans ce grand voyage vers Laugh Tale.",
-  },
-  {
     question: "Qu'est-ce que la Théorie des Fous du Bus en résumé ?",
     answer:
-      "C'est la thèse selon laquelle le Siècle Oublié de One Piece ne s'est pas déroulé il y a 800 ans dans un passé lointain, mais se déroule en direct dans le présent depuis le chapitre 1. Les Ponéglyphes sont des stèles venues du futur, Joy Boy est le nom de règne que portera Luffy, et Laugh Tale est une coordonnée temporelle (Lodestar dans le futur).",
+      "C'est la thèse selon laquelle le Siècle Oublié de One Piece ne s'est pas déroulé il y a 800 ans dans un passé lointain, mais se déroule en direct dans le présent depuis le chapitre 1. Les Ponéglyphes sont des stèles venues du futur, Joy Boy est le nom de règne que portera Luffy, et Laugh Tale est une coordonnée temporelle (Roadstar dans le futur).",
   },
   {
     question: "Pourquoi Roger était-il arrivé 'trop tôt' de 25 ans ?",
     answer:
-      "Parce que Laugh Tale n'est pas une île inaccessible dans l'espace, mais dans le temps. Roger est arrivé physiquement sur la dernière île (Lodestar), mais 25 ans avant la naissance et l'éveil du libérateur Joy Boy (Luffy). Il a donc découvert l'histoire sans pouvoir accomplir la promesse.",
+      "Parce que Laugh Tale n'est pas une île inaccessible dans l'espace, mais dans le temps. Roger est arrivé physiquement sur la dernière île (Roadstar), mais 25 ans avant la naissance et l'éveil du libérateur Joy Boy (Luffy). Il a donc découvert l'histoire sans pouvoir accomplir la promesse.",
   },
   {
     question: "Pourquoi aucune arme ne peut détruire un Ponéglyphe ?",
@@ -623,10 +598,5 @@ export const THEORY_FAQ: FAQItem[] = [
     question: "Qu'est-ce que le trésor One Piece selon cette théorie ?",
     answer:
       "Le One Piece est le récit complet de l'aventure de Luffy consigné à la fin des temps, que Roger a lu en riant aux larmes ('He Laughed'). C'est l'histoire complète qui boucle la causalité du manga, du chapitre 1 jusqu'à la libération finale.",
-  },
-  {
-    question: "Comment naîtra All Blue à la fin du manga ?",
-    answer:
-      "All Blue n'existe pas encore. Il naîtra lors de la guerre finale de l'effondrement de Red Line et de Mary Geoise provoqué par les Armes Antiques, réunissant North, South, East et West Blue en un océan universel et sans frontières.",
   },
 ];

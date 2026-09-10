@@ -11,22 +11,37 @@ import { YOUTUBE_ID } from "./bus/constants";
 interface TheoryModalProps {
   isOpen?: boolean;
   onClose?: () => void;
+  onLeaveBusPermanently?: () => Promise<boolean>;
 }
 
-export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryModalProps) {
+export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBusPermanently }: TheoryModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"thesis" | "video" | "faq">("thesis");
+  const [confirmLeave, setConfirmLeave] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [leaveError, setLeaveError] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
 
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalOpen;
 
   const handleClose = useCallback(() => {
+    setConfirmLeave(false);
+    setLeaveError("");
     if (onClose) {
       onClose();
     } else {
       setInternalOpen(false);
     }
   }, [onClose]);
+
+  const leavePermanently = useCallback(async () => {
+    if (!onLeaveBusPermanently) return;
+    setLeaving(true);
+    setLeaveError("");
+    const left = await onLeaveBusPermanently();
+    setLeaving(false);
+    if (!left) setLeaveError("La place n’a pas pu être supprimée. Réessaie dans un instant.");
+  }, [onLeaveBusPermanently]);
 
   // Écoute de l'événement global pour ouvrir le modal depuis n'importe quel composant
   useEffect(() => {
@@ -147,7 +162,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                 </span>
               </aside>
 
-              {/* Une seule introduction avant le détail des 22 points. */}
+              {/* Une seule introduction avant le détail des 21 points. */}
               <section className="space-y-4 rounded-2xl border border-[#ffd23f]/45 border-l-4 border-l-[#ffd23f] bg-[#171a19] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.2)] sm:p-7 lg:p-8">
                 <div className="flex flex-wrap items-center gap-2.5">
                   <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#ffd23f] text-[#071b5b] shadow-[inset_0_0_0_1px_rgba(7,27,91,0.22)]" aria-hidden="true">
@@ -263,7 +278,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                 {/* Iframe vidéo YouTube */}
                 <div className="mt-4 aspect-video w-full overflow-hidden rounded-xl border border-white/20 bg-black">
                   <iframe
-                    src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?rel=0&modestbranding=1`}
+                    src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?rel=0&modestbranding=1&cc_load_policy=0`}
                     title="La Théorie des Fous du Bus — Vidéo Officielle Le Mont Corvo"
                     className="w-full h-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -316,7 +331,16 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
         </div>
 
         {/* Pied de page du modal */}
-        <div className="flex min-h-14 items-center justify-end border-t border-white/15 bg-[#070c16]/95 px-5 py-2.5 sm:px-7 lg:px-9">
+        <div className="flex min-h-14 items-center justify-between gap-4 border-t border-white/15 bg-[#070c16]/95 px-5 py-2.5 sm:px-7 lg:px-9">
+          {onLeaveBusPermanently ? (
+            <button
+              type="button"
+              onClick={() => setConfirmLeave(true)}
+              className="text-left text-[11px] font-semibold text-white/40 underline-offset-4 transition hover:text-red-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+            >
+              Se retirer définitivement du bus
+            </button>
+          ) : <span />}
           <button
             type="button"
             onClick={handleClose}
@@ -325,6 +349,31 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
             Fermer
           </button>
         </div>
+
+        {confirmLeave && (
+          <div className="absolute inset-0 z-20 grid place-items-center bg-[#020617]/55 p-4 backdrop-blur-[2px]" onClick={() => !leaving && setConfirmLeave(false)}>
+            <section
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="leave-bus-title"
+              className="w-full max-w-md rounded-2xl border border-red-300/45 bg-[#101827] p-5 shadow-2xl sm:p-6"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-red-200">Sortie définitive</p>
+              <h3 id="leave-bus-title" className="mt-2 text-xl font-black text-white">Supprimer ta place du bus ?</h3>
+              <p className="mt-3 text-sm leading-6 text-white/75">
+                Ton prénom, ton commentaire et ta place seront supprimés de Cloudflare. Le compteur diminuera aussi. Le bouton normal « Sortir du bus » ne fait pas cela.
+              </p>
+              {leaveError && <p role="alert" className="mt-3 text-sm font-bold text-red-200">{leaveError}</p>}
+              <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button type="button" disabled={leaving} onClick={() => setConfirmLeave(false)} className="min-h-10 rounded-lg border border-white/15 px-4 text-sm font-bold text-white/80 hover:bg-white/10 disabled:opacity-50">Annuler</button>
+                <button type="button" disabled={leaving} onClick={() => void leavePermanently()} className="min-h-10 rounded-lg bg-red-600 px-4 text-sm font-black text-white hover:bg-red-500 disabled:cursor-wait disabled:opacity-60">
+                  {leaving ? "Suppression…" : "Supprimer ma place"}
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
       </div>
     </div>
   );

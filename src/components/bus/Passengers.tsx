@@ -1,9 +1,8 @@
 "use client";
 
-import { memo, useLayoutEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
 import type { PassengerProfile } from "./constants";
 
 export interface NakamaArchetype {
@@ -347,6 +346,7 @@ interface PassengersProps {
   reservedRow?: number;
   passengerProfiles?: PassengerProfile[];
   onPassengerSelect?: (passenger: PassengerProfile) => void;
+  activePassengerIndex?: number | null;
 }
 
 function Passengers({
@@ -356,8 +356,9 @@ function Passengers({
   reservedRow = 3,
   passengerProfiles = [],
   onPassengerSelect,
+  activePassengerIndex = null,
 }: PassengersProps) {
-  const seats = useMemo(() => getSeatPositions(numRows, reservedRow), [numRows, reservedRow]);
+  const seats = useMemo(() => getSeatPositions(numRows, -1), [numRows]);
 
   const occupiedSeats = useMemo(
     () => seats.slice(0, Math.min(Math.max(0, passengerCount), seats.length)),
@@ -388,15 +389,20 @@ function Passengers({
       <SimplifiedPassengers passengers={simplified} />
       {detailed.map(({ seat, index }) => {
         const archetype = NAKAMA_ROSTER[index % NAKAMA_ROSTER.length];
+        const isCurrentPassenger = activePassengerIndex === index && reservedRow >= 0;
+        const displayedSeat = isCurrentPassenger
+          ? { x: 0.72, z: -2.6 + reservedRow * 1.2 + 0.15, row: reservedRow, seatInRow: 3 }
+          : seat;
         return (
           <Passenger
             key={`p-${index}-${archetype.id}`}
-            seat={seat}
+            seat={displayedSeat}
             index={index}
             archetype={archetype}
             hornPulse={hornPulse}
             profile={profilesBySeatIndex.get(index)}
             onSelect={onPassengerSelect}
+            firstPerson={isCurrentPassenger}
           />
         );
       })}
@@ -440,6 +446,7 @@ function Passenger({
   hornPulse,
   profile,
   onSelect,
+  firstPerson = false,
 }: {
   seat: SeatInfo;
   index: number;
@@ -447,13 +454,21 @@ function Passenger({
   hornPulse: number;
   profile?: PassengerProfile;
   onSelect?: (passenger: PassengerProfile) => void;
+  firstPerson?: boolean;
 }) {
   const group = useRef<THREE.Group>(null);
   const headGroup = useRef<THREE.Group>(null);
   const torsoGroup = useRef<THREE.Group>(null);
+  const nameMaterial = useRef<THREE.SpriteMaterial>(null);
 
   // Matériaux partagés et mis en cache par archetype
   const mats = useMemo(() => getArchetypeMaterials(archetype), [archetype]);
+  const nameTexture = useMemo(
+    () => profile ? makePassengerNameTexture(profile.displayName) : null,
+    [profile],
+  );
+
+  useEffect(() => () => nameTexture?.texture.dispose(), [nameTexture]);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
@@ -497,26 +512,34 @@ function Passenger({
           : undefined
       }
     >
-      {profile && (
-        <Html
-          center
-          occlude="raycast"
+      {profile && nameTexture && (
+        <sprite
           position={[0, 2.22, 0.14]}
-          distanceFactor={7}
-          zIndexRange={[40, 20]}
+          scale={[nameTexture.aspect * 0.23, 0.23, 1]}
+          onClick={(event: { stopPropagation: () => void }) => {
+            event.stopPropagation();
+            onSelect?.(profile);
+          }}
+          onPointerOver={(event: { stopPropagation: () => void }) => {
+            event.stopPropagation();
+            document.body.style.cursor = "pointer";
+            nameMaterial.current?.color.set("#ffd23f");
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "auto";
+            nameMaterial.current?.color.set("#ffffff");
+          }}
         >
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onSelect?.(profile);
-            }}
-            className="pointer-events-auto max-w-36 cursor-pointer truncate px-2 py-1 text-xs font-black tracking-wide text-white drop-shadow-[0_2px_2px_rgba(0,0,0,1)] transition-colors hover:text-[#ffd23f] focus:outline-none focus-visible:text-[#ffd23f] focus-visible:underline focus-visible:decoration-2 focus-visible:underline-offset-4"
-            title={`Voir le message de ${profile.displayName}`}
-          >
-            {profile.displayName}
-          </button>
-        </Html>
+          <spriteMaterial
+            ref={nameMaterial}
+            map={nameTexture.texture}
+            transparent
+            alphaTest={0.08}
+            depthTest
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </sprite>
       )}
       {/* ---------- JAMBES ASSISES & PIEDS ---------- */}
       {/* Bassin posé sur le coussin du siège */}
@@ -583,13 +606,14 @@ function Passenger({
         ))}
       </group>
 
-      {/* Cou */}
-      <mesh material={mats.skin} position={[0, 1.66, 0.14]}>
-        <cylinderGeometry args={[0.06, 0.06, 0.08, 8]} />
-      </mesh>
+      {!firstPerson && <>
+        {/* Cou */}
+        <mesh material={mats.skin} position={[0, 1.66, 0.14]}>
+          <cylinderGeometry args={[0.06, 0.06, 0.08, 8]} />
+        </mesh>
 
-      {/* ---------- TÊTE & VISAGE ANIMÉ ---------- */}
-      <group ref={headGroup} position={[0, 1.82, 0.14]}>
+        {/* ---------- TÊTE & VISAGE ANIMÉ ---------- */}
+        <group ref={headGroup} position={[0, 1.82, 0.14]}>
         {/* Tête */}
         <mesh material={mats.skin}>
           <boxGeometry args={[0.22, 0.24, 0.2]} />
@@ -639,12 +663,46 @@ function Passenger({
 
         {/* ---------- ACCESSOIRES DISTINCTIFS ---------- */}
         <Accessory archetype={archetype} mats={mats} />
-      </group>
+        </group>
+      </>}
 
       {/* ---------- PROPS & OBJETS TENUS ---------- */}
       <NakamaProp prop={archetype.prop} mats={mats} />
     </group>
   );
+}
+
+function makePassengerNameTexture(displayName: string) {
+  const font = "900 64px ui-sans-serif, system-ui, sans-serif";
+  const measureCanvas = document.createElement("canvas");
+  const measureContext = measureCanvas.getContext("2d")!;
+  measureContext.font = font;
+  const measuredWidth = Math.ceil(measureContext.measureText(displayName).width + 48);
+  const width = Math.min(1024, Math.max(256, THREE.MathUtils.ceilPowerOfTwo(measuredWidth)));
+  const height = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d")!;
+
+  context.clearRect(0, 0, width, height);
+  context.font = font;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.lineJoin = "round";
+  context.strokeStyle = "rgba(2, 6, 23, 0.96)";
+  context.lineWidth = 12;
+  context.strokeText(displayName, width / 2, height / 2 + 2, width - 36);
+  context.fillStyle = "#ffffff";
+  context.fillText(displayName, width / 2, height / 2 + 2, width - 36);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.anisotropy = 4;
+
+  return { texture, aspect: width / height };
 }
 
 export default memo(Passengers);

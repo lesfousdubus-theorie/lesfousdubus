@@ -31,6 +31,7 @@ interface BusProps {
   isMutedForFullscreen?: boolean;
   hasEntered?: boolean;
   passengerProfiles?: PassengerProfile[];
+  currentPassengerSeatIndex?: number | null;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
 }
 
@@ -52,6 +53,7 @@ export default function Bus({
   isMutedForFullscreen = false,
   hasEntered = false,
   passengerProfiles = [],
+  currentPassengerSeatIndex = null,
   onPassengerSelect,
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
@@ -515,6 +517,10 @@ export default function Bus({
     if (iframe?.contentWindow) {
       try {
         if (!wasOn) {
+          iframe.contentWindow.postMessage(
+            JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
+            "*",
+          );
           iframe.contentWindow.postMessage(
             JSON.stringify({ event: "command", func: "unMute", args: [] }),
             "*",
@@ -1034,14 +1040,11 @@ export default function Bus({
 
       {/* PASSAGERS NAKAMA ASSIS DANS LE BUS */}
       <Passengers
-        passengerCount={
-          phase === "inside" || phase === "entering"
-            ? Math.max(0, passengerCount - 1)
-            : passengerCount
-        }
+        passengerCount={passengerCount}
         numRows={numRows}
         hornPulse={hornPulse}
         reservedRow={phase === "inside" || phase === "entering" ? reservedRow : -1}
+        activePassengerIndex={phase === "inside" || phase === "entering" ? currentPassengerSeatIndex : null}
         passengerProfiles={passengerProfiles}
         onPassengerSelect={onPassengerSelect}
       />
@@ -1358,11 +1361,30 @@ function BusTvUnit({
               id="tv-primary-iframe"
               width="560"
               height="315"
-              src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?autoplay=0&mute=1&controls=1&rel=0&enablejsapi=1&fs=1&playsinline=1&iv_load_policy=3`}
+              src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?autoplay=0&mute=1&controls=1&rel=0&enablejsapi=1&fs=1&playsinline=1&iv_load_policy=3&cc_load_policy=0`}
               title="La théorie des Fous du Bus"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
+              onLoad={(event) => {
+                event.currentTarget.contentWindow?.postMessage(
+                  JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
+                  "*",
+                );
+              }}
               style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden", pointerEvents: "auto" }}
+            />
+            {/* La zone d'image laisse les gestes remonter à la caméra. La bande basse
+                reste libre afin que les commandes officielles YouTube soient cliquables. */}
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: "0 0 58px 0",
+                zIndex: 2,
+                cursor: "grab",
+                background: "transparent",
+                touchAction: "none",
+              }}
             />
           </div>
         </Html>

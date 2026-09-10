@@ -16,6 +16,11 @@ interface ToastMessage {
   badge?: string;
 }
 
+interface PassengerManifestEntry {
+  seatIndex: number;
+  displayName: string | null;
+}
+
 const THEORY_START_DATE = Date.UTC(2024, 4, 26);
 const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
 
@@ -57,6 +62,8 @@ export default function BusExperience() {
     return false;
   });
   const [showTheoryModal, setShowTheoryModal] = useState(false);
+  const [showPassengerList, setShowPassengerList] = useState(false);
+  const [showTheoryAge, setShowTheoryAge] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [profileModalMode, setProfileModalMode] = useState<"name" | "comment">("name");
   const [joinName, setJoinName] = useState("");
@@ -67,6 +74,12 @@ export default function BusExperience() {
   const [selectedPassenger, setSelectedPassenger] = useState<PassengerProfile | null>(null);
   const [passengerCardLoading, setPassengerCardLoading] = useState(false);
   const [passengerCardError, setPassengerCardError] = useState("");
+  const [currentPassengerSeatIndex, setCurrentPassengerSeatIndex] = useState<number | null>(null);
+  const [passengerManifest, setPassengerManifest] = useState<PassengerManifestEntry[]>([]);
+  const [manifestLoading, setManifestLoading] = useState(false);
+  const [manifestError, setManifestError] = useState("");
+  const [manifestNextFrom, setManifestNextFrom] = useState(0);
+  const [manifestHasMore, setManifestHasMore] = useState(false);
   const [theoryAgeInDays] = useState(getTheoryAgeInDays);
 
   // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
@@ -339,6 +352,7 @@ export default function BusExperience() {
         count: number;
         added: boolean;
         passenger: PassengerProfile | null;
+        seatIndex: number | null;
       };
       const prevRows = computeNumRows(count ?? 0);
       const nextRows = computeNumRows(d.count);
@@ -352,12 +366,15 @@ export default function BusExperience() {
         showToast("Bienvenue à bord !", "Tu es maintenant assis dans le bus !", "🎉 NAKAMA");
       }
       setCount(d.count);
+      setCurrentPassengerSeatIndex(d.seatIndex);
+      if (d.seatIndex !== null) {
+        setSeatRow(Math.min(computeNumRows(d.count) - 1, Math.floor(d.seatIndex / 4)));
+      }
       if (d.passenger) {
         setPassengerProfiles((profiles) => [
           ...profiles.filter((profile) => profile.seatIndex !== d.passenger!.seatIndex),
           d.passenger!,
         ]);
-        setSeatRow(Math.min(computeNumRows(d.count) - 1, Math.floor(d.passenger.seatIndex / 4)));
       }
     } catch {
       showToast(
@@ -519,6 +536,75 @@ export default function BusExperience() {
     }
   }, []);
 
+  const loadPassengerManifest = useCallback(async (from = 0) => {
+    setManifestLoading(true);
+    setManifestError("");
+    try {
+      const response = await fetch(`/api/bus-entries?manifest=1&from=${from}&limit=60`, {
+        cache: "no-store",
+      });
+      if (!response.ok) throw new Error("Passenger manifest unavailable");
+      const data = (await response.json()) as {
+        count: number;
+        passengers: PassengerManifestEntry[];
+        nextFrom: number;
+        hasMore: boolean;
+      };
+      setPassengerManifest((current) => from === 0 ? data.passengers : [...current, ...data.passengers]);
+      setManifestNextFrom(data.nextFrom);
+      setManifestHasMore(data.hasMore);
+      setCount(data.count);
+    } catch {
+      setManifestError("Impossible de charger les passagers pour le moment.");
+    } finally {
+      setManifestLoading(false);
+    }
+  }, []);
+
+  const openPassengerManifest = useCallback(() => {
+    setShowPassengerList(true);
+    void loadPassengerManifest(0);
+  }, [loadPassengerManifest]);
+
+  const leaveBusPermanently = useCallback(async () => {
+    try {
+      const visitorId = getOrCreateVisitorId();
+      const response = await fetch("/api/bus-entries", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ visitorId }),
+      });
+      if (!response.ok) return false;
+      const data = (await response.json()) as { count: number; removed: boolean };
+      try {
+        localStorage.removeItem("fdb-display-name");
+        localStorage.removeItem("fdb-comment");
+      } catch {
+        // La suppression D1 est déjà effective.
+      }
+      setCount(data.count);
+      setPassengerProfiles([]);
+      setPassengerManifest([]);
+      setSelectedPassenger(null);
+      setJoinName("");
+      setJoinComment("");
+      setTvOn(false);
+      setHasEntered(false);
+      setCurrentPassengerSeatIndex(null);
+      setShowTheoryModal(false);
+      setPhase((current) => current === "inside" ? "exiting" : "outside");
+      showToast(
+        data.removed ? "Place supprimée" : "Aucune place à supprimer",
+        data.removed ? "Tu as quitté définitivement le bus." : "Tu n’étais pas enregistré comme passager.",
+        "👋 BUS",
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  }, [showToast]);
+
   // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
   const exitBus = useCallback(() => {
     if (phase !== "inside") return;
@@ -589,12 +675,13 @@ export default function BusExperience() {
         isMutedForFullscreen={false}
         hasEntered={hasEntered}
         passengerProfiles={passengerProfiles}
+        currentPassengerSeatIndex={currentPassengerSeatIndex}
         onPassengerSelect={openPassengerCard}
         modeOverride={manualDayNight}
       />
 
       {/* ---------- HUD & INTERFACE UTILISATEUR (GARANTI TOUJOURS AU PREMIER PLAN Z-INDEX) ---------- */}
-      {!showTheoryModal && !showJoinModal && !selectedPassenger && (
+      {!showTheoryModal && !showJoinModal && !showPassengerList && !showTheoryAge && !selectedPassenger && (
         <div
           className="pointer-events-none fixed inset-0 isolate select-none"
           style={{ zIndex: 2147483647 }}
@@ -639,9 +726,9 @@ export default function BusExperience() {
         </div>
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
-        <div className="pointer-events-auto absolute right-3 sm:right-4 top-3 sm:top-4 flex items-center gap-1.5 sm:gap-3 rounded-2xl border border-[#ffd23f]/40 bg-black/60 px-2.5 sm:px-4 py-1 sm:py-2.5 shadow-lg backdrop-blur-md">
+        <div className="pointer-events-auto absolute right-3 sm:right-4 top-3 sm:top-4 flex items-stretch gap-1.5 sm:gap-3 rounded-2xl border border-[#ffd23f]/40 bg-black/60 px-2.5 sm:px-4 py-1 sm:py-2.5 shadow-lg backdrop-blur-md">
           <span className="text-lg sm:text-2xl">🚌</span>
-          <div className="leading-tight">
+          <button type="button" onClick={openPassengerManifest} className="rounded-lg text-left leading-tight transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">
             <div className="flex items-center gap-1 sm:gap-2">
               <span className="text-[8px] sm:text-[10px] font-semibold uppercase tracking-[0.15em] text-[#ffd23f]">
                 Passagers
@@ -653,8 +740,8 @@ export default function BusExperience() {
             <div className="text-base sm:text-xl font-black tabular-nums text-white">
               {effectiveCount.toLocaleString("fr-FR")}
             </div>
-          </div>
-          <div className="border-l border-white/20 pl-2 sm:pl-3 leading-tight" title="La théorie existe depuis le 26 mai 2024">
+          </button>
+          <button type="button" onClick={() => setShowTheoryAge(true)} className="rounded-r-lg border-l border-white/20 pl-2 text-left leading-tight transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] sm:pl-3" title="Voir le compteur précis depuis le 26 mai 2024">
             <div className="text-[8px] sm:text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffd23f]">
               La théorie existe depuis
             </div>
@@ -662,7 +749,7 @@ export default function BusExperience() {
               {theoryAgeInDays.toLocaleString("fr-FR")}
               <span className="ml-1 text-[9px] sm:text-xs font-bold uppercase text-white/70">jours</span>
             </div>
-          </div>
+          </button>
         </div>
 
         {/* Bouton interactif Jour / Nuit */}
@@ -814,7 +901,11 @@ export default function BusExperience() {
       )}
 
       {/* Modal interactif complet de la théorie des Fous du Bus */}
-      <TheoryModal isOpen={showTheoryModal} onClose={() => setShowTheoryModal(false)} />
+      <TheoryModal
+        isOpen={showTheoryModal}
+        onClose={() => setShowTheoryModal(false)}
+        onLeaveBusPermanently={leaveBusPermanently}
+      />
       <JoinBusModal
         isOpen={showJoinModal}
         mode={profileModalMode}
@@ -834,6 +925,21 @@ export default function BusExperience() {
         error={passengerCardError}
         onClose={() => setSelectedPassenger(null)}
       />
+      <PassengerListModal
+        isOpen={showPassengerList}
+        count={effectiveCount}
+        passengers={passengerManifest}
+        loading={manifestLoading}
+        error={manifestError}
+        hasMore={manifestHasMore}
+        onLoadMore={() => void loadPassengerManifest(manifestNextFrom)}
+        onPassengerClick={(passenger) => {
+          setShowPassengerList(false);
+          void openPassengerCard({ ...passenger, displayName: passenger.displayName!, comment: null });
+        }}
+        onClose={() => setShowPassengerList(false)}
+      />
+      <TheoryAgeModal isOpen={showTheoryAge} onClose={() => setShowTheoryAge(false)} />
     </div>
   );
 }
@@ -969,11 +1075,11 @@ function JoinBusModal({
             </p>
           )}
 
-          <p className="text-xs leading-relaxed text-[#aebde0]">
-            {mode === "name"
-              ? "Ton nom sera visible publiquement dans le bus."
-              : "Ton commentaire restera dans Cloudflare et ne sera chargé que lorsqu’un visiteur clique sur ton personnage."}
-          </p>
+          {mode === "name" && (
+            <p className="text-xs leading-relaxed text-[#aebde0]">
+              Ton nom sera visible publiquement dans le bus.
+            </p>
+          )}
 
           <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
             <button
@@ -1061,6 +1167,129 @@ function PassengerCard({
               {passenger.comment || "Ce passager n’a pas laissé de message."}
             </p>
           )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function PassengerListModal({
+  isOpen,
+  count,
+  passengers,
+  loading,
+  error,
+  hasMore,
+  onLoadMore,
+  onPassengerClick,
+  onClose,
+}: {
+  isOpen: boolean;
+  count: number;
+  passengers: PassengerManifestEntry[];
+  loading: boolean;
+  error: string;
+  hasMore: boolean;
+  onLoadMore: () => void;
+  onPassengerClick: (passenger: PassengerManifestEntry) => void;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/30 p-4 backdrop-blur-[2px]" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section role="dialog" aria-modal="true" aria-labelledby="passenger-list-title" className="flex max-h-[72dvh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/50 bg-[#081127]/95 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+        <header className="flex items-center justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ffd23f]">Le convoi</p>
+            <h2 id="passenger-list-title" className="mt-0.5 text-xl font-black">{count.toLocaleString("fr-FR")} passagers</h2>
+          </div>
+          <ModalCloseButton onClick={onClose} />
+        </header>
+        <div className="overflow-y-auto overscroll-contain p-3 sm:p-4">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {passengers.map((passenger) => passenger.displayName ? (
+              <button key={passenger.seatIndex} type="button" onClick={() => onPassengerClick(passenger)} className="flex min-h-12 items-center gap-3 rounded-xl border border-white/12 bg-white/[0.055] px-3 text-left transition hover:border-[#ffd23f]/55 hover:bg-[#ffd23f]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ffd23f]/15 text-sm">👤</span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-black text-white">{passenger.displayName}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/45">Place {passenger.seatIndex + 1}</span>
+                </span>
+              </button>
+            ) : (
+              <div key={passenger.seatIndex} className="flex min-h-12 items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 text-white/55">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/[0.06] text-sm">👤</span>
+                <span>
+                  <span className="block text-sm font-bold">Anonyme</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">Place {passenger.seatIndex + 1}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+          {loading && <div className="flex min-h-20 items-center justify-center gap-3 text-sm font-bold text-white/70"><span className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-[#ffd23f]" /> Chargement…</div>}
+          {error && <p role="alert" className="p-4 text-center text-sm font-bold text-red-200">{error}</p>}
+          {!loading && hasMore && <button type="button" onClick={onLoadMore} className="mt-4 min-h-11 w-full rounded-xl border border-white/15 bg-white/[0.06] text-sm font-black text-white transition hover:border-[#ffd23f]/50 hover:bg-white/10">Afficher plus de passagers</button>}
+          {!loading && !error && passengers.length === 0 && <p className="p-8 text-center text-sm text-white/60">Le bus attend son premier passager.</p>}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    const onKeyDown = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+  const elapsedSeconds = Math.max(0, Math.floor((now - THEORY_START_DATE) / 1000));
+  const values = [
+    ["Années", Math.floor(elapsedSeconds / 31_556_952)],
+    ["Mois", Math.floor(elapsedSeconds / 2_629_746)],
+    ["Jours", Math.floor(elapsedSeconds / 86_400)],
+    ["Heures", Math.floor(elapsedSeconds / 3_600)],
+    ["Minutes", Math.floor(elapsedSeconds / 60)],
+    ["Secondes", elapsedSeconds],
+  ] as const;
+
+  return (
+    <div className="fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/30 p-4 backdrop-blur-[2px]" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section role="dialog" aria-modal="true" aria-labelledby="theory-age-title" className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[#ffd23f]/55 bg-[#081127]/96 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+        <header className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5 sm:px-6">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ffd23f]">Depuis le 26 mai 2024</p>
+            <h2 id="theory-age-title" className="mt-1 text-xl font-black sm:text-2xl">La théorie tient toujours</h2>
+          </div>
+          <ModalCloseButton onClick={onClose} />
+        </header>
+        <div className="p-5 sm:p-6">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {values.map(([label, value]) => (
+              <div key={label} className="rounded-xl border border-white/10 bg-white/[0.055] p-3 sm:p-4">
+                <div className="break-all text-lg font-black tabular-nums text-white sm:text-xl">{value.toLocaleString("fr-FR")}</div>
+                <div className="mt-1 text-[10px] font-black uppercase tracking-[0.13em] text-[#ffd23f]">{label}</div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-5 rounded-xl border border-[#ffd23f]/30 bg-[#ffd23f]/10 px-4 py-3 text-center text-sm font-black text-[#ffe88d]">
+            Toujours pas débunkée. Toujours pas contredite.
+          </p>
         </div>
       </section>
     </div>

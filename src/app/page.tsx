@@ -60,10 +60,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Les 22 axes issus de la transcription complète */}
+        {/* Les 21 axes issus de la transcription complète */}
         <section className="mt-8">
           <h2 className="text-xl font-bold text-[#ffd23f]">
-            La Théorie Complète en 22 Étapes
+            La Théorie Complète en {FULL_THEORY_SECTIONS.length} Étapes
           </h2>
           <div className="space-y-6 mt-4">
             {FULL_THEORY_SECTIONS.map((section, index) => (

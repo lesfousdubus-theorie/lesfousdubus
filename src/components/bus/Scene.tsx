@@ -28,6 +28,7 @@ interface SceneProps {
   isMutedForFullscreen?: boolean;
   hasEntered?: boolean;
   passengerProfiles?: PassengerProfile[];
+  currentPassengerSeatIndex?: number | null;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   modeOverride?: "day" | "night" | null;
 }
@@ -64,6 +65,7 @@ export default function Scene({
   isMutedForFullscreen = false,
   hasEntered = false,
   passengerProfiles = [],
+  currentPassengerSeatIndex = null,
   onPassengerSelect,
   modeOverride,
 }: SceneProps) {
@@ -107,6 +109,7 @@ export default function Scene({
           isMutedForFullscreen={isMutedForFullscreen}
           hasEntered={hasEntered}
           passengerProfiles={passengerProfiles}
+          currentPassengerSeatIndex={currentPassengerSeatIndex}
           onPassengerSelect={onPassengerSelect}
         />
       </Suspense>
