@@ -511,7 +511,7 @@ function Passenger({
               event.stopPropagation();
               onSelect?.(profile);
             }}
-            className="pointer-events-auto max-w-36 cursor-pointer truncate rounded-full border border-[#ffd23f]/80 bg-[#071027]/90 px-2.5 py-1 text-[11px] font-black tracking-wide text-white shadow-[0_3px_12px_rgba(0,0,0,0.55)] backdrop-blur-sm transition hover:border-white hover:bg-[#1636c9] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="pointer-events-auto max-w-36 cursor-pointer truncate px-2 py-1 text-xs font-black tracking-wide text-white drop-shadow-[0_2px_2px_rgba(0,0,0,1)] transition-colors hover:text-[#ffd23f] focus:outline-none focus-visible:text-[#ffd23f] focus-visible:underline focus-visible:decoration-2 focus-visible:underline-offset-4"
             title={`Voir le message de ${profile.displayName}`}
           >
             {profile.displayName}
