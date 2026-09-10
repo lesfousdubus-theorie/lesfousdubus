@@ -426,6 +426,11 @@ export default function BusExperience() {
           ...profiles.filter((profile) => profile.seatIndex !== data.passenger!.seatIndex),
           data.passenger!,
         ]);
+        if (profileModalMode === "name") {
+          setSeatRow(
+            Math.min(computeNumRows(data.count) - 1, Math.floor(data.passenger.seatIndex / 4)),
+          );
+        }
       }
       setCount(data.count);
       setShowJoinModal(false);
