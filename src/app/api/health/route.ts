@@ -1,15 +1,15 @@
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import type { CloudflareD1Database } from "@/types/cloudflare";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  if (!db) {
-    return Response.json({ ok: true, database: "unconfigured" });
-  }
   try {
-    await db.execute(sql`select 1`);
-    return Response.json({ ok: true, database: "connected" });
+    const { env } = await getCloudflareContext({ async: true });
+    const database = env.DB_BUS as CloudflareD1Database | undefined;
+    if (!database) throw new Error("DB_BUS binding missing");
+    await database.prepare("SELECT 1").first();
+    return Response.json({ ok: true, database: "d1" });
   } catch {
     return Response.json({ ok: false, database: "error" }, { status: 500 });
   }
