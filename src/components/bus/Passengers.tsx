@@ -459,7 +459,6 @@ function Passenger({
   const group = useRef<THREE.Group>(null);
   const headGroup = useRef<THREE.Group>(null);
   const torsoGroup = useRef<THREE.Group>(null);
-  const nameMaterial = useRef<THREE.SpriteMaterial>(null);
 
   // Matériaux partagés et mis en cache par archetype
   const mats = useMemo(() => getArchetypeMaterials(archetype), [archetype]);
@@ -514,8 +513,9 @@ function Passenger({
     >
       {profile && nameTexture && (
         <sprite
-          position={[0, 2.22, 0.14]}
+          position={[0, 2.48, 0.14]}
           scale={[nameTexture.aspect * 0.23, 0.23, 1]}
+          renderOrder={20}
           onClick={(event: { stopPropagation: () => void }) => {
             event.stopPropagation();
             onSelect?.(profile);
@@ -523,20 +523,18 @@ function Passenger({
           onPointerOver={(event: { stopPropagation: () => void }) => {
             event.stopPropagation();
             document.body.style.cursor = "pointer";
-            nameMaterial.current?.color.set("#ffd23f");
           }}
           onPointerOut={() => {
             document.body.style.cursor = "auto";
-            nameMaterial.current?.color.set("#ffffff");
           }}
         >
           <spriteMaterial
-            ref={nameMaterial}
             map={nameTexture.texture}
             transparent
             alphaTest={0.08}
             depthTest
             depthWrite={false}
+            fog={false}
             toneMapped={false}
           />
         </sprite>

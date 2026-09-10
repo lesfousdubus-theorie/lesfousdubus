@@ -746,29 +746,32 @@ export default function BusExperience() {
         </div>
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
-        <div className="pointer-events-auto absolute right-3 sm:right-4 top-3 sm:top-4 flex items-stretch gap-1.5 sm:gap-3 rounded-2xl border border-[#ffd23f]/40 bg-black/60 px-2.5 sm:px-4 py-1 sm:py-2.5 shadow-lg backdrop-blur-md">
-          <span className="text-lg sm:text-2xl">🚌</span>
-          <button type="button" onClick={openPassengerManifest} className="rounded-lg text-left leading-tight transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">
-            <div className="flex items-center gap-1 sm:gap-2">
-              <span className="text-[8px] sm:text-[10px] font-semibold uppercase tracking-[0.15em] text-[#ffd23f]">
-                Passagers
+        <div className="pointer-events-auto absolute right-3 top-3 flex items-stretch gap-1 rounded-2xl border border-[#ffd23f]/40 bg-black/60 p-1 shadow-lg backdrop-blur-md sm:right-4 sm:top-4">
+          <button type="button" onClick={openPassengerManifest} className="group flex items-center gap-2 rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:gap-2.5 sm:px-3 sm:py-2">
+            <span className="text-lg transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 motion-reduce:transform-none sm:text-2xl">🚌</span>
+            <span>
+              <span className="flex items-center gap-1 sm:gap-2">
+                <span className="text-[8px] font-semibold uppercase tracking-[0.15em] text-[#ffd23f] sm:text-[10px]">
+                  Passagers
+                </span>
+                <span className="rounded-full bg-white/15 px-1 text-[8px] font-bold text-white/90 sm:px-1.5 sm:text-[9px]">
+                  {numRows} r.
+                </span>
               </span>
-              <span className="rounded-full bg-white/15 px-1 sm:px-1.5 py-0.2 text-[8px] sm:text-[9px] font-bold text-white/90">
-                {numRows} r.
+              <span className="block text-base font-black tabular-nums text-white sm:text-xl">
+                {effectiveCount.toLocaleString("fr-FR")}
               </span>
-            </div>
-            <div className="text-base sm:text-xl font-black tabular-nums text-white">
-              {effectiveCount.toLocaleString("fr-FR")}
-            </div>
+            </span>
           </button>
-          <button type="button" onClick={() => setShowTheoryAge(true)} className="rounded-r-lg border-l border-white/20 pl-2 text-left leading-tight transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] sm:pl-3" title="Voir le compteur précis depuis le 26 mai 2024">
-            <div className="text-[8px] sm:text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffd23f]">
+          <div className="my-1 w-px bg-white/20" aria-hidden="true" />
+          <button type="button" onClick={() => setShowTheoryAge(true)} className="rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:px-3 sm:py-2" title="Voir le compteur précis depuis le 26 mai 2024">
+            <span className="block text-[8px] font-semibold uppercase tracking-[0.12em] text-[#ffd23f] sm:text-[10px]">
               La théorie existe depuis
-            </div>
-            <div className="text-base sm:text-xl font-black tabular-nums text-white">
+            </span>
+            <span className="block text-base font-black tabular-nums text-white sm:text-xl">
               {theoryAgeInDays.toLocaleString("fr-FR")}
-              <span className="ml-1 text-[9px] sm:text-xs font-bold uppercase text-white/70">jours</span>
-            </div>
+              <span className="ml-1 text-[9px] font-bold uppercase text-white/70 sm:text-xs">jours</span>
+            </span>
           </button>
         </div>
 
@@ -841,26 +844,29 @@ export default function BusExperience() {
 
         {/* Navigation entre les rangées quand on est à l'intérieur */}
         {phase === "inside" && (
-          <div className="pointer-events-auto absolute top-[4.5rem] sm:top-20 right-3 sm:right-4 flex flex-col items-end gap-1.5 sm:gap-2">
+          <div className="pointer-events-auto absolute right-3 top-[5.5rem] flex flex-col items-end gap-1.5 sm:right-4 sm:top-[6.25rem] sm:gap-2">
             {/* Déplacement dans l'allée */}
-            <div className="flex items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-lg backdrop-blur-md">
+            <div className="flex h-10 items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-2.5 shadow-lg backdrop-blur-md sm:px-3">
               <button
                 type="button"
                 onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
                 disabled={seatRow <= 0}
-                className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer"
+                className="grid h-7 w-8 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer sm:w-9"
                 title="Rangée précédente"
               >
                 ◀
               </button>
-              <span className="px-1.5 sm:px-2 text-xs font-bold whitespace-nowrap">
-                Rangée <span className="text-[#ffd23f]">{seatRow + 1}</span>/{numRows}
+              <span className="flex h-7 items-center px-1.5 text-xs font-bold leading-none whitespace-nowrap sm:px-2">
+                <span>Rangée</span>
+                <span className="ml-1 text-[#ffd23f]">{seatRow + 1}</span>
+                <span className="mx-0.5 text-white/55">/</span>
+                <span>{numRows}</span>
               </span>
               <button
                 type="button"
                 onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
                 disabled={seatRow >= numRows - 1}
-                className="rounded-lg bg-white/10 px-2 sm:px-2.5 py-1 text-xs font-bold text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer"
+                className="grid h-7 w-8 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer sm:w-9"
                 title="Rangée suivante"
               >
                 ▶
@@ -884,11 +890,13 @@ export default function BusExperience() {
           <HudButton className="w-[104px] sm:w-[112px]" onClick={honk} icon="📯" disabled={busy || !controlsReady || !exteriorControlsVisible}>
             Klaxonner
           </HudButton>
-          <div className={`absolute bottom-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2 transition-[opacity,transform] duration-250 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none ${tvOn ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-1 opacity-0"}`}>
-            <HudButton className="w-[124px] sm:w-[132px]" onClick={() => setTvOn(false)} icon="📺" disabled={busy || !controlsReady || !tvOn || !exteriorControlsVisible}>
-              Éteindre la TV
-            </HudButton>
-          </div>
+          {tvOn && exteriorControlsVisible && (
+            <div className="absolute bottom-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2 animate-[hud-control-in_220ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none">
+              <HudButton className="w-[124px] sm:w-[132px]" onClick={() => setTvOn(false)} icon="📺" disabled={busy || !controlsReady}>
+                Éteindre la TV
+              </HudButton>
+            </div>
+          )}
           <HudButton className="w-[184px] sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={busy || joining || !controlsReady || !exteriorControlsVisible}>
             {joining || phase === "entering" ? "Installation…" : "Entrer dans le bus"}
           </HudButton>
@@ -896,30 +904,34 @@ export default function BusExperience() {
 
         <div
           aria-hidden={!interiorControlsVisible}
-          className={`absolute bottom-16 left-1/2 flex max-w-[95vw] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:max-w-3xl sm:gap-2 ${
+          className={`absolute bottom-16 left-1/2 flex w-[512px] max-w-[95vw] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:gap-2 ${
             interiorControlsVisible
               ? "pointer-events-auto translate-y-0 opacity-100"
               : "pointer-events-none translate-y-2 opacity-0"
           }`}
         >
-          <HudButton className="w-[150px] sm:w-[158px]" onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy || !controlsReady || !interiorControlsVisible}>
-            Ajouter un prénom
-          </HudButton>
-          <HudButton className="w-[172px] sm:w-[180px]" onClick={() => openProfileModal("comment")} icon="💬" disabled={busy || !controlsReady || !interiorControlsVisible}>
-            Mettre un commentaire
-          </HudButton>
-          <HudButton className="w-[130px] sm:w-[138px]" onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy || !controlsReady || !interiorControlsVisible}>
-            {tvOn ? "Éteindre la TV" : "Allumer la TV"}
-          </HudButton>
-          <HudButton className="w-[96px] sm:w-[108px]" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !controlsReady || !interiorControlsVisible}>
-            {headlights ? "Éteindre" : "Phares"}
-          </HudButton>
-          <HudButton className="w-[92px] sm:w-[100px]" onClick={honk} icon="📯" disabled={busy || !controlsReady || !interiorControlsVisible}>
-            Klaxon
-          </HudButton>
-          <HudButton className="w-[134px] sm:w-[142px]" onClick={exitBus} primary icon="🏝️" disabled={busy || !controlsReady || !interiorControlsVisible}>
-            {phase === "exiting" ? "Descente…" : "Sortir du bus"}
-          </HudButton>
+          <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2">
+            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy || !controlsReady || !interiorControlsVisible}>
+              Ajouter un prénom
+            </HudButton>
+            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("comment")} icon="💬" disabled={busy || !controlsReady || !interiorControlsVisible}>
+              Mettre un commentaire
+            </HudButton>
+          </div>
+          <div className="grid w-full grid-cols-4 items-center gap-1.5 sm:gap-2">
+            <HudButton className="min-w-0 w-full px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy || !controlsReady || !interiorControlsVisible}>
+              {tvOn ? "Éteindre la TV" : "Allumer la TV"}
+            </HudButton>
+            <HudButton className="min-w-0 w-full px-2" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !controlsReady || !interiorControlsVisible}>
+              {headlights ? "Éteindre" : "Phares"}
+            </HudButton>
+            <HudButton className="min-w-0 w-full px-2" onClick={honk} icon="📯" disabled={busy || !controlsReady || !interiorControlsVisible}>
+              Klaxon
+            </HudButton>
+            <HudButton className="min-w-0 w-full px-2" onClick={exitBus} primary icon="🏝️" disabled={busy || !controlsReady || !interiorControlsVisible}>
+              {phase === "exiting" ? "Descente…" : "Sortir du bus"}
+            </HudButton>
+          </div>
         </div>
         </div>
       )}
@@ -974,9 +986,11 @@ function ModalCloseButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label="Fermer"
-      className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 text-xl text-white transition hover:border-[#ffd23f] hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]"
+      className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 text-white transition-[background-color,border-color,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:scale-[1.03] hover:border-[#ffd23f] hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 motion-reduce:transform-none motion-reduce:transition-none"
     >
-      ×
+      <svg aria-hidden="true" className="block h-4 w-4" viewBox="0 0 16 16" fill="none">
+        <path d="M3.25 3.25 12.75 12.75M12.75 3.25 3.25 12.75" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
     </button>
   );
 }
@@ -1019,7 +1033,7 @@ function JoinBusModal({
 
   return (
     <div
-      className="fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#020617]/80 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#020617]/80 p-3 backdrop-blur-md sm:p-6"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
@@ -1029,10 +1043,10 @@ function JoinBusModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="join-bus-title"
-        className="my-auto w-full max-w-lg overflow-hidden rounded-[1.75rem] border border-[#ffd23f]/60 bg-[#081127] text-white shadow-[0_30px_90px_rgba(0,0,0,0.65)]"
+        className="my-auto w-full max-w-[34rem] overflow-hidden rounded-[1.5rem] border border-[#ffd23f]/60 bg-[#081127] text-white shadow-[0_30px_90px_rgba(0,0,0,0.65)]"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-white/10 bg-gradient-to-r from-[#102a75] to-[#081127] px-5 py-5 sm:px-7">
-          <div>
+        <div className="flex items-start justify-between gap-5 border-b border-white/10 bg-gradient-to-r from-[#102a75] to-[#081127] px-5 py-5 sm:px-6 sm:py-6">
+          <div className="min-w-0 flex-1">
             <div className="mb-2 inline-flex rounded-full bg-[#ffd23f] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#0a216f]">
               Ton profil de passager
             </div>
@@ -1051,7 +1065,7 @@ function JoinBusModal({
         </div>
 
         <form
-          className="space-y-5 px-5 py-6 sm:px-7"
+          className="space-y-5 px-5 py-5 sm:px-6 sm:py-6"
           onSubmit={(event) => {
             event.preventDefault();
             onSubmit();
@@ -1105,7 +1119,7 @@ function JoinBusModal({
             </p>
           )}
 
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+          <div className="grid gap-3 sm:grid-cols-2">
             <button
               type="submit"
               disabled={joining}
@@ -1297,12 +1311,13 @@ function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
       <section role="dialog" aria-modal="true" aria-labelledby="theory-age-title" className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[#ffd23f]/55 bg-[#081127]/96 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
         <header className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5 sm:px-6">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ffd23f]">Depuis le 26 mai 2024</p>
-            <h2 id="theory-age-title" className="mt-1 text-xl font-black sm:text-2xl">La théorie tient toujours</h2>
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ffd23f]">Première mention de la théorie</p>
+            <h2 id="theory-age-title" className="mt-1 text-xl font-black sm:text-2xl">26 mai 2024 <span className="text-[#b9c7e8]">· Le Mont Corvo</span></h2>
           </div>
           <ModalCloseButton onClick={onClose} />
         </header>
         <div className="p-5 sm:p-6">
+          <p className="mb-3 text-sm font-bold text-[#d8e3ff]">La théorie tient toujours depuis :</p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {values.map(([label, value]) => (
               <div key={label} className="rounded-xl border border-white/10 bg-white/[0.055] p-3 sm:p-4">
@@ -1312,7 +1327,7 @@ function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             ))}
           </div>
           <p className="mt-5 rounded-xl border border-[#ffd23f]/30 bg-[#ffd23f]/10 px-4 py-3 text-center text-sm font-black text-[#ffe88d]">
-            Toujours pas débunkée. Toujours pas contredite.
+            Toujours pas débunk.
           </p>
         </div>
       </section>

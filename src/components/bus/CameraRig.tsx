@@ -91,6 +91,10 @@ export default function CameraRig({
     if (phase === "entering") {
       saved.current.pos.copy(camera.position);
       if (controls.current) saved.current.target.copy(controls.current.target);
+      // La vue intérieure doit commencer avec la rangée d'arrivée déjà synchronisée.
+      // Sinon, la première image en phase `inside` repart brièvement vers l'ancienne
+      // rangée mémorisée avant de revenir vers la bonne place.
+      seatZRef.current = activeEyePos.z;
       a.from.copy(camera.position);
       a.fromQ.copy(camera.quaternion);
       a.to.copy(activeEyePos);
@@ -299,10 +303,9 @@ export default function CameraRig({
       const targetZ = currentSeatZ ?? SEAT_EYE.z;
       seatZRef.current += (targetZ - seatZRef.current) * Math.min(1, dt * 5.5);
 
-      const t = state.clock.elapsedTime;
       cam.position.set(
-        SEAT_EYE.x + Math.sin(t * 2.1) * 0.006,
-        SEAT_EYE.y + Math.sin(t * 9) * 0.012 + Math.sin(t * 2.3) * 0.008,
+        SEAT_EYE.x,
+        SEAT_EYE.y,
         seatZRef.current,
       );
     }

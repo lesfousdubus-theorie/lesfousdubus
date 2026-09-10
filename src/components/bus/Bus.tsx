@@ -482,8 +482,24 @@ export default function Bus({
   );
 
   const primaryIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const youtubePlayerStateRef = useRef(-1);
 
   const previousTvOn = useRef(false);
+
+  useEffect(() => {
+    const onYoutubeMessage = (event: MessageEvent) => {
+      if (!event.origin.endsWith("youtube.com") && !event.origin.endsWith("youtube-nocookie.com")) return;
+      try {
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        const state = data?.event === "onStateChange" ? data.info : data?.info?.playerState;
+        if (typeof state === "number") youtubePlayerStateRef.current = state;
+      } catch {
+        // Les autres messages du lecteur ne sont pas du JSON exploitable.
+      }
+    };
+    window.addEventListener("message", onYoutubeMessage);
+    return () => window.removeEventListener("message", onYoutubeMessage);
+  }, []);
 
   // La mise sous tension lance ou met en pause le lecteur. Une fois allumée,
   // lecture, pause, volume et plein écran restent contrôlés par l'interface YouTube.
@@ -495,6 +511,7 @@ export default function Bus({
     previousTvOn.current = tvOn;
 
     if (!tvOn || isMutedForFullscreen || !hasEntered) {
+      youtubePlayerStateRef.current = 2;
       if (iframe?.contentWindow) {
         try {
           iframe.contentWindow.postMessage(
@@ -517,6 +534,7 @@ export default function Bus({
     if (iframe?.contentWindow) {
       try {
         if (!wasOn) {
+          youtubePlayerStateRef.current = 1;
           iframe.contentWindow.postMessage(
             JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
             "*",
@@ -551,9 +569,15 @@ export default function Bus({
       const stretchBounce =
         sinceStretch < 0.9 ? Math.sin(sinceStretch * 20) * (0.9 - sinceStretch) * 0.05 : 0;
 
-      group.current.position.y =
-        (Math.sin(t * 8.5 * mult) * 0.014 + Math.sin(t * 2.1) * 0.008) * Math.min(1.4, Math.max(0.7, mult)) + stretchBounce;
-      group.current.rotation.z = Math.sin(t * 1.6 * mult) * 0.0035;
+      const cabinIsStable = phase === "inside" || phase === "entering";
+      const targetY = cabinIsStable
+        ? 0
+        : (Math.sin(t * 8.5 * mult) * 0.014 + Math.sin(t * 2.1) * 0.008)
+          * Math.min(1.4, Math.max(0.7, mult)) + stretchBounce;
+      const targetRoll = cabinIsStable ? 0 : Math.sin(t * 1.6 * mult) * 0.0035;
+      const settle = Math.min(1, dt * 10);
+      group.current.position.y += (targetY - group.current.position.y) * settle;
+      group.current.rotation.z += (targetRoll - group.current.rotation.z) * settle;
     }
 
     const rainStrength = worldRef.current?.weather === "rain"
@@ -639,7 +663,7 @@ export default function Bus({
               </mesh>
               {/* 2. Barbe Noire est Davy D. Jones (milieu gauche) */}
               <mesh
-                position={[sx * 1.352, 1.36, 0.0]}
+                position={[sx * 1.352, 1.27, 0.0]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
                 <planeGeometry args={[2.5, 0.44]} />
@@ -673,7 +697,7 @@ export default function Bus({
               {/* CÔTÉ DROIT (2 phrases grandes et artistiques) */}
               {/* 4. Les ponéglyphes viennent du futur (avant/milieu droit) */}
               <mesh
-                position={[sx * 1.352, 1.36, -1.5]}
+                position={[sx * 1.352, 1.27, -1.5]}
                 rotation={[0, Math.PI / 2, 0]}
               >
                 <planeGeometry args={[3.6, 0.44]} />
@@ -743,12 +767,12 @@ export default function Bus({
         <boxGeometry args={[2.3, 1.0, 0.02]} />
       </mesh>
       {/* Essuie-glaces */}
-      <group ref={leftWiper} position={[-0.55, 1.94, -4.66]} rotation={[0, 0, 0.58]}>
+      <group ref={leftWiper} position={[-0.55, 1.8, -4.66]} rotation={[0, 0, 0.58]}>
         <mesh material={mats.dark} position={[0, 0.31, 0]}>
           <boxGeometry args={[0.035, 0.62, 0.02]} />
         </mesh>
       </group>
-      <group ref={rightWiper} position={[0.55, 1.94, -4.66]} rotation={[0, 0, -0.58]}>
+      <group ref={rightWiper} position={[0.55, 1.8, -4.66]} rotation={[0, 0, -0.58]}>
         <mesh material={mats.dark} position={[0, 0.31, 0]}>
           <boxGeometry args={[0.035, 0.62, 0.02]} />
         </mesh>
@@ -790,7 +814,7 @@ export default function Bus({
           </mesh>
         ))}
         {/* Affiche à l'arrière du bus */}
-        <mesh position={[0, 2.3, -0.06]} rotation={[0, Math.PI, 0]}>
+        <mesh position={[0, 2.3, 0.06]}>
           <planeGeometry args={[1.8, 0.38]} />
           <meshStandardMaterial map={sideLabel} roughness={0.3} />
         </mesh>
@@ -1103,6 +1127,7 @@ export default function Bus({
         mats={mats}
         tvOffTex={tvOffTex}
         primaryIframeRef={primaryIframeRef}
+        youtubePlayerStateRef={youtubePlayerStateRef}
       />
       {tvPositions.slice(1).map((pos) => (
         <SecondaryTvUnit
@@ -1233,6 +1258,7 @@ interface BusTvUnitProps {
   mats: Record<string, THREE.Material>;
   tvOffTex: THREE.CanvasTexture;
   primaryIframeRef: React.RefObject<HTMLIFrameElement | null>;
+  youtubePlayerStateRef: React.RefObject<number>;
 }
 
 function BusTvUnit({
@@ -1246,6 +1272,7 @@ function BusTvUnit({
   mats,
   tvOffTex,
   primaryIframeRef,
+  youtubePlayerStateRef,
 }: BusTvUnitProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1307,20 +1334,19 @@ function BusTvUnit({
         <boxGeometry args={[0.16, 0.45, 0.16]} />
       </mesh>
 
-      {/* Écran TV éteint si tvOn === false : verre noir éteint, sans miniature ni texte */}
-      {!tvOn && (
-        <mesh position={[0, 0, 0.047]}>
-          <planeGeometry args={[1.26, 0.72]} />
-          <meshStandardMaterial
-            map={tvOffTex}
-            color="#080a10"
-            roughness={0.25}
-            metalness={0.8}
-            emissive="#000000"
-            emissiveIntensity={0}
-          />
-        </mesh>
-      )}
+      {/* Fond noir permanent : aucune couche bleue de la carrosserie ne transparaît
+          derrière l'iframe pendant son chargement ou ses changements d'occlusion. */}
+      <mesh position={[0, 0, 0.047]}>
+        <planeGeometry args={[1.26, 0.72]} />
+        <meshStandardMaterial
+          map={tvOn ? undefined : tvOffTex}
+          color="#05070b"
+          roughness={0.25}
+          metalness={tvOn ? 0 : 0.8}
+          emissive="#000000"
+          emissiveIntensity={0}
+        />
+      </mesh>
 
       {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels, reste chargé en mémoire) */}
       {isPrimary && (
@@ -1367,17 +1393,33 @@ function BusTvUnit({
               allowFullScreen
               onLoad={(event) => {
                 event.currentTarget.contentWindow?.postMessage(
+                  JSON.stringify({ event: "listening", id: "tv-primary-iframe" }),
+                  "*",
+                );
+                event.currentTarget.contentWindow?.postMessage(
                   JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
                   "*",
                 );
               }}
               style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden", pointerEvents: "auto" }}
             />
-            {/* La surface YouTube reste totalement interactive. Cette fine bordure haute,
-                hors des commandes du lecteur, réserve la molette au zoom de la caméra. */}
+            {/* Une iframe YouTube ne transmet pas la molette à la scène parente.
+                Le centre de l'image la convertit donc en zoom caméra et relaie son clic
+                au lecteur. Les commandes YouTube du haut et du bas restent directes. */}
             <div
               aria-hidden="true"
-              title="Molette : zoom de la caméra"
+              title="Molette : zoom caméra · Clic : lecture ou pause"
+              onClick={(event) => {
+                event.stopPropagation();
+                const iframe = primaryIframeRef.current;
+                if (!iframe?.contentWindow) return;
+                const shouldPause = youtubePlayerStateRef.current === 1;
+                youtubePlayerStateRef.current = shouldPause ? 2 : 1;
+                iframe.contentWindow.postMessage(
+                  JSON.stringify({ event: "command", func: shouldPause ? "pauseVideo" : "playVideo", args: [] }),
+                  "*",
+                );
+              }}
               onWheel={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -1385,10 +1427,9 @@ function BusTvUnit({
               }}
               style={{
                 position: "absolute",
-                inset: "0 0 auto 0",
-                height: 18,
+                inset: "54px 0 76px 0",
                 zIndex: 2,
-                cursor: "ns-resize",
+                cursor: "pointer",
                 background: "transparent",
               }}
             />

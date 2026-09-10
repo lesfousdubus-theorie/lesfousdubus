@@ -16,3 +16,14 @@ body {
   height: 100vh !important;
   background: #000;
 }
+
+@keyframes hud-control-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
