@@ -81,6 +81,7 @@ export default function BusExperience() {
   const [manifestNextFrom, setManifestNextFrom] = useState(0);
   const [manifestHasMore, setManifestHasMore] = useState(false);
   const [theoryAgeInDays] = useState(getTheoryAgeInDays);
+  const [controlsReady, setControlsReady] = useState(true);
 
   // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
   const [speedMultiplier, setSpeedMultiplier] = useState(() => {
@@ -124,6 +125,7 @@ export default function BusExperience() {
   const [manualDayNight, setManualDayNight] = useState<"day" | "night" | null>(null);
 
   const toastTimeout = useRef<NodeJS.Timeout | null>(null);
+  const controlsReadyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const worldRef = useRef<WorldState>({
     daylight: 1,
     timeOfDay: 0.2,
@@ -330,12 +332,9 @@ export default function BusExperience() {
 
   // Entrer immédiatement dans le bus : le profil reste entièrement facultatif.
   const enterBus = useCallback(async () => {
-    if (phase !== "outside") return;
+    if (phase !== "outside" || joining) return;
     setJoining(true);
     setHasEntered(true);
-    setPhase("entering");
-    setTvOn(true);
-    playDing();
 
     const visitorId = getOrCreateVisitorId();
 
@@ -376,7 +375,13 @@ export default function BusExperience() {
           d.passenger!,
         ]);
       }
+      setTvOn(true);
+      setPhase("entering");
+      playDing();
     } catch {
+      setTvOn(true);
+      setPhase("entering");
+      playDing();
       showToast(
         "Bienvenue à bord !",
         "Le compteur se resynchronisera dès que Cloudflare répondra.",
@@ -385,7 +390,7 @@ export default function BusExperience() {
     } finally {
       setJoining(false);
     }
-  }, [phase, count, showToast]);
+  }, [phase, joining, count, showToast]);
 
   const openProfileModal = useCallback((mode: "name" | "comment") => {
     try {
@@ -612,7 +617,20 @@ export default function BusExperience() {
     playDing();
   }, [phase]);
 
-  const onArrived = useCallback((p: "inside" | "outside") => setPhase(p), []);
+  const onArrived = useCallback((p: "inside" | "outside") => {
+    setPhase(p);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setControlsReady(true);
+      return;
+    }
+    setControlsReady(false);
+    if (controlsReadyTimeout.current) clearTimeout(controlsReadyTimeout.current);
+    controlsReadyTimeout.current = setTimeout(() => setControlsReady(true), 320);
+  }, []);
+
+  useEffect(() => () => {
+    if (controlsReadyTimeout.current) clearTimeout(controlsReadyTimeout.current);
+  }, []);
 
   const honk = useCallback(() => {
     playHorn();
@@ -659,6 +677,8 @@ export default function BusExperience() {
   const effectiveCount = count ?? 0;
   const numRows = computeNumRows(effectiveCount);
   const busy = phase === "entering" || phase === "exiting";
+  const exteriorControlsVisible = phase === "outside" || phase === "entering";
+  const interiorControlsVisible = phase === "inside" || phase === "exiting";
 
   return (
     <div className="fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
@@ -849,53 +869,57 @@ export default function BusExperience() {
           </div>
         )}
 
-        {/* Barre de boutons principale */}
+        {/* Barres persistantes : aucune commande ne se téléporte sous le pointeur. */}
         <div
-          className={`pointer-events-auto absolute flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 sm:max-w-2xl sm:gap-2 max-w-[95vw] ${
-            phase === "outside" || phase === "entering"
-              ? "bottom-3 left-1/2 sm:bottom-4 md:left-[calc(50%-4.75rem)]"
-              : "bottom-16 left-1/2"
+          aria-hidden={!exteriorControlsVisible}
+          className={`absolute bottom-3 left-1/2 flex max-w-[95vw] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-4 sm:max-w-3xl sm:gap-2 md:left-[calc(50%-4.75rem)] ${
+            exteriorControlsVisible
+              ? "pointer-events-auto translate-y-0 opacity-100"
+              : "pointer-events-none translate-y-2 opacity-0"
           }`}
         >
-          {phase === "outside" || phase === "entering" ? (
-            <>
-              <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
-                {headlights ? "Éteindre" : "Phares"}
-              </HudButton>
-              <HudButton onClick={honk} icon="📯" disabled={busy}>
-                Klaxonner
-              </HudButton>
-              {tvOn && (
-                <HudButton onClick={() => setTvOn(false)} icon="📺" disabled={busy}>
-                  Éteindre la TV
-                </HudButton>
-              )}
-              <HudButton onClick={() => void enterBus()} primary icon="🚪" disabled={busy || joining}>
-                {phase === "entering" ? "Installation…" : "Entrer dans le bus"}
-              </HudButton>
-            </>
-          ) : (
-            <>
-              <HudButton onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy}>
-                Ajouter un prénom
-              </HudButton>
-              <HudButton onClick={() => openProfileModal("comment")} icon="💬" disabled={busy}>
-                Mettre un commentaire
-              </HudButton>
-              <HudButton onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy}>
-                {tvOn ? "Éteindre la TV" : "Allumer la TV"}
-              </HudButton>
-              <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
-                {headlights ? "Éteindre" : "Phares"}
-              </HudButton>
-              <HudButton onClick={honk} icon="📯" disabled={busy}>
-                Klaxon
-              </HudButton>
-              <HudButton onClick={exitBus} primary icon="🏝️" disabled={busy}>
-                {phase === "exiting" ? "Descente…" : "Sortir du bus"}
-              </HudButton>
-            </>
-          )}
+          <HudButton className="w-[96px] sm:w-[108px]" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !controlsReady || !exteriorControlsVisible}>
+            {headlights ? "Éteindre" : "Phares"}
+          </HudButton>
+          <HudButton className="w-[104px] sm:w-[112px]" onClick={honk} icon="📯" disabled={busy || !controlsReady || !exteriorControlsVisible}>
+            Klaxonner
+          </HudButton>
+          <div className={`absolute bottom-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2 transition-[opacity,transform] duration-250 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none ${tvOn ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-1 opacity-0"}`}>
+            <HudButton className="w-[124px] sm:w-[132px]" onClick={() => setTvOn(false)} icon="📺" disabled={busy || !controlsReady || !tvOn || !exteriorControlsVisible}>
+              Éteindre la TV
+            </HudButton>
+          </div>
+          <HudButton className="w-[184px] sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={busy || joining || !controlsReady || !exteriorControlsVisible}>
+            {joining || phase === "entering" ? "Installation…" : "Entrer dans le bus"}
+          </HudButton>
+        </div>
+
+        <div
+          aria-hidden={!interiorControlsVisible}
+          className={`absolute bottom-16 left-1/2 flex max-w-[95vw] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:max-w-3xl sm:gap-2 ${
+            interiorControlsVisible
+              ? "pointer-events-auto translate-y-0 opacity-100"
+              : "pointer-events-none translate-y-2 opacity-0"
+          }`}
+        >
+          <HudButton className="w-[150px] sm:w-[158px]" onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            Ajouter un prénom
+          </HudButton>
+          <HudButton className="w-[172px] sm:w-[180px]" onClick={() => openProfileModal("comment")} icon="💬" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            Mettre un commentaire
+          </HudButton>
+          <HudButton className="w-[130px] sm:w-[138px]" onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            {tvOn ? "Éteindre la TV" : "Allumer la TV"}
+          </HudButton>
+          <HudButton className="w-[96px] sm:w-[108px]" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            {headlights ? "Éteindre" : "Phares"}
+          </HudButton>
+          <HudButton className="w-[92px] sm:w-[100px]" onClick={honk} icon="📯" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            Klaxon
+          </HudButton>
+          <HudButton className="w-[134px] sm:w-[142px]" onClick={exitBus} primary icon="🏝️" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            {phase === "exiting" ? "Descente…" : "Sortir du bus"}
+          </HudButton>
         </div>
         </div>
       )}
@@ -1258,14 +1282,14 @@ function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
-  const elapsedSeconds = Math.max(0, Math.floor((now - THEORY_START_DATE) / 1000));
+  const elapsed = getElapsedCalendarTime(THEORY_START_DATE, now);
   const values = [
-    ["Années", Math.floor(elapsedSeconds / 31_556_952)],
-    ["Mois", Math.floor(elapsedSeconds / 2_629_746)],
-    ["Jours", Math.floor(elapsedSeconds / 86_400)],
-    ["Heures", Math.floor(elapsedSeconds / 3_600)],
-    ["Minutes", Math.floor(elapsedSeconds / 60)],
-    ["Secondes", elapsedSeconds],
+    ["Années", elapsed.years],
+    ["Mois", elapsed.months],
+    ["Jours", elapsed.days],
+    ["Heures", elapsed.hours],
+    ["Minutes", elapsed.minutes],
+    ["Secondes", elapsed.seconds],
   ] as const;
 
   return (
@@ -1296,6 +1320,39 @@ function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   );
 }
 
+function getElapsedCalendarTime(startTimestamp: number, endTimestamp: number) {
+  const start = new Date(startTimestamp);
+  const end = new Date(Math.max(startTimestamp, endTimestamp));
+  let years = end.getUTCFullYear() - start.getUTCFullYear();
+  let cursor = new Date(startTimestamp);
+  cursor.setUTCFullYear(start.getUTCFullYear() + years);
+  if (cursor.getTime() > end.getTime()) {
+    years -= 1;
+    cursor = new Date(startTimestamp);
+    cursor.setUTCFullYear(start.getUTCFullYear() + years);
+  }
+
+  let months = (end.getUTCFullYear() - cursor.getUTCFullYear()) * 12
+    + end.getUTCMonth() - cursor.getUTCMonth();
+  const monthCursor = new Date(cursor);
+  monthCursor.setUTCMonth(cursor.getUTCMonth() + months);
+  if (monthCursor.getTime() > end.getTime()) {
+    months -= 1;
+    monthCursor.setTime(cursor.getTime());
+    monthCursor.setUTCMonth(cursor.getUTCMonth() + months);
+  }
+
+  let remainingSeconds = Math.floor((end.getTime() - monthCursor.getTime()) / 1000);
+  const days = Math.floor(remainingSeconds / 86_400);
+  remainingSeconds %= 86_400;
+  const hours = Math.floor(remainingSeconds / 3_600);
+  remainingSeconds %= 3_600;
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+
+  return { years, months, days, hours, minutes, seconds };
+}
+
 function HudButton({
   children,
   onClick,
@@ -1303,6 +1360,7 @@ function HudButton({
   primary,
   active,
   disabled,
+  className = "",
 }: {
   children: React.ReactNode;
   onClick: () => void;
@@ -1310,16 +1368,17 @@ function HudButton({
   primary?: boolean;
   active?: boolean;
   disabled?: boolean;
+  className?: string;
 }) {
   const base =
-    "pointer-events-auto inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer";
+    "pointer-events-auto inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer";
   const look = primary
     ? "bg-[#ffd23f] text-[#0d2190] hover:bg-[#ffe066] shadow-[0_5px_0_#b8860b] active:shadow-none active:translate-y-1"
     : active
       ? "bg-[#1636c9] text-white ring-2 ring-[#ffd23f] hover:bg-[#1d44e6]"
       : "bg-black/55 text-white border border-white/25 hover:bg-black/75 hover:border-[#ffd23f]/50";
   return (
-    <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${look}`}>
+    <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${look} ${className}`}>
       {icon && <span className="text-sm leading-none">{icon}</span>}
       {children}
     </button>

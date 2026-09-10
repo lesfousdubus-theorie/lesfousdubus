@@ -1373,17 +1373,23 @@ function BusTvUnit({
               }}
               style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden", pointerEvents: "auto" }}
             />
-            {/* La zone d'image laisse les gestes remonter à la caméra. La bande basse
-                reste libre afin que les commandes officielles YouTube soient cliquables. */}
+            {/* La surface YouTube reste totalement interactive. Cette fine bordure haute,
+                hors des commandes du lecteur, réserve la molette au zoom de la caméra. */}
             <div
               aria-hidden="true"
+              title="Molette : zoom de la caméra"
+              onWheel={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                window.dispatchEvent(new CustomEvent("bus-zoom", { detail: event.deltaY * 0.04 }));
+              }}
               style={{
                 position: "absolute",
-                inset: "0 0 58px 0",
+                inset: "0 0 auto 0",
+                height: 18,
                 zIndex: 2,
-                cursor: "grab",
+                cursor: "ns-resize",
                 background: "transparent",
-                touchAction: "none",
               }}
             />
           </div>
