@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { memo, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
@@ -349,7 +349,7 @@ interface PassengersProps {
   onPassengerSelect?: (passenger: PassengerProfile) => void;
 }
 
-export default function Passengers({
+function Passengers({
   passengerCount,
   numRows,
   hornPulse,
@@ -498,7 +498,13 @@ function Passenger({
       }
     >
       {profile && (
-        <Html center position={[0, 2.22, 0.14]} distanceFactor={7} zIndexRange={[40, 20]}>
+        <Html
+          center
+          occlude="raycast"
+          position={[0, 2.22, 0.14]}
+          distanceFactor={7}
+          zIndexRange={[40, 20]}
+        >
           <button
             type="button"
             onClick={(event) => {
@@ -640,6 +646,8 @@ function Passenger({
     </group>
   );
 }
+
+export default memo(Passengers);
 
 /** Styles de cheveux 3D manga */
 function HairStyle({

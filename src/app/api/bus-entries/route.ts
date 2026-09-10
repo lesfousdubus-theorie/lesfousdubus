@@ -132,13 +132,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (hasDisplayName && !displayName) {
-      return Response.json(
-        { error: "Choisis un nom à afficher dans le bus." },
-        { status: 400, headers: WRITE_HEADERS },
-      );
-    }
-
     const database = await getPassengerDatabase();
     const insertion = await database
       .prepare("INSERT OR IGNORE INTO bus_entries (visitor_id, display_name, comment) VALUES (?, ?, ?)")
@@ -154,12 +147,12 @@ export async function POST(request: Request) {
       if (hasDisplayName && hasComment) {
         await database
           .prepare("UPDATE bus_entries SET display_name = ?, comment = ? WHERE visitor_id = ?")
-          .bind(displayName, comment || null, visitorId)
+          .bind(displayName || null, comment || null, visitorId)
           .run();
       } else if (hasDisplayName) {
         await database
           .prepare("UPDATE bus_entries SET display_name = ? WHERE visitor_id = ?")
-          .bind(displayName, visitorId)
+          .bind(displayName || null, visitorId)
           .run();
       } else if (hasComment) {
         await database
@@ -177,9 +170,10 @@ export async function POST(request: Request) {
       .first<PassengerRow>();
     const count = await readPassengerCount(database);
     const passenger = passengerRow ? toPassengerProfile(passengerRow) : null;
+    const seatIndex = passengerRow ? Number(passengerRow.seat_index) : null;
 
     return Response.json(
-      { count, added, passenger },
+      { count, added, passenger, seatIndex },
       { headers: WRITE_HEADERS },
     );
   } catch (error) {

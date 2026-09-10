@@ -872,45 +872,41 @@ export default function Bus({
               color={headlights ? "#f0f8ff" : "#8ab0d8"}
               emissive={headlights ? "#e1f2ff" : "#447098"}
               emissiveIntensity={headlights ? 4.0 : 0.2}
-              toneMapped={!headlights}
+              toneMapped={false}
             />
           </mesh>
 
-          {/* Faisceaux de phares quand allumés */}
-          {headlights && (
-            <>
-              <spotLight
-                ref={(sl: THREE.SpotLight | null) => {
-                  if (sl) {
-                    const tgt = i === 0 ? leftTarget.current : rightTarget.current;
-                    if (tgt) sl.target = tgt;
-                  }
-                }}
-                color="#eaf4ff"
-                intensity={260}
-                distance={85}
-                angle={0.42}
-                penumbra={0.65}
-                decay={1.5}
-                position={[0, 0, -0.1]}
-                castShadow={false}
-              />
-              {/* Cône volumétrique lumineux */}
-              <mesh position={[0, -0.3, -10]} rotation={[-Math.PI / 2 - 0.03, 0, 0]}>
-                <coneGeometry args={[2.8, 20, 32, 1, true]} />
-                <meshBasicMaterial
-                  color="#b8e2ff"
-                  transparent
-                  opacity={0.08}
-                  side={THREE.DoubleSide}
-                  depthWrite={false}
-                  blending={THREE.AdditiveBlending}
-                />
-              </mesh>
-              {/* Lueur d'appoint au sol */}
-              <pointLight color="#d6ecff" intensity={8} distance={8} decay={1.8} />
-            </>
-          )}
+          {/* Les faisceaux restent montés : seul leur intensité change, pour éviter
+              une recompilation des shaders et le micro-gel au clic. */}
+          <spotLight
+            ref={(sl: THREE.SpotLight | null) => {
+              if (sl) {
+                const tgt = i === 0 ? leftTarget.current : rightTarget.current;
+                if (tgt) sl.target = tgt;
+              }
+            }}
+            color="#eaf4ff"
+            intensity={headlights ? 260 : 0}
+            distance={85}
+            angle={0.42}
+            penumbra={0.65}
+            decay={1.5}
+            position={[0, 0, -0.1]}
+            castShadow={false}
+          />
+          <mesh position={[0, -0.3, -10]} rotation={[-Math.PI / 2 - 0.03, 0, 0]}>
+            <coneGeometry args={[2.8, 20, 32, 1, true]} />
+            <meshBasicMaterial
+              color="#b8e2ff"
+              transparent
+              opacity={headlights ? 0.08 : 0}
+              side={THREE.DoubleSide}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
+            />
+          </mesh>
+          <pointLight color="#d6ecff" intensity={headlights ? 8 : 0} distance={8} decay={1.8} />
         </group>
       ))}
 

@@ -136,9 +136,10 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                     Le concept du site
                   </div>
                   <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#e8f5ff] sm:text-[15px]">
-                    Ce site est un projet créé pour le fun autour de la théorie du Mont Corvo.
-                    Ici, on ne se contente pas de dire qu&apos;on y croit : on monte réellement dans
-                    le bus. Chaque nouveau passager rejoint le compteur et agrandit le convoi.
+                    La théorie du Mont Corvo est une véritable lecture de One Piece, présentée ici
+                    dans une expérience créée pour le fun. On monte réellement dans le bus pour la
+                    suivre, la défendre ou la découvrir. Chaque passager rejoint le compteur et
+                    agrandit le convoi.
                   </p>
                 </div>
                 <span className="shrink-0 rounded-full border border-[#7dd3fc]/60 bg-[#07131f] px-4 py-2 text-xs font-black uppercase text-[#a5e4ff]">
@@ -149,7 +150,11 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
               {/* Une seule introduction avant le détail des 22 points. */}
               <section className="space-y-4 rounded-2xl border border-[#ffd23f]/45 border-l-4 border-l-[#ffd23f] bg-[#171a19] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.2)] sm:p-7 lg:p-8">
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#ffd23f] text-xl text-[#101621]" aria-hidden="true">⚡</span>
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#ffd23f] text-[#071b5b] shadow-[inset_0_0_0_1px_rgba(7,27,91,0.22)]" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current" focusable="false">
+                      <path d="M13.2 2 5.5 13.1h5.1L9.8 22l8.7-12.5h-5.2L13.2 2Z" />
+                    </svg>
+                  </span>
                   <span className="rounded-full bg-[#ffd23f] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#0d2190] sm:text-xs">
                     L&apos;idée centrale
                   </span>
@@ -176,6 +181,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                       <p className="text-sm italic leading-relaxed text-[#eef1f5]">« {q.text} »</p>
                       <footer className="mt-4 border-t border-white/20 pt-3 text-xs font-bold text-[#ffd23f]">
                         {q.author} <span className="font-normal text-white/75">· {q.chapter}</span>
+                        <span className="mt-1.5 block font-semibold leading-relaxed text-[#cbd8ee]">{q.relevance}</span>
                       </footer>
                     </blockquote>
                   ))}

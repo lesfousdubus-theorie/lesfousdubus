@@ -413,6 +413,7 @@ export default function BusExperience() {
       const data = (await response.json()) as {
         count: number;
         passenger: PassengerProfile | null;
+        seatIndex: number | null;
       };
 
       try {
@@ -447,6 +448,57 @@ export default function BusExperience() {
       setJoining(false);
     }
   }, [joinComment, joinName, profileModalMode, showToast]);
+
+  const removeProfileField = useCallback(async () => {
+    setJoining(true);
+    setJoinError("");
+    try {
+      const visitorId = getOrCreateVisitorId();
+      const payload =
+        profileModalMode === "name"
+          ? { visitorId, displayName: "" }
+          : { visitorId, comment: "" };
+      const response = await fetch("/api/bus-entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error("Profile removal failed");
+      const data = (await response.json()) as {
+        count: number;
+        passenger: PassengerProfile | null;
+        seatIndex: number | null;
+      };
+
+      try {
+        localStorage.removeItem(profileModalMode === "name" ? "fdb-display-name" : "fdb-comment");
+      } catch {
+        // La suppression D1 reste valide même si le stockage local est bloqué.
+      }
+
+      setPassengerProfiles((profiles) => {
+        if (data.seatIndex === null) return profiles;
+        const others = profiles.filter((profile) => profile.seatIndex !== data.seatIndex);
+        return data.passenger ? [...others, data.passenger] : others;
+      });
+      if (profileModalMode === "name") setJoinName("");
+      else setJoinComment("");
+      setCount(data.count);
+      setShowJoinModal(false);
+      showToast(
+        profileModalMode === "name" ? "Prénom retiré" : "Commentaire retiré",
+        profileModalMode === "name"
+          ? "Tu gardes ta place dans le bus, sans étiquette publique."
+          : "Ton prénom reste affiché, mais ton message a été supprimé.",
+        "✓ PROFIL",
+      );
+    } catch {
+      setJoinError("Impossible de supprimer pour le moment. Réessaie dans quelques instants.");
+    } finally {
+      setJoining(false);
+    }
+  }, [profileModalMode, showToast]);
 
   const openPassengerCard = useCallback(async (summary: PassengerProfile) => {
     setSelectedPassenger(summary);
@@ -537,7 +589,7 @@ export default function BusExperience() {
         isMutedForFullscreen={false}
         hasEntered={hasEntered}
         passengerProfiles={passengerProfiles}
-        onPassengerSelect={(passenger) => void openPassengerCard(passenger)}
+        onPassengerSelect={openPassengerCard}
         modeOverride={manualDayNight}
       />
 
@@ -774,6 +826,7 @@ export default function BusExperience() {
         onCommentChange={setJoinComment}
         onClose={() => setShowJoinModal(false)}
         onSubmit={() => void submitProfile()}
+        onRemove={() => void removeProfileField()}
       />
       <PassengerCard
         passenger={selectedPassenger}
@@ -809,6 +862,7 @@ function JoinBusModal({
   onCommentChange,
   onClose,
   onSubmit,
+  onRemove,
 }: {
   isOpen: boolean;
   mode: "name" | "comment";
@@ -820,6 +874,7 @@ function JoinBusModal({
   onCommentChange: (value: string) => void;
   onClose: () => void;
   onSubmit: () => void;
+  onRemove: () => void;
 }) {
   useEffect(() => {
     if (!isOpen) return;
@@ -852,7 +907,9 @@ function JoinBusModal({
               Ton profil de passager
             </div>
             <h2 id="join-bus-title" className="text-2xl font-black leading-tight sm:text-3xl">
-              {mode === "name" ? "Ajoute ton prénom" : "Laisse un commentaire"}
+              {mode === "name"
+                ? name.trim() ? "Modifie ton prénom" : "Ajoute ton prénom"
+                : comment.trim() ? "Modifie ton commentaire" : "Laisse un commentaire"}
             </h2>
             <p className="mt-1.5 text-sm leading-relaxed text-[#d8e3ff]">
               {mode === "name"
@@ -918,14 +975,24 @@ function JoinBusModal({
               : "Ton commentaire restera dans Cloudflare et ne sera chargé que lorsqu’un visiteur clique sur ton personnage."}
           </p>
 
-          <button
-            type="submit"
-            disabled={joining}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#ffd23f] px-5 py-3.5 text-base font-black text-[#09216d] shadow-[0_5px_0_#a87500] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none disabled:cursor-wait disabled:opacity-65"
-          >
-            <span aria-hidden="true">{mode === "name" ? "🏷️" : "💬"}</span>
-            {joining ? "Enregistrement…" : "Enregistrer"}
-          </button>
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+            <button
+              type="submit"
+              disabled={joining}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#ffd23f] px-5 py-3 text-base font-black text-[#09216d] shadow-[0_5px_0_#a87500] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none disabled:cursor-wait disabled:opacity-65"
+            >
+              <span aria-hidden="true">{mode === "name" ? "🏷️" : "💬"}</span>
+              {joining ? "Enregistrement…" : "Enregistrer"}
+            </button>
+            <button
+              type="button"
+              disabled={joining}
+              onClick={onRemove}
+              className="min-h-12 rounded-xl border border-red-300/45 bg-red-950/35 px-4 py-3 text-sm font-black text-red-100 transition hover:border-red-200 hover:bg-red-900/55 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-200 disabled:cursor-wait disabled:opacity-65"
+            >
+              {mode === "name" ? "Retirer mon prénom" : "Retirer mon commentaire"}
+            </button>
+          </div>
         </form>
       </section>
     </div>
@@ -980,7 +1047,13 @@ function PassengerCard({
 
         <div className="mt-5 rounded-2xl border border-white/12 bg-white/[0.07] p-4">
           {loading ? (
-            <p className="animate-pulse text-sm font-semibold text-[#d8e3ff]">Chargement de son message…</p>
+            <div className="flex min-h-16 items-center gap-3" role="status" aria-live="polite">
+              <span
+                aria-hidden="true"
+                className="h-7 w-7 shrink-0 animate-spin rounded-full border-2 border-[#d8e3ff]/25 border-t-[#ffd23f] motion-reduce:animate-none"
+              />
+              <p className="text-sm font-semibold text-[#d8e3ff]">Chargement de son message…</p>
+            </div>
           ) : error ? (
             <p role="alert" className="text-sm font-semibold text-red-200">{error}</p>
           ) : (

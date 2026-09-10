@@ -73,16 +73,19 @@ export const CENTRAL_THESIS = {
       author: "Gol D. Roger",
       chapter: "Chapitre 967",
       text: "Joy Boy, j'aurais vraiment aimé vivre à la même époque que toi… Quel trésor extraordinaire tu as laissé là ! C'est une histoire tellement drôle !",
+      relevance: "Roger est arrivé trop tôt : la bonne époque n'existait pas encore.",
     },
     {
       author: "Silvers Rayleigh",
       chapter: "Chapitre 507",
       text: "Nous avons appris toute l'histoire du monde… Mais vous et nous sommes peut-être allés trop vite. Vous arriverez peut-être à une conclusion différente de la nôtre.",
+      relevance: "L'équipage de Roger connaissait l'histoire, sans pouvoir encore l'accomplir.",
     },
     {
       author: "Docteur Vegapunk",
       chapter: "Chapitre 1113",
       text: "Ce monde… va sombrer dans l'océan !",
+      relevance: "Cette annonce soutient le déluge futur provoqué par la guerre finale.",
     },
   ],
 };
@@ -589,7 +592,7 @@ export const THEORY_FAQ: FAQItem[] = [
   {
     question: "Quel est le but de ce site ?",
     answer:
-      "Le but est de transformer la blague du « bus de la théorie » en expérience interactive. En cliquant pour entrer, le visiteur monte réellement dans le bus, rejoint le compteur partagé et fait grandir le véhicule. La télévision permet ensuite de regarder la vidéo complète du Mont Corvo à bord.",
+      "Le but est de donner vie à une véritable théorie de One Piece dans une expérience interactive créée pour le fun. En cliquant pour entrer, le visiteur monte réellement dans le bus, rejoint le compteur partagé et fait grandir le véhicule. La télévision permet ensuite de regarder la vidéo complète du Mont Corvo à bord.",
   },
   {
     question: "Pourquoi un bus qui s'allonge en direct ?",
