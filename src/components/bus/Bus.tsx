@@ -11,7 +11,12 @@ import {
   makeLicensePlateTexture,
   makeTvScreenTexture,
 } from "@/lib/textures";
-import { TV_POSITION, YOUTUBE_ID, type WorldState } from "./constants";
+import {
+  TV_POSITION,
+  YOUTUBE_ID,
+  type PassengerProfile,
+  type WorldState,
+} from "./constants";
 import Passengers, { computeNumRows } from "./Passengers";
 
 interface BusProps {
@@ -25,6 +30,8 @@ interface BusProps {
   reservedRow?: number;
   isMutedForFullscreen?: boolean;
   hasEntered?: boolean;
+  passengerProfiles?: PassengerProfile[];
+  onPassengerSelect?: (passenger: PassengerProfile) => void;
 }
 
 const BLUE = "#154ddb";
@@ -44,6 +51,8 @@ export default function Bus({
   reservedRow = 3,
   isMutedForFullscreen = false,
   hasEntered = false,
+  passengerProfiles = [],
+  onPassengerSelect,
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
   const hat = useRef<THREE.Group>(null);
@@ -816,7 +825,7 @@ export default function Bus({
         <mesh material={mats.chrome} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.26, 0.26, 0.025, 32]} />
         </mesh>
-        {/* Fond sombre de l'emblème puis logo réduit pour ne pas être rogné par le disque. */}
+        {/* Fond sombre rond puis logo complet, ajusté dans le diamètre intérieur. */}
         <mesh position={[0, 0, -0.018]} rotation={[0, Math.PI, 0]}>
           <circleGeometry args={[0.24, 32]} />
           <meshStandardMaterial
@@ -827,7 +836,7 @@ export default function Bus({
           />
         </mesh>
         <mesh position={[0, 0, -0.033]} rotation={[0, Math.PI, 0]}>
-          <planeGeometry args={[0.36, 0.36]} />
+          <planeGeometry args={[0.334, 0.334]} />
           <meshStandardMaterial map={montCorvoTex} roughness={0.2} metalness={0.1} />
         </mesh>
       </group>
@@ -1035,6 +1044,8 @@ export default function Bus({
         numRows={numRows}
         hornPulse={hornPulse}
         reservedRow={phase === "inside" || phase === "entering" ? reservedRow : -1}
+        passengerProfiles={passengerProfiles}
+        onPassengerSelect={onPassengerSelect}
       />
 
       {/* Poste de conduite avec volant et tableau de bord */}

@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Scene from "./bus/Scene";
 import { computeNumRows } from "./bus/Passengers";
-import { type Phase, type WorldState } from "./bus/constants";
+import { type PassengerProfile, type Phase, type WorldState } from "./bus/constants";
 import { playDing, playHorn, playStretch, playBoost } from "@/lib/horn";
 
 const TheoryModal = dynamic(() => import("./TheoryModal"), { ssr: false });
@@ -18,6 +18,16 @@ interface ToastMessage {
 
 const THEORY_START_DATE = Date.UTC(2024, 4, 26);
 const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
+
+function getOrCreateVisitorId(): string {
+  try {
+    const visitorId = localStorage.getItem("fdb-visitor") ?? crypto.randomUUID();
+    localStorage.setItem("fdb-visitor", visitorId);
+    return visitorId;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
 
 function getTheoryAgeInDays(): number {
   const today = new Date();
@@ -47,6 +57,16 @@ export default function BusExperience() {
     return false;
   });
   const [showTheoryModal, setShowTheoryModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [profileModalMode, setProfileModalMode] = useState<"name" | "comment">("name");
+  const [joinName, setJoinName] = useState("");
+  const [joinComment, setJoinComment] = useState("");
+  const [joinError, setJoinError] = useState("");
+  const [joining, setJoining] = useState(false);
+  const [passengerProfiles, setPassengerProfiles] = useState<PassengerProfile[]>([]);
+  const [selectedPassenger, setSelectedPassenger] = useState<PassengerProfile | null>(null);
+  const [passengerCardLoading, setPassengerCardLoading] = useState(false);
+  const [passengerCardError, setPassengerCardError] = useState("");
   const [theoryAgeInDays] = useState(getTheoryAgeInDays);
 
   // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
@@ -168,6 +188,27 @@ export default function BusExperience() {
       .catch(() => setCount(0));
   }, []);
 
+  // Seuls les profils proches de la caméra sont chargés : le compteur peut ainsi
+  // grandir sans télécharger des milliers de commentaires à chaque actualisation.
+  useEffect(() => {
+    if (count === null) return;
+    const focusRow = phase === "inside" ? seatRow : 0;
+    const from = Math.max(0, (focusRow - 4) * 4);
+    const controller = new AbortController();
+
+    fetch(`/api/bus-entries?profiles=1&from=${from}&limit=48`, {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((data: { passengers?: PassengerProfile[] }) => {
+        setPassengerProfiles(data.passengers ?? []);
+      })
+      .catch(() => undefined);
+
+    return () => controller.abort();
+  }, [count, phase, seatRow]);
+
   // Synchronisation en direct, ralentie et suspendue quand l'onglet est masqué.
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -274,21 +315,16 @@ export default function BusExperience() {
     };
   }, []);
 
-  // Entrer dans le bus : enregistre ce visiteur une seule fois dans D1 et allume la TV
+  // Entrer immédiatement dans le bus : le profil reste entièrement facultatif.
   const enterBus = useCallback(async () => {
     if (phase !== "outside") return;
+    setJoining(true);
     setHasEntered(true);
     setPhase("entering");
     setTvOn(true);
     playDing();
 
-    let visitorId = "";
-    try {
-      visitorId = localStorage.getItem("fdb-visitor") ?? crypto.randomUUID();
-      localStorage.setItem("fdb-visitor", visitorId);
-    } catch {
-      visitorId = crypto.randomUUID();
-    }
+    const visitorId = getOrCreateVisitorId();
 
     try {
       const r = await fetch("/api/bus-entries", {
@@ -299,7 +335,11 @@ export default function BusExperience() {
       });
       if (!r.ok) throw new Error("Passenger registration failed");
 
-      const d = (await r.json()) as { count: number; added: boolean };
+      const d = (await r.json()) as {
+        count: number;
+        added: boolean;
+        passenger: PassengerProfile | null;
+      };
       const prevRows = computeNumRows(count ?? 0);
       const nextRows = computeNumRows(d.count);
 
@@ -312,14 +352,115 @@ export default function BusExperience() {
         showToast("Bienvenue à bord !", "Tu es maintenant assis dans le bus !", "🎉 NAKAMA");
       }
       setCount(d.count);
+      if (d.passenger) {
+        setPassengerProfiles((profiles) => [
+          ...profiles.filter((profile) => profile.seatIndex !== d.passenger!.seatIndex),
+          d.passenger!,
+        ]);
+        setSeatRow(Math.min(computeNumRows(d.count) - 1, Math.floor(d.passenger.seatIndex / 4)));
+      }
     } catch {
       showToast(
         "Bienvenue à bord !",
         "Le compteur se resynchronisera dès que Cloudflare répondra.",
         "⏳ SYNCHRO",
       );
+    } finally {
+      setJoining(false);
     }
   }, [phase, count, showToast]);
+
+  const openProfileModal = useCallback((mode: "name" | "comment") => {
+    try {
+      setJoinName(localStorage.getItem("fdb-display-name") ?? "");
+      setJoinComment(localStorage.getItem("fdb-comment") ?? "");
+    } catch {
+      setJoinName("");
+      setJoinComment("");
+    }
+    setProfileModalMode(mode);
+    setJoinError("");
+    setShowJoinModal(true);
+  }, []);
+
+  const submitProfile = useCallback(async () => {
+    const name = joinName.replace(/\s+/g, " ").trim();
+    const comment = joinComment.replace(/\s+/g, " ").trim();
+    if (profileModalMode === "name" && !name) {
+      setJoinError("Choisis un nom à afficher au-dessus de ton personnage.");
+      return;
+    }
+    if (profileModalMode === "comment" && !comment) {
+      setJoinError("Écris un petit message avant de l’enregistrer.");
+      return;
+    }
+
+    setJoining(true);
+    setJoinError("");
+    try {
+      const visitorId = getOrCreateVisitorId();
+      const payload =
+        profileModalMode === "name"
+          ? { visitorId, displayName: name }
+          : { visitorId, comment };
+      const response = await fetch("/api/bus-entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error("Profile update failed");
+      const data = (await response.json()) as {
+        count: number;
+        passenger: PassengerProfile | null;
+      };
+
+      try {
+        if (profileModalMode === "name") localStorage.setItem("fdb-display-name", name);
+        if (profileModalMode === "comment") localStorage.setItem("fdb-comment", comment);
+      } catch {
+        // L'enregistrement D1 reste valide même si le stockage local est bloqué.
+      }
+      if (data.passenger) {
+        setPassengerProfiles((profiles) => [
+          ...profiles.filter((profile) => profile.seatIndex !== data.passenger!.seatIndex),
+          data.passenger!,
+        ]);
+      }
+      setCount(data.count);
+      setShowJoinModal(false);
+      showToast(
+        profileModalMode === "name" ? "Prénom ajouté !" : "Message enregistré !",
+        profileModalMode === "name"
+          ? "Il apparaît maintenant au-dessus de ton personnage."
+          : "Il sera visible lorsqu’on cliquera sur ton personnage.",
+        "✅ PROFIL",
+      );
+    } catch {
+      setJoinError("Impossible d’enregistrer pour le moment. Réessaie dans quelques instants.");
+    } finally {
+      setJoining(false);
+    }
+  }, [joinComment, joinName, profileModalMode, showToast]);
+
+  const openPassengerCard = useCallback(async (summary: PassengerProfile) => {
+    setSelectedPassenger(summary);
+    setPassengerCardError("");
+    setPassengerCardLoading(true);
+
+    try {
+      const response = await fetch(`/api/bus-entries?seat=${summary.seatIndex}`, {
+        cache: "no-store",
+      });
+      if (!response.ok) throw new Error("Passenger unavailable");
+      const data = (await response.json()) as { passenger: PassengerProfile };
+      setSelectedPassenger(data.passenger);
+    } catch {
+      setPassengerCardError("Impossible de charger ce message pour le moment.");
+    } finally {
+      setPassengerCardLoading(false);
+    }
+  }, []);
 
   // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
   const exitBus = useCallback(() => {
@@ -390,11 +531,13 @@ export default function BusExperience() {
         currentSeatRow={seatRow}
         isMutedForFullscreen={false}
         hasEntered={hasEntered}
+        passengerProfiles={passengerProfiles}
+        onPassengerSelect={(passenger) => void openPassengerCard(passenger)}
         modeOverride={manualDayNight}
       />
 
       {/* ---------- HUD & INTERFACE UTILISATEUR (GARANTI TOUJOURS AU PREMIER PLAN Z-INDEX) ---------- */}
-      {!showTheoryModal && (
+      {!showTheoryModal && !showJoinModal && !selectedPassenger && (
         <div
           className="pointer-events-none fixed inset-0 isolate select-none"
           style={{ zIndex: 2147483647 }}
@@ -456,7 +599,7 @@ export default function BusExperience() {
           </div>
           <div className="border-l border-white/20 pl-2 sm:pl-3 leading-tight" title="La théorie existe depuis le 26 mai 2024">
             <div className="text-[8px] sm:text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffd23f]">
-              Théorie depuis
+              La théorie existe depuis
             </div>
             <div className="text-base sm:text-xl font-black tabular-nums text-white">
               {theoryAgeInDays.toLocaleString("fr-FR")}
@@ -563,7 +706,7 @@ export default function BusExperience() {
         )}
 
         {/* Barre de boutons principale */}
-        <div className="pointer-events-auto absolute bottom-16 md:bottom-6 left-1/2 flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 max-w-[95vw] sm:max-w-xl">
+        <div className="pointer-events-auto absolute bottom-16 left-1/2 flex -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 sm:max-w-2xl sm:gap-2 max-w-[95vw]">
           {phase === "outside" || phase === "entering" ? (
             <>
               <HudButton onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy}>
@@ -577,12 +720,18 @@ export default function BusExperience() {
                   Éteindre la TV
                 </HudButton>
               )}
-              <HudButton onClick={enterBus} primary icon="🚪" disabled={busy}>
+              <HudButton onClick={() => void enterBus()} primary icon="🚪" disabled={busy || joining}>
                 {phase === "entering" ? "Installation…" : "Entrer dans le bus"}
               </HudButton>
             </>
           ) : (
             <>
+              <HudButton onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy}>
+                Ajouter un prénom
+              </HudButton>
+              <HudButton onClick={() => openProfileModal("comment")} icon="💬" disabled={busy}>
+                Mettre un commentaire
+              </HudButton>
               <HudButton onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy}>
                 {tvOn ? "Éteindre la TV" : "Allumer la TV"}
               </HudButton>
@@ -603,6 +752,233 @@ export default function BusExperience() {
 
       {/* Modal interactif complet de la théorie des Fous du Bus */}
       <TheoryModal isOpen={showTheoryModal} onClose={() => setShowTheoryModal(false)} />
+      <JoinBusModal
+        isOpen={showJoinModal}
+        mode={profileModalMode}
+        name={joinName}
+        comment={joinComment}
+        error={joinError}
+        joining={joining}
+        onNameChange={setJoinName}
+        onCommentChange={setJoinComment}
+        onClose={() => setShowJoinModal(false)}
+        onSubmit={() => void submitProfile()}
+      />
+      <PassengerCard
+        passenger={selectedPassenger}
+        loading={passengerCardLoading}
+        error={passengerCardError}
+        onClose={() => setSelectedPassenger(null)}
+      />
+    </div>
+  );
+}
+
+function ModalCloseButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Fermer"
+      className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 text-xl text-white transition hover:border-[#ffd23f] hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]"
+    >
+      ×
+    </button>
+  );
+}
+
+function JoinBusModal({
+  isOpen,
+  mode,
+  name,
+  comment,
+  error,
+  joining,
+  onNameChange,
+  onCommentChange,
+  onClose,
+  onSubmit,
+}: {
+  isOpen: boolean;
+  mode: "name" | "comment";
+  name: string;
+  comment: string;
+  error: string;
+  joining: boolean;
+  onNameChange: (value: string) => void;
+  onCommentChange: (value: string) => void;
+  onClose: () => void;
+  onSubmit: () => void;
+}) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#020617]/80 p-4 backdrop-blur-md"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="join-bus-title"
+        className="my-auto w-full max-w-lg overflow-hidden rounded-[1.75rem] border border-[#ffd23f]/60 bg-[#081127] text-white shadow-[0_30px_90px_rgba(0,0,0,0.65)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-white/10 bg-gradient-to-r from-[#102a75] to-[#081127] px-5 py-5 sm:px-7">
+          <div>
+            <div className="mb-2 inline-flex rounded-full bg-[#ffd23f] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#0a216f]">
+              Ton profil de passager
+            </div>
+            <h2 id="join-bus-title" className="text-2xl font-black leading-tight sm:text-3xl">
+              {mode === "name" ? "Ajoute ton prénom" : "Laisse un commentaire"}
+            </h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-[#d8e3ff]">
+              {mode === "name"
+                ? "Il sera affiché au-dessus de ton personnage dans le bus."
+                : "Partage un petit mot sur la théorie avec les autres passagers."}
+            </p>
+          </div>
+          <ModalCloseButton onClick={onClose} />
+        </div>
+
+        <form
+          className="space-y-5 px-5 py-6 sm:px-7"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSubmit();
+          }}
+        >
+          {mode === "name" ? (
+            <label className="block">
+              <span className="mb-2 flex items-center justify-between gap-3 text-sm font-black text-white">
+                Nom ou pseudo <span className="text-xs font-semibold text-[#ffd23f]">24 caractères max.</span>
+              </span>
+              <input
+                autoFocus
+                required
+                maxLength={24}
+                value={name}
+                onChange={(event) => onNameChange(event.target.value)}
+                placeholder="Ex. NakamaBasque"
+                className="w-full select-text rounded-xl border border-white/20 bg-black/25 px-4 py-3 text-base text-white outline-none placeholder:text-[#9aabd2] focus:border-[#ffd23f] focus:ring-2 focus:ring-[#ffd23f]/25"
+              />
+            </label>
+          ) : (
+            <label className="block">
+              <span className="mb-2 flex items-center justify-between gap-3 text-sm font-black text-white">
+                Ton message <span className="text-xs font-semibold text-[#ffd23f]">180 caractères max.</span>
+              </span>
+              <textarea
+                autoFocus
+                required
+                maxLength={180}
+                rows={4}
+                value={comment}
+                onChange={(event) => onCommentChange(event.target.value)}
+                placeholder="Ex. Trop bien, vive la théorie !"
+                className="w-full resize-none select-text rounded-xl border border-white/20 bg-black/25 px-4 py-3 text-base leading-relaxed text-white outline-none placeholder:text-[#9aabd2] focus:border-[#ffd23f] focus:ring-2 focus:ring-[#ffd23f]/25"
+              />
+              <span className="mt-1.5 block text-right text-xs font-semibold tabular-nums text-[#aebde0]">
+                {comment.length}/180
+              </span>
+            </label>
+          )}
+
+          {error && (
+            <p role="alert" className="rounded-xl border border-red-400/50 bg-red-950/60 px-3.5 py-2.5 text-sm font-bold text-red-100">
+              {error}
+            </p>
+          )}
+
+          <p className="text-xs leading-relaxed text-[#aebde0]">
+            {mode === "name"
+              ? "Ton nom sera visible publiquement dans le bus."
+              : "Ton commentaire restera dans Cloudflare et ne sera chargé que lorsqu’un visiteur clique sur ton personnage."}
+          </p>
+
+          <button
+            type="submit"
+            disabled={joining}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#ffd23f] px-5 py-3.5 text-base font-black text-[#09216d] shadow-[0_5px_0_#a87500] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none disabled:cursor-wait disabled:opacity-65"
+          >
+            <span aria-hidden="true">{mode === "name" ? "🏷️" : "💬"}</span>
+            {joining ? "Enregistrement…" : "Enregistrer"}
+          </button>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function PassengerCard({
+  passenger,
+  loading,
+  error,
+  onClose,
+}: {
+  passenger: PassengerProfile | null;
+  loading: boolean;
+  error: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!passenger) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose, passenger]);
+
+  if (!passenger) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/70 p-4 backdrop-blur-sm"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="passenger-name"
+        className="w-full max-w-md rounded-[1.5rem] border border-[#ffd23f]/65 bg-[#081127] p-5 text-white shadow-[0_25px_80px_rgba(0,0,0,0.65)] sm:p-6"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#ffd23f]">Passager du bus</p>
+            <h2 id="passenger-name" className="mt-1 break-words text-2xl font-black leading-tight">
+              {passenger.displayName}
+            </h2>
+          </div>
+          <ModalCloseButton onClick={onClose} />
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-white/12 bg-white/[0.07] p-4">
+          {loading ? (
+            <p className="animate-pulse text-sm font-semibold text-[#d8e3ff]">Chargement de son message…</p>
+          ) : error ? (
+            <p role="alert" className="text-sm font-semibold text-red-200">{error}</p>
+          ) : (
+            <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-[#eef3ff]">
+              {passenger.comment || "Ce passager n’a pas laissé de message."}
+            </p>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

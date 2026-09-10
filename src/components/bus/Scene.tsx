@@ -8,7 +8,12 @@ import DayNight from "./DayNight";
 import Weather from "./Weather";
 import CameraRig from "./CameraRig";
 import { computeNumRows } from "./Passengers";
-import { DEFAULT_CAMERA_POS, type Phase, type WorldState } from "./constants";
+import {
+  DEFAULT_CAMERA_POS,
+  type PassengerProfile,
+  type Phase,
+  type WorldState,
+} from "./constants";
 
 interface SceneProps {
   phase: Phase;
@@ -22,6 +27,8 @@ interface SceneProps {
   currentSeatRow?: number;
   isMutedForFullscreen?: boolean;
   hasEntered?: boolean;
+  passengerProfiles?: PassengerProfile[];
+  onPassengerSelect?: (passenger: PassengerProfile) => void;
   modeOverride?: "day" | "night" | null;
 }
 
@@ -56,6 +63,8 @@ export default function Scene({
   currentSeatRow = 3,
   isMutedForFullscreen = false,
   hasEntered = false,
+  passengerProfiles = [],
+  onPassengerSelect,
   modeOverride,
 }: SceneProps) {
   const lowPower = useMemo(() => {
@@ -97,6 +106,8 @@ export default function Scene({
           reservedRow={clampedRow}
           isMutedForFullscreen={isMutedForFullscreen}
           hasEntered={hasEntered}
+          passengerProfiles={passengerProfiles}
+          onPassengerSelect={onPassengerSelect}
         />
       </Suspense>
       <World worldRef={worldRef} />

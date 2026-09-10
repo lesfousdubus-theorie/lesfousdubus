@@ -3,6 +3,8 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
+import type { PassengerProfile } from "./constants";
 
 export interface NakamaArchetype {
   id: string;
@@ -343,6 +345,8 @@ interface PassengersProps {
   numRows: number;
   hornPulse: number;
   reservedRow?: number;
+  passengerProfiles?: PassengerProfile[];
+  onPassengerSelect?: (passenger: PassengerProfile) => void;
 }
 
 export default function Passengers({
@@ -350,6 +354,8 @@ export default function Passengers({
   numRows,
   hornPulse,
   reservedRow = 3,
+  passengerProfiles = [],
+  onPassengerSelect,
 }: PassengersProps) {
   const seats = useMemo(() => getSeatPositions(numRows, reservedRow), [numRows, reservedRow]);
 
@@ -372,6 +378,10 @@ export default function Passengers({
     if (remaining.length <= 160) return remaining;
     return Array.from({ length: 160 }, (_, i) => remaining[Math.floor((i * remaining.length) / 160)]);
   }, [detailed, occupiedSeats]);
+  const profilesBySeatIndex = useMemo(
+    () => new Map(passengerProfiles.map((profile) => [profile.seatIndex, profile])),
+    [passengerProfiles],
+  );
 
   return (
     <group>
@@ -385,6 +395,8 @@ export default function Passengers({
             index={index}
             archetype={archetype}
             hornPulse={hornPulse}
+            profile={profilesBySeatIndex.get(index)}
+            onSelect={onPassengerSelect}
           />
         );
       })}
@@ -426,11 +438,15 @@ function Passenger({
   index,
   archetype,
   hornPulse,
+  profile,
+  onSelect,
 }: {
   seat: SeatInfo;
   index: number;
   archetype: NakamaArchetype;
   hornPulse: number;
+  profile?: PassengerProfile;
+  onSelect?: (passenger: PassengerProfile) => void;
 }) {
   const group = useRef<THREE.Group>(null);
   const headGroup = useRef<THREE.Group>(null);
@@ -469,7 +485,33 @@ function Passenger({
   });
 
   return (
-    <group ref={group} position={[seat.x, 0, seat.z]}>
+    <group
+      ref={group}
+      position={[seat.x, 0, seat.z]}
+      onClick={
+        profile
+          ? (event: { stopPropagation: () => void }) => {
+              event.stopPropagation();
+              onSelect?.(profile);
+            }
+          : undefined
+      }
+    >
+      {profile && (
+        <Html center position={[0, 2.22, 0.14]} distanceFactor={7} zIndexRange={[40, 20]}>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onSelect?.(profile);
+            }}
+            className="pointer-events-auto max-w-36 cursor-pointer truncate rounded-full border border-[#ffd23f]/80 bg-[#071027]/90 px-2.5 py-1 text-[11px] font-black tracking-wide text-white shadow-[0_3px_12px_rgba(0,0,0,0.55)] backdrop-blur-sm transition hover:border-white hover:bg-[#1636c9] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            title={`Voir le message de ${profile.displayName}`}
+          >
+            {profile.displayName}
+          </button>
+        </Html>
+      )}
       {/* ---------- JAMBES ASSISES & PIEDS ---------- */}
       {/* Bassin posé sur le coussin du siège */}
       <mesh material={mats.pants} position={[0, 1.15, 0.12]}>

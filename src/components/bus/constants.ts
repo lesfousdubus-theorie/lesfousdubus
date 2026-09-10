@@ -3,6 +3,12 @@ import * as THREE from "three";
 export type Phase = "outside" | "entering" | "inside" | "exiting";
 export type WeatherType = "clear" | "rain" | "snow";
 
+export interface PassengerProfile {
+  seatIndex: number;
+  displayName: string;
+  comment: string | null;
+}
+
 /** Position des yeux quand on est assis dans le bus (siège côté droit, 4e rangée). */
 export const SEAT_EYE = new THREE.Vector3(0.72, 2.02, 1.15);
 /** Point regardé à l'arrivée dans le bus : la TV. */

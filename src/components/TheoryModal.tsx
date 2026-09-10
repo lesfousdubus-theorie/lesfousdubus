@@ -86,7 +86,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                 La Théorie des Fous du Bus
               </h2>
               <p className="mt-1 truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 sm:text-xs">
-                Le Siècle Oublié est le Présent <span className="hidden sm:inline">· Dossier Officiel</span>
+                Le Siècle Oublié est le Présent
               </p>
             </div>
           </div>
@@ -167,9 +167,6 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
 
               {/* Citations clés du manga */}
               <div>
-                <h4 className="mb-4 text-sm font-black uppercase tracking-[0.08em] text-white/80">
-                  Les indices canoniques cités
-                </h4>
                 <div className="grid gap-3 sm:grid-cols-3">
                   {CENTRAL_THESIS.quotes.map((q, idx) => (
                     <blockquote
@@ -186,44 +183,60 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
               </div>
 
               <section>
-                <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-                  <div>
-                    <div className="text-xs font-black uppercase tracking-[0.12em] text-[#ffd23f]">
-                      La transcription complète
+                <div className="hidden items-start gap-3 sm:grid sm:grid-cols-2">
+                  {[0, 1].map((column) => (
+                    <div key={column} className="flex flex-col gap-3">
+                      {FULL_THEORY_SECTIONS.map((section, idx) => {
+                        if (idx % 2 !== column) return null;
+                        return (
+                          <details
+                            key={section.title}
+                            className="group rounded-xl border border-white/20 bg-[#101827] p-4 transition hover:border-white/35 hover:bg-[#142033] open:border-[#ffd23f]/60 open:bg-[#1c1d19] sm:p-5"
+                          >
+                            <summary className="flex min-h-11 cursor-pointer list-none items-start gap-3 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1220]">
+                              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050912] text-lg shadow-inner shadow-white/5">
+                                {section.icon}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-[11px] font-black uppercase tracking-wider text-[#9ba9bc]">
+                                  Étape {idx + 1}
+                                </span>
+                                <span className="mt-0.5 block text-sm font-bold leading-snug text-white group-open:text-[#ffd23f]">
+                                  {section.title}
+                                </span>
+                              </span>
+                              <span className="mt-2 text-sm text-[#ffd23f] transition-transform group-open:rotate-180" aria-hidden="true">
+                                ▼
+                              </span>
+                            </summary>
+                            <p className="mt-4 border-t border-white/20 pt-4 text-sm leading-7 text-[#e4e9f0]">
+                              {section.summary}
+                            </p>
+                          </details>
+                        );
+                      })}
                     </div>
-                    <h4 className="mt-1 text-xl font-black text-white sm:text-2xl">
-                      La théorie en 22 étapes
-                    </h4>
-                  </div>
-                  <span className="text-xs font-semibold text-white/75">Touchez une étape pour lire son résumé</span>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {FULL_THEORY_SECTIONS.map((section, idx) => (
-                    <details
-                      key={section.title}
-                      className="group rounded-xl border border-white/20 bg-[#101827] p-4 transition hover:border-white/35 hover:bg-[#142033] open:border-[#ffd23f]/60 open:bg-[#1c1d19] sm:p-5"
-                    >
-                      <summary className="flex min-h-11 cursor-pointer list-none items-start gap-3 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1220]">
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050912] text-lg shadow-inner shadow-white/5">
-                          {section.icon}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-[11px] font-black uppercase tracking-wider text-[#9ba9bc]">
-                            Étape {idx + 1}
-                          </span>
-                          <span className="mt-0.5 block text-sm font-bold leading-snug text-white group-open:text-[#ffd23f]">
-                            {section.title}
-                          </span>
-                        </span>
-                        <span className="mt-2 text-sm text-[#ffd23f] transition-transform group-open:rotate-180" aria-hidden="true">
-                          ▼
-                        </span>
-                      </summary>
-                      <p className="mt-4 border-t border-white/20 pt-4 text-sm leading-7 text-[#e4e9f0]">
-                        {section.summary}
-                      </p>
-                    </details>
                   ))}
+                </div>
+                <div className="flex flex-col gap-3 sm:hidden">
+                    {FULL_THEORY_SECTIONS.map((section, idx) => {
+                      return (
+                        <details
+                          key={section.title}
+                          className="group rounded-xl border border-white/20 bg-[#101827] p-4 transition hover:border-white/35 hover:bg-[#142033] open:border-[#ffd23f]/60 open:bg-[#1c1d19]"
+                        >
+                          <summary className="flex min-h-11 cursor-pointer list-none items-start gap-3 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">
+                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050912] text-lg">{section.icon}</span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-[11px] font-black uppercase tracking-wider text-[#9ba9bc]">Étape {idx + 1}</span>
+                              <span className="mt-0.5 block text-sm font-bold leading-snug text-white group-open:text-[#ffd23f]">{section.title}</span>
+                            </span>
+                            <span className="mt-2 text-sm text-[#ffd23f] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+                          </summary>
+                          <p className="mt-4 border-t border-white/20 pt-4 text-sm leading-7 text-[#e4e9f0]">{section.summary}</p>
+                        </details>
+                      );
+                    })}
                 </div>
               </section>
             </div>
@@ -241,13 +254,6 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
                     Vidéo fondatrice de la théorie
                   </span>
                 </div>
-                <h3 className="text-base sm:text-lg font-black text-[#ffd23f]">
-                  Démonstration Vidéo : Le Siècle Oublié est le Présent par Le Mont Corvo
-                </h3>
-                <p className="mt-1 text-xs sm:text-sm text-white/80">
-                  Découvrez la vidéo complète et passionnante du Mont Corvo qui a lancé la grande théorie des Fous du Bus. Une démonstration magistrale reliant les mystères de Joy Boy, Laugh Tale, les Ponéglyphes et le destin de Luffy.
-                </p>
-
                 {/* Iframe vidéo YouTube */}
                 <div className="mt-4 aspect-video w-full overflow-hidden rounded-xl border border-white/20 bg-black">
                   <iframe
@@ -280,9 +286,6 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
           {/* 3. ONGLET FAQ & ORIGINE */}
           {activeTab === "faq" && (
             <div className="mx-auto max-w-[920px] space-y-3">
-              <p className="mb-5 text-sm leading-relaxed text-white/85 sm:text-[15px]">
-                Origine du site, raison d&apos;être du convoi animé et réponses aux questions fondamentales sur la théorie des Fous du Bus.
-              </p>
               {THEORY_FAQ.map((faq, idx) => (
                 <details
                   key={idx}
@@ -307,10 +310,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose }: TheoryM
         </div>
 
         {/* Pied de page du modal */}
-        <div className="flex min-h-14 items-center justify-between gap-3 border-t border-white/15 bg-[#070c16]/95 px-5 py-2.5 text-[11px] text-white/75 sm:px-7 sm:text-xs lg:px-9">
-          <div>
-            Site officiel : <span className="text-[#ffd23f] font-bold">lesfousdubus.sbs</span>
-          </div>
+        <div className="flex min-h-14 items-center justify-end border-t border-white/15 bg-[#070c16]/95 px-5 py-2.5 sm:px-7 lg:px-9">
           <button
             type="button"
             onClick={handleClose}
@@ -350,7 +350,13 @@ function TabButton({
           : "border-white/15 bg-white/[0.035] text-white/80 hover:border-white/30 hover:bg-white/[0.09] hover:text-white"
       }`}
     >
-      <span className="text-sm sm:text-base" aria-hidden="true">{icon}</span>
+      {icon === "⚡" ? (
+        <svg className="h-4 w-4 shrink-0 text-current" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M13.2 2 4.8 13.1h6.1L9.8 22l9.4-12.3h-6.4L13.2 2Z" />
+        </svg>
+      ) : (
+        <span className="text-sm sm:text-base" aria-hidden="true">{icon}</span>
+      )}
       <span className="sm:hidden">{shortLabel}</span>
       <span className="hidden sm:inline">{label}</span>
     </button>

@@ -8,6 +8,7 @@ export interface CloudflareD1Result {
 export interface CloudflareD1PreparedStatement {
   bind(...values: unknown[]): CloudflareD1PreparedStatement;
   first<T = Record<string, unknown>>(): Promise<T | null>;
+  all<T = Record<string, unknown>>(): Promise<{ results: T[] }>;
   run(): Promise<CloudflareD1Result>;
 }
 

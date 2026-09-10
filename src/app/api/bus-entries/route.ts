@@ -1,5 +1,6 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { CloudflareD1Database } from "@/types/cloudflare";
+import type { PassengerProfile } from "@/components/bus/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -23,17 +24,84 @@ async function getPassengerDatabase(): Promise<CloudflareD1Database> {
 
 async function readPassengerCount(database: CloudflareD1Database): Promise<number> {
   const row = await database
-    .prepare("SELECT COUNT(*) AS count FROM bus_entries")
+    .prepare("SELECT passenger_count AS count FROM bus_stats WHERE id = 1")
     .first<{ count: number }>();
 
   return Number(row?.count ?? 0);
 }
 
-export async function GET() {
+interface PassengerRow {
+  seat_index: number;
+  display_name: string | null;
+  comment: string | null;
+}
+
+function toPassengerProfile(row: PassengerRow, includeComment = false): PassengerProfile | null {
+  if (!row.display_name) return null;
+  return {
+    seatIndex: Number(row.seat_index),
+    displayName: row.display_name,
+    comment: includeComment ? row.comment || null : null,
+  };
+}
+
+function cleanText(value: unknown, maxLength: number) {
+  if (typeof value !== "string") return "";
+  return value.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
+
+export async function GET(request: Request) {
   try {
     const database = await getPassengerDatabase();
-    const count = await readPassengerCount(database);
+    const url = new URL(request.url);
+    const seatParam = url.searchParams.get("seat");
 
+    if (seatParam !== null) {
+      const seatIndex = Number.parseInt(seatParam, 10);
+      if (!Number.isSafeInteger(seatIndex) || seatIndex < 0) {
+        return Response.json(
+          { error: "Passager invalide." },
+          { status: 400, headers: WRITE_HEADERS },
+        );
+      }
+
+      const row = await database
+        .prepare(
+          `SELECT rowid - 1 AS seat_index, display_name, comment
+           FROM bus_entries
+           WHERE rowid = ? AND display_name IS NOT NULL`,
+        )
+        .bind(seatIndex + 1)
+        .first<PassengerRow>();
+      const passenger = row ? toPassengerProfile(row, true) : null;
+
+      return passenger
+        ? Response.json({ passenger }, { headers: WRITE_HEADERS })
+        : Response.json({ error: "Passager introuvable." }, { status: 404, headers: WRITE_HEADERS });
+    }
+
+    const wantsProfiles = url.searchParams.get("profiles") === "1";
+
+    if (wantsProfiles) {
+      const from = Math.max(0, Number.parseInt(url.searchParams.get("from") ?? "0", 10) || 0);
+      const limit = Math.min(48, Math.max(1, Number.parseInt(url.searchParams.get("limit") ?? "32", 10) || 32));
+      const rows = await database
+        .prepare(
+          `SELECT rowid - 1 AS seat_index, display_name, NULL AS comment
+           FROM bus_entries
+           WHERE rowid > ? AND rowid <= ? AND display_name IS NOT NULL
+           ORDER BY rowid ASC`,
+        )
+        .bind(from, from + limit)
+        .all<PassengerRow>();
+      const passengers = rows.results
+        .map((row) => toPassengerProfile(row))
+        .filter((profile): profile is PassengerProfile => profile !== null);
+
+      return Response.json({ passengers }, { headers: WRITE_HEADERS });
+    }
+
+    const count = await readPassengerCount(database);
     return Response.json({ count }, { headers: READ_HEADERS });
   } catch (error) {
     console.error("GET /api/bus-entries error:", error);
@@ -46,8 +114,16 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { visitorId?: unknown };
+    const body = (await request.json()) as {
+      visitorId?: unknown;
+      displayName?: unknown;
+      comment?: unknown;
+    };
     const visitorId = typeof body.visitorId === "string" ? body.visitorId.trim() : "";
+    const hasDisplayName = Object.prototype.hasOwnProperty.call(body, "displayName");
+    const hasComment = Object.prototype.hasOwnProperty.call(body, "comment");
+    const displayName = cleanText(body.displayName, 24);
+    const comment = cleanText(body.comment, 180);
 
     if (!/^[a-zA-Z0-9-]{8,128}$/.test(visitorId)) {
       return Response.json(
@@ -56,15 +132,54 @@ export async function POST(request: Request) {
       );
     }
 
+    if (hasDisplayName && !displayName) {
+      return Response.json(
+        { error: "Choisis un nom à afficher dans le bus." },
+        { status: 400, headers: WRITE_HEADERS },
+      );
+    }
+
     const database = await getPassengerDatabase();
     const insertion = await database
-      .prepare("INSERT OR IGNORE INTO bus_entries (visitor_id) VALUES (?)")
-      .bind(visitorId)
+      .prepare("INSERT OR IGNORE INTO bus_entries (visitor_id, display_name, comment) VALUES (?, ?, ?)")
+      .bind(
+        visitorId,
+        hasDisplayName ? displayName : null,
+        hasComment ? comment || null : null,
+      )
       .run();
+    const added = (insertion.meta.changes ?? 0) > 0;
+
+    if (!added) {
+      if (hasDisplayName && hasComment) {
+        await database
+          .prepare("UPDATE bus_entries SET display_name = ?, comment = ? WHERE visitor_id = ?")
+          .bind(displayName, comment || null, visitorId)
+          .run();
+      } else if (hasDisplayName) {
+        await database
+          .prepare("UPDATE bus_entries SET display_name = ? WHERE visitor_id = ?")
+          .bind(displayName, visitorId)
+          .run();
+      } else if (hasComment) {
+        await database
+          .prepare("UPDATE bus_entries SET comment = ? WHERE visitor_id = ?")
+          .bind(comment || null, visitorId)
+          .run();
+      }
+    }
+
+    const passengerRow = await database
+      .prepare(
+        "SELECT rowid - 1 AS seat_index, display_name, NULL AS comment FROM bus_entries WHERE visitor_id = ?",
+      )
+      .bind(visitorId)
+      .first<PassengerRow>();
     const count = await readPassengerCount(database);
+    const passenger = passengerRow ? toPassengerProfile(passengerRow) : null;
 
     return Response.json(
-      { count, added: (insertion.meta.changes ?? 0) > 0 },
+      { count, added, passenger },
       { headers: WRITE_HEADERS },
     );
   } catch (error) {
