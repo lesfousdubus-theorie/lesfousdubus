@@ -817,7 +817,7 @@ export default function Bus({
           <cylinderGeometry args={[0.26, 0.26, 0.025, 32]} />
         </mesh>
         {/* Disque avec le logo pirate Le Mont Corvo */}
-        <mesh position={[0, 0, -0.018]}>
+        <mesh position={[0, 0, -0.018]} rotation={[0, Math.PI, 0]}>
           <circleGeometry args={[0.24, 32]} />
           <meshStandardMaterial
             map={montCorvoTex}
