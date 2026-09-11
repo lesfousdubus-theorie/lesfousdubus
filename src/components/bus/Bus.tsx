@@ -1326,7 +1326,10 @@ function BusTvUnit({
     // 2. Détection d'orientation : l'écran fait face à l'arrière du bus (+Z)
     // Si la caméra est située en avant de l'écran (z < pos[2] + 0.04), on regarde le dos de la TV.
     // La vidéo DOIT être totalement masquée par le dos de la TV et le support au plafond !
-    const isBehindTv = camera.position.z < (pos[2] + 0.04);
+    // À l'intérieur, le déplacement/zoom de la caméra peut franchir brièvement
+    // ce plan pendant une transition. Ne jamais masquer alors l'iframe : sinon
+    // YouTube continue à jouer et l'utilisateur n'entend plus que le son.
+    const isBehindTv = phase !== "inside" && camera.position.z < (pos[2] + 0.04);
     if (isBehindTv) {
       if (containerRef.current.style.visibility !== "hidden") {
         containerRef.current.style.visibility = "hidden";
@@ -1386,7 +1389,9 @@ function BusTvUnit({
       {isPrimary && (
         <Html
           transform
-          occlude={tvOn && !isMutedForFullscreen ? "blending" : undefined}
+          // Le masque reste monté en permanence afin que l'iframe YouTube ne
+          // change jamais de couche DOM quand la TV est éteinte puis rallumée.
+          occlude="blending"
           zIndexRange={[10, 0]}
           geometry={<planeGeometry args={[1.26, 0.71]} />}
           distanceFactor={400}
@@ -1440,10 +1445,19 @@ function BusTvUnit({
                 height: "100%",
                 backfaceVisibility: "hidden",
                 pointerEvents: "auto",
-                // Recouvre à l'intérieur les éventuels sous-pixels du masque 3D :
-                // le bord reste noir pendant une rotation au lieu de révéler le bus bleu.
-                outline: "2px solid #000000",
-                outlineOffset: "-2px",
+              }}
+            />
+            {/* Filet séparé de l'iframe : modifier directement le contour d'une
+                vidéo transformée en 3D peut produire une couche noire dans Chrome. */}
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 3,
+                boxSizing: "border-box",
+                border: "2px solid #000000",
+                pointerEvents: "none",
               }}
             />
             {/* Une iframe YouTube ne transmet pas la molette à la scène parente.
