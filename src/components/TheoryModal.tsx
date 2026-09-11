@@ -14,9 +14,11 @@ interface TheoryModalProps {
   onLeaveBusPermanently?: () => Promise<boolean>;
 }
 
+type TheoryTab = "thesis" | "video" | "faq" | "participate";
+
 export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBusPermanently }: TheoryModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"thesis" | "video" | "faq">("thesis");
+  const [activeTab, setActiveTab] = useState<TheoryTab>("thesis");
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [leaveError, setLeaveError] = useState("");
@@ -46,7 +48,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
   // Écoute de l'événement global pour ouvrir le modal depuis n'importe quel composant
   useEffect(() => {
     const handleOpenEvent = (e: Event) => {
-      const customEvent = e as CustomEvent<{ tab?: "thesis" | "video" | "faq" }>;
+      const customEvent = e as CustomEvent<{ tab?: TheoryTab }>;
       if (customEvent.detail?.tab) {
         setActiveTab(customEvent.detail.tab);
       }
@@ -138,6 +140,13 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
             icon="❓"
             label="FAQ & Origine"
             shortLabel="FAQ"
+          />
+          <TabButton
+            active={activeTab === "participate"}
+            onClick={() => setActiveTab("participate")}
+            icon="🤝"
+            label="Participer au site"
+            shortLabel="Participer"
           />
         </div>
 
@@ -326,6 +335,40 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
                   </div>
                 </details>
               ))}
+            </div>
+          )}
+
+          {/* 4. ONGLET PARTICIPER */}
+          {activeTab === "participate" && (
+            <div className="mx-auto max-w-[760px]">
+              <section className="rounded-2xl border border-[#ffd23f]/35 bg-[#101827] p-6 text-center shadow-[0_18px_50px_rgba(0,0,0,0.22)] sm:p-9">
+                <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-[#ffd23f]/35 bg-[#ffd23f]/10 text-2xl" aria-hidden="true">
+                  🛠️
+                </span>
+                <p className="mt-5 text-xs font-black uppercase tracking-[0.16em] text-[#ffd23f]">
+                  Le bus se construit avec sa communauté
+                </p>
+                <h3 className="mt-2 text-2xl font-black text-white sm:text-3xl">
+                  Participer au site
+                </h3>
+                <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#dce5f5] sm:text-[15px]">
+                  Une idée, une amélioration ou un bug à signaler ? Le code du site est disponible
+                  sur GitHub. Tu peux consulter le projet, proposer une modification ou ouvrir une
+                  discussion pour aider le bus à avancer.
+                </p>
+                <a
+                  href="https://github.com/lesfousdubus-theorie/lesfousdubus"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#ffd23f] px-5 py-3 text-sm font-black text-[#0d2190] shadow-[0_5px_0_#a87500] transition hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white active:translate-y-1 active:shadow-none"
+                >
+                  <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.23c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.74-1.55-2.57-.29-5.28-1.29-5.28-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.16 1.18A11 11 0 0 1 12 6.09c.98 0 1.95.13 2.87.39 2.19-1.49 3.16-1.18 3.16-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.41-2.71 5.39-5.29 5.68.42.36.79 1.07.79 2.16v3.25c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z" />
+                  </svg>
+                  Ouvrir le projet sur GitHub
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </section>
             </div>
           )}
         </div>
