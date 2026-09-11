@@ -41,6 +41,13 @@ const YELLOW = "#ffbf18";
 const CHROME = "#eaf0fa";
 const DARK = "#12141a";
 
+function disableYoutubeCaptions(iframe: HTMLIFrameElement | null) {
+  iframe?.contentWindow?.postMessage(
+    JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
+    "*",
+  );
+}
+
 export default function Bus({
   headlights,
   hornPulse,
@@ -509,6 +516,7 @@ export default function Bus({
     const iframe = primaryIframeRef.current;
     const wasOn = previousTvOn.current;
     previousTvOn.current = tvOn;
+    const captionTimers: number[] = [];
 
     if (!tvOn || isMutedForFullscreen || !hasEntered) {
       youtubePlayerStateRef.current = 2;
@@ -535,9 +543,13 @@ export default function Bus({
       try {
         if (!wasOn) {
           youtubePlayerStateRef.current = 1;
-          iframe.contentWindow.postMessage(
-            JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
-            "*",
+          // Le paramètre cc_load_policy ne suffit pas si YouTube restaure la
+          // préférence du visiteur. On réapplique donc l'état sans sous-titres
+          // après le démarrage réel du lecteur, quand l'API accepte la commande.
+          disableYoutubeCaptions(iframe);
+          captionTimers.push(
+            window.setTimeout(() => disableYoutubeCaptions(iframe), 250),
+            window.setTimeout(() => disableYoutubeCaptions(iframe), 900),
           );
           iframe.contentWindow.postMessage(
             JSON.stringify({ event: "command", func: "unMute", args: [] }),
@@ -552,6 +564,8 @@ export default function Bus({
         // ignore
       }
     }
+
+    return () => captionTimers.forEach((timer) => window.clearTimeout(timer));
   }, [tvOn, isMutedForFullscreen, hasEntered]);
 
   // Cibles fixes pour les projecteurs de phares
@@ -1355,10 +1369,9 @@ function BusTvUnit({
         <boxGeometry args={[0.16, 0.45, 0.16]} />
       </mesh>
 
-      {/* Fond noir permanent : aucune couche bleue de la carrosserie ne transparaît
-          derrière l'iframe pendant son chargement ou ses changements d'occlusion. */}
+      {/* Fond de l'écran, limité à l'ouverture réelle du cadre. */}
       <mesh position={[0, 0, 0.047]}>
-        <planeGeometry args={[1.3, 0.76]} />
+        <planeGeometry args={[1.26, 0.72]} />
         <meshStandardMaterial
           map={tvOn ? undefined : tvOffTex}
           color="#05070b"
@@ -1396,10 +1409,11 @@ function BusTvUnit({
               width: 560,
               height: 315,
               background: "#000000",
-              borderRadius: "8px",
+              boxSizing: "border-box",
+              borderRadius: 0,
               overflow: "hidden",
               boxShadow: "0 0 24px rgba(255, 210, 63, 0.35)",
-              border: "2px solid #1a1d26",
+              border: 0,
               visibility: tvOn && !isMutedForFullscreen ? "visible" : "hidden",
             }}
           >
@@ -1417,12 +1431,20 @@ function BusTvUnit({
                   JSON.stringify({ event: "listening", id: "tv-primary-iframe" }),
                   "*",
                 );
-                event.currentTarget.contentWindow?.postMessage(
-                  JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
-                  "*",
-                );
+                disableYoutubeCaptions(event.currentTarget);
               }}
-              style={{ border: 0, display: "block", width: "100%", height: "100%", backfaceVisibility: "hidden", pointerEvents: "auto" }}
+              style={{
+                border: 0,
+                display: "block",
+                width: "100%",
+                height: "100%",
+                backfaceVisibility: "hidden",
+                pointerEvents: "auto",
+                // Recouvre à l'intérieur les éventuels sous-pixels du masque 3D :
+                // le bord reste noir pendant une rotation au lieu de révéler le bus bleu.
+                outline: "2px solid #000000",
+                outlineOffset: "-2px",
+              }}
             />
             {/* Une iframe YouTube ne transmet pas la molette à la scène parente.
                 Le centre de l'image la convertit donc en zoom caméra et relaie son clic
