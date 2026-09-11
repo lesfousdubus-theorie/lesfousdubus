@@ -86,7 +86,7 @@ export default function Scene({
 
   return (
     <Canvas
-      shadows
+      shadows="percentage"
       frameloop="demand"
       dpr={lowPower ? 1 : Math.min(window.devicePixelRatio, 1.35)}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: 2000 }}
