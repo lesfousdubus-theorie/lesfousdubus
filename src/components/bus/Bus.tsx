@@ -416,7 +416,7 @@ export default function Bus({
     () =>
       makeGraffitiTexture({
         text: "LE SIÈCLE OUBLIÉ\nC'EST LE PRÉSENT",
-        height: 256,
+        height: 384,
         color: "#fff1a8",
         stroke: "#071952",
         accent: "#ef3340",
@@ -430,7 +430,7 @@ export default function Bus({
     () =>
       makeGraffitiTexture({
         text: "BARBE NOIRE EST\nDAVY D. JONES",
-        height: 256,
+        height: 384,
         color: "#f7d6e0",
         stroke: "#3b0a2a",
         accent: "#ff9f1c",
@@ -444,7 +444,7 @@ export default function Bus({
     () =>
       makeGraffitiTexture({
         text: "LUFFY EST NIKA\nET JOY BOY",
-        height: 256,
+        height: 384,
         color: "#ffdc4a",
         stroke: "#34145f",
         accent: "#22d3ee",
@@ -458,7 +458,7 @@ export default function Bus({
     () =>
       makeGraffitiTexture({
         text: "LES PONÉGLYPHES\nVIENNENT DU FUTUR",
-        height: 256,
+        height: 384,
         color: "#baf7d0",
         stroke: "#053d33",
         accent: "#ff6b35",
@@ -472,7 +472,7 @@ export default function Bus({
     () =>
       makeGraffitiTexture({
         text: "TOUT EST UNE QUESTION\nDE TIMING",
-        height: 256,
+        height: 384,
         color: "#bde7ff",
         stroke: "#071f5c",
         accent: "#ff4da6",
@@ -648,10 +648,10 @@ export default function Bus({
               {/* CÔTÉ GAUCHE (3 phrases grandes et artistiques) */}
               {/* 1. Le siècle oublié c'est le présent (avant gauche) */}
               <mesh
-                position={[sx * 1.352, 1.36, -2.7]}
+                position={[sx * 1.352, 1.25, -2.7]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.7, 0.44]} />
+                <planeGeometry args={[2.7, 0.62]} />
                 <meshStandardMaterial
                   map={tagSiecleTex}
                   transparent
@@ -663,10 +663,10 @@ export default function Bus({
               </mesh>
               {/* 2. Barbe Noire est Davy D. Jones (milieu gauche) */}
               <mesh
-                position={[sx * 1.352, 1.27, 0.0]}
+                position={[sx * 1.352, 1.25, 0.0]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.5, 0.44]} />
+                <planeGeometry args={[2.5, 0.62]} />
                 <meshStandardMaterial
                   map={tagBarbeNoireTex}
                   transparent
@@ -678,10 +678,10 @@ export default function Bus({
               </mesh>
               {/* 3. Luffy est Nika et Joy Boy (arrière gauche) */}
               <mesh
-                position={[sx * 1.352, 1.36, 2.7]}
+                position={[sx * 1.352, 1.25, 2.7]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.5, 0.44]} />
+                <planeGeometry args={[2.5, 0.62]} />
                 <meshStandardMaterial
                   map={tagLuffyNikaTex}
                   transparent
@@ -697,10 +697,10 @@ export default function Bus({
               {/* CÔTÉ DROIT (2 phrases grandes et artistiques) */}
               {/* 4. Les ponéglyphes viennent du futur (avant/milieu droit) */}
               <mesh
-                position={[sx * 1.352, 1.27, -1.5]}
+                position={[sx * 1.352, 1.25, -1.5]}
                 rotation={[0, Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.6, 0.44]} />
+                <planeGeometry args={[3.6, 0.62]} />
                 <meshStandardMaterial
                   map={tagPoneglyphesTex}
                   transparent
@@ -712,10 +712,10 @@ export default function Bus({
               </mesh>
               {/* 5. Tout est une question de timing (milieu/arrière droit) */}
               <mesh
-                position={[sx * 1.352, 1.36, 2.4]}
+                position={[sx * 1.352, 1.25, 2.4]}
                 rotation={[0, Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.4, 0.44]} />
+                <planeGeometry args={[3.4, 0.62]} />
                 <meshStandardMaterial
                   map={tagTimingTex}
                   transparent
@@ -765,6 +765,14 @@ export default function Bus({
       </mesh>
       <mesh material={mats.glass} position={[0, 2.25, -4.6]} raycast={() => null}>
         <boxGeometry args={[2.3, 1.0, 0.02]} />
+      </mesh>
+      {/* Finition intérieure du bandeau de pare-brise, dans le prolongement
+          exact des habillages latéraux. */}
+      <mesh material={mats.interiorWall} position={[0, 2.98, -4.548]}>
+        <boxGeometry args={[2.5, 0.4, 0.016]} />
+      </mesh>
+      <mesh material={mats.bodyDark} position={[0, 2.76, -4.535]}>
+        <boxGeometry args={[2.5, 0.08, 0.04]} />
       </mesh>
       {/* Essuie-glaces */}
       <group ref={leftWiper} position={[-0.55, 1.8, -4.66]} rotation={[0, 0, 0.58]}>
@@ -1023,6 +1031,19 @@ export default function Bus({
       <mesh material={mats.interiorWall} position={[0, 3.15, cabinCenterZ]}>
         <boxGeometry args={[2.5, 0.02, cabinLength - 0.1]} />
       </mesh>
+
+      {/* Bandeaux intérieurs continus : ils habillent proprement le raccord entre
+          le plafond et les vitres, sans faces bleues superposées ni interstices. */}
+      {[-1, 1].map((sx) => (
+        <group key={`window-headliner-${sx}`}>
+          <mesh material={mats.interiorWall} position={[sx * 1.248, 2.98, cabinCenterZ]}>
+            <boxGeometry args={[0.012, 0.4, cabinLength - 0.12]} />
+          </mesh>
+          <mesh material={mats.bodyDark} position={[sx * 1.242, 2.76, cabinCenterZ]}>
+            <boxGeometry args={[0.04, 0.08, cabinLength - 0.1]} />
+          </mesh>
+        </group>
+      ))}
 
       {/* Néons de plafond lumineux continus */}
       {[-0.5, 0.5].map((x) => (
@@ -1337,7 +1358,7 @@ function BusTvUnit({
       {/* Fond noir permanent : aucune couche bleue de la carrosserie ne transparaît
           derrière l'iframe pendant son chargement ou ses changements d'occlusion. */}
       <mesh position={[0, 0, 0.047]}>
-        <planeGeometry args={[1.26, 0.72]} />
+        <planeGeometry args={[1.3, 0.76]} />
         <meshStandardMaterial
           map={tvOn ? undefined : tvOffTex}
           color="#05070b"
@@ -1427,7 +1448,7 @@ function BusTvUnit({
               }}
               style={{
                 position: "absolute",
-                inset: "54px 0 76px 0",
+                inset: "54px 72px 72px 0",
                 zIndex: 2,
                 cursor: "pointer",
                 background: "transparent",
