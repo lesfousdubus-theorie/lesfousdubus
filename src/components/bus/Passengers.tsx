@@ -265,9 +265,9 @@ function getPassengerLabelY(archetype: NakamaArchetype): number {
   };
   const accessoryTop = accessoryTops[archetype.accessory ?? "none"];
 
-  // Le centre du sprite tient compte de sa demi-hauteur (0,115) et garde
-  // seulement 0,06 d'air au-dessus des cheveux ou du chapeau.
-  return Math.max(hairTop, accessoryTop ?? 0) + 0.175;
+  // Le centre du sprite tient compte de sa demi-hauteur (0,055 pour une hauteur de 0,11)
+  // et garde environ 0,05 d'air au-dessus des cheveux ou du chapeau.
+  return Math.max(hairTop, accessoryTop ?? 0) + 0.105;
 }
 
 /**
@@ -541,10 +541,10 @@ function Passenger({
           : undefined
       }
     >
-      {profile && nameTexture && (
+      {!firstPerson && profile && nameTexture && (
         <sprite
           position={[0, labelY, 0.14]}
-          scale={[nameTexture.aspect * 0.23, 0.23, 1]}
+          scale={[nameTexture.aspect * 0.11, 0.11, 1]}
           renderOrder={20}
           onClick={(event: { stopPropagation: () => void }) => {
             event.stopPropagation();
