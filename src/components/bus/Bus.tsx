@@ -41,11 +41,20 @@ const YELLOW = "#ffbf18";
 const CHROME = "#eaf0fa";
 const DARK = "#12141a";
 
-function disableYoutubeCaptions(iframe: HTMLIFrameElement | null) {
-  iframe?.contentWindow?.postMessage(
-    JSON.stringify({ event: "command", func: "setOption", args: ["captions", "track", {}] }),
-    "*",
-  );
+function sendYoutubeCommand(
+  iframe: HTMLIFrameElement | null,
+  func: string,
+  args: any[] = [],
+) {
+  if (!iframe?.contentWindow) return;
+  try {
+    iframe.contentWindow.postMessage(
+      JSON.stringify({ event: "command", func, args }),
+      "*",
+    );
+  } catch {
+    // ignore
+  }
 }
 
 export default function Bus({
@@ -491,15 +500,7 @@ export default function Bus({
   const primaryIframeRef = useRef<HTMLIFrameElement | null>(null);
   const youtubePlayerStateRef = useRef(-1);
 
-  const previousTvOn = useRef(false);
-
-  const tvSyncStateRef = useRef({ tvOn, hasEntered, isMutedForFullscreen });
-  useEffect(() => {
-    tvSyncStateRef.current = { tvOn, hasEntered, isMutedForFullscreen };
-  }, [tvOn, hasEntered, isMutedForFullscreen]);
-
-  const isVideoMutedRef = useRef(true);
-
+  // Écoute de l'état du lecteur YouTube (1 = lecture, 2 = pause, etc.)
   useEffect(() => {
     const onYoutubeMessage = (event: MessageEvent) => {
       if (!event.origin.endsWith("youtube.com") && !event.origin.endsWith("youtube-nocookie.com")) return;
@@ -507,111 +508,35 @@ export default function Bus({
         const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         const state = data?.event === "onStateChange" ? data.info : data?.info?.playerState;
         if (typeof state === "number") youtubePlayerStateRef.current = state;
-        if (typeof data?.info?.muted === "boolean") {
-          isVideoMutedRef.current = data.info.muted;
-        }
-
-        // Lorsque le lecteur YouTube est prêt, démarrer automatiquement en muet si la TV doit être allumée
-        const { tvOn: currentTvOn, hasEntered: currentHasEntered, isMutedForFullscreen: currentMuted } = tvSyncStateRef.current;
-        if ((data?.event === "onReady" || data?.event === "initialDelivery") && currentTvOn && currentHasEntered && !currentMuted) {
-          const iframe = primaryIframeRef.current;
-          if (iframe?.contentWindow) {
-            iframe.contentWindow.postMessage(
-              JSON.stringify({ event: "command", func: "mute", args: [] }),
-              "*",
-            );
-            iframe.contentWindow.postMessage(
-              JSON.stringify({ event: "command", func: "playVideo", args: [] }),
-              "*",
-            );
-          }
-        }
       } catch {
-        // Les autres messages du lecteur ne sont pas du JSON exploitable.
+        // ignore
       }
     };
     window.addEventListener("message", onYoutubeMessage);
     return () => window.removeEventListener("message", onYoutubeMessage);
   }, []);
 
-  // La mise sous tension lance ou met en pause le lecteur. Une fois allumée,
-  // lecture, pause, volume et plein écran restent contrôlés par l'interface YouTube.
-  // Le lecteur est monté dès l'arrivée pour précharger la vidéo, mais reste en pause
-  // et muet tant que l'utilisateur n'est pas entré dans le bus.
+  // Synchronisation de la TV : départ immédiat à l'entrée, reprise instantanée sans rechargement,
+  // et volume spatialisé (atténué à 25% à l'extérieur du bus quand la TV est allumée).
   useEffect(() => {
     const iframe = primaryIframeRef.current;
-    const wasOn = previousTvOn.current;
-    previousTvOn.current = tvOn;
-    const syncTimers: number[] = [];
+    if (!iframe?.contentWindow) return;
 
-    if (!tvOn || isMutedForFullscreen || !hasEntered) {
-      youtubePlayerStateRef.current = 2;
-      if (iframe?.contentWindow) {
-        try {
-          iframe.contentWindow.postMessage(
-            JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
-            "*",
-          );
-          if (!hasEntered) {
-            iframe.contentWindow.postMessage(
-              JSON.stringify({ event: "command", func: "seekTo", args: [0, true] }),
-              "*",
-            );
-          }
-        } catch {
-          // ignore
-        }
-      }
+    if (!hasEntered) {
+      sendYoutubeCommand(iframe, "pauseVideo");
       return;
     }
 
-    if (iframe?.contentWindow) {
-      try {
-        disableYoutubeCaptions(iframe);
-
-        const sendPlay = () => {
-          if (iframe?.contentWindow && youtubePlayerStateRef.current !== 1) {
-            iframe.contentWindow.postMessage(
-              JSON.stringify({ event: "command", func: "mute", args: [] }),
-              "*",
-            );
-            iframe.contentWindow.postMessage(
-              JSON.stringify({ event: "command", func: "playVideo", args: [] }),
-              "*",
-            );
-          }
-        };
-
-        // Envoi initial des commandes de lecture en muet (requis pour l'autoplay sous Firefox et Chrome)
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "listening", id: "tv-primary-iframe" }),
-          "*",
-        );
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "mute", args: [] }),
-          "*",
-        );
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "playVideo", args: [] }),
-          "*",
-        );
-
-        // Relances échelonnées pour compenser le temps de chargement du lecteur dans l'iframe (ex: Firefox)
-        syncTimers.push(
-          window.setTimeout(() => disableYoutubeCaptions(iframe), 250),
-          window.setTimeout(() => disableYoutubeCaptions(iframe), 900),
-          window.setTimeout(sendPlay, 350),
-          window.setTimeout(sendPlay, 850),
-          window.setTimeout(sendPlay, 1600),
-          window.setTimeout(sendPlay, 2800),
-        );
-      } catch {
-        // ignore
-      }
+    if (tvOn && !isMutedForFullscreen) {
+      sendYoutubeCommand(iframe, "unMute");
+      sendYoutubeCommand(iframe, "setVolume", [phase === "outside" ? 25 : 100]);
+      sendYoutubeCommand(iframe, "playVideo");
+      youtubePlayerStateRef.current = 1;
+    } else {
+      sendYoutubeCommand(iframe, "pauseVideo");
+      youtubePlayerStateRef.current = 2;
     }
-
-    return () => syncTimers.forEach((timer) => window.clearTimeout(timer));
-  }, [tvOn, isMutedForFullscreen, hasEntered]);
+  }, [tvOn, isMutedForFullscreen, hasEntered, phase]);
 
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
@@ -1201,6 +1126,7 @@ export default function Bus({
         idx={0}
         tvOn={tvOn}
         phase={phase}
+        hasEntered={hasEntered}
         isPrimary
         onToggleTv={onToggleTv}
         isMutedForFullscreen={isMutedForFullscreen}
@@ -1208,7 +1134,6 @@ export default function Bus({
         tvOffTex={tvOffTex}
         primaryIframeRef={primaryIframeRef}
         youtubePlayerStateRef={youtubePlayerStateRef}
-        isVideoMutedRef={isVideoMutedRef}
       />
       {tvPositions.slice(1).map((pos) => (
         <SecondaryTvUnit
@@ -1333,6 +1258,7 @@ interface BusTvUnitProps {
   idx: number;
   tvOn: boolean;
   phase: "outside" | "entering" | "inside" | "exiting";
+  hasEntered?: boolean;
   isPrimary: boolean;
   onToggleTv?: () => void;
   isMutedForFullscreen: boolean;
@@ -1340,7 +1266,6 @@ interface BusTvUnitProps {
   tvOffTex: THREE.CanvasTexture;
   primaryIframeRef: React.RefObject<HTMLIFrameElement | null>;
   youtubePlayerStateRef: React.RefObject<number>;
-  isVideoMutedRef: React.RefObject<boolean>;
 }
 
 function BusTvUnit({
@@ -1348,6 +1273,7 @@ function BusTvUnit({
   idx,
   tvOn,
   phase,
+  hasEntered = false,
   isPrimary,
   onToggleTv,
   isMutedForFullscreen,
@@ -1355,7 +1281,6 @@ function BusTvUnit({
   tvOffTex,
   primaryIframeRef,
   youtubePlayerStateRef,
-  isVideoMutedRef,
 }: BusTvUnitProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
@@ -1363,8 +1288,6 @@ function BusTvUnit({
   useFrame(({ camera }) => {
     if (!containerRef.current) return;
 
-    // 1. Si la TV est éteinte ou en plein écran modal -> masquer sans démonter
-    // l'iframe, afin qu'elle reste prête à reprendre immédiatement.
     if (!tvOn || isMutedForFullscreen) {
       if (containerRef.current.style.visibility !== "hidden") {
         containerRef.current.style.visibility = "hidden";
@@ -1372,12 +1295,7 @@ function BusTvUnit({
       return;
     }
 
-    // 2. Détection d'orientation : l'écran fait face à l'arrière du bus (+Z)
-    // Si la caméra est située en avant de l'écran (z < pos[2] + 0.04), on regarde le dos de la TV.
-    // La vidéo DOIT être totalement masquée par le dos de la TV et le support au plafond !
-    // À l'intérieur, le déplacement/zoom de la caméra peut franchir brièvement
-    // ce plan pendant une transition. Ne jamais masquer alors l'iframe : sinon
-    // YouTube continue à jouer et l'utilisateur n'entend plus que le son.
+    // Si la caméra est en avant de la TV (z < pos[2] + 0.04), on regarde le dos de la TV
     const isBehindTv = phase !== "inside" && camera.position.z < (pos[2] + 0.04);
     if (isBehindTv) {
       if (containerRef.current.style.visibility !== "hidden") {
@@ -1386,9 +1304,6 @@ function BusTvUnit({
       return;
     }
 
-    // L'occlusion "blending" effectue la découpe réelle, pixel par pixel :
-    // la carrosserie, le toit et les piliers masquent la vidéo, tandis que les
-    // vitres transparentes (depthWrite: false) la laissent visible.
     if (containerRef.current.style.visibility !== "visible") {
       containerRef.current.style.visibility = "visible";
     }
@@ -1421,14 +1336,14 @@ function BusTvUnit({
         <boxGeometry args={[0.16, 0.45, 0.16]} />
       </mesh>
 
-      {/* Plaque d'occultation arrière noire : évite toute transparence ou fuite de couleur */}
+      {/* Plaque d'occultation arrière noire */}
       <mesh position={[0, 0, 0.045]}>
         <planeGeometry args={[1.28, 0.73]} />
         <meshBasicMaterial color="#05070c" side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Fond de l'écran éteint : dalle noire élégante en verre sombre calée dans le cadre. */}
-      <mesh position={[0, 0, 0.047]} visible={!tvOn}>
+      {/* Fond de l'écran éteint : dalle noire élégante en verre sombre calée dans le cadre */}
+      <mesh position={[0, 0, 0.053]} visible={!tvOn}>
         <planeGeometry args={[1.26, 0.70875]} />
         <meshStandardMaterial
           map={tvOffTex}
@@ -1440,39 +1355,16 @@ function BusTvUnit({
         />
       </mesh>
 
-      {/* TV 0 : Lecteur principal (avec audio et contrôles YouTube officiels, reste chargé en mémoire) */}
+      {/* TV 0 : Lecteur principal */}
       {isPrimary && (
         <Html
           transform
-          occlude={tvOn && !isMutedForFullscreen ? "blending" : undefined}
-          zIndexRange={[10, 0]}
-          geometry={<planeGeometry args={[1.26, 0.70875]} />}
-          material={
-            <shaderMaterial
-              transparent
-              blending={THREE.NoBlending}
-              side={THREE.DoubleSide}
-              vertexShader={`
-                void main() {
-                  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-              `}
-              fragmentShader={`
-                void main() {
-                  gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-                }
-              `}
-            />
-          }
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
           style={{
             userSelect: "none",
             pointerEvents: tvOn && phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
-            opacity: tvOn && !isMutedForFullscreen ? 1 : 0,
-            visibility: tvOn ? "visible" : "hidden",
-            transition: "opacity 0.2s ease",
           }}
         >
           <div
@@ -1487,8 +1379,11 @@ function BusTvUnit({
               borderRadius: 0,
               overflow: "hidden",
               border: 0,
-              willChange: "transform",
+              backfaceVisibility: "hidden",
+              willChange: "transform, opacity",
+              opacity: tvOn && !isMutedForFullscreen ? 1 : 0,
               visibility: tvOn && !isMutedForFullscreen ? "visible" : "hidden",
+              transition: "opacity 0.2s ease",
             }}
           >
             <iframe
@@ -1496,27 +1391,22 @@ function BusTvUnit({
               id="tv-primary-iframe"
               width="560"
               height="315"
-              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=0&mute=1&controls=1&rel=0&enablejsapi=1&fs=1&playsinline=1&iv_load_policy=3&cc_load_policy=0${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`}
+              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?enablejsapi=1&autoplay=0&controls=1&rel=0&playsinline=1&iv_load_policy=3&cc_load_policy=0${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`}
               title="La théorie des Fous du Bus"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
               referrerPolicy="strict-origin-when-cross-origin"
+              loading="eager"
               onLoad={(event) => {
                 const iframe = event.currentTarget;
                 iframe.contentWindow?.postMessage(
                   JSON.stringify({ event: "listening", id: "tv-primary-iframe" }),
                   "*",
                 );
-                disableYoutubeCaptions(iframe);
-                if (tvOn && !isMutedForFullscreen) {
-                  iframe.contentWindow?.postMessage(
-                    JSON.stringify({ event: "command", func: "mute", args: [] }),
-                    "*",
-                  );
-                  iframe.contentWindow?.postMessage(
-                    JSON.stringify({ event: "command", func: "playVideo", args: [] }),
-                    "*",
-                  );
+                if (hasEntered && tvOn && !isMutedForFullscreen) {
+                  sendYoutubeCommand(iframe, "unMute");
+                  sendYoutubeCommand(iframe, "setVolume", [phase === "outside" ? 25 : 100]);
+                  sendYoutubeCommand(iframe, "playVideo");
                 }
               }}
               style={{
@@ -1527,22 +1417,11 @@ function BusTvUnit({
                 pointerEvents: "auto",
               }}
             />
-            {/* Filet séparé de l'iframe : modifier directement le contour d'une
-                vidéo transformée en 3D peut produire une couche noire dans Chrome. */}
-            <div
-              aria-hidden="true"
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 3,
-                boxSizing: "border-box",
-                border: "2px solid #000000",
-                pointerEvents: "none",
-              }}
-            />
-            {/* Une iframe YouTube ne transmet pas la molette à la scène parente.
-                Le centre de l'image la convertit donc en zoom caméra et relaie son clic
-                au lecteur. Les commandes YouTube du haut et du bas restent directes. */}
+
+            {/* Zone de contrôle vidéo et zoom molette :
+                - Molette : zoom caméra Three.js (CameraRig)
+                - Clic : play / pause vidéo direct
+                - Le bandeau du bas (48px) reste 100% accessible pour la timeline et les commandes YouTube */}
             <div
               aria-hidden="true"
               title="Molette : zoom caméra · Clic : lecture ou pause"
@@ -1552,19 +1431,20 @@ function BusTvUnit({
                 if (!iframe?.contentWindow) return;
                 const shouldPause = youtubePlayerStateRef.current === 1;
                 youtubePlayerStateRef.current = shouldPause ? 2 : 1;
-                iframe.contentWindow.postMessage(
-                  JSON.stringify({ event: "command", func: shouldPause ? "pauseVideo" : "playVideo", args: [] }),
-                  "*",
-                );
+                sendYoutubeCommand(iframe, shouldPause ? "pauseVideo" : "playVideo");
               }}
               onWheel={(event) => {
-                event.preventDefault();
                 event.stopPropagation();
-                window.dispatchEvent(new CustomEvent("bus-zoom", { detail: event.deltaY * 0.04 }));
+                window.dispatchEvent(
+                  new CustomEvent("bus-zoom", { detail: event.deltaY * 0.04 }),
+                );
               }}
               style={{
                 position: "absolute",
-                inset: "54px 72px 72px 0",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 48,
                 zIndex: 2,
                 cursor: "pointer",
                 background: "transparent",
