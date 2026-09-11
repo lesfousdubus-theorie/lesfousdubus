@@ -241,6 +241,35 @@ export const NAKAMA_ROSTER: NakamaArchetype[] = [
 
 export const BASE_ROWS = 6;
 
+/** Hauteur visuelle du sommet de chaque passager assis, accessoires compris. */
+function getPassengerLabelY(archetype: NakamaArchetype): number {
+  const hairTop = {
+    spiky: 2.04,
+    crop: 1.98,
+    flowing: 1.98,
+    swoop: 1.98,
+    afro: 2.14,
+    pompadour: 2.13,
+    topknot: 2.08,
+    wavy: 1.98,
+    shaggy: 1.98,
+  }[archetype.hairStyle];
+
+  const accessoryTops: Partial<Record<NonNullable<NakamaArchetype["accessory"]>, number>> = {
+    straw_hat: 2.09,
+    reindeer_hat: 2.19,
+    top_hat: 2.27,
+    white_cap: 2.01,
+    cowboy_hat: 2.11,
+    horns: 2.07,
+  };
+  const accessoryTop = accessoryTops[archetype.accessory ?? "none"];
+
+  // Le centre du sprite tient compte de sa demi-hauteur (0,115) et garde
+  // seulement 0,06 d'air au-dessus des cheveux ou du chapeau.
+  return Math.max(hairTop, accessoryTop ?? 0) + 0.175;
+}
+
 /**
  * Calcule le nombre de rangées nécessaires pour asseoir `passengerCount` personnes.
  * Les 6 rangées de base disposent de 22 places assises (+ 1 place réservée pour le joueur).
@@ -466,6 +495,7 @@ function Passenger({
     () => profile ? makePassengerNameTexture(profile.displayName) : null,
     [profile],
   );
+  const labelY = useMemo(() => getPassengerLabelY(archetype), [archetype]);
 
   useEffect(() => () => nameTexture?.texture.dispose(), [nameTexture]);
 
@@ -513,7 +543,7 @@ function Passenger({
     >
       {profile && nameTexture && (
         <sprite
-          position={[0, 2.48, 0.14]}
+          position={[0, labelY, 0.14]}
           scale={[nameTexture.aspect * 0.23, 0.23, 1]}
           renderOrder={20}
           onClick={(event: { stopPropagation: () => void }) => {
