@@ -1450,6 +1450,7 @@ function BusTvUnit({
           material={
             <shaderMaterial
               transparent
+              blending={THREE.NoBlending}
               side={THREE.DoubleSide}
               vertexShader={`
                 void main() {
