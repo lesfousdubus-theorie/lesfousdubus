@@ -230,21 +230,22 @@ export default function CameraRig({
       targetFovRef.current = 55;
     };
 
-    el.addEventListener("pointerdown", down);
+    const target = gl.domElement.parentElement ?? el;
+    target.addEventListener("pointerdown", down);
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
-    el.addEventListener("wheel", wheel, { passive: false });
+    target.addEventListener("wheel", wheel, { passive: false });
     window.addEventListener("keydown", key);
     window.addEventListener("bus-zoom", onCustomZoom);
     window.addEventListener("bus-zoom-reset", onCustomZoomReset);
 
     return () => {
-      el.removeEventListener("pointerdown", down);
+      target.removeEventListener("pointerdown", down);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", up);
-      el.removeEventListener("wheel", wheel);
+      target.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", key);
       window.removeEventListener("bus-zoom", onCustomZoom);
       window.removeEventListener("bus-zoom-reset", onCustomZoomReset);

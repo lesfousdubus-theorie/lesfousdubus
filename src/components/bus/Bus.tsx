@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html, useTexture } from "@react-three/drei";
@@ -498,7 +498,28 @@ export default function Bus({
   );
 
   const primaryIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const allTvIframesRef = useRef<Map<number, HTMLIFrameElement>>(new Map());
   const youtubePlayerStateRef = useRef(-1);
+
+  const registerIframe = useCallback((idx: number, iframe: HTMLIFrameElement | null) => {
+    if (iframe) {
+      allTvIframesRef.current.set(idx, iframe);
+      if (idx === 0) primaryIframeRef.current = iframe;
+    } else {
+      allTvIframesRef.current.delete(idx);
+      if (idx === 0) primaryIframeRef.current = null;
+    }
+  }, []);
+
+  const broadcastYoutubeCommand = useCallback((func: string, args: any[] = []) => {
+    allTvIframesRef.current.forEach((iframe, idx) => {
+      // Les TV secondaires restent TOUJOURS muettes pour éviter tout écho
+      if (idx !== 0 && (func === "unMute" || func === "setVolume")) {
+        return;
+      }
+      sendYoutubeCommand(iframe, func, args);
+    });
+  }, []);
 
   // Écoute de l'état du lecteur YouTube (1 = lecture, 2 = pause, etc.)
   useEffect(() => {
@@ -516,27 +537,24 @@ export default function Bus({
     return () => window.removeEventListener("message", onYoutubeMessage);
   }, []);
 
-  // Synchronisation de la TV : départ immédiat à l'entrée, reprise instantanée sans rechargement,
+  // Synchronisation de toutes les TV du bus : départ immédiat à l'entrée, reprise instantanée,
   // et volume spatialisé (atténué à 25% à l'extérieur du bus quand la TV est allumée).
   useEffect(() => {
-    const iframe = primaryIframeRef.current;
-    if (!iframe?.contentWindow) return;
-
     if (!hasEntered) {
-      sendYoutubeCommand(iframe, "pauseVideo");
+      broadcastYoutubeCommand("pauseVideo");
       return;
     }
 
     if (tvOn && !isMutedForFullscreen) {
-      sendYoutubeCommand(iframe, "unMute");
-      sendYoutubeCommand(iframe, "setVolume", [phase === "outside" ? 25 : 100]);
-      sendYoutubeCommand(iframe, "playVideo");
+      broadcastYoutubeCommand("unMute");
+      broadcastYoutubeCommand("setVolume", [phase === "outside" ? 25 : 100]);
+      broadcastYoutubeCommand("playVideo");
       youtubePlayerStateRef.current = 1;
     } else {
-      sendYoutubeCommand(iframe, "pauseVideo");
+      broadcastYoutubeCommand("pauseVideo");
       youtubePlayerStateRef.current = 2;
     }
-  }, [tvOn, isMutedForFullscreen, hasEntered, phase]);
+  }, [tvOn, isMutedForFullscreen, hasEntered, phase, broadcastYoutubeCommand]);
 
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
@@ -1121,29 +1139,21 @@ export default function Bus({
       </group>
 
       {/* ---------- TÉLÉVISIONS DU BUS (Une à l'avant + une toutes les 5 rangées) ---------- */}
-      <BusTvUnit
-        pos={tvPositions[0]}
-        idx={0}
-        tvOn={tvOn}
-        phase={phase}
-        hasEntered={hasEntered}
-        isPrimary
-        onToggleTv={onToggleTv}
-        isMutedForFullscreen={isMutedForFullscreen}
-        mats={mats}
-        tvOffTex={tvOffTex}
-        primaryIframeRef={primaryIframeRef}
-        youtubePlayerStateRef={youtubePlayerStateRef}
-      />
-      {tvPositions.slice(1).map((pos) => (
-        <SecondaryTvUnit
-          key={`secondary-tv-${pos[2]}`}
+      {tvPositions.map((pos, idx) => (
+        <BusTvUnit
+          key={`tv-unit-${idx}-${pos[2]}`}
           pos={pos}
-          tvOn={tvOn && hasEntered && !isMutedForFullscreen}
+          idx={idx}
+          tvOn={tvOn}
+          phase={phase}
+          hasEntered={hasEntered}
+          isPrimary={idx === 0}
           onToggleTv={onToggleTv}
+          isMutedForFullscreen={isMutedForFullscreen}
           mats={mats}
           tvOffTex={tvOffTex}
-          tvOnTex={tvOnTex}
+          onRegisterIframe={registerIframe}
+          youtubePlayerStateRef={youtubePlayerStateRef}
         />
       ))}
     </group>
@@ -1219,40 +1229,6 @@ function SeatInstances({
   );
 }
 
-function SecondaryTvUnit({
-  pos,
-  tvOn,
-  onToggleTv,
-  mats,
-  tvOffTex,
-  tvOnTex,
-}: {
-  pos: [number, number, number];
-  tvOn: boolean;
-  onToggleTv?: () => void;
-  mats: Record<string, THREE.Material>;
-  tvOffTex: THREE.CanvasTexture;
-  tvOnTex: THREE.CanvasTexture;
-}) {
-  return (
-    <group position={pos} onClick={(event: any) => { event.stopPropagation(); onToggleTv?.(); }}>
-      <mesh material={mats.dark} castShadow><boxGeometry args={[1.36, 0.82, 0.08]} /></mesh>
-      <mesh material={mats.yellow} position={[0, 0, 0.041]}><boxGeometry args={[1.34, 0.8, 0.01]} /></mesh>
-      <mesh material={mats.seatFrame} position={[0, 0.52, -0.08]}><boxGeometry args={[0.16, 0.45, 0.16]} /></mesh>
-      <mesh position={[0, 0, 0.052]}>
-        <planeGeometry args={[1.26, 0.71]} />
-        <meshStandardMaterial
-          map={tvOn ? tvOnTex : tvOffTex}
-          emissiveMap={tvOn ? tvOnTex : undefined}
-          emissive={tvOn ? "#ffffff" : "#000000"}
-          emissiveIntensity={tvOn ? 0.8 : 0}
-          roughness={0.3}
-        />
-      </mesh>
-    </group>
-  );
-}
-
 interface BusTvUnitProps {
   pos: [number, number, number];
   idx: number;
@@ -1264,7 +1240,7 @@ interface BusTvUnitProps {
   isMutedForFullscreen: boolean;
   mats: Record<string, THREE.Material>;
   tvOffTex: THREE.CanvasTexture;
-  primaryIframeRef: React.RefObject<HTMLIFrameElement | null>;
+  onRegisterIframe?: (idx: number, iframe: HTMLIFrameElement | null) => void;
   youtubePlayerStateRef: React.RefObject<number>;
 }
 
@@ -1279,13 +1255,19 @@ function BusTvUnit({
   isMutedForFullscreen,
   mats,
   tvOffTex,
-  primaryIframeRef,
+  onRegisterIframe,
   youtubePlayerStateRef,
 }: BusTvUnitProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const shaderMatRef = useRef<THREE.ShaderMaterial>(null);
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
 
   useFrame(({ camera }) => {
+    // Synchronisation de l'uniforme du shader de découpe 3D
+    if (shaderMatRef.current?.uniforms?.uVisible) {
+      shaderMatRef.current.uniforms.uVisible.value = tvOn && !isMutedForFullscreen ? 1.0 : 0.0;
+    }
+
     if (!containerRef.current) return;
 
     if (!tvOn || isMutedForFullscreen) {
@@ -1355,105 +1337,133 @@ function BusTvUnit({
         />
       </mesh>
 
-      {/* TV 0 : Lecteur principal */}
-      {isPrimary && (
-        <Html
-          transform
-          distanceFactor={400}
-          position={[0, 0, 0.052]}
-          scale={0.00225}
+      {/* Écran TV 3D avec occlusion réelle par les éléments qui passent devant (passagers, piliers, toit) */}
+      <Html
+        transform
+        occlude="blending"
+        onOcclude={() => {}}
+        zIndexRange={[10, 0]}
+        geometry={<planeGeometry args={[1.26, 0.70875]} />}
+        material={
+          <shaderMaterial
+            ref={shaderMatRef}
+            transparent
+            blending={THREE.NoBlending}
+            side={THREE.DoubleSide}
+            depthTest={true}
+            depthWrite={false}
+            uniforms={useMemo(() => ({ uVisible: { value: 1.0 } }), [])}
+            vertexShader={`
+              void main() {
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+              }
+            `}
+            fragmentShader={`
+              uniform float uVisible;
+              void main() {
+                if (uVisible < 0.5) discard;
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+              }
+            `}
+          />
+        }
+        distanceFactor={400}
+        position={[0, 0, 0.052]}
+        scale={0.00225}
+        style={{
+          userSelect: "none",
+          pointerEvents: tvOn && phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
+        }}
+      >
+        <div
+          ref={containerRef}
+          id={`tv-frame-${idx}`}
           style={{
-            userSelect: "none",
-            pointerEvents: tvOn && phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
+            position: "relative",
+            width: 560,
+            height: 315,
+            background: "#000000",
+            boxSizing: "border-box",
+            borderRadius: 0,
+            overflow: "hidden",
+            border: 0,
+            backfaceVisibility: "hidden",
+            willChange: "transform, opacity",
+            opacity: tvOn && !isMutedForFullscreen ? 1 : 0,
+            visibility: tvOn && !isMutedForFullscreen ? "visible" : "hidden",
+            transition: "opacity 0.2s ease",
           }}
         >
-          <div
-            ref={containerRef}
-            id="tv-frame"
-            style={{
-              position: "relative",
-              width: 560,
-              height: 315,
-              background: "#000000",
-              boxSizing: "border-box",
-              borderRadius: 0,
-              overflow: "hidden",
-              border: 0,
-              backfaceVisibility: "hidden",
-              willChange: "transform, opacity",
-              opacity: tvOn && !isMutedForFullscreen ? 1 : 0,
-              visibility: tvOn && !isMutedForFullscreen ? "visible" : "hidden",
-              transition: "opacity 0.2s ease",
-            }}
-          >
-            <iframe
-              ref={primaryIframeRef}
-              id="tv-primary-iframe"
-              width="560"
-              height="315"
-              src={`https://www.youtube.com/embed/${YOUTUBE_ID}?enablejsapi=1&autoplay=0&controls=1&rel=0&playsinline=1&iv_load_policy=3&cc_load_policy=0${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`}
-              title="La théorie des Fous du Bus"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-              allowFullScreen
-              referrerPolicy="strict-origin-when-cross-origin"
-              loading="eager"
-              onLoad={(event) => {
-                const iframe = event.currentTarget;
-                iframe.contentWindow?.postMessage(
-                  JSON.stringify({ event: "listening", id: "tv-primary-iframe" }),
-                  "*",
-                );
-                if (hasEntered && tvOn && !isMutedForFullscreen) {
+          <iframe
+            id={`tv-iframe-${idx}`}
+            width="560"
+            height="315"
+            src={
+              isPrimary
+                ? `https://www.youtube.com/embed/${YOUTUBE_ID}?enablejsapi=1&autoplay=0&controls=1&rel=0&playsinline=1&iv_load_policy=3&cc_load_policy=0${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`
+                : `https://www.youtube.com/embed/${YOUTUBE_ID}?enablejsapi=1&autoplay=0&controls=0&rel=0&playsinline=1&iv_load_policy=3&cc_load_policy=0&mute=1${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`
+            }
+            title={isPrimary ? "La théorie des Fous du Bus" : `TV ${idx + 1}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+            loading="eager"
+            onLoad={(event) => {
+              const iframe = event.currentTarget;
+              onRegisterIframe?.(idx, iframe);
+              iframe.contentWindow?.postMessage(
+                JSON.stringify({ event: "listening", id: `tv-iframe-${idx}` }),
+                "*",
+              );
+              if (hasEntered && tvOn && !isMutedForFullscreen) {
+                if (isPrimary) {
                   sendYoutubeCommand(iframe, "unMute");
                   sendYoutubeCommand(iframe, "setVolume", [phase === "outside" ? 25 : 100]);
-                  sendYoutubeCommand(iframe, "playVideo");
+                } else {
+                  sendYoutubeCommand(iframe, "mute");
                 }
-              }}
-              style={{
-                border: 0,
-                display: "block",
-                width: "100%",
-                height: "100%",
-                pointerEvents: "auto",
-              }}
-            />
+                sendYoutubeCommand(iframe, "playVideo");
+              }
+            }}
+            style={{
+              border: 0,
+              display: "block",
+              width: "100%",
+              height: "100%",
+              pointerEvents: isPrimary ? "auto" : "none",
+            }}
+          />
 
-            {/* Zone de contrôle vidéo et zoom molette :
-                - Molette : zoom caméra Three.js (CameraRig)
-                - Clic : play / pause vidéo direct
-                - Le bandeau du bas (48px) reste 100% accessible pour la timeline et les commandes YouTube */}
-            <div
-              aria-hidden="true"
-              title="Molette : zoom caméra · Clic : lecture ou pause"
-              onClick={(event) => {
-                event.stopPropagation();
-                const iframe = primaryIframeRef.current;
-                if (!iframe?.contentWindow) return;
-                const shouldPause = youtubePlayerStateRef.current === 1;
-                youtubePlayerStateRef.current = shouldPause ? 2 : 1;
-                sendYoutubeCommand(iframe, shouldPause ? "pauseVideo" : "playVideo");
-              }}
-              onWheel={(event) => {
-                event.stopPropagation();
-                window.dispatchEvent(
-                  new CustomEvent("bus-zoom", { detail: event.deltaY * 0.04 }),
-                );
-              }}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 48,
-                zIndex: 2,
-                cursor: "pointer",
-                background: "transparent",
-              }}
-            />
-          </div>
-        </Html>
-      )}
-
+          {/* Zone de contrôle vidéo et zoom molette :
+              - Molette : zoom caméra Three.js (CameraRig)
+              - Clic : allumer / éteindre ou lecture / pause direct
+              - Pour la TV principale, le bandeau du bas (48px) reste 100% accessible pour la timeline et les boutons YouTube */}
+          <div
+            aria-hidden="true"
+            title="Molette : zoom caméra · Clic : allumer ou éteindre la TV"
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleTv?.();
+            }}
+            onWheel={(event) => {
+              event.stopPropagation();
+              window.dispatchEvent(
+                new CustomEvent("bus-zoom", { detail: event.deltaY * 0.04 }),
+              );
+            }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: isPrimary ? 48 : 0,
+              zIndex: 2,
+              cursor: "pointer",
+              background: "transparent",
+            }}
+          />
+        </div>
+      </Html>
     </group>
   );
 }
