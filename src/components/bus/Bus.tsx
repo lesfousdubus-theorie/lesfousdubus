@@ -1370,7 +1370,7 @@ function BusTvUnit({
       </mesh>
 
       {/* Fond de l'écran, limité à l'ouverture réelle du cadre. */}
-      <mesh position={[0, 0, 0.047]}>
+      <mesh position={[0, 0, 0.047]} visible={!tvOn}>
         <planeGeometry args={[1.26, 0.72]} />
         <meshStandardMaterial
           map={tvOn ? undefined : tvOffTex}
