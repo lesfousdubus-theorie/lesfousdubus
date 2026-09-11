@@ -1447,6 +1447,22 @@ function BusTvUnit({
           occlude={tvOn && !isMutedForFullscreen ? "blending" : undefined}
           zIndexRange={[10, 0]}
           geometry={<planeGeometry args={[1.26, 0.70875]} />}
+          material={
+            <shaderMaterial
+              transparent
+              side={THREE.DoubleSide}
+              vertexShader={`
+                void main() {
+                  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+              `}
+              fragmentShader={`
+                void main() {
+                  gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+                }
+              `}
+            />
+          }
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
