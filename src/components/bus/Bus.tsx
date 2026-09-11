@@ -1429,7 +1429,7 @@ function BusTvUnit({
 
       {/* Fond de l'écran éteint : dalle noire élégante en verre sombre calée dans le cadre. */}
       <mesh position={[0, 0, 0.047]} visible={!tvOn}>
-        <planeGeometry args={[1.26, 0.71]} />
+        <planeGeometry args={[1.26, 0.70875]} />
         <meshStandardMaterial
           map={tvOffTex}
           color="#05070b"
@@ -1446,7 +1446,7 @@ function BusTvUnit({
           transform
           occlude={tvOn && !isMutedForFullscreen ? "blending" : undefined}
           zIndexRange={[10, 0]}
-          geometry={<planeGeometry args={[1.26, 0.71]} />}
+          geometry={<planeGeometry args={[1.26, 0.70875]} />}
           distanceFactor={400}
           position={[0, 0, 0.052]}
           scale={0.00225}
@@ -1469,8 +1469,8 @@ function BusTvUnit({
               boxSizing: "border-box",
               borderRadius: 0,
               overflow: "hidden",
-              boxShadow: "0 0 24px rgba(255, 210, 63, 0.35)",
               border: 0,
+              willChange: "transform",
               visibility: tvOn && !isMutedForFullscreen ? "visible" : "hidden",
             }}
           >
