@@ -13,6 +13,7 @@ interface Props {
   cabinLength?: number;
   cabinCenterZ?: number;
   currentSeatZ?: number;
+  reducedMotion?: boolean;
 }
 
 const TRANSITION_TIME = 1.8;
@@ -23,6 +24,7 @@ export default function CameraRig({
   cabinLength = 9.2,
   cabinCenterZ = 0,
   currentSeatZ,
+  reducedMotion = false,
 }: Props) {
   const { camera, gl } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
@@ -102,6 +104,12 @@ export default function CameraRig({
       a.toQ.setFromRotationMatrix(m);
       a.t = 0;
       a.active = true;
+      if (reducedMotion) {
+        camera.position.copy(a.to);
+        camera.quaternion.copy(a.toQ);
+        a.active = false;
+        arrivedRef.current("inside");
+      }
     } else if (phase === "exiting") {
       a.from.copy(camera.position);
       a.fromQ.copy(camera.quaternion);
@@ -110,8 +118,14 @@ export default function CameraRig({
       a.toQ.setFromRotationMatrix(m);
       a.t = 0;
       a.active = true;
+      if (reducedMotion) {
+        camera.position.copy(a.to);
+        camera.quaternion.copy(a.toQ);
+        a.active = false;
+        arrivedRef.current("outside");
+      }
     }
-  }, [phase, camera, activeEyePos]);
+  }, [phase, camera, activeEyePos, reducedMotion]);
 
   // Fallback de sécurité : garantit la fin de la transition même si requestAnimationFrame est suspendu/throttlé
   useEffect(() => {
@@ -260,6 +274,7 @@ export default function CameraRig({
     // Gestion du FOV (zoom)
     if (cam instanceof THREE.PerspectiveCamera) {
       if (p === "inside") {
+        if (reducedMotion) currentFovRef.current = targetFovRef.current;
         currentFovRef.current += (targetFovRef.current - currentFovRef.current) * Math.min(1, dt * 10);
         cam.fov = currentFovRef.current;
         cam.updateProjectionMatrix();
@@ -296,13 +311,14 @@ export default function CameraRig({
     }
     if (p === "inside") {
       const l = look.current;
-      l.yaw += (l.targetYaw - l.yaw) * Math.min(1, dt * 10);
-      l.pitch += (l.targetPitch - l.pitch) * Math.min(1, dt * 10);
+      const lookBlend = reducedMotion ? 1 : Math.min(1, dt * 10);
+      l.yaw += (l.targetYaw - l.yaw) * lookBlend;
+      l.pitch += (l.targetPitch - l.pitch) * lookBlend;
       cam.rotation.set(l.pitch, l.yaw, 0, "YXZ");
 
       // Glissement fluide de siège le long de l'allée
       const targetZ = currentSeatZ ?? SEAT_EYE.z;
-      seatZRef.current += (targetZ - seatZRef.current) * Math.min(1, dt * 5.5);
+      seatZRef.current += (targetZ - seatZRef.current) * (reducedMotion ? 1 : Math.min(1, dt * 5.5));
 
       cam.position.set(
         SEAT_EYE.x,
@@ -323,7 +339,7 @@ export default function CameraRig({
       maxDistance={maxOrbitDistance}
       maxPolarAngle={Math.PI / 2 - 0.04}
       enablePan={false}
-      enableDamping
+      enableDamping={!reducedMotion}
       dampingFactor={0.08}
     />
   );

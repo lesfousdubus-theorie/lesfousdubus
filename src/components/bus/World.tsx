@@ -538,9 +538,10 @@ function Prop({ def }: { def: PropDef }) {
 
 interface WorldProps {
   worldRef: React.RefObject<WorldState>;
+  reducedMotion?: boolean;
 }
 
-export default function World({ worldRef }: WorldProps) {
+export default function World({ worldRef, reducedMotion = false }: WorldProps) {
   const props = useMemo(() => buildProps(), []);
   const propRefs = useRef<(THREE.Group | null)[]>([]);
   const zoneRefs = useRef<(THREE.Group | null)[]>([]);
@@ -552,7 +553,7 @@ export default function World({ worldRef }: WorldProps) {
 
   useFrame((state, dt) => {
     const mult = worldRef.current?.speedMultiplier ?? 1.0;
-    const scroll = (worldRef.current?.scroll ?? 0) + dt * WORLD_SPEED * mult;
+    const scroll = (worldRef.current?.scroll ?? 0) + (reducedMotion ? 0 : dt * WORLD_SPEED * mult);
     if (worldRef.current) worldRef.current.scroll = scroll;
 
     // Défilement des décors
@@ -603,7 +604,7 @@ export default function World({ worldRef }: WorldProps) {
     // Ondulation de l'océan de Grand Line
     if (oceanMat.current) {
       const t = state.clock.elapsedTime;
-      oceanMat.current.emissiveIntensity = 0.08 + Math.sin(t * 1.8) * 0.04;
+      oceanMat.current.emissiveIntensity = reducedMotion ? 0.08 : 0.08 + Math.sin(t * 1.8) * 0.04;
     }
   });
 
