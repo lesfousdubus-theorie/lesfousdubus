@@ -7,8 +7,6 @@ export const dynamic = "force-dynamic";
 const READ_HEADERS = { "Cache-Control": "public, max-age=5, s-maxage=5, stale-while-revalidate=10" };
 const WRITE_HEADERS = { "Cache-Control": "no-store, max-age=0" };
 const MAX_BODY_SIZE = 2_048;
-const RATE_LIMIT_PURGE_INTERVAL_SECONDS = 15 * 60;
-let nextReadTriggeredPurgeAt = 0;
 
 async function getPassengerDatabase(): Promise<CloudflareD1Database> {
   const { env } = await getCloudflareContext({ async: true });
@@ -72,37 +70,10 @@ function cleanText(value: unknown, maxLength: number) {
 }
 
 async function readJsonBody(request: Request): Promise<Record<string, unknown>> {
-  const contentLengthHeader = request.headers.get("content-length");
-  if (contentLengthHeader !== null) {
-    const normalizedLength = contentLengthHeader.trim();
-    if (!/^\d+$/.test(normalizedLength)) throw new Error("INVALID_BODY");
-    const contentLength = Number(normalizedLength);
-    if (!Number.isSafeInteger(contentLength)) throw new Error("INVALID_BODY");
-    if (contentLength > MAX_BODY_SIZE) throw new Error("BODY_TOO_LARGE");
-  }
-
-  const reader = request.body?.getReader();
-  if (!reader) throw new Error("INVALID_BODY");
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
-    if (size > MAX_BODY_SIZE) {
-      await reader.cancel().catch(() => undefined);
-      throw new Error("BODY_TOO_LARGE");
-    }
-    chunks.push(value);
-  }
-
-  const bytes = new Uint8Array(size);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  const rawBody = new TextDecoder().decode(bytes);
+  const contentLength = Number(request.headers.get("content-length") ?? 0);
+  if (contentLength > MAX_BODY_SIZE) throw new Error("BODY_TOO_LARGE");
+  const rawBody = await request.text();
+  if (rawBody.length > MAX_BODY_SIZE) throw new Error("BODY_TOO_LARGE");
   let parsed: unknown;
   try {
     parsed = JSON.parse(rawBody);
@@ -111,29 +82,6 @@ async function readJsonBody(request: Request): Promise<Record<string, unknown>> 
   }
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("INVALID_BODY");
   return parsed as Record<string, unknown>;
-}
-
-function validateRateLimitSecret(secret: string | undefined) {
-  const normalized = secret?.trim() ?? "";
-  if (normalized.length < 32) {
-    throw new Error("The RATE_LIMIT_SECRET Cloudflare secret must contain at least 32 characters.");
-  }
-  return normalized;
-}
-
-async function purgeExpiredRateLimits(
-  database: CloudflareD1Database,
-  now: number,
-  force = false,
-) {
-  if (!force && now < nextReadTriggeredPurgeAt) return;
-  if (!force) nextReadTriggeredPurgeAt = now + RATE_LIMIT_PURGE_INTERVAL_SECONDS;
-  try {
-    await database.prepare("DELETE FROM bus_rate_limits WHERE expires_at <= ?").bind(now).run();
-  } catch (error) {
-    if (!force) nextReadTriggeredPurgeAt = 0;
-    throw error;
-  }
 }
 
 async function hashRateKey(secret: string, value: string) {
@@ -161,9 +109,12 @@ async function consumeRateLimit(
   // pas placer tous les développeurs dans un quota global commun.
   if (!address) return { allowed: true, retryAfter: 0 };
   const { env } = await getCloudflareContext({ async: true });
-  const secret = validateRateLimitSecret(env.RATE_LIMIT_SECRET);
+  const secret = env.RATE_LIMIT_SECRET?.trim();
+  if (!secret || secret.length < 32) {
+    throw new Error("The RATE_LIMIT_SECRET Cloudflare secret must contain at least 32 characters.");
+  }
   const now = Math.floor(Date.now() / 1_000);
-  await purgeExpiredRateLimits(database, now, true);
+  await database.prepare("DELETE FROM bus_rate_limits WHERE expires_at <= ?").bind(now).run();
   const bucket = Math.floor(now / windowSeconds);
   // Including the bucket prevents a retained row from linking the same visitor
   // across separate rate-limit windows.
@@ -258,9 +209,6 @@ export async function GET(request: Request) {
       return Response.json({ ...stats, passengers }, { headers: WRITE_HEADERS });
     }
 
-    // The public counter is polled while the site is open, so expired buckets
-    // are also removed when traffic is read-only after the final mutation.
-    await purgeExpiredRateLimits(database, Math.floor(Date.now() / 1_000));
     return Response.json(await readBusStats(database), { headers: READ_HEADERS });
   } catch (error) {
     console.error("GET /api/bus-entries error:", error);
