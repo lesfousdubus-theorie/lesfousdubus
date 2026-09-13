@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import Scene from "./bus/Scene";
 import { computeNumRows } from "./bus/Passengers";
 import { type PassengerProfile, type Phase, type WorldState } from "./bus/constants";
-import { playDing, playHorn, playStretch, playBoost } from "@/lib/horn";
+import { playDing, playHorn, playStretch, playBoost, unlockAudio } from "@/lib/horn";
 
 const TheoryModal = dynamic(() => import("./TheoryModal"), { ssr: false });
 
@@ -58,18 +58,14 @@ function useModalAccessibility(
     previouslyFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const page = document.getElementById("site-content");
     const wasInert = page?.inert ?? false;
-    const previousAriaHidden = page?.getAttribute("aria-hidden") ?? null;
     if (page) {
       page.inert = true;
-      page.setAttribute("aria-hidden", "true");
     }
     const frame = window.requestAnimationFrame(() => initialFocusRef.current?.focus());
     return () => {
       window.cancelAnimationFrame(frame);
       if (page) {
         page.inert = wasInert;
-        if (previousAriaHidden === null) page.removeAttribute("aria-hidden");
-        else page.setAttribute("aria-hidden", previousAriaHidden);
       }
       previouslyFocusedRef.current?.focus({ preventScroll: true });
       previouslyFocusedRef.current = null;
@@ -310,7 +306,17 @@ export default function BusExperience() {
     if (typeof window !== "undefined") {
       const b = new URLSearchParams(window.location.search).get("boost");
       if (b === "1" || b === "true") {
-        playBoost();
+        const playOnInteraction = () => {
+          window.removeEventListener("pointerdown", playOnInteraction);
+          window.removeEventListener("keydown", playOnInteraction);
+          playBoost();
+        };
+        window.addEventListener("pointerdown", playOnInteraction, { once: true });
+        window.addEventListener("keydown", playOnInteraction, { once: true });
+        return () => {
+          window.removeEventListener("pointerdown", playOnInteraction);
+          window.removeEventListener("keydown", playOnInteraction);
+        };
       }
     }
   }, []);
@@ -504,6 +510,7 @@ export default function BusExperience() {
   // Entrer immédiatement dans le bus : le profil reste entièrement facultatif.
   const enterBus = useCallback(async () => {
     if (phase !== "outside" || joining) return;
+    unlockAudio();
     setJoining(true);
     setHasEntered(true);
 

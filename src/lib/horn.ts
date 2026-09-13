@@ -9,8 +9,13 @@ function getCtx(): AudioContext | null {
     if (!Ctor) return null;
     ctx = new Ctor();
   }
-  if (ctx.state === "suspended") void ctx.resume();
+  if (ctx.state === "suspended") void ctx.resume().catch(() => undefined);
   return ctx;
+}
+
+/** Déverrouille Web Audio pendant un geste utilisateur, avant toute attente réseau. */
+export function unlockAudio() {
+  getCtx();
 }
 
 let hornAudio: HTMLAudioElement | null = null;
@@ -151,4 +156,3 @@ export function playStretch() {
     osc.stop(now + 0.9);
   });
 }
-

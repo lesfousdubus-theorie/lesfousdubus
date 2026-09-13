@@ -18,11 +18,11 @@
     "@opennextjs/cloudflare": "^1.20.6",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
-    "@types/three": "^0.185.4",
+    "@types/three": "0.182.0",
     "next": "^16.3.4",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "three": "^0.185.1"
+    "three": "0.182.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.1.17",
@@ -32,9 +32,9 @@
     "esbuild": "^0.25.12",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
-    "postcss": "8.5.8",
+    "postcss": "8.5.28",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
-    "wrangler": "^4.129.0"
+    "wrangler": "4.131.1"
   }
 }

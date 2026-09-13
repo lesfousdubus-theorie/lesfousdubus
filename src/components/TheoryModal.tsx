@@ -101,10 +101,8 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
 
     const page = document.getElementById("site-content");
     const wasInert = page?.inert ?? false;
-    const previousAriaHidden = page ? page.getAttribute("aria-hidden") : null;
     if (page) {
       page.inert = true;
-      page.setAttribute("aria-hidden", "true");
     }
 
     const frame = window.requestAnimationFrame(() => dialogTitleRef.current?.focus());
@@ -113,8 +111,6 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
       window.cancelAnimationFrame(frame);
       if (page) {
         page.inert = wasInert;
-        if (previousAriaHidden === null) page.removeAttribute("aria-hidden");
-        else page.setAttribute("aria-hidden", previousAriaHidden);
       }
       previouslyFocusedRef.current?.focus({ preventScroll: true });
       previouslyFocusedRef.current = null;
@@ -402,8 +398,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
                     src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?rel=0&modestbranding=1&cc_load_policy=0`}
                     title="La Théorie des Fous du Bus — Vidéo Officielle Le Mont Corvo"
                     className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                   />
                 </div>
 

@@ -179,7 +179,7 @@ export default function Scene({
   return (
     <SceneErrorBoundary>
       <Canvas
-      shadows={!lowPower}
+      shadows={lowPower ? false : "basic"}
       frameloop="demand"
       dpr={lowPower ? 1 : Math.min(window.devicePixelRatio, 1.35)}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: cameraFar }}
