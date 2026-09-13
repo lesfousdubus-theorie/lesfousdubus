@@ -8,7 +8,6 @@ import type { WorldState } from "./constants";
 interface WeatherProps {
   worldRef: React.RefObject<WorldState>;
   lowPower?: boolean;
-  reducedMotion?: boolean;
 }
 
 const AREA = { x: 34, y: 28, z: 74 };
@@ -17,11 +16,16 @@ function seededValue(index: number, salt: number) {
   return Math.abs(Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453) % 1;
 }
 
-export default function Weather({ worldRef, lowPower = false, reducedMotion = false }: WeatherProps) {
+export default function Weather({ worldRef, lowPower = false }: WeatherProps) {
   const rainRef = useRef<THREE.LineSegments>(null);
   const rainMaterialRef = useRef<THREE.LineBasicMaterial>(null);
   const snowRef = useRef<THREE.Points>(null);
   const snowMaterialRef = useRef<THREE.PointsMaterial>(null);
+  const reducedMotion = useMemo(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
+
   const rainGeometry = useMemo(() => {
     const count = lowPower ? 180 : 420;
     const positions = new Float32Array(count * 6);

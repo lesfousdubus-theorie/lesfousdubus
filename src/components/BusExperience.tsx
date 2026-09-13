@@ -1,8 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type RefObject } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Scene from "./bus/Scene";
 import { computeNumRows } from "./bus/Passengers";
 import { type PassengerProfile, type Phase, type WorldState } from "./bus/constants";
@@ -22,126 +21,16 @@ interface PassengerManifestEntry {
   displayName: string | null;
 }
 
-interface BusApiState {
-  count: number;
-  seatCapacity: number;
-  profileRevision: number;
-  vacantSeatRanges: Array<[number, number, number]>;
-}
-
 const THEORY_START_DATE = Date.UTC(2024, 4, 26);
 const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
-const API_TIMEOUT_MS = 8_000;
-let memoryVisitorId: string | null = null;
-
-const MODAL_FOCUSABLE_SELECTOR = [
-  "a[href]", "button:not([disabled])", "input:not([disabled])", "select:not([disabled])",
-  "textarea:not([disabled])", "[tabindex]:not([tabindex='-1'])",
-].join(",");
-
-function useModalAccessibility(
-  isOpen: boolean,
-  onClose: () => void,
-  dialogRef: RefObject<HTMLElement | null>,
-  initialFocusRef: RefObject<HTMLElement | null> = dialogRef,
-) {
-  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
-  const onCloseRef = useRef(onClose);
-
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    previouslyFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const page = document.getElementById("site-content");
-    const wasInert = page?.inert ?? false;
-    const previousAriaHidden = page?.getAttribute("aria-hidden") ?? null;
-    if (page) {
-      page.inert = true;
-      page.setAttribute("aria-hidden", "true");
-    }
-    const frame = window.requestAnimationFrame(() => initialFocusRef.current?.focus());
-    return () => {
-      window.cancelAnimationFrame(frame);
-      if (page) {
-        page.inert = wasInert;
-        if (previousAriaHidden === null) page.removeAttribute("aria-hidden");
-        else page.setAttribute("aria-hidden", previousAriaHidden);
-      }
-      previouslyFocusedRef.current?.focus({ preventScroll: true });
-      previouslyFocusedRef.current = null;
-    };
-  }, [initialFocusRef, isOpen]);
-
-  return useCallback((event: ReactKeyboardEvent<HTMLElement>) => {
-    event.stopPropagation();
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onCloseRef.current();
-      return;
-    }
-    if (event.key !== "Tab") return;
-    const scope = dialogRef.current;
-    if (!scope) return;
-    const focusable = Array.from(scope.querySelectorAll<HTMLElement>(MODAL_FOCUSABLE_SELECTOR));
-    if (focusable.length === 0) {
-      event.preventDefault();
-      scope.focus();
-      return;
-    }
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-    if (event.shiftKey && (active === first || !scope.contains(active) || !focusable.includes(active as HTMLElement))) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && (active === last || !scope.contains(active) || !focusable.includes(active as HTMLElement))) {
-      event.preventDefault();
-      first.focus();
-    }
-  }, [dialogRef]);
-}
 
 function getOrCreateVisitorId(): string {
-  if (memoryVisitorId) return memoryVisitorId;
   try {
     const visitorId = localStorage.getItem("fdb-visitor") ?? crypto.randomUUID();
     localStorage.setItem("fdb-visitor", visitorId);
-    memoryVisitorId = visitorId;
     return visitorId;
   } catch {
-    memoryVisitorId = crypto.randomUUID();
-    return memoryVisitorId;
-  }
-}
-
-class ApiError extends Error {
-  constructor(message: string, readonly status: number) {
-    super(message);
-  }
-}
-
-async function fetchJson<T>(
-  input: RequestInfo | URL,
-  init: RequestInit = {},
-  timeoutMs = API_TIMEOUT_MS,
-): Promise<T> {
-  const timeoutController = new AbortController();
-  const timeout = window.setTimeout(() => timeoutController.abort(), timeoutMs);
-  const signal = init.signal
-    ? AbortSignal.any([init.signal, timeoutController.signal])
-    : timeoutController.signal;
-  try {
-    const response = await fetch(input, { ...init, signal });
-    const data = (await response.json().catch(() => ({}))) as T & { error?: string };
-    if (!response.ok) {
-      throw new ApiError(data.error || "Le serveur ne répond pas pour le moment.", response.status);
-    }
-    return data;
-  } finally {
-    window.clearTimeout(timeout);
+    return crypto.randomUUID();
   }
 }
 
@@ -191,14 +80,6 @@ export default function BusExperience() {
   const [manifestError, setManifestError] = useState("");
   const [manifestNextFrom, setManifestNextFrom] = useState(0);
   const [manifestHasMore, setManifestHasMore] = useState(false);
-  const [seatCapacity, setSeatCapacity] = useState(() => {
-    if (typeof window === "undefined") return 0;
-    const value = Number(new URLSearchParams(window.location.search).get("count"));
-    return Number.isSafeInteger(value) && value >= 0 ? value : 0;
-  });
-  const [profileRevision, setProfileRevision] = useState(0);
-  const [vacantSeatRanges, setVacantSeatRanges] = useState<Array<[number, number, number]>>([]);
-  const [registrationPending, setRegistrationPending] = useState(false);
   const [theoryAgeInDays] = useState(getTheoryAgeInDays);
   const [controlsReady, setControlsReady] = useState(true);
 
@@ -245,10 +126,6 @@ export default function BusExperience() {
 
   const toastTimeout = useRef<NodeJS.Timeout | null>(null);
   const controlsReadyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const passengerCardRequest = useRef<AbortController | null>(null);
-  const manifestRequest = useRef<AbortController | null>(null);
-  const seatCapacityRef = useRef(seatCapacity);
-  const profileRevisionRef = useRef(profileRevision);
   const worldRef = useRef<WorldState>({
     daylight: 1,
     timeOfDay: 0.2,
@@ -264,14 +141,9 @@ export default function BusExperience() {
   const manualHeadlightsRef = useRef<boolean | null>(null);
 
   const toggleDayNight = useCallback(() => {
-    if (manualDayNight !== null) {
-      setManualDayNight(null);
-      return;
-    }
-    const nextMode = isNight ? "day" : "night";
-    setManualDayNight(nextMode);
-    setIsNight(nextMode === "night");
-  }, [isNight, manualDayNight]);
+    setManualDayNight(isNight ? "day" : "night");
+    setIsNight((night) => !night);
+  }, [isNight]);
 
   // Affiche une notification festive
   const showToast = useCallback((text: string, sub?: string, badge?: string) => {
@@ -282,22 +154,6 @@ export default function BusExperience() {
       setToast((cur) => (cur?.id === id ? null : cur));
     }, 2800);
   }, []);
-
-  const updateSeatCapacity = useCallback((capacity: number) => {
-    seatCapacityRef.current = capacity;
-    setSeatCapacity(capacity);
-    setSeatRow((row) => Math.min(row, computeNumRows(capacity) - 1));
-  }, []);
-
-  const applyBusSnapshot = useCallback((data: BusApiState, updateCount = true) => {
-    if (data.profileRevision < profileRevisionRef.current) return false;
-    profileRevisionRef.current = data.profileRevision;
-    setProfileRevision(data.profileRevision);
-    setVacantSeatRanges(data.vacantSeatRanges);
-    updateSeatCapacity(data.seatCapacity);
-    if (updateCount) setCount(data.count);
-    return true;
-  }, [updateSeatCapacity]);
 
   // Synchronise en continu la vitesse du bus avec le moteur 3D
   useEffect(() => {
@@ -336,38 +192,37 @@ export default function BusExperience() {
     });
   }, []);
 
-  // Récupération initiale : une erreur conserve l'état "inconnu" plutôt que
-  // d'afficher artificiellement un bus vide.
+  // Récupération initiale du nombre réel de passagers depuis l'API
   useEffect(() => {
-    const controller = new AbortController();
-    void fetchJson<BusApiState>("/api/bus-entries", { signal: controller.signal })
-      .then((data) => {
-        applyBusSnapshot(data);
+    fetch("/api/bus-entries")
+      .then((r) => {
+        if (!r.ok) throw new Error("Passenger counter unavailable");
+        return r.json();
       })
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [applyBusSnapshot]);
+      .then((d: { count: number }) => setCount(d.count))
+      .catch(() => setCount(0));
+  }, []);
 
   // Seuls les profils proches de la caméra sont chargés : le compteur peut ainsi
   // grandir sans télécharger des milliers de commentaires à chaque actualisation.
   useEffect(() => {
+    if (count === null) return;
     const focusRow = phase === "inside" ? seatRow : 0;
     const from = Math.max(0, (focusRow - 4) * 4);
     const controller = new AbortController();
 
-    void fetchJson<BusApiState & { passengers?: PassengerProfile[] }>(
-      `/api/bus-entries?profiles=1&from=${from}&limit=48`, {
+    fetch(`/api/bus-entries?profiles=1&from=${from}&limit=48`, {
       cache: "no-store",
       signal: controller.signal,
     })
-      .then((data) => {
-        if (!applyBusSnapshot(data)) return;
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((data: { passengers?: PassengerProfile[] }) => {
         setPassengerProfiles(data.passengers ?? []);
       })
       .catch(() => undefined);
 
     return () => controller.abort();
-  }, [applyBusSnapshot, phase, profileRevision, seatRow]);
+  }, [count, phase, seatRow]);
 
   // Synchronisation en direct, ralentie et suspendue quand l'onglet est masqué.
   useEffect(() => {
@@ -377,14 +232,14 @@ export default function BusExperience() {
     const poll = async () => {
       if (stopped || document.hidden) return;
       try {
-        const d = await fetchJson<BusApiState>("/api/bus-entries");
-        const previousSeatCapacity = seatCapacityRef.current;
-        if (!applyBusSnapshot(d, false)) return;
+        const r = await fetch("/api/bus-entries");
+        if (!r.ok) return;
+        const d = (await r.json()) as { count: number };
         setCount((prev) => {
           if (prev === null) return d.count;
           if (d.count > prev) {
-            const prevRows = computeNumRows(previousSeatCapacity);
-            const nextRows = computeNumRows(d.seatCapacity);
+            const prevRows = computeNumRows(prev);
+            const nextRows = computeNumRows(d.count);
             if (nextRows > prevRows) {
               playStretch();
               showToast(
@@ -430,32 +285,7 @@ export default function BusExperience() {
       document.removeEventListener("visibilitychange", refresh);
       window.removeEventListener("focus", refresh);
     };
-  }, [applyBusSnapshot, showToast]);
-
-  // Si l'entrée a échoué, elle est réellement rejouée jusqu'à confirmation D1.
-  useEffect(() => {
-    if (!registrationPending) return;
-    const controller = new AbortController();
-    const retryRegistration = () => {
-      void fetchJson<BusApiState & { seatIndex: number | null }>("/api/bus-entries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ visitorId: getOrCreateVisitorId() }),
-        signal: controller.signal,
-      }).then((data) => {
-        applyBusSnapshot(data);
-        setCurrentPassengerSeatIndex(data.seatIndex);
-        setRegistrationPending(false);
-        showToast("Place synchronisée !", "Ton inscription est maintenant confirmée.", "✓ SYNCHRO");
-      }).catch(() => undefined);
-    };
-    const retry = window.setInterval(retryRegistration, 10_000);
-    return () => {
-      window.clearInterval(retry);
-      controller.abort();
-    };
-  }, [applyBusSnapshot, registrationPending, showToast]);
+  }, [showToast]);
 
   // Ne remonte vers React que le changement jour/nuit, pas les valeurs 3D à chaque tick.
   useEffect(() => {
@@ -509,18 +339,22 @@ export default function BusExperience() {
     const visitorId = getOrCreateVisitorId();
 
     try {
-      const d = await fetchJson<BusApiState & {
-        added: boolean;
-        passenger: PassengerProfile | null;
-        seatIndex: number | null;
-      }>("/api/bus-entries", {
+      const r = await fetch("/api/bus-entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
         body: JSON.stringify({ visitorId }),
       });
-      const prevRows = computeNumRows(seatCapacityRef.current);
-      const nextRows = computeNumRows(d.seatCapacity);
+      if (!r.ok) throw new Error("Passenger registration failed");
+
+      const d = (await r.json()) as {
+        count: number;
+        added: boolean;
+        passenger: PassengerProfile | null;
+        seatIndex: number | null;
+      };
+      const prevRows = computeNumRows(count ?? 0);
+      const nextRows = computeNumRows(d.count);
 
       if (!d.added) {
         showToast("Bon retour à bord !", "Tu reprends ta place dans le bus !", "🚌 NAKAMA");
@@ -530,11 +364,10 @@ export default function BusExperience() {
       } else {
         showToast("Bienvenue à bord !", "Tu es maintenant assis dans le bus !", "🎉 NAKAMA");
       }
-      applyBusSnapshot(d);
-      setRegistrationPending(false);
+      setCount(d.count);
       setCurrentPassengerSeatIndex(d.seatIndex);
       if (d.seatIndex !== null) {
-        setSeatRow(Math.min(computeNumRows(d.seatCapacity) - 1, Math.floor(d.seatIndex / 4)));
+        setSeatRow(Math.min(computeNumRows(d.count) - 1, Math.floor(d.seatIndex / 4)));
       }
       if (d.passenger) {
         setPassengerProfiles((profiles) => [
@@ -546,19 +379,18 @@ export default function BusExperience() {
       setPhase("entering");
       playDing();
     } catch {
-      setRegistrationPending(true);
       setTvOn(true);
       setPhase("entering");
       playDing();
       showToast(
-        "Place en cours de synchronisation",
-        "L’inscription sera automatiquement rejouée dès que Cloudflare répondra.",
+        "Bienvenue à bord !",
+        "Le compteur se resynchronisera dès que Cloudflare répondra.",
         "⏳ SYNCHRO",
       );
     } finally {
       setJoining(false);
     }
-  }, [applyBusSnapshot, phase, joining, showToast]);
+  }, [phase, joining, count, showToast]);
 
   const openProfileModal = useCallback((mode: "name" | "comment") => {
     try {
@@ -593,33 +425,37 @@ export default function BusExperience() {
         profileModalMode === "name"
           ? { visitorId, displayName: name }
           : { visitorId, comment };
-      const data = await fetchJson<BusApiState & {
-        passenger: PassengerProfile | null;
-        seatIndex: number | null;
-      }>("/api/bus-entries", {
+      const response = await fetch("/api/bus-entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
         body: JSON.stringify(payload),
       });
-      const acceptedSnapshot = applyBusSnapshot(data);
+      if (!response.ok) throw new Error("Profile update failed");
+      const data = (await response.json()) as {
+        count: number;
+        passenger: PassengerProfile | null;
+        seatIndex: number | null;
+      };
+
       try {
         if (profileModalMode === "name") localStorage.setItem("fdb-display-name", name);
         if (profileModalMode === "comment") localStorage.setItem("fdb-comment", comment);
       } catch {
         // L'enregistrement D1 reste valide même si le stockage local est bloqué.
       }
-      if (acceptedSnapshot && data.passenger) {
+      if (data.passenger) {
         setPassengerProfiles((profiles) => [
           ...profiles.filter((profile) => profile.seatIndex !== data.passenger!.seatIndex),
           data.passenger!,
         ]);
         if (profileModalMode === "name") {
           setSeatRow(
-            Math.min(computeNumRows(data.seatCapacity) - 1, Math.floor(data.passenger.seatIndex / 4)),
+            Math.min(computeNumRows(data.count) - 1, Math.floor(data.passenger.seatIndex / 4)),
           );
         }
       }
+      setCount(data.count);
       setShowJoinModal(false);
       showToast(
         profileModalMode === "name" ? "Prénom ajouté !" : "Message enregistré !",
@@ -628,12 +464,12 @@ export default function BusExperience() {
           : "Il sera visible lorsqu’on cliquera sur ton personnage.",
         "✅ PROFIL",
       );
-    } catch (error) {
-      setJoinError(error instanceof ApiError ? error.message : "Impossible d’enregistrer pour le moment. Réessaie dans quelques instants.");
+    } catch {
+      setJoinError("Impossible d’enregistrer pour le moment. Réessaie dans quelques instants.");
     } finally {
       setJoining(false);
     }
-  }, [applyBusSnapshot, joinComment, joinName, profileModalMode, showToast]);
+  }, [joinComment, joinName, profileModalMode, showToast]);
 
   const removeProfileField = useCallback(async () => {
     setJoining(true);
@@ -644,31 +480,33 @@ export default function BusExperience() {
         profileModalMode === "name"
           ? { visitorId, displayName: "" }
           : { visitorId, comment: "" };
-      const data = await fetchJson<BusApiState & {
-        passenger: PassengerProfile | null;
-        seatIndex: number | null;
-      }>("/api/bus-entries", {
+      const response = await fetch("/api/bus-entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
         body: JSON.stringify(payload),
       });
-      const acceptedSnapshot = applyBusSnapshot(data);
+      if (!response.ok) throw new Error("Profile removal failed");
+      const data = (await response.json()) as {
+        count: number;
+        passenger: PassengerProfile | null;
+        seatIndex: number | null;
+      };
+
       try {
         localStorage.removeItem(profileModalMode === "name" ? "fdb-display-name" : "fdb-comment");
       } catch {
         // La suppression D1 reste valide même si le stockage local est bloqué.
       }
 
-      if (acceptedSnapshot) {
-        setPassengerProfiles((profiles) => {
-          if (data.seatIndex === null) return profiles;
-          const others = profiles.filter((profile) => profile.seatIndex !== data.seatIndex);
-          return data.passenger ? [...others, data.passenger] : others;
-        });
-      }
+      setPassengerProfiles((profiles) => {
+        if (data.seatIndex === null) return profiles;
+        const others = profiles.filter((profile) => profile.seatIndex !== data.seatIndex);
+        return data.passenger ? [...others, data.passenger] : others;
+      });
       if (profileModalMode === "name") setJoinName("");
       else setJoinComment("");
+      setCount(data.count);
       setShowJoinModal(false);
       showToast(
         profileModalMode === "name" ? "Prénom retiré" : "Commentaire retiré",
@@ -677,67 +515,56 @@ export default function BusExperience() {
           : "Ton prénom reste affiché, mais ton message a été supprimé.",
         "✓ PROFIL",
       );
-    } catch (error) {
-      setJoinError(error instanceof ApiError ? error.message : "Impossible de supprimer pour le moment. Réessaie dans quelques instants.");
+    } catch {
+      setJoinError("Impossible de supprimer pour le moment. Réessaie dans quelques instants.");
     } finally {
       setJoining(false);
     }
-  }, [applyBusSnapshot, profileModalMode, showToast]);
+  }, [profileModalMode, showToast]);
 
   const openPassengerCard = useCallback(async (summary: PassengerProfile) => {
-    passengerCardRequest.current?.abort();
-    const controller = new AbortController();
-    passengerCardRequest.current = controller;
     setSelectedPassenger(summary);
     setPassengerCardError("");
     setPassengerCardLoading(true);
 
     try {
-      const data = await fetchJson<{ passenger: PassengerProfile }>(`/api/bus-entries?seat=${summary.seatIndex}`, {
+      const response = await fetch(`/api/bus-entries?seat=${summary.seatIndex}`, {
         cache: "no-store",
-        signal: controller.signal,
       });
-      if (passengerCardRequest.current !== controller) return;
+      if (!response.ok) throw new Error("Passenger unavailable");
+      const data = (await response.json()) as { passenger: PassengerProfile };
       setSelectedPassenger(data.passenger);
     } catch {
-      if (controller.signal.aborted) return;
       setPassengerCardError("Impossible de charger ce message pour le moment.");
     } finally {
-      if (passengerCardRequest.current === controller) setPassengerCardLoading(false);
+      setPassengerCardLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    if (!selectedPassenger) passengerCardRequest.current?.abort();
-  }, [selectedPassenger]);
-
   const loadPassengerManifest = useCallback(async (from = 0) => {
-    if (from === 0) manifestRequest.current?.abort();
-    const controller = new AbortController();
-    manifestRequest.current = controller;
     setManifestLoading(true);
     setManifestError("");
     try {
-      const data = await fetchJson<BusApiState & {
+      const response = await fetch(`/api/bus-entries?manifest=1&from=${from}&limit=60`, {
+        cache: "no-store",
+      });
+      if (!response.ok) throw new Error("Passenger manifest unavailable");
+      const data = (await response.json()) as {
+        count: number;
         passengers: PassengerManifestEntry[];
         nextFrom: number;
         hasMore: boolean;
-      }>(`/api/bus-entries?manifest=1&from=${from}&limit=60`, {
-        cache: "no-store",
-        signal: controller.signal,
-      });
-      if (manifestRequest.current !== controller) return;
-      if (!applyBusSnapshot(data)) return;
+      };
       setPassengerManifest((current) => from === 0 ? data.passengers : [...current, ...data.passengers]);
       setManifestNextFrom(data.nextFrom);
       setManifestHasMore(data.hasMore);
+      setCount(data.count);
     } catch {
-      if (controller.signal.aborted) return;
       setManifestError("Impossible de charger les passagers pour le moment.");
     } finally {
-      if (manifestRequest.current === controller) setManifestLoading(false);
+      setManifestLoading(false);
     }
-  }, [applyBusSnapshot]);
+  }, []);
 
   const openPassengerManifest = useCallback(() => {
     setShowPassengerList(true);
@@ -747,20 +574,21 @@ export default function BusExperience() {
   const leaveBusPermanently = useCallback(async () => {
     try {
       const visitorId = getOrCreateVisitorId();
-      const data = await fetchJson<BusApiState & { removed: boolean }>("/api/bus-entries", {
+      const response = await fetch("/api/bus-entries", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
         body: JSON.stringify({ visitorId }),
       });
+      if (!response.ok) return false;
+      const data = (await response.json()) as { count: number; removed: boolean };
       try {
         localStorage.removeItem("fdb-display-name");
         localStorage.removeItem("fdb-comment");
       } catch {
         // La suppression D1 est déjà effective.
       }
-      applyBusSnapshot(data);
-      setRegistrationPending(false);
+      setCount(data.count);
       setPassengerProfiles([]);
       setPassengerManifest([]);
       setSelectedPassenger(null);
@@ -780,7 +608,7 @@ export default function BusExperience() {
     } catch {
       return false;
     }
-  }, [applyBusSnapshot, showToast]);
+  }, [showToast]);
 
   // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
   const exitBus = useCallback(() => {
@@ -809,12 +637,11 @@ export default function BusExperience() {
     setHornPulse(performance.now());
   }, []);
 
-  // Les commandes globales restent inactives pendant la saisie, dans les fenêtres
-  // et à l'intérieur, où les flèches et +/- contrôlent exclusivement la caméra.
+  // Raccourcis clavier (H = klaxon, L = phares, +/↑ = accélérer, -/↓ = ralentir, B = boost)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Évite les raccourcis si l'utilisateur est dans un input (recherche du modal)
       if (
-        document.querySelector("[role='dialog']") ||
         document.activeElement?.tagName === "INPUT" ||
         document.activeElement?.tagName === "TEXTAREA"
       ) {
@@ -823,11 +650,11 @@ export default function BusExperience() {
 
       if (e.key === "h" || e.key === "H") honk();
       if (e.key === "l" || e.key === "L") toggleHeadlights();
-      if (phase !== "inside" && (e.key === "+" || e.key === "=" || e.key === "ArrowUp")) {
+      if (e.key === "+" || e.key === "=" || e.key === "ArrowUp") {
         e.preventDefault();
         accelerateBus();
       }
-      if (phase !== "inside" && (e.key === "-" || e.key === "_" || e.key === "ArrowDown")) {
+      if (e.key === "-" || e.key === "_" || e.key === "ArrowDown") {
         e.preventDefault();
         decelerateBus();
       }
@@ -845,10 +672,10 @@ export default function BusExperience() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase, honk, toggleHeadlights, accelerateBus, decelerateBus]);
+  }, [honk, toggleHeadlights, accelerateBus, decelerateBus]);
 
   const effectiveCount = count ?? 0;
-  const numRows = computeNumRows(seatCapacity);
+  const numRows = computeNumRows(effectiveCount);
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
@@ -864,8 +691,6 @@ export default function BusExperience() {
         onArrived={onArrived}
         onToggleTv={() => setTvOn((v) => !v)}
         passengerCount={effectiveCount}
-        seatCapacity={seatCapacity}
-        vacantSeatRanges={vacantSeatRanges}
         currentSeatRow={seatRow}
         isMutedForFullscreen={false}
         hasEntered={hasEntered}
@@ -876,8 +701,9 @@ export default function BusExperience() {
       />
 
       {/* ---------- HUD & INTERFACE UTILISATEUR (GARANTI TOUJOURS AU PREMIER PLAN Z-INDEX) ---------- */}
+      {!showTheoryModal && !showJoinModal && !showPassengerList && !showTheoryAge && !selectedPassenger && (
         <div
-          className={`pointer-events-none fixed inset-0 isolate select-none ${showTheoryModal || showJoinModal || showPassengerList || showTheoryAge || selectedPassenger ? "invisible" : ""}`}
+          className="pointer-events-none fixed inset-0 isolate select-none"
           style={{ zIndex: 2147483647 }}
         >
         {/* Toast notification dynamique (allongement du bus) */}
@@ -898,41 +724,37 @@ export default function BusExperience() {
         )}
 
         {/* Titre + zone (Responsive mobile) */}
-        <div className={`pointer-events-none absolute left-3 max-w-[calc(100vw-1.5rem)] sm:left-4 sm:top-4 sm:max-w-[60vw] ${phase === "inside" ? "top-[8.25rem]" : "top-[4.75rem]"}`}>
-          <h1 className={`font-black uppercase leading-[1.08] tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,0.55)] text-sm sm:text-2xl md:text-3xl ${phase === "inside" ? "hidden sm:block" : ""}`}>
+        <div className="pointer-events-none absolute left-3 sm:left-4 top-3 sm:top-4 max-w-[50vw] sm:max-w-[60vw]">
+          <h1 className="font-black uppercase leading-[1.08] tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,0.55)] text-sm sm:text-2xl md:text-3xl">
             <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
             <span className="text-white">des Fous du Bus</span>
           </h1>
-          <p className={`mt-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-[#ffd23f] drop-shadow sm:mt-1 sm:text-xs md:text-sm ${phase === "inside" ? "hidden sm:block" : ""}`}>
+          <p className="mt-0.5 sm:mt-1 text-[9px] sm:text-xs font-bold uppercase tracking-[0.14em] text-[#ffd23f] drop-shadow md:text-sm">
             LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
           </p>
           <div className="mt-2 sm:mt-3">
             <button
               type="button"
               onClick={() => setShowTheoryModal(true)}
-              className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/60 px-4 text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] active:scale-95 cursor-pointer"
+              className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/60 px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:bg-[#ffd23f] hover:text-[#0d2190] hover:border-white active:scale-95 cursor-pointer"
               title="Découvrir la théorie des Fous du Bus"
             >
               <span>📜</span>
               <span>La Théorie</span>
             </button>
-            <p className={`mt-2 rounded-full bg-black/50 px-3 py-1.5 text-[11px] font-semibold normal-case tracking-normal text-white/90 backdrop-blur-sm sm:text-xs ${phase === "inside" ? "hidden sm:block" : ""}`}>
-              <span className="sm:hidden">Glisse pour tourner · Pince pour zoomer</span>
-              <span className="hidden sm:inline">Glisser pour tourner · Molette pour zoomer</span>
-            </p>
           </div>
         </div>
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
-        <div className="pointer-events-auto absolute left-3 right-3 top-3 flex h-[3.5rem] items-stretch justify-end gap-1 rounded-2xl border border-[#ffd23f]/40 bg-black/60 p-1 shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:top-4 sm:h-auto">
+        <div className="pointer-events-auto absolute right-3 top-3 flex items-stretch gap-1 rounded-2xl border border-[#ffd23f]/40 bg-black/60 p-1 shadow-lg backdrop-blur-md sm:right-4 sm:top-4">
           <button type="button" onClick={openPassengerManifest} className="group flex items-center gap-2 rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:gap-2.5 sm:px-3 sm:py-2">
             <span className="text-lg transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 motion-reduce:transform-none sm:text-2xl">🚌</span>
             <span>
               <span className="flex items-center gap-1 sm:gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffd23f]">
+                <span className="text-[8px] font-semibold uppercase tracking-[0.15em] text-[#ffd23f] sm:text-[10px]">
                   Passagers
                 </span>
-                <span className="rounded-full bg-white/15 px-1.5 text-[9px] font-bold text-white/90">
+                <span className="rounded-full bg-white/15 px-1 text-[8px] font-bold text-white/90 sm:px-1.5 sm:text-[9px]">
                   {numRows} r.
                 </span>
               </span>
@@ -943,7 +765,7 @@ export default function BusExperience() {
           </button>
           <div className="my-1 w-px bg-white/20" aria-hidden="true" />
           <button type="button" onClick={() => setShowTheoryAge(true)} className="rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:px-3 sm:py-2" title="Voir le compteur précis depuis le 26 mai 2024">
-            <span className="block text-[9px] font-semibold uppercase tracking-[0.08em] text-[#ffd23f] sm:text-[10px] sm:tracking-[0.12em]">
+            <span className="block text-[8px] font-semibold uppercase tracking-[0.12em] text-[#ffd23f] sm:text-[10px]">
               La théorie existe depuis
             </span>
             <span className="block text-base font-black tabular-nums text-white sm:text-xl">
@@ -957,8 +779,8 @@ export default function BusExperience() {
         <button
           type="button"
           onClick={toggleDayNight}
-          title={manualDayNight === null ? `Forcer le mode ${isNight ? "Jour" : "Nuit"}` : "Revenir au cycle automatique"}
-          className="pointer-events-auto absolute bottom-[4.5rem] left-3 flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 bg-black/65 px-3 text-xs font-bold text-white shadow-lg backdrop-blur-md transition hover:border-[#ffd23f]/60 hover:bg-black/85 active:scale-95 cursor-pointer sm:bottom-4 sm:left-4 sm:gap-2 sm:px-3.5 sm:text-sm"
+          title={isNight ? "Passer en mode Jour" : "Passer en mode Nuit"}
+          className="pointer-events-auto absolute bottom-3 sm:bottom-4 left-3 sm:left-4 flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/25 bg-black/65 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-lg backdrop-blur-md transition hover:bg-black/85 hover:border-[#ffd23f]/60 active:scale-95 cursor-pointer"
         >
           {isNight ? (
             <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
@@ -970,25 +792,25 @@ export default function BusExperience() {
               <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           )}
-          <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
-          <span className="text-white/60 text-[10px] sm:text-xs">· {manualDayNight === null ? (isNight ? "Nuit" : "Jour") : "Auto"}</span>
+          <span>{isNight ? "Nuit" : "Jour"}</span>
+          <span className="text-white/50 text-[10px] sm:text-xs">· Changer</span>
         </button>
 
         {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
-        <div className="pointer-events-auto absolute bottom-3 left-3 right-3 flex min-h-11 items-center gap-1 rounded-full border border-white/25 bg-black/65 px-1.5 text-xs shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-3.5 sm:py-2 sm:text-sm">
+        <div className="pointer-events-auto absolute bottom-3 sm:bottom-4 right-3 sm:right-4 flex items-center gap-1 sm:gap-1.5 rounded-full border border-white/25 bg-black/65 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm shadow-lg backdrop-blur-md">
           <button
             type="button"
             onClick={decelerateBus}
             disabled={speedMultiplier <= 0.3}
             aria-label="Ralentir le bus"
-            className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-white/10 px-2 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95 disabled:cursor-default disabled:opacity-30 sm:min-h-0 sm:w-[90px] sm:flex-none sm:py-1 sm:px-2.5"
+            className="flex w-[76px] items-center justify-center gap-1 rounded-full bg-white/10 px-2 py-1 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:px-2.5"
             title="Ralentir le bus (Touche - ou Flèche Bas)"
           >
             <span>🐢</span>
             <span>Ralentir</span>
           </button>
 
-          <div className="flex w-[62px] shrink-0 items-center justify-center gap-1 px-1 font-black tabular-nums sm:w-[76px] sm:px-1.5">
+          <div className="flex w-[68px] shrink-0 items-center justify-center gap-1 px-1 font-black tabular-nums sm:w-[76px] sm:px-1.5">
             <span
               className={
                 speedMultiplier >= 2.0
@@ -1012,7 +834,7 @@ export default function BusExperience() {
             onClick={accelerateBus}
             disabled={speedMultiplier >= 3.0}
             aria-label="Accélérer le bus"
-            className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#ffd23f]/25 px-2 text-xs font-black text-[#ffd23f] transition hover:bg-[#ffd23f]/40 active:scale-95 disabled:cursor-default disabled:opacity-30 sm:min-h-0 sm:w-[90px] sm:flex-none sm:py-1 sm:px-2.5"
+            className="flex w-[76px] items-center justify-center gap-1 rounded-full bg-[#ffd23f]/25 px-2 py-1 text-xs font-black text-[#ffd23f] transition hover:bg-[#ffd23f]/40 active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:px-2.5"
             title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
           >
             <span>⚡</span>
@@ -1022,14 +844,14 @@ export default function BusExperience() {
 
         {/* Navigation entre les rangées quand on est à l'intérieur */}
         {phase === "inside" && (
-          <div className="pointer-events-auto absolute right-3 top-[4.75rem] flex flex-col items-end gap-1.5 sm:right-4 sm:top-[6.25rem] sm:gap-2">
+          <div className="pointer-events-auto absolute right-3 top-[5.5rem] flex flex-col items-end gap-1.5 sm:right-4 sm:top-[6.25rem] sm:gap-2">
             {/* Déplacement dans l'allée */}
-            <div className="flex min-h-11 items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-1.5 shadow-lg backdrop-blur-md sm:px-3">
+            <div className="flex h-10 items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-2.5 shadow-lg backdrop-blur-md sm:px-3">
               <button
                 type="button"
                 onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
                 disabled={seatRow <= 0}
-                className="grid h-11 w-11 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer"
+                className="grid h-7 w-8 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer sm:w-9"
                 title="Rangée précédente"
               >
                 ◀
@@ -1044,7 +866,7 @@ export default function BusExperience() {
                 type="button"
                 onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
                 disabled={seatRow >= numRows - 1}
-                className="grid h-11 w-11 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer"
+                className="grid h-7 w-8 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer sm:w-9"
                 title="Rangée suivante"
               >
                 ▶
@@ -1056,16 +878,16 @@ export default function BusExperience() {
         {/* Barres persistantes : aucune commande ne se téléporte sous le pointeur. */}
         <div
           aria-hidden={!exteriorControlsVisible}
-          className={`absolute bottom-[7.75rem] left-1/2 flex w-[calc(100vw-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-4 sm:w-auto sm:max-w-3xl sm:gap-2 md:left-[calc(50%-4.75rem)] ${
+          className={`absolute bottom-3 left-1/2 flex max-w-[95vw] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-4 sm:max-w-3xl sm:gap-2 md:left-[calc(50%-4.75rem)] ${
             exteriorControlsVisible
               ? "pointer-events-auto translate-y-0 opacity-100"
               : "pointer-events-none translate-y-2 opacity-0"
           }`}
         >
-          <HudButton className="min-w-[96px] flex-1 sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !controlsReady || !exteriorControlsVisible}>
+          <HudButton className="w-[96px] sm:w-[108px]" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !controlsReady || !exteriorControlsVisible}>
             {headlights ? "Éteindre" : "Phares"}
           </HudButton>
-          <HudButton className="min-w-[104px] flex-1 sm:w-[112px] sm:flex-none" onClick={honk} icon="📯" disabled={busy || !controlsReady || !exteriorControlsVisible}>
+          <HudButton className="w-[104px] sm:w-[112px]" onClick={honk} icon="📯" disabled={busy || !controlsReady || !exteriorControlsVisible}>
             Klaxonner
           </HudButton>
           {tvOn && phase === "outside" && (
@@ -1075,14 +897,14 @@ export default function BusExperience() {
               </HudButton>
             </div>
           )}
-          <HudButton className="w-full sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={busy || joining || !controlsReady || !exteriorControlsVisible}>
+          <HudButton className="w-[184px] sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={busy || joining || !controlsReady || !exteriorControlsVisible}>
             {joining || phase === "entering" ? "Installation…" : "Entrer dans le bus"}
           </HudButton>
         </div>
 
         <div
           aria-hidden={!interiorControlsVisible}
-          className={`absolute bottom-[7.75rem] left-1/2 flex w-[512px] max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-16 sm:gap-2 ${
+          className={`absolute bottom-16 left-1/2 flex w-[512px] max-w-[95vw] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:gap-2 ${
             interiorControlsVisible
               ? "pointer-events-auto translate-y-0 opacity-100"
               : "pointer-events-none translate-y-2 opacity-0"
@@ -1090,28 +912,29 @@ export default function BusExperience() {
         >
           <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2">
             <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy || !controlsReady || !interiorControlsVisible}>
-              <span className="sm:hidden">Prénom</span><span className="hidden sm:inline">Ajouter un prénom</span>
+              Ajouter un prénom
             </HudButton>
             <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("comment")} icon="💬" disabled={busy || !controlsReady || !interiorControlsVisible}>
-              <span className="sm:hidden">Commenter</span><span className="hidden sm:inline">Mettre un commentaire</span>
+              Mettre un commentaire
             </HudButton>
           </div>
-          <div className="grid w-full grid-cols-4 items-center gap-1.5 sm:grid-cols-[1.25fr_1fr_0.82fr_1.08fr] sm:gap-2">
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy || !controlsReady || !interiorControlsVisible}>
-              <span className="sm:hidden">TV</span><span className="hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
+          <div className="grid w-full grid-cols-[1.25fr_1fr_0.82fr_1.08fr] items-center gap-1.5 sm:gap-2">
+            <HudButton className="min-w-0 w-full px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy || !controlsReady || !interiorControlsVisible}>
+              {tvOn ? "Éteindre la TV" : "Allumer la TV"}
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            <HudButton className="min-w-0 w-full px-2" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !controlsReady || !interiorControlsVisible}>
               {headlights ? "Éteindre" : "Phares"}
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={honk} icon="📯" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            <HudButton className="min-w-0 w-full px-2" onClick={honk} icon="📯" disabled={busy || !controlsReady || !interiorControlsVisible}>
               Klaxon
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={exitBus} primary icon="🏝️" disabled={busy || !controlsReady || !interiorControlsVisible}>
-              <span className="sm:hidden">{phase === "exiting" ? "Descente…" : "Sortir"}</span><span className="hidden sm:inline">{phase === "exiting" ? "Descente…" : "Sortir du bus"}</span>
+            <HudButton className="min-w-0 w-full px-2" onClick={exitBus} primary icon="🏝️" disabled={busy || !controlsReady || !interiorControlsVisible}>
+              {phase === "exiting" ? "Descente…" : "Sortir du bus"}
             </HudButton>
           </div>
         </div>
         </div>
+      )}
 
       {/* Modal interactif complet de la théorie des Fous du Bus */}
       <TheoryModal
@@ -1136,11 +959,7 @@ export default function BusExperience() {
         passenger={selectedPassenger}
         loading={passengerCardLoading}
         error={passengerCardError}
-        onClose={() => {
-          passengerCardRequest.current?.abort();
-          passengerCardRequest.current = null;
-          setSelectedPassenger(null);
-        }}
+        onClose={() => setSelectedPassenger(null)}
       />
       <PassengerListModal
         isOpen={showPassengerList}
@@ -1167,7 +986,7 @@ function ModalCloseButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label="Fermer"
-      className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 text-white transition-[background-color,border-color,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:scale-[1.03] hover:border-[#ffd23f] hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 motion-reduce:transform-none motion-reduce:transition-none"
+      className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 text-white transition-[background-color,border-color,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:scale-[1.03] hover:border-[#ffd23f] hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 motion-reduce:transform-none motion-reduce:transition-none"
     >
       <svg aria-hidden="true" className="block h-4 w-4" viewBox="0 0 16 16" fill="none">
         <path d="M3.25 3.25 12.75 12.75M12.75 3.25 3.25 12.75" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -1201,24 +1020,26 @@ function JoinBusModal({
   onSubmit: () => void;
   onRemove: () => void;
 }) {
-  const dialogRef = useRef<HTMLElement>(null);
-  const initialFocusRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-  const handleKeyDown = useModalAccessibility(isOpen, onClose, dialogRef, initialFocusRef);
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  return createPortal(
+  return (
     <div
       className="fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#020617]/80 p-3 backdrop-blur-md sm:p-6"
       role="presentation"
-      onKeyDown={handleKeyDown}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <section
-        ref={dialogRef}
-        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="join-bus-title"
@@ -1256,7 +1077,7 @@ function JoinBusModal({
                 Nom ou pseudo <span className="text-xs font-semibold text-[#ffd23f]">24 caractères max.</span>
               </span>
               <input
-                ref={mode === "name" ? initialFocusRef as RefObject<HTMLInputElement> : undefined}
+                autoFocus
                 required
                 maxLength={24}
                 value={name}
@@ -1271,7 +1092,7 @@ function JoinBusModal({
                 Ton message <span className="text-xs font-semibold text-[#ffd23f]">180 caractères max.</span>
               </span>
               <textarea
-                ref={mode === "comment" ? initialFocusRef as RefObject<HTMLTextAreaElement> : undefined}
+                autoFocus
                 required
                 maxLength={180}
                 rows={4}
@@ -1318,8 +1139,7 @@ function JoinBusModal({
           </div>
         </form>
       </section>
-    </div>,
-    document.body,
+    </div>
   );
 }
 
@@ -1334,23 +1154,26 @@ function PassengerCard({
   error: string;
   onClose: () => void;
 }) {
-  const dialogRef = useRef<HTMLElement>(null);
-  const handleKeyDown = useModalAccessibility(Boolean(passenger), onClose, dialogRef);
+  useEffect(() => {
+    if (!passenger) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose, passenger]);
 
   if (!passenger) return null;
 
-  return createPortal(
+  return (
     <div
       className="fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/70 p-4 backdrop-blur-sm"
       role="presentation"
-      onKeyDown={handleKeyDown}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <section
-        ref={dialogRef}
-        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="passenger-name"
@@ -1384,8 +1207,7 @@ function PassengerCard({
           )}
         </div>
       </section>
-    </div>,
-    document.body,
+    </div>
   );
 }
 
@@ -1410,19 +1232,22 @@ function PassengerListModal({
   onPassengerClick: (passenger: PassengerManifestEntry) => void;
   onClose: () => void;
 }) {
-  const dialogRef = useRef<HTMLElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const handleKeyDown = useModalAccessibility(isOpen, onClose, dialogRef, titleRef);
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  return createPortal(
-    <div className="fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/30 p-4 backdrop-blur-[2px]" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="passenger-list-title" className="flex max-h-[72dvh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/50 bg-[#081127]/95 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+  return (
+    <div className="fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/30 p-4 backdrop-blur-[2px]" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section role="dialog" aria-modal="true" aria-labelledby="passenger-list-title" className="flex max-h-[72dvh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/50 bg-[#081127]/95 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
         <header className="flex items-center justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ffd23f]">Le convoi</p>
-            <h2 ref={titleRef} tabIndex={-1} id="passenger-list-title" className="mt-0.5 text-xl font-black focus:outline-none">{count.toLocaleString("fr-FR")} passagers</h2>
+            <h2 id="passenger-list-title" className="mt-0.5 text-xl font-black">{count.toLocaleString("fr-FR")} passagers</h2>
           </div>
           <ModalCloseButton onClick={onClose} />
         </header>
@@ -1452,24 +1277,23 @@ function PassengerListModal({
           {!loading && !error && passengers.length === 0 && <p className="p-8 text-center text-sm text-white/60">Le bus attend son premier passager.</p>}
         </div>
       </section>
-    </div>,
-    document.body,
+    </div>
   );
 }
 
 function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [now, setNow] = useState(() => Date.now());
-  const dialogRef = useRef<HTMLElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const handleKeyDown = useModalAccessibility(isOpen, onClose, dialogRef, titleRef);
 
   useEffect(() => {
     if (!isOpen) return;
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    const onKeyDown = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKeyDown);
     return () => {
       window.clearInterval(timer);
+      window.removeEventListener("keydown", onKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
   const elapsed = getElapsedCalendarTime(THEORY_START_DATE, now);
@@ -1482,13 +1306,13 @@ function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     ["Secondes", elapsed.seconds],
   ] as const;
 
-  return createPortal(
-    <div className="fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/30 p-4 backdrop-blur-[2px]" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="theory-age-title" className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[#ffd23f]/55 bg-[#081127]/96 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+  return (
+    <div className="fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/30 p-4 backdrop-blur-[2px]" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section role="dialog" aria-modal="true" aria-labelledby="theory-age-title" className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[#ffd23f]/55 bg-[#081127]/96 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
         <header className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5 sm:px-6">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ffd23f]">Première mention de la théorie</p>
-            <h2 ref={titleRef} tabIndex={-1} id="theory-age-title" className="mt-1 text-xl font-black focus:outline-none sm:text-2xl">26 mai 2024 <span className="text-[#b9c7e8]">· Le Mont Corvo</span></h2>
+            <h2 id="theory-age-title" className="mt-1 text-xl font-black sm:text-2xl">26 mai 2024 <span className="text-[#b9c7e8]">· Le Mont Corvo</span></h2>
           </div>
           <ModalCloseButton onClick={onClose} />
         </header>
@@ -1507,8 +1331,7 @@ function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           </p>
         </div>
       </section>
-    </div>,
-    document.body,
+    </div>
   );
 }
 
@@ -1563,7 +1386,7 @@ function HudButton({
   className?: string;
 }) {
   const base =
-    "pointer-events-auto inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer";
+    "pointer-events-auto inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer";
   const look = primary
     ? "bg-[#ffd23f] text-[#0d2190] hover:bg-[#ffe066] shadow-[0_5px_0_#b8860b] active:shadow-none active:translate-y-1"
     : active

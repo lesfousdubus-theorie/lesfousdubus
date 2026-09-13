@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import type { PassengerProfile } from "./constants";
@@ -371,8 +371,6 @@ function getArchetypeMaterials(archetype: NakamaArchetype): Record<string, THREE
 interface PassengersProps {
   passengerCount: number;
   numRows: number;
-  renderedRowIndices?: number[];
-  vacantSeatRanges?: Array<[number, number, number]>;
   hornPulse: number;
   reservedRow?: number;
   passengerProfiles?: PassengerProfile[];
@@ -383,118 +381,33 @@ interface PassengersProps {
 function Passengers({
   passengerCount,
   numRows,
-  renderedRowIndices,
-  vacantSeatRanges = [],
   hornPulse,
   reservedRow = 3,
   passengerProfiles = [],
   onPassengerSelect,
   activePassengerIndex = null,
 }: PassengersProps) {
-  const capacity = numRows * 4;
-  const vacantRanges = useMemo(() => {
-    return vacantSeatRanges
-      .map(([start, end, before]) => ({
-        start: Math.max(0, start),
-        end: Math.min(capacity - 1, end),
-        before,
-      }))
-      .filter(({ start, end }) => start <= end)
-      .sort((left, right) => left.start - right.start);
-  }, [capacity, vacantSeatRanges]);
-  const vacantCount = vacantRanges.reduce((total, range) => total + range.end - range.start + 1, 0);
-  const occupiedCount = Math.min(Math.max(0, passengerCount), capacity - vacantCount);
-  const vacantCountThrough = useCallback((seatIndex: number) => {
-    let low = 0;
-    let high = vacantRanges.length;
-    while (low < high) {
-      const middle = (low + high) >>> 1;
-      if (vacantRanges[middle].start <= seatIndex) low = middle + 1;
-      else high = middle;
-    }
-    if (low === 0) return 0;
-    const range = vacantRanges[low - 1];
-    return range.before + Math.min(range.end, seatIndex) - range.start + 1;
-  }, [vacantRanges]);
-  const seatIndexForOccupiedRank = useCallback((rank: number) => {
-    let low = Math.max(0, rank);
-    let high = Math.max(low, capacity - 1);
-    while (low < high) {
-      const middle = Math.floor((low + high) / 2);
-      const occupiedThrough = middle + 1 - vacantCountThrough(middle);
-      if (occupiedThrough > rank) high = middle;
-      else low = middle + 1;
-    }
-    return low;
-  }, [capacity, vacantCountThrough]);
-  const seatAt = (index: number): SeatInfo => {
-    const row = Math.floor(index / 4);
-    return {
-      x: [-0.94, -0.5, 0.5, 0.94][index % 4],
-      z: -2.6 + row * 1.2,
-      row,
-      seatInRow: index % 4,
-    };
-  };
-  const renderedRows = useMemo(
-    () => new Set(renderedRowIndices ?? Array.from({ length: numRows }, (_, row) => row)),
-    [numRows, renderedRowIndices],
+  const seats = useMemo(() => getSeatPositions(numRows, -1), [numRows]);
+
+  const occupiedSeats = useMemo(
+    () => seats.slice(0, Math.min(Math.max(0, passengerCount), seats.length)),
+    [passengerCount, seats],
   );
   const detailed = useMemo(() => {
-    if (occupiedCount <= 24) {
-      return Array.from({ length: occupiedCount }, (_, rank) => seatIndexForOccupiedRank(rank))
-        .filter((index) => renderedRows.has(Math.floor(index / 4)))
-        .map((index) => ({ seat: seatAt(index), index }));
-    }
-    const focusRow = Math.max(0, Math.min(numRows - 1, reservedRow));
-    const focusSeat = focusRow * 4;
-    const rankNearFocus = Math.max(0, Math.min(occupiedCount - 1, focusSeat - vacantCountThrough(focusSeat)));
-    const ranks = new Set<number>();
-    if (activePassengerIndex !== null && activePassengerIndex >= 0 && activePassengerIndex < capacity) {
-      ranks.add(activePassengerIndex - vacantCountThrough(activePassengerIndex));
-    }
-    for (let distance = 0; ranks.size < 24; distance++) {
-      const candidates = distance === 0
-        ? [rankNearFocus]
-        : [rankNearFocus - distance, rankNearFocus + distance];
-      for (const rank of candidates) {
-        if (rank >= 0 && rank < occupiedCount) ranks.add(rank);
-      }
-    }
-    return Array.from(ranks, (rank) => {
-      const index = seatIndexForOccupiedRank(rank);
-      return { seat: seatAt(index), index };
-    }).filter(({ index }) =>
-      index === activePassengerIndex || renderedRows.has(Math.floor(index / 4)));
-  }, [activePassengerIndex, capacity, numRows, occupiedCount, renderedRows, reservedRow, seatIndexForOccupiedRank, vacantCountThrough]);
+    if (occupiedSeats.length <= 24) return occupiedSeats.map((seat, index) => ({ seat, index }));
+    return occupiedSeats
+      .map((seat, index) => ({ seat, index }))
+      .sort((a, b) => Math.abs(a.seat.row - reservedRow) - Math.abs(b.seat.row - reservedRow))
+      .slice(0, 24);
+  }, [occupiedSeats, reservedRow]);
   const simplified = useMemo(() => {
     const detailedIndices = new Set(detailed.map(({ index }) => index));
-    if (occupiedCount - detailed.length <= 160) {
-      const remaining: Array<{ seat: SeatInfo; index: number }> = [];
-      for (let rank = 0; rank < occupiedCount; rank++) {
-        const index = seatIndexForOccupiedRank(rank);
-        if (!detailedIndices.has(index) && renderedRows.has(Math.floor(index / 4))) {
-          remaining.push({ seat: seatAt(index), index });
-        }
-      }
-      return remaining;
-    }
-    const candidates: number[] = [];
-    for (const row of renderedRows) {
-      for (let seat = 0; seat < 4; seat++) {
-        const index = row * 4 + seat;
-        if (index >= capacity || detailedIndices.has(index)) continue;
-        const vacantBefore = index === 0 ? 0 : vacantCountThrough(index - 1);
-        if (vacantCountThrough(index) === vacantBefore) candidates.push(index);
-      }
-    }
-    if (candidates.length <= 160) return candidates.map((index) => ({ seat: seatAt(index), index }));
-    const sampled = new Set<number>();
-    for (let sample = 0; sample < 160; sample++) {
-      sampled.add(candidates[Math.floor((sample * (candidates.length - 1)) / 159)]);
-    }
-    return Array.from(sampled, (index) => ({ seat: seatAt(index), index }));
-  }, [capacity, detailed, occupiedCount, renderedRows, seatIndexForOccupiedRank, vacantCountThrough]);
+    const remaining = occupiedSeats
+      .map((seat, index) => ({ seat, index }))
+      .filter(({ index }) => !detailedIndices.has(index));
+    if (remaining.length <= 160) return remaining;
+    return Array.from({ length: 160 }, (_, i) => remaining[Math.floor((i * remaining.length) / 160)]);
+  }, [detailed, occupiedSeats]);
   const profilesBySeatIndex = useMemo(
     () => new Map(passengerProfiles.map((profile) => [profile.seatIndex, profile])),
     [passengerProfiles],

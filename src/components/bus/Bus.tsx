@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html, useTexture } from "@react-three/drei";
@@ -27,16 +27,12 @@ interface BusProps {
   worldRef: React.RefObject<WorldState>;
   onToggleTv?: () => void;
   passengerCount?: number;
-  seatCapacity?: number;
-  vacantSeatRanges?: Array<[number, number, number]>;
   reservedRow?: number;
   isMutedForFullscreen?: boolean;
   hasEntered?: boolean;
   passengerProfiles?: PassengerProfile[];
   currentPassengerSeatIndex?: number | null;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
-  reducedMotion?: boolean;
-  playbackSuspended?: boolean;
 }
 
 const BLUE = "#154ddb";
@@ -44,22 +40,6 @@ const DARK_BLUE = "#0a2a85";
 const YELLOW = "#ffbf18";
 const CHROME = "#eaf0fa";
 const DARK = "#12141a";
-const MAX_STRUCTURAL_ROWS = 180;
-
-function getRenderedRowIndices(numRows: number, focusRow: number): number[] {
-  if (numRows <= MAX_STRUCTURAL_ROWS) return Array.from({ length: numRows }, (_, index) => index);
-  const rows = new Set<number>();
-  const add = (row: number) => {
-    if (row >= 0 && row < numRows) rows.add(row);
-  };
-  for (let row = 0; row < 16; row++) {
-    add(row);
-    add(numRows - 1 - row);
-  }
-  for (let row = focusRow - 48; row <= focusRow + 48; row++) add(row);
-  for (let index = 0; index < 48; index++) add(Math.round((index * (numRows - 1)) / 47));
-  return Array.from(rows).sort((a, b) => a - b);
-}
 
 function sendYoutubeCommand(
   iframe: HTMLIFrameElement | null,
@@ -85,16 +65,12 @@ export default function Bus({
   worldRef,
   onToggleTv,
   passengerCount = 0,
-  seatCapacity = passengerCount,
-  vacantSeatRanges = [],
   reservedRow = 3,
   isMutedForFullscreen = false,
   hasEntered = false,
   passengerProfiles = [],
   currentPassengerSeatIndex = null,
   onPassengerSelect,
-  reducedMotion = false,
-  playbackSuspended = false,
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
   const hat = useRef<THREE.Group>(null);
@@ -102,6 +78,10 @@ export default function Bus({
   const interiorLights = useRef<THREE.PointLight[]>([]);
   const leftWiper = useRef<THREE.Group>(null);
   const rightWiper = useRef<THREE.Group>(null);
+  const reducedMotion = useMemo(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
 
   // Texture paille WebP optimisée pour le petit chapeau à l'écran
   const strawMap = useTexture("/textures/straw.webp", (tex) => {
@@ -120,16 +100,12 @@ export default function Bus({
   });
 
   // Calcul dynamique de la longueur et des rangées du bus
-  const numRows = computeNumRows(seatCapacity);
+  const numRows = computeNumRows(passengerCount);
 
   // Position Z de chaque rangée de sièges
-  const renderedRowIndices = useMemo(
-    () => getRenderedRowIndices(numRows, reservedRow),
-    [numRows, reservedRow],
-  );
   const SEAT_ROWS = useMemo(
-    () => renderedRowIndices.map((row) => -2.6 + row * 1.2),
-    [renderedRowIndices],
+    () => Array.from({ length: numRows }, (_, i) => -2.6 + i * 1.2),
+    [numRows],
   );
 
   // Une TV principale réelle et au maximum 8 rappels visuels légers dans les très longs bus.
@@ -154,12 +130,11 @@ export default function Bus({
   // Piliers de vitres : 2 avant + 1 par jointure de rangée
   const PILLARS = useMemo(() => {
     const arr = [-4.55, -3.85];
-    for (const row of renderedRowIndices) {
-      arr.push(-2.65 + row * 1.2);
+    for (let i = 0; i <= numRows; i++) {
+      arr.push(-2.65 + i * 1.2);
     }
-    arr.push(-2.65 + numRows * 1.2);
     return arr;
-  }, [numRows, renderedRowIndices]);
+  }, [numRows]);
 
   // Points lumineux de plafond répartis le long de l'habitacle
   const interiorLightZs = useMemo(() => {
@@ -523,15 +498,28 @@ export default function Bus({
   );
 
   const primaryIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const allTvIframesRef = useRef<Map<number, HTMLIFrameElement>>(new Map());
   const youtubePlayerStateRef = useRef(-1);
-  const tvOnRef = useRef(tvOn);
-  const playbackSuspendedRef = useRef(playbackSuspended || isMutedForFullscreen);
-  const toggleTvRef = useRef(onToggleTv);
-  useEffect(() => {
-    tvOnRef.current = tvOn;
-    playbackSuspendedRef.current = playbackSuspended || isMutedForFullscreen;
-    toggleTvRef.current = onToggleTv;
-  }, [isMutedForFullscreen, onToggleTv, playbackSuspended, tvOn]);
+
+  const registerIframe = useCallback((idx: number, iframe: HTMLIFrameElement | null) => {
+    if (iframe) {
+      allTvIframesRef.current.set(idx, iframe);
+      if (idx === 0) primaryIframeRef.current = iframe;
+    } else {
+      allTvIframesRef.current.delete(idx);
+      if (idx === 0) primaryIframeRef.current = null;
+    }
+  }, []);
+
+  const broadcastYoutubeCommand = useCallback((func: string, args: any[] = []) => {
+    allTvIframesRef.current.forEach((iframe, idx) => {
+      // Les TV secondaires restent TOUJOURS muettes pour éviter tout écho
+      if (idx !== 0 && (func === "unMute" || func === "setVolume")) {
+        return;
+      }
+      sendYoutubeCommand(iframe, func, args);
+    });
+  }, []);
 
   // Écoute de l'état du lecteur YouTube (1 = lecture, 2 = pause, etc.)
   useEffect(() => {
@@ -540,13 +528,7 @@ export default function Bus({
       try {
         const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         const state = data?.event === "onStateChange" ? data.info : data?.info?.playerState;
-        if (event.source !== primaryIframeRef.current?.contentWindow || typeof state !== "number") return;
-        youtubePlayerStateRef.current = state;
-        // Une pause ou une fin lancée depuis les contrôles YouTube éteint aussi la TV.
-        // Les pauses imposées par une modale sont ignorées afin de reprendre au retour.
-        if ((state === 0 || state === 2) && tvOnRef.current && !playbackSuspendedRef.current) {
-          toggleTvRef.current?.();
-        }
+        if (typeof state === "number") youtubePlayerStateRef.current = state;
       } catch {
         // ignore
       }
@@ -559,20 +541,20 @@ export default function Bus({
   // et volume spatialisé (atténué à 25% à l'extérieur du bus quand la TV est allumée).
   useEffect(() => {
     if (!hasEntered) {
-      sendYoutubeCommand(primaryIframeRef.current, "pauseVideo");
+      broadcastYoutubeCommand("pauseVideo");
       return;
     }
 
-    if (tvOn && !isMutedForFullscreen && !playbackSuspended) {
-      sendYoutubeCommand(primaryIframeRef.current, "unMute");
-      sendYoutubeCommand(primaryIframeRef.current, "setVolume", [phase === "outside" ? 25 : 100]);
-      sendYoutubeCommand(primaryIframeRef.current, "playVideo");
+    if (tvOn && !isMutedForFullscreen) {
+      broadcastYoutubeCommand("unMute");
+      broadcastYoutubeCommand("setVolume", [phase === "outside" ? 25 : 100]);
+      broadcastYoutubeCommand("playVideo");
       youtubePlayerStateRef.current = 1;
     } else {
-      sendYoutubeCommand(primaryIframeRef.current, "pauseVideo");
+      broadcastYoutubeCommand("pauseVideo");
       youtubePlayerStateRef.current = 2;
     }
-  }, [tvOn, isMutedForFullscreen, playbackSuspended, hasEntered, phase]);
+  }, [tvOn, isMutedForFullscreen, hasEntered, phase, broadcastYoutubeCommand]);
 
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
@@ -586,15 +568,15 @@ export default function Bus({
     // Roulis, tangage et rebond d'extension dynamique du minibus (adapté à la vitesse)
     if (group.current) {
       const sinceStretch = (performance.now() - stretchRef.current) / 1000;
-      const stretchBounce = !reducedMotion &&
+      const stretchBounce =
         sinceStretch < 0.9 ? Math.sin(sinceStretch * 20) * (0.9 - sinceStretch) * 0.05 : 0;
 
       const cabinIsStable = phase === "inside" || phase === "entering";
-      const targetY = cabinIsStable || reducedMotion
+      const targetY = cabinIsStable
         ? 0
         : (Math.sin(t * 8.5 * mult) * 0.014 + Math.sin(t * 2.1) * 0.008)
           * Math.min(1.4, Math.max(0.7, mult)) + stretchBounce;
-      const targetRoll = cabinIsStable || reducedMotion ? 0 : Math.sin(t * 1.6 * mult) * 0.0035;
+      const targetRoll = cabinIsStable ? 0 : Math.sin(t * 1.6 * mult) * 0.0035;
       const settle = Math.min(1, dt * 10);
       group.current.position.y += (targetY - group.current.position.y) * settle;
       group.current.rotation.z += (targetRoll - group.current.rotation.z) * settle;
@@ -614,7 +596,7 @@ export default function Bus({
     // Animation du chapeau : droit sur le bus avec oscillation dynamique au klaxon
     if (hat.current) {
       const since = (performance.now() - hornPulse) / 1000;
-      const wobble = !reducedMotion && since < 0.9 ? Math.sin(since * 28) * (0.9 - since) * 0.03 : 0;
+      const wobble = since < 0.9 ? Math.sin(since * 28) * (0.9 - since) * 0.03 : 0;
       hat.current.rotation.x = wobble;
       hat.current.rotation.y = 0;
       hat.current.rotation.z = 0;
@@ -622,7 +604,7 @@ export default function Bus({
 
     // Rotation des roues du bus adaptée à la vitesse de défilement
     wheels.current.forEach((w) => {
-      if (w && !reducedMotion) w.rotation.x -= dt * 12 * mult;
+      if (w) w.rotation.x -= dt * 12 * mult;
     });
 
     // Éclairage intérieur doux et constant de jour comme de nuit
@@ -1107,8 +1089,6 @@ export default function Bus({
       <Passengers
         passengerCount={passengerCount}
         numRows={numRows}
-        renderedRowIndices={renderedRowIndices}
-        vacantSeatRanges={vacantSeatRanges}
         hornPulse={hornPulse}
         reservedRow={phase === "inside" || phase === "entering" ? reservedRow : -1}
         activePassengerIndex={phase === "inside" || phase === "entering" ? currentPassengerSeatIndex : null}
@@ -1172,10 +1152,8 @@ export default function Bus({
           isMutedForFullscreen={isMutedForFullscreen}
           mats={mats}
           tvOffTex={tvOffTex}
-          tvOnTex={tvOnTex}
-          primaryIframeRef={primaryIframeRef}
-          reducedMotion={reducedMotion}
-          playbackSuspended={playbackSuspended}
+          onRegisterIframe={registerIframe}
+          youtubePlayerStateRef={youtubePlayerStateRef}
         />
       ))}
     </group>
@@ -1262,10 +1240,8 @@ interface BusTvUnitProps {
   isMutedForFullscreen: boolean;
   mats: Record<string, THREE.Material>;
   tvOffTex: THREE.CanvasTexture;
-  tvOnTex: THREE.CanvasTexture;
-  primaryIframeRef: React.RefObject<HTMLIFrameElement | null>;
-  reducedMotion: boolean;
-  playbackSuspended: boolean;
+  onRegisterIframe?: (idx: number, iframe: HTMLIFrameElement | null) => void;
+  youtubePlayerStateRef: React.RefObject<number>;
 }
 
 function BusTvUnit({
@@ -1279,15 +1255,12 @@ function BusTvUnit({
   isMutedForFullscreen,
   mats,
   tvOffTex,
-  tvOnTex,
-  primaryIframeRef,
-  reducedMotion,
-  playbackSuspended,
+  onRegisterIframe,
+  youtubePlayerStateRef,
 }: BusTvUnitProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const shaderMatRef = useRef<THREE.ShaderMaterial>(null);
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
-  const shaderUniforms = useMemo(() => ({ uVisible: { value: 1.0 } }), []);
 
   useFrame(({ camera }) => {
     // Synchronisation de l'uniforme du shader de découpe 3D
@@ -1295,7 +1268,7 @@ function BusTvUnit({
       shaderMatRef.current.uniforms.uVisible.value = tvOn && !isMutedForFullscreen ? 1.0 : 0.0;
     }
 
-    if (!isPrimary || !containerRef.current) return;
+    if (!containerRef.current) return;
 
     if (!tvOn || isMutedForFullscreen) {
       if (containerRef.current.style.visibility !== "hidden") {
@@ -1364,22 +1337,8 @@ function BusTvUnit({
         />
       </mesh>
 
-      {!isPrimary && (
-        <mesh position={[0, 0, 0.053]} visible={tvOn}>
-          <planeGeometry args={[1.26, 0.70875]} />
-          <meshStandardMaterial
-            map={tvOn ? tvOnTex : tvOffTex}
-            emissive={tvOn ? "#d8e8ff" : "#000000"}
-            emissiveMap={tvOn ? tvOnTex : null}
-            emissiveIntensity={tvOn ? 0.65 : 0}
-            roughness={0.3}
-            metalness={0.25}
-          />
-        </mesh>
-      )}
-
-      {/* Une seule TV monte un lecteur réel ; les écrans secondaires restent des textures légères. */}
-      {isPrimary && <Html
+      {/* Écran TV 3D avec occlusion réelle par les éléments qui passent devant (passagers, piliers, toit) */}
+      <Html
         transform
         occlude="blending"
         onOcclude={() => {}}
@@ -1393,7 +1352,7 @@ function BusTvUnit({
             side={THREE.DoubleSide}
             depthTest={true}
             depthWrite={false}
-            uniforms={shaderUniforms}
+            uniforms={useMemo(() => ({ uVisible: { value: 1.0 } }), [])}
             vertexShader={`
               void main() {
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -1432,31 +1391,37 @@ function BusTvUnit({
             willChange: "transform, opacity",
             opacity: tvOn && !isMutedForFullscreen ? 1 : 0,
             visibility: tvOn && !isMutedForFullscreen ? "visible" : "hidden",
-            transition: reducedMotion ? "none" : "opacity 0.2s ease",
+            transition: "opacity 0.2s ease",
           }}
         >
           <iframe
-            id="tv-iframe-primary"
+            id={`tv-iframe-${idx}`}
             width="560"
             height="315"
-            src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?enablejsapi=1&autoplay=0&controls=1&rel=0&playsinline=1&iv_load_policy=3&cc_load_policy=0${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`}
-            title="La théorie des Fous du Bus"
+            src={
+              isPrimary
+                ? `https://www.youtube.com/embed/${YOUTUBE_ID}?enablejsapi=1&autoplay=0&controls=1&rel=0&playsinline=1&iv_load_policy=3&cc_load_policy=0${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`
+                : `https://www.youtube.com/embed/${YOUTUBE_ID}?enablejsapi=1&autoplay=0&controls=0&rel=0&playsinline=1&iv_load_policy=3&cc_load_policy=0&mute=1${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`
+            }
+            title={isPrimary ? "La théorie des Fous du Bus" : `TV ${idx + 1}`}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
             loading="eager"
-            ref={(iframe) => {
-              primaryIframeRef.current = iframe;
-            }}
             onLoad={(event) => {
               const iframe = event.currentTarget;
+              onRegisterIframe?.(idx, iframe);
               iframe.contentWindow?.postMessage(
-                JSON.stringify({ event: "listening", id: "tv-iframe-primary" }),
+                JSON.stringify({ event: "listening", id: `tv-iframe-${idx}` }),
                 "*",
               );
-              if (hasEntered && tvOn && !isMutedForFullscreen && !playbackSuspended) {
-                sendYoutubeCommand(iframe, "unMute");
-                sendYoutubeCommand(iframe, "setVolume", [phase === "outside" ? 25 : 100]);
+              if (hasEntered && tvOn && !isMutedForFullscreen) {
+                if (isPrimary) {
+                  sendYoutubeCommand(iframe, "unMute");
+                  sendYoutubeCommand(iframe, "setVolume", [phase === "outside" ? 25 : 100]);
+                } else {
+                  sendYoutubeCommand(iframe, "mute");
+                }
                 sendYoutubeCommand(iframe, "playVideo");
               }
             }}
@@ -1465,7 +1430,7 @@ function BusTvUnit({
               display: "block",
               width: "100%",
               height: "100%",
-              pointerEvents: "auto",
+              pointerEvents: isPrimary ? "auto" : "none",
             }}
           />
 
@@ -1491,14 +1456,14 @@ function BusTvUnit({
               top: 0,
               left: 0,
               right: 0,
-              bottom: 48,
+              bottom: isPrimary ? 48 : 0,
               zIndex: 2,
               cursor: "pointer",
               background: "transparent",
             }}
           />
         </div>
-      </Html>}
+      </Html>
     </group>
   );
 }

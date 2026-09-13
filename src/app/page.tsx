@@ -9,21 +9,19 @@ import { YOUTUBE_ID } from "@/components/bus/constants";
 
 export default function HomePage() {
   return (
-    <main id="site-content" className="relative h-dvh w-screen overflow-hidden">
+    <main className="relative h-dvh w-screen overflow-hidden">
       {/* Expérience 3D interactive (WebGL / Three.js / Canvas) */}
       <BusClient />
 
       {/* 
         Contenu sémantique complet rendu en SSR (Server-Side Rendering).
         Indispensable pour l'indexation exhaustive par Googlebot, Bingbot, Perplexity et les moteurs de recherche.
-        Le contenu interactif équivalent reste disponible dans la fenêtre accessible du dossier.
+        Accessible aux lecteurs d'écran (WCAG a11y) et aux technologies d'assistance.
       */}
       <article
         id="theorie-fous-du-bus-manifeste"
         aria-label="La Théorie des Fous du Bus — Le Siècle Oublié est le Présent"
-        inert
-        aria-hidden="true"
-        className="sr-only"
+        className="sr-only focus-within:not-sr-only focus-within:fixed focus-within:inset-4 focus-within:z-[300] focus-within:overflow-y-auto focus-within:bg-[#0c1322] focus-within:p-6 focus-within:text-white focus-within:rounded-2xl"
       >
         <header>
           <h1 className="text-2xl font-black text-[#ffd23f]">
