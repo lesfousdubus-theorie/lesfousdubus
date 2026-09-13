@@ -856,6 +856,9 @@ export default function BusExperience() {
 
   return (
     <div className="fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {toast ? [toast.badge, toast.text, toast.sub].filter(Boolean).join(". ") : ""}
+      </div>
       <Scene
         phase={phase}
         headlights={headlights}
@@ -883,7 +886,7 @@ export default function BusExperience() {
         >
         {/* Toast notification dynamique (allongement du bus) */}
         {toast && (
-          <div className="pointer-events-none absolute left-3 right-3 top-[12rem] z-50 animate-in fade-in slide-in-from-top-4 duration-300 min-[480px]:left-auto min-[480px]:top-[4.75rem] min-[480px]:max-w-[calc(100vw-14rem)] sm:right-4 sm:top-20 sm:max-w-sm">
+          <div aria-hidden="true" className="pointer-events-none absolute left-3 right-3 top-[12rem] z-50 animate-in fade-in slide-in-from-top-4 duration-300 min-[480px]:left-auto min-[480px]:top-[4.75rem] min-[480px]:max-w-[calc(100vw-14rem)] sm:right-4 sm:top-20 sm:max-w-sm">
             <div className="flex items-center gap-3 rounded-2xl border border-[#ffd23f] bg-black/80 px-4 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md sm:px-5">
               {toast.badge && (
                 <span className="rounded-md bg-[#ffd23f] px-2 py-0.5 text-xs font-black text-[#0d2190]">
@@ -1451,7 +1454,12 @@ function PassengerListModal({
               </div>
             ))}
           </div>
-          {loading && <div className="flex min-h-20 items-center justify-center gap-3 text-sm font-bold text-white/70"><span className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-[#ffd23f]" /> Chargement…</div>}
+          {loading && (
+            <div role="status" aria-live="polite" aria-atomic="true" className="flex min-h-20 items-center justify-center gap-3 text-sm font-bold text-white/70">
+              <span aria-hidden="true" className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-[#ffd23f] motion-reduce:animate-none" />
+              Chargement des passagers…
+            </div>
+          )}
           {error && <p role="alert" className="p-4 text-center text-sm font-bold text-red-200">{error}</p>}
           {!loading && hasMore && <button type="button" onClick={onLoadMore} className="mt-4 min-h-11 w-full rounded-xl border border-white/15 bg-white/[0.06] text-sm font-black text-white transition hover:border-[#ffd23f]/50 hover:bg-white/10">Afficher plus de passagers</button>}
           {!loading && !error && passengers.length === 0 && <p className="p-8 text-center text-sm text-white/60">Le bus attend son premier passager.</p>}
