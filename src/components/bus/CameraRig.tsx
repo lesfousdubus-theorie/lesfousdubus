@@ -18,6 +18,7 @@ interface Props {
 }
 
 const TRANSITION_TIME = 1.8;
+const FOV_EPSILON = 0.01;
 
 export default function CameraRig({
   phase,
@@ -229,6 +230,7 @@ export default function CameraRig({
 
     const key = (e: KeyboardEvent) => {
       if (phaseRef.current !== "inside") return;
+      if (document.querySelector("[role='dialog'][aria-modal='true']")) return;
       if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") {
         return;
       }
@@ -284,23 +286,37 @@ export default function CameraRig({
 
     // Gestion du FOV (zoom)
     if (cam instanceof THREE.PerspectiveCamera) {
+      let projectionChanged = false;
       if (cam.far !== cameraFar) {
         cam.far = cameraFar;
-        cam.updateProjectionMatrix();
+        projectionChanged = true;
       }
+
+      let nextFov = currentFovRef.current;
       if (p === "inside") {
-        if (reducedMotion) currentFovRef.current = targetFovRef.current;
-        currentFovRef.current += (targetFovRef.current - currentFovRef.current) * Math.min(1, dt * 10);
-        cam.fov = currentFovRef.current;
-        cam.updateProjectionMatrix();
+        nextFov = reducedMotion
+          ? targetFovRef.current
+          : currentFovRef.current
+            + (targetFovRef.current - currentFovRef.current) * Math.min(1, dt * 10);
+        if (Math.abs(targetFovRef.current - nextFov) < FOV_EPSILON) {
+          nextFov = targetFovRef.current;
+        }
       } else {
         targetFovRef.current = 55;
-        if (Math.abs(cam.fov - 55) > 0.05) {
-          currentFovRef.current += (55 - currentFovRef.current) * Math.min(1, dt * 6);
-          cam.fov = currentFovRef.current;
-          cam.updateProjectionMatrix();
+        nextFov = reducedMotion
+          ? 55
+          : currentFovRef.current + (55 - currentFovRef.current) * Math.min(1, dt * 6);
+        if (Math.abs(55 - nextFov) < FOV_EPSILON) {
+          nextFov = 55;
         }
       }
+
+      currentFovRef.current = nextFov;
+      if (cam.fov !== nextFov) {
+        cam.fov = nextFov;
+        projectionChanged = true;
+      }
+      if (projectionChanged) cam.updateProjectionMatrix();
     }
 
     if ((p === "entering" || p === "exiting") && a.active) {
