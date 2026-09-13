@@ -58,8 +58,10 @@ Cliquez sur le bouton **« 📜 La Théorie »** en haut à gauche pour ouvrir l
 - **Dans le bus** : glissez votre souris pour regarder autour de vous dans la cabine, et utilisez les flèches **◀ Rangée ▶** pour vous déplacer d'avant en arrière le long de l'allée.
 
 ### Raccourcis clavier (sur ordinateur) :
-- **`+` ou `Flèche Haut`** : Accélérer le bus
-- **`-` ou `Flèche Bas`** : Ralentir le bus
+- **À l’extérieur, `+` ou `Flèche Haut`** : Accélérer le bus
+- **À l’extérieur, `-` ou `Flèche Bas`** : Ralentir le bus
+- **À l’intérieur, flèches directionnelles** : Regarder autour de soi
+- **À l’intérieur, `+` / `-`** : Zoomer / dézoomer
 - **`B`** : Activer / désactiver le Turbo Boost
 - **`H`** : Klaxonner (*Honk*)
 - **`L`** : Allumer / éteindre les phares (*Lights*)

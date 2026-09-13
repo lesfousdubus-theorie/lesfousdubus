@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo } from "react";
+import { Component, Suspense, useEffect, useMemo, useState, type ErrorInfo, type ReactNode } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import Bus from "./Bus";
 import World from "./World";
@@ -24,6 +24,8 @@ interface SceneProps {
   onArrived: (phase: "inside" | "outside") => void;
   onToggleTv?: () => void;
   passengerCount?: number;
+  seatCapacity?: number;
+  vacantSeatRanges?: Array<[number, number, number]>;
   currentSeatRow?: number;
   isMutedForFullscreen?: boolean;
   hasEntered?: boolean;
@@ -33,9 +35,97 @@ interface SceneProps {
   modeOverride?: "day" | "night" | null;
 }
 
-function FrameScheduler({ fps }: { fps: number }) {
+function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil." }: { reason?: string }) {
+  return (
+    <div className="absolute inset-0 grid place-items-center bg-gradient-to-b from-[#79c2ff] to-[#174f91] p-6 text-center text-white">
+      <div className="max-w-md rounded-2xl border border-white/20 bg-[#07142b]/85 p-6 shadow-2xl backdrop-blur-sm">
+        <div className="mb-3 text-5xl" aria-hidden="true">🚌</div>
+        <p className="text-lg font-black">Le bus reste au dépôt</p>
+        <p className="mt-2 text-sm text-white/80">{reason}</p>
+        <button
+          type="button"
+          className="mt-5 min-h-11 rounded-xl bg-[#ffd23f] px-4 py-2 font-black text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          onClick={() => window.location.reload()}
+        >
+          Réessayer
+        </button>
+      </div>
+    </div>
+  );
+}
+
+class SceneErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Impossible d’initialiser la scène 3D", error, info);
+  }
+
+  render() {
+    return this.state.failed
+      ? <SceneFallback reason="Le chargement de la scène a échoué. Vous pouvez relancer l’expérience." />
+      : this.props.children;
+  }
+}
+
+function readSceneRuntimeState() {
+  if (typeof window === "undefined") {
+    return { covered: false, hidden: false, lowPower: false, reducedMotion: false };
+  }
+  const connection = (navigator as Navigator & {
+    connection?: { saveData?: boolean; effectiveType?: string };
+  }).connection;
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+  const constrainedNetwork = connection?.saveData === true
+    || connection?.effectiveType === "slow-2g"
+    || connection?.effectiveType === "2g";
+  return {
+    covered: document.querySelector('[role="dialog"][aria-modal="true"]') !== null,
+    hidden: document.hidden,
+    lowPower: constrainedNetwork || window.innerWidth < 768 || navigator.hardwareConcurrency <= 4 || memory <= 4,
+    reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  };
+}
+
+function useSceneRuntimeState() {
+  const [state, setState] = useState(readSceneRuntimeState);
+
+  useEffect(() => {
+    const reducedQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const connection = (navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string; addEventListener?: (type: string, listener: () => void) => void; removeEventListener?: (type: string, listener: () => void) => void };
+    }).connection;
+    const update = () => {
+      setState(readSceneRuntimeState());
+    };
+    const observer = new MutationObserver(update);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-modal", "role"] });
+    update();
+    window.addEventListener("resize", update, { passive: true });
+    document.addEventListener("visibilitychange", update);
+    reducedQuery.addEventListener("change", update);
+    connection?.addEventListener?.("change", update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+      document.removeEventListener("visibilitychange", update);
+      reducedQuery.removeEventListener("change", update);
+      connection?.removeEventListener?.("change", update);
+    };
+  }, []);
+
+  return state;
+}
+
+function FrameScheduler({ fps, active }: { fps: number; active: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
+    invalidate();
+    if (!active) return;
     let frame = 0;
     let previous = 0;
     const interval = 1000 / fps;
@@ -48,7 +138,7 @@ function FrameScheduler({ fps }: { fps: number }) {
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [fps, invalidate]);
+  }, [active, fps, invalidate]);
   return null;
 }
 
@@ -61,6 +151,8 @@ export default function Scene({
   onArrived,
   onToggleTv,
   passengerCount = 0,
+  seatCapacity = passengerCount,
+  vacantSeatRanges = [],
   currentSeatRow = 3,
   isMutedForFullscreen = false,
   hasEntered = false,
@@ -69,13 +161,10 @@ export default function Scene({
   onPassengerSelect,
   modeOverride,
 }: SceneProps) {
-  const lowPower = useMemo(() => {
-    if (typeof navigator === "undefined") return false;
-    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
-    return window.innerWidth < 768 || navigator.hardwareConcurrency <= 4 || memory <= 4;
-  }, []);
+  const { covered, hidden, lowPower, reducedMotion } = useSceneRuntimeState();
+  const renderPaused = covered || hidden;
   // Calcul géométrique de la cabine pour la caméra
-  const numRows = useMemo(() => computeNumRows(passengerCount), [passengerCount]);
+  const numRows = useMemo(() => computeNumRows(seatCapacity), [seatCapacity]);
   const rearWallZ = useMemo(() => -2.6 + numRows * 1.2, [numRows]);
   const cabinLength = useMemo(() => rearWallZ + 4.6, [rearWallZ]);
   const cabinCenterZ = useMemo(() => (-4.6 + rearWallZ) / 2, [rearWallZ]);
@@ -85,17 +174,19 @@ export default function Scene({
   const currentSeatZ = -2.6 + clampedRow * 1.2 + 0.15;
 
   return (
-    <Canvas
-      shadows
+    <SceneErrorBoundary>
+      <Canvas
+      shadows={!lowPower}
       frameloop="demand"
       dpr={lowPower ? 1 : Math.min(window.devicePixelRatio, 1.35)}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: 2000 }}
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      gl={{ antialias: !lowPower, alpha: true, powerPreference: lowPower ? "low-power" : "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
+      fallback={<SceneFallback />}
     >
-      <FrameScheduler fps={lowPower ? 30 : 45} />
-      <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} />
-      <Weather worldRef={worldRef} lowPower={lowPower} />
+      <FrameScheduler fps={reducedMotion ? 8 : lowPower ? 24 : 45} active={!renderPaused} />
+      <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} />
+      <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Suspense fallback={null}>
         <Bus
           headlights={headlights}
@@ -105,22 +196,28 @@ export default function Scene({
           worldRef={worldRef}
           onToggleTv={onToggleTv}
           passengerCount={passengerCount}
+          seatCapacity={seatCapacity}
+          vacantSeatRanges={vacantSeatRanges}
           reservedRow={clampedRow}
           isMutedForFullscreen={isMutedForFullscreen}
           hasEntered={hasEntered}
           passengerProfiles={passengerProfiles}
           currentPassengerSeatIndex={currentPassengerSeatIndex}
           onPassengerSelect={onPassengerSelect}
+          reducedMotion={reducedMotion}
+          playbackSuspended={renderPaused}
         />
       </Suspense>
-      <World worldRef={worldRef} />
+      <World worldRef={worldRef} reducedMotion={reducedMotion} />
       <CameraRig
         phase={phase}
         onArrived={onArrived}
         cabinLength={cabinLength}
         cabinCenterZ={cabinCenterZ}
         currentSeatZ={currentSeatZ}
+        reducedMotion={reducedMotion}
       />
-    </Canvas>
+      </Canvas>
+    </SceneErrorBoundary>
   );
 }
