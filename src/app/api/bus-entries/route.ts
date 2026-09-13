@@ -74,26 +74,13 @@ async function readJsonBody(request: Request): Promise<Record<string, unknown>> 
   if (contentLength > MAX_BODY_SIZE) throw new Error("BODY_TOO_LARGE");
   const rawBody = await request.text();
   if (rawBody.length > MAX_BODY_SIZE) throw new Error("BODY_TOO_LARGE");
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(rawBody);
-  } catch {
-    throw new Error("INVALID_BODY");
-  }
+  const parsed: unknown = JSON.parse(rawBody);
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("INVALID_BODY");
   return parsed as Record<string, unknown>;
 }
 
-async function hashRateKey(secret: string, value: string) {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const digest = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
+async function hashRateKey(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
@@ -108,23 +95,16 @@ async function consumeRateLimit(
   // Ce header est présent derrière Cloudflare. En local, son absence ne doit
   // pas placer tous les développeurs dans un quota global commun.
   if (!address) return { allowed: true, retryAfter: 0 };
-  const { env } = await getCloudflareContext({ async: true });
-  const secret = env.RATE_LIMIT_SECRET?.trim();
-  if (!secret || secret.length < 32) {
-    throw new Error("The RATE_LIMIT_SECRET Cloudflare secret must contain at least 32 characters.");
-  }
   const now = Math.floor(Date.now() / 1_000);
-  await database.prepare("DELETE FROM bus_rate_limits WHERE expires_at <= ?").bind(now).run();
+  await database.prepare("DELETE FROM bus_rate_limits WHERE expires_at < ?").bind(now).run();
   const bucket = Math.floor(now / windowSeconds);
-  // Including the bucket prevents a retained row from linking the same visitor
-  // across separate rate-limit windows.
-  const rateKey = await hashRateKey(secret, `${action}:${bucket}:${address}`);
+  const rateKey = await hashRateKey(`${action}:${address}`);
   const row = await database.prepare(
     `INSERT INTO bus_rate_limits (rate_key, bucket, attempts, expires_at)
      VALUES (?, ?, 1, ?)
      ON CONFLICT(rate_key, bucket) DO UPDATE SET attempts = attempts + 1
      RETURNING attempts`,
-  ).bind(rateKey, bucket, (bucket + 1) * windowSeconds).first<{ attempts: number }>();
+  ).bind(rateKey, bucket, (bucket + 2) * windowSeconds).first<{ attempts: number }>();
   return {
     allowed: Number(row?.attempts ?? maximum + 1) <= maximum,
     retryAfter: Math.max(1, (bucket + 1) * windowSeconds - now),

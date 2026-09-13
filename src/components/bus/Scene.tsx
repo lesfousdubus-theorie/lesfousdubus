@@ -168,9 +168,6 @@ export default function Scene({
   const rearWallZ = useMemo(() => -2.6 + numRows * 1.2, [numRows]);
   const cabinLength = useMemo(() => rearWallZ + 4.6, [rearWallZ]);
   const cabinCenterZ = useMemo(() => (-4.6 + rearWallZ) / 2, [rearWallZ]);
-  // OrbitControls peut s'éloigner de 2,2 longueurs depuis le centre. La marge
-  // supplémentaire couvre alors l'extrémité opposée du bus, même à grande capacité.
-  const cameraFar = useMemo(() => Math.max(2000, cabinLength * 3 + 100), [cabinLength]);
 
   // Position Z du regard du passager (rangée choisie)
   const clampedRow = Math.max(0, Math.min(numRows - 1, currentSeatRow));
@@ -182,7 +179,7 @@ export default function Scene({
       shadows={!lowPower}
       frameloop="demand"
       dpr={lowPower ? 1 : Math.min(window.devicePixelRatio, 1.35)}
-      camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: cameraFar }}
+      camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: 2000 }}
       gl={{ antialias: !lowPower, alpha: true, powerPreference: lowPower ? "low-power" : "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
       fallback={<SceneFallback />}
@@ -217,7 +214,6 @@ export default function Scene({
         onArrived={onArrived}
         cabinLength={cabinLength}
         cabinCenterZ={cabinCenterZ}
-        cameraFar={cameraFar}
         currentSeatZ={currentSeatZ}
         reducedMotion={reducedMotion}
       />

@@ -82,27 +82,3 @@ npm run dev
 ```
 
 Ouvrez ensuite [http://localhost:3000](http://localhost:3000) dans votre navigateur web préféré !
-
-## Déploiement Cloudflare
-
-Le rate limiting utilise un secret HMAC côté Worker. Il doit être créé une fois
-avant le premier déploiement :
-
-```bash
-openssl rand -hex 32 | npx wrangler secret put RATE_LIMIT_SECRET
-```
-
-Pour les previews Cloudflare locales, copiez `.dev.vars.example` vers
-`.dev.vars` et remplacez la valeur d'exemple par une valeur aléatoire. Le fichier
-`.dev.vars` est ignoré par Git.
-
-Déployez ensuite uniquement avec la commande suivante :
-
-```bash
-npm run deploy
-```
-
-Cette commande construit l'application, applique les migrations D1 distantes,
-puis déploie le Worker. Cet ordre évite qu'une version de l'API utilise un schéma
-qui n'a pas encore été migré. Pour initialiser la base D1 locale, utilisez
-`npm run db:migrate:local`.

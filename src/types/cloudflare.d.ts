@@ -19,6 +19,5 @@ export interface CloudflareD1Database {
 declare global {
   interface CloudflareEnv {
     DB_BUS?: CloudflareD1Database;
-    RATE_LIMIT_SECRET?: string;
   }
 }
