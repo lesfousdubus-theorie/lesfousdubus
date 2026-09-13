@@ -20,6 +20,7 @@ interface ToastMessage {
 interface PassengerManifestEntry {
   seatIndex: number;
   displayName: string | null;
+  hasComment: boolean;
 }
 
 interface BusApiState {
@@ -882,8 +883,8 @@ export default function BusExperience() {
         >
         {/* Toast notification dynamique (allongement du bus) */}
         {toast && (
-          <div className="pointer-events-none absolute left-1/2 top-20 z-50 -translate-x-1/2 animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="flex items-center gap-3 rounded-2xl border border-[#ffd23f] bg-black/80 px-5 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md">
+          <div className="pointer-events-none absolute left-3 right-3 top-[12rem] z-50 animate-in fade-in slide-in-from-top-4 duration-300 min-[480px]:left-auto min-[480px]:top-[4.75rem] min-[480px]:max-w-[calc(100vw-14rem)] sm:right-4 sm:top-20 sm:max-w-sm">
+            <div className="flex items-center gap-3 rounded-2xl border border-[#ffd23f] bg-black/80 px-4 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md sm:px-5">
               {toast.badge && (
                 <span className="rounded-md bg-[#ffd23f] px-2 py-0.5 text-xs font-black text-[#0d2190]">
                   {toast.badge}
@@ -1152,7 +1153,11 @@ export default function BusExperience() {
         onLoadMore={() => void loadPassengerManifest(manifestNextFrom)}
         onPassengerClick={(passenger) => {
           setShowPassengerList(false);
-          void openPassengerCard({ ...passenger, displayName: passenger.displayName!, comment: null });
+          void openPassengerCard({
+            seatIndex: passenger.seatIndex,
+            displayName: passenger.displayName ?? "Anonyme",
+            comment: null,
+          });
         }}
         onClose={() => setShowPassengerList(false)}
       />
@@ -1428,12 +1433,12 @@ function PassengerListModal({
         </header>
         <div className="overflow-y-auto overscroll-contain p-3 sm:p-4">
           <div className="grid gap-2 sm:grid-cols-2">
-            {passengers.map((passenger) => passenger.displayName ? (
+            {passengers.map((passenger) => passenger.displayName || passenger.hasComment ? (
               <button key={passenger.seatIndex} type="button" onClick={() => onPassengerClick(passenger)} className="flex min-h-12 items-center gap-3 rounded-xl border border-white/12 bg-white/[0.055] px-3 text-left transition hover:border-[#ffd23f]/55 hover:bg-[#ffd23f]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ffd23f]/15 text-sm">👤</span>
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-black text-white">{passenger.displayName}</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/45">Place {passenger.seatIndex + 1}</span>
+                  <span className="block truncate text-sm font-black text-white">{passenger.displayName ?? "Anonyme"}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/45">Place {passenger.seatIndex + 1}{passenger.hasComment ? " · Message" : ""}</span>
                 </span>
               </button>
             ) : (
@@ -1483,16 +1488,16 @@ function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   ] as const;
 
   return createPortal(
-    <div className="fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/30 p-4 backdrop-blur-[2px]" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="theory-age-title" className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[#ffd23f]/55 bg-[#081127]/96 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
-        <header className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5 sm:px-6">
+    <div className="fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto overscroll-contain bg-[#020617]/30 p-2 backdrop-blur-[2px] sm:p-4" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="theory-age-title" className="flex max-h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/55 bg-[#081127]/96 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)] sm:max-h-[calc(100dvh-2rem)]">
+        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-white/10 px-4 py-3 sm:px-6 sm:py-5">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ffd23f]">Première mention de la théorie</p>
             <h2 ref={titleRef} tabIndex={-1} id="theory-age-title" className="mt-1 text-xl font-black focus:outline-none sm:text-2xl">26 mai 2024 <span className="text-[#b9c7e8]">· Le Mont Corvo</span></h2>
           </div>
           <ModalCloseButton onClick={onClose} />
         </header>
-        <div className="p-5 sm:p-6">
+        <div className="overflow-y-auto overscroll-contain p-4 sm:p-6">
           <p className="mb-3 text-sm font-bold text-[#d8e3ff]">La théorie tient toujours depuis :</p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {values.map(([label, value]) => (

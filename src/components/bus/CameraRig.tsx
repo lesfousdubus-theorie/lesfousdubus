@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
@@ -12,6 +12,7 @@ interface Props {
   onArrived: (phase: "inside" | "outside") => void;
   cabinLength?: number;
   cabinCenterZ?: number;
+  cameraFar?: number;
   currentSeatZ?: number;
   reducedMotion?: boolean;
 }
@@ -23,6 +24,7 @@ export default function CameraRig({
   onArrived,
   cabinLength = 9.2,
   cabinCenterZ = 0,
+  cameraFar = 2000,
   currentSeatZ,
   reducedMotion = false,
 }: Props) {
@@ -66,6 +68,22 @@ export default function CameraRig({
     return Math.max(32, cabinLength * 2.2);
   }, [cabinLength]);
 
+  const finishTransition = useCallback((destination: "inside" | "outside") => {
+    const a = anim.current;
+    camera.position.copy(a.to);
+    camera.quaternion.copy(a.toQ);
+    camera.updateMatrixWorld();
+    a.active = false;
+
+    if (destination === "inside") {
+      const e = new THREE.Euler().setFromQuaternion(a.toQ, "YXZ");
+      look.current.yaw = look.current.targetYaw = e.y;
+      look.current.pitch = look.current.targetPitch = e.x;
+    }
+
+    arrivedRef.current(destination);
+  }, [camera]);
+
   // Support vue caméra optionnelle (ex: pour vérification ou captures tests)
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -105,10 +123,7 @@ export default function CameraRig({
       a.t = 0;
       a.active = true;
       if (reducedMotion) {
-        camera.position.copy(a.to);
-        camera.quaternion.copy(a.toQ);
-        a.active = false;
-        arrivedRef.current("inside");
+        finishTransition("inside");
       }
     } else if (phase === "exiting") {
       a.from.copy(camera.position);
@@ -119,26 +134,22 @@ export default function CameraRig({
       a.t = 0;
       a.active = true;
       if (reducedMotion) {
-        camera.position.copy(a.to);
-        camera.quaternion.copy(a.toQ);
-        a.active = false;
-        arrivedRef.current("outside");
+        finishTransition("outside");
       }
     }
-  }, [phase, camera, activeEyePos, reducedMotion]);
+  }, [phase, camera, activeEyePos, reducedMotion, finishTransition]);
 
   // Fallback de sécurité : garantit la fin de la transition même si requestAnimationFrame est suspendu/throttlé
   useEffect(() => {
     if (phase === "entering" || phase === "exiting") {
       const fallbackTimer = setTimeout(() => {
         if (anim.current.active) {
-          anim.current.active = false;
-          arrivedRef.current(phase === "entering" ? "inside" : "outside");
+          finishTransition(phase === "entering" ? "inside" : "outside");
         }
       }, (TRANSITION_TIME + 0.3) * 1000);
       return () => clearTimeout(fallbackTimer);
     }
-  }, [phase]);
+  }, [phase, finishTransition]);
 
   // Contrôles "tourner la tête" & Zoom à l'intérieur (souris / tactile / clavier / molette)
   useEffect(() => {
@@ -273,6 +284,10 @@ export default function CameraRig({
 
     // Gestion du FOV (zoom)
     if (cam instanceof THREE.PerspectiveCamera) {
+      if (cam.far !== cameraFar) {
+        cam.far = cameraFar;
+        cam.updateProjectionMatrix();
+      }
       if (p === "inside") {
         if (reducedMotion) currentFovRef.current = targetFovRef.current;
         currentFovRef.current += (targetFovRef.current - currentFovRef.current) * Math.min(1, dt * 10);
@@ -296,16 +311,7 @@ export default function CameraRig({
       cam.position.setY(cam.position.y + Math.sin(s * Math.PI) * 0.6);
       cam.quaternion.slerpQuaternions(a.fromQ, a.toQ, s);
       if (a.t >= 1) {
-        a.active = false;
-        if (p === "entering") {
-          const e = new THREE.Euler().setFromQuaternion(a.toQ, "YXZ");
-          look.current.yaw = look.current.targetYaw = e.y;
-          look.current.pitch = look.current.targetPitch = e.x;
-          arrivedRef.current("inside");
-        } else {
-          cam.position.copy(saved.current.pos);
-          arrivedRef.current("outside");
-        }
+        finishTransition(p === "entering" ? "inside" : "outside");
       }
       return;
     }
