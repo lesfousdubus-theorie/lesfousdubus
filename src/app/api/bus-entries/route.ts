@@ -163,7 +163,7 @@ async function consumeRateLimit(
   const { env } = await getCloudflareContext({ async: true });
   const secret = validateRateLimitSecret(env.RATE_LIMIT_SECRET);
   const now = Math.floor(Date.now() / 1_000);
-  await purgeExpiredRateLimits(database, now, true);
+  await purgeExpiredRateLimits(database, now);
   const bucket = Math.floor(now / windowSeconds);
   // Including the bucket prevents a retained row from linking the same visitor
   // across separate rate-limit windows.

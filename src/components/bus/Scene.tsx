@@ -22,7 +22,6 @@ interface SceneProps {
   tvOn: boolean;
   worldRef: React.RefObject<WorldState>;
   onArrived: (phase: "inside" | "outside") => void;
-  onToggleTv?: () => void;
   passengerCount?: number;
   seatCapacity?: number;
   vacantSeatRanges?: Array<[number, number, number]>;
@@ -74,7 +73,7 @@ class SceneErrorBoundary extends Component<{ children: ReactNode }, { failed: bo
 
 function readSceneRuntimeState() {
   if (typeof window === "undefined") {
-    return { covered: false, hidden: false, lowPower: false, reducedMotion: false };
+    return { hidden: false, lowPower: false, reducedMotion: false };
   }
   const connection = (navigator as Navigator & {
     connection?: { saveData?: boolean; effectiveType?: string };
@@ -84,7 +83,6 @@ function readSceneRuntimeState() {
     || connection?.effectiveType === "slow-2g"
     || connection?.effectiveType === "2g";
   return {
-    covered: document.querySelector('[role="dialog"][aria-modal="true"]') !== null,
     hidden: document.hidden,
     lowPower: constrainedNetwork || window.innerWidth < 768 || navigator.hardwareConcurrency <= 4 || memory <= 4,
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -102,15 +100,12 @@ function useSceneRuntimeState() {
     const update = () => {
       setState(readSceneRuntimeState());
     };
-    const observer = new MutationObserver(update);
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-modal", "role"] });
     update();
     window.addEventListener("resize", update, { passive: true });
     document.addEventListener("visibilitychange", update);
     reducedQuery.addEventListener("change", update);
     connection?.addEventListener?.("change", update);
     return () => {
-      observer.disconnect();
       window.removeEventListener("resize", update);
       document.removeEventListener("visibilitychange", update);
       reducedQuery.removeEventListener("change", update);
@@ -149,7 +144,6 @@ export default function Scene({
   tvOn,
   worldRef,
   onArrived,
-  onToggleTv,
   passengerCount = 0,
   seatCapacity = passengerCount,
   vacantSeatRanges = [],
@@ -161,8 +155,8 @@ export default function Scene({
   onPassengerSelect,
   modeOverride,
 }: SceneProps) {
-  const { covered, hidden, lowPower, reducedMotion } = useSceneRuntimeState();
-  const renderPaused = covered || hidden;
+  const { hidden, lowPower, reducedMotion } = useSceneRuntimeState();
+  const renderPaused = hidden;
   // Calcul géométrique de la cabine pour la caméra
   const numRows = useMemo(() => computeNumRows(seatCapacity), [seatCapacity]);
   const rearWallZ = useMemo(() => -2.6 + numRows * 1.2, [numRows]);
@@ -197,7 +191,6 @@ export default function Scene({
           tvOn={tvOn}
           phase={phase}
           worldRef={worldRef}
-          onToggleTv={onToggleTv}
           passengerCount={passengerCount}
           seatCapacity={seatCapacity}
           vacantSeatRanges={vacantSeatRanges}
