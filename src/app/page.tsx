@@ -13,16 +13,11 @@ export default function HomePage() {
       {/* Expérience 3D interactive (WebGL / Three.js / Canvas) */}
       <BusClient />
 
-      {/* 
-        Contenu sémantique complet rendu en SSR (Server-Side Rendering).
-        Indispensable pour l'indexation exhaustive par Googlebot, Bingbot, Perplexity et les moteurs de recherche.
-        Le contenu interactif équivalent reste disponible dans la fenêtre accessible du dossier.
-      */}
+      {/* Contenu sémantique SSR équivalent au dossier interactif, disponible aussi
+          pour les lecteurs d'écran et les clients qui n'interprètent pas la scène WebGL. */}
       <article
         id="theorie-fous-du-bus-manifeste"
         aria-label="La Théorie des Fous du Bus — Le Siècle Oublié est le Présent"
-        inert
-        aria-hidden="true"
         className="sr-only"
       >
         <header>
