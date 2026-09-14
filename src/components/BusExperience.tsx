@@ -794,6 +794,23 @@ export default function BusExperience() {
     return () => window.removeEventListener("keydown", onKey);
   }, [phase, honk, toggleHeadlights, accelerateBus, decelerateBus]);
 
+  // Filet de sécurité : si la phase reste bloquée à "entering" ou "exiting"
+  // (par exemple si le planificateur d'images du Canvas est suspendu parce que
+  // l'onglet est masqué), on force la transition vers la phase finale après un
+  // délai raisonnable. Cela évite que tous les boutons restent désactivés
+  // indéfiniment à cause de `busy = true`.
+  useEffect(() => {
+    if (phase !== "entering" && phase !== "exiting") return;
+    const timer = setTimeout(() => {
+      setPhase((current) => {
+        if (current === "entering") return "inside";
+        if (current === "exiting") return "outside";
+        return current;
+      });
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [phase]);
+
   const effectiveCount = count ?? 0;
   const numRows = computeNumRows(seatCapacity);
   const busy = phase === "entering" || phase === "exiting";
@@ -1144,6 +1161,11 @@ function HudButton({
         onClick();
       }}
       disabled={disabled}
+      /* Quand le bouton est désactivé, on force pointer-events: none en inline
+         pour empêcher les boutons désactivés des barres de contrôles masquées
+         (interiorControls) d'intercepter les clics destinés aux barres visibles
+         (exteriorControls) qui se chevauchent sur mobile. */
+      style={disabled ? { pointerEvents: "none" } : undefined}
       className={`${base} relative z-10 touch-manipulation ${look} ${className}`}
     >
       {icon && <span className="pointer-events-none text-sm leading-none">{icon}</span>}
