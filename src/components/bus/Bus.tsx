@@ -826,7 +826,7 @@ export default function Bus({
           </mesh>
         ))}
         {/* Affiche à l'arrière du bus */}
-        <mesh position={[0, 2.3, 0.06]}>
+        <mesh position={[0, 2.3, 0.012]}>
           <planeGeometry args={[1.8, 0.38]} />
           <meshStandardMaterial map={sideLabel} roughness={0.3} />
         </mesh>
@@ -972,8 +972,8 @@ export default function Bus({
       ))}
 
       {/* ---------- Roues stylisées (adaptées à la longueur) ---------- */}
-      {wheelPositions.map(([x, z], i) => (
-        <group key={`wheel-${i}`} position={[x, 0.55, z]} visible={phase !== "inside"}>
+      {phase === "outside" && wheelPositions.map(([x, z], i) => (
+        <group key={`wheel-${i}`} position={[x, 0.55, z]}>
           <mesh
             ref={(el: any) => {
               if (el) wheels.current[i] = el;

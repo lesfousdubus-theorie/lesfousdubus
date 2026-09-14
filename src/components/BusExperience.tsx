@@ -131,7 +131,6 @@ export default function BusExperience() {
   const [vacantSeatRanges, setVacantSeatRanges] = useState<Array<[number, number, number]>>([]);
   const [registrationPending, setRegistrationPending] = useState(false);
   const [theoryAgeInDays] = useState(getTheoryAgeInDays);
-  const [controlsReady, setControlsReady] = useState(true);
 
   // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
   const [speedMultiplier, setSpeedMultiplier] = useState(() => {
@@ -175,7 +174,6 @@ export default function BusExperience() {
   const [manualDayNight, setManualDayNight] = useState<"day" | "night" | null>(null);
 
   const toastTimeout = useRef<NodeJS.Timeout | null>(null);
-  const controlsReadyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const passengerCardRequest = useRef<AbortController | null>(null);
   const manifestRequest = useRef<AbortController | null>(null);
   const seatCapacityRef = useRef(seatCapacity);
@@ -751,17 +749,6 @@ export default function BusExperience() {
 
   const onArrived = useCallback((p: "inside" | "outside") => {
     setPhase(p);
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setControlsReady(true);
-      return;
-    }
-    setControlsReady(false);
-    if (controlsReadyTimeout.current) clearTimeout(controlsReadyTimeout.current);
-    controlsReadyTimeout.current = setTimeout(() => setControlsReady(true), 320);
-  }, []);
-
-  useEffect(() => () => {
-    if (controlsReadyTimeout.current) clearTimeout(controlsReadyTimeout.current);
   }, []);
 
   const honk = useCallback(() => {
@@ -1020,20 +1007,20 @@ export default function BusExperience() {
               : "pointer-events-none translate-y-2 opacity-0"
           }`}
         >
-          <HudButton className="min-w-[96px] flex-1 sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !controlsReady || !exteriorControlsVisible}>
+          <HudButton className="min-w-[96px] flex-1 sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !exteriorControlsVisible}>
             {headlights ? "Éteindre" : "Phares"}
           </HudButton>
-          <HudButton className="min-w-[104px] flex-1 sm:w-[112px] sm:flex-none" onClick={honk} icon="📯" disabled={busy || !controlsReady || !exteriorControlsVisible}>
+          <HudButton className="min-w-[104px] flex-1 sm:w-[112px] sm:flex-none" onClick={honk} icon="📯" disabled={busy || !exteriorControlsVisible}>
             Klaxonner
           </HudButton>
           {tvOn && phase === "outside" && (
             <div className="animate-[hud-control-in-flow_220ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none">
-              <HudButton className="w-[124px] sm:w-[132px]" onClick={() => setTvOn(false)} icon="📺" disabled={busy || !controlsReady}>
+              <HudButton className="w-[124px] sm:w-[132px]" onClick={() => setTvOn(false)} icon="📺" disabled={busy}>
                 Éteindre la TV
               </HudButton>
             </div>
           )}
-          <HudButton className="w-full sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={busy || joining || !controlsReady || !exteriorControlsVisible}>
+          <HudButton className="w-full sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={busy || joining || !exteriorControlsVisible}>
             {joining || phase === "entering" ? "Installation…" : "Entrer dans le bus"}
           </HudButton>
         </div>
@@ -1047,24 +1034,24 @@ export default function BusExperience() {
           }`}
         >
           <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2">
-            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy || !interiorControlsVisible}>
               <span className="sm:hidden">Prénom</span><span className="hidden sm:inline">Ajouter un prénom</span>
             </HudButton>
-            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("comment")} icon="💬" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("comment")} icon="💬" disabled={busy || !interiorControlsVisible}>
               <span className="sm:hidden">Commenter</span><span className="hidden sm:inline">Mettre un commentaire</span>
             </HudButton>
           </div>
           <div className="grid w-full grid-cols-4 items-center gap-1.5 sm:grid-cols-[1.25fr_1fr_0.82fr_1.08fr] sm:gap-2">
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy || !interiorControlsVisible}>
               <span className="sm:hidden">TV</span><span className="hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !interiorControlsVisible}>
               {headlights ? "Éteindre" : "Phares"}
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={honk} icon="📯" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={honk} icon="📯" disabled={busy || !interiorControlsVisible}>
               Klaxon
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={exitBus} primary icon="🏝️" disabled={busy || !controlsReady || !interiorControlsVisible}>
+            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={exitBus} primary icon="🏝️" disabled={busy || !interiorControlsVisible}>
               <span className="sm:hidden">{phase === "exiting" ? "Descente…" : "Sortir"}</span><span className="hidden sm:inline">{phase === "exiting" ? "Descente…" : "Sortir du bus"}</span>
             </HudButton>
           </div>
@@ -1149,8 +1136,8 @@ function HudButton({
       : "bg-black/55 text-white border border-white/25 hover:bg-black/75 hover:border-[#ffd23f]/50";
   return (
     <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${look} ${className}`}>
-      {icon && <span className="text-sm leading-none">{icon}</span>}
-      {children}
+      {icon && <span className="pointer-events-none text-sm leading-none">{icon}</span>}
+      <span className="pointer-events-none contents">{children}</span>
     </button>
   );
 }

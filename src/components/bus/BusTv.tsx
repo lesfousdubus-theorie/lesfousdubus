@@ -193,7 +193,7 @@ export default function BusTvUnit({
             id={`tv-iframe-${idx}`}
             width="560"
             height="315"
-            src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?enablejsapi=1&autoplay=0&controls=1&rel=0&playsinline=1&iv_load_policy=3&cc_load_policy=0${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`}
+            src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?enablejsapi=1&autoplay=0&controls=1&rel=0&playsinline=1&iv_load_policy=3${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`}
             title="La théorie des Fous du Bus"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
             referrerPolicy="strict-origin-when-cross-origin"
@@ -207,6 +207,11 @@ export default function BusTvUnit({
                 JSON.stringify({ event: "listening", id: `tv-iframe-${idx}` }),
                 "*",
               );
+              // YouTube peut mémoriser une préférence de sous-titres. On les coupe
+              // explicitement au démarrage, sans empêcher l'utilisateur de les
+              // réactiver ensuite via le bouton CC du lecteur.
+              sendYoutubeCommand(iframe, "unloadModule", ["captions"]);
+              window.setTimeout(() => sendYoutubeCommand(iframe, "unloadModule", ["captions"]), 250);
               if (hasEntered && tvOn && !isMutedForFullscreen && !playbackSuspended) {
                 if (isPrimary) {
                   sendYoutubeCommand(iframe, "unMute");
