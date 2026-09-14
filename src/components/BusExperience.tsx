@@ -1001,26 +1001,26 @@ export default function BusExperience() {
         {/* Barres persistantes : aucune commande ne se téléporte sous le pointeur. */}
         <div
           aria-hidden={!exteriorControlsVisible}
-          className={`absolute bottom-[7.75rem] left-1/2 flex w-[calc(100vw-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-4 sm:w-auto sm:max-w-3xl sm:gap-2 md:left-[calc(50%-4.75rem)] ${
+          className={`absolute bottom-[7.75rem] left-1/2 z-30 flex w-[calc(100vw-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-4 sm:w-auto sm:max-w-3xl sm:gap-2 md:left-[calc(50%-4.75rem)] ${
             exteriorControlsVisible
               ? "pointer-events-auto translate-y-0 opacity-100"
               : "pointer-events-none translate-y-2 opacity-0"
           }`}
         >
-          <HudButton className="min-w-[96px] flex-1 sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !exteriorControlsVisible}>
+          <HudButton className="min-w-[96px] flex-1 sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={!exteriorControlsVisible}>
             {headlights ? "Éteindre" : "Phares"}
           </HudButton>
-          <HudButton className="min-w-[104px] flex-1 sm:w-[112px] sm:flex-none" onClick={honk} icon="📯" disabled={busy || !exteriorControlsVisible}>
+          <HudButton className="min-w-[104px] flex-1 sm:w-[112px] sm:flex-none" onClick={honk} icon="📯" disabled={!exteriorControlsVisible}>
             Klaxonner
           </HudButton>
           {tvOn && phase === "outside" && (
             <div className="animate-[hud-control-in-flow_220ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none">
-              <HudButton className="w-[124px] sm:w-[132px]" onClick={() => setTvOn(false)} icon="📺" disabled={busy}>
+              <HudButton className="w-[124px] sm:w-[132px]" onClick={() => setTvOn(false)} icon="📺">
                 Éteindre la TV
               </HudButton>
             </div>
           )}
-          <HudButton className="w-full sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={busy || joining || !exteriorControlsVisible}>
+          <HudButton className="w-full sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={joining || phase !== "outside"}>
             {joining || phase === "entering" ? "Installation…" : "Entrer dans le bus"}
           </HudButton>
         </div>
@@ -1135,7 +1135,17 @@ function HudButton({
       ? "bg-[#1636c9] text-white ring-2 ring-[#ffd23f] hover:bg-[#1d44e6]"
       : "bg-black/55 text-white border border-white/25 hover:bg-black/75 hover:border-[#ffd23f]/50";
   return (
-    <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${look} ${className}`}>
+    <button
+      type="button"
+      onPointerDown={(event) => event.stopPropagation()}
+      onPointerUp={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+      disabled={disabled}
+      className={`${base} relative z-10 touch-manipulation ${look} ${className}`}
+    >
       {icon && <span className="pointer-events-none text-sm leading-none">{icon}</span>}
       <span className="pointer-events-none contents">{children}</span>
     </button>
