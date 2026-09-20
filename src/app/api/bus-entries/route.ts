@@ -311,11 +311,12 @@ export async function POST(request: Request) {
     let added = false;
     if (!existing) {
       const insertion = await database.prepare(
-        `INSERT OR IGNORE INTO bus_entries (visitor_id, display_name, comment, seat_index)
+        `INSERT INTO bus_entries (visitor_id, display_name, comment, seat_index)
          VALUES (?, ?, ?, COALESCE(
            (SELECT start_index FROM bus_vacant_seat_ranges ORDER BY start_index ASC LIMIT 1),
            (SELECT COALESCE(MAX(seat_index) + 1, 0) FROM bus_entries)
-         ))`,
+         ))
+         ON CONFLICT(visitor_id) DO NOTHING`,
       ).bind(
         visitorId,
         hasDisplayName ? displayName || null : null,
