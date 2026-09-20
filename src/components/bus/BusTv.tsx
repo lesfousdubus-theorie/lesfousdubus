@@ -104,7 +104,6 @@ export function BusTvPlayer({
   const playerRef = useRef<YouTubePlayer | null>(null);
   const warmTimerRef = useRef<number | null>(null);
   const volumeFrameRef = useRef<number | null>(null);
-  const interactionClickTimerRef = useRef<number | null>(null);
   const warmingRef = useRef(true);
   const desiredRef = useRef({
     tvOn,
@@ -272,7 +271,6 @@ export function BusTvPlayer({
       cancelled = true;
       if (warmTimerRef.current !== null) window.clearTimeout(warmTimerRef.current);
       if (volumeFrameRef.current !== null) cancelAnimationFrame(volumeFrameRef.current);
-      if (interactionClickTimerRef.current !== null) window.clearTimeout(interactionClickTimerRef.current);
       playerRef.current?.destroy();
       playerRef.current = null;
     };
@@ -294,27 +292,9 @@ export function BusTvPlayer({
       player.playVideo();
       setAutoplayBlocked(false);
     };
-    const onTogglePlayback = () => {
-      const player = playerRef.current;
-      if (!player) return;
-      try {
-        if (player.getPlayerState() === 1) {
-          player.pauseVideo();
-        } else {
-          player.unMute();
-          player.setVolume(100);
-          player.playVideo();
-          setAutoplayBlocked(false);
-        }
-      } catch {
-        // Le lecteur peut être en cours d'initialisation.
-      }
-    };
     window.addEventListener("bus-tv-user-play", onUserPlay);
-    window.addEventListener("bus-tv-toggle-playback", onTogglePlayback);
     return () => {
       window.removeEventListener("bus-tv-user-play", onUserPlay);
-      window.removeEventListener("bus-tv-toggle-playback", onTogglePlayback);
     };
   }, []);
 
@@ -386,11 +366,10 @@ export function BusTvPlayer({
         >
           <div ref={mountRef} data-bus-youtube-player style={{ width: "100%", height: "100%" }} />
           {tvOn && phase === "inside" && !isMutedForFullscreen && (
-            <div
+            <button
               data-tv-wheel-capture
-              role="button"
-              tabIndex={0}
-              aria-label="Écran de la TV. Molette pour zoomer, clic pour lecture ou pause, double-clic pour plein écran."
+              type="button"
+              aria-label="Zone de zoom de la vue du bus. Utilise la molette ici pour zoomer, ou clique pour recentrer."
               onWheel={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -398,39 +377,35 @@ export function BusTvPlayer({
                   new CustomEvent<number>("bus-zoom", { detail: event.deltaY * 0.04 }),
                 );
               }}
-              onClick={() => {
-                if (interactionClickTimerRef.current !== null) {
-                  window.clearTimeout(interactionClickTimerRef.current);
-                }
-                interactionClickTimerRef.current = window.setTimeout(() => {
-                  interactionClickTimerRef.current = null;
-                  window.dispatchEvent(new Event("bus-tv-toggle-playback"));
-                }, 180);
-              }}
-              onDoubleClick={(event) => {
+              onClick={(event) => {
                 event.preventDefault();
-                if (interactionClickTimerRef.current !== null) {
-                  window.clearTimeout(interactionClickTimerRef.current);
-                  interactionClickTimerRef.current = null;
-                }
-                const iframe = playerRef.current?.getIframe();
-                if (iframe?.requestFullscreen) void iframe.requestFullscreen().catch(() => undefined);
-              }}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter" && event.key !== " ") return;
-                event.preventDefault();
-                window.dispatchEvent(new Event("bus-tv-toggle-playback"));
+                event.stopPropagation();
+                window.dispatchEvent(new Event("bus-zoom-reset"));
               }}
               onPointerDown={(event) => event.stopPropagation()}
-              title="Molette : zoom · clic : lecture/pause · double-clic : plein écran"
+              title="Molette ici : zoomer dans le bus · clic : recentrer"
               style={{
                 position: "absolute",
-                inset: "0 0 46px 0",
+                top: 8,
+                left: "50%",
+                transform: "translateX(-50%)",
                 zIndex: 2,
-                background: "transparent",
-                cursor: "pointer",
+                minWidth: 72,
+                height: 28,
+                padding: "0 10px",
+                border: "1px solid rgba(255,255,255,0.32)",
+                borderRadius: 999,
+                background: "rgba(2,6,23,0.68)",
+                color: "#fff",
+                fontSize: 11,
+                fontWeight: 900,
+                letterSpacing: "0.08em",
+                cursor: "ns-resize",
+                backdropFilter: "blur(4px)",
               }}
-            />
+            >
+              ↕ ZOOM
+            </button>
           )}
           {(autoplayBlocked || apiFailed) && tvOn && hasEntered && (
             <button
