@@ -80,6 +80,34 @@ try {
   ]);
   assert.deepEqual(execute("SELECT start_index, end_index FROM bus_vacant_seat_ranges ORDER BY start_index"), []);
 
+  // Fusion des plages contiguës, réutilisation dans l'ordre et contraction
+  // de la capacité lorsque les dernières places occupées sont supprimées.
+  addPassenger("visitor-e");
+  addPassenger("visitor-f");
+
+  execute("DELETE FROM bus_entries WHERE visitor_id IN ('visitor-d', 'visitor-c', 'visitor-e')");
+  assert.deepEqual(execute("SELECT start_index, end_index FROM bus_vacant_seat_ranges ORDER BY start_index"), [
+    { start_index: 1, end_index: 3 },
+  ]);
+
+  addPassenger("visitor-g");
+  addPassenger("visitor-h");
+  assert.deepEqual(execute("SELECT start_index, end_index FROM bus_vacant_seat_ranges ORDER BY start_index"), [
+    { start_index: 3, end_index: 3 },
+  ]);
+  assert.deepEqual(execute("SELECT visitor_id, seat_index FROM bus_entries ORDER BY seat_index"), [
+    { visitor_id: "visitor-a", seat_index: 0 },
+    { visitor_id: "visitor-g", seat_index: 1 },
+    { visitor_id: "visitor-h", seat_index: 2 },
+    { visitor_id: "visitor-f", seat_index: 4 },
+  ]);
+
+  execute("DELETE FROM bus_entries WHERE visitor_id = 'visitor-f'");
+  assert.deepEqual(execute("SELECT start_index, end_index FROM bus_vacant_seat_ranges ORDER BY start_index"), []);
+  assert.deepEqual(execute("SELECT passenger_count, seat_capacity FROM bus_stats WHERE id = 1"), [
+    { passenger_count: 3, seat_capacity: 3 },
+  ]);
+
   console.log("D1 seat reuse test passed.");
 } finally {
   rmSync(persistTo, { recursive: true, force: true });
