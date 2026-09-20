@@ -34,6 +34,7 @@ interface BusApiState {
 
 const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
 const API_TIMEOUT_MS = 8_000;
+const MAX_DEBUG_PASSENGERS = 10_000;
 let memoryVisitorId: string | null = null;
 
 function createVisitorId(): string {
@@ -161,14 +162,14 @@ export default function BusExperience() {
   const [seatCapacity, setSeatCapacity] = useState(() => {
     if (typeof window === "undefined") return 0;
     const value = Number(new URLSearchParams(window.location.search).get("count"));
-    return Number.isSafeInteger(value) && value >= 0 ? value : 0;
+    return Number.isSafeInteger(value) && value >= 0 ? Math.min(value, MAX_DEBUG_PASSENGERS) : 0;
   });
   const [profileRevision, setProfileRevision] = useState(0);
   const [vacantSeatRanges, setVacantSeatRanges] = useState<Array<[number, number, number]>>([]);
   const [registrationPending, setRegistrationPending] = useState(false);
   const [statsLoadError, setStatsLoadError] = useState(false);
   const [statsRetryToken, setStatsRetryToken] = useState(0);
-  const [theoryAgeInDays] = useState(getTheoryAgeInDays);
+  const theoryAgeInDays = getTheoryAgeInDays();
 
   // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
   const [speedMultiplier, setSpeedMultiplier] = useState(() => {
@@ -190,7 +191,7 @@ export default function BusExperience() {
       const c = new URLSearchParams(window.location.search).get("count");
       if (c !== null) {
         const parsed = parseInt(c, 10);
-        if (!Number.isNaN(parsed) && parsed >= 0) return parsed;
+        if (Number.isSafeInteger(parsed) && parsed >= 0) return Math.min(parsed, MAX_DEBUG_PASSENGERS);
       }
     }
     return null;
@@ -201,7 +202,7 @@ export default function BusExperience() {
       const r = new URLSearchParams(window.location.search).get("row");
       if (r !== null) {
         const parsed = parseInt(r, 10);
-        if (!Number.isNaN(parsed) && parsed >= 0) return parsed;
+        if (Number.isSafeInteger(parsed) && parsed >= 0) return Math.min(parsed, MAX_DEBUG_PASSENGERS);
       }
     }
     return 3;
@@ -211,7 +212,7 @@ export default function BusExperience() {
   const [isNight, setIsNight] = useState(false);
   const [manualDayNight, setManualDayNight] = useState<"day" | "night" | null>(null);
 
-  const toastTimeout = useRef<NodeJS.Timeout | null>(null);
+  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const passengerManifestButtonRef = useRef<HTMLButtonElement>(null);
   const passengerCardRequest = useRef<AbortController | null>(null);
   const manifestRequest = useRef<AbortController | null>(null);
@@ -272,6 +273,17 @@ export default function BusExperience() {
   useEffect(() => {
     worldRef.current.speedMultiplier = speedMultiplier;
   }, [speedMultiplier]);
+
+  // Les paramètres de debug restent bornés à la capacité réellement affichable.
+  useEffect(() => {
+    setSeatRow((row) => Math.max(0, Math.min(row, computeNumRows(seatCapacity) - 1)));
+  }, [seatCapacity]);
+
+  useEffect(() => () => {
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    passengerCardRequest.current?.abort();
+    manifestRequest.current?.abort();
+  }, []);
 
   // Détection du mode boost via l'URL (?boost=1), sans notification intrusive.
   useEffect(() => {
