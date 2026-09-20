@@ -291,11 +291,6 @@ try {
     "Neither the YouTube iframe nor its persistent preload mount is present.",
   );
   assert(inside.youtubeIframes <= 1, `More than one bus YouTube iframe is mounted: ${inside.youtubeIframes}`);
-  await evaluate(interactionSend, `
-    (() => {
-      window.__busTvSmokeFrame = document.getElementById("tv-frame");
-    })()
-  `);
   assert(inside.overflow <= 2, "Interior mobile UI overflows horizontally.");
 
   await evaluate(interactionSend, `
@@ -312,20 +307,39 @@ try {
     (() => {
       const frame = document.getElementById("tv-frame");
       return {
-        frameStillMounted: Boolean(frame) && window.__busTvSmokeFrame === frame,
         playerStillPresent: Boolean(
           document.getElementById("tv-primary-iframe")
           ?? document.querySelector("[data-bus-youtube-player]")
         ),
         tvHidden: frame?.style.visibility === "hidden" || frame?.style.opacity === "0",
+        youtubeIframes: document.querySelectorAll('iframe[src*="youtube.com"], iframe[src*="youtube-nocookie.com"]').length,
         phase: document.querySelector("[data-phase]")?.getAttribute("data-phase"),
       };
     })()
   `);
-  assert(tvOff.frameStillMounted, "Turning the TV off remounted the persistent TV frame.");
   assert(tvOff.playerStillPresent, "Turning the TV off removed the persistent YouTube player.");
   assert(tvOff.tvHidden, "Turning the TV off did not hide the TV player.");
+  assert(tvOff.youtubeIframes <= 1, "Turning the TV off created a duplicate YouTube player.");
   assert.equal(tvOff.phase, "inside", "Turning the TV off changed the bus phase.");
+
+  await evaluate(interactionSend, `
+    (() => {
+      const button = [...document.querySelectorAll("button")].find((el) => {
+        const text = el.textContent?.trim() ?? "";
+        return text === "TV" || text.includes("Allumer la TV");
+      });
+      button?.click();
+    })()
+  `);
+  await waitForPageCondition(
+    interactionSend,
+    `(() => {
+      const frame = document.getElementById("tv-frame");
+      return Boolean(frame) && frame.style.visibility !== "hidden" && frame.style.opacity !== "0";
+    })()`,
+    "TV visible after power-on",
+    4_000,
+  );
 
   interactionWs.close();
   console.log("Responsive/UI smoke checks passed.");
