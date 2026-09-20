@@ -1,6 +1,7 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { CloudflareD1Database } from "@/types/cloudflare";
 import type { PassengerProfile } from "@/components/bus/constants";
+import { isValidVisitorId } from "@/lib/visitor-id";
 
 export const dynamic = "force-dynamic";
 
@@ -281,7 +282,7 @@ export async function POST(request: Request) {
     const hasComment = Object.prototype.hasOwnProperty.call(body, "comment");
     const displayName = cleanText(body.displayName, 24);
     const comment = cleanText(body.comment, 180);
-    if (!/^[a-zA-Z0-9-]{8,128}$/.test(visitorId)) {
+    if (!isValidVisitorId(visitorId)) {
       return Response.json({ error: "Identifiant visiteur invalide." }, { status: 400, headers: WRITE_HEADERS });
     }
 
@@ -353,7 +354,7 @@ export async function DELETE(request: Request) {
   try {
     const body = await readJsonBody(request);
     const visitorId = typeof body.visitorId === "string" ? body.visitorId.trim() : "";
-    if (!/^[a-zA-Z0-9-]{8,128}$/.test(visitorId)) {
+    if (!isValidVisitorId(visitorId)) {
       return Response.json({ error: "Identifiant visiteur invalide." }, { status: 400, headers: WRITE_HEADERS });
     }
     const database = await getPassengerDatabase();
