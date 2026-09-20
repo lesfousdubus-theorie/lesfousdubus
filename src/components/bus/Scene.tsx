@@ -1,7 +1,7 @@
 "use client";
 
-import { Component, Suspense, useEffect, useMemo, useState, type ErrorInfo, type ReactNode } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Component, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import Bus from "./Bus";
 import World from "./World";
 import DayNight from "./DayNight";
@@ -126,6 +126,44 @@ function useSceneRuntimeState() {
   return state;
 }
 
+function AdaptiveDpr({ lowPower }: { lowPower: boolean }) {
+  const setDpr = useThree((state) => state.setDpr);
+  const baseDpr = Math.min(window.devicePixelRatio || 1, lowPower ? 1.15 : 1.6);
+  const sampleRef = useRef({ elapsed: 0, frames: 0, dpr: baseDpr });
+
+  useEffect(() => {
+    sampleRef.current = { elapsed: 0, frames: 0, dpr: baseDpr };
+    setDpr(baseDpr);
+  }, [baseDpr, setDpr]);
+
+  useFrame((_, dt) => {
+    if (!Number.isFinite(dt) || dt <= 0 || dt > 0.25) return;
+    const sample = sampleRef.current;
+    sample.elapsed += dt;
+    sample.frames += 1;
+    if (sample.elapsed < 1.5) return;
+
+    const fps = sample.frames / sample.elapsed;
+    let nextDpr = sample.dpr;
+    if (fps < 48) {
+      nextDpr = Math.max(0.85, sample.dpr - 0.15);
+    } else if (fps > 100) {
+      nextDpr = Math.min(sample.dpr, lowPower ? 1 : 1.25);
+    } else if (fps > 57 && sample.dpr < baseDpr) {
+      nextDpr = Math.min(baseDpr, sample.dpr + 0.1);
+    }
+
+    if (Math.abs(nextDpr - sample.dpr) >= 0.04) {
+      sample.dpr = nextDpr;
+      setDpr(nextDpr);
+    }
+    sample.elapsed = 0;
+    sample.frames = 0;
+  });
+
+  return null;
+}
+
 function WebGLContextGuard({ setLost }: { setLost: (lost: boolean) => void }) {
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
@@ -192,13 +230,14 @@ export default function Scene({
       <Canvas
       shadows={lowPower ? false : "basic"}
       frameloop={renderPaused ? "demand" : "always"}
-      dpr={Math.min(window.devicePixelRatio, lowPower ? 1.25 : 1.75)}
+      dpr={Math.min(window.devicePixelRatio, lowPower ? 1.15 : 1.6)}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: cameraFar }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
       fallback={<SceneFallback />}
     >
       <WebGLContextGuard setLost={setContextLost} />
+      <AdaptiveDpr lowPower={lowPower} />
       <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Suspense fallback={null}>
@@ -221,7 +260,7 @@ export default function Scene({
           playbackSuspended={renderPaused}
         />
       </Suspense>
-      <World worldRef={worldRef} reducedMotion={reducedMotion} />
+      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} />
       <CameraRig
         phase={phase}
         onArrived={onArrived}
