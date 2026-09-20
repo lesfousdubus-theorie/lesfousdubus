@@ -18,6 +18,8 @@ const world = read("src/components/bus/World.tsx");
 const weather = read("src/components/bus/Weather.tsx");
 const youtubeLoader = read("src/lib/youtube-player.ts");
 const textures = read("src/lib/textures.ts");
+const llmsFull = read("public/llms-full.txt");
+const schemaLd = read("src/lib/schema-ld.ts");
 
 assert.equal((busTv.match(/new YT\.Player/g) ?? []).length, 1, "The bus must have exactly one YouTube player.");
 assert.match(bus, /<BusTvPlayer[\s\S]*pos=\{activeTvPosition\}/, "The single player must follow the active TV.");
@@ -81,4 +83,6 @@ assert.match(youtubeLoader, /clearTimeout\(timeoutTimer\)/, "YouTube API timeout
 assert.match(youtubeLoader, /script\.remove\(\)/, "A failed YouTube API script must be removable so a later attempt can retry.");
 assert.match(textures, /makeTvOffTexture/, "The TV texture helper must only model the actual off state.");
 assert.doesNotMatch(textures, /makeProceduralStrawTexture|makeTvScreenTexture/, "Obsolete procedural straw and fake-on TV texture branches must stay removed.");
+assert.doesNotMatch(llmsFull, /lesfousdubus\.sbs\/(?:theorie|chapitres)\//, "LLM corpus must not advertise internal routes that do not exist.");
+assert.match(schemaLd, /datePublished:\s*"2024-05-26T00:00:00\+02:00"/, "Structured data publication date must match the theory start date.");
 console.log("Static regression checks passed.");
