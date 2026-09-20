@@ -155,6 +155,7 @@ async function consumeRateLimit(
   action: "join" | "profile" | "leave",
   maximum: number,
   windowSeconds: number,
+  identity?: string,
 ) {
   const address = request.headers.get("cf-connecting-ip")?.trim();
   // Ce header est présent derrière Cloudflare. En local, son absence ne doit
@@ -165,9 +166,10 @@ async function consumeRateLimit(
   const now = Math.floor(Date.now() / 1_000);
   await purgeExpiredRateLimits(database, now);
   const bucket = Math.floor(now / windowSeconds);
-  // Including the bucket prevents a retained row from linking the same visitor
-  // across separate rate-limit windows.
-  const rateKey = await hashRateKey(secret, `${action}:${bucket}:${address}`);
+  // Le quota est isolé par visiteur pour ne pas bloquer une classe, une convention
+  // ou une entreprise entière derrière la même IP. L'IP reste incluse dans la clé.
+  const scopedIdentity = identity?.slice(0, 128) || "anonymous";
+  const rateKey = await hashRateKey(secret, `${action}:${bucket}:${address}:${scopedIdentity}`);
   const row = await database.prepare(
     `INSERT INTO bus_rate_limits (rate_key, bucket, attempts, expires_at)
      VALUES (?, ?, 1, ?)
@@ -288,8 +290,14 @@ export async function POST(request: Request) {
       "SELECT seat_index FROM bus_entries WHERE visitor_id = ?",
     ).bind(visitorId).first<{ seat_index: number }>();
     const action = existing ? "profile" : "join";
+    // Deux étages : un quota généreux pour l'IP partagée (école, salon,
+    // entreprise), puis un quota plus strict par navigateur/visiteur.
+    const sharedRateLimit = await consumeRateLimit(
+      database, request, action, action === "join" ? 120 : 300, action === "join" ? 3_600 : 600,
+    );
+    if (!sharedRateLimit.allowed) return rateLimitedResponse(sharedRateLimit.retryAfter);
     const rateLimit = await consumeRateLimit(
-      database, request, action, action === "join" ? 6 : 30, action === "join" ? 3_600 : 600,
+      database, request, action, action === "join" ? 6 : 30, action === "join" ? 3_600 : 600, visitorId,
     );
     if (!rateLimit.allowed) return rateLimitedResponse(rateLimit.retryAfter);
 
@@ -349,7 +357,9 @@ export async function DELETE(request: Request) {
       return Response.json({ error: "Identifiant visiteur invalide." }, { status: 400, headers: WRITE_HEADERS });
     }
     const database = await getPassengerDatabase();
-    const rateLimit = await consumeRateLimit(database, request, "leave", 12, 3_600);
+    const sharedRateLimit = await consumeRateLimit(database, request, "leave", 120, 3_600);
+    if (!sharedRateLimit.allowed) return rateLimitedResponse(sharedRateLimit.retryAfter);
+    const rateLimit = await consumeRateLimit(database, request, "leave", 12, 3_600, visitorId);
     if (!rateLimit.allowed) return rateLimitedResponse(rateLimit.retryAfter);
     const existing = await database.prepare("SELECT seat_index FROM bus_entries WHERE visitor_id = ?")
       .bind(visitorId).first<{ seat_index: number }>();

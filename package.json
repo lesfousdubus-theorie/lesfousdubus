@@ -11,9 +11,10 @@
     "deploy": "npm run deploy:preflight && npm run build && npm run db:migrate:remote && opennextjs-cloudflare deploy",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "start": "next start",
-    "test": "node scripts/test-seat-reuse.mjs",
+    "test": "node scripts/test-seat-reuse.mjs && node scripts/static-regression.mjs",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:ui": "node scripts/ui-smoke.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.6",

@@ -42,7 +42,7 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
   const sunPosition = useMemo(() => new THREE.Vector3(), []);
 
   const starGeo = useMemo(() => {
-    const n = 1800;
+    const n = lowPower ? 700 : 1800;
     const pos = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) {
       const u = Math.abs(Math.sin(i * 12.9898 + 78.233)) % 1;
@@ -57,7 +57,7 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     return g;
-  }, []);
+  }, [lowPower]);
 
   useFrame((state, dt) => {
     let targetSunY = 0.85;

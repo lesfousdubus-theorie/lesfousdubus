@@ -82,9 +82,19 @@ function readSceneRuntimeState() {
   const constrainedNetwork = connection?.saveData === true
     || connection?.effectiveType === "slow-2g"
     || connection?.effectiveType === "2g";
+  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const shortSide = Math.min(window.innerWidth, window.innerHeight);
+  const cappedDpr = Math.min(window.devicePixelRatio || 1, 2);
+  const pixelBudget = window.innerWidth * window.innerHeight * cappedDpr * cappedDpr;
   return {
     hidden: document.hidden,
-    lowPower: constrainedNetwork || window.innerWidth < 768 || navigator.hardwareConcurrency <= 4 || memory <= 4,
+    // La petite dimension reste stable quand un téléphone pivote, contrairement
+    // à innerWidth seul. On tient aussi compte du coût réel en pixels.
+    lowPower: constrainedNetwork
+      || navigator.hardwareConcurrency <= 4
+      || memory <= 4
+      || (coarsePointer && shortSide < 900)
+      || pixelBudget > 5_000_000,
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   };
 }
@@ -137,6 +147,32 @@ function FrameScheduler({ fps, active }: { fps: number; active: boolean }) {
   return null;
 }
 
+function WebGLContextGuard({ setLost }: { setLost: (lost: boolean) => void }) {
+  const gl = useThree((state) => state.gl);
+  const invalidate = useThree((state) => state.invalidate);
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const onLost = (event: Event) => {
+      event.preventDefault();
+      setLost(true);
+    };
+    const onRestored = () => {
+      gl.resetState();
+      setLost(false);
+      invalidate();
+    };
+    canvas.addEventListener("webglcontextlost", onLost, false);
+    canvas.addEventListener("webglcontextrestored", onRestored, false);
+    return () => {
+      canvas.removeEventListener("webglcontextlost", onLost, false);
+      canvas.removeEventListener("webglcontextrestored", onRestored, false);
+    };
+  }, [gl, invalidate, setLost]);
+
+  return null;
+}
+
 export default function Scene({
   phase,
   headlights,
@@ -156,7 +192,8 @@ export default function Scene({
   modeOverride,
 }: SceneProps) {
   const { hidden, lowPower, reducedMotion } = useSceneRuntimeState();
-  const renderPaused = hidden;
+  const [contextLost, setContextLost] = useState(false);
+  const renderPaused = hidden || contextLost;
   // Calcul géométrique de la cabine pour la caméra
   const numRows = useMemo(() => computeNumRows(seatCapacity), [seatCapacity]);
   const rearWallZ = useMemo(() => -2.6 + numRows * 1.2, [numRows]);
@@ -172,6 +209,7 @@ export default function Scene({
 
   return (
     <SceneErrorBoundary>
+      <div className="absolute inset-0">
       <Canvas
       shadows={lowPower ? false : "basic"}
       frameloop="demand"
@@ -181,7 +219,8 @@ export default function Scene({
       style={{ width: "100%", height: "100%", touchAction: "none" }}
       fallback={<SceneFallback />}
     >
-      <FrameScheduler fps={lowPower || reducedMotion ? 24 : 45} active={!renderPaused} />
+      <WebGLContextGuard setLost={setContextLost} />
+      <FrameScheduler fps={lowPower || reducedMotion ? 30 : 60} active={!renderPaused} />
       <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Suspense fallback={null}>
@@ -215,6 +254,10 @@ export default function Scene({
         reducedMotion={reducedMotion}
       />
       </Canvas>
+      {contextLost && (
+        <SceneFallback reason="Le moteur graphique a été suspendu par l’appareil. Le contexte WebGL est en cours de restauration ; vous pouvez aussi relancer l’expérience." />
+      )}
+      </div>
     </SceneErrorBoundary>
   );
 }

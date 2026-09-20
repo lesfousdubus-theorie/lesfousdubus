@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
@@ -17,7 +17,7 @@ import {
   type WorldState,
 } from "./constants";
 import Passengers, { computeNumRows } from "./Passengers";
-import BusTvUnit, { sendYoutubeCommand } from "./BusTv";
+import { BusTvFrame, BusTvPlayer } from "./BusTv";
 
 interface BusProps {
   headlights: boolean;
@@ -127,6 +127,25 @@ export default function Bus({
     }
     return arr;
   }, [numRows]);
+
+  // Un seul vrai lecteur YouTube est conservé. À l'intérieur, il se déplace vers
+  // la télévision la plus proche de la rangée courante ; les autres écrans restent
+  // des répéteurs visuels très légers sans iframe supplémentaire.
+  const activeTvIndex = useMemo(() => {
+    if (phase !== "inside" || tvPositions.length === 1) return 0;
+    const targetZ = -2.6 + reservedRow * 1.2 + 0.15;
+    let bestIndex = 0;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    tvPositions.forEach((position, index) => {
+      const distance = Math.abs(position[2] - targetZ);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestIndex = index;
+      }
+    });
+    return bestIndex;
+  }, [phase, reservedRow, tvPositions]);
+  const activeTvPosition = tvPositions[activeTvIndex] ?? tvPositions[0];
 
   // Coordonnées Z dynamiques du bus
   const rearWallZ = -2.6 + numRows * 1.2; // pour 6 rangées: 4.6
@@ -502,61 +521,6 @@ export default function Bus({
     [],
   );
 
-  const primaryIframeRef = useRef<HTMLIFrameElement | null>(null);
-  const tvIframeRefs = useRef<Array<HTMLIFrameElement | null>>([]);
-  const youtubeTimeRef = useRef(0);
-  const youtubeStateRef = useRef(-1);
-  const registerTvIframe = useCallback((index: number, iframe: HTMLIFrameElement | null, isPrimary: boolean) => {
-    tvIframeRefs.current[index] = iframe;
-    if (isPrimary) primaryIframeRef.current = iframe;
-  }, []);
-
-  useEffect(() => {
-    const onYoutubeMessage = (event: MessageEvent) => {
-      if (!event.origin.endsWith("youtube.com") && !event.origin.endsWith("youtube-nocookie.com")) return;
-      if (event.source !== primaryIframeRef.current?.contentWindow) return;
-      try {
-        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-        const info = data?.info;
-        if (typeof info?.currentTime === "number") youtubeTimeRef.current = info.currentTime;
-        const state = data?.event === "onStateChange" ? info : info?.playerState;
-        if (typeof state === "number") {
-          youtubeStateRef.current = state;
-          tvIframeRefs.current.slice(1).forEach((iframe) => {
-            if (state === 1) sendYoutubeCommand(iframe, "playVideo");
-            if (state === 2 || state === 0) sendYoutubeCommand(iframe, "pauseVideo");
-          });
-        }
-      } catch {
-        // Les autres messages postMessage de YouTube ne concernent pas le lecteur.
-      }
-    };
-    window.addEventListener("message", onYoutubeMessage);
-    return () => window.removeEventListener("message", onYoutubeMessage);
-  }, []);
-
-  // Synchronisation de toutes les TV du bus : départ immédiat à l'entrée, reprise instantanée,
-  // et volume spatialisé (atténué à 25% à l'extérieur du bus quand la TV est allumée).
-  useEffect(() => {
-    if (!hasEntered) {
-      tvIframeRefs.current.forEach((iframe) => sendYoutubeCommand(iframe, "pauseVideo"));
-      return;
-    }
-
-    if (tvOn && !isMutedForFullscreen && !playbackSuspended) {
-      tvIframeRefs.current.forEach((iframe, index) => {
-        if (index === 0) {
-          sendYoutubeCommand(iframe, "unMute");
-          sendYoutubeCommand(iframe, "setVolume", [phase === "outside" ? 25 : 100]);
-        } else {
-          sendYoutubeCommand(iframe, "mute");
-        }
-        sendYoutubeCommand(iframe, "playVideo");
-      });
-    } else {
-      tvIframeRefs.current.forEach((iframe) => sendYoutubeCommand(iframe, "pauseVideo"));
-    }
-  }, [tvOn, isMutedForFullscreen, playbackSuspended, hasEntered, phase]);
 
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
@@ -1145,26 +1109,28 @@ export default function Bus({
         </mesh>
       </group>
 
-      {/* ---------- TÉLÉVISIONS DU BUS (Une à l'avant + une toutes les 5 rangées) ---------- */}
+      {/* ---------- TÉLÉVISIONS DU BUS ---------- */}
       {tvPositions.map((pos, idx) => (
-        <BusTvUnit
+        <BusTvFrame
           key={`tv-unit-${idx}-${pos[2]}`}
           pos={pos}
           idx={idx}
           tvOn={tvOn}
-          phase={phase}
-          hasEntered={hasEntered}
-          isPrimary={idx === 0}
-          isMutedForFullscreen={isMutedForFullscreen}
+          isActive={idx === activeTvIndex}
           mats={mats}
           tvOffTex={tvOffTex}
-          registerIframe={registerTvIframe}
-          youtubeTimeRef={youtubeTimeRef}
-          youtubeStateRef={youtubeStateRef}
-          reducedMotion={reducedMotion}
-          playbackSuspended={playbackSuspended}
+          posterTex={montCorvoTex}
         />
       ))}
+      <BusTvPlayer
+        pos={activeTvPosition}
+        tvOn={tvOn}
+        phase={phase}
+        hasEntered={hasEntered}
+        isMutedForFullscreen={isMutedForFullscreen}
+        reducedMotion={reducedMotion}
+        playbackSuspended={playbackSuspended}
+      />
     </group>
   );
 }

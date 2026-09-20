@@ -35,15 +35,23 @@ const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
 const API_TIMEOUT_MS = 8_000;
 let memoryVisitorId: string | null = null;
 
+function createVisitorId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const randomPart = Math.random().toString(36).slice(2, 14);
+  return `fdb-${Date.now().toString(36)}-${randomPart}`;
+}
+
 function getOrCreateVisitorId(): string {
   if (memoryVisitorId) return memoryVisitorId;
   try {
-    const visitorId = localStorage.getItem("fdb-visitor") ?? crypto.randomUUID();
+    const visitorId = localStorage.getItem("fdb-visitor") ?? createVisitorId();
     localStorage.setItem("fdb-visitor", visitorId);
     memoryVisitorId = visitorId;
     return visitorId;
   } catch {
-    memoryVisitorId = crypto.randomUUID();
+    memoryVisitorId = createVisitorId();
     return memoryVisitorId;
   }
 }
@@ -151,6 +159,8 @@ export default function BusExperience() {
   const [profileRevision, setProfileRevision] = useState(0);
   const [vacantSeatRanges, setVacantSeatRanges] = useState<Array<[number, number, number]>>([]);
   const [registrationPending, setRegistrationPending] = useState(false);
+  const [statsLoadError, setStatsLoadError] = useState(false);
+  const [statsRetryToken, setStatsRetryToken] = useState(0);
   const [theoryAgeInDays] = useState(getTheoryAgeInDays);
 
   // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
@@ -298,17 +308,23 @@ export default function BusExperience() {
     });
   }, []);
 
-  // Récupération initiale : une erreur conserve l'état "inconnu" plutôt que
-  // d'afficher artificiellement un bus vide.
+  // Récupération initiale : une erreur conserve l'état "inconnu" et propose
+  // explicitement une nouvelle tentative au lieu de laisser un simple tiret.
   useEffect(() => {
     const controller = new AbortController();
+    setStatsLoadError(false);
     void fetchJson<BusApiState>("/api/bus-entries", { signal: controller.signal })
       .then((data) => {
         applyBusSnapshot(data);
+        setStatsLoadError(false);
       })
-      .catch(() => undefined);
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setStatsLoadError(true);
+      });
     return () => controller.abort();
-  }, [applyBusSnapshot]);
+  }, [applyBusSnapshot, statsRetryToken]);
 
   // Seuls les profils proches de la caméra sont chargés : le compteur peut ainsi
   // grandir sans télécharger des milliers de commentaires à chaque actualisation.
@@ -496,12 +512,17 @@ export default function BusExperience() {
     };
   }, []);
 
-  // Entrer immédiatement dans le bus : le profil reste entièrement facultatif.
+  // L'entrée et la lecture vidéo partent pendant le geste utilisateur, sans
+  // attendre Cloudflare. L'inscription se synchronise ensuite en arrière-plan.
   const enterBus = useCallback(async () => {
     if (phase !== "outside" || joining) return;
     unlockAudio();
+    window.dispatchEvent(new Event("bus-tv-user-play"));
     setJoining(true);
     setHasEntered(true);
+    setTvOn(true);
+    setPhase("entering");
+    playDing();
 
     const visitorId = getOrCreateVisitorId();
 
@@ -539,15 +560,13 @@ export default function BusExperience() {
           d.passenger!,
         ]);
       }
-      setTvOn(true);
-      setPhase("entering");
-      playDing();
     } catch (error) {
       if (!isRetryableRegistrationError(error)) {
+        setRegistrationPending(false);
         showToast(
-          "Inscription impossible",
-          error instanceof ApiError ? error.message : "Recharge la page avant de réessayer.",
-          "⚠ ERREUR",
+          "Mode visiteur",
+          error instanceof ApiError ? error.message : "Le bus reste accessible sans inscription.",
+          "⚠ SYNCHRO",
         );
         return;
       }
@@ -556,9 +575,6 @@ export default function BusExperience() {
         error instanceof ApiError && error.retryAfterMs !== null ? error.retryAfterMs : 10_000,
       );
       setRegistrationPending(true);
-      setTvOn(true);
-      setPhase("entering");
-      playDing();
       showToast(
         "Place en cours de synchronisation",
         "L’inscription sera automatiquement rejouée dès que Cloudflare répondra.",
@@ -878,7 +894,7 @@ export default function BusExperience() {
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
 
   return (
-    <div className="fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
+    <div data-phase={phase} data-tv-on={tvOn ? "true" : "false"} className="bus-app fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {toast ? [toast.badge, toast.text, toast.sub].filter(Boolean).join(". ") : ""}
       </div>
@@ -908,8 +924,8 @@ export default function BusExperience() {
         >
         {/* Toast notification dynamique (allongement du bus) */}
         {toast && (
-          <div aria-hidden="true" className="pointer-events-none absolute left-3 right-3 top-[12rem] z-50 animate-in fade-in slide-in-from-top-4 duration-300 min-[480px]:left-auto min-[480px]:top-[4.75rem] min-[480px]:max-w-[calc(100vw-14rem)] sm:right-4 sm:top-20 sm:max-w-sm">
-            <div className="flex items-center gap-3 rounded-2xl border border-[#ffd23f] bg-black/80 px-4 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md sm:px-5">
+          <div aria-hidden="true" className="pointer-events-none absolute left-3 right-3 top-[12rem] z-50 animate-[toast-in_300ms_cubic-bezier(0.25,1,0.5,1)_both] min-[480px]:left-auto min-[480px]:top-[4.75rem] min-[480px]:max-w-[calc(100vw-14rem)] sm:right-4 sm:top-20 sm:max-w-sm">
+            <div className="bus-glass flex items-center gap-3 rounded-2xl border border-[#ffd23f] bg-black/80 px-4 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md sm:px-5">
               {toast.badge && (
                 <span className="rounded-md bg-[#ffd23f] px-2 py-0.5 text-xs font-black text-[#0d2190]">
                   {toast.badge}
@@ -924,7 +940,7 @@ export default function BusExperience() {
         )}
 
         {/* Titre + zone (Responsive mobile) */}
-        <div className={`pointer-events-none absolute left-3 max-w-[calc(100vw-1.5rem)] sm:left-4 sm:right-[25rem] sm:top-4 sm:max-w-none lg:right-auto lg:max-w-[60vw] ${phase === "inside" ? "top-[8.25rem]" : "top-[4.75rem]"}`}>
+        <div className={`bus-title-panel pointer-events-none absolute left-3 max-w-[calc(100vw-1.5rem)] sm:left-4 sm:right-[25rem] sm:top-4 sm:max-w-none lg:right-auto lg:max-w-[60vw] ${phase === "inside" ? "top-[8.25rem]" : "top-[4.75rem]"}`}>
           <h1 className={`break-words font-black uppercase leading-[1.08] tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,0.55)] text-sm sm:text-xl md:text-2xl lg:text-3xl ${phase === "inside" ? "hidden sm:block" : ""}`}>
             <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
             <span className="text-white">des Fous du Bus</span>
@@ -936,7 +952,7 @@ export default function BusExperience() {
             <button
               type="button"
               onClick={() => setShowTheoryModal(true)}
-              className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/60 px-4 text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] active:scale-95 cursor-pointer"
+              className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/60 px-4 text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] active:scale-95 cursor-pointer"
               title="Découvrir la théorie des Fous du Bus"
             >
               <span>📜</span>
@@ -946,8 +962,8 @@ export default function BusExperience() {
         </div>
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
-        <div className="pointer-events-auto absolute left-3 right-3 top-3 flex h-[3.5rem] items-stretch justify-end gap-1 rounded-2xl border border-[#ffd23f]/40 bg-black/60 p-1 shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:top-4 sm:h-auto">
-          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} className="group flex items-center gap-2 rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:gap-2.5 sm:px-3 sm:py-2">
+        <div className="bus-top-stats bus-glass pointer-events-auto absolute left-3 right-3 top-3 flex h-[3.5rem] items-stretch justify-end gap-1 rounded-2xl border border-[#ffd23f]/40 bg-black/60 p-1 shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:top-4 sm:h-auto">
+          <button ref={passengerManifestButtonRef} type="button" onClick={statsLoadError && count === null ? () => setStatsRetryToken((value) => value + 1) : openPassengerManifest} className="group flex items-center gap-2 rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:gap-2.5 sm:px-3 sm:py-2">
             <span className="text-lg transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 motion-reduce:transform-none sm:text-2xl">🚌</span>
             <span>
               <span className="flex items-center gap-1 sm:gap-2">
@@ -959,7 +975,7 @@ export default function BusExperience() {
                 </span>
               </span>
               <span className="block text-base font-black tabular-nums text-white sm:text-xl">
-                {count === null ? "—" : count.toLocaleString("fr-FR")}
+                {count === null ? (statsLoadError ? "Réessayer" : "…") : count.toLocaleString("fr-FR")}
               </span>
             </span>
           </button>
@@ -980,7 +996,7 @@ export default function BusExperience() {
           type="button"
           onClick={toggleDayNight}
           title={manualDayNight === null ? `Forcer le mode ${isNight ? "Jour" : "Nuit"}` : "Revenir au cycle automatique"}
-          className="pointer-events-auto absolute bottom-[4.5rem] left-3 flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 bg-black/65 px-3 text-xs font-bold text-white shadow-lg backdrop-blur-md transition hover:border-[#ffd23f]/60 hover:bg-black/85 active:scale-95 cursor-pointer sm:bottom-4 sm:left-4 sm:gap-2 sm:px-3.5 sm:text-sm"
+          className="bus-day-night bus-glass pointer-events-auto absolute bottom-[4.5rem] left-3 flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 bg-black/65 px-3 text-xs font-bold text-white shadow-lg backdrop-blur-md transition hover:border-[#ffd23f]/60 hover:bg-black/85 active:scale-95 cursor-pointer sm:bottom-4 sm:left-4 sm:gap-2 sm:px-3.5 sm:text-sm"
         >
           {isNight ? (
             <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
@@ -997,7 +1013,7 @@ export default function BusExperience() {
         </button>
 
         {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
-        <div className="pointer-events-auto absolute bottom-3 left-3 right-3 flex min-h-11 items-center gap-1 rounded-full border border-white/25 bg-black/65 px-1.5 text-xs shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-3.5 sm:py-2 sm:text-sm">
+        <div className="bus-speed bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex min-h-11 items-center gap-1 rounded-full border border-white/25 bg-black/65 px-1.5 text-xs shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-3.5 sm:py-2 sm:text-sm">
           <button
             type="button"
             onClick={decelerateBus}
@@ -1044,9 +1060,9 @@ export default function BusExperience() {
 
         {/* Navigation entre les rangées quand on est à l'intérieur */}
         {phase === "inside" && (
-          <div className="pointer-events-auto absolute right-3 top-[4.75rem] flex flex-col items-end gap-1.5 sm:right-4 sm:top-[6.25rem] sm:gap-2">
+          <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] flex flex-col items-end gap-1.5 sm:right-4 sm:top-[6.25rem] sm:gap-2">
             {/* Déplacement dans l'allée */}
-            <div className="flex min-h-11 items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-1.5 shadow-lg backdrop-blur-md sm:px-3">
+            <div className="bus-glass flex min-h-11 items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-1.5 shadow-lg backdrop-blur-md sm:px-3">
               <button
                 type="button"
                 onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
@@ -1078,7 +1094,7 @@ export default function BusExperience() {
         {/* Barres persistantes : aucune commande ne se téléporte sous le pointeur. */}
         <div
           aria-hidden={!exteriorControlsVisible}
-          className={`pointer-events-none absolute bottom-[7.75rem] left-1/2 z-30 flex w-[calc(100vw-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:max-w-[42rem] sm:gap-2 xl:bottom-4 xl:left-[calc(50%-4.75rem)] ${
+          className={`bus-exterior-controls pointer-events-none absolute bottom-[7.75rem] left-1/2 z-30 flex w-[calc(100vw-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:max-w-[42rem] sm:gap-2 xl:bottom-4 xl:left-[calc(50%-4.75rem)] ${
             exteriorControlsVisible
               ? "translate-y-0 opacity-100"
               : "translate-y-2 opacity-0 [&_*]:!pointer-events-none"
@@ -1104,7 +1120,7 @@ export default function BusExperience() {
 
         <div
           aria-hidden={!interiorControlsVisible}
-          className={`pointer-events-none absolute bottom-[7.75rem] left-1/2 flex w-[512px] max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:gap-2 xl:bottom-4 ${
+          className={`bus-interior-controls pointer-events-none absolute bottom-[7.75rem] left-1/2 flex w-[512px] max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:gap-2 xl:bottom-4 ${
             interiorControlsVisible
               ? "translate-y-0 opacity-100"
               : "translate-y-2 opacity-0 [&_*]:!pointer-events-none"
