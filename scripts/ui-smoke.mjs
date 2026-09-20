@@ -311,5 +311,10 @@ try {
   console.log("Responsive/UI smoke checks passed.");
 } finally {
   if (chrome.exitCode === null) chrome.kill("SIGTERM");
-  rmSync(chromeProfileDir, { recursive: true, force: true });
+  try {
+    rmSync(chromeProfileDir, { recursive: true, force: true });
+  } catch {
+    // Le runner est éphémère et Chrome peut encore écrire quelques fichiers
+    // pendant son extinction. Ce nettoyage ne doit jamais invalider les tests.
+  }
 }
