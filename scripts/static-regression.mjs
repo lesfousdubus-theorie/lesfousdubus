@@ -13,6 +13,9 @@ const scene = read("src/components/bus/Scene.tsx");
 const cameraRig = read("src/components/bus/CameraRig.tsx");
 const css = read("src/app/globals.css");
 const api = read("src/app/api/bus-entries/route.ts");
+const passengers = read("src/components/bus/Passengers.tsx");
+const world = read("src/components/bus/World.tsx");
+const weather = read("src/components/bus/Weather.tsx");
 
 assert.equal((busTv.match(/new YT\.Player/g) ?? []).length, 1, "The bus must have exactly one YouTube player.");
 assert.match(bus, /<BusTvPlayer[\s\S]*pos=\{activeTvPosition\}/, "The single player must follow the active TV.");
@@ -60,3 +63,9 @@ assert.match(experience, /isValidVisitorId\(storedVisitorId\)/, "Corrupted store
 assert.match(experience, /previousBodyOverflow[\s\S]*previousHtmlOverflow/, "Body and document overflow must restore independently.");
 
 console.log("Static regression checks passed.");
+
+assert.match(passengers, /passengerCount <= BASE_ROWS \* 4/, "Row capacity must match the four logical passenger slots rendered per row.");
+assert.doesNotMatch(passengers, /getSeatPositions/, "The obsolete camera-reserved seat helper must stay removed.");
+assert.match(bus, /const frameDt = Math\.min\(dt, 0\.1\)/, "Bus animation must clamp long resume frames.");
+assert.match(world, /const frameDt = Math\.min\(dt, 0\.1\)/, "World simulation must clamp long resume frames.");
+assert.match(weather, /const frameDt = Math\.min\(dt, 0\.1\)/, "Weather simulation must clamp long resume frames.");
