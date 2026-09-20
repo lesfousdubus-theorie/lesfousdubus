@@ -201,6 +201,15 @@ try {
     `);
   }
 
+  // Release the viewport-matrix WebGL context before the interaction flow.
+  // Keeping both tabs alive can exhaust SwiftShader on GitHub's headless runner.
+  ws.close();
+  const closeViewportTarget = await fetch(
+    `http://127.0.0.1:${debugPort}/json/close/${target.id}`,
+  );
+  assert(closeViewportTarget.ok, "Unable to close the viewport test target.");
+  await sleep(300);
+
   // Use a fresh tab for the interaction flow. Repeated WebGL reloads from the
   // viewport matrix can exhaust SwiftShader resources in headless Chrome even
   // though a real visitor only has one active page.
@@ -319,7 +328,6 @@ try {
   assert.equal(tvOff.phase, "inside", "Turning the TV off changed the bus phase.");
 
   interactionWs.close();
-  ws.close();
   console.log("Responsive/UI smoke checks passed.");
 } finally {
   if (chrome.exitCode === null) chrome.kill("SIGTERM");
