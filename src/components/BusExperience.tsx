@@ -944,7 +944,7 @@ export default function BusExperience() {
             <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
             <span className="text-white">des Fous du Bus</span>
           </h1>
-          <p className={`mt-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-[#ffd23f] drop-shadow sm:mt-1 sm:text-xs md:text-sm ${phase === "inside" ? "hidden sm:block" : ""}`}>
+          <p className={`mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#ffd23f] drop-shadow sm:mt-1 sm:text-xs md:text-sm ${phase === "inside" ? "hidden sm:block" : ""}`}>
             LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
           </p>
           <div className="mt-2 sm:mt-3">
@@ -972,7 +972,7 @@ export default function BusExperience() {
                 <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffd23f]">
                   Passagers
                 </span>
-                <span className="rounded-full bg-white/15 px-1.5 text-[9px] font-bold text-white/90">
+                <span className="rounded-full bg-white/15 px-1.5 text-[10px] font-bold text-white/90">
                   {numRows} r.
                 </span>
               </span>
@@ -983,12 +983,12 @@ export default function BusExperience() {
           </button>
           <div className="my-1 w-px bg-white/20" aria-hidden="true" />
           <button type="button" onClick={() => setShowTheoryAge(true)} className="rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:px-3 sm:py-2" title="Voir le compteur précis depuis le 26 mai 2024">
-            <span className="block text-[9px] font-semibold uppercase tracking-[0.08em] text-[#ffd23f] sm:text-[10px] sm:tracking-[0.12em]">
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#ffd23f] sm:text-[10px] sm:tracking-[0.12em]">
               La théorie existe depuis
             </span>
             <span className="block text-base font-black tabular-nums text-white sm:text-xl">
               {theoryAgeInDays.toLocaleString("fr-FR")}
-              <span className="ml-1 text-[9px] font-bold uppercase text-white/70 sm:text-xs">jours</span>
+              <span className="ml-1 text-[10px] font-bold uppercase text-white/70 sm:text-xs">jours</span>
             </span>
           </button>
         </div>
@@ -1011,7 +1011,7 @@ export default function BusExperience() {
             </svg>
           )}
           <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
-          <span className="text-white/60 text-[10px] sm:text-xs">· {manualDayNight === null ? (isNight ? "Nuit" : "Jour") : "Auto"}</span>
+          <span className="bus-day-night-detail text-white/60 text-[10px] sm:text-xs">· {manualDayNight === null ? (isNight ? "Nuit" : "Jour") : "Auto"}</span>
         </button>
 
         {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
@@ -1025,10 +1025,10 @@ export default function BusExperience() {
             title="Ralentir le bus (Touche - ou Flèche Bas)"
           >
             <span>🐢</span>
-            <span>Ralentir</span>
+            <span className="bus-speed-label">Ralentir</span>
           </button>
 
-          <div className="flex w-[62px] shrink-0 items-center justify-center gap-1 px-1 font-black tabular-nums sm:w-[76px] sm:px-1.5">
+          <div className="bus-speed-value flex w-[62px] shrink-0 items-center justify-center gap-1 px-1 font-black tabular-nums sm:w-[76px] sm:px-1.5">
             <span
               className={
                 speedMultiplier >= 2.0
@@ -1041,7 +1041,7 @@ export default function BusExperience() {
               {speedMultiplier.toFixed(1)}x
             </span>
             {speedMultiplier >= 2.0 && (
-              <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[8px] sm:text-[9px] font-black uppercase text-[#0d2190]">
+              <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[8px] sm:text-[10px] font-black uppercase text-[#0d2190]">
                 Boost
               </span>
             )}
@@ -1056,7 +1056,7 @@ export default function BusExperience() {
             title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
           >
             <span>⚡</span>
-            <span>Accélérer</span>
+            <span className="bus-speed-label">Accélérer</span>
           </button>
         </div>
 
@@ -1135,15 +1135,15 @@ export default function BusExperience() {
         >
           <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2">
             <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy || !interiorControlsVisible}>
-              <span className="sm:hidden">Prénom</span><span className="hidden sm:inline">Ajouter un prénom</span>
+              <span className="hud-label-short sm:hidden">Prénom</span><span className="hud-label-long hidden sm:inline">Ajouter un prénom</span>
             </HudButton>
             <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("comment")} icon="💬" disabled={busy || !interiorControlsVisible}>
-              <span className="sm:hidden">Commenter</span><span className="hidden sm:inline">Mettre un commentaire</span>
+              <span className="hud-label-short sm:hidden">Commenter</span><span className="hud-label-long hidden sm:inline">Mettre un commentaire</span>
             </HudButton>
           </div>
           <div className="grid w-full grid-cols-4 items-center gap-1.5 sm:grid-cols-[1.25fr_1fr_0.82fr_1.08fr] sm:gap-2">
             <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy || !interiorControlsVisible}>
-              <span className="sm:hidden">TV</span><span className="hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
+              <span className="hud-label-short sm:hidden">TV</span><span className="hud-label-long hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
             </HudButton>
             <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !interiorControlsVisible}>
               {headlights ? "Éteindre" : "Phares"}
@@ -1152,7 +1152,7 @@ export default function BusExperience() {
               Klaxon
             </HudButton>
             <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={exitBus} primary icon="🏝️" disabled={busy || !interiorControlsVisible}>
-              <span className="sm:hidden">{phase === "exiting" ? "Descente…" : "Sortir"}</span><span className="hidden sm:inline">{phase === "exiting" ? "Descente…" : "Sortir du bus"}</span>
+              <span className="hud-label-short sm:hidden">{phase === "exiting" ? "Descente…" : "Sortir"}</span><span className="hud-label-long hidden sm:inline">{phase === "exiting" ? "Descente…" : "Sortir du bus"}</span>
             </HudButton>
           </div>
         </div>

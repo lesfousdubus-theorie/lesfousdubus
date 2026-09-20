@@ -196,7 +196,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
       aria-modal="true"
       aria-labelledby="theory-modal-title"
       tabIndex={-1}
-      className="pointer-events-auto fixed inset-0 z-[999999] flex items-center justify-center bg-[#030712]/88 p-1 backdrop-blur-lg animate-in fade-in duration-200 min-[360px]:p-2 sm:p-5 lg:p-8"
+      className="theory-modal-backdrop pointer-events-auto fixed inset-0 z-[999999] flex items-center justify-center bg-[#030712]/88 backdrop-blur-lg"
       onClick={handleClose}
       onKeyDown={handleDialogKeyDown}
       onWheel={(e) => e.stopPropagation()}
@@ -359,12 +359,12 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
               </section>
               <section className="hidden items-start gap-3 sm:grid sm:grid-cols-2">
                 <div className="space-y-3">
-                  {FULL_THEORY_SECTIONS.filter((_, index) => index % 2 === 0).map((section) => (
+                  {FULL_THEORY_SECTIONS.slice(0, Math.ceil(FULL_THEORY_SECTIONS.length / 2)).map((section) => (
                     <TheoryDetailCard key={section.title} section={section} />
                   ))}
                 </div>
                 <div className="space-y-3">
-                  {FULL_THEORY_SECTIONS.filter((_, index) => index % 2 === 1).map((section) => (
+                  {FULL_THEORY_SECTIONS.slice(Math.ceil(FULL_THEORY_SECTIONS.length / 2)).map((section) => (
                     <TheoryDetailCard key={section.title} section={section} />
                   ))}
                 </div>
