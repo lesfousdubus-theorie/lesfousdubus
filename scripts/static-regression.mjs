@@ -20,6 +20,8 @@ assert.doesNotMatch(bus, /tvIframeRefs|primaryIframeRef|sendYoutubeCommand/, "Le
 assert.doesNotMatch(busTv, /unloadModule|cc_load_policy/, "Captions must not be forcibly removed from the standard YouTube player.");
 assert.match(busTv, /playVideo\(\);[\s\S]*setTimeout/, "The player must warm up on initial load.");
 assert.match(experience, /bus-tv-user-play/, "Entering the bus must trigger playback from the user gesture.");
+assert.match(experience, /hasEntered && phase === "outside"/, "The exterior TV toggle must remain available after the first ride.");
+assert.match(experience, /Allumer la TV/, "The exterior TV control must be able to turn the TV back on.");
 assert.ok(
   experience.indexOf('window.dispatchEvent(new Event("bus-tv-user-play"))') < experience.indexOf('fetchJson<BusApiState & {', experience.indexOf("const enterBus")),
   "Playback must be requested before the registration request.",
