@@ -280,6 +280,12 @@ export async function POST(request: Request) {
     const visitorId = typeof body.visitorId === "string" ? body.visitorId.trim() : "";
     const hasDisplayName = Object.prototype.hasOwnProperty.call(body, "displayName");
     const hasComment = Object.prototype.hasOwnProperty.call(body, "comment");
+    if (
+      (hasDisplayName && typeof body.displayName !== "string")
+      || (hasComment && typeof body.comment !== "string")
+    ) {
+      return Response.json({ error: "Profil invalide." }, { status: 400, headers: WRITE_HEADERS });
+    }
     const displayName = cleanText(body.displayName, 24);
     const comment = cleanText(body.comment, 180);
     if (!isValidVisitorId(visitorId)) {
