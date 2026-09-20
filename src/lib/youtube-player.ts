@@ -13,7 +13,6 @@ export interface YouTubePlayer {
   getPlayerState(): number;
   getIframe(): HTMLIFrameElement;
   destroy(): void;
-  unloadModule?: (module: string) => void;
 }
 
 export interface YouTubePlayerEvent {
