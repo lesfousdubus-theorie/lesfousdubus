@@ -239,42 +239,22 @@ try {
     );
   }
 
-  // Release the viewport-matrix WebGL context before the interaction flow.
-  // Keeping both tabs alive can exhaust SwiftShader on GitHub's headless runner.
-  ws.close();
-  const closeViewportTarget = await fetch(
-    `http://127.0.0.1:${debugPort}/json/close/${target.id}`,
-  );
-  assert(closeViewportTarget.ok, "Unable to close the viewport test target.");
-  await sleep(300);
-
-  // Use a fresh tab for the interaction flow. Repeated WebGL reloads from the
-  // viewport matrix can exhaust SwiftShader resources in headless Chrome even
-  // though a real visitor only has one active page.
-  const interactionResponse = await fetch(
-    `http://127.0.0.1:${debugPort}/json/new?about:blank`,
-    { method: "PUT" },
-  );
-  assert(interactionResponse.ok, "Unable to create a fresh Chrome target for the interaction flow.");
-  const interactionTarget = await interactionResponse.json();
-  assert(interactionTarget?.webSocketDebuggerUrl, "Fresh Chrome target is unavailable.");
-
-  const interactionWs = new WebSocket(interactionTarget.webSocketDebuggerUrl);
-  await new Promise((resolve, reject) => {
-    interactionWs.addEventListener("open", resolve, { once: true });
-    interactionWs.addEventListener("error", reject, { once: true });
-  });
-  const interactionSend = createCdp(interactionWs);
-  await interactionSend("Page.enable");
-  await interactionSend("Runtime.enable");
+  // Le responsive est désormais testé en redimensionnant une seule page.
+  // On conserve donc volontairement ce même contexte WebGL pour le parcours
+  // d'interaction, comme le ferait un visiteur réel, au lieu d'en créer un second.
+  const interactionSend = send;
   await interactionSend("Emulation.setDeviceMetricsOverride", {
     width: 393, height: 852, deviceScaleFactor: 2, mobile: true,
     screenOrientation: { type: "portraitPrimary", angle: 0 },
   });
+  await waitForPageCondition(
+    interactionSend,
+    `Boolean(document.querySelector("canvas")) && !document.body.innerText.includes("Le bus reste au dépôt")`,
+    "Healthy WebGL scene before interaction",
+  );
   await interactionSend("Emulation.setEmulatedMedia", {
     features: [{ name: "prefers-reduced-motion", value: "reduce" }],
   });
-  await interactionSend("Page.navigate", { url: `${baseUrl}/?count=12` });
   await waitForPageCondition(
     interactionSend,
     `document.querySelector("[data-phase]")?.getAttribute("data-phase") === "outside"`,
@@ -338,7 +318,7 @@ try {
   // un cycle extinction/rallumage de TV finit par épuiser son contexte WebGL.
   // Le contrat TV est couvert par les régressions statiques ; ici on valide le
   // vrai parcours utilisateur critique : chargement, entrée, player unique et zoom.
-  interactionWs.close();
+  ws.close();
   console.log("Responsive/UI smoke checks passed.");
 } finally {
   if (chrome.exitCode === null) chrome.kill("SIGTERM");
