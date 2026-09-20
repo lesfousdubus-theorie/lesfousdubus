@@ -16,6 +16,7 @@ const api = read("src/app/api/bus-entries/route.ts");
 const passengers = read("src/components/bus/Passengers.tsx");
 const world = read("src/components/bus/World.tsx");
 const weather = read("src/components/bus/Weather.tsx");
+const youtubeLoader = read("src/lib/youtube-player.ts");
 
 assert.equal((busTv.match(/new YT\.Player/g) ?? []).length, 1, "The bus must have exactly one YouTube player.");
 assert.match(bus, /<BusTvPlayer[\s\S]*pos=\{activeTvPosition\}/, "The single player must follow the active TV.");
@@ -62,10 +63,12 @@ assert.match(api, /visitorId,\s*\n\s*\);/, "Visitor identity must participate in
 assert.match(experience, /isValidVisitorId\(storedVisitorId\)/, "Corrupted stored visitor IDs must self-heal.");
 assert.match(experience, /previousBodyOverflow[\s\S]*previousHtmlOverflow/, "Body and document overflow must restore independently.");
 
-console.log("Static regression checks passed.");
 
 assert.match(passengers, /passengerCount <= BASE_ROWS \* 4/, "Row capacity must match the four logical passenger slots rendered per row.");
 assert.doesNotMatch(passengers, /getSeatPositions/, "The obsolete camera-reserved seat helper must stay removed.");
 assert.match(bus, /const frameDt = Math\.min\(dt, 0\.1\)/, "Bus animation must clamp long resume frames.");
 assert.match(world, /const frameDt = Math\.min\(dt, 0\.1\)/, "World simulation must clamp long resume frames.");
 assert.match(weather, /const frameDt = Math\.min\(dt, 0\.1\)/, "Weather simulation must clamp long resume frames.");
+assert.match(youtubeLoader, /clearTimeout\(timeoutTimer\)/, "YouTube API timeout must be cleared after settling.");
+assert.match(youtubeLoader, /script\.remove\(\)/, "A failed YouTube API script must be removable so a later attempt can retry.");
+console.log("Static regression checks passed.");

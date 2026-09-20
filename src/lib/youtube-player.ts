@@ -58,39 +58,61 @@ export function loadYouTubeIframeApi(): Promise<YouTubeNamespace> {
     const previousReady = window.onYouTubeIframeAPIReady;
     let settled = false;
     let pollTimer = 0;
+    let timeoutTimer = 0;
+    let script = document.getElementById("youtube-iframe-api") as HTMLScriptElement | null;
 
-    const finish = () => {
+    function cleanup() {
+      window.clearInterval(pollTimer);
+      window.clearTimeout(timeoutTimer);
+      script?.removeEventListener("error", onScriptError);
+      if (window.onYouTubeIframeAPIReady === readyHandler) {
+        window.onYouTubeIframeAPIReady = previousReady;
+      }
+    }
+
+    function finish() {
       if (settled || !window.YT?.Player) return;
       settled = true;
-      window.clearInterval(pollTimer);
+      cleanup();
       resolve(window.YT);
-    };
+    }
 
-    const fail = (message: string) => {
+    function fail(message: string) {
       if (settled) return;
       settled = true;
-      window.clearInterval(pollTimer);
+      cleanup();
+      if (!window.YT?.Player && script?.id === "youtube-iframe-api") {
+        script.remove();
+      }
       apiPromise = null;
       reject(new Error(message));
-    };
+    }
 
-    window.onYouTubeIframeAPIReady = () => {
+    function onScriptError() {
+      fail("Impossible de charger l’API YouTube.");
+    }
+
+    function readyHandler() {
       previousReady?.();
       finish();
-    };
+    }
 
-    let script = document.getElementById("youtube-iframe-api") as HTMLScriptElement | null;
+    window.onYouTubeIframeAPIReady = readyHandler;
+
     if (!script) {
       script = document.createElement("script");
       script.id = "youtube-iframe-api";
       script.src = "https://www.youtube.com/iframe_api";
       script.async = true;
-      script.onerror = () => fail("Impossible de charger l’API YouTube.");
       document.head.appendChild(script);
     }
+    script.addEventListener("error", onScriptError, { once: true });
 
     pollTimer = window.setInterval(finish, 50);
-    window.setTimeout(() => fail("Le chargement de l’API YouTube a expiré."), 15_000);
+    timeoutTimer = window.setTimeout(
+      () => fail("Le chargement de l’API YouTube a expiré."),
+      15_000,
+    );
   });
 
   return apiPromise;
