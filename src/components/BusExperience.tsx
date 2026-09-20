@@ -909,6 +909,7 @@ export default function BusExperience() {
         vacantSeatRanges={vacantSeatRanges}
         currentSeatRow={seatRow}
         isMutedForFullscreen={showTheoryModal}
+        uiPaused={showTheoryModal || showJoinModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger)}
         hasEntered={hasEntered}
         passengerProfiles={passengerProfiles}
         currentPassengerSeatIndex={currentPassengerSeatIndex}

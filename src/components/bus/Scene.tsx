@@ -27,6 +27,7 @@ interface SceneProps {
   vacantSeatRanges?: Array<[number, number, number]>;
   currentSeatRow?: number;
   isMutedForFullscreen?: boolean;
+  uiPaused?: boolean;
   hasEntered?: boolean;
   passengerProfiles?: PassengerProfile[];
   currentPassengerSeatIndex?: number | null;
@@ -202,6 +203,7 @@ export default function Scene({
   vacantSeatRanges = [],
   currentSeatRow = 3,
   isMutedForFullscreen = false,
+  uiPaused = false,
   hasEntered = false,
   passengerProfiles = [],
   currentPassengerSeatIndex = null,
@@ -210,7 +212,8 @@ export default function Scene({
 }: SceneProps) {
   const { hidden, lowPower, reducedMotion } = useSceneRuntimeState();
   const [contextLost, setContextLost] = useState(false);
-  const renderPaused = hidden || contextLost;
+  const renderPaused = hidden || contextLost || uiPaused;
+  const playbackSuspended = hidden || contextLost;
   // Calcul géométrique de la cabine pour la caméra
   const numRows = useMemo(() => computeNumRows(seatCapacity), [seatCapacity]);
   const rearWallZ = useMemo(() => -2.6 + numRows * 1.2, [numRows]);
@@ -257,7 +260,7 @@ export default function Scene({
           currentPassengerSeatIndex={currentPassengerSeatIndex}
           onPassengerSelect={onPassengerSelect}
           reducedMotion={reducedMotion}
-          playbackSuspended={renderPaused}
+          playbackSuspended={playbackSuspended}
         />
       </Suspense>
       <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} />
