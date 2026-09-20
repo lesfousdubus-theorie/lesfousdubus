@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { rmSync } from "node:fs";
 
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const chromePath = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
@@ -7,7 +8,7 @@ const debugPort = 9222;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function waitForJson(url, attempts = 40) {
+async function waitForJson(url, attempts = 120) {
   let lastError;
   for (let i = 0; i < attempts; i += 1) {
     try {
@@ -65,19 +66,38 @@ async function waitForPageCondition(send, expression, label, timeoutMs = 8_000) 
   throw new Error(`${label} timed out after ${timeoutMs}ms: ${JSON.stringify(diagnostics)}`);
 }
 
+const chromeProfileDir = `/tmp/lesfousdubus-chrome-${process.pid}`;
+let chromeStderr = "";
 const chrome = spawn(chromePath, [
   "--headless=new",
   `--remote-debugging-port=${debugPort}`,
+  "--remote-debugging-address=127.0.0.1",
+  `--user-data-dir=${chromeProfileDir}`,
+  "--no-first-run",
+  "--no-default-browser-check",
   "--no-sandbox",
   "--disable-dev-shm-usage",
+  "--disable-background-networking",
   "--use-angle=swiftshader",
   "--enable-unsafe-swiftshader",
   "--window-size=1920,1080",
   "about:blank",
-], { stdio: "ignore" });
+], { stdio: ["ignore", "ignore", "pipe"] });
+
+chrome.stderr?.on("data", (chunk) => {
+  chromeStderr = (chromeStderr + chunk.toString()).slice(-12_000);
+});
 
 try {
-  const targets = await waitForJson(`http://127.0.0.1:${debugPort}/json/list`);
+  let targets;
+  try {
+    targets = await waitForJson(`http://127.0.0.1:${debugPort}/json/list`);
+  } catch (error) {
+    throw new Error(
+      `Chrome DevTools did not become ready. Chrome exited=${chrome.exitCode !== null}. stderr: ${chromeStderr || "(empty)"}`,
+      { cause: error },
+    );
+  }
   const target = targets.find((item) => item.type === "page");
   assert(target?.webSocketDebuggerUrl, "Chrome page target is unavailable.");
 
@@ -257,5 +277,6 @@ try {
   ws.close();
   console.log("Responsive/UI smoke checks passed.");
 } finally {
-  chrome.kill("SIGTERM");
+  if (chrome.exitCode === null) chrome.kill("SIGTERM");
+  rmSync(chromeProfileDir, { recursive: true, force: true });
 }
