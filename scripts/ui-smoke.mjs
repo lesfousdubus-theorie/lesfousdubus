@@ -201,30 +201,49 @@ try {
     `);
   }
 
-  // One complete interaction flow on a representative phone.
-  await send("Emulation.setDeviceMetricsOverride", {
+  // Use a fresh tab for the interaction flow. Repeated WebGL reloads from the
+  // viewport matrix can exhaust SwiftShader resources in headless Chrome even
+  // though a real visitor only has one active page.
+  const interactionResponse = await fetch(
+    `http://127.0.0.1:${debugPort}/json/new?about:blank`,
+    { method: "PUT" },
+  );
+  assert(interactionResponse.ok, "Unable to create a fresh Chrome target for the interaction flow.");
+  const interactionTarget = await interactionResponse.json();
+  assert(interactionTarget?.webSocketDebuggerUrl, "Fresh Chrome target is unavailable.");
+
+  const interactionWs = new WebSocket(interactionTarget.webSocketDebuggerUrl);
+  await new Promise((resolve, reject) => {
+    interactionWs.addEventListener("open", resolve, { once: true });
+    interactionWs.addEventListener("error", reject, { once: true });
+  });
+  const interactionSend = createCdp(interactionWs);
+  await interactionSend("Page.enable");
+  await interactionSend("Runtime.enable");
+  await interactionSend("Emulation.setDeviceMetricsOverride", {
     width: 393, height: 852, deviceScaleFactor: 2, mobile: true,
     screenOrientation: { type: "portraitPrimary", angle: 0 },
   });
+  await interactionSend("Page.navigate", { url: `${baseUrl}/?count=12` });
   await waitForPageCondition(
-    send,
+    interactionSend,
     `document.querySelector("[data-phase]")?.getAttribute("data-phase") === "outside"`,
     "Phone bus UI",
   );
-  await evaluate(send, `
+  await evaluate(interactionSend, `
     (() => {
       const button = [...document.querySelectorAll("button")].find((el) => el.textContent?.includes("Entrer dans le bus"));
       button?.click();
     })()
   `);
   await waitForPageCondition(
-    send,
+    interactionSend,
     `document.querySelector("[data-phase]")?.getAttribute("data-phase") === "inside"`,
     "Bus entering transition",
     7_000,
   );
 
-  const inside = await evaluate(send, `
+  const inside = await evaluate(interactionSend, `
     (() => ({
       phase: document.querySelector("[data-phase]")?.getAttribute("data-phase"),
       youtubeIframes: document.querySelectorAll('iframe[src*="youtube.com"], iframe[src*="youtube-nocookie.com"]').length,
@@ -243,7 +262,7 @@ try {
     "Neither the YouTube iframe nor its persistent preload mount is present.",
   );
   assert(inside.youtubeIframes <= 1, `More than one bus YouTube iframe is mounted: ${inside.youtubeIframes}`);
-  await evaluate(send, `
+  await evaluate(interactionSend, `
     (() => {
       const player = document.getElementById("tv-primary-iframe")
         ?? document.querySelector("[data-bus-youtube-player]");
@@ -252,7 +271,7 @@ try {
   `);
   assert(inside.overflow <= 2, "Interior mobile UI overflows horizontally.");
 
-  await evaluate(send, `
+  await evaluate(interactionSend, `
     (() => {
       const button = [...document.querySelectorAll("button")].find((el) => {
         const text = el.textContent?.trim() ?? "";
@@ -262,7 +281,7 @@ try {
     })()
   `);
   await sleep(200);
-  const tvOff = await evaluate(send, `
+  const tvOff = await evaluate(interactionSend, `
     (() => ({
       playerStillMounted: (
         document.getElementById("tv-primary-iframe")
@@ -274,6 +293,7 @@ try {
   assert(tvOff.playerStillMounted, "Turning the TV off destroyed the preloaded player.");
   assert.equal(tvOff.phase, "inside", "Turning the TV off changed the bus phase.");
 
+  interactionWs.close();
   ws.close();
   console.log("Responsive/UI smoke checks passed.");
 } finally {
