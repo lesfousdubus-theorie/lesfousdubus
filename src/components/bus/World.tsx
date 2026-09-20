@@ -539,10 +539,15 @@ function Prop({ def }: { def: PropDef }) {
 interface WorldProps {
   worldRef: React.RefObject<WorldState>;
   reducedMotion?: boolean;
+  lowPower?: boolean;
 }
 
-export default function World({ worldRef, reducedMotion = false }: WorldProps) {
-  const props = useMemo(() => buildProps(), []);
+export default function World({ worldRef, reducedMotion = false, lowPower = false }: WorldProps) {
+  const allProps = useMemo(() => buildProps(), []);
+  const props = useMemo(
+    () => lowPower ? allProps.filter((_, index) => index % 2 === 0) : allProps,
+    [allProps, lowPower],
+  );
   const propRefs = useRef<(THREE.Group | null)[]>([]);
   const zoneRefs = useRef<(THREE.Group | null)[]>([]);
   const dashRef = useRef<THREE.InstancedMesh>(null);
