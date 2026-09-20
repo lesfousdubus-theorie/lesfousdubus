@@ -209,15 +209,23 @@ try {
     (() => ({
       phase: document.querySelector("[data-phase]")?.getAttribute("data-phase"),
       youtubeIframes: document.querySelectorAll('iframe[src*="youtube.com"], iframe[src*="youtube-nocookie.com"]').length,
-      hasPlayerHost: Boolean(document.querySelector("[data-bus-youtube-player]")),
+      hasTvFrame: Boolean(document.getElementById("tv-frame")),
+      hasPrimaryIframe: Boolean(document.getElementById("tv-primary-iframe")),
       hasExit: [...document.querySelectorAll("button")].some((el) => el.textContent?.includes("Sortir")),
       overflow: document.documentElement.scrollWidth - innerWidth,
     }))()
   `);
   assert.equal(inside.phase, "inside", "Bus did not finish entering.");
   assert(inside.hasExit, "Interior controls are unavailable after entering.");
-  assert(inside.hasPlayerHost, "The persistent YouTube player host was unmounted.");
-  assert(inside.youtubeIframes <= 1, `More than one bus YouTube iframe is mounted: ${inside.youtubeIframes}`);
+  assert(inside.hasTvFrame, "The TV frame was unmounted after entering.");
+  assert(inside.hasPrimaryIframe, "The primary YouTube iframe was not initialized.");
+  assert.equal(inside.youtubeIframes, 1, `Expected exactly one bus YouTube iframe, got ${inside.youtubeIframes}`);
+  await evaluate(send, `
+    (() => {
+      const iframe = document.getElementById("tv-primary-iframe");
+      if (iframe) iframe.dataset.smokePersistent = "yes";
+    })()
+  `);
   assert(inside.overflow <= 2, "Interior mobile UI overflows horizontally.");
 
   await evaluate(send, `
@@ -232,7 +240,7 @@ try {
   await sleep(200);
   const tvOff = await evaluate(send, `
     (() => ({
-      playerStillMounted: Boolean(document.querySelector("[data-bus-youtube-player]")),
+      playerStillMounted: document.getElementById("tv-primary-iframe")?.dataset.smokePersistent === "yes",
       phase: document.querySelector("[data-phase]")?.getAttribute("data-phase"),
     }))()
   `);
