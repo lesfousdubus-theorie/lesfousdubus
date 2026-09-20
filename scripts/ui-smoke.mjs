@@ -224,6 +224,9 @@ try {
     width: 393, height: 852, deviceScaleFactor: 2, mobile: true,
     screenOrientation: { type: "portraitPrimary", angle: 0 },
   });
+  await interactionSend("Emulation.setEmulatedMedia", {
+    features: [{ name: "prefers-reduced-motion", value: "reduce" }],
+  });
   await interactionSend("Page.navigate", { url: `${baseUrl}/?count=12` });
   await waitForPageCondition(
     interactionSend,
@@ -236,6 +239,16 @@ try {
       button?.click();
     })()
   `);
+  await sleep(250);
+  const phaseDuringEntry = await evaluate(
+    interactionSend,
+    `document.querySelector("[data-phase]")?.getAttribute("data-phase")`,
+  );
+  assert.equal(
+    phaseDuringEntry,
+    "entering",
+    "Reduced-motion mode skipped the bus entry animation.",
+  );
   await waitForPageCondition(
     interactionSend,
     `document.querySelector("[data-phase]")?.getAttribute("data-phase") === "inside"`,
