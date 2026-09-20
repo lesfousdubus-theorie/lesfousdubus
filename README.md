@@ -18,11 +18,12 @@ Vous découvrez un minibus orné du célèbre chapeau de paille géant de Monkey
 Cliquez sur le gros bouton jaune **« Entrer dans le bus »** pour vous asseoir à l'intérieur aux côtés des autres nakamas.
 - Le bus accueille les vrais visiteurs du site en direct : chaque nouvel arrivant ajoute un passager assis !
 - Lorsque de nouveaux passagers arrivent, **le bus s'allonge automatiquement** sous vos yeux pour faire de la place à tout le monde.
+- Chaque passager peut ajouter un nom/pseudo et un commentaire, puis consulter les autres passagers depuis la liste à bord.
 
 ### 📺 2. Regarder la vidéo sur la télé du bus
-- Tant que vous êtes dehors à admirer le bus, la vidéo reste en pause.
-- **Dès que vous montez dans le bus**, la télévision suspendue au plafond s'allume et lance automatiquement la vidéo de la théorie avec le son à bord !
-- Vous pouvez cliquer sur l'écran pour mettre en pause ou passer en **Plein écran** à tout moment. Si vous descendez du bus, le son reste doucement audible au loin.
+- Avant la première montée, le lecteur est préchargé mais reste en pause.
+- **Dès que vous montez dans le bus**, la télévision suspendue au plafond s'allume et lance automatiquement la vidéo de la théorie avec le son à bord.
+- Vous pouvez cliquer sur l'écran pour mettre en pause ou passer en **Plein écran** à tout moment. Après être redescendu, la TV peut continuer à jouer à volume réduit et reste activable/désactivable depuis l'extérieur.
 
 ### ⚡ 3. Accélérer et ralentir le bus (Mode Boost !)
 En bas à droite de l'écran, vous disposez de deux boutons pour régler la vitesse du bus :
