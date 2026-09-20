@@ -186,10 +186,9 @@ try {
     width: 393, height: 852, deviceScaleFactor: 2, mobile: true,
     screenOrientation: { type: "portraitPrimary", angle: 0 },
   });
-  await send("Page.navigate", { url: `${baseUrl}/?count=12` });
   await waitForPageCondition(
     send,
-    `Boolean([...document.querySelectorAll("button")].find((el) => el.textContent?.includes("Entrer dans le bus")))`,
+    `document.querySelector("[data-phase]")?.getAttribute("data-phase") === "outside"`,
     "Phone bus UI",
   );
   await evaluate(send, `
