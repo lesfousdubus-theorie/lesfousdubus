@@ -553,7 +553,7 @@ export default function Bus({
       : 0;
     // Environ 1,6 à 2 secondes par aller-retour, même sous une forte averse.
     const wiperRate = 3 + Math.min(1, rainStrength) * 0.9;
-    const sweep = !reducedMotion && rainStrength > 0.08
+    const sweep = rainStrength > 0.08
       ? Math.sin(t * wiperRate) * 0.68
       : 0;
     if (leftWiper.current) leftWiper.current.rotation.z = 0.58 + sweep;

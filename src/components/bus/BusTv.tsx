@@ -320,11 +320,30 @@ export function BusTvPlayer({
       if (typeof currentTime !== "number" || !Number.isFinite(currentTime)) return;
       playerRef.current?.seekTo(Math.max(0, currentTime), true);
     };
+    const onTogglePlayback = () => {
+      const player = playerRef.current;
+      if (!player) return;
+      try {
+        if (player.getPlayerState() === 1) {
+          player.pauseVideo();
+        } else {
+          player.unMute();
+          player.setVolume(100);
+          player.playVideo();
+          setAutoplayBlocked(false);
+          updateBusVideoSnapshot({ autoplayBlocked: false });
+        }
+      } catch {
+        // Le lecteur peut être en cours d'initialisation.
+      }
+    };
     window.addEventListener("bus-tv-user-play", onUserPlay);
     window.addEventListener("bus-video-seek", onSeek);
+    window.addEventListener("bus-tv-toggle-playback", onTogglePlayback);
     return () => {
       window.removeEventListener("bus-tv-user-play", onUserPlay);
       window.removeEventListener("bus-video-seek", onSeek);
+      window.removeEventListener("bus-tv-toggle-playback", onTogglePlayback);
     };
   }, []);
 
@@ -395,6 +414,28 @@ export function BusTvPlayer({
           }}
         >
           <div ref={mountRef} data-bus-youtube-player style={{ width: "100%", height: "100%" }} />
+          {tvOn && phase === "inside" && !isMutedForFullscreen && (
+            <div
+              data-tv-wheel-capture
+              onWheel={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                window.dispatchEvent(
+                  new CustomEvent<number>("bus-zoom", { detail: event.deltaY * 0.04 }),
+                );
+              }}
+              onClick={() => window.dispatchEvent(new Event("bus-tv-toggle-playback"))}
+              onPointerDown={(event) => event.stopPropagation()}
+              title="Molette : zoomer dans le bus · clic : lecture/pause"
+              style={{
+                position: "absolute",
+                inset: "0 0 46px 0",
+                zIndex: 2,
+                background: "transparent",
+                cursor: "pointer",
+              }}
+            />
+          )}
           {(autoplayBlocked || apiFailed) && tvOn && hasEntered && (
             <button
               type="button"
@@ -402,6 +443,7 @@ export function BusTvPlayer({
               style={{
                 position: "absolute",
                 inset: 0,
+                zIndex: 3,
                 display: "grid",
                 placeItems: "center",
                 border: 0,

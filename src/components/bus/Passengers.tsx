@@ -357,8 +357,27 @@ function getArchetypeMaterials(archetype: NakamaArchetype): Record<string, THREE
       metalness: 0.85,
       roughness: 0.25,
     }),
-    eyes: new THREE.MeshBasicMaterial({ color: "#111113" }),
-    teeth: new THREE.MeshBasicMaterial({ color: "#ffffff" }),
+    eyes: new THREE.MeshBasicMaterial({
+      color: "#111113",
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    }),
+    teeth: new THREE.MeshBasicMaterial({
+      color: "#ffffff",
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    }),
+    faceDark: new THREE.MeshBasicMaterial({
+      color: "#1c1917",
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    }),
     dark: new THREE.MeshStandardMaterial({ color: "#1c1917", roughness: 0.8 }),
     steel: new THREE.MeshStandardMaterial({ color: "#cbd5e1", metalness: 0.8, roughness: 0.2 }),
     red: new THREE.MeshStandardMaterial({ color: "#dc2626", roughness: 0.5 }),
@@ -692,9 +711,14 @@ function Passenger({
 
         {/* Détail torse Luffy : croix cicatrice ou torse ouvert */}
         {archetype.id === "luffy" && (
-          <mesh position={[0, 0.02, -0.115]}>
+          <mesh position={[0, 0.02, -0.122]} renderOrder={2}>
             <planeGeometry args={[0.12, 0.24]} />
-            <meshStandardMaterial color={archetype.skinColor} />
+            <meshStandardMaterial
+              color={archetype.skinColor}
+              polygonOffset
+              polygonOffsetFactor={-2}
+              polygonOffsetUnits={-2}
+            />
           </mesh>
         )}
 
@@ -736,7 +760,7 @@ function Passenger({
 
         {/* Yeux stylisés animés */}
         {[-0.055, 0.055].map((ex) => (
-          <mesh key={ex} material={mats.eyes} position={[ex, 0.02, -0.104]}>
+          <mesh key={ex} material={mats.eyes} position={[ex, 0.02, -0.112]}>
             <boxGeometry args={[0.035, 0.035, 0.01]} />
           </mesh>
         ))}
@@ -744,17 +768,17 @@ function Passenger({
         {/* Expressions du visage */}
         {archetype.expression === "grin" ? (
           // Grand sourire éclatant avec dents (Luffy, Franky, Ace)
-          <mesh material={mats.teeth} position={[0, -0.05, -0.104]}>
+          <mesh material={mats.teeth} position={[0, -0.05, -0.112]}>
             <boxGeometry args={[0.11, 0.035, 0.01]} />
           </mesh>
         ) : archetype.expression === "smile" ? (
           // Sourire bienveillant (Nami, Robin, Chopper)
-          <mesh material={mats.dark} position={[0, -0.05, -0.104]}>
+          <mesh material={mats.faceDark} position={[0, -0.05, -0.112]}>
             <boxGeometry args={[0.08, 0.015, 0.01]} />
           </mesh>
         ) : archetype.expression === "funny" ? (
           // Expression drôle (Usopp, Buggy)
-          <mesh material={mats.dark} position={[0, -0.05, -0.104]}>
+          <mesh material={mats.faceDark} position={[0, -0.05, -0.112]}>
             <boxGeometry args={[0.09, 0.03, 0.01]} />
           </mesh>
         ) : null}
@@ -990,7 +1014,7 @@ function Accessory({
     case "goggles":
       // Lunettes de tireur d'élite d'Usopp
       return (
-        <group position={[0, 0.12, -0.09]}>
+        <group position={[0, 0.12, -0.12]}>
           {[-0.05, 0.05].map((gx) => (
             <mesh key={gx} material={mats.gold} position={[gx, 0, 0]} rotation={[0, 0, 0]}>
               <cylinderGeometry args={[0.03, 0.03, 0.02, 12]} />
@@ -1011,10 +1035,10 @@ function Accessory({
             <sphereGeometry args={[0.18, 16, 16]} />
           </mesh>
           {/* Croix médicale blanche */}
-          <mesh material={mats.accessorySub} position={[0, 0.04, -0.16]}>
+          <mesh material={mats.accessorySub} position={[0, 0.04, -0.19]}>
             <boxGeometry args={[0.08, 0.025, 0.01]} />
           </mesh>
-          <mesh material={mats.accessorySub} position={[0, 0.04, -0.16]}>
+          <mesh material={mats.accessorySub} position={[0, 0.04, -0.19]}>
             <boxGeometry args={[0.025, 0.08, 0.01]} />
           </mesh>
           {/* Bois de renne */}
@@ -1051,7 +1075,7 @@ function Accessory({
     case "sunglasses":
       // Lunettes de soleil (Robin, Franky)
       return (
-        <group position={[0, 0.1, -0.1]}>
+        <group position={[0, 0.1, -0.12]}>
           <mesh material={mats.accessory}>
             <boxGeometry args={[0.18, 0.035, 0.03]} />
           </mesh>

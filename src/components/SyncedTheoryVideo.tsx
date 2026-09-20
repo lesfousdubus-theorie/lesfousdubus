@@ -46,10 +46,9 @@ export default function SyncedTheoryVideo() {
               iframe.style.border = "0";
               iframe.style.display = "block";
 
-              // Ce lecteur est volontairement indépendant de la TV du bus :
-              // il démarre toujours au début et ne modifie jamais sa position.
-              event.target.pauseVideo();
-              event.target.seekTo(0, true);
+              // Lecteur volontairement indépendant de la TV du bus.
+              // Aucun play, pause ou seek n'est envoyé ici : YouTube reste simplement
+              // affiché à 0:00 jusqu'au clic explicite de l'utilisateur.
             },
             onStateChange: (event) => {
               if (event.data === 1) setAutoplayBlocked(false);
