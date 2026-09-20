@@ -46,6 +46,25 @@ async function evaluate(send, expression) {
   return result.result?.value;
 }
 
+async function waitForPageCondition(send, expression, label, timeoutMs = 8_000) {
+  const startedAt = Date.now();
+  let lastValue = null;
+  while (Date.now() - startedAt < timeoutMs) {
+    lastValue = await evaluate(send, expression);
+    if (lastValue) return lastValue;
+    await sleep(150);
+  }
+  const diagnostics = await evaluate(send, `
+    (() => ({
+      readyState: document.readyState,
+      phase: document.querySelector("[data-phase]")?.getAttribute("data-phase") ?? null,
+      bodyText: document.body.innerText.slice(0, 600),
+      buttons: [...document.querySelectorAll("button")].map((button) => button.textContent?.trim() ?? ""),
+    }))()
+  `);
+  throw new Error(`${label} timed out after ${timeoutMs}ms: ${JSON.stringify(diagnostics)}`);
+}
+
 const chrome = spawn(chromePath, [
   "--headless=new",
   `--remote-debugging-port=${debugPort}`,
@@ -91,7 +110,15 @@ try {
         : { type: "portraitPrimary", angle: 0 },
     });
     await send("Page.navigate", { url: `${baseUrl}/?count=12` });
-    await sleep(1800);
+    await waitForPageCondition(
+      send,
+      `(() => {
+        const root = document.querySelector("[data-phase]");
+        const button = [...document.querySelectorAll("button")].find((el) => el.textContent?.includes("Entrer dans le bus"));
+        return root?.getAttribute("data-phase") === "outside" && Boolean(button);
+      })()`,
+      `Bus UI at ${viewport.width}x${viewport.height}`,
+    );
 
     const layout = await evaluate(send, `
       (() => {
@@ -129,7 +156,11 @@ try {
         button?.click();
       })()
     `);
-    await sleep(250);
+    await waitForPageCondition(
+      send,
+      `Boolean(document.querySelector("[data-theory-video]"))`,
+      `Theory video at ${viewport.width}x${viewport.height}`,
+    );
     const theoryVideo = await evaluate(send, `
       (() => {
         const video = document.querySelector("[data-theory-video]");
@@ -156,14 +187,23 @@ try {
     screenOrientation: { type: "portraitPrimary", angle: 0 },
   });
   await send("Page.navigate", { url: `${baseUrl}/?count=12` });
-  await sleep(1800);
+  await waitForPageCondition(
+    send,
+    `Boolean([...document.querySelectorAll("button")].find((el) => el.textContent?.includes("Entrer dans le bus")))`,
+    "Phone bus UI",
+  );
   await evaluate(send, `
     (() => {
       const button = [...document.querySelectorAll("button")].find((el) => el.textContent?.includes("Entrer dans le bus"));
       button?.click();
     })()
   `);
-  await sleep(4300);
+  await waitForPageCondition(
+    send,
+    `document.querySelector("[data-phase]")?.getAttribute("data-phase") === "inside"`,
+    "Bus entering transition",
+    7_000,
+  );
 
   const inside = await evaluate(send, `
     (() => ({
