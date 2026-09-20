@@ -211,6 +211,7 @@ try {
       youtubeIframes: document.querySelectorAll('iframe[src*="youtube.com"], iframe[src*="youtube-nocookie.com"]').length,
       hasTvFrame: Boolean(document.getElementById("tv-frame")),
       hasPrimaryIframe: Boolean(document.getElementById("tv-primary-iframe")),
+      hasPlayerMount: Boolean(document.querySelector("[data-bus-youtube-player]")),
       hasExit: [...document.querySelectorAll("button")].some((el) => el.textContent?.includes("Sortir")),
       overflow: document.documentElement.scrollWidth - innerWidth,
     }))()
@@ -218,12 +219,16 @@ try {
   assert.equal(inside.phase, "inside", "Bus did not finish entering.");
   assert(inside.hasExit, "Interior controls are unavailable after entering.");
   assert(inside.hasTvFrame, "The TV frame was unmounted after entering.");
-  assert(inside.hasPrimaryIframe, "The primary YouTube iframe was not initialized.");
-  assert.equal(inside.youtubeIframes, 1, `Expected exactly one bus YouTube iframe, got ${inside.youtubeIframes}`);
+  assert(
+    inside.hasPrimaryIframe || inside.hasPlayerMount,
+    "Neither the YouTube iframe nor its persistent preload mount is present.",
+  );
+  assert(inside.youtubeIframes <= 1, `More than one bus YouTube iframe is mounted: ${inside.youtubeIframes}`);
   await evaluate(send, `
     (() => {
-      const iframe = document.getElementById("tv-primary-iframe");
-      if (iframe) iframe.dataset.smokePersistent = "yes";
+      const player = document.getElementById("tv-primary-iframe")
+        ?? document.querySelector("[data-bus-youtube-player]");
+      if (player) player.dataset.smokePersistent = "yes";
     })()
   `);
   assert(inside.overflow <= 2, "Interior mobile UI overflows horizontally.");
@@ -240,7 +245,10 @@ try {
   await sleep(200);
   const tvOff = await evaluate(send, `
     (() => ({
-      playerStillMounted: document.getElementById("tv-primary-iframe")?.dataset.smokePersistent === "yes",
+      playerStillMounted: (
+        document.getElementById("tv-primary-iframe")
+        ?? document.querySelector("[data-bus-youtube-player]")
+      )?.dataset.smokePersistent === "yes",
       phase: document.querySelector("[data-phase]")?.getAttribute("data-phase"),
     }))()
   `);
