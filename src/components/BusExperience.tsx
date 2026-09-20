@@ -199,10 +199,17 @@ export default function BusExperience() {
 
   const [seatRow, setSeatRow] = useState(() => {
     if (typeof window !== "undefined") {
-      const r = new URLSearchParams(window.location.search).get("row");
+      const params = new URLSearchParams(window.location.search);
+      const r = params.get("row");
       if (r !== null) {
         const parsed = parseInt(r, 10);
-        if (Number.isSafeInteger(parsed) && parsed >= 0) return Math.min(parsed, MAX_DEBUG_PASSENGERS);
+        const debugCount = Number(params.get("count"));
+        const debugCapacity = Number.isSafeInteger(debugCount) && debugCount >= 0
+          ? Math.min(debugCount, MAX_DEBUG_PASSENGERS)
+          : 0;
+        if (Number.isSafeInteger(parsed) && parsed >= 0) {
+          return Math.min(parsed, computeNumRows(debugCapacity) - 1);
+        }
       }
     }
     return 3;
@@ -257,7 +264,7 @@ export default function BusExperience() {
     seatCapacityRef.current = capacity;
     setSeatCapacity(capacity);
     setSeatRow((row) => Math.min(row, computeNumRows(capacity) - 1));
-  }, []);
+  }, [setSeatRow]);
 
   const applyBusSnapshot = useCallback((data: BusApiState, updateCount = true) => {
     if (data.profileRevision < profileRevisionRef.current) return false;
@@ -289,11 +296,6 @@ export default function BusExperience() {
     return () => window.clearTimeout(timer);
   }, []);
 
-
-  // Les paramètres de debug restent bornés à la capacité réellement affichable.
-  useEffect(() => {
-    setSeatRow((row) => Math.max(0, Math.min(row, computeNumRows(seatCapacity) - 1)));
-  }, [seatCapacity]);
 
   useEffect(() => () => {
     if (toastTimeout.current) clearTimeout(toastTimeout.current);
