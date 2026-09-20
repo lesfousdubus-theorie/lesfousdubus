@@ -272,12 +272,13 @@ function getPassengerLabelY(archetype: NakamaArchetype): number {
 
 /**
  * Calcule le nombre de rangées nécessaires pour asseoir `passengerCount` personnes.
- * Les 6 rangées de base disposent de 22 places assises (+ 1 place réservée pour le joueur).
- * Chaque rangée supplémentaire au-delà de 6 ajoute 4 places assises.
+ * Les 6 rangées de base offrent 24 positions logiques (4 par rangée). Le passager
+ * courant utilise l'une de ces positions et est simplement déplacé vers la caméra
+ * en vue intérieure, il ne consomme donc pas une place supplémentaire.
  */
 export function computeNumRows(passengerCount: number): number {
-  if (passengerCount <= 22) return BASE_ROWS;
-  return BASE_ROWS + Math.ceil((passengerCount - 22) / 4);
+  if (passengerCount <= BASE_ROWS * 4) return BASE_ROWS;
+  return BASE_ROWS + Math.ceil((passengerCount - BASE_ROWS * 4) / 4);
 }
 
 export interface SeatInfo {
@@ -285,36 +286,6 @@ export interface SeatInfo {
   z: number;
   row: number;
   seatInRow: number;
-}
-
-/**
- * Calcule toutes les places assises disponibles pour `numRows` rangées.
- * La place occupée par le joueur (`reservedRow`, par défaut 3) côté droit
- * est réservée afin d'éviter tout clipping avec la caméra SEAT_EYE.
- */
-export function getSeatPositions(
-  numRows: number,
-  reservedRow = 3,
-  firstRowZ = -2.6,
-  rowSpacing = 1.2,
-): SeatInfo[] {
-  const seats: SeatInfo[] = [];
-
-  for (let r = 0; r < numRows; r++) {
-    const z = firstRowZ + r * rowSpacing;
-
-    // Côté gauche : place fenêtre & place couloir
-    seats.push({ x: -0.94, z, row: r, seatInRow: 0 });
-    seats.push({ x: -0.50, z, row: r, seatInRow: 1 });
-
-    // Côté droit : réservé dans la rangée active du joueur
-    if (r !== reservedRow) {
-      seats.push({ x: 0.50, z, row: r, seatInRow: 2 });
-      seats.push({ x: 0.94, z, row: r, seatInRow: 3 });
-    }
-  }
-
-  return seats;
 }
 
 const ARCHETYPE_MATS_CACHE = new Map<string, Record<string, THREE.Material>>();

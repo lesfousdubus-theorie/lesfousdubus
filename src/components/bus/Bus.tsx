@@ -528,6 +528,7 @@ export default function Bus({
 
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime;
+    const frameDt = Math.min(dt, 0.1);
 
     const mult = worldRef.current?.speedMultiplier ?? 1.0;
 
@@ -543,7 +544,7 @@ export default function Bus({
         : (Math.sin(t * 8.5 * mult) * 0.014 + Math.sin(t * 2.1) * 0.008)
           * Math.min(1.4, Math.max(0.7, mult)) + stretchBounce;
       const targetRoll = cabinIsStable || reducedMotion ? 0 : Math.sin(t * 1.6 * mult) * 0.0035;
-      const settle = Math.min(1, dt * 10);
+      const settle = Math.min(1, frameDt * 10);
       group.current.position.y += (targetY - group.current.position.y) * settle;
       group.current.rotation.z += (targetRoll - group.current.rotation.z) * settle;
     }
@@ -570,7 +571,7 @@ export default function Bus({
 
     // Rotation des roues du bus adaptée à la vitesse de défilement
     wheels.current.forEach((w) => {
-      if (w) w.rotation.x -= dt * 12 * mult;
+      if (w) w.rotation.x -= frameDt * 12 * mult;
     });
 
     // Éclairage intérieur doux et constant de jour comme de nuit

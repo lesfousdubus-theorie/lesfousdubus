@@ -17,7 +17,7 @@ function seededValue(index: number, salt: number) {
   return Math.abs(Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453) % 1;
 }
 
-export default function Weather({ worldRef, lowPower = false }: WeatherProps) {
+export default function Weather({ worldRef, lowPower = false, reducedMotion = false }: WeatherProps) {
   const rainRef = useRef<THREE.LineSegments>(null);
   const rainMaterialRef = useRef<THREE.LineBasicMaterial>(null);
   const snowRef = useRef<THREE.Points>(null);
@@ -56,6 +56,7 @@ export default function Weather({ worldRef, lowPower = false }: WeatherProps) {
   }, [lowPower]);
 
   useFrame((state, dt) => {
+    const frameDt = Math.min(dt, 0.1);
     const weather = worldRef.current?.weather ?? "clear";
     const intensity = worldRef.current?.weatherIntensity ?? 0;
     const rainOpacity = weather === "rain" ? intensity * 0.72 : 0;
@@ -68,7 +69,7 @@ export default function Weather({ worldRef, lowPower = false }: WeatherProps) {
     if (rainRef.current && rainOpacity > 0.01) {
       const positions = rainRef.current.geometry.attributes.position as THREE.BufferAttribute;
       for (let i = 0; i < positions.count; i += 2) {
-        let y = positions.getY(i) - dt * 24;
+        let y = positions.getY(i) - frameDt * 24;
         if (y < 0) y += AREA.y;
         positions.setY(i, y);
         positions.setY(i + 1, y - 0.75);
@@ -80,10 +81,12 @@ export default function Weather({ worldRef, lowPower = false }: WeatherProps) {
       const positions = snowRef.current.geometry.attributes.position as THREE.BufferAttribute;
       const time = state.clock.elapsedTime;
       for (let i = 0; i < positions.count; i++) {
-        let y = positions.getY(i) - dt * (1.5 + seededValue(i, 8) * 1.8);
+        let y = positions.getY(i) - frameDt * (1.5 + seededValue(i, 8) * 1.8);
         if (y < 0) y += AREA.y;
         positions.setY(i, y);
-        positions.setX(i, positions.getX(i) + Math.sin(time * 0.7 + i) * dt * 0.12);
+        if (!reducedMotion) {
+          positions.setX(i, positions.getX(i) + Math.sin(time * 0.7 + i) * frameDt * 0.12);
+        }
       }
       positions.needsUpdate = true;
     }

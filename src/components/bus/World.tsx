@@ -557,11 +557,12 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
   const dashes = useMemo(() => Array.from({ length: 48 }, (_, i) => i * 10), []);
 
   useFrame((state, dt) => {
+    const frameDt = Math.min(dt, 0.1);
     const mult = worldRef.current?.speedMultiplier ?? 1.0;
     // Le déplacement du bus fait partie du fonctionnement principal de la scène :
     // la préférence système "réduire les animations" coupe seulement les effets
     // décoratifs, jamais l'avancement du véhicule.
-    const scroll = (worldRef.current?.scroll ?? 0) + dt * WORLD_SPEED * mult;
+    const scroll = (worldRef.current?.scroll ?? 0) + frameDt * WORLD_SPEED * mult;
     if (worldRef.current) worldRef.current.scroll = scroll;
 
     // Défilement des décors
@@ -606,7 +607,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       worldRef.current.weather = weather;
       const targetIntensity = weather === "clear" ? 0 : weather === "rain" ? 0.9 : 0.72;
       worldRef.current.weatherIntensity +=
-        (targetIntensity - worldRef.current.weatherIntensity) * Math.min(1, dt * 0.65);
+        (targetIntensity - worldRef.current.weatherIntensity) * Math.min(1, frameDt * 0.65);
     }
 
     // Ondulation de l'océan de Grand Line

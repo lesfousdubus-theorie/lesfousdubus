@@ -24,7 +24,7 @@ function smoothstep(a: number, b: number, x: number) {
   return t * t * (3 - 2 * t);
 }
 
-export default function DayNight({ worldRef, modeOverride, lowPower = false }: Props) {
+export default function DayNight({ worldRef, modeOverride, lowPower = false, reducedMotion = false }: Props) {
   const sun = useRef<THREE.DirectionalLight>(null);
   const sunMesh = useRef<THREE.Mesh>(null);
   const moonMesh = useRef<THREE.Mesh>(null);
@@ -90,7 +90,7 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false }: P
     }
 
     // Interpolation fluide vers la cible (transition douce au clic ou au fil des secondes)
-    const blend = Math.min(1, dt * 2.8);
+    const blend = reducedMotion ? 1 : Math.min(1, Math.min(dt, 0.1) * 2.8);
     curSunY.current += (targetSunY - curSunY.current) * blend;
     curSunX.current += (targetSunX - curSunX.current) * blend;
 
@@ -133,7 +133,7 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false }: P
     if (ambient.current) ambient.current.intensity = 0.12 + daylight * 0.5;
     if (hemi.current) hemi.current.intensity = 0.15 + daylight * 0.6;
     if (starsMat.current) starsMat.current.opacity = Math.max(0, 1 - daylight * 1.4);
-    if (starsRef.current) starsRef.current.rotation.y = state.clock.elapsedTime * 0.004;
+    if (starsRef.current) starsRef.current.rotation.y = reducedMotion ? 0 : state.clock.elapsedTime * 0.004;
   });
 
   return (
