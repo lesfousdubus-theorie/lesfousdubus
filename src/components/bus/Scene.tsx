@@ -181,7 +181,7 @@ export default function Scene({
       style={{ width: "100%", height: "100%", touchAction: "none" }}
       fallback={<SceneFallback />}
     >
-      <FrameScheduler fps={reducedMotion ? 8 : lowPower ? 24 : 45} active={!renderPaused} />
+      <FrameScheduler fps={lowPower || reducedMotion ? 24 : 45} active={!renderPaused} />
       <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Suspense fallback={null}>
