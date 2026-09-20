@@ -17,7 +17,7 @@ function seededValue(index: number, salt: number) {
   return Math.abs(Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453) % 1;
 }
 
-export default function Weather({ worldRef, lowPower = false, reducedMotion = false }: WeatherProps) {
+export default function Weather({ worldRef, lowPower = false }: WeatherProps) {
   const rainRef = useRef<THREE.LineSegments>(null);
   const rainMaterialRef = useRef<THREE.LineBasicMaterial>(null);
   const snowRef = useRef<THREE.Points>(null);
@@ -65,8 +65,6 @@ export default function Weather({ worldRef, lowPower = false, reducedMotion = fa
     if (snowMaterialRef.current) snowMaterialRef.current.opacity = snowOpacity;
     if (rainRef.current) rainRef.current.visible = rainOpacity > 0.01;
     if (snowRef.current) snowRef.current.visible = snowOpacity > 0.01;
-    if (reducedMotion) return;
-
     if (rainRef.current && rainOpacity > 0.01) {
       const positions = rainRef.current.geometry.attributes.position as THREE.BufferAttribute;
       for (let i = 0; i < positions.count; i += 2) {
