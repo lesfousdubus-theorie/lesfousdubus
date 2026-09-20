@@ -113,12 +113,16 @@ try {
   const viewports = [
     { width: 320, height: 568, mobile: true },
     { width: 393, height: 852, mobile: true },
+    { width: 568, height: 320, mobile: true },
+    { width: 667, height: 375, mobile: true },
+    { width: 740, height: 360, mobile: true },
     { width: 844, height: 390, mobile: true },
     { width: 768, height: 1024, mobile: false },
     { width: 1366, height: 768, mobile: false },
     { width: 1920, height: 1080, mobile: false },
   ];
 
+  let firstViewport = true;
   for (const viewport of viewports) {
     await send("Emulation.setDeviceMetricsOverride", {
       width: viewport.width,
@@ -129,7 +133,12 @@ try {
         ? { type: "landscapePrimary", angle: 90 }
         : { type: "portraitPrimary", angle: 0 },
     });
-    await send("Page.navigate", { url: `${baseUrl}/?count=12` });
+    if (firstViewport) {
+      await send("Page.navigate", { url: `${baseUrl}/?count=12` });
+      firstViewport = false;
+    } else {
+      await sleep(200);
+    }
     await waitForPageCondition(
       send,
       `(() => {
@@ -152,16 +161,36 @@ try {
         const outside = buttons
           .map((button) => ({ text: button.textContent?.trim() ?? "", rect: button.getBoundingClientRect() }))
           .filter(({ rect }) => rect.left < -2 || rect.right > innerWidth + 2 || rect.top < -2 || rect.bottom > innerHeight + 2);
+        const tooSmall = buttons
+          .map((button) => ({ text: button.textContent?.trim() ?? "", rect: button.getBoundingClientRect() }))
+          .filter(({ rect }) => rect.width < 42 || rect.height < 42)
+          .map(({ text, rect }) => ({ text, width: rect.width, height: rect.height }));
+        const collisions = [];
+        for (let i = 0; i < buttons.length; i += 1) {
+          const a = buttons[i].getBoundingClientRect();
+          for (let j = i + 1; j < buttons.length; j += 1) {
+            const b = buttons[j].getBoundingClientRect();
+            const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+            const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+            if (overlapX > 3 && overlapY > 3) {
+              collisions.push([buttons[i].textContent?.trim() ?? "", buttons[j].textContent?.trim() ?? ""]);
+            }
+          }
+        }
         return {
           overflow: document.documentElement.scrollWidth - innerWidth,
           hasEnter: buttons.some((button) => button.textContent?.includes("Entrer dans le bus")),
           outside: outside.map(({ text, rect }) => ({ text, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom })),
+          tooSmall,
+          collisions,
         };
       })()
     `);
     assert(layout.hasEnter, `Enter button missing at ${viewport.width}x${viewport.height}`);
     assert(layout.overflow <= 2, `Horizontal overflow at ${viewport.width}x${viewport.height}: ${layout.overflow}px`);
     assert.equal(layout.outside.length, 0, `Visible controls leave viewport at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.outside)}`);
+    assert.equal(layout.tooSmall.length, 0, `Touch targets are too small at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.tooSmall)}`);
+    assert.equal(layout.collisions.length, 0, `Visible controls overlap at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.collisions)}`);
 
     await evaluate(send, `
       (() => {
