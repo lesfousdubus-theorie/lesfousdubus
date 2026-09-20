@@ -256,6 +256,13 @@ try {
     7_000,
   );
 
+  await waitForPageCondition(
+    interactionSend,
+    `Boolean(document.getElementById("tv-frame"))`,
+    "TV frame after entering",
+    4_000,
+  );
+
   const inside = await evaluate(interactionSend, `
     (() => ({
       phase: document.querySelector("[data-phase]")?.getAttribute("data-phase"),
