@@ -64,6 +64,15 @@ try {
     { visitor_id: "visitor-c", seat_index: 2 },
   ]);
 
+  // Le même UPSERT que l'API ne doit ignorer que le doublon visitor_id.
+  execute(`INSERT INTO bus_entries (visitor_id, seat_index)
+    VALUES ('visitor-a', 99)
+    ON CONFLICT(visitor_id) DO NOTHING`);
+  assert.throws(() => execute(`INSERT INTO bus_entries (visitor_id, seat_index)
+    VALUES ('visitor-seat-collision', 0)
+    ON CONFLICT(visitor_id) DO NOTHING`));
+
+
   execute("DELETE FROM bus_entries WHERE visitor_id = 'visitor-b'");
   assert.deepEqual(execute("SELECT start_index, end_index FROM bus_vacant_seat_ranges ORDER BY start_index"), [
     { start_index: 1, end_index: 1 },
