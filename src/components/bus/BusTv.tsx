@@ -113,7 +113,6 @@ export function BusTvPlayer({
     isMutedForFullscreen,
     playbackSuspended,
   });
-  const [ready, setReady] = useState(false);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const [apiFailed, setApiFailed] = useState(false);
   const shaderUniforms = useMemo(() => ({ uVisible: { value: 1.0 } }), []);
@@ -222,7 +221,6 @@ export function BusTvPlayer({
               iframe.style.border = "0";
               iframe.style.display = "block";
 
-              setReady(true);
               // Préchargement réel : le lecteur est initialisé immédiatement, démarre
               // brièvement en muet pour amorcer le flux, puis revient exactement à 0.
               event.target.mute();
@@ -240,7 +238,6 @@ export function BusTvPlayer({
               }, 900);
             },
             onStateChange: (event) => {
-              const activePlayer = event.target;
               if (event.data === 1) {
                 setAutoplayBlocked(false);
               }
