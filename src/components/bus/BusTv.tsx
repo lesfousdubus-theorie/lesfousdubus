@@ -366,48 +366,6 @@ export function BusTvPlayer({
           }}
         >
           <div ref={setMountElement} data-bus-youtube-player style={{ width: "100%", height: "100%" }} />
-          {tvOn && phase === "inside" && !isMutedForFullscreen && !autoplayBlocked && !apiFailed && (
-            <button
-              data-tv-wheel-capture
-              type="button"
-              aria-label="Zone de zoom de la vue du bus. Utilise la molette ici pour zoomer, ou clique pour recentrer."
-              onWheel={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                window.dispatchEvent(
-                  new CustomEvent<number>("bus-zoom", { detail: event.deltaY * 0.04 }),
-                );
-              }}
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                window.dispatchEvent(new Event("bus-zoom-reset"));
-              }}
-              onPointerDown={(event) => event.stopPropagation()}
-              title="Molette ici : zoomer dans le bus · clic : recentrer"
-              style={{
-                position: "absolute",
-                top: 8,
-                left: "50%",
-                transform: "translateX(-50%)",
-                zIndex: 2,
-                minWidth: 72,
-                height: 28,
-                padding: "0 10px",
-                border: "1px solid rgba(255,255,255,0.32)",
-                borderRadius: 999,
-                background: "rgba(2,6,23,0.68)",
-                color: "#fff",
-                fontSize: 11,
-                fontWeight: 900,
-                letterSpacing: "0.08em",
-                cursor: "ns-resize",
-                backdropFilter: "blur(4px)",
-              }}
-            >
-              ↕ ZOOM
-            </button>
-          )}
           {autoplayBlocked && !apiFailed && tvOn && hasEntered && (
             <button
               type="button"

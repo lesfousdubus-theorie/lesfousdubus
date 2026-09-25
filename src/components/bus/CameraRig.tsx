@@ -255,15 +255,6 @@ export default function CameraRig({
       }
     };
 
-    // Écoute des événements de boutons d'interface utilisateur pour le zoom
-    const onCustomZoom = (e: Event) => {
-      const detail = ((e as CustomEvent).detail as number) ?? 0;
-      targetFovRef.current = THREE.MathUtils.clamp(targetFovRef.current + detail, 22, 75);
-    };
-    const onCustomZoomReset = () => {
-      targetFovRef.current = 55;
-    };
-
     const target = gl.domElement.parentElement ?? el;
     target.addEventListener("pointerdown", down);
     window.addEventListener("pointermove", move);
@@ -271,8 +262,6 @@ export default function CameraRig({
     window.addEventListener("pointercancel", up);
     target.addEventListener("wheel", wheel, { passive: false });
     window.addEventListener("keydown", key);
-    window.addEventListener("bus-zoom", onCustomZoom);
-    window.addEventListener("bus-zoom-reset", onCustomZoomReset);
 
     return () => {
       target.removeEventListener("pointerdown", down);
@@ -281,8 +270,6 @@ export default function CameraRig({
       window.removeEventListener("pointercancel", up);
       target.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", key);
-      window.removeEventListener("bus-zoom", onCustomZoom);
-      window.removeEventListener("bus-zoom-reset", onCustomZoomReset);
     };
   }, [gl]);
 

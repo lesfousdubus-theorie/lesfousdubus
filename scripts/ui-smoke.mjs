@@ -324,7 +324,7 @@ try {
       hasTvFrame: Boolean(document.getElementById("tv-frame")),
       hasPrimaryIframe: Boolean(document.getElementById("tv-primary-iframe")),
       hasPlayerMount: Boolean(document.querySelector("[data-bus-youtube-player]")),
-      hasTvWheelCapture: Boolean(document.querySelector("[data-tv-wheel-capture]")),
+      hasZoomBadge: [...document.querySelectorAll('#tv-frame button')].some((el) => /zoom/i.test(el.textContent ?? "")),
       hasVideoFallback: Boolean(document.querySelector('#tv-frame a[href*="youtube.com/watch"]')),
       hasPlayPrompt: Boolean(document.querySelector('#tv-frame button[aria-label="Lancer la vidéo"]')),
       hasExit: [...document.querySelectorAll("button")].some((el) => el.textContent?.includes("Sortir")),
@@ -338,10 +338,7 @@ try {
     inside.hasPrimaryIframe || inside.hasPlayerMount,
     "Neither the YouTube iframe nor its persistent preload mount is present.",
   );
-  assert(
-    inside.hasTvWheelCapture || inside.hasVideoFallback || inside.hasPlayPrompt,
-    `The TV surface offers no interaction or recovery: ${JSON.stringify(inside)}`,
-  );
+  assert(!inside.hasZoomBadge, "The TV player must not show a zoom badge over the video.");
   assert(inside.youtubeIframes <= 1, `More than one bus YouTube iframe is mounted: ${inside.youtubeIframes}`);
   assert(inside.overflow <= 2, "Interior mobile UI overflows horizontally.");
 
@@ -349,7 +346,7 @@ try {
   // headless utilise SwiftShader : prolonger artificiellement ce scénario jusqu'à
   // un cycle extinction/rallumage de TV finit par épuiser son contexte WebGL.
   // Le contrat TV est couvert par les régressions statiques ; ici on valide le
-  // vrai parcours utilisateur critique : chargement, entrée, player unique et zoom.
+  // vrai parcours utilisateur critique : chargement, entrée et player unique.
   ws.close();
   console.log("Responsive/UI smoke checks passed.");
 } finally {
