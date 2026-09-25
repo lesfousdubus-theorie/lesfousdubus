@@ -265,6 +265,12 @@ export default function BusExperience() {
     }, 2800);
   }, []);
 
+  const dismissToast = useCallback(() => {
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    toastTimeout.current = null;
+    setToast(null);
+  }, []);
+
   const updateSeatCapacity = useCallback((capacity: number) => {
     seatCapacityRef.current = capacity;
     setSeatCapacity(capacity);
@@ -491,7 +497,6 @@ export default function BusExperience() {
         setCurrentPassengerSeatIndex(data.seatIndex);
         registrationRetryDelayRef.current = 10_000;
         setRegistrationPending(false);
-        showToast("Place synchronisée !", "Ton inscription est maintenant confirmée.", "✓ SYNCHRO");
       } catch (error) {
         if (controller.signal.aborted) return;
         if (!isRetryableRegistrationError(error)) {
@@ -569,6 +574,7 @@ export default function BusExperience() {
   // attendre Cloudflare. L'inscription se synchronise ensuite en arrière-plan.
   const enterBus = useCallback(async () => {
     if (phase !== "outside" || joining) return;
+    dismissToast();
     unlockAudio();
     window.dispatchEvent(new Event("bus-tv-user-play"));
     setJoining(true);
@@ -593,13 +599,8 @@ export default function BusExperience() {
       const prevRows = computeNumRows(seatCapacityRef.current);
       const nextRows = computeNumRows(d.seatCapacity);
 
-      if (!d.added) {
-        showToast("Bon retour à bord !", "Tu reprends ta place dans le bus !", "🚌 NAKAMA");
-      } else if (nextRows > prevRows) {
+      if (d.added && nextRows > prevRows) {
         playStretch();
-        showToast("Bienvenue à bord !", "Le bus s'allonge pour t'accueillir !", "🚌 EXTENSION");
-      } else {
-        showToast("Bienvenue à bord !", "Tu es maintenant assis dans le bus !", "🎉 NAKAMA");
       }
       applyBusSnapshot(d);
       setRegistrationPending(false);
@@ -628,15 +629,10 @@ export default function BusExperience() {
         error instanceof ApiError && error.retryAfterMs !== null ? error.retryAfterMs : 10_000,
       );
       setRegistrationPending(true);
-      showToast(
-        "Place en cours de synchronisation",
-        "L’inscription sera automatiquement rejouée dès que Cloudflare répondra.",
-        "⏳ SYNCHRO",
-      );
     } finally {
       setJoining(false);
     }
-  }, [applyBusSnapshot, phase, joining, showToast]);
+  }, [applyBusSnapshot, dismissToast, phase, joining, showToast]);
 
   const openProfileModal = useCallback((mode: "name" | "comment") => {
     try {
@@ -858,23 +854,20 @@ export default function BusExperience() {
       setCurrentPassengerSeatIndex(null);
       setShowTheoryModal(false);
       setPhase((current) => current === "inside" ? "exiting" : "outside");
-      showToast(
-        data.removed ? "Place supprimée" : "Aucune place à supprimer",
-        data.removed ? "Tu as quitté définitivement le bus." : "Tu n’étais pas enregistré comme passager.",
-        "👋 BUS",
-      );
+      dismissToast();
       return true;
     } catch {
       return false;
     }
-  }, [applyBusSnapshot, showToast]);
+  }, [applyBusSnapshot, dismissToast]);
 
   // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
   const exitBus = useCallback(() => {
     if (phase !== "inside") return;
+    dismissToast();
     setPhase("exiting");
     playDing();
-  }, [phase]);
+  }, [dismissToast, phase]);
 
   const onArrived = useCallback((p: "inside" | "outside") => {
     setPhase(p);
@@ -963,7 +956,7 @@ export default function BusExperience() {
         vacantSeatRanges={vacantSeatRanges}
         currentSeatRow={seatRow}
         isMutedForFullscreen={showTheoryModal}
-        uiPaused={showTheoryModal || showJoinModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger)}
+        uiPaused={showTheoryModal}
         hasEntered={hasEntered}
         passengerProfiles={passengerProfiles}
         currentPassengerSeatIndex={currentPassengerSeatIndex}
@@ -978,8 +971,8 @@ export default function BusExperience() {
         >
         {/* Toast notification dynamique (allongement du bus) */}
         {toast && (
-          <div aria-hidden="true" className="pointer-events-none absolute left-3 right-3 top-[12rem] z-50 animate-[toast-in_300ms_cubic-bezier(0.25,1,0.5,1)_both] min-[480px]:left-auto min-[480px]:top-[4.75rem] min-[480px]:max-w-[calc(100vw-14rem)] sm:right-4 sm:top-20 sm:max-w-sm">
-            <div className="bus-glass flex items-center gap-3 rounded-2xl border border-[#ffd23f] bg-black/80 px-4 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md sm:px-5">
+          <div aria-hidden="true" className="pointer-events-none absolute left-3 right-3 top-[12rem] z-50 min-[480px]:left-auto min-[480px]:top-[4.75rem] min-[480px]:max-w-[calc(100vw-14rem)] sm:right-4 sm:top-20 sm:max-w-sm lg:left-1/2 lg:right-auto lg:top-24 lg:w-96 lg:max-w-[calc(100vw-2rem)] lg:-translate-x-1/2 xl:top-4">
+            <div className="bus-glass flex animate-[toast-in_300ms_cubic-bezier(0.25,1,0.5,1)_both] items-center gap-3 rounded-2xl border border-[#ffd23f] bg-black/80 px-4 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md sm:px-5">
               {toast.badge && (
                 <span className="rounded-md bg-[#ffd23f] px-2 py-0.5 text-xs font-black text-[#0d2190]">
                   {toast.badge}
