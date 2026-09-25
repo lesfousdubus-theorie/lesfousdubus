@@ -98,15 +98,20 @@ async function fetchJson<T>(
   const timeout = window.setTimeout(() => requestController.abort(), timeoutMs);
   try {
     const response = await fetch(input, { ...init, signal: requestController.signal });
-    const data = (await response.json().catch(() => ({}))) as T & { error?: string };
+    const data: unknown = await response.json().catch(() => null);
     if (!response.ok) {
       throw new ApiError(
-        data.error || "Le serveur ne répond pas pour le moment.",
+        data && typeof data === "object" && "error" in data && typeof data.error === "string"
+          ? data.error
+          : "Le serveur ne répond pas pour le moment.",
         response.status,
         getRetryAfterMs(response),
       );
     }
-    return data;
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      throw new ApiError("Réponse du serveur invalide.", 502);
+    }
+    return data as T;
   } finally {
     window.clearTimeout(timeout);
     externalSignal?.removeEventListener("abort", abortFromExternal);
@@ -267,6 +272,17 @@ export default function BusExperience() {
   }, [setSeatRow]);
 
   const applyBusSnapshot = useCallback((data: BusApiState, updateCount = true) => {
+    if (
+      !Number.isSafeInteger(data.count) || data.count < 0
+      || !Number.isSafeInteger(data.seatCapacity) || data.seatCapacity < data.count
+      || !Number.isSafeInteger(data.profileRevision) || data.profileRevision < 0
+      || !Array.isArray(data.vacantSeatRanges)
+      || !data.vacantSeatRanges.every((range) => Array.isArray(range)
+        && range.length === 3
+        && range.every((value) => Number.isSafeInteger(value) && value >= 0))
+    ) {
+      throw new ApiError("Réponse du serveur invalide.", 502);
+    }
     if (data.profileRevision < profileRevisionRef.current) return false;
     profileRevisionRef.current = data.profileRevision;
     setProfileRevision(data.profileRevision);
@@ -990,7 +1006,7 @@ export default function BusExperience() {
             <button
               type="button"
               onClick={() => setShowTheoryModal(true)}
-              className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/60 px-4 text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] active:scale-95 cursor-pointer"
+              className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/60 px-4 text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer"
               title="Découvrir la théorie des Fous du Bus"
             >
               <span>📜</span>
@@ -1037,7 +1053,10 @@ export default function BusExperience() {
           type="button"
           onClick={toggleDayNight}
           title={manualDayNight === null ? `Forcer le mode ${isNight ? "Jour" : "Nuit"}` : "Revenir au cycle automatique"}
-          className="bus-day-night bus-glass pointer-events-auto absolute bottom-[4.5rem] left-3 flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 bg-black/65 px-3 text-xs font-bold text-white shadow-lg backdrop-blur-md transition hover:border-[#ffd23f]/60 hover:bg-black/85 active:scale-95 cursor-pointer sm:bottom-4 sm:left-4 sm:gap-2 sm:px-3.5 sm:text-sm"
+          aria-label={manualDayNight === null
+            ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
+            : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
+          className="bus-day-night bus-glass pointer-events-auto absolute bottom-[4.5rem] left-3 flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 bg-black/65 px-3 text-xs font-bold text-white shadow-lg backdrop-blur-md transition hover:border-[#ffd23f]/60 hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer sm:bottom-4 sm:left-4 sm:gap-2 sm:px-3.5 sm:text-sm"
         >
           {isNight ? (
             <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
@@ -1060,7 +1079,7 @@ export default function BusExperience() {
             onClick={decelerateBus}
             disabled={speedMultiplier <= 0.3}
             aria-label="Ralentir le bus"
-            className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-white/10 px-2 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:flex-none sm:px-2.5"
+            className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-white/10 px-2 text-xs font-bold text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:flex-none sm:px-2.5"
             title="Ralentir le bus (Touche - ou Flèche Bas)"
           >
             <span>🐢</span>
@@ -1091,7 +1110,7 @@ export default function BusExperience() {
             onClick={accelerateBus}
             disabled={speedMultiplier >= 3.0}
             aria-label="Accélérer le bus"
-            className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#ffd23f]/25 px-2 text-xs font-black text-[#ffd23f] transition hover:bg-[#ffd23f]/40 active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:flex-none sm:px-2.5"
+            className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#ffd23f]/25 px-2 text-xs font-black text-[#ffd23f] transition hover:bg-[#ffd23f]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:flex-none sm:px-2.5"
             title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
           >
             <span>⚡</span>
@@ -1108,7 +1127,8 @@ export default function BusExperience() {
                 type="button"
                 onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
                 disabled={seatRow <= 0}
-                className="grid h-11 w-11 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer"
+                aria-label="Rangée précédente"
+                className="grid h-11 w-11 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-30 active:scale-95 cursor-pointer"
                 title="Rangée précédente"
               >
                 ◀
@@ -1123,7 +1143,8 @@ export default function BusExperience() {
                 type="button"
                 onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
                 disabled={seatRow >= numRows - 1}
-                className="grid h-11 w-11 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 disabled:opacity-30 active:scale-95 cursor-pointer"
+                aria-label="Rangée suivante"
+                className="grid h-11 w-11 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-30 active:scale-95 cursor-pointer"
                 title="Rangée suivante"
               >
                 ▶
@@ -1141,7 +1162,7 @@ export default function BusExperience() {
               : "translate-y-2 opacity-0 [&_*]:!pointer-events-none"
           }`}
         >
-          <HudButton className="min-w-[96px] flex-1 sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={!exteriorControlsVisible}>
+          <HudButton className="min-w-[96px] flex-1 sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={!exteriorControlsVisible}>
             {headlights ? "Éteindre" : "Phares"}
           </HudButton>
           <HudButton className="min-w-[104px] flex-1 sm:w-[112px] sm:flex-none" onClick={honk} icon="📯" disabled={!exteriorControlsVisible}>
@@ -1153,6 +1174,7 @@ export default function BusExperience() {
                 className="w-[124px] sm:w-[132px]"
                 onClick={() => setTvOn((value) => !value)}
                 active={tvOn}
+                ariaLabel="Télévision"
                 icon="📺"
               >
                 {tvOn ? "Éteindre la TV" : "Allumer la TV"}
@@ -1181,10 +1203,10 @@ export default function BusExperience() {
             </HudButton>
           </div>
           <div className="grid w-full grid-cols-4 items-center gap-1.5 sm:grid-cols-[1.25fr_1fr_0.82fr_1.08fr] sm:gap-2">
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} icon="📺" disabled={busy || !interiorControlsVisible}>
+            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} ariaLabel="Télévision" icon="📺" disabled={busy || !interiorControlsVisible}>
               <span className="hud-label-short sm:hidden">TV</span><span className="hud-label-long hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={toggleHeadlights} active={headlights} icon="💡" disabled={busy || !interiorControlsVisible}>
+            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={busy || !interiorControlsVisible}>
               {headlights ? "Éteindre" : "Phares"}
             </HudButton>
             <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={honk} icon="📯" disabled={busy || !interiorControlsVisible}>
@@ -1221,6 +1243,7 @@ export default function BusExperience() {
         loading={passengerCardLoading}
         error={passengerCardError}
         returnFocusRef={passengerManifestButtonRef}
+        onRetry={() => selectedPassenger && void openPassengerCard(selectedPassenger)}
         onClose={() => {
           passengerCardRequest.current?.abort();
           passengerCardRequest.current = null;
@@ -1237,6 +1260,7 @@ export default function BusExperience() {
         hasMore={manifestHasMore}
         returnFocusRef={passengerManifestButtonRef}
         onLoadMore={() => void loadPassengerManifest(manifestNextFrom)}
+        onRetry={() => void loadPassengerManifest(passengerManifest.length === 0 ? 0 : manifestNextFrom)}
         onPassengerClick={(passenger) => {
           closePassengerManifest();
           void openPassengerCard({
@@ -1258,6 +1282,7 @@ function HudButton({
   icon,
   primary,
   active,
+  ariaLabel,
   disabled,
   className = "",
 }: {
@@ -1266,11 +1291,12 @@ function HudButton({
   icon?: string;
   primary?: boolean;
   active?: boolean;
+  ariaLabel?: string;
   disabled?: boolean;
   className?: string;
 }) {
   const base =
-    "pointer-events-auto inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer";
+    "pointer-events-auto inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer";
   const look = primary
     ? "bg-[#ffd23f] text-[#0d2190] hover:bg-[#ffe066] shadow-[0_5px_0_#b8860b] active:shadow-none active:translate-y-1"
     : active
@@ -1279,6 +1305,8 @@ function HudButton({
   return (
     <button
       type="button"
+      aria-label={ariaLabel}
+      aria-pressed={active}
       onPointerDown={(event) => event.stopPropagation()}
       onPointerUp={(event) => event.stopPropagation()}
       onClick={(event) => {

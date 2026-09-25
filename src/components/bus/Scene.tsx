@@ -8,8 +8,10 @@ import DayNight from "./DayNight";
 import Weather from "./Weather";
 import CameraRig from "./CameraRig";
 import { computeNumRows } from "./Passengers";
+import { getActiveTvIndex, getTvPositions } from "./tv-layout";
 import {
   DEFAULT_CAMERA_POS,
+  TV_POSITION,
   type PassengerProfile,
   type Phase,
   type WorldState,
@@ -212,6 +214,7 @@ export default function Scene({
 }: SceneProps) {
   const { hidden, lowPower, reducedMotion } = useSceneRuntimeState();
   const [contextLost, setContextLost] = useState(false);
+  const [canvasReady, setCanvasReady] = useState(false);
   const renderPaused = hidden || contextLost || uiPaused;
   const playbackSuspended = hidden || contextLost;
   // Calcul géométrique de la cabine pour la caméra
@@ -226,6 +229,8 @@ export default function Scene({
   // Position Z du regard du passager (rangée choisie)
   const clampedRow = Math.max(0, Math.min(numRows - 1, currentSeatRow));
   const currentSeatZ = -2.6 + clampedRow * 1.2 + 0.15;
+  const tvPositions = useMemo(() => getTvPositions(numRows, TV_POSITION), [numRows]);
+  const tvTargetZ = tvPositions[getActiveTvIndex(tvPositions, clampedRow)][2];
 
   return (
     <SceneErrorBoundary>
@@ -237,7 +242,8 @@ export default function Scene({
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: cameraFar }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
-      fallback={<SceneFallback />}
+      onCreated={() => setCanvasReady(true)}
+      fallback={<div aria-hidden={canvasReady}><SceneFallback /></div>}
     >
       <WebGLContextGuard setLost={setContextLost} />
       <AdaptiveDpr lowPower={lowPower} />
@@ -271,6 +277,7 @@ export default function Scene({
         cabinCenterZ={cabinCenterZ}
         cameraFar={cameraFar}
         currentSeatZ={currentSeatZ}
+        tvTargetZ={tvTargetZ}
         reducedMotion={reducedMotion}
       />
       </Canvas>

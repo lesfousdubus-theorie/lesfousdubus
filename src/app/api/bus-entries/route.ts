@@ -11,6 +11,17 @@ const MAX_BODY_SIZE = 2_048;
 const RATE_LIMIT_PURGE_INTERVAL_SECONDS = 15 * 60;
 let nextReadTriggeredPurgeAt = 0;
 
+function acceptsJsonBody(request: Request) {
+  return request.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() === "application/json";
+}
+
+function unsupportedMediaTypeResponse() {
+  return Response.json(
+    { error: "Le corps de la requête doit être au format JSON." },
+    { status: 415, headers: WRITE_HEADERS },
+  );
+}
+
 async function getPassengerDatabase(): Promise<CloudflareD1Database> {
   const { env } = await getCloudflareContext({ async: true });
   if (!env.DB_BUS) throw new Error("The DB_BUS Cloudflare D1 binding is missing.");
@@ -275,6 +286,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  if (!acceptsJsonBody(request)) return unsupportedMediaTypeResponse();
   try {
     const body = await readJsonBody(request);
     const visitorId = typeof body.visitorId === "string" ? body.visitorId.trim() : "";
@@ -358,6 +370,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (!acceptsJsonBody(request)) return unsupportedMediaTypeResponse();
   try {
     const body = await readJsonBody(request);
     const visitorId = typeof body.visitorId === "string" ? body.visitorId.trim() : "";
