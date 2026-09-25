@@ -256,12 +256,14 @@ export function PassengerCard({
   loading,
   error,
   returnFocusRef,
+  onRetry,
   onClose,
 }: {
   passenger: PassengerProfile | null;
   loading: boolean;
   error: string;
   returnFocusRef?: RefObject<HTMLElement | null>;
+  onRetry: () => void;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
@@ -306,7 +308,12 @@ export function PassengerCard({
               <p className="text-sm font-semibold text-[#d8e3ff]">Chargement de son message…</p>
             </div>
           ) : error ? (
-            <p role="alert" className="text-sm font-semibold text-red-200">{error}</p>
+            <div>
+              <p role="alert" className="text-sm font-semibold text-red-200">{error}</p>
+              <button type="button" onClick={onRetry} className="mt-3 min-h-11 rounded-lg border border-red-200/60 px-4 text-sm font-bold text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">
+                Réessayer
+              </button>
+            </div>
           ) : (
             <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-[#eef3ff]">
               {passenger.comment || "Ce passager n’a pas laissé de message."}
@@ -328,6 +335,7 @@ export function PassengerListModal({
   hasMore,
   returnFocusRef,
   onLoadMore,
+  onRetry,
   onPassengerClick,
   onClose,
 }: {
@@ -339,6 +347,7 @@ export function PassengerListModal({
   hasMore: boolean;
   returnFocusRef?: RefObject<HTMLElement | null>;
   onLoadMore: () => void;
+  onRetry: () => void;
   onPassengerClick: (passenger: PassengerManifestEntry) => void;
   onClose: () => void;
 }) {
@@ -375,7 +384,7 @@ export function PassengerListModal({
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ffd23f]/15 text-sm">👤</span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-black text-white">{passenger.displayName ?? "Anonyme"}</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/45">Place {passenger.seatIndex + 1}{passenger.hasComment ? " · Message" : ""}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">Place {passenger.seatIndex + 1}{passenger.hasComment ? " · Message" : ""}</span>
                 </span>
               </button>
             ) : (
@@ -383,7 +392,7 @@ export function PassengerListModal({
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/[0.06] text-sm">👤</span>
                 <span>
                   <span className="block text-sm font-bold">Anonyme</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">Place {passenger.seatIndex + 1}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">Place {passenger.seatIndex + 1}</span>
                 </span>
               </div>
             ))}
@@ -394,8 +403,15 @@ export function PassengerListModal({
               Chargement des passagers…
             </div>
           )}
-          {error && <p role="alert" className="p-4 text-center text-sm font-bold text-red-200">{error}</p>}
-          {!loading && hasMore && <button type="button" onClick={onLoadMore} className="mt-4 min-h-11 w-full rounded-xl border border-white/15 bg-white/[0.06] text-sm font-black text-white transition hover:border-[#ffd23f]/50 hover:bg-white/10">Afficher plus de passagers</button>}
+          {error && (
+            <div className="p-4 text-center">
+              <p role="alert" className="text-sm font-bold text-red-200">{error}</p>
+              <button type="button" onClick={onRetry} className="mt-3 min-h-11 rounded-xl border border-red-200/50 px-4 text-sm font-bold text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">
+                Réessayer
+              </button>
+            </div>
+          )}
+          {!loading && !error && hasMore && <button type="button" onClick={onLoadMore} className="mt-4 min-h-11 w-full rounded-xl border border-white/15 bg-white/[0.06] text-sm font-black text-white transition hover:border-[#ffd23f]/50 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">Afficher plus de passagers</button>}
           {!loading && !error && passengers.length === 0 && <p className="p-8 text-center text-sm text-white/60">Le bus attend son premier passager.</p>}
           </>}
         </div>

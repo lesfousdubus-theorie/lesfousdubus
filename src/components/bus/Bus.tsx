@@ -11,13 +11,10 @@ import {
   makeLicensePlateTexture,
   makeTvOffTexture,
 } from "@/lib/textures";
-import {
-  TV_POSITION,
-  type PassengerProfile,
-  type WorldState,
-} from "./constants";
+import { TV_POSITION, type PassengerProfile, type WorldState } from "./constants";
 import Passengers, { computeNumRows } from "./Passengers";
 import { BusTvFrame, BusTvPlayer } from "./BusTv";
+import { getActiveTvIndex, getTvPositions } from "./tv-layout";
 
 interface BusProps {
   headlights: boolean;
@@ -115,37 +112,17 @@ export default function Bus({
   );
 
   // Une TV principale réelle et au maximum 8 rappels visuels légers dans les très longs bus.
-  const tvPositions = useMemo(() => {
-    const arr: [number, number, number][] = [TV_POSITION.toArray() as [number, number, number]];
-    if (numRows > 6) {
-      const totalSecondary = Math.ceil((numRows - 6) / 5);
-      const stride = Math.max(5, Math.ceil((numRows - 6) / Math.min(8, totalSecondary)));
-      for (let r = 6; r < numRows && arr.length <= 8; r += stride) {
-        const tvZ = -2.6 + (r - 0.25) * 1.2;
-        arr.push([0, 2.55, tvZ]);
-      }
-    }
-    return arr;
-  }, [numRows]);
+  const tvPositions = useMemo(() => getTvPositions(numRows, TV_POSITION), [numRows]);
 
-  // Un seul vrai lecteur YouTube est conservé. À l'intérieur, il se déplace vers
-  // la télévision la plus proche de la rangée courante ; les autres écrans restent
-  // des répéteurs visuels très légers sans iframe supplémentaire.
+  // Un seul vrai lecteur YouTube est conservé. La caméra intérieure regarde vers
+  // l'avant du bus (Z décroissant) : un écran derrière la rangée serait invisible.
+  // Les autres écrans restent des répéteurs visuels sans iframe supplémentaire.
   const activeTvIndex = useMemo(() => {
-    if (phase !== "inside" || tvPositions.length === 1) return 0;
-    const targetZ = -2.6 + reservedRow * 1.2 + 0.15;
-    let bestIndex = 0;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    tvPositions.forEach((position, index) => {
-      const distance = Math.abs(position[2] - targetZ);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestIndex = index;
-      }
-    });
-    return bestIndex;
+    if (phase !== "inside" && phase !== "entering") return 0;
+    return getActiveTvIndex(tvPositions, reservedRow);
   }, [phase, reservedRow, tvPositions]);
   const activeTvPosition = tvPositions[activeTvIndex] ?? tvPositions[0];
+  const viewerZ = -2.6 + reservedRow * 1.2 + 0.15;
 
   // Coordonnées Z dynamiques du bus
   const rearWallZ = -2.6 + numRows * 1.2; // pour 6 rangées: 4.6
@@ -1118,6 +1095,8 @@ export default function Bus({
           idx={idx}
           tvOn={tvOn}
           isActive={idx === activeTvIndex}
+          visible={idx === activeTvIndex || phase !== "inside"
+            || viewerZ <= pos[2] || viewerZ - pos[2] >= 2.5}
           mats={mats}
           tvOffTex={tvOffTex}
           posterTex={montCorvoTex}

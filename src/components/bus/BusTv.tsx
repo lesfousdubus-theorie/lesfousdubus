@@ -12,6 +12,7 @@ interface BusTvFrameProps {
   idx: number;
   tvOn: boolean;
   isActive: boolean;
+  visible: boolean;
   mats: Record<string, THREE.Material>;
   tvOffTex: THREE.CanvasTexture;
   posterTex: THREE.Texture;
@@ -22,12 +23,13 @@ export function BusTvFrame({
   idx,
   tvOn,
   isActive,
+  visible,
   mats,
   tvOffTex,
   posterTex,
 }: BusTvFrameProps) {
   return (
-    <group key={`tv-frame-${idx}-${pos[2]}`} position={pos}>
+    <group key={`tv-frame-${idx}-${pos[2]}`} position={pos} visible={visible}>
       <mesh material={mats.dark} castShadow>
         <boxGeometry args={[1.36, 0.82, 0.08]} />
       </mesh>
@@ -99,7 +101,7 @@ export function BusTvPlayer({
   playbackSuspended,
 }: BusTvPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mountRef = useRef<HTMLDivElement>(null);
+  const [mountElement, setMountElement] = useState<HTMLDivElement | null>(null);
   const shaderMatRef = useRef<THREE.ShaderMaterial>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const warmTimerRef = useRef<number | null>(null);
@@ -186,13 +188,12 @@ export function BusTvPlayer({
 
   useEffect(() => {
     let cancelled = false;
-    const mount = mountRef.current;
-    if (!mount) return;
+    if (!mountElement) return;
 
     void loadYouTubeIframeApi()
       .then((YT) => {
-        if (cancelled || !mountRef.current) return;
-        const player = new YT.Player(mountRef.current, {
+        if (cancelled || !mountElement.isConnected) return;
+        const player = new YT.Player(mountElement, {
           width: 560,
           height: 315,
           videoId: YOUTUBE_ID,
@@ -274,7 +275,7 @@ export function BusTvPlayer({
       playerRef.current?.destroy();
       playerRef.current = null;
     };
-  }, [applyDesiredPlayback]);
+  }, [applyDesiredPlayback, mountElement]);
 
 
 
@@ -364,8 +365,8 @@ export function BusTvPlayer({
             transition: reducedMotion ? "none" : "opacity 0.2s ease",
           }}
         >
-          <div ref={mountRef} data-bus-youtube-player style={{ width: "100%", height: "100%" }} />
-          {tvOn && phase === "inside" && !isMutedForFullscreen && (
+          <div ref={setMountElement} data-bus-youtube-player style={{ width: "100%", height: "100%" }} />
+          {tvOn && phase === "inside" && !isMutedForFullscreen && !autoplayBlocked && !apiFailed && (
             <button
               data-tv-wheel-capture
               type="button"
@@ -407,10 +408,10 @@ export function BusTvPlayer({
               ↕ ZOOM
             </button>
           )}
-          {(autoplayBlocked || apiFailed) && tvOn && hasEntered && (
+          {autoplayBlocked && !apiFailed && tvOn && hasEntered && (
             <button
               type="button"
-              onClick={() => apiFailed ? window.location.reload() : window.dispatchEvent(new Event("bus-tv-user-play"))}
+              onClick={() => window.dispatchEvent(new Event("bus-tv-user-play"))}
               style={{
                 position: "absolute",
                 inset: 0,
@@ -426,8 +427,31 @@ export function BusTvPlayer({
               }}
               aria-label="Lancer la vidéo"
             >
-              {apiFailed ? "Réessayer la vidéo" : "▶ Lancer la vidéo"}
+              ▶ Lancer la vidéo
             </button>
+          )}
+          {apiFailed && tvOn && hasEntered && (
+            <a
+              href={`https://www.youtube.com/watch?v=${YOUTUBE_ID}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Voir la vidéo sur YouTube"
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 3,
+                display: "grid",
+                placeItems: "center",
+                background: "rgba(2, 6, 23, 0.88)",
+                color: "#ffd23f",
+                fontSize: 30,
+                fontWeight: 900,
+                textAlign: "center",
+                textDecoration: "none",
+              }}
+            >
+              ▶ Voir sur YouTube
+            </a>
           )}
         </div>
       </Html>
