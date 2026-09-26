@@ -7,15 +7,14 @@ import World from "./World";
 import DayNight from "./DayNight";
 import Weather from "./Weather";
 import CameraRig from "./CameraRig";
-import { computeNumRows } from "./Passengers";
-import { getActiveTvIndex, getTvPositions } from "./tv-layout";
+import { computeNumRows, getActiveTvIndex, getTvPositions } from "@/lib/bus-layout";
 import {
   DEFAULT_CAMERA_POS,
   TV_POSITION,
-  type PassengerProfile,
   type Phase,
   type WorldState,
 } from "./constants";
+import type { PassengerProfile } from "@/types/passenger";
 
 interface SceneProps {
   phase: Phase;

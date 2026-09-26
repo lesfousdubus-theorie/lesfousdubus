@@ -75,14 +75,30 @@ Cliquez sur le bouton **« 📜 La Théorie »** en haut à gauche pour ouvrir l
 Si vous souhaitez faire tourner le site en local sur votre ordinateur :
 
 ```bash
-# 1. Installer les modules
-npm install
+# 1. Installer exactement les versions du dépôt
+npm ci
 
-# 2. Lancer le serveur local
+# 2. Initialiser la base D1 locale (une seule fois)
+npm run db:migrate:local
+
+# 3. Lancer le serveur local
 npm run dev
 ```
 
 Ouvrez ensuite [http://localhost:3000](http://localhost:3000) dans votre navigateur web préféré !
+
+Avant de proposer une modification, vérifiez-la localement :
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+npm run build:next
+```
+
+`npm test` utilise une base D1 temporaire pour ses scénarios de places et ne
+modifie pas les passagers de la base locale. Le test visuel `npm run test:ui`
+nécessite que `npm run dev` tourne dans un autre terminal.
 
 ## Déploiement Cloudflare
 

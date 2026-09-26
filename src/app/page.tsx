@@ -5,7 +5,7 @@ import {
   FULL_THEORY_SECTIONS,
   THEORY_FAQ,
 } from "@/lib/theory-data";
-import { YOUTUBE_ID } from "@/components/bus/constants";
+import { THEORY_VIDEO_URL } from "@/lib/theory-video";
 
 export default function HomePage() {
   return (
@@ -82,7 +82,7 @@ export default function HomePage() {
           <p className="text-sm text-white/80">
             Regardez la démonstration complète sur YouTube :{" "}
             <a
-              href={`https://www.youtube.com/watch?v=${YOUTUBE_ID}`}
+              href={THEORY_VIDEO_URL}
               className="text-[#ffd23f] underline"
             >
               La théorie One Piece qui explique tout. (Théorie des fous du bus)

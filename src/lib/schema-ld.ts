@@ -1,3 +1,5 @@
+import { THEORY_VIDEO_URL, THEORY_VIDEO_EMBED_URL, THEORY_VIDEO_THUMBNAIL_URL } from "@/lib/theory-video";
+
 /**
  * Données structurées Schema.org (JSON-LD) pour le site officiel de la Théorie des Fous du Bus.
  * Conforme aux spécifications Google Rich Results.
@@ -77,12 +79,12 @@ export const videoJsonLd = {
   description:
     "Explication et démonstration vidéo complète de la théorie des Fous du Bus : comment le Siècle Oublié est en réalité le présent de One Piece, pourquoi Roger est arrivé trop tôt de 25 ans et pourquoi Joy Boy est Luffy.",
   thumbnailUrl: [
-    "https://img.youtube.com/vi/SgJ25zjMJyo/maxresdefault.jpg",
+    THEORY_VIDEO_THUMBNAIL_URL,
     `${SITE_URL}/og-image.jpg`,
   ],
   uploadDate: "2026-04-10",
-  contentUrl: "https://www.youtube.com/watch?v=SgJ25zjMJyo",
-  embedUrl: "https://www.youtube-nocookie.com/embed/SgJ25zjMJyo",
+  contentUrl: THEORY_VIDEO_URL,
+  embedUrl: THEORY_VIDEO_EMBED_URL,
   publisher: {
     "@type": "Organization",
     name: "Les Fous du Bus",

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { build } from "esbuild";
 
 const compiled = await build({
-  entryPoints: ["src/components/bus/tv-layout.ts"],
+  entryPoints: ["src/lib/bus-layout.ts"],
   bundle: true,
   format: "esm",
   platform: "neutral",
