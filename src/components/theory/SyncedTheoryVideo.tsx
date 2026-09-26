@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { YOUTUBE_ID } from "./bus/constants";
+import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
 import { loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
 
 export default function SyncedTheoryVideo() {
@@ -88,7 +88,7 @@ export default function SyncedTheoryVideo() {
           type="button"
           onClick={
             failed
-              ? () => window.open(`https://www.youtube.com/watch?v=${YOUTUBE_ID}`, "_blank", "noopener,noreferrer")
+              ? () => window.open(THEORY_VIDEO_URL, "_blank", "noopener,noreferrer")
               : resume
           }
           className="absolute inset-0 grid place-items-center bg-[#020617]/85 text-base font-black text-[#ffd23f] transition hover:bg-[#020617]/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffd23f]"
