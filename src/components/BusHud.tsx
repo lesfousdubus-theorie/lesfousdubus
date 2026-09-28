@@ -93,7 +93,7 @@ export function BusHud({
             <button
               type="button"
               onClick={() => setShowTheoryModal(true)}
-              className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/60 px-4 text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer"
+              className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/75 px-4 text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer"
               title="Découvrir la théorie des Fous du Bus"
             >
               <span>📜</span>
@@ -103,7 +103,7 @@ export function BusHud({
         </div>
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
-        <div className="bus-top-stats bus-glass pointer-events-auto absolute left-3 right-3 top-3 flex h-[3.5rem] items-stretch justify-end gap-1 rounded-2xl border border-[#ffd23f]/40 bg-black/60 p-1 shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:top-4 sm:h-auto">
+        <div className="bus-top-stats bus-glass pointer-events-auto absolute left-3 right-3 top-3 flex h-[3.5rem] items-stretch justify-end gap-1 rounded-2xl border border-[#ffd23f]/40 bg-black/75 p-1 shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:top-4 sm:h-auto">
           <button ref={passengerManifestButtonRef} type="button" onClick={statsLoadError && count === null ? () => {
             setStatsLoadError(false);
             setStatsRetryToken((value) => value + 1);
@@ -156,20 +156,20 @@ export function BusHud({
             </svg>
           )}
           <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
-          <span className="bus-day-night-detail text-white/60 text-[10px] sm:text-xs">· {manualDayNight === null ? (isNight ? "Nuit" : "Jour") : "Auto"}</span>
+          <span className="bus-day-night-detail text-white/85 text-[10px] sm:text-xs">· {manualDayNight === null ? (isNight ? "Nuit" : "Jour") : "Auto"}</span>
         </button>
 
         {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
-        <div className="bus-speed bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex h-11 items-center gap-1 rounded-full bg-black/65 px-1.5 text-xs shadow-lg ring-1 ring-white/25 backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-3.5 sm:text-sm">
+        <div className="bus-speed bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex h-11 items-center gap-1 rounded-full bg-black/80 px-1.5 text-xs shadow-lg ring-1 ring-white/25 backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-3.5 sm:text-sm">
           <button
             type="button"
             onClick={decelerateBus}
             disabled={speedMultiplier <= 0.3}
             aria-label="Ralentir le bus"
-            className="group relative flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-bold text-white transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:flex-none sm:px-2.5"
+            className="group relative flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-bold text-white transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-not-allowed disabled:text-white/80 sm:w-[90px] sm:flex-none sm:px-2.5"
             title="Ralentir le bus (Touche - ou Flèche Bas)"
           >
-            <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-full bg-white/10 transition-colors group-hover:bg-white/25" />
+            <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-full bg-white/10 transition-colors group-hover:bg-white/25 group-disabled:bg-white/5" />
             <span className="relative">🐢</span>
             <span className="bus-speed-label relative">Ralentir</span>
           </button>
@@ -198,10 +198,10 @@ export function BusHud({
             onClick={accelerateBus}
             disabled={speedMultiplier >= 3.0}
             aria-label="Accélérer le bus"
-            className="group relative flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-black text-[#ffd23f] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:flex-none sm:px-2.5"
+            className="group relative flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-black text-[#ffd23f] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-not-allowed disabled:text-[#ffe58a] sm:w-[90px] sm:flex-none sm:px-2.5"
             title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
           >
-            <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-full bg-[#ffd23f]/25 transition-colors group-hover:bg-[#ffd23f]/40" />
+            <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-full bg-[#ffd23f]/15 transition-colors group-hover:bg-[#ffd23f]/25 group-disabled:bg-[#ffd23f]/10" />
             <span className="relative">⚡</span>
             <span className="bus-speed-label relative">Accélérer</span>
           </button>
@@ -211,21 +211,24 @@ export function BusHud({
         {phase === "inside" && (
           <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] flex flex-col items-end gap-1.5 sm:right-4 sm:top-[6.25rem] sm:gap-2">
             {/* Déplacement dans l'allée */}
-            <div className="bus-glass flex min-h-11 items-center gap-1 rounded-2xl border border-white/20 bg-black/65 px-1.5 shadow-lg backdrop-blur-md sm:px-3">
+            <div className="bus-glass flex h-11 items-center gap-1 rounded-2xl bg-black/80 px-1.5 shadow-lg ring-1 ring-white/25 backdrop-blur-md sm:px-3">
               <button
                 type="button"
                 onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
                 disabled={seatRow <= 0}
                 aria-label="Rangée précédente"
-                className="grid h-11 w-11 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-30 active:scale-95 cursor-pointer"
+                className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
                 title="Rangée précédente"
               >
-                ◀
+                <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
+                <svg aria-hidden="true" className="relative h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <path d="m14.5 5-7 7 7 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
-              <span className="flex h-7 items-center px-1.5 text-xs font-bold leading-none whitespace-nowrap sm:px-2">
+              <span className="flex h-11 items-center justify-center px-1.5 text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white sm:px-2">
                 <span>Rangée</span>
                 <span className="ml-1 text-[#ffd23f]">{seatRow + 1}</span>
-                <span className="mx-0.5 text-white/55">/</span>
+                <span className="mx-0.5 text-white/85">/</span>
                 <span>{numRows}</span>
               </span>
               <button
@@ -233,10 +236,13 @@ export function BusHud({
                 onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
                 disabled={seatRow >= numRows - 1}
                 aria-label="Rangée suivante"
-                className="grid h-11 w-11 place-items-center rounded-lg bg-white/10 p-0 text-xs font-bold leading-none text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-30 active:scale-95 cursor-pointer"
+                className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
                 title="Rangée suivante"
               >
-                ▶
+                <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
+                <svg aria-hidden="true" className="relative h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <path d="m9.5 5 7 7-7 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
             </div>
           </div>
@@ -332,12 +338,12 @@ function HudButton({
   className?: string;
 }) {
   const base =
-    "pointer-events-auto inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer";
+    "pointer-events-auto inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 disabled:cursor-not-allowed disabled:opacity-80 cursor-pointer";
   const look = primary
     ? "bg-[#ffd23f] text-[#0d2190] hover:bg-[#ffe066] shadow-[0_5px_0_#b8860b] active:shadow-none active:translate-y-1"
     : active
       ? "bg-[#1636c9] text-white ring-2 ring-[#ffd23f] hover:bg-[#1d44e6]"
-      : "bg-black/55 text-white border border-white/25 hover:bg-black/75 hover:border-[#ffd23f]/50";
+      : "bg-black/70 text-white border border-white/35 hover:bg-black/85 hover:border-[#ffd23f]/70";
   return (
     <button
       type="button"

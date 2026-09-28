@@ -131,7 +131,7 @@ export function JoinBusModal({
             <button
               type="submit"
               disabled={joining}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#ffd23f] px-5 py-3 text-base font-black text-[#09216d] shadow-[0_5px_0_#a87500] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none disabled:cursor-wait disabled:opacity-65"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#ffd23f] px-5 py-3 text-base font-black text-[#09216d] shadow-[0_5px_0_#a87500] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none disabled:cursor-wait disabled:opacity-80"
             >
               <span aria-hidden="true">{mode === "name" ? "🏷️" : "💬"}</span>
               {joining ? "Enregistrement…" : "Enregistrer"}
@@ -140,7 +140,7 @@ export function JoinBusModal({
               type="button"
               disabled={joining}
               onClick={onRemove}
-              className="min-h-12 rounded-xl border border-red-300/45 bg-red-950/35 px-4 py-3 text-sm font-black text-red-100 transition hover:border-red-200 hover:bg-red-900/55 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-200 disabled:cursor-wait disabled:opacity-65"
+              className="min-h-12 rounded-xl border border-red-300/45 bg-red-950/35 px-4 py-3 text-sm font-black text-red-100 transition hover:border-red-200 hover:bg-red-900/55 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-200 disabled:cursor-wait disabled:opacity-80"
             >
               {mode === "name" ? "Retirer mon prénom" : "Retirer mon commentaire"}
             </button>

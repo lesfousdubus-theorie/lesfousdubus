@@ -357,6 +357,61 @@ try {
   assert(inside.youtubeIframes <= 1, `More than one bus YouTube iframe is mounted: ${inside.youtubeIframes}`);
   assert(inside.overflow <= 2, "Interior mobile UI overflows horizontally.");
 
+  for (const viewport of [
+    { width: 393, height: 852, mobile: true },
+    { width: 1366, height: 768, mobile: false },
+  ]) {
+    await interactionSend("Emulation.setDeviceMetricsOverride", {
+      width: viewport.width, height: viewport.height,
+      deviceScaleFactor: viewport.mobile ? 2 : 1, mobile: viewport.mobile,
+      screenOrientation: { type: "portraitPrimary", angle: 0 },
+    });
+    const rowControl = await evaluate(interactionSend, `
+      (() => {
+        const nav = document.querySelector('.bus-row-nav > div');
+        const label = nav?.querySelector(':scope > span');
+        const buttons = [...(nav?.querySelectorAll('button') ?? [])];
+        if (!nav || !label || buttons.length !== 2) return null;
+        const outer = nav.getBoundingClientRect();
+        return {
+          outerHeight: outer.height,
+          interiorButtonHeight: document.querySelector('.bus-interior-controls button')?.getBoundingClientRect().height ?? 0,
+          labelOffset: (label.getBoundingClientRect().top + label.getBoundingClientRect().bottom - outer.top - outer.bottom) / 2,
+          buttons: buttons.map((button) => {
+            const rect = button.getBoundingClientRect();
+            const fill = button.querySelector('span[aria-hidden="true"]')?.getBoundingClientRect();
+            const icon = button.querySelector('svg')?.getBoundingClientRect();
+            return {
+              height: rect.height,
+              fillGaps: fill ? [fill.top - rect.top, rect.bottom - fill.bottom] : [0, 0],
+              iconOffset: icon ? (icon.top + icon.bottom - rect.top - rect.bottom) / 2 : 100,
+            };
+          }),
+        };
+      })()
+    `);
+    assert(rowControl, `Row selector missing at ${viewport.width}x${viewport.height}`);
+    assert(Math.abs(rowControl.outerHeight - rowControl.interiorButtonHeight) <= 1,
+      `Row selector has a different height at ${viewport.width}x${viewport.height}: ${JSON.stringify(rowControl)}`);
+    assert(rowControl.buttons.every(({ height }) => height >= 44),
+      `Row arrow targets are too short at ${viewport.width}x${viewport.height}: ${JSON.stringify(rowControl)}`);
+    assert(rowControl.buttons.every(({ fillGaps }) => fillGaps.every((gap) => gap >= 3)),
+      `Row arrow backgrounds touch an edge at ${viewport.width}x${viewport.height}: ${JSON.stringify(rowControl)}`);
+    assert(Math.abs(rowControl.labelOffset) <= 1 && rowControl.buttons.every(({ iconOffset }) => Math.abs(iconOffset) <= 1),
+      `Row label or arrows are off center at ${viewport.width}x${viewport.height}: ${JSON.stringify(rowControl)}`);
+  }
+
+  const initialRow = await evaluate(interactionSend,
+    `document.querySelector('.bus-row-nav > div > span')?.textContent?.replace(/\\s+/g, '')`,
+  );
+  await evaluate(interactionSend,
+    `document.querySelector('button[aria-label="Rangée suivante"]')?.click()`,
+  );
+  await waitForPageCondition(interactionSend,
+    `document.querySelector('.bus-row-nav > div > span')?.textContent?.replace(/\\s+/g, '') !== ${JSON.stringify(initialRow)}`,
+    "Row selector changes the displayed row",
+  );
+
   // Le rendu est désormais cadencé par requestAnimationFrame natif. Le runner
   // headless utilise SwiftShader : prolonger artificiellement ce scénario jusqu'à
   // un cycle extinction/rallumage de TV finit par épuiser son contexte WebGL.
