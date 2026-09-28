@@ -3,6 +3,7 @@
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { WorldLandmark, type PropDef, type PropType } from "./WorldLandmark";
+import WorldSetPiece from "./WorldSetPiece";
 import { useFrame } from "@react-three/fiber";
 import { WORLD_SPEED, type WorldState } from "./constants";
 
@@ -143,9 +144,9 @@ function buildProps(): PropDef[] {
   const out: PropDef[] = [];
   for (let z = 0; z < 5; z++) {
     const types = ZONE_PROPS[z];
-    const count = z === 2 ? 24 : 22;
+    const count = z === 2 ? 16 : 14;
     for (let i = 0; i < count; i++) {
-      const side = rnd() > 0.5 ? 1 : -1;
+      let side = rnd() > 0.5 ? 1 : -1;
       const type = types[Math.floor(rnd() * types.length)];
       const big =
         type === "pyramid" ||
@@ -153,11 +154,16 @@ function buildProps(): PropDef[] {
         type === "bell" ||
         type === "giantJack" ||
         type === "drumMesa";
-      const x = side * (big ? 20 + rnd() * 24 : 7 + rnd() * 26);
+      const distance = type === "building"
+        ? 24 + rnd() * 18
+        : big ? 20 + rnd() * 24 : 7 + rnd() * 26;
+      const localZ = 10 + rnd() * (ZONE_LEN - 20);
+      // Préserver la silhouette du monument central en évitant les superpositions.
+      if (side > 0 && distance > 16 && localZ > 45 && localZ < 115) side = -1;
       out.push({
         type,
-        x,
-        base: z * ZONE_LEN + 10 + rnd() * (ZONE_LEN - 20),
+        x: side * distance,
+        base: z * ZONE_LEN + localZ,
         s: big ? 1.0 + rnd() * 0.5 : 0.8 + rnd() * 0.5,
         rot: rnd() * Math.PI * 2,
         seed: rnd(),
@@ -279,6 +285,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
           <mesh geometry={terrains[i]} receiveShadow>
             <meshStandardMaterial vertexColors roughness={0.95} side={THREE.DoubleSide} />
           </mesh>
+          <WorldSetPiece zone={i} />
           {!lowPower && <ZoneDetails zone={i} />}
           {/* Plage / bordure d'île */}
           <mesh position={[0, -0.44, 0]}>
