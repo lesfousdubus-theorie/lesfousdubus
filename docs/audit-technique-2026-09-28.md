@@ -1,25 +1,68 @@
-# Audit technique du projet — 28 septembre 2026
+# Revue technique et architecture — 28 septembre 2026
 
-Revue statique du dépôt après les corrections du bus. Le projet compte 56 fichiers dans `src/` et `scripts/`, pour environ 11 000 lignes. Les recommandations de performance ci-dessous sont des pistes à mesurer sur ordinateur et téléphone réels : cette revue ne fournit pas de mesure GPU ou de FPS par appareil.
+Revue de l'arborescence versionnée, des responsabilités des modules, des scripts,
+des migrations D1, des ressources publiques et du README. Les changements de
+structure ci-dessous sont limités aux frontières qui séparent déjà des fonctions
+indépendantes ; les autres refontes doivent être guidées par des mesures ou des
+tests de comportement.
 
-## Priorité haute
+## Structure actuelle
 
-1. **Mesurer puis réduire le coût du décor 3D.** `src/components/bus/World.tsx` crée environ 70 groupes de décors avec `WorldLandmark`, en plus des cinq îles et de `WorldSetPiece`. Plusieurs palmiers, arbres, nuages et bâtiments répètent des géométries. Mesurer les draw calls, le temps CPU/GPU et la mémoire via `WebGLRenderer.info` et le profileur du navigateur, puis instancier les formes répétées et limiter les ombres ou détails éloignés. Dossiers concernés : `src/components/bus/World.tsx`, `WorldLandmark.tsx`, `WorldSetPiece.tsx`.
-2. **Simplifier la synchronisation des passagers.** `src/components/useBusSync.ts` lance au démarrage une lecture des statistiques et une lecture des profils ; la réponse des profils contient déjà les statistiques. Regrouper ces lectures éviterait une requête et une lecture D1. Le `setCount` du polling exécute aussi `playStretch` et `showToast` dans une fonction de mise à jour React : déplacer ces effets après la comparaison des états éviterait une exécution répétée lors des vérifications React.
-3. **Ajouter une CI GitHub.** Aucun workflow `.github/workflows` n'est présent. Exécuter au minimum `typecheck`, `lint`, `test` et `build:next` sur chaque proposition de changement. Garder le parcours `test:ui` comme contrôle navigateur sur les changements 3D et d'interface.
+| Emplacement | Rôle | État |
+| --- | --- | --- |
+| `src/app/` | Pages, routes API, métadonnées et CSS global | Cohérent avec l'App Router. |
+| `src/components/` | Assemblage de l'expérience, HUD et hooks de contrôle/synchronisation | `useBusControls.ts` sépare désormais les commandes du bus de `BusExperience.tsx`. |
+| `src/components/bus/` | Scène 3D, véhicule, passagers, paysages, caméra, météo, télévision | `BusFront.tsx` isole la face avant fixe de `BusExterior.tsx`, qui gère la carrosserie extensible. |
+| `src/components/modals/`, `src/components/theory/` | Fenêtres des passagers et contenu de la théorie | Séparation claire. |
+| `src/lib/` | Calculs et ressources partagés | `client/` et `server/` séparent les accès réseau et D1 ; `bus-front-geometry.ts` centralise les cotes de la calandre. |
+| `src/types/`, `migrations/` | Types partagés et six migrations D1 ordonnées | Noms et hiérarchie cohérents. |
+| `public/`, `scripts/`, `.github/workflows/` | Ressources statiques, tests et CI | Les ressources référencées existent ; les vérifications sont automatisées. |
 
-## Priorité moyenne
+Convention de noms vérifiée : composants React en `PascalCase`, hooks en `use...`,
+fonctions et données partagées en noms descriptifs minuscules, migrations numérotées.
+Aucun renommage massif de dossier n'améliorerait à lui seul le fonctionnement.
 
-4. **Découper le composant principal.** `src/components/BusExperience.tsx` (818 lignes) regroupe la navigation, les contrôles du bus, les passagers, les formulaires, les notifications et les fenêtres. Extraire des hooks distincts pour la navigation, les actions passagers et les fenêtres, puis garder `BusExperience` comme assemblage. Cela réduira les dépendances entre états et facilitera les tests.
-5. **Découper la scène et les personnages.** `src/components/bus/Bus.tsx` (environ 650 lignes) mélange matériaux, textures, géométrie, animation et télévisions. `Passengers.tsx` (577 lignes) mélange sélection des places, rendu détaillé, instances et étiquettes. Extraire la géométrie, les ressources et les calculs de places en modules séparés ; conserver les limites d'instances et les transitions stables déjà mises en place.
-6. **Revoir les textures créées au chargement.** `Bus.tsx` crée synchroniquement plusieurs `CanvasTexture` via `src/lib/textures.ts` pour les enseignes, la plaque, le tableau de bord et les graffitis. Mesurer le temps de création et la mémoire ; les textures statiques pourraient être préparées en fichiers optimisés dans `public/textures/`. Vérifier la libération des ressources lors d'un remontage de la scène.
-7. **Évaluer le préchargement de la télévision.** `src/components/bus/BusTv.tsx` installe le lecteur YouTube avant la première entrée dans le bus pour accélérer la lecture. Mesurer son poids réseau et son coût au démarrage avant de décider si un chargement au premier geste utilisateur serait préférable ; préserver la lecture attendue à l'entrée.
-8. **Remplacer les contrôles structurels fragiles par des scénarios.** `scripts/static-regression.mjs` vérifie surtout des expressions dans le code. Compléter avec des tests de comportement pour les transitions caméra, la synchronisation et les commandes météo/vitesse. Les tests D1 et le parcours navigateur existants constituent une bonne base.
+## Défauts corrigés pendant cette revue
 
-## Entretien et organisation
+- La calandre montait jusqu'à `Y = 1,24` alors que le cercle de l'emblème descend
+  à `Y = 1,22` : elle masquait son bord inférieur. La calandre s'arrête
+  maintenant à `Y = 1,17`, soit un espace de `0,05` unité. Les cinq lames restent
+  à l'intérieur de leur panneau ; un test contrôle ces contraintes.
+- La face avant et les commandes de conduite ont été extraites respectivement
+  dans `BusFront.tsx` et `useBusControls.ts`, réduisant la taille des modules
+  principaux sans changer les interfaces publiques.
+- Les sons et notifications déclenchés depuis des fonctions de mise à jour
+  d'état React ont été déplacés dans les gestionnaires d'actions et dans le
+  polling. Ils ne dépendent plus d'une éventuelle réexécution de l'updater.
+- Le README décrit maintenant le comportement réel de la vidéo et la procédure
+  de test. La CI exécute typecheck, lint, tests et compilation sur les PR et `main`.
 
-9. **Répartir les fichiers longs par fonction.** `WorldLandmark.tsx` (466 lignes) et `WorldSetPiece.tsx` (292 lignes) peuvent être organisés par île ; `BusTv.tsx` (460 lignes) peut séparer le cadre 3D du lecteur ; `TheoryModal.tsx` (401 lignes) peut séparer la confirmation de sortie et la gestion des onglets. `src/lib/theory-data.ts` (602 lignes) peut être réparti par section pour l'édition ; son interface est déjà chargée à la demande, donc ce découpage vise surtout la maintenance.
-10. **Clarifier les dossiers après extraction.** `src/components/bus/` contient à la fois véhicule, caméra, passagers, météo et paysages. Une structure `bus/vehicle/`, `bus/passengers/`, `bus/media/` et `world/` rendrait les responsabilités plus lisibles. Déplacer les fichiers en même temps que les découpages ci-dessus, pas comme migration isolée.
-11. **Réduire quelques travaux par image après mesure.** `DayNight.tsx` instancie une `Date` à chaque frame ; l'heure réelle pourrait être actualisée une fois par seconde. `Weather.tsx` réécrit les buffers des particules à chaque frame. Mesurer leur part CPU avant une réécriture.
+## Travaux restants, à traiter par priorité
 
-Ordre conseillé : instrumentation du rendu et CI, puis synchronisation des passagers, optimisation du décor, enfin découpage des composants et ressources.
+1. **Mesurer le rendu 3D sur appareils réels.** `World.tsx`, `WorldLandmark.tsx`
+   et `WorldSetPiece.tsx` créent de nombreuses formes répétées. Relever d'abord
+   les draw calls, la mémoire et les temps CPU/GPU, puis instancier les formes
+   qui dominent réellement le coût. Une capture fixe ne mesure pas les freezes.
+2. **Fusionner les lectures initiales de données.** `useBusSync.ts` lit les
+   statistiques puis les profils proches alors que la réponse profils contient
+   aussi les statistiques. Garder un repli de statistiques si les profils
+   échouent, pour que le compteur et son bouton Réessayer restent utilisables.
+3. **Poursuivre les découpages quand une zone change.** `BusExperience.tsx`
+   regroupe encore les formulaires et la liste des passagers ;
+   `Bus.tsx` contient matériaux, textures et habitacle ; `Passengers.tsx`
+   contient sélection, instances et étiquettes ; `BusTv.tsx` regroupe cadre 3D
+   et lecteur. Extraire ces responsabilités avec des tests de parcours avant
+   de déplacer les fichiers dans de nouveaux sous-dossiers.
+4. **Évaluer les ressources au chargement.** Les textures Canvas de `Bus.tsx`
+   et le lecteur YouTube préchargé peuvent peser sur le premier affichage.
+   Comparer le temps de démarrage avant de choisir des textures préfabriquées
+   ou un chargement différé ; préserver le démarrage de la vidéo à l'entrée.
+5. **Compléter les tests de comportement.** `static-regression.mjs` vérifie
+   surtout des motifs de code. Les transitions caméra, la synchronisation et
+   les commandes météo/vitesse gagneraient à être couvertes par des scénarios
+   exécutés ; le test navigateur actuel couvre déjà le parcours principal et
+   les dimensions du HUD.
+
+La revue ne conclut pas à un gain de FPS : aucun profil CPU/GPU d'appareil réel
+n'a été produit. La compilation et les tests du dépôt établissent la validité
+fonctionnelle de ces changements, pas une mesure universelle de performance.
