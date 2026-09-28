@@ -276,8 +276,14 @@ function SimplifiedPassengers({ passengers }: { passengers: Array<{ seat: SeatIn
       matrix.makeTranslation(seat.x, 1.82, seat.z + 0.14);
       heads.current?.setMatrixAt(index, matrix);
     });
-    if (bodies.current) bodies.current.instanceMatrix.needsUpdate = true;
-    if (heads.current) heads.current.instanceMatrix.needsUpdate = true;
+    if (bodies.current) {
+      bodies.current.instanceMatrix.needsUpdate = true;
+      bodies.current.computeBoundingSphere();
+    }
+    if (heads.current) {
+      heads.current.instanceMatrix.needsUpdate = true;
+      heads.current.computeBoundingSphere();
+    }
   }, [passengers]);
   if (passengers.length === 0) return null;
   return (
@@ -397,37 +403,44 @@ function Passenger({
       )}
       {/* ---------- JAMBES ASSISES & PIEDS ---------- */}
       {/* Bassin posé sur le coussin du siège */}
-      <mesh material={mats.pants} position={[0, 1.15, 0.12]}>
-        <boxGeometry args={[0.34, 0.14, 0.28]} />
+      <mesh material={mats.pants} position={[0, 1.15, 0.12]} scale={[0.19, 0.10, 0.17]}>
+        <sphereGeometry args={[1, 10, 8]} />
       </mesh>
 
       {/* Cuisses horizontales allant vers l'avant */}
       {[-0.09, 0.09].map((lx) => (
-        <mesh key={lx} material={mats.pants} position={[lx, 1.15, -0.06]}>
-          <boxGeometry args={[0.13, 0.12, 0.32]} />
+        <mesh key={lx} material={mats.pants} position={[lx, 1.15, -0.06]} scale={[0.08, 0.075, 0.20]}>
+          <sphereGeometry args={[1, 10, 8]} />
         </mesh>
       ))}
 
       {/* Mollets verticaux descendant vers le sol */}
       {[-0.09, 0.09].map((lx) => (
         <mesh key={lx} material={mats.pants} position={[lx, 0.88, -0.21]}>
-          <boxGeometry args={[0.12, 0.42, 0.12]} />
+          <capsuleGeometry args={[0.065, 0.29, 4, 8]} />
         </mesh>
       ))}
 
       {/* Chaussures posées au sol */}
       {[-0.09, 0.09].map((lx) => (
-        <mesh key={lx} material={mats.shoes} position={[lx, 0.65, -0.24]}>
-          <boxGeometry args={[0.13, 0.08, 0.2]} />
+        <mesh key={lx} material={mats.shoes} position={[lx, 0.65, -0.26]} scale={[0.075, 0.055, 0.13]}>
+          <sphereGeometry args={[1, 10, 8]} />
         </mesh>
       ))}
 
       {/* ---------- TORSE & BRAS ---------- */}
       <group ref={torsoGroup} position={[0, 1.42, 0.14]}>
         {/* Buste adossé au dossier */}
-        <mesh material={mats.shirt} rotation={[-0.05, 0, 0]}>
-          <boxGeometry args={[0.34, 0.4, 0.22]} />
+        <mesh material={mats.shirt} rotation={[-0.05, 0, 0]} scale={[0.19, 0.25, 0.13]}>
+          <sphereGeometry args={[1, 12, 10]} />
         </mesh>
+
+        {/* Col visible au-dessus du dossier, avec une nuance propre à la tenue. */}
+        {[-1, 1].map((side) => (
+          <mesh key={side} material={mats.accessorySub} position={[side * 0.085, 0.18, -0.095]} rotation={[0.15, 0, side * 0.32]}>
+            <boxGeometry args={[0.075, 0.11, 0.018]} />
+          </mesh>
+        ))}
 
         {/* Détail torse Luffy : croix cicatrice ou torse ouvert */}
         {archetype.id === "luffy" && (
@@ -474,15 +487,29 @@ function Passenger({
         {/* ---------- TÊTE & VISAGE ANIMÉ ---------- */}
         <group ref={headGroup} position={[0, 1.82, 0.14]}>
         {/* Tête */}
-        <mesh material={mats.skin}>
-          <boxGeometry args={[0.22, 0.24, 0.2]} />
+        <mesh material={mats.skin} scale={[0.13, 0.145, 0.12]}>
+          <sphereGeometry args={[1, 14, 12]} />
+        </mesh>
+
+        {[-1, 1].map((side) => (
+          <mesh key={side} material={mats.skin} position={[side * 0.13, -0.012, 0]} scale={[0.025, 0.045, 0.024]}>
+            <sphereGeometry args={[1, 8, 6]} />
+        </mesh>))}
+
+        <mesh material={mats.skin} position={[0, -0.018, -0.125]} rotation={[-Math.PI / 2, 0, 0]}>
+          <coneGeometry args={[0.024, 0.045, 6]} />
         </mesh>
 
         {/* Yeux stylisés animés */}
         {[-0.055, 0.055].map((ex) => (
-          <mesh key={ex} material={mats.eyes} position={[ex, 0.02, -0.112]}>
-            <boxGeometry args={[0.035, 0.035, 0.01]} />
-          </mesh>
+          <group key={ex} position={[ex, 0.024, -0.113]}>
+            <mesh material={mats.teeth} scale={[0.031, 0.024, 0.009]}>
+              <sphereGeometry args={[1, 8, 6]} />
+            </mesh>
+            <mesh material={mats.eyes} position={[0, 0, -0.008]} scale={[0.014, 0.018, 0.008]}>
+              <sphereGeometry args={[1, 8, 6]} />
+            </mesh>
+          </group>
         ))}
 
         {/* Expressions du visage */}

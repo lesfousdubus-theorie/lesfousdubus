@@ -33,6 +33,7 @@ export interface PropDef {
 const MATS = {
   trunk: new THREE.MeshStandardMaterial({ color: "#6e3f1c", roughness: 0.9 }),
   leaf: new THREE.MeshStandardMaterial({ color: "#2d9138", roughness: 0.75 }),
+  leafLight: new THREE.MeshStandardMaterial({ color: "#58b94e", roughness: 0.8 }),
   sand: new THREE.MeshStandardMaterial({ color: "#e3b865", roughness: 0.95 }),
   sandDark: new THREE.MeshStandardMaterial({ color: "#ba8b3c", roughness: 0.9 }),
   cactus: new THREE.MeshStandardMaterial({ color: "#32853b", roughness: 0.8 }),
@@ -74,9 +75,9 @@ export function WorldLandmark({ def }: { def: PropDef }) {
           {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
             const a = (i / 8) * Math.PI * 2;
             return (
-              <group key={i} position={[0, 4.6, 0]} rotation={[0, a, 0.62]}>
-                <mesh material={MATS.leaf} position={[1.4, 0, 0]} castShadow>
-                  <boxGeometry args={[2.8, 0.08, 0.55]} />
+              <group key={i} position={[0, 4.6, 0]} rotation={[0, a, 0.45]}>
+                <mesh material={i % 2 ? MATS.leafLight : MATS.leaf} position={[1.25, -0.12, 0]} rotation={[0, 0, -Math.PI / 2]} castShadow>
+                  <coneGeometry args={[0.48, 2.65, 3]} />
                 </mesh>
               </group>
             );
@@ -252,15 +253,15 @@ export function WorldLandmark({ def }: { def: PropDef }) {
         <group scale={s * 1.3}>
           {/* Le haricot géant de Skypiea */}
           <mesh material={MATS.leaf} position={[0, 7.5, 0]} rotation={[0.08, 0.1, 0]} castShadow>
-            <cylinderGeometry args={[1.2, 2.5, 15, 12]} />
+            <cylinderGeometry args={[1.0, 2.2, 15, 10]} />
           </mesh>
           {[0, 1, 2, 3].map((i) => {
             const h = 3 + i * 3.5;
             const a = i * 1.6;
             return (
               <group key={i} position={[Math.cos(a) * 1.4, h, Math.sin(a) * 1.4]} rotation={[0, a, 0.4]}>
-                <mesh material={MATS.leaf}>
-                  <boxGeometry args={[3.2, 0.18, 1.4]} />
+                <mesh material={MATS.leafLight} rotation={[0, 0, -Math.PI / 2]}>
+                  <coneGeometry args={[0.9, 3.6, 4]} />
                 </mesh>
               </group>
             );

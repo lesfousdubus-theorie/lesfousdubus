@@ -249,7 +249,7 @@ export default function BusExterior({
           </mesh>
         ))}
         {/* Affiche à l'arrière du bus */}
-        <mesh position={[0, 2.3, 0.012]}>
+        <mesh position={[0, 2.3, 0.035]}>
           <planeGeometry args={[1.8, 0.38]} />
           <meshStandardMaterial map={sideLabel} roughness={0.3} />
         </mesh>
@@ -470,6 +470,7 @@ function PillarInstances({ positions, material }: { positions: number[]; materia
       }
     }
     ref.current.instanceMatrix.needsUpdate = true;
+    ref.current.computeBoundingSphere();
   }, [positions]);
   return (
     <instancedMesh ref={ref} args={[undefined, undefined, positions.length * 2]} material={material}>
