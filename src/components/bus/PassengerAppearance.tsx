@@ -16,8 +16,8 @@ export function HairStyle({
       // Cheveux hérissés (Luffy)
       return (
         <group>
-          <mesh material={mats.hair} position={[0, 0.085, 0.025]} scale={[0.14, 0.09, 0.13]}>
-            <sphereGeometry args={[1, 12, 8]} />
+          <mesh material={mats.hair} position={[0, 0.08, 0.02]}>
+            <boxGeometry args={[0.24, 0.16, 0.22]} />
           </mesh>
           {[-0.08, 0, 0.08].map((hx, hi) => (
             <mesh
@@ -35,8 +35,8 @@ export function HairStyle({
     case "crop":
       // Cheveux courts marimo (Zoro, Chopper)
       return (
-        <mesh material={mats.hair} position={[0, 0.09, 0.02]} scale={[0.14, 0.09, 0.13]}>
-          <sphereGeometry args={[1, 12, 8]} />
+        <mesh material={mats.hair} position={[0, 0.08, 0.01]}>
+          <boxGeometry args={[0.24, 0.16, 0.22]} />
         </mesh>
       );
 
@@ -44,8 +44,8 @@ export function HairStyle({
       // Longs cheveux (Nami, Robin, Yamato, Shanks, Buggy)
       return (
         <group>
-          <mesh material={mats.hair} position={[0, 0.08, 0.025]} scale={[0.14, 0.09, 0.13]}>
-            <sphereGeometry args={[1, 12, 8]} />
+          <mesh material={mats.hair} position={[0, 0.08, 0.02]}>
+            <boxGeometry args={[0.24, 0.16, 0.22]} />
           </mesh>
           {/* Mèches longues tombant sur les épaules */}
           {[-0.12, 0.12].map((lx) => (
@@ -53,8 +53,8 @@ export function HairStyle({
               <cylinderGeometry args={[0.035, 0.045, 0.28, 6]} />
             </mesh>
           ))}
-          <mesh material={mats.hair} position={[0, -0.08, 0.115]} scale={[0.125, 0.16, 0.042]}>
-            <sphereGeometry args={[1, 10, 8]} />
+          <mesh material={mats.hair} position={[0, -0.08, 0.11]}>
+            <boxGeometry args={[0.22, 0.26, 0.04]} />
           </mesh>
         </group>
       );
@@ -63,11 +63,11 @@ export function HairStyle({
       // Mèche asymétrique tombante (Sanji)
       return (
         <group>
-          <mesh material={mats.hair} position={[0, 0.08, 0.025]} scale={[0.14, 0.09, 0.13]}>
-            <sphereGeometry args={[1, 12, 8]} />
+          <mesh material={mats.hair} position={[0, 0.08, 0.02]}>
+            <boxGeometry args={[0.24, 0.16, 0.22]} />
           </mesh>
-          <mesh material={mats.hair} position={[0.06, 0.02, -0.11]} rotation={[0, 0, -0.45]} scale={[0.065, 0.11, 0.035]}>
-            <sphereGeometry args={[1, 10, 8]} />
+          <mesh material={mats.hair} position={[0.06, 0.02, -0.11]} rotation={[0, 0, -0.45]}>
+            <boxGeometry args={[0.1, 0.18, 0.03]} />
           </mesh>
         </group>
       );
@@ -75,8 +75,8 @@ export function HairStyle({
     case "afro":
       // Afro volumineux (Brook, Usopp)
       return (
-        <mesh material={mats.hair} position={[0, 0.13, 0.04]} scale={[0.22, 0.23, 0.2]}>
-          <sphereGeometry args={[1, 14, 12]} />
+        <mesh material={mats.hair} position={[0, 0.1, 0.04]}>
+          <sphereGeometry args={[0.22, 14, 14]} />
         </mesh>
       );
 
@@ -84,8 +84,8 @@ export function HairStyle({
       // Banane rockeur Franky
       return (
         <group>
-          <mesh material={mats.hair} position={[0, 0.08, 0.025]} scale={[0.14, 0.09, 0.13]}>
-            <sphereGeometry args={[1, 12, 8]} />
+          <mesh material={mats.hair} position={[0, 0.08, 0.02]}>
+            <boxGeometry args={[0.24, 0.16, 0.22]} />
           </mesh>
           <mesh
             material={mats.hair}
@@ -101,8 +101,8 @@ export function HairStyle({
       // Chignon samouraï (Jinbe)
       return (
         <group>
-          <mesh material={mats.hair} position={[0, 0.08, 0.025]} scale={[0.14, 0.09, 0.13]}>
-            <sphereGeometry args={[1, 12, 8]} />
+          <mesh material={mats.hair} position={[0, 0.08, 0.02]}>
+            <boxGeometry args={[0.24, 0.16, 0.22]} />
           </mesh>
           <mesh material={mats.hair} position={[0, 0.2, 0.05]}>
             <sphereGeometry args={[0.06, 8, 8]} />
@@ -115,8 +115,8 @@ export function HairStyle({
     default:
       return (
         <group>
-          <mesh material={mats.hair} position={[0, 0.08, 0.025]} scale={[0.14, 0.09, 0.13]}>
-            <sphereGeometry args={[1, 12, 8]} />
+          <mesh material={mats.hair} position={[0, 0.08, 0.02]}>
+            <boxGeometry args={[0.24, 0.16, 0.22]} />
           </mesh>
           {[-0.11, 0.11].map((wx) => (
             <mesh key={wx} material={mats.hair} position={[wx, -0.02, 0.02]}>
