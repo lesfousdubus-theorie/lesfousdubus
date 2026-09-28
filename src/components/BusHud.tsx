@@ -160,17 +160,18 @@ export function BusHud({
         </button>
 
         {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
-        <div className="bus-speed bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex min-h-11 items-center gap-1 rounded-full border border-white/25 bg-black/65 px-1.5 text-xs shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-3.5 sm:py-2 sm:text-sm">
+        <div className="bus-speed bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex h-11 items-center gap-1 rounded-full bg-black/65 px-1.5 text-xs shadow-lg ring-1 ring-white/25 backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-3.5 sm:text-sm">
           <button
             type="button"
             onClick={decelerateBus}
             disabled={speedMultiplier <= 0.3}
             aria-label="Ralentir le bus"
-            className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-white/10 px-2 text-xs font-bold text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:flex-none sm:px-2.5"
+            className="group relative flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-bold text-white transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:flex-none sm:px-2.5"
             title="Ralentir le bus (Touche - ou Flèche Bas)"
           >
-            <span>🐢</span>
-            <span className="bus-speed-label">Ralentir</span>
+            <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-full bg-white/10 transition-colors group-hover:bg-white/25" />
+            <span className="relative">🐢</span>
+            <span className="bus-speed-label relative">Ralentir</span>
           </button>
 
           <div className="bus-speed-value flex w-[62px] shrink-0 items-center justify-center gap-1 px-1 font-black tabular-nums sm:w-[76px] sm:px-1.5">
@@ -197,11 +198,12 @@ export function BusHud({
             onClick={accelerateBus}
             disabled={speedMultiplier >= 3.0}
             aria-label="Accélérer le bus"
-            className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#ffd23f]/25 px-2 text-xs font-black text-[#ffd23f] transition hover:bg-[#ffd23f]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:flex-none sm:px-2.5"
+            className="group relative flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-black text-[#ffd23f] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-default disabled:opacity-30 sm:w-[90px] sm:flex-none sm:px-2.5"
             title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
           >
-            <span>⚡</span>
-            <span className="bus-speed-label">Accélérer</span>
+            <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-full bg-[#ffd23f]/25 transition-colors group-hover:bg-[#ffd23f]/40" />
+            <span className="relative">⚡</span>
+            <span className="bus-speed-label relative">Accélérer</span>
           </button>
         </div>
 

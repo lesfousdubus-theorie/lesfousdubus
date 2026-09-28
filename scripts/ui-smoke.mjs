@@ -197,6 +197,17 @@ try {
         return {
           overflow: document.documentElement.scrollWidth - innerWidth,
           hasEnter: buttons.some((button) => button.textContent?.includes("Entrer dans le bus")),
+          controlHeights: {
+            speed: document.querySelector(".bus-speed")?.getBoundingClientRect().height ?? 0,
+            dayNight: document.querySelector(".bus-day-night")?.getBoundingClientRect().height ?? 0,
+            exterior: document.querySelector(".bus-exterior-controls button")?.getBoundingClientRect().height ?? 0,
+            speedButtons: [...document.querySelectorAll(".bus-speed button")].map((button) => button.getBoundingClientRect().height),
+            speedFillGaps: [...document.querySelectorAll(".bus-speed button")].map((button) => {
+              const buttonRect = button.getBoundingClientRect();
+              const fillRect = button.querySelector('[aria-hidden="true"]')?.getBoundingClientRect();
+              return fillRect ? [fillRect.top - buttonRect.top, buttonRect.bottom - fillRect.bottom] : [0, 0];
+            }),
+          },
           outside: outside.map(({ text, rect }) => ({ text, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom })),
           tooSmall,
           collisions,
@@ -207,6 +218,10 @@ try {
     assert(layout.overflow <= 2, `Horizontal overflow at ${viewport.width}x${viewport.height}: ${layout.overflow}px`);
     assert.equal(layout.outside.length, 0, `Visible controls leave viewport at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.outside)}`);
     assert.equal(layout.tooSmall.length, 0, `Touch targets are too small at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.tooSmall)}`);
+    assert(Math.abs(layout.controlHeights.speed - layout.controlHeights.dayNight) <= 1, `Speed and day/night controls have different heights at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
+    assert(Math.abs(layout.controlHeights.speed - layout.controlHeights.exterior) <= 1, `Speed and exterior controls have different heights at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
+    assert(layout.controlHeights.speedButtons.every((height) => height >= 44), `Speed buttons are too short at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
+    assert(layout.controlHeights.speedFillGaps.every(([top, bottom]) => top >= 3 && bottom >= 3), `Speed button backgrounds touch the top or bottom edge at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
     assert.equal(layout.collisions.length, 0, `Visible controls overlap at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.collisions)}`);
 
     await evaluate(send, `

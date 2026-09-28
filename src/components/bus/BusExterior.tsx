@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, type RefObject } from "react";
 import * as THREE from "three";
+import { WIPER_PARK_ANGLE } from "@/lib/bus-wipers";
 
 interface BusExteriorProps {
   headlights: boolean;
@@ -202,14 +203,14 @@ export default function BusExterior({
         <boxGeometry args={[2.5, 0.08, 0.04]} />
       </mesh>
       {/* Essuie-glaces */}
-      <group ref={leftWiper} position={[-0.55, 1.8, -4.66]} rotation={[0, 0, 0.58]}>
-        <mesh material={mats.dark} position={[0, 0.31, 0]}>
-          <boxGeometry args={[0.035, 0.62, 0.02]} />
+      <group ref={leftWiper} position={[-0.48, 1.79, -4.66]} rotation={[0, 0, WIPER_PARK_ANGLE]}>
+        <mesh material={mats.dark} position={[0, 0.28, 0]}>
+          <boxGeometry args={[0.035, 0.56, 0.02]} />
         </mesh>
       </group>
-      <group ref={rightWiper} position={[0.55, 1.8, -4.66]} rotation={[0, 0, -0.58]}>
-        <mesh material={mats.dark} position={[0, 0.31, 0]}>
-          <boxGeometry args={[0.035, 0.62, 0.02]} />
+      <group ref={rightWiper} position={[0.48, 1.79, -4.66]} rotation={[0, 0, WIPER_PARK_ANGLE]}>
+        <mesh material={mats.dark} position={[0, 0.28, 0]}>
+          <boxGeometry args={[0.035, 0.56, 0.02]} />
         </mesh>
       </group>
       {/* Girouette de destination lumineuse */}
@@ -286,14 +287,15 @@ export default function BusExterior({
         </mesh>
       ))}
 
-      {/* Logo emblème officiel Le Mont Corvo à l'avant du bus (surélevé au-dessus de la grille d'aération) */}
-      <group position={[0, 1.48, -6.05]}>
+      {/* Le capot se termine à Z = -6 : le dos du badge entre légèrement
+          dans cette face pour qu'aucun vide ne soit visible de profil. */}
+      <group position={[0, 1.48, -6.012]}>
         {/* Cerclage chromé d'emblème */}
         <mesh material={mats.chrome} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.26, 0.26, 0.025, 32]} />
         </mesh>
         {/* Fond sombre rond puis logo complet, ajusté dans le diamètre intérieur. */}
-        <mesh position={[0, 0, -0.018]} rotation={[0, Math.PI, 0]}>
+        <mesh position={[0, 0, -0.014]} rotation={[0, Math.PI, 0]}>
           <circleGeometry args={[0.24, 32]} />
           <meshStandardMaterial
             color="#101214"
@@ -302,7 +304,7 @@ export default function BusExterior({
             side={THREE.DoubleSide}
           />
         </mesh>
-        <mesh position={[0, 0, -0.033]} rotation={[0, Math.PI, 0]}>
+        <mesh position={[0, 0, -0.017]} rotation={[0, Math.PI, 0]}>
           <planeGeometry args={[0.334, 0.334]} />
           <meshStandardMaterial map={montCorvoTex} roughness={0.2} metalness={0.1} />
         </mesh>
