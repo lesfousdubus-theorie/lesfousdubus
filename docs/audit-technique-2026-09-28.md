@@ -16,7 +16,7 @@ tests de comportement.
 | `src/components/modals/`, `src/components/theory/` | Fenêtres des passagers et contenu de la théorie | Séparation claire. |
 | `src/lib/` | Calculs et ressources partagés | `client/` et `server/` séparent les accès réseau et D1 ; `bus-front-geometry.ts` centralise les cotes de la calandre. |
 | `src/types/`, `migrations/` | Types partagés et six migrations D1 ordonnées | Noms et hiérarchie cohérents. |
-| `public/`, `scripts/`, `.github/workflows/` | Ressources statiques, tests et CI | Les ressources référencées existent ; les vérifications sont automatisées. |
+| `public/`, `scripts/` | Ressources statiques et tests locaux | Les ressources référencées existent ; les vérifications s'exécutent avant le déploiement. |
 
 Convention de noms vérifiée : composants React en `PascalCase`, hooks en `use...`,
 fonctions et données partagées en noms descriptifs minuscules, migrations numérotées.
@@ -35,7 +35,7 @@ Aucun renommage massif de dossier n'améliorerait à lui seul le fonctionnement.
   d'état React ont été déplacés dans les gestionnaires d'actions et dans le
   polling. Ils ne dépendent plus d'une éventuelle réexécution de l'updater.
 - Le README décrit maintenant le comportement réel de la vidéo et la procédure
-  de test. La CI exécute typecheck, lint, tests et compilation sur les PR et `main`.
+  de test locale. Aucun workflow GitHub n'est nécessaire pour ces contrôles.
 
 ## Travaux restants, à traiter par priorité
 
