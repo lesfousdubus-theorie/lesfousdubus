@@ -131,10 +131,10 @@ function useSceneRuntimeState() {
 function AdaptiveDpr({ lowPower }: { lowPower: boolean }) {
   const setDpr = useThree((state) => state.setDpr);
   const baseDpr = Math.min(window.devicePixelRatio || 1, lowPower ? 1.15 : 1.6);
-  const sampleRef = useRef({ elapsed: 0, frames: 0, dpr: baseDpr });
+  const sampleRef = useRef({ elapsed: 0, frames: 0, dpr: baseDpr, slowSamples: 0, fastSamples: 0, cooldown: 0 });
 
   useEffect(() => {
-    sampleRef.current = { elapsed: 0, frames: 0, dpr: baseDpr };
+    sampleRef.current = { elapsed: 0, frames: 0, dpr: baseDpr, slowSamples: 0, fastSamples: 0, cooldown: 0 };
     setDpr(baseDpr);
   }, [baseDpr, setDpr]);
 
@@ -143,25 +143,65 @@ function AdaptiveDpr({ lowPower }: { lowPower: boolean }) {
     const sample = sampleRef.current;
     sample.elapsed += dt;
     sample.frames += 1;
-    if (sample.elapsed < 1.5) return;
+    if (sample.elapsed < 2) return;
 
     const fps = sample.frames / sample.elapsed;
+    sample.cooldown = Math.max(0, sample.cooldown - sample.elapsed);
+    sample.slowSamples = fps < 46 ? sample.slowSamples + 1 : 0;
+    sample.fastSamples = fps > 57 ? sample.fastSamples + 1 : 0;
     let nextDpr = sample.dpr;
-    if (fps < 48) {
+    if (sample.cooldown === 0 && sample.slowSamples >= 2) {
       nextDpr = Math.max(0.85, sample.dpr - 0.15);
-    } else if (fps > 100) {
-      nextDpr = Math.min(sample.dpr, lowPower ? 1 : 1.25);
-    } else if (fps > 57 && sample.dpr < baseDpr) {
+    } else if (sample.cooldown === 0 && sample.fastSamples >= 4 && sample.dpr < baseDpr) {
       nextDpr = Math.min(baseDpr, sample.dpr + 0.1);
     }
 
     if (Math.abs(nextDpr - sample.dpr) >= 0.04) {
       sample.dpr = nextDpr;
+      sample.slowSamples = 0;
+      sample.fastSamples = 0;
+      // Changer le DPR recrée des buffers WebGL : laisser le rendu se stabiliser.
+      sample.cooldown = 8;
       setDpr(nextDpr);
     }
     sample.elapsed = 0;
     sample.frames = 0;
   });
+
+  return null;
+}
+
+/** Budget de 60 images par seconde pour les écrans à rafraîchissement élevé. */
+function CappedFrameLoop({ paused }: { paused: boolean }) {
+  const advance = useThree((state) => state.advance);
+  const clock = useThree((state) => state.clock);
+
+  useEffect(() => {
+    if (paused) return;
+    const frameInterval = 1000 / 60;
+    let frame = 0;
+    let origin: number | null = null;
+    let lastTick: number | null = null;
+    let frameBudget = 0;
+
+    const tick = (now: number) => {
+      if (origin === null) origin = now - clock.elapsedTime * 1000;
+      if (lastTick !== null) {
+        const elapsed = now - lastTick;
+        frameBudget = elapsed > 100 ? frameInterval : frameBudget + elapsed;
+      }
+      lastTick = now;
+      if (frameBudget >= frameInterval) {
+        advance((now - origin) / 1000);
+        // Pas de rattrapage en rafale après une pause ou une image lente.
+        frameBudget = Math.min(frameBudget - frameInterval, frameInterval - 0.001);
+      }
+      frame = requestAnimationFrame(tick);
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [advance, clock, paused]);
 
   return null;
 }
@@ -236,7 +276,7 @@ export default function Scene({
       <div className="absolute inset-0">
       <Canvas
       shadows={lowPower ? false : "basic"}
-      frameloop={renderPaused ? "demand" : "always"}
+      frameloop="never"
       dpr={Math.min(window.devicePixelRatio, lowPower ? 1.15 : 1.6)}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: cameraFar }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
@@ -245,6 +285,7 @@ export default function Scene({
       fallback={<div aria-hidden={canvasReady}><SceneFallback /></div>}
     >
       <WebGLContextGuard setLost={setContextLost} />
+      <CappedFrameLoop paused={renderPaused} />
       <AdaptiveDpr lowPower={lowPower} />
       <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} />
