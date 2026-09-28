@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type Dispatch, type RefObject, type SetStateAction } from "react";
+import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { playStretch } from "@/lib/horn";
 import { ApiError, fetchJson, getOrCreateVisitorId, isRetryableRegistrationError, type BusApiState } from "@/lib/client/bus-api";
 import type { PassengerProfile } from "@/types/passenger";
@@ -16,6 +16,7 @@ interface BusSyncOptions {
   profileRevision: number;
   setPassengerProfiles: Dispatch<SetStateAction<PassengerProfile[]>>;
   seatCapacityRef: RefObject<number>;
+  count: number | null;
   setCount: Dispatch<SetStateAction<number | null>>;
   showToast: (text: string, sub?: string, badge?: string) => void;
   registrationPending: boolean;
@@ -26,10 +27,15 @@ interface BusSyncOptions {
 
 export function useBusSync({
   applyBusSnapshot, statsRetryToken, setStatsLoadError, phase, seatRow,
-  profileRevision, setPassengerProfiles, seatCapacityRef, setCount, showToast,
+  profileRevision, setPassengerProfiles, seatCapacityRef, count, setCount, showToast,
   registrationPending, registrationRetryDelayRef, setCurrentPassengerSeatIndex,
   setRegistrationPending,
 }: BusSyncOptions) {
+  const countRef = useRef(count);
+  useEffect(() => {
+    countRef.current = count;
+  }, [count]);
+
   // Récupération initiale : une erreur conserve l'état "inconnu" et propose
   // explicitement une nouvelle tentative au lieu de laisser un simple tiret.
   useEffect(() => {
@@ -78,29 +84,28 @@ export function useBusSync({
       try {
         const d = await fetchJson<BusApiState>("/api/bus-entries");
         const previousSeatCapacity = seatCapacityRef.current;
+        const previousCount = countRef.current;
         if (!applyBusSnapshot(d, false)) return;
-        setCount((prev) => {
-          if (prev === null) return d.count;
-          if (d.count > prev) {
-            const prevRows = computeNumRows(previousSeatCapacity);
-            const nextRows = computeNumRows(d.seatCapacity);
-            if (nextRows > prevRows) {
-              playStretch();
-              showToast(
-                "Le bus s'allonge !",
-                `Nouveaux nakamas à bord ! +${nextRows - prevRows} rangée(s) créée(s)`,
-                "🚌 EXTENSION",
-              );
-            } else {
-              showToast(
-                "+1 Nakama à bord !",
-                `${d.count} passagers voyagent vers Laugh Tale`,
-                "⚡ REJOINT",
-              );
-            }
+        countRef.current = d.count;
+        setCount(d.count);
+        if (previousCount !== null && d.count > previousCount) {
+          const prevRows = computeNumRows(previousSeatCapacity);
+          const nextRows = computeNumRows(d.seatCapacity);
+          if (nextRows > prevRows) {
+            playStretch();
+            showToast(
+              "Le bus s'allonge !",
+              `Nouveaux nakamas à bord ! +${nextRows - prevRows} rangée(s) créée(s)`,
+              "🚌 EXTENSION",
+            );
+          } else {
+            showToast(
+              "+1 Nakama à bord !",
+              `${d.count} passagers voyagent vers Laugh Tale`,
+              "⚡ REJOINT",
+            );
           }
-          return d.count;
-        });
+        }
       } catch {
         // ignore
       }
