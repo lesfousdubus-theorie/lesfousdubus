@@ -306,6 +306,7 @@ export default function Scene({
           currentPassengerSeatIndex={currentPassengerSeatIndex}
           onPassengerSelect={onPassengerSelect}
           reducedMotion={reducedMotion}
+          lowPower={lowPower}
           playbackSuspended={playbackSuspended}
         />
       </Suspense>

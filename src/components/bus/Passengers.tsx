@@ -117,6 +117,7 @@ interface PassengersProps {
   passengerProfiles?: PassengerProfile[];
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   activePassengerIndex?: number | null;
+  lowPower?: boolean;
 }
 
 function Passengers({
@@ -129,7 +130,9 @@ function Passengers({
   passengerProfiles = [],
   onPassengerSelect,
   activePassengerIndex = null,
+  lowPower = false,
 }: PassengersProps) {
+  const detailLimit = lowPower ? 12 : 24;
   const capacity = numRows * 4;
   const vacantRanges = useMemo(() => {
     return vacantSeatRanges
@@ -180,7 +183,7 @@ function Passengers({
     [numRows, renderedRowIndices],
   );
   const detailed = useMemo(() => {
-    if (occupiedCount <= 24) {
+    if (occupiedCount <= detailLimit) {
       return Array.from({ length: occupiedCount }, (_, rank) => seatIndexForOccupiedRank(rank))
         .filter((index) => renderedRows.has(Math.floor(index / 4)))
         .map((index) => ({ seat: seatAt(index), index }));
@@ -192,7 +195,7 @@ function Passengers({
     if (activePassengerIndex !== null && activePassengerIndex >= 0 && activePassengerIndex < capacity) {
       ranks.add(activePassengerIndex - vacantCountThrough(activePassengerIndex));
     }
-    for (let distance = 0; ranks.size < 24; distance++) {
+    for (let distance = 0; ranks.size < detailLimit; distance++) {
       const candidates = distance === 0
         ? [rankNearFocus]
         : [rankNearFocus - distance, rankNearFocus + distance];
@@ -205,7 +208,7 @@ function Passengers({
       return { seat: seatAt(index), index };
     }).filter(({ index }) =>
       index === activePassengerIndex || renderedRows.has(Math.floor(index / 4)));
-  }, [activePassengerIndex, capacity, numRows, occupiedCount, renderedRows, reservedRow, seatIndexForOccupiedRank, vacantCountThrough]);
+  }, [activePassengerIndex, capacity, detailLimit, numRows, occupiedCount, renderedRows, reservedRow, seatIndexForOccupiedRank, vacantCountThrough]);
   const simplified = useMemo(() => {
     const detailedIndices = new Set(detailed.map(({ index }) => index));
     if (occupiedCount - detailed.length <= 160) {
@@ -288,12 +291,12 @@ function SimplifiedPassengers({ passengers }: { passengers: Array<{ seat: SeatIn
   if (passengers.length === 0) return null;
   return (
     <>
-      <instancedMesh ref={bodies} args={[undefined, undefined, passengers.length]}>
-        <capsuleGeometry args={[0.16, 0.35, 4, 8]} />
+      <instancedMesh ref={bodies} args={[undefined, undefined, 160]} count={passengers.length}>
+        <boxGeometry args={[0.32, 0.42, 0.22]} />
         <meshStandardMaterial color="#314ba5" roughness={0.7} />
       </instancedMesh>
-      <instancedMesh ref={heads} args={[undefined, undefined, passengers.length]}>
-        <sphereGeometry args={[0.13, 8, 8]} />
+      <instancedMesh ref={heads} args={[undefined, undefined, 160]} count={passengers.length}>
+        <boxGeometry args={[0.26, 0.24, 0.2]} />
         <meshStandardMaterial color="#d9a27e" roughness={0.7} />
       </instancedMesh>
     </>
@@ -323,9 +326,10 @@ function Passenger({
 
   // Matériaux partagés et mis en cache par archetype
   const mats = useMemo(() => getArchetypeMaterials(archetype), [archetype]);
+  const displayName = profile?.displayName;
   const nameTexture = useMemo(
-    () => profile ? makePassengerNameTexture(profile.displayName) : null,
-    [profile],
+    () => displayName ? makePassengerNameTexture(displayName) : null,
+    [displayName],
   );
   const labelY = useMemo(() => getPassengerLabelY(archetype), [archetype]);
 

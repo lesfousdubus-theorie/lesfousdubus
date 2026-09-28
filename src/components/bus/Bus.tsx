@@ -35,6 +35,7 @@ interface BusProps {
   currentPassengerSeatIndex?: number | null;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   reducedMotion?: boolean;
+  lowPower?: boolean;
   playbackSuspended?: boolean;
 }
 
@@ -59,6 +60,7 @@ export default function Bus({
   currentPassengerSeatIndex = null,
   onPassengerSelect,
   reducedMotion = false,
+  lowPower = false,
   playbackSuspended = false,
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
@@ -127,12 +129,14 @@ export default function Bus({
 
   // Points lumineux de plafond répartis le long de l'habitacle
   const interiorLightZs = useMemo(() => {
-    const count = Math.min(5, Math.max(3, Math.ceil(cabinLength / 3.4)));
+    // Garder trois lumières : une variation du nombre de sources force Three.js
+    // à recompiler les matériaux lorsque le bus s'allonge.
+    const count = 3;
     const start = -2.5;
     const end = rearWallZ - 1.2;
     const step = (end - start) / (count - 1);
     return Array.from({ length: count }, (_, i) => start + i * step);
-  }, [cabinLength, rearWallZ]);
+  }, [rearWallZ]);
 
   // Emplacement des roues (2 avant fixes, 2 arrière mobiles, + essieu médian si bus long)
   const wheelPositions = useMemo(() => {
@@ -152,6 +156,9 @@ export default function Bus({
   // Détection du moment d'extension pour animer le rebond
   const stretchRef = useRef(0);
   const prevRows = useRef(numRows);
+  const bouncePhase = useRef(0);
+  const rollPhase = useRef(0);
+  const wiperPhase = useRef(0);
   useEffect(() => {
     if (numRows > prevRows.current) {
       stretchRef.current = performance.now();
@@ -189,13 +196,12 @@ export default function Bus({
         color: "#18181c",
         roughness: 0.95,
       }),
-      glass: new THREE.MeshPhysicalMaterial({
+      glass: new THREE.MeshStandardMaterial({
         color: "#9ec9ff",
         transparent: true,
         opacity: 0.32,
         roughness: 0.04,
         metalness: 0.05,
-        side: THREE.DoubleSide,
         depthWrite: false,
       }),
       floor: new THREE.MeshStandardMaterial({
@@ -362,6 +368,8 @@ export default function Bus({
     const frameDt = Math.min(dt, 0.1);
 
     const mult = worldRef.current?.speedMultiplier ?? 1.0;
+    bouncePhase.current = (bouncePhase.current + frameDt * 8.5 * mult) % (Math.PI * 2);
+    rollPhase.current = (rollPhase.current + frameDt * 1.6 * mult) % (Math.PI * 2);
 
     // Roulis, tangage et rebond d'extension dynamique du minibus (adapté à la vitesse)
     if (group.current) {
@@ -372,9 +380,9 @@ export default function Bus({
       const cabinIsStable = phase === "inside" || phase === "entering";
       const targetY = cabinIsStable || reducedMotion
         ? 0
-        : (Math.sin(t * 8.5 * mult) * 0.014 + Math.sin(t * 2.1) * 0.008)
+        : (Math.sin(bouncePhase.current) * 0.014 + Math.sin(t * 2.1) * 0.008)
           * Math.min(1.4, Math.max(0.7, mult)) + stretchBounce;
-      const targetRoll = cabinIsStable || reducedMotion ? 0 : Math.sin(t * 1.6 * mult) * 0.0035;
+      const targetRoll = cabinIsStable || reducedMotion ? 0 : Math.sin(rollPhase.current) * 0.0035;
       const settle = Math.min(1, frameDt * 10);
       group.current.position.y += (targetY - group.current.position.y) * settle;
       group.current.rotation.z += (targetRoll - group.current.rotation.z) * settle;
@@ -385,9 +393,9 @@ export default function Bus({
       : 0;
     // Environ 1,6 à 2 secondes par aller-retour, même sous une forte averse.
     const wiperRate = 3 + Math.min(1, rainStrength) * 0.9;
-    const sweep = rainStrength > 0.08
-      ? Math.sin(t * wiperRate) * 0.68
-      : 0;
+    wiperPhase.current = (wiperPhase.current + frameDt * wiperRate) % (Math.PI * 2);
+    const wiperStrength = Math.min(1, Math.max(0, (rainStrength - 0.04) / 0.2));
+    const sweep = Math.sin(wiperPhase.current) * 0.68 * wiperStrength;
     if (leftWiper.current) leftWiper.current.rotation.z = 0.58 + sweep;
     if (rightWiper.current) rightWiper.current.rotation.z = -0.58 + sweep;
 
@@ -401,9 +409,11 @@ export default function Bus({
     }
 
     // Rotation des roues du bus adaptée à la vitesse de défilement
-    wheels.current.forEach((w) => {
-      if (w) w.rotation.x -= frameDt * 12 * mult;
-    });
+    if (phase !== "inside") {
+      wheels.current.forEach((w) => {
+        if (w) w.rotation.x = (w.rotation.x - frameDt * 12 * mult) % (Math.PI * 2);
+      });
+    }
 
     // Éclairage intérieur doux et constant de jour comme de nuit
     const daylight = worldRef.current?.daylight ?? 1;
@@ -484,7 +494,7 @@ export default function Bus({
           position={[0, 2.85, lz]}
           color="#fff4db"
           intensity={4.5}
-          distance={9.5}
+          distance={Math.max(9.5, cabinLength / 2)}
           decay={1.5}
         />
       ))}
@@ -516,6 +526,7 @@ export default function Bus({
         activePassengerIndex={phase === "inside" || phase === "entering" ? currentPassengerSeatIndex : null}
         passengerProfiles={passengerProfiles}
         onPassengerSelect={onPassengerSelect}
+        lowPower={lowPower}
       />
 
       {/* Poste de conduite avec volant et tableau de bord */}
@@ -620,18 +631,20 @@ function SeatInstances({
     });
   }, [rows]);
   const count = rows.length * 2;
+  // Taille fixe : l'ajout d'une rangée ne recrée pas les quatre buffers GPU.
+  const capacity = 180 * 2;
   return (
     <>
-      <instancedMesh ref={cushion} args={[undefined, undefined, count]} material={seatMaterial} castShadow>
+      <instancedMesh ref={cushion} args={[undefined, undefined, capacity]} count={count} material={seatMaterial} castShadow>
         <boxGeometry args={[0.95, 0.15, 0.7]} />
       </instancedMesh>
-      <instancedMesh ref={back} args={[undefined, undefined, count]} material={seatMaterial} castShadow>
+      <instancedMesh ref={back} args={[undefined, undefined, capacity]} count={count} material={seatMaterial} castShadow>
         <boxGeometry args={[0.95, 0.58, 0.12]} />
       </instancedMesh>
-      <instancedMesh ref={base} args={[undefined, undefined, count]} material={frameMaterial}>
+      <instancedMesh ref={base} args={[undefined, undefined, capacity]} count={count} material={frameMaterial}>
         <boxGeometry args={[0.85, 0.36, 0.6]} />
       </instancedMesh>
-      <instancedMesh ref={headrest} args={[undefined, undefined, count]} material={frameMaterial}>
+      <instancedMesh ref={headrest} args={[undefined, undefined, capacity]} count={count} material={frameMaterial}>
         <boxGeometry args={[0.95, 0.05, 0.08]} />
       </instancedMesh>
     </>

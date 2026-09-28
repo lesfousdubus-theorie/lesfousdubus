@@ -49,6 +49,7 @@ export default function CameraRig({
   const pinchStartDistRef = useRef<number | null>(null);
   const pinchStartFovRef = useRef<number>(55);
   const phaseRef = useRef<Phase>(phase);
+  const preparedPhaseRef = useRef<Phase | null>(null);
   const arrivedRef = useRef(onArrived);
   useEffect(() => {
     arrivedRef.current = onArrived;
@@ -110,23 +111,30 @@ export default function CameraRig({
 
   // Prépare la transition à chaque changement de phase
   useEffect(() => {
+    const phaseChanged = preparedPhaseRef.current !== phase;
+    preparedPhaseRef.current = phase;
     phaseRef.current = phase;
     const a = anim.current;
     if (phase === "entering") {
-      saved.current.pos.copy(camera.position);
-      if (controls.current) saved.current.target.copy(controls.current.target);
-      // La vue intérieure doit commencer avec la rangée d'arrivée déjà synchronisée.
-      // Sinon, la première image en phase `inside` repart brièvement vers l'ancienne
-      // rangée mémorisée avant de revenir vers la bonne place.
+      if (phaseChanged) {
+        saved.current.pos.copy(camera.position);
+        if (controls.current) saved.current.target.copy(controls.current.target);
+        a.from.copy(camera.position);
+        a.fromQ.copy(camera.quaternion);
+        a.t = 0;
+        a.active = true;
+      } else if (a.active && !a.to.equals(activeEyePos)) {
+        // L'attribution de la place peut arriver pendant le trajet. Repartir de
+        // l'image courante évite un saut ou la perte de la vue extérieure sauvée.
+        a.from.copy(camera.position);
+        a.fromQ.copy(camera.quaternion);
+        a.t = 0;
+      }
       seatZRef.current = activeEyePos.z;
-      a.from.copy(camera.position);
-      a.fromQ.copy(camera.quaternion);
       a.to.copy(activeEyePos);
       const m = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
       a.toQ.setFromRotationMatrix(m);
-      a.t = 0;
-      a.active = true;
-    } else if (phase === "exiting") {
+    } else if (phase === "exiting" && phaseChanged) {
       a.from.copy(camera.position);
       a.fromQ.copy(camera.quaternion);
       a.to.copy(saved.current.pos);
@@ -134,8 +142,10 @@ export default function CameraRig({
       a.toQ.setFromRotationMatrix(m);
       a.t = 0;
       a.active = true;
+    } else if (phaseChanged) {
+      a.active = false;
     }
-  }, [phase, camera, activeEyePos, activeTvTarget, reducedMotion, finishTransition]);
+  }, [phase, camera, activeEyePos, activeTvTarget]);
 
   // Chaque déplacement dans l'allée oriente le regard vers le lecteur actif.
   // Le visiteur peut ensuite tourner librement la tête avec la souris ou le doigt.
@@ -146,18 +156,6 @@ export default function CameraRig({
     look.current.targetYaw = rotation.y;
     look.current.targetPitch = rotation.x;
   }, [phase, activeEyePos, activeTvTarget]);
-
-  // Fallback de sécurité : garantit la fin de la transition même si requestAnimationFrame est suspendu/throttlé
-  useEffect(() => {
-    if (phase === "entering" || phase === "exiting") {
-      const fallbackTimer = setTimeout(() => {
-        if (anim.current.active) {
-          finishTransition(phase === "entering" ? "inside" : "outside");
-        }
-      }, (TRANSITION_TIME + 0.3) * 1000);
-      return () => clearTimeout(fallbackTimer);
-    }
-  }, [phase, finishTransition]);
 
   // Contrôles "tourner la tête" & Zoom à l'intérieur (souris / tactile / clavier / molette)
   useEffect(() => {
