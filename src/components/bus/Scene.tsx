@@ -34,28 +34,43 @@ interface SceneProps {
   currentPassengerSeatIndex?: number | null;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   modeOverride?: "day" | "night" | null;
+  audioMuted?: boolean;
+  resetViewToken?: number;
+  onAvailabilityChange?: (available: boolean) => void;
+  onReadTheory?: () => void;
+  onReadVideo?: () => void;
 }
 
-function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil." }: { reason?: string }) {
+function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil.", onReadTheory, onReadVideo }: {
+  reason?: string;
+  onReadTheory?: () => void;
+  onReadVideo?: () => void;
+}) {
   return (
-    <div className="absolute inset-0 grid place-items-center bg-gradient-to-b from-[#79c2ff] to-[#174f91] p-6 text-center text-white">
-      <div className="max-w-md rounded-2xl border border-white/20 bg-[#07142b]/85 p-6 shadow-2xl backdrop-blur-sm">
-        <div className="mb-3 text-5xl" aria-hidden="true">🚌</div>
-        <p className="text-lg font-black">Le bus reste au dépôt</p>
+    <div className="absolute inset-0 bg-gradient-to-b from-[#79c2ff] to-[#174f91] text-center text-white">
+      <div className="bus-scene-fallback absolute inset-x-0 grid place-items-center overflow-y-auto px-3">
+      <div className="my-auto w-full max-w-md rounded-2xl border border-white/20 bg-[#07142b]/95 p-5 shadow-2xl backdrop-blur-sm">
+        <div className="mb-3 text-3xl" aria-hidden="true">🚌</div>
+        <h1 className="text-lg font-black">La théorie reste accessible</h1>
         <p className="mt-2 text-sm text-white/80">{reason}</p>
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
+          {onReadTheory && <button type="button" onClick={onReadTheory} className="min-h-11 rounded-xl bg-[#ffd23f] px-4 py-2 font-black text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Lire la théorie</button>}
+          {onReadVideo && <button type="button" onClick={onReadVideo} className="min-h-11 rounded-xl border border-white/40 px-4 py-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Voir la vidéo</button>}
+        </div>
         <button
           type="button"
-          className="mt-5 min-h-11 rounded-xl bg-[#ffd23f] px-4 py-2 font-black text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="mt-3 min-h-11 rounded-xl px-4 py-2 text-sm font-semibold text-white/85 underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           onClick={() => window.location.reload()}
         >
-          Réessayer
+          Réessayer la 3D
         </button>
+      </div>
       </div>
     </div>
   );
 }
 
-class SceneErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+class SceneErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode; onFailure: () => void }, { failed: boolean }> {
   state = { failed: false };
 
   static getDerivedStateFromError() {
@@ -64,11 +79,12 @@ class SceneErrorBoundary extends Component<{ children: ReactNode }, { failed: bo
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("Impossible d’initialiser la scène 3D", error, info);
+    this.props.onFailure();
   }
 
   render() {
     return this.state.failed
-      ? <SceneFallback reason="Le chargement de la scène a échoué. Vous pouvez relancer l’expérience." />
+      ? this.props.fallback
       : this.props.children;
   }
 }
@@ -250,12 +266,44 @@ export default function Scene({
   currentPassengerSeatIndex = null,
   onPassengerSelect,
   modeOverride,
+  audioMuted = false,
+  resetViewToken = 0,
+  onAvailabilityChange,
+  onReadTheory,
+  onReadVideo,
 }: SceneProps) {
   const { hidden, lowPower, reducedMotion } = useSceneRuntimeState();
   const [contextLost, setContextLost] = useState(false);
   const [canvasReady, setCanvasReady] = useState(false);
+  const [webglAvailable, setWebglAvailable] = useState<boolean | null>(null);
+  const [startupFailed, setStartupFailed] = useState(false);
   const renderPaused = hidden || contextLost || uiPaused;
   const playbackSuspended = hidden || contextLost;
+  useEffect(() => {
+    // Canvas.fallback est un enfant du <canvas> : un navigateur qui supporte
+    // canvas mais refuse WebGL ne l'affiche pas. Tester avant de monter le moteur.
+    const frame = window.requestAnimationFrame(() => {
+      const probe = document.createElement("canvas");
+      try {
+        const context = probe.getContext("webgl2");
+        setWebglAvailable(Boolean(context));
+        context?.getExtension("WEBGL_lose_context")?.loseContext();
+      } catch {
+        setWebglAvailable(false);
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    onAvailabilityChange?.(webglAvailable === true && canvasReady && !contextLost && !startupFailed);
+  }, [canvasReady, contextLost, onAvailabilityChange, startupFailed, webglAvailable]);
+
+  useEffect(() => {
+    if (webglAvailable !== true || canvasReady) return;
+    const timeout = window.setTimeout(() => setStartupFailed(true), 8_000);
+    return () => window.clearTimeout(timeout);
+  }, [canvasReady, webglAvailable]);
   // Calcul géométrique de la cabine pour la caméra
   const numRows = useMemo(() => computeNumRows(seatCapacity), [seatCapacity]);
   const rearWallZ = useMemo(() => -2.6 + numRows * 1.2, [numRows]);
@@ -271,8 +319,12 @@ export default function Scene({
   const tvPositions = useMemo(() => getTvPositions(numRows, TV_POSITION), [numRows]);
   const tvTargetZ = tvPositions[getActiveTvIndex(tvPositions, clampedRow)][2];
 
+  const fallback = <SceneFallback onReadTheory={onReadTheory} onReadVideo={onReadVideo} />;
+  if (webglAvailable === false || startupFailed) return fallback;
+  if (webglAvailable === null) return <div role="status" className="absolute inset-0 grid place-items-center text-center text-[#07142b]">Préparation du voyage…</div>;
+
   return (
-    <SceneErrorBoundary>
+    <SceneErrorBoundary fallback={fallback} onFailure={() => setStartupFailed(true)}>
       <div className="absolute inset-0">
       <Canvas
       shadows={lowPower ? false : "basic"}
@@ -282,7 +334,7 @@ export default function Scene({
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
       onCreated={() => setCanvasReady(true)}
-      fallback={<div aria-hidden={canvasReady}><SceneFallback /></div>}
+      fallback={null}
     >
       <WebGLContextGuard setLost={setContextLost} />
       <CappedFrameLoop paused={renderPaused} />
@@ -308,6 +360,7 @@ export default function Scene({
           reducedMotion={reducedMotion}
           lowPower={lowPower}
           playbackSuspended={playbackSuspended}
+          audioMuted={audioMuted}
         />
       </Suspense>
       <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} />
@@ -320,10 +373,11 @@ export default function Scene({
         currentSeatZ={currentSeatZ}
         tvTargetZ={tvTargetZ}
         reducedMotion={reducedMotion}
+        resetViewToken={resetViewToken}
       />
       </Canvas>
       {contextLost && (
-        <SceneFallback reason="Le moteur graphique a été suspendu par l’appareil. Le contexte WebGL est en cours de restauration ; vous pouvez aussi relancer l’expérience." />
+        <SceneFallback onReadTheory={onReadTheory} onReadVideo={onReadVideo} reason="Le moteur graphique a été suspendu. Vous pouvez lire la théorie pendant sa restauration." />
       )}
       </div>
     </SceneErrorBoundary>

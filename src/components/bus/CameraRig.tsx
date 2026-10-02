@@ -16,6 +16,7 @@ interface Props {
   currentSeatZ?: number;
   tvTargetZ?: number;
   reducedMotion?: boolean;
+  resetViewToken?: number;
 }
 
 const TRANSITION_TIME = 1.8;
@@ -34,6 +35,7 @@ export default function CameraRig({
   currentSeatZ,
   tvTargetZ = TV_POSITION.z,
   reducedMotion = false,
+  resetViewToken = 0,
 }: Props) {
   const { camera, gl } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
@@ -57,6 +59,7 @@ export default function CameraRig({
   const pinchStartFovRef = useRef<number>(55);
   const phaseRef = useRef<Phase>(phase);
   const preparedPhaseRef = useRef<Phase | null>(null);
+  const lastResetToken = useRef(resetViewToken);
   const arrivedRef = useRef(onArrived);
   useEffect(() => {
     arrivedRef.current = onArrived;
@@ -79,6 +82,24 @@ export default function CameraRig({
   const maxOrbitDistance = useMemo(() => {
     return Math.max(32, cabinLength * 2.2);
   }, [cabinLength]);
+
+  useEffect(() => {
+    if (lastResetToken.current === resetViewToken) return;
+    lastResetToken.current = resetViewToken;
+    targetFovRef.current = 55;
+    skyPitchRef.current = 0;
+    if (phase === "outside" && controls.current) {
+      camera.position.copy(DEFAULT_CAMERA_POS);
+      controls.current.minPolarAngle = 0;
+      controls.current.target.set(0, 1.9, orbitTargetZ);
+      controls.current.update();
+    } else if (phase === "inside") {
+      const matrix = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
+      const rotation = new THREE.Euler().setFromRotationMatrix(matrix, "YXZ");
+      look.current.targetYaw = rotation.y;
+      look.current.targetPitch = rotation.x;
+    }
+  }, [activeEyePos, activeTvTarget, camera, orbitTargetZ, phase, resetViewToken]);
 
   const finishTransition = useCallback((destination: "inside" | "outside") => {
     const a = anim.current;
@@ -119,6 +140,11 @@ export default function CameraRig({
   // Prépare la transition à chaque changement de phase
   useEffect(() => {
     const phaseChanged = preparedPhaseRef.current !== phase;
+    if (phaseChanged) {
+      activePointersRef.current.clear();
+      pinchStartDistRef.current = null;
+      look.current.dragging = false;
+    }
     preparedPhaseRef.current = phase;
     phaseRef.current = phase;
     const a = anim.current;
@@ -198,7 +224,7 @@ export default function CameraRig({
     };
 
     const move = (e: PointerEvent) => {
-      if (phaseRef.current !== "inside") return;
+      if (phaseRef.current !== "inside" || !pointers.has(e.pointerId)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       if (pointers.size === 2 && pinchStartDistRef.current !== null && pinchStartDistRef.current > 0) {

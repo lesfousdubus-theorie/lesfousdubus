@@ -77,6 +77,7 @@ interface BusTvPlayerProps {
   isMutedForFullscreen: boolean;
   reducedMotion: boolean;
   playbackSuspended: boolean;
+  audioMuted: boolean;
 }
 
 export function BusTvPlayer({
@@ -87,6 +88,7 @@ export function BusTvPlayer({
   isMutedForFullscreen,
   reducedMotion,
   playbackSuspended,
+  audioMuted,
 }: BusTvPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mountElement, setMountElement] = useState<HTMLDivElement | null>(null);
@@ -102,6 +104,7 @@ export function BusTvPlayer({
     hasEntered,
     isMutedForFullscreen,
     playbackSuspended,
+    audioMuted,
   });
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const [apiFailed, setApiFailed] = useState(false);
@@ -161,7 +164,12 @@ export function BusTvPlayer({
       }
 
       const targetVolume = desired.phase === "outside" || desired.phase === "exiting" ? 25 : 100;
-      rampVolume(targetVolume, desired.phase === "entering" || desired.phase === "exiting" ? 900 : 300);
+      if (desired.audioMuted) {
+        if (volumeTimerRef.current !== null) window.clearTimeout(volumeTimerRef.current);
+        player.mute();
+      } else {
+        rampVolume(targetVolume, desired.phase === "entering" || desired.phase === "exiting" ? 900 : 300);
+      }
       player.playVideo();
     } catch {
       playerRef.current = null;
@@ -178,6 +186,7 @@ export function BusTvPlayer({
       hasEntered,
       isMutedForFullscreen,
       playbackSuspended,
+      audioMuted,
     };
     if (hasEntered && warmingRef.current) {
       warmingRef.current = false;
@@ -187,7 +196,7 @@ export function BusTvPlayer({
       }
     }
     applyDesiredPlayback();
-  }, [tvOn, phase, hasEntered, isMutedForFullscreen, playbackSuspended, applyDesiredPlayback]);
+  }, [tvOn, phase, hasEntered, isMutedForFullscreen, playbackSuspended, audioMuted, applyDesiredPlayback]);
 
   useEffect(() => {
     let cancelled = false;
@@ -326,8 +335,11 @@ export function BusTvPlayer({
       }
       warmingRef.current = false;
       try {
-        player.unMute();
-        player.setVolume(100);
+        if (desiredRef.current.audioMuted) player.mute();
+        else {
+          player.unMute();
+          player.setVolume(100);
+        }
         player.playVideo();
         setAutoplayBlocked(false);
       } catch {

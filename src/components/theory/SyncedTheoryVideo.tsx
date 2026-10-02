@@ -4,11 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
 import { loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
 
-export default function SyncedTheoryVideo() {
+export default function SyncedTheoryVideo({ active = true }: { active?: boolean }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    if (!active) playerRef.current?.pauseVideo();
+  }, [active]);
 
   useEffect(() => {
     let cancelled = false;

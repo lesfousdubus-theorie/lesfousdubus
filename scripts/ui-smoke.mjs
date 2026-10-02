@@ -153,6 +153,8 @@ try {
     if (firstViewport) {
       await send("Page.navigate", { url: `${baseUrl}/?count=12` });
       firstViewport = false;
+      await waitForPageCondition(send, `document.querySelector('[data-scene-available="true"]')`, "Ready 3D scene");
+      await evaluate(send, `(() => { const welcome = [...document.querySelectorAll('button')].find(el => el.textContent?.includes('C’est parti !')); welcome?.click(); })()`);
     } else {
       await sleep(200);
     }
@@ -200,7 +202,7 @@ try {
           controlHeights: {
             speed: document.querySelector(".bus-speed")?.getBoundingClientRect().height ?? 0,
             dayNight: document.querySelector(".bus-day-night")?.getBoundingClientRect().height ?? 0,
-            exterior: document.querySelector(".bus-exterior-controls button")?.getBoundingClientRect().height ?? 0,
+            exterior: [...document.querySelectorAll(".bus-exterior-controls button")].find(visible)?.getBoundingClientRect().height ?? 0,
             speedButtons: [...document.querySelectorAll(".bus-speed button")].map((button) => button.getBoundingClientRect().height),
             speedFillGaps: [...document.querySelectorAll(".bus-speed button")].map((button) => {
               const buttonRect = button.getBoundingClientRect();
@@ -256,7 +258,7 @@ try {
 
     await evaluate(send, `
       (() => {
-        const button = document.querySelector('button[aria-label="Fermer la fenêtre"]');
+        const button = document.querySelector('[role="dialog"] button[aria-label="Fermer"]');
         button?.click();
       })()
     `);
@@ -352,7 +354,7 @@ try {
   const inside = await evaluate(interactionSend, `
     (() => ({
       phase: document.querySelector("[data-phase]")?.getAttribute("data-phase"),
-      youtubeIframes: document.querySelectorAll('iframe[src*="youtube.com"], iframe[src*="youtube-nocookie.com"]').length,
+      youtubeIframes: document.querySelectorAll('#tv-frame iframe[src*="youtube.com"], #tv-frame iframe[src*="youtube-nocookie.com"]').length,
       hasTvFrame: Boolean(document.getElementById("tv-frame")),
       hasPrimaryIframe: Boolean(document.getElementById("tv-primary-iframe")),
       hasPlayerMount: Boolean(document.querySelector("[data-bus-youtube-player]")),

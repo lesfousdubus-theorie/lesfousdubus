@@ -28,7 +28,7 @@ export function PassengerCard({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto overscroll-contain bg-[#020617]/70 p-2 backdrop-blur-sm sm:p-4"
+      className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto overscroll-contain bg-[#020617]/70 p-2 backdrop-blur-sm sm:p-4"
       role="presentation"
       onKeyDown={handleKeyDown}
       onMouseDown={(event) => {
@@ -41,7 +41,7 @@ export function PassengerCard({
         role="dialog"
         aria-modal="true"
         aria-labelledby="passenger-name"
-        className="my-auto max-h-[calc(100dvh-1rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-[1.5rem] border border-[#ffd23f]/65 bg-[#081127] p-4 text-white shadow-[0_25px_80px_rgba(0,0,0,0.65)] sm:max-h-[calc(100dvh-2rem)] sm:p-6"
+        className="bus-modal-card my-auto w-full max-w-md overflow-y-auto overscroll-contain rounded-[1.5rem] border border-[#ffd23f]/65 bg-[#081127] p-4 text-white shadow-[0_25px_80px_rgba(0,0,0,0.65)] sm:p-6"
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">

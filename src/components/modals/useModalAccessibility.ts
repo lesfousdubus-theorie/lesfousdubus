@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, type KeyboardEvent as ReactKeyboardEven
 const MODAL_FOCUSABLE_SELECTOR = [
   "a[href]", "button:not([disabled])", "input:not([disabled])", "select:not([disabled])",
   "textarea:not([disabled])", "[tabindex]:not([tabindex='-1'])",
+  "summary", "iframe",
 ].join(",");
 
 export function useModalAccessibility(
@@ -53,7 +54,8 @@ export function useModalAccessibility(
     if (event.key !== "Tab") return;
     const scope = dialogRef.current;
     if (!scope) return;
-    const focusable = Array.from(scope.querySelectorAll<HTMLElement>(MODAL_FOCUSABLE_SELECTOR));
+    const focusable = Array.from(scope.querySelectorAll<HTMLElement>(MODAL_FOCUSABLE_SELECTOR))
+      .filter((element) => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden" && !element.closest("[hidden], [inert]"));
     if (focusable.length === 0) {
       event.preventDefault();
       scope.focus();

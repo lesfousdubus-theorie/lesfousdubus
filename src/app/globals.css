@@ -45,6 +45,7 @@ body {
 }
 
 .theory-modal-backdrop {
+  --bus-modal-pad: 0.25rem;
   padding:
     max(0.25rem, env(safe-area-inset-top))
     max(0.25rem, env(safe-area-inset-right))
@@ -55,6 +56,7 @@ body {
 
 @media (min-width: 360px) {
   .theory-modal-backdrop {
+    --bus-modal-pad: 0.5rem;
     padding:
       max(0.5rem, env(safe-area-inset-top))
       max(0.5rem, env(safe-area-inset-right))
@@ -65,6 +67,7 @@ body {
 
 @media (min-width: 640px) {
   .theory-modal-backdrop {
+    --bus-modal-pad: 1.25rem;
     padding:
       max(1.25rem, env(safe-area-inset-top))
       max(1.25rem, env(safe-area-inset-right))
@@ -75,12 +78,54 @@ body {
 
 @media (min-width: 1024px) {
   .theory-modal-backdrop {
+    --bus-modal-pad: 2rem;
     padding:
       max(2rem, env(safe-area-inset-top))
       max(2rem, env(safe-area-inset-right))
       max(2rem, env(safe-area-inset-bottom))
       max(2rem, env(safe-area-inset-left));
   }
+}
+
+.bus-modal-backdrop {
+  --bus-modal-pad: 0.75rem;
+  padding:
+    max(var(--bus-modal-pad), env(safe-area-inset-top))
+    max(var(--bus-modal-pad), env(safe-area-inset-right))
+    max(var(--bus-modal-pad), env(safe-area-inset-bottom))
+    max(var(--bus-modal-pad), env(safe-area-inset-left));
+}
+
+.bus-modal-backdrop,
+.theory-modal-backdrop {
+  top: var(--bus-viewport-top, 0px);
+  bottom: auto;
+  height: var(--bus-viewport-height, 100dvh);
+  overscroll-behavior: contain;
+}
+
+.bus-modal-card,
+.theory-modal-window {
+  max-height: calc(var(--bus-viewport-height, 100dvh) - max(var(--bus-modal-pad), env(safe-area-inset-top)) - max(var(--bus-modal-pad), env(safe-area-inset-bottom)));
+}
+
+.bus-passenger-list {
+  max-height: min(72dvh, calc(var(--bus-viewport-height, 100dvh) - max(var(--bus-modal-pad), env(safe-area-inset-top)) - max(var(--bus-modal-pad), env(safe-area-inset-bottom))));
+}
+
+.bus-scene-fallback {
+  top: calc(4.75rem + env(safe-area-inset-top));
+  bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+}
+
+.bus-app[data-scene-available="false"] .bus-day-night {
+  bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important;
+}
+
+@media (min-width: 640px) {
+  .bus-modal-backdrop { --bus-modal-pad: 1.5rem; }
 }
 
 /* Les contrôles respectent les encoches, Dynamic Island et barres d'accueil. */
@@ -91,10 +136,17 @@ body {
 }
 
 .bus-title-panel {
+  top: calc(4.75rem + env(safe-area-inset-top)) !important;
   left: calc(0.75rem + env(safe-area-inset-left)) !important;
 }
 
+.bus-app[data-phase="inside"] .bus-title-panel,
+.bus-app[data-phase="exiting"] .bus-title-panel {
+  top: calc(8.25rem + env(safe-area-inset-top)) !important;
+}
+
 .bus-row-nav {
+  top: calc(4.75rem + env(safe-area-inset-top)) !important;
   right: calc(0.75rem + env(safe-area-inset-right)) !important;
 }
 
@@ -122,10 +174,17 @@ body {
   }
 
   .bus-title-panel {
+    top: calc(1rem + env(safe-area-inset-top)) !important;
     left: calc(1rem + env(safe-area-inset-left)) !important;
   }
 
+  .bus-app[data-phase="inside"] .bus-title-panel,
+  .bus-app[data-phase="exiting"] .bus-title-panel {
+    top: calc(1rem + env(safe-area-inset-top)) !important;
+  }
+
   .bus-row-nav {
+    top: calc(6.25rem + env(safe-area-inset-top)) !important;
     right: calc(1rem + env(safe-area-inset-right)) !important;
   }
 
@@ -167,6 +226,15 @@ body {
   .bus-title-panel {
     top: calc(0.35rem + env(safe-area-inset-top)) !important;
     max-width: 36vw !important;
+  }
+
+  .bus-app[data-phase="inside"] .bus-title-panel,
+  .bus-app[data-phase="exiting"] .bus-title-panel {
+    top: calc(0.35rem + env(safe-area-inset-top)) !important;
+  }
+
+  .bus-title-panel > div:first-child {
+    display: none !important;
   }
 
   .bus-title-panel h1,

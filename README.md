@@ -40,20 +40,24 @@ Tournez autour du bus pour admirer les cinq slogans de la théorie tagués au sp
 5. **« Tout est une question de timing »**
 
 ### 💡 5. Klaxonner et allumer les phares
-- Cliquez sur **Klaxonner** pour faire retentir le célèbre *TUUUT !* avec rebond du chapeau de paille.
-- Cliquez sur **Phares** pour allumer de puissants faisceaux lumineux.
+- Ouvrez **Commandes** pour klaxonner ou allumer les phares. Sur ordinateur, ces boutons sont aussi disponibles directement à l’extérieur.
+- Le bouton **Son** coupe les effets et la télévision du bus. Ce choix est conservé pour la prochaine visite.
 
 ### 🌙 6. Passer du Jour à la Nuit
-Un cycle jour/nuit automatique fait voyager le bus du grand soleil jusqu'à la nuit étoilée. Vous pouvez aussi changer manuellement entre **Jour** et **Nuit** d'un simple clic sur le bouton en bas à gauche.
+Un cycle jour/nuit automatique fait voyager le bus du grand soleil jusqu'à la nuit étoilée. Dans **Commandes**, choisissez **Auto**, **Jour** ou **Nuit**.
 
 ### 📜 7. Découvrir le dossier complet de la théorie
 Cliquez sur le bouton **« 📜 La Théorie »** en haut à gauche pour ouvrir le dossier complet expliquant la thèse centrale, la vidéo du Mont Corvo et la FAQ sur l'origine du site et du convoi des Fous du Bus.
+Le sommaire donne accès aux étapes du dossier. La position de lecture et les cartes ouvertes sont conservées en changeant d’onglet ou en fermant la fenêtre. La vidéo de la théorie reste indépendante de la TV du bus et se met en pause quand elle est masquée.
+
+Si la 3D est indisponible, **Lire la théorie** et **Voir la vidéo** restent accessibles.
 
 ---
 
 ## 🎮 Comment naviguer sur le site ?
 
 ### Avec la souris ou au doigt (sur smartphone / tablette) :
+- Le bouton **Aide** présente les gestes. **Commandes** permet de recentrer la vue, de revenir à sa place et de supprimer sa place avec confirmation. **Sortir** conserve la place et le profil.
 - **Faire pivoter la vue** : cliquez et glissez pour tourner à 360° autour du minibus. Glissez vers le haut de l'écran au-delà de l'horizon pour regarder jusqu'au ciel au-dessus de vous ; glissez vers le bas pour retrouver la vue sur le bus.
 - **Zoomer / Dézoomer** : utilisez la molette de votre souris (ou écartez deux doigts sur mobile).
 - **Dans le bus** : glissez votre souris pour regarder autour de vous dans la cabine, et utilisez les flèches **◀ Rangée ▶** pour vous déplacer d'avant en arrière le long de l'allée.
@@ -97,7 +101,10 @@ npm run build:next -- --webpack
 ```
 
 `npm test` utilise une base D1 temporaire pour ses scénarios de places et ne
-modifie pas les passagers de la base locale. Le test d'interface `npm run test:ui`
+modifie pas les passagers de la base locale. Il couvre aussi les sauvegardes de
+profil, les fenêtres, la reprise de lecture, le son, les erreurs de synchronisation
+et le secours WebGL dans un DOM simulé, avec les services externes remplacés.
+Le test d'interface `npm run test:ui`
 nécessite que `npm run dev` ou `npm run start` tourne dans un autre terminal ;
 il vérifie notamment les tailles et le centrage des commandes sur téléphone et
 ordinateur. Tous les contrôles sont lancés localement avant le déploiement ;
