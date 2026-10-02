@@ -11,7 +11,7 @@
     "deploy": "npm run deploy:preflight && npm run build && npm run db:migrate:remote && opennextjs-cloudflare deploy",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "start": "next start",
-    "test": "node scripts/test-seat-reuse.mjs && node scripts/test-tv-layout.mjs && node scripts/test-bus-wipers.mjs && node scripts/test-bus-front.mjs && node scripts/static-regression.mjs",
+    "test": "node scripts/test-seat-reuse.mjs && node scripts/test-tv-layout.mjs && node scripts/test-bus-wipers.mjs && node scripts/test-bus-front.mjs && node scripts/static-regression.mjs && node scripts/test-ui-state.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:ui": "node scripts/ui-smoke.mjs"
@@ -34,6 +34,7 @@
     "esbuild": "^0.25.12",
     "eslint": "9.39.4",
     "eslint-config-next": "^16.3.4",
+    "jsdom": "^26.1.0",
     "postcss": "8.5.28",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",

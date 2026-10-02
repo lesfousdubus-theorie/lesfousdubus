@@ -33,11 +33,11 @@ export function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: 
   ] as const;
 
   return createPortal(
-    <div className="fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto overscroll-contain bg-[#020617]/30 p-2 backdrop-blur-[2px] sm:p-4" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="theory-age-title" className="flex max-h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/55 bg-[#081127]/96 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)] sm:max-h-[calc(100dvh-2rem)]">
+    <div className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto overscroll-contain bg-[#020617]/70 p-2 backdrop-blur-sm sm:p-4" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="theory-age-title" className="bus-modal-card flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/55 bg-[#081127] text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
         <header className="flex shrink-0 items-start justify-between gap-4 border-b border-white/10 px-4 py-3 sm:px-6 sm:py-5">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ffd23f]">Première mention de la théorie</p>
+            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#ffd23f]">Première mention de la théorie</p>
             <h2 ref={titleRef} tabIndex={-1} id="theory-age-title" className="mt-1 text-xl font-black focus:outline-none sm:text-2xl">
               26 mai 2024 <span className="text-[#b9c7e8]">· </span>
               <a
@@ -59,7 +59,7 @@ export function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: 
             {values.map(([label, value]) => (
               <div key={label} className="rounded-xl border border-white/10 bg-white/[0.055] p-3 sm:p-4">
                 <div className="break-all text-lg font-black tabular-nums text-white sm:text-xl">{value.toLocaleString("fr-FR")}</div>
-                <div className="mt-1 text-[10px] font-black uppercase tracking-[0.13em] text-[#ffd23f]">{label}</div>
+                <div className="mt-1 text-xs font-black uppercase tracking-[0.08em] text-[#ffd23f]">{label}</div>
               </div>
             ))}
           </div>

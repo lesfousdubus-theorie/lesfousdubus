@@ -6,7 +6,7 @@ import SyncedTheoryVideo from "./SyncedTheoryVideo";
 
 export type TheoryTab = "thesis" | "video" | "faq" | "participate";
 
-export default function TheoryPanelContent({ activeTab }: { activeTab: TheoryTab }) {
+export default function TheoryPanelContent({ activeTab, isActive = true }: { activeTab: TheoryTab; isActive?: boolean }) {
   return (
     <>
       {/* 1. ONGLET THÈSE */}
@@ -24,7 +24,7 @@ export default function TheoryPanelContent({ activeTab }: { activeTab: TheoryTab
                 agrandit le convoi.
               </p>
             </div>
-            <span className="shrink-0 rounded-full border border-[#7dd3fc]/60 bg-[#07131f] px-4 py-2 text-xs font-black uppercase text-[#a5e4ff]">
+            <span className="shrink-0 text-sm font-bold text-[#a5e4ff]">
               🚌 Tous à bord
             </span>
           </aside>
@@ -47,7 +47,7 @@ export default function TheoryPanelContent({ activeTab }: { activeTab: TheoryTab
             <p className="max-w-4xl text-sm font-semibold leading-relaxed text-[#ffd23f] sm:text-[15px]">
               {CENTRAL_THESIS.subtitle}
             </p>
-            <p className="max-w-4xl text-sm leading-7 text-[#f1f4f8] sm:text-[15px]">
+            <p className="max-w-[75ch] text-base leading-7 text-[#f1f4f8]">
               {CENTRAL_THESIS.overview}
             </p>
           </section>
@@ -70,22 +70,36 @@ export default function TheoryPanelContent({ activeTab }: { activeTab: TheoryTab
             </div>
           </div>
 
+          <nav aria-label="Sommaire de la théorie" className="rounded-xl border border-white/20 bg-[#101827] p-4">
+            <details>
+              <summary className="flex min-h-11 cursor-pointer items-center text-base font-bold text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">Sommaire des {FULL_THEORY_SECTIONS.length} axes</summary>
+              <div className="mt-3 grid gap-1 sm:grid-cols-2">
+                {FULL_THEORY_SECTIONS.map((section, index) => <a key={section.title} href={`#theory-detail-${index}-desktop`} className="flex min-h-11 items-center rounded-lg px-2 py-2 text-sm text-white/90 underline-offset-4 hover:bg-white/10 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]" onClick={(event) => {
+                  event.preventDefault();
+                  const layout = window.matchMedia("(min-width: 640px)").matches ? "desktop" : "mobile";
+                  const target = document.getElementById(`theory-detail-${index}-${layout}`) as HTMLDetailsElement | null;
+                  if (target) { target.open = true; target.scrollIntoView({ block: "start" }); target.querySelector("summary")?.focus({ preventScroll: true }); }
+                }}>{section.title}</a>)}
+              </div>
+            </details>
+          </nav>
+
           {/* Mobile : ordre naturel. Desktop : deux piles indépendantes,
               pour qu'ouvrir une carte à gauche ne décale jamais la colonne de droite. */}
           <section className="space-y-3 sm:hidden">
-            {FULL_THEORY_SECTIONS.map((section) => (
-              <TheoryDetailCard key={section.title} section={section} />
+            {FULL_THEORY_SECTIONS.map((section, index) => (
+              <TheoryDetailCard key={section.title} section={section} id={`theory-detail-${index}-mobile`} />
             ))}
           </section>
           <section className="hidden items-start gap-3 sm:grid sm:grid-cols-2">
             <div className="space-y-3">
-              {FULL_THEORY_SECTIONS.slice(0, Math.ceil(FULL_THEORY_SECTIONS.length / 2)).map((section) => (
-                <TheoryDetailCard key={section.title} section={section} />
+              {FULL_THEORY_SECTIONS.slice(0, Math.ceil(FULL_THEORY_SECTIONS.length / 2)).map((section, index) => (
+                <TheoryDetailCard key={section.title} section={section} id={`theory-detail-${index}-desktop`} />
               ))}
             </div>
             <div className="space-y-3">
-              {FULL_THEORY_SECTIONS.slice(Math.ceil(FULL_THEORY_SECTIONS.length / 2)).map((section) => (
-                <TheoryDetailCard key={section.title} section={section} />
+              {FULL_THEORY_SECTIONS.slice(Math.ceil(FULL_THEORY_SECTIONS.length / 2)).map((section, index) => (
+                <TheoryDetailCard key={section.title} section={section} id={`theory-detail-${index + Math.ceil(FULL_THEORY_SECTIONS.length / 2)}-desktop`} />
               ))}
             </div>
           </section>
@@ -104,7 +118,7 @@ export default function TheoryPanelContent({ activeTab }: { activeTab: TheoryTab
                 Vidéo fondatrice de la théorie
               </span>
             </div>
-            <SyncedTheoryVideo />
+            <SyncedTheoryVideo active={isActive} />
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10">
               <span className="text-xs text-white/80">
@@ -188,17 +202,19 @@ export default function TheoryPanelContent({ activeTab }: { activeTab: TheoryTab
 
 function TheoryDetailCard({
   section,
+  id,
 }: {
   section: (typeof FULL_THEORY_SECTIONS)[number];
+  id: string;
 }) {
   return (
-    <details className="group rounded-xl border border-white/20 bg-[#101827] p-4 transition hover:border-white/35 hover:bg-[#142033] open:border-[#ffd23f]/60 open:bg-[#1c1d19] sm:p-5">
+    <details id={id} className="group scroll-mt-4 rounded-xl border border-white/20 bg-[#101827] p-4 transition hover:border-white/35 hover:bg-[#142033] open:border-[#ffd23f]/60 open:bg-[#1c1d19] sm:p-5">
       <summary className="flex min-h-11 cursor-pointer list-none items-start gap-3 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1220]">
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050912] text-lg shadow-inner shadow-white/5">
           {section.icon}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-bold leading-snug text-white group-open:text-[#ffd23f]">
+          <span className="block text-base font-bold leading-snug text-white group-open:text-[#ffd23f]">
             {section.title}
           </span>
         </span>
@@ -206,7 +222,7 @@ function TheoryDetailCard({
           ▼
         </span>
       </summary>
-      <p className="mt-4 border-t border-white/20 pt-4 text-sm leading-7 text-[#e4e9f0]">
+      <p className="mt-4 max-w-[75ch] border-t border-white/20 pt-4 text-base leading-7 text-[#e4e9f0]">
         {section.summary}
       </p>
     </details>

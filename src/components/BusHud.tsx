@@ -15,6 +15,7 @@ interface BusHudProps {
   hidden: boolean;
   toast: ToastMessage | null;
   passengerManifestButtonRef: RefObject<HTMLButtonElement | null>;
+  helpButtonRef: RefObject<HTMLButtonElement | null>;
   statsLoadError: boolean;
   count: number | null;
   numRows: number;
@@ -30,14 +31,19 @@ interface BusHudProps {
   tvOn: boolean;
   joining: boolean;
   busy: boolean;
-  setShowTheoryModal: Dispatch<SetStateAction<boolean>>;
+  openTheory: () => void;
   setShowTheoryAge: Dispatch<SetStateAction<boolean>>;
   setStatsLoadError: Dispatch<SetStateAction<boolean>>;
   setStatsRetryToken: Dispatch<SetStateAction<number>>;
   setSeatRow: Dispatch<SetStateAction<number>>;
   setTvOn: Dispatch<SetStateAction<boolean>>;
   openPassengerManifest: () => void;
-  toggleDayNight: () => void;
+  openSettings: () => void;
+  openHelp: () => void;
+  soundMuted: boolean;
+  toggleSound: () => void;
+  sceneAvailable: boolean;
+  registrationPending: boolean;
   decelerateBus: () => void;
   accelerateBus: () => void;
   toggleHeadlights: () => void;
@@ -48,12 +54,13 @@ interface BusHudProps {
 }
 
 export function BusHud({
-  phase, hidden, toast, passengerManifestButtonRef, statsLoadError, count,
+  phase, hidden, toast, passengerManifestButtonRef, helpButtonRef, statsLoadError, count,
   numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow,
   exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
-  tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, setStatsLoadError,
+  tvOn, joining, busy, openTheory, setShowTheoryAge, setStatsLoadError,
   setStatsRetryToken, setSeatRow, setTvOn, openPassengerManifest,
-  toggleDayNight, decelerateBus, accelerateBus, toggleHeadlights, honk,
+  openSettings, openHelp, soundMuted, toggleSound, sceneAvailable, registrationPending,
+  decelerateBus, accelerateBus, toggleHeadlights, honk,
   enterBus, openProfileModal, exitBus,
 }: BusHudProps) {
   return (
@@ -81,18 +88,20 @@ export function BusHud({
         )}
 
         {/* Titre + zone (Responsive mobile) */}
-        <div className={`bus-title-panel pointer-events-none absolute left-3 max-w-[calc(100vw-1.5rem)] sm:left-4 sm:right-[25rem] sm:top-4 sm:max-w-none lg:right-auto lg:max-w-[60vw] ${phase === "inside" ? "top-[8.25rem]" : "top-[4.75rem]"}`}>
-          <h1 className={`break-words font-black uppercase leading-[1.08] tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,0.55)] text-sm sm:text-xl md:text-2xl lg:text-3xl ${phase === "inside" ? "hidden sm:block" : ""}`}>
+        <div className={`bus-title-panel pointer-events-none absolute left-3 max-w-[calc(100vw-1.5rem)] sm:left-4 sm:right-[25rem] sm:top-4 sm:max-w-none lg:right-auto lg:max-w-[60vw] ${!sceneAvailable ? "hidden" : ""} ${phase === "inside" ? "top-[8.25rem]" : "top-[4.75rem]"}`}>
+          <div className={`inline-block rounded-xl bg-[#07142b]/85 px-3 py-2 shadow-lg ${phase === "inside" ? "hidden sm:inline-block" : ""}`}>
+          <h1 className="break-words font-black uppercase leading-[1.08] tracking-tight text-base sm:text-xl md:text-2xl lg:text-3xl">
             <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
             <span className="text-white">des Fous du Bus</span>
           </h1>
-          <p className={`mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#ffd23f] drop-shadow sm:mt-1 sm:text-xs md:text-sm ${phase === "inside" ? "hidden sm:block" : ""}`}>
+          <p className="mt-1 text-xs font-bold uppercase tracking-[0.04em] text-[#ffd23f] md:text-sm">
             LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
           </p>
+          </div>
           <div className="mt-2 sm:mt-3">
             <button
               type="button"
-              onClick={() => setShowTheoryModal(true)}
+              onClick={openTheory}
               className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/75 px-4 text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer"
               title="Découvrir la théorie des Fous du Bus"
             >
@@ -104,46 +113,45 @@ export function BusHud({
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
         <div className="bus-top-stats bus-glass pointer-events-auto absolute left-3 right-3 top-3 flex h-[3.5rem] items-stretch justify-end gap-1 rounded-2xl border border-[#ffd23f]/40 bg-black/75 p-1 shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:top-4 sm:h-auto">
-          <button ref={passengerManifestButtonRef} type="button" onClick={statsLoadError && count === null ? () => {
+          <button ref={passengerManifestButtonRef} type="button" aria-label={statsLoadError ? `Synchronisation indisponible. Dernier compteur : ${count ?? "inconnu"}. Réessayer` : registrationPending || (joining && phase === "inside") ? "Attribution de ta place en cours. Réessayer la synchronisation" : undefined} title={statsLoadError ? "Le compteur n’est plus à jour. Réessayer la synchronisation" : registrationPending ? "L’attribution de ta place est en attente" : "Voir les passagers"} onClick={statsLoadError || registrationPending ? () => {
             setStatsLoadError(false);
             setStatsRetryToken((value) => value + 1);
           } : openPassengerManifest} className="group flex items-center gap-2 rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:gap-2.5 sm:px-3 sm:py-2">
             <span className="text-lg transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 motion-reduce:transform-none sm:text-2xl">🚌</span>
             <span>
               <span className="flex items-center gap-1 sm:gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffd23f]">
+                <span className="text-xs font-semibold uppercase tracking-[0.04em] text-[#ffd23f]">
                   Passagers
                 </span>
-                <span className="rounded-full bg-white/15 px-1.5 text-[10px] font-bold text-white/90">
+                <span className={`rounded-full bg-white/15 px-1.5 text-xs font-bold text-white/90 ${statsLoadError || registrationPending || joining ? "hidden" : "hidden min-[360px]:inline"}`}>
                   {numRows} r.
                 </span>
               </span>
-              <span className="block text-base font-black tabular-nums text-white sm:text-xl">
-                {count === null ? (statsLoadError ? "Réessayer" : "…") : count.toLocaleString("fr-FR")}
+              <span role={statsLoadError || registrationPending ? "status" : undefined} className="block text-base font-black tabular-nums text-white sm:text-xl">
+                {statsLoadError ? "Réessayer" : registrationPending || (joining && phase === "inside") ? "Place en attente" : count === null ? "…" : count.toLocaleString("fr-FR")}
               </span>
             </span>
           </button>
           <div className="my-1 w-px bg-white/20" aria-hidden="true" />
           <button type="button" onClick={() => setShowTheoryAge(true)} className="rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:px-3 sm:py-2" title="Voir le compteur précis depuis le 26 mai 2024">
-            <span className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#ffd23f] sm:text-[10px] sm:tracking-[0.12em]">
-              La théorie existe depuis
+            <span className="block text-xs font-semibold uppercase tracking-[0.04em] text-[#ffd23f]">
+              <span className="sm:hidden">Depuis</span><span className="hidden sm:inline">La théorie existe depuis</span>
             </span>
             <span className="block text-base font-black tabular-nums text-white sm:text-xl">
               {theoryAgeInDays.toLocaleString("fr-FR")}
-              <span className="ml-1 text-[10px] font-bold uppercase text-white/70 sm:text-xs">jours</span>
+              <span className="ml-1 text-xs font-bold text-white/85">jours</span>
             </span>
           </button>
         </div>
 
         {/* Bouton interactif Jour / Nuit */}
+        <div className="bus-day-night pointer-events-auto absolute bottom-[4.5rem] left-3 flex h-11 items-center gap-1.5 sm:bottom-4 sm:left-4">
         <button
           type="button"
-          onClick={toggleDayNight}
-          title={manualDayNight === null ? `Forcer le mode ${isNight ? "Jour" : "Nuit"}` : "Revenir au cycle automatique"}
-          aria-label={manualDayNight === null
-            ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
-            : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
-          className="bus-day-night bus-glass pointer-events-auto absolute bottom-[4.5rem] left-3 flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 bg-black/65 px-3 text-xs font-bold text-white shadow-lg backdrop-blur-md transition hover:border-[#ffd23f]/60 hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer sm:bottom-4 sm:left-4 sm:gap-2 sm:px-3.5 sm:text-sm"
+          onClick={openSettings}
+          title={`Commandes du bus · ${manualDayNight === null ? "Ambiance automatique" : isNight ? "Nuit" : "Jour"}`}
+          aria-haspopup="dialog"
+          className="bus-glass inline-flex h-11 items-center justify-center gap-1.5 rounded-full border border-white/30 bg-[#07142b]/90 px-3 text-xs font-bold text-white shadow-lg backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 sm:text-sm"
         >
           {isNight ? (
             <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
@@ -155,12 +163,14 @@ export function BusHud({
               <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           )}
-          <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
-          <span className="bus-day-night-detail text-white/85 text-[10px] sm:text-xs">· {manualDayNight === null ? (isNight ? "Nuit" : "Jour") : "Auto"}</span>
+          <span>Commandes</span>
         </button>
+        <button type="button" onClick={toggleSound} aria-pressed={soundMuted} aria-label={soundMuted ? "Activer le son du bus" : "Couper le son du bus"} className="bus-glass flex h-11 items-center justify-center gap-1.5 rounded-full border border-white/30 bg-[#07142b]/90 px-3 text-xs font-bold shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]"><span aria-hidden="true">{soundMuted ? "🔇" : "🔊"}</span><span>{soundMuted ? "Son coupé" : "Son"}</span></button>
+        <button ref={helpButtonRef} type="button" onClick={openHelp} aria-haspopup="dialog" className="bus-glass h-11 rounded-full border border-white/30 bg-[#07142b]/90 px-3 text-xs font-bold shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">Aide</button>
+        </div>
 
         {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
-        <div className="bus-speed bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex h-11 items-center gap-1 rounded-full bg-black/80 px-1.5 text-xs shadow-lg ring-1 ring-white/25 backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-3.5 sm:text-sm">
+        {sceneAvailable && <div className="bus-speed bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex h-11 items-center gap-1 rounded-full bg-black/80 px-1.5 text-xs shadow-lg ring-1 ring-white/25 backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-3.5 sm:text-sm">
           <button
             type="button"
             onClick={decelerateBus}
@@ -187,7 +197,7 @@ export function BusHud({
               {speedMultiplier.toFixed(1)}x
             </span>
             {speedMultiplier >= 2.0 && (
-              <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[10px] font-black uppercase text-[#0d2190]">
+              <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-xs font-black uppercase text-[#0d2190]">
                 Boost
               </span>
             )}
@@ -205,10 +215,10 @@ export function BusHud({
             <span className="relative">⚡</span>
             <span className="bus-speed-label relative">Accélérer</span>
           </button>
-        </div>
+        </div>}
 
         {/* Navigation entre les rangées quand on est à l'intérieur */}
-        {phase === "inside" && (
+        {phase === "inside" && sceneAvailable && (
           <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] flex flex-col items-end gap-1.5 sm:right-4 sm:top-[6.25rem] sm:gap-2">
             {/* Déplacement dans l'allée */}
             <div className="bus-glass flex h-11 items-center gap-1 rounded-2xl bg-black/80 px-1.5 shadow-lg ring-1 ring-white/25 backdrop-blur-md sm:px-3">
@@ -250,64 +260,59 @@ export function BusHud({
 
         {/* Barres persistantes : aucune commande ne se téléporte sous le pointeur. */}
         <div
-          aria-hidden={!exteriorControlsVisible}
-          className={`bus-exterior-controls pointer-events-none absolute bottom-[7.75rem] left-1/2 z-30 flex w-[calc(100vw-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:max-w-[42rem] sm:gap-2 xl:bottom-4 xl:left-[calc(50%-4.75rem)] ${
-            exteriorControlsVisible
+          aria-hidden={!exteriorControlsVisible || !sceneAvailable}
+          className={`bus-exterior-controls pointer-events-none absolute bottom-[7.75rem] left-1/2 z-30 flex w-[calc(100vw-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:max-w-[42rem] sm:gap-2 xl:bottom-4 ${
+            exteriorControlsVisible && sceneAvailable
               ? "translate-y-0 opacity-100"
               : "translate-y-2 opacity-0 [&_*]:!pointer-events-none"
           }`}
         >
-          <HudButton className="min-w-[96px] flex-1 sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={!exteriorControlsVisible}>
+          <HudButton className="hidden min-w-[96px] flex-1 sm:inline-flex sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={!exteriorControlsVisible || !sceneAvailable}>
             {headlights ? "Éteindre" : "Phares"}
           </HudButton>
-          <HudButton className="min-w-[104px] flex-1 sm:w-[112px] sm:flex-none" onClick={honk} icon="📯" disabled={!exteriorControlsVisible}>
+          <HudButton className="hidden min-w-[104px] flex-1 sm:inline-flex sm:w-[112px] sm:flex-none" onClick={honk} icon="📯" disabled={!exteriorControlsVisible || !sceneAvailable || soundMuted}>
             Klaxonner
           </HudButton>
           {hasEntered && phase === "outside" && (
             <div className="animate-[hud-control-in-flow_220ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none">
               <HudButton
-                className="w-[124px] sm:w-[132px]"
+                className="hidden w-[124px] sm:inline-flex sm:w-[132px]"
                 onClick={() => setTvOn((value) => !value)}
                 active={tvOn}
                 ariaLabel="Télévision"
                 icon="📺"
+                disabled={!exteriorControlsVisible || !sceneAvailable}
               >
                 {tvOn ? "Éteindre la TV" : "Allumer la TV"}
               </HudButton>
             </div>
           )}
-          <HudButton className="w-full sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={joining || phase !== "outside"}>
+          <HudButton className="w-full sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={joining || phase !== "outside" || !sceneAvailable}>
             {joining || phase === "entering" ? "Installation…" : "Entrer dans le bus"}
           </HudButton>
         </div>
 
         <div
-          aria-hidden={!interiorControlsVisible}
+          aria-hidden={!interiorControlsVisible || !sceneAvailable}
           className={`bus-interior-controls pointer-events-none absolute bottom-[7.75rem] left-1/2 flex w-[512px] max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:gap-2 xl:bottom-4 ${
-            interiorControlsVisible
+            interiorControlsVisible && sceneAvailable
               ? "translate-y-0 opacity-100"
               : "translate-y-2 opacity-0 [&_*]:!pointer-events-none"
           }`}
         >
           <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2">
-            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy || !interiorControlsVisible}>
-              <span className="hud-label-short sm:hidden">Prénom</span><span className="hud-label-long hidden sm:inline">Ajouter un prénom</span>
+            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy || joining || !interiorControlsVisible || !sceneAvailable}>
+              <span className="hud-label-short sm:hidden">Pseudo</span><span className="hud-label-long hidden sm:inline">Mon pseudo</span>
             </HudButton>
-            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("comment")} icon="💬" disabled={busy || !interiorControlsVisible}>
+            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("comment")} icon="💬" disabled={busy || joining || !interiorControlsVisible || !sceneAvailable}>
               <span className="hud-label-short sm:hidden">Commenter</span><span className="hud-label-long hidden sm:inline">Mettre un commentaire</span>
             </HudButton>
           </div>
-          <div className="grid w-full grid-cols-4 items-center gap-1.5 sm:grid-cols-[1.25fr_1fr_0.82fr_1.08fr] sm:gap-2">
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} ariaLabel="Télévision" icon="📺" disabled={busy || !interiorControlsVisible}>
+          <div className="grid w-full grid-cols-2 items-center gap-1.5 sm:gap-2">
+            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} icon="📺" disabled={busy || !interiorControlsVisible || !sceneAvailable}>
               <span className="hud-label-short sm:hidden">TV</span><span className="hud-label-long hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={busy || !interiorControlsVisible}>
-              {headlights ? "Éteindre" : "Phares"}
-            </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={honk} icon="📯" disabled={busy || !interiorControlsVisible}>
-              Klaxon
-            </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={exitBus} primary icon="🏝️" disabled={busy || !interiorControlsVisible}>
+            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={exitBus} primary icon="🏝️" disabled={busy || !interiorControlsVisible || !sceneAvailable}>
               <span className="hud-label-short sm:hidden">{phase === "exiting" ? "Descente…" : "Sortir"}</span><span className="hud-label-long hidden sm:inline">{phase === "exiting" ? "Descente…" : "Sortir du bus"}</span>
             </HudButton>
           </div>

@@ -16,12 +16,17 @@ import { PassengerListModal } from "./modals/PassengerListModal";
 import { TheoryAgeModal } from "./modals/TheoryAgeModal";
 import { getTheoryAgeInDays } from "@/lib/theory-age";
 import { useBusSync } from "./useBusSync";
+import { BusSettingsModal } from "./modals/BusSettingsModal";
+import { BusHelpModal } from "./modals/BusHelpModal";
+import { useVisualViewport } from "./useVisualViewport";
+import type { TheoryTab } from "./theory/TheoryPanelContent";
 
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
 
 const MAX_DEBUG_PASSENGERS = 10_000;
 
 export default function BusExperience() {
+  useVisualViewport();
   const [phase, setPhase] = useState<Phase>(() => {
     if (typeof window !== "undefined") {
       const p = new URLSearchParams(window.location.search).get("phase");
@@ -40,6 +45,12 @@ export default function BusExperience() {
     return false;
   });
   const [showTheoryModal, setShowTheoryModal] = useState(false);
+  const [theoryTab, setTheoryTab] = useState<TheoryTab>("thesis");
+  const [visitedTheoryTabs, setVisitedTheoryTabs] = useState<TheoryTab[]>(["thesis"]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [sceneAvailable, setSceneAvailable] = useState(false);
+  const [resetViewToken, setResetViewToken] = useState(0);
+  const [showHelp, setShowHelp] = useState(false);
   const [showPassengerList, setShowPassengerList] = useState(false);
   const [showTheoryAge, setShowTheoryAge] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -48,11 +59,22 @@ export default function BusExperience() {
   const [joinComment, setJoinComment] = useState("");
   const [joinError, setJoinError] = useState("");
   const [joining, setJoining] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [savedProfile, setSavedProfile] = useState(() => {
+    try { return { name: localStorage.getItem("fdb-display-name") ?? "", comment: localStorage.getItem("fdb-comment") ?? "" }; }
+    catch { return { name: "", comment: "" }; }
+  });
   const [passengerProfiles, setPassengerProfiles] = useState<PassengerProfile[]>([]);
   const [selectedPassenger, setSelectedPassenger] = useState<PassengerProfile | null>(null);
   const [passengerCardLoading, setPassengerCardLoading] = useState(false);
   const [passengerCardError, setPassengerCardError] = useState("");
-  const [currentPassengerSeatIndex, setCurrentPassengerSeatIndex] = useState<number | null>(null);
+  const [currentPassengerSeatIndex, setCurrentPassengerSeatIndex] = useState<number | null>(() => {
+    try {
+      const raw = localStorage.getItem("fdb-seat-index");
+      const index = Number(raw);
+      return raw !== null && Number.isSafeInteger(index) && index >= 0 ? index : null;
+    } catch { return null; }
+  });
   const [passengerManifest, setPassengerManifest] = useState<PassengerManifestEntry[]>([]);
   const [manifestLoading, setManifestLoading] = useState(false);
   const [manifestError, setManifestError] = useState("");
@@ -103,8 +125,11 @@ export default function BusExperience() {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const passengerManifestButtonRef = useRef<HTMLButtonElement>(null);
+  const helpButtonRef = useRef<HTMLButtonElement>(null);
   const passengerCardRequest = useRef<AbortController | null>(null);
   const manifestRequest = useRef<AbortController | null>(null);
+  const profileRequest = useRef<AbortController | null>(null);
+  const profileMutationLock = useRef(false);
   const registrationRetryDelayRef = useRef(10_000);
   const seatCapacityRef = useRef(seatCapacity);
   const profileRevisionRef = useRef(profileRevision);
@@ -120,8 +145,44 @@ export default function BusExperience() {
 
   const {
     headlights, hornPulse, speedMultiplier, isNight, manualDayNight,
-    toggleDayNight, accelerateBus, decelerateBus, toggleHeadlights, honk,
+    selectDayNight, soundMuted, toggleSound, accelerateBus, decelerateBus, toggleHeadlights, honk,
   } = useBusControls(phase, worldRef);
+
+  const rememberSeat = useCallback((seat: number | null) => {
+    setCurrentPassengerSeatIndex(seat);
+    try {
+      if (seat === null) localStorage.removeItem("fdb-seat-index");
+      else localStorage.setItem("fdb-seat-index", String(seat));
+    } catch { /* La place reste accessible pour cette visite. */ }
+  }, []);
+
+  const selectTheoryTab = useCallback((tab: TheoryTab) => {
+    setTheoryTab(tab);
+    setVisitedTheoryTabs((tabs) => tabs.includes(tab) ? tabs : [...tabs, tab]);
+  }, []);
+
+  const openTheory = useCallback((tab?: TheoryTab) => {
+    if (tab) selectTheoryTab(tab);
+    setShowTheoryModal(true);
+  }, [selectTheoryTab]);
+
+  const closeHelp = useCallback(() => {
+    setShowHelp(false);
+    try { localStorage.setItem("fdb-help-seen", "true"); } catch { /* L'aide reste disponible. */ }
+  }, []);
+
+  const overlayOpen = showTheoryModal || showJoinModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger) || showSettings || showHelp;
+
+  useEffect(() => {
+    if (!sceneAvailable || overlayOpen) return;
+    try { if (localStorage.getItem("fdb-help-seen") === "true") return; } catch { /* Afficher l'aide lors de cette visite. */ }
+    const frame = window.requestAnimationFrame(() => setShowHelp(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [overlayOpen, sceneAvailable]);
+
+  const closeProfile = useCallback(() => {
+    if (!profileMutationLock.current) setShowJoinModal(false);
+  }, []);
 
   // Affiche une notification festive
   const showToast = useCallback((text: string, sub?: string, badge?: string) => {
@@ -191,6 +252,7 @@ export default function BusExperience() {
     if (toastTimeout.current) clearTimeout(toastTimeout.current);
     passengerCardRequest.current?.abort();
     manifestRequest.current?.abort();
+    profileRequest.current?.abort();
   }, []);
 
   useBusSync({
@@ -207,7 +269,7 @@ export default function BusExperience() {
     showToast,
     registrationPending,
     registrationRetryDelayRef,
-    setCurrentPassengerSeatIndex,
+    setCurrentPassengerSeatIndex: rememberSeat,
     setRegistrationPending,
   });
 
@@ -226,7 +288,7 @@ export default function BusExperience() {
   // L'entrée et la lecture vidéo partent pendant le geste utilisateur, sans
   // attendre Cloudflare. L'inscription se synchronise ensuite en arrière-plan.
   const enterBus = useCallback(async () => {
-    if (phase !== "outside" || joining) return;
+    if (phase !== "outside" || joining || !sceneAvailable) return;
     dismissToast();
     unlockAudio();
     window.dispatchEvent(new Event("bus-tv-user-play"));
@@ -257,7 +319,8 @@ export default function BusExperience() {
       }
       applyBusSnapshot(d);
       setRegistrationPending(false);
-      setCurrentPassengerSeatIndex(d.seatIndex);
+      rememberSeat(d.seatIndex);
+      setSavedProfile({ name: d.passenger?.displayName === "Anonyme" ? "" : d.passenger?.displayName ?? "", comment: d.passenger?.comment ?? "" });
       if (d.seatIndex !== null) {
         setSeatRow(Math.min(computeNumRows(d.seatCapacity) - 1, Math.floor(d.seatIndex / 4)));
       }
@@ -285,26 +348,23 @@ export default function BusExperience() {
     } finally {
       setJoining(false);
     }
-  }, [applyBusSnapshot, dismissToast, phase, joining, showToast]);
+  }, [applyBusSnapshot, dismissToast, phase, joining, rememberSeat, sceneAvailable, showToast]);
 
   const openProfileModal = useCallback((mode: "name" | "comment") => {
-    try {
-      setJoinName(localStorage.getItem("fdb-display-name") ?? "");
-      setJoinComment(localStorage.getItem("fdb-comment") ?? "");
-    } catch {
-      setJoinName("");
-      setJoinComment("");
-    }
+    if (profileMutationLock.current) return;
+    setJoinName(savedProfile.name);
+    setJoinComment(savedProfile.comment);
     setProfileModalMode(mode);
     setJoinError("");
     setShowJoinModal(true);
-  }, []);
+  }, [savedProfile]);
 
   const submitProfile = useCallback(async () => {
+    if (profileMutationLock.current) return;
     const name = joinName.replace(/\s+/g, " ").trim();
     const comment = joinComment.replace(/\s+/g, " ").trim();
     if (profileModalMode === "name" && !name) {
-      setJoinError("Choisis un nom à afficher au-dessus de ton personnage.");
+      setJoinError("Choisis un pseudo à afficher au-dessus de ton personnage.");
       return;
     }
     if (profileModalMode === "comment" && !comment) {
@@ -312,7 +372,10 @@ export default function BusExperience() {
       return;
     }
 
-    setJoining(true);
+    profileMutationLock.current = true;
+    const controller = new AbortController();
+    profileRequest.current = controller;
+    setProfileSaving(true);
     setJoinError("");
     try {
       const visitorId = getOrCreateVisitorId();
@@ -328,8 +391,12 @@ export default function BusExperience() {
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
+      if (controller.signal.aborted) return;
       const acceptedSnapshot = applyBusSnapshot(data);
+      rememberSeat(data.seatIndex);
+      setSavedProfile((previous) => profileModalMode === "name" ? { ...previous, name } : { ...previous, comment });
       try {
         if (profileModalMode === "name") localStorage.setItem("fdb-display-name", name);
         if (profileModalMode === "comment") localStorage.setItem("fdb-comment", comment);
@@ -349,21 +416,28 @@ export default function BusExperience() {
       }
       setShowJoinModal(false);
       showToast(
-        profileModalMode === "name" ? "Prénom ajouté !" : "Message enregistré !",
+        profileModalMode === "name" ? "Pseudo enregistré !" : "Message enregistré !",
         profileModalMode === "name"
           ? "Il apparaît maintenant au-dessus de ton personnage."
           : "Il sera visible lorsqu’on cliquera sur ton personnage.",
         "✅ PROFIL",
       );
     } catch (error) {
+      if (controller.signal.aborted) return;
       setJoinError(error instanceof ApiError ? error.message : "Impossible d’enregistrer pour le moment. Réessaie dans quelques instants.");
     } finally {
-      setJoining(false);
+      profileMutationLock.current = false;
+      setProfileSaving(false);
+      profileRequest.current = null;
     }
-  }, [applyBusSnapshot, joinComment, joinName, profileModalMode, showToast]);
+  }, [applyBusSnapshot, joinComment, joinName, profileModalMode, rememberSeat, showToast]);
 
   const removeProfileField = useCallback(async () => {
-    setJoining(true);
+    if (profileMutationLock.current) return;
+    profileMutationLock.current = true;
+    const controller = new AbortController();
+    profileRequest.current = controller;
+    setProfileSaving(true);
     setJoinError("");
     try {
       const visitorId = getOrCreateVisitorId();
@@ -379,8 +453,12 @@ export default function BusExperience() {
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
+      if (controller.signal.aborted) return;
       const acceptedSnapshot = applyBusSnapshot(data);
+      rememberSeat(data.seatIndex);
+      setSavedProfile((previous) => profileModalMode === "name" ? { ...previous, name: "" } : { ...previous, comment: "" });
       try {
         localStorage.removeItem(profileModalMode === "name" ? "fdb-display-name" : "fdb-comment");
       } catch {
@@ -398,18 +476,21 @@ export default function BusExperience() {
       else setJoinComment("");
       setShowJoinModal(false);
       showToast(
-        profileModalMode === "name" ? "Prénom retiré" : "Commentaire retiré",
+        profileModalMode === "name" ? "Pseudo retiré" : "Commentaire retiré",
         profileModalMode === "name"
           ? "Tu gardes ta place dans le bus, sans étiquette publique."
-          : "Ton prénom reste affiché, mais ton message a été supprimé.",
+          : "Ton message a été supprimé. Ta place est conservée.",
         "✓ PROFIL",
       );
     } catch (error) {
+      if (controller.signal.aborted) return;
       setJoinError(error instanceof ApiError ? error.message : "Impossible de supprimer pour le moment. Réessaie dans quelques instants.");
     } finally {
-      setJoining(false);
+      profileMutationLock.current = false;
+      setProfileSaving(false);
+      profileRequest.current = null;
     }
-  }, [applyBusSnapshot, profileModalMode, showToast]);
+  }, [applyBusSnapshot, profileModalMode, rememberSeat, showToast]);
 
   const openPassengerCard = useCallback(async (summary: PassengerProfile) => {
     passengerCardRequest.current?.abort();
@@ -504,7 +585,8 @@ export default function BusExperience() {
       setJoinComment("");
       setTvOn(false);
       setHasEntered(false);
-      setCurrentPassengerSeatIndex(null);
+      rememberSeat(null);
+      setSavedProfile({ name: "", comment: "" });
       setShowTheoryModal(false);
       setPhase((current) => current === "inside" ? "exiting" : "outside");
       dismissToast();
@@ -512,7 +594,7 @@ export default function BusExperience() {
     } catch {
       return false;
     }
-  }, [applyBusSnapshot, dismissToast]);
+  }, [applyBusSnapshot, dismissToast, rememberSeat]);
 
   // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
   const exitBus = useCallback(() => {
@@ -550,7 +632,7 @@ export default function BusExperience() {
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
 
   return (
-    <div data-phase={phase} data-tv-on={tvOn ? "true" : "false"} className="bus-app fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
+    <div data-phase={phase} data-scene-available={sceneAvailable} data-tv-on={tvOn ? "true" : "false"} className="bus-app fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {toast ? [toast.badge, toast.text, toast.sub].filter(Boolean).join(". ") : ""}
       </div>
@@ -565,20 +647,26 @@ export default function BusExperience() {
         seatCapacity={seatCapacity}
         vacantSeatRanges={vacantSeatRanges}
         currentSeatRow={seatRow}
-        isMutedForFullscreen={showTheoryModal}
-        uiPaused={showTheoryModal}
+        isMutedForFullscreen={overlayOpen}
+        uiPaused={overlayOpen}
         hasEntered={hasEntered}
         passengerProfiles={passengerProfiles}
         currentPassengerSeatIndex={currentPassengerSeatIndex}
         onPassengerSelect={openPassengerCard}
         modeOverride={manualDayNight}
+        audioMuted={soundMuted}
+        resetViewToken={resetViewToken}
+        onAvailabilityChange={setSceneAvailable}
+        onReadTheory={() => openTheory("thesis")}
+        onReadVideo={() => openTheory("video")}
       />
 
       <BusHud
         phase={phase}
-        hidden={showTheoryModal || showJoinModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger)}
+        hidden={overlayOpen}
         toast={toast}
         passengerManifestButtonRef={passengerManifestButtonRef}
+        helpButtonRef={helpButtonRef}
         statsLoadError={statsLoadError}
         count={count}
         numRows={numRows}
@@ -594,14 +682,19 @@ export default function BusExperience() {
         tvOn={tvOn}
         joining={joining}
         busy={busy}
-        setShowTheoryModal={setShowTheoryModal}
+        openTheory={() => openTheory()}
         setShowTheoryAge={setShowTheoryAge}
         setStatsLoadError={setStatsLoadError}
         setStatsRetryToken={setStatsRetryToken}
         setSeatRow={setSeatRow}
         setTvOn={setTvOn}
         openPassengerManifest={openPassengerManifest}
-        toggleDayNight={toggleDayNight}
+        openSettings={() => setShowSettings(true)}
+        openHelp={() => setShowHelp(true)}
+        soundMuted={soundMuted}
+        toggleSound={toggleSound}
+        sceneAvailable={sceneAvailable}
+        registrationPending={registrationPending}
         decelerateBus={decelerateBus}
         accelerateBus={accelerateBus}
         toggleHeadlights={toggleHeadlights}
@@ -615,7 +708,9 @@ export default function BusExperience() {
       <TheoryModal
         isOpen={showTheoryModal}
         onClose={() => setShowTheoryModal(false)}
-        onLeaveBusPermanently={leaveBusPermanently}
+        activeTab={theoryTab}
+        visitedTabs={visitedTheoryTabs}
+        onTabChange={selectTheoryTab}
       />
       <JoinBusModal
         isOpen={showJoinModal}
@@ -623,10 +718,11 @@ export default function BusExperience() {
         name={joinName}
         comment={joinComment}
         error={joinError}
-        joining={joining}
-        onNameChange={setJoinName}
-        onCommentChange={setJoinComment}
-        onClose={() => setShowJoinModal(false)}
+        joining={profileSaving}
+        hasSavedValue={Boolean(profileModalMode === "name" ? savedProfile.name : savedProfile.comment)}
+        onNameChange={(value) => { setJoinName(value); setJoinError(""); }}
+        onCommentChange={(value) => { setJoinComment(value); setJoinError(""); }}
+        onClose={closeProfile}
         onSubmit={() => void submitProfile()}
         onRemove={() => void removeProfileField()}
       />
@@ -664,6 +760,32 @@ export default function BusExperience() {
         onClose={closePassengerManifest}
       />
       <TheoryAgeModal isOpen={showTheoryAge} onClose={() => setShowTheoryAge(false)} />
+      <BusHelpModal isOpen={showHelp} onClose={closeHelp} returnFocusRef={helpButtonRef} />
+      <BusSettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        sceneAvailable={sceneAvailable}
+        inside={phase === "inside"}
+        headlights={headlights}
+        tvOn={tvOn}
+        hasEntered={hasEntered}
+        soundMuted={soundMuted}
+        mode={manualDayNight}
+        hasSeat={currentPassengerSeatIndex !== null}
+        canReturnToSeat={currentPassengerSeatIndex !== null}
+        onModeChange={selectDayNight}
+        onHeadlights={toggleHeadlights}
+        onHonk={honk}
+        onTv={() => setTvOn((value) => !value)}
+        onSound={toggleSound}
+        onResetView={() => setResetViewToken((token) => token + 1)}
+        onReturnToSeat={() => {
+          if (currentPassengerSeatIndex !== null) setSeatRow(Math.min(numRows - 1, Math.floor(currentPassengerSeatIndex / 4)));
+          setResetViewToken((token) => token + 1);
+        }}
+        onHelp={() => setShowHelp(true)}
+        onLeave={leaveBusPermanently}
+      />
     </div>
   );
 }

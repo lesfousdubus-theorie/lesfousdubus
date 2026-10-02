@@ -1,7 +1,17 @@
 let ctx: AudioContext | null = null;
+let soundMuted = false;
+
+/** Préférence commune aux effets sonores du bus. */
+export function setBusSoundMuted(muted: boolean) {
+  soundMuted = muted;
+  if (muted) {
+    hornAudio?.pause();
+    void ctx?.suspend().catch(() => undefined);
+  }
+}
 
 function getCtx(): AudioContext | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined" || soundMuted) return null;
   if (!ctx) {
     const Ctor =
       window.AudioContext ||
@@ -22,7 +32,7 @@ let hornAudio: HTMLAudioElement | null = null;
 
 /** Joue le klaxon officiel One Piece (Luffy Eyecatcher - Grand Line). */
 export function playHorn() {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || soundMuted) return;
   try {
     if (!hornAudio) {
       hornAudio = new Audio("/sounds/horn.mp3");

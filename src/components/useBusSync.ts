@@ -21,7 +21,7 @@ interface BusSyncOptions {
   showToast: (text: string, sub?: string, badge?: string) => void;
   registrationPending: boolean;
   registrationRetryDelayRef: RefObject<number>;
-  setCurrentPassengerSeatIndex: Dispatch<SetStateAction<number | null>>;
+  setCurrentPassengerSeatIndex: (seat: number | null) => void;
   setRegistrationPending: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -78,11 +78,16 @@ export function useBusSync({
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | null = null;
     let stopped = false;
+    let running = false;
+    const controller = new AbortController();
 
     const poll = async () => {
-      if (stopped || document.hidden) return;
+      if (stopped || document.hidden || running) return;
+      running = true;
       try {
-        const d = await fetchJson<BusApiState>("/api/bus-entries");
+        const d = await fetchJson<BusApiState>("/api/bus-entries", { signal: controller.signal });
+        if (stopped) return;
+        setStatsLoadError(false);
         const previousSeatCapacity = seatCapacityRef.current;
         const previousCount = countRef.current;
         if (!applyBusSnapshot(d, false)) return;
@@ -100,19 +105,22 @@ export function useBusSync({
             );
           } else {
             showToast(
-              "+1 Nakama à bord !",
+              `+${d.count - previousCount} Nakama${d.count - previousCount > 1 ? "s" : ""} à bord !`,
               `${d.count} passagers voyagent vers Laugh Tale`,
               "⚡ REJOINT",
             );
           }
         }
       } catch {
-        // ignore
+        if (!stopped) setStatsLoadError(true);
+      } finally {
+        running = false;
       }
     };
 
     const schedule = () => {
       if (timeout) clearTimeout(timeout);
+      if (stopped) return;
       if (!document.hidden) {
         timeout = setTimeout(async () => {
           await poll();
@@ -124,17 +132,23 @@ export function useBusSync({
       if (!document.hidden) void poll();
       schedule();
     };
+    const offline = () => setStatsLoadError(true);
 
     schedule();
     document.addEventListener("visibilitychange", refresh);
     window.addEventListener("focus", refresh);
+    window.addEventListener("online", refresh);
+    window.addEventListener("offline", offline);
     return () => {
       stopped = true;
+      controller.abort();
       if (timeout) clearTimeout(timeout);
       document.removeEventListener("visibilitychange", refresh);
       window.removeEventListener("focus", refresh);
+      window.removeEventListener("online", refresh);
+      window.removeEventListener("offline", offline);
     };
-  }, [applyBusSnapshot, seatCapacityRef, setCount, showToast]);
+  }, [applyBusSnapshot, seatCapacityRef, setCount, setStatsLoadError, showToast]);
 
   // Si l'entrée a échoué temporairement, elle est rejouée avec un délai progressif.
   // Les refus permanents ne déclenchent pas une boucle de requêtes.
@@ -185,13 +199,13 @@ export function useBusSync({
       else if (timeout) clearTimeout(timeout);
     };
 
-    schedule(registrationRetryDelayRef.current);
+    schedule(statsRetryToken > 0 ? 0 : registrationRetryDelayRef.current);
     document.addEventListener("visibilitychange", resume);
     return () => {
       if (timeout) clearTimeout(timeout);
       document.removeEventListener("visibilitychange", resume);
       controller.abort();
     };
-  }, [applyBusSnapshot, registrationPending, registrationRetryDelayRef, setCurrentPassengerSeatIndex, setRegistrationPending, showToast]);
+  }, [applyBusSnapshot, registrationPending, registrationRetryDelayRef, setCurrentPassengerSeatIndex, setRegistrationPending, showToast, statsRetryToken]);
 
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
-import { playBoost, playDing, playHorn } from "@/lib/horn";
+import { playBoost, playDing, playHorn, setBusSoundMuted } from "@/lib/horn";
 import type { Phase, WorldState } from "./bus/constants";
 
 const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
@@ -27,20 +27,25 @@ export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>) {
 
   const [isNight, setIsNight] = useState(false);
   const [manualDayNight, setManualDayNight] = useState<"day" | "night" | null>(null);
+  const [soundMuted, setSoundMuted] = useState(() => {
+    try { return localStorage.getItem("fdb-sound-muted") === "true"; }
+    catch { return false; }
+  });
+
+  useEffect(() => {
+    setBusSoundMuted(soundMuted);
+    try { localStorage.setItem("fdb-sound-muted", String(soundMuted)); } catch { /* Mémoire locale optionnelle. */ }
+  }, [soundMuted]);
+
+  const toggleSound = useCallback(() => setSoundMuted((muted) => !muted), []);
+  const selectDayNight = useCallback((mode: "day" | "night" | null) => {
+    setManualDayNight(mode);
+    if (mode !== null) setIsNight(mode === "night");
+  }, []);
 
   // Références pour les phares automatiques jour / nuit
   const prevIsNight = useRef(false);
   const manualHeadlightsRef = useRef<boolean | null>(null);
-
-  const toggleDayNight = useCallback(() => {
-    if (manualDayNight !== null) {
-      setManualDayNight(null);
-      return;
-    }
-    const nextMode = isNight ? "day" : "night";
-    setManualDayNight(nextMode);
-    setIsNight(nextMode === "night");
-  }, [isNight, manualDayNight]);
 
   // Synchronise en continu la vitesse du bus avec le moteur 3D
   useEffect(() => {
@@ -128,7 +133,7 @@ export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (
-        document.querySelector("[role='dialog']") ||
+        document.querySelector("[role='dialog'], [role='alertdialog']") ||
         document.activeElement?.tagName === "INPUT" ||
         document.activeElement?.tagName === "TEXTAREA"
       ) {
@@ -160,6 +165,7 @@ export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>) {
 
   return {
     headlights, hornPulse, speedMultiplier, isNight, manualDayNight,
-    toggleDayNight, accelerateBus, decelerateBus, toggleHeadlights, honk,
+    selectDayNight, soundMuted, toggleSound,
+    accelerateBus, decelerateBus, toggleHeadlights, honk,
   };
 }

@@ -38,20 +38,20 @@ export function PassengerListModal({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/30 p-4 backdrop-blur-[2px]" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="passenger-list-title" className="flex h-[72dvh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/50 bg-[#081127]/95 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+    <div className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center bg-[#020617]/70 p-4 backdrop-blur-sm" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="passenger-list-title" className="bus-passenger-list flex w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/50 bg-[#081127] text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
         <header className="flex items-center justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ffd23f]">Le convoi</p>
+            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#ffd23f]">Le convoi</p>
             <h2 ref={titleRef} tabIndex={-1} id="passenger-list-title" className="mt-0.5 text-xl font-black focus:outline-none">
               {count === null ? "Passagers" : `${count.toLocaleString("fr-FR")} passagers`}
             </h2>
           </div>
           <ModalCloseButton onClick={onClose} />
         </header>
-        <div className="relative flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4">
+        <div className="relative min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-4">
           {loading && passengers.length === 0 ? (
-            <div role="status" aria-live="polite" aria-atomic="true" className="absolute inset-0 grid place-items-center p-6">
+            <div role="status" aria-live="polite" aria-atomic="true" className="grid min-h-32 place-items-center p-6">
               <div className="flex flex-col items-center gap-3 text-center text-sm font-bold text-white/70">
                 <span aria-hidden="true" className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-[#ffd23f] motion-reduce:animate-none" />
                 Chargement des passagers…
@@ -64,7 +64,7 @@ export function PassengerListModal({
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ffd23f]/15 text-sm">👤</span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-black text-white">{passenger.displayName ?? "Anonyme"}</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">Place {passenger.seatIndex + 1}{passenger.hasComment ? " · Message" : ""}</span>
+                  <span className="text-xs font-semibold text-white/80">Place {passenger.seatIndex + 1}{passenger.hasComment ? " · Message" : ""}</span>
                 </span>
               </button>
             ) : (
@@ -72,7 +72,7 @@ export function PassengerListModal({
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/[0.06] text-sm">👤</span>
                 <span>
                   <span className="block text-sm font-bold">Anonyme</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">Place {passenger.seatIndex + 1}</span>
+                  <span className="text-xs font-semibold text-white/80">Place {passenger.seatIndex + 1}</span>
                 </span>
               </div>
             ))}

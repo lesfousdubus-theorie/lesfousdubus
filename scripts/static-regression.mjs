@@ -44,7 +44,7 @@ assert.ok(
   experience.indexOf('window.dispatchEvent(new Event("bus-tv-user-play"))') < experience.indexOf('fetchJson<BusApiState & {', experience.indexOf("const enterBus")),
   "Playback must be requested before the registration request.",
 );
-assert.match(theoryContent, /<SyncedTheoryVideo\s*\/>/, "The theory modal must keep its dedicated video player.");
+assert.match(theoryContent, /<SyncedTheoryVideo\b[^>]*\/>/, "The theory modal must keep its dedicated video player.");
 assert.doesNotMatch(theoryContent, /Étape \{idx \+ 1\}/, "Theory cards must not display numbered step labels.");
 assert.match(theoryContent, /slice\(0, Math\.ceil[\s\S]*slice\(Math\.ceil/, "Desktop theory cards must use two independent sequential columns.");
 assert.doesNotMatch(theory, /modestbranding|cc_load_policy/, "Deprecated/forced YouTube parameters must stay removed.");

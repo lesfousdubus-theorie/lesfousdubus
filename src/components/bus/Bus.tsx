@@ -38,6 +38,7 @@ interface BusProps {
   reducedMotion?: boolean;
   lowPower?: boolean;
   playbackSuspended?: boolean;
+  audioMuted?: boolean;
 }
 
 const BLUE = "#154ddb";
@@ -63,6 +64,7 @@ export default function Bus({
   reducedMotion = false,
   lowPower = false,
   playbackSuspended = false,
+  audioMuted = false,
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
   const hat = useRef<THREE.Group>(null);
@@ -595,7 +597,8 @@ export default function Bus({
         hasEntered={hasEntered}
         isMutedForFullscreen={isMutedForFullscreen}
         reducedMotion={reducedMotion}
-        playbackSuspended={playbackSuspended}
+          playbackSuspended={playbackSuspended}
+          audioMuted={audioMuted}
       />
     </group>
   );
