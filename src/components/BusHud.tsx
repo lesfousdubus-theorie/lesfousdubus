@@ -15,6 +15,7 @@ interface BusHudProps {
   hidden: boolean;
   toast: ToastMessage | null;
   passengerManifestButtonRef: RefObject<HTMLButtonElement | null>;
+  helpButtonRef: RefObject<HTMLButtonElement | null>;
   statsLoadError: boolean;
   count: number | null;
   numRows: number;
@@ -53,7 +54,7 @@ interface BusHudProps {
 }
 
 export function BusHud({
-  phase, hidden, toast, passengerManifestButtonRef, statsLoadError, count,
+  phase, hidden, toast, passengerManifestButtonRef, helpButtonRef, statsLoadError, count,
   numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow,
   exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
   tvOn, joining, busy, openTheory, setShowTheoryAge, setStatsLoadError,
@@ -165,7 +166,7 @@ export function BusHud({
           <span>Commandes</span>
         </button>
         <button type="button" onClick={toggleSound} aria-pressed={soundMuted} aria-label={soundMuted ? "Activer le son du bus" : "Couper le son du bus"} className="bus-glass flex h-11 items-center justify-center gap-1.5 rounded-full border border-white/30 bg-[#07142b]/90 px-3 text-xs font-bold shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]"><span aria-hidden="true">{soundMuted ? "🔇" : "🔊"}</span><span>{soundMuted ? "Son coupé" : "Son"}</span></button>
-        <button type="button" onClick={openHelp} aria-haspopup="dialog" className="bus-glass h-11 rounded-full border border-white/30 bg-[#07142b]/90 px-3 text-xs font-bold shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">Aide</button>
+        <button ref={helpButtonRef} type="button" onClick={openHelp} aria-haspopup="dialog" className="bus-glass h-11 rounded-full border border-white/30 bg-[#07142b]/90 px-3 text-xs font-bold shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">Aide</button>
         </div>
 
         {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}

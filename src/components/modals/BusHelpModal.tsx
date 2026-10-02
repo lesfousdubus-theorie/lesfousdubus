@@ -1,13 +1,13 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { useModalAccessibility } from "./useModalAccessibility";
 import { ModalCloseButton } from "./ModalCloseButton";
 
-export function BusHelpModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export function BusHelpModal({ isOpen, onClose, returnFocusRef }: { isOpen: boolean; onClose: () => void; returnFocusRef?: RefObject<HTMLElement | null> }) {
   const dialogRef = useRef<HTMLElement>(null);
-  const handleKeyDown = useModalAccessibility(isOpen, onClose, dialogRef);
+  const handleKeyDown = useModalAccessibility(isOpen, onClose, dialogRef, dialogRef, returnFocusRef);
   if (!isOpen) return null;
   return createPortal(
     <div className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#020617]/80 p-3 backdrop-blur-sm" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>

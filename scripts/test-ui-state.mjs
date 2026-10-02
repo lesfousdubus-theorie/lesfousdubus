@@ -196,6 +196,12 @@ try {
   assert.equal(document.querySelector('[data-reset-view]').getAttribute("data-reset-view"), "1");
   await click(findButton("Aide"));
   await click(findButton("C’est parti !", dialog()));
+  await click(findButton("Commandes"));
+  await click(findButton("Comment naviguer ?", dialog()));
+  assert.equal(document.querySelectorAll('[role="dialog"]').length, 1);
+  await closeDialog();
+  assert.equal(document.getElementById("site-content").inert, false, "Switching dialogs must restore the page");
+  assert(document.activeElement === findButton("Aide"), `Closing help restores focus after switching dialogs (actual: ${document.activeElement?.tagName})`);
 
   failReads = true;
   await act(async () => window.dispatchEvent(new window.Event("focus")));

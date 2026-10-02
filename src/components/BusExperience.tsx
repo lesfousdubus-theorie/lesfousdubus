@@ -125,6 +125,7 @@ export default function BusExperience() {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const passengerManifestButtonRef = useRef<HTMLButtonElement>(null);
+  const helpButtonRef = useRef<HTMLButtonElement>(null);
   const passengerCardRequest = useRef<AbortController | null>(null);
   const manifestRequest = useRef<AbortController | null>(null);
   const profileRequest = useRef<AbortController | null>(null);
@@ -665,6 +666,7 @@ export default function BusExperience() {
         hidden={overlayOpen}
         toast={toast}
         passengerManifestButtonRef={passengerManifestButtonRef}
+        helpButtonRef={helpButtonRef}
         statsLoadError={statsLoadError}
         count={count}
         numRows={numRows}
@@ -758,7 +760,7 @@ export default function BusExperience() {
         onClose={closePassengerManifest}
       />
       <TheoryAgeModal isOpen={showTheoryAge} onClose={() => setShowTheoryAge(false)} />
-      <BusHelpModal isOpen={showHelp} onClose={closeHelp} />
+      <BusHelpModal isOpen={showHelp} onClose={closeHelp} returnFocusRef={helpButtonRef} />
       <BusSettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}

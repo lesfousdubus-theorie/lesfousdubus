@@ -8,6 +8,8 @@ const MODAL_FOCUSABLE_SELECTOR = [
   "summary", "iframe",
 ].join(",");
 
+const activeModalPages = new WeakMap<HTMLElement, { count: number; wasInert: boolean }>();
+
 export function useModalAccessibility(
   isOpen: boolean,
   onClose: () => void,
@@ -27,18 +29,28 @@ export function useModalAccessibility(
     previouslyFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const fallbackReturnTarget = returnFocusRef?.current ?? null;
     const page = document.getElementById("site-content");
-    const wasInert = page?.inert ?? false;
     if (page) {
+      const modalPage = activeModalPages.get(page) ?? { count: 0, wasInert: page.inert ?? false };
+      modalPage.count += 1;
+      activeModalPages.set(page, modalPage);
       page.inert = true;
     }
     const frame = window.requestAnimationFrame(() => initialFocusRef.current?.focus());
     return () => {
       window.cancelAnimationFrame(frame);
       if (page) {
-        page.inert = wasInert;
+        const modalPage = activeModalPages.get(page);
+        if (modalPage && --modalPage.count === 0) {
+          page.inert = modalPage.wasInert;
+          activeModalPages.delete(page);
+        }
       }
       const previous = previouslyFocusedRef.current;
-      const returnTarget = previous?.isConnected ? previous : fallbackReturnTarget;
+      const canReturnToPrevious = previous?.isConnected && previous !== document.body
+        && previous.getClientRects().length > 0
+        && !previous.closest("[hidden], [inert]")
+        && getComputedStyle(previous).visibility !== "hidden";
+      const returnTarget = canReturnToPrevious ? previous : fallbackReturnTarget;
       returnTarget?.focus({ preventScroll: true });
       previouslyFocusedRef.current = null;
     };
