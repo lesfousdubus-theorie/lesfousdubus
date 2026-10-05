@@ -127,10 +127,16 @@ export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>) {
   // et à l'intérieur, où les flèches et +/- contrôlent exclusivement la caméra.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Ctrl/Cmd/Alt appartiennent au navigateur (zoom, barre d'adresse, masquage)
+      // et une touche maintenue ne doit pas répéter klaxon ou boost.
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      const active = document.activeElement;
       if (
         document.querySelector("[role='dialog']") ||
-        document.activeElement?.tagName === "INPUT" ||
-        document.activeElement?.tagName === "TEXTAREA"
+        active?.tagName === "INPUT" ||
+        active?.tagName === "TEXTAREA" ||
+        active?.tagName === "SELECT" ||
+        (active instanceof HTMLElement && active.isContentEditable)
       ) {
         return;
       }

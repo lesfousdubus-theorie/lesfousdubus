@@ -99,8 +99,9 @@ export function useBusSync({
               "🚌 EXTENSION",
             );
           } else {
+            const arrivals = d.count - previousCount;
             showToast(
-              "+1 Nakama à bord !",
+              arrivals > 1 ? `+${arrivals} Nakamas à bord !` : "+1 Nakama à bord !",
               `${d.count} passagers voyagent vers Laugh Tale`,
               "⚡ REJOINT",
             );

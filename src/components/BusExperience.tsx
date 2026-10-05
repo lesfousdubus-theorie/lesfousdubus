@@ -271,9 +271,19 @@ export default function BusExperience() {
       applyBusSnapshot(d);
       setRegistrationPending(false);
       setCurrentPassengerSeatIndex(d.seatIndex);
-      // La réponse de montée omet les commentaires ; conserver le texte
-      // déjà enregistré dans ce navigateur.
-      setSavedProfile((previous) => ({ name: d.passenger?.displayName ?? "", comment: previous.comment }));
+      // Synchronise le profil depuis la base : restaure le commentaire existant
+      // même si le visiteur a vidé ses cookies ou changé d'onglet.
+      const restoredComment = d.passenger?.comment ?? "";
+      setSavedProfile((previous) => ({
+        name: d.passenger?.displayName ?? previous.name,
+        comment: restoredComment || previous.comment,
+      }));
+      try {
+        if (d.passenger?.displayName) localStorage.setItem("fdb-display-name", d.passenger.displayName);
+        if (restoredComment) localStorage.setItem("fdb-comment", restoredComment);
+      } catch {
+        // Le stockage local reste optionnel.
+      }
       if (d.seatIndex !== null) {
         setSeatRow(Math.min(computeNumRows(d.seatCapacity) - 1, Math.floor(d.seatIndex / 4)));
       }

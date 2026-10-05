@@ -78,6 +78,16 @@ export function PassengerCard({
             </p>
           )}
         </div>
+        {!loading && !error && (passenger.comment || passenger.displayName) && (
+          <div className="mt-2 text-right">
+            <a
+              href={`mailto:contact@lesfousdubus.sbs?subject=${encodeURIComponent(`Signalement passager #${passenger.seatIndex}`)}&body=${encodeURIComponent(`Bonjour,\n\nJe souhaite signaler le passager suivant :\nPlace : ${passenger.seatIndex}\nNom : ${passenger.displayName}\nMessage : ${passenger.comment ?? "aucun"}\n\nMotif du signalement :\n`)}`}
+              className="text-xs text-white/50 hover:text-red-300 underline transition-colors"
+            >
+              Signaler ce contenu
+            </a>
+          </div>
+        )}
       </section>
     </div>,
     document.body,

@@ -1,5 +1,7 @@
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { PassengerProfile } from "@/types/passenger";
 import { isValidVisitorId } from "@/lib/visitor-id";
+import { findModerationIssue, MODERATION_MESSAGES } from "@/lib/server/moderation";
 import {
   READ_HEADERS, WRITE_HEADERS, acceptsJsonBody, unsupportedMediaTypeResponse,
   getPassengerDatabase, readBusStats, toNamedPassengerProfile, cleanText, readJsonBody,
@@ -30,7 +32,7 @@ export async function GET(request: Request) {
         seatIndex: Number(row.seat_index),
         displayName: row.display_name || "Anonyme",
         comment: row.comment || null,
-      } }, { headers: WRITE_HEADERS });
+      } }, { headers: READ_HEADERS });
     }
 
     const wantsProfiles = url.searchParams.get("profiles") === "1";
@@ -54,7 +56,7 @@ export async function GET(request: Request) {
         passengers,
         nextFrom: passengers.length > 0 ? passengers.at(-1)!.seatIndex + 1 : from,
         hasMore: rows.results.length > limit,
-      }, { headers: WRITE_HEADERS });
+      }, { headers: READ_HEADERS });
     }
 
     if (wantsProfiles) {
@@ -71,12 +73,12 @@ export async function GET(request: Request) {
       const passengers = rows.results.map((row) => toNamedPassengerProfile(row))
         .filter((profile): profile is PassengerProfile => profile !== null);
       const stats = await readBusStats(database);
-      return Response.json({ ...stats, passengers }, { headers: WRITE_HEADERS });
+      return Response.json({ ...stats, passengers }, { headers: READ_HEADERS });
     }
 
     // The public counter is polled while the site is open, so expired buckets
     // are also removed when traffic is read-only after the final mutation.
-    await purgeExpiredRateLimits(database, Math.floor(Date.now() / 1_000));
+    await purgeExpiredRateLimits(database, Math.floor(Date.now() / 1_000)).catch(console.error);
     return Response.json(await readBusStats(database), { headers: READ_HEADERS });
   } catch (error) {
     console.error("GET /api/bus-entries error:", error);
@@ -102,6 +104,18 @@ export async function POST(request: Request) {
     }
     const displayName = cleanText(body.displayName, 24);
     const comment = cleanText(body.comment, 180);
+    if (displayName) {
+      const issue = findModerationIssue(displayName);
+      if (issue) {
+        return Response.json({ error: MODERATION_MESSAGES[issue] }, { status: 400, headers: WRITE_HEADERS });
+      }
+    }
+    if (comment) {
+      const issue = findModerationIssue(comment);
+      if (issue) {
+        return Response.json({ error: MODERATION_MESSAGES[issue] }, { status: 400, headers: WRITE_HEADERS });
+      }
+    }
     if (!isValidVisitorId(visitorId)) {
       return Response.json({ error: "Identifiant visiteur invalide." }, { status: 400, headers: WRITE_HEADERS });
     }
@@ -150,13 +164,13 @@ export async function POST(request: Request) {
     }
 
     const passengerRow = await database.prepare(
-      `SELECT seat_index, display_name, NULL AS comment FROM bus_entries WHERE visitor_id = ?`,
+      `SELECT seat_index, display_name, comment FROM bus_entries WHERE visitor_id = ?`,
     ).bind(visitorId).first<PassengerRow>();
     const stats = await readBusStats(database);
     return Response.json({
       ...stats,
       added,
-      passenger: passengerRow ? toNamedPassengerProfile(passengerRow) : null,
+      passenger: passengerRow ? toNamedPassengerProfile(passengerRow, true) : null,
       seatIndex: passengerRow ? Number(passengerRow.seat_index) : null,
     }, { headers: WRITE_HEADERS });
   } catch (error) {
@@ -175,6 +189,25 @@ export async function DELETE(request: Request) {
   if (!acceptsJsonBody(request)) return unsupportedMediaTypeResponse();
   try {
     const body = await readJsonBody(request);
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7).trim();
+      const { env } = await getCloudflareContext({ async: true });
+      if (token && env.RATE_LIMIT_SECRET && token === env.RATE_LIMIT_SECRET) {
+        const seatIndex = Number(body.seatIndex);
+        if (Number.isSafeInteger(seatIndex) && seatIndex >= 0) {
+          const database = await getPassengerDatabase();
+          const deletion = await database.prepare("DELETE FROM bus_entries WHERE seat_index = ?").bind(seatIndex).run();
+          const stats = await readBusStats(database);
+          return Response.json({
+            ...stats,
+            removed: (deletion.meta.changes ?? 0) > 0,
+            seatIndex,
+          }, { headers: WRITE_HEADERS });
+        }
+      }
+    }
+
     const visitorId = typeof body.visitorId === "string" ? body.visitorId.trim() : "";
     if (!isValidVisitorId(visitorId)) {
       return Response.json({ error: "Identifiant visiteur invalide." }, { status: 400, headers: WRITE_HEADERS });

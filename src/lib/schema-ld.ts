@@ -42,7 +42,7 @@ export const articleJsonLd = {
   description: THEORY_DESCRIPTION,
   image: [`${SITE_URL}/og-image.jpg`, `${SITE_URL}/logo.png`],
   datePublished: "2024-05-26T00:00:00+02:00",
-  dateModified: new Date().toISOString(),
+  dateModified: "2026-10-05T14:00:00+02:00",
   inLanguage: "fr-FR",
   mainEntityOfPage: {
     "@type": "WebPage",

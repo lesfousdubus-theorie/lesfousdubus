@@ -94,6 +94,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#07142b",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -106,6 +108,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="preconnect" href="https://www.googlevideo.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="//www.youtube.com" />
         <link rel="dns-prefetch" href="//www.youtube-nocookie.com" />
+        <link rel="dns-prefetch" href="//img.youtube.com" />
+        <link rel="dns-prefetch" href="//i.ytimg.com" />
         {/* Données structurées Schema.org (JSON-LD) */}
         <script
           type="application/ld+json"

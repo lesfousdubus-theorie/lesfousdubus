@@ -1,6 +1,7 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { CloudflareD1Database } from "@/types/cloudflare";
 import type { PassengerProfile } from "@/types/passenger";
+import { normalizeRateAddress } from "./rate-address";
 
 export const READ_HEADERS = { "Cache-Control": "public, max-age=5, s-maxage=5, stale-while-revalidate=10" };
 export const WRITE_HEADERS = { "Cache-Control": "no-store, max-age=0" };
@@ -75,10 +76,7 @@ export function toNamedPassengerProfile(row: PassengerRow, includeComment = fals
   };
 }
 
-export function cleanText(value: unknown, maxLength: number) {
-  if (typeof value !== "string") return "";
-  return value.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
-}
+export { cleanText } from "./text";
 
 export async function readJsonBody(request: Request): Promise<Record<string, unknown>> {
   const contentLengthHeader = request.headers.get("content-length");
@@ -166,14 +164,15 @@ export async function consumeRateLimit(
   windowSeconds: number,
   identity?: string,
 ) {
-  const address = request.headers.get("cf-connecting-ip")?.trim();
+  const rawAddress = request.headers.get("cf-connecting-ip")?.trim();
   // Ce header est présent derrière Cloudflare. En local, son absence ne doit
   // pas placer tous les développeurs dans un quota global commun.
-  if (!address) return { allowed: true, retryAfter: 0 };
+  if (!rawAddress) return { allowed: true, retryAfter: 0 };
+  const address = normalizeRateAddress(rawAddress);
   const { env } = await getCloudflareContext({ async: true });
   const secret = validateRateLimitSecret(env.RATE_LIMIT_SECRET);
   const now = Math.floor(Date.now() / 1_000);
-  await purgeExpiredRateLimits(database, now);
+  await purgeExpiredRateLimits(database, now).catch(() => undefined);
   const bucket = Math.floor(now / windowSeconds);
   // Le quota est isolé par visiteur pour ne pas bloquer une classe, une convention
   // ou une entreprise entière derrière la même IP. L'IP reste incluse dans la clé.
