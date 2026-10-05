@@ -16,6 +16,7 @@ interface Props {
   currentSeatZ?: number;
   tvTargetZ?: number;
   reducedMotion?: boolean;
+  resetViewToken?: number;
 }
 
 const TRANSITION_TIME = 1.8;
@@ -34,8 +35,9 @@ export default function CameraRig({
   currentSeatZ,
   tvTargetZ = TV_POSITION.z,
   reducedMotion = false,
+  resetViewToken = 0,
 }: Props) {
-  const { camera, gl } = useThree();
+  const { camera, gl, size } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
   const saved = useRef({ pos: DEFAULT_CAMERA_POS.clone(), target: DEFAULT_TARGET.clone() });
   const anim = useRef({
@@ -57,6 +59,8 @@ export default function CameraRig({
   const pinchStartFovRef = useRef<number>(55);
   const phaseRef = useRef<Phase>(phase);
   const preparedPhaseRef = useRef<Phase | null>(null);
+  const framingScaleRef = useRef(1);
+  const resetViewRef = useRef(resetViewToken);
   const arrivedRef = useRef(onArrived);
   useEffect(() => {
     arrivedRef.current = onArrived;
@@ -95,6 +99,49 @@ export default function CameraRig({
 
     arrivedRef.current(destination);
   }, [camera]);
+
+  // Le même angle doit montrer le bus entier sur un écran portrait.
+  // Au redimensionnement, préserver le zoom choisi en ajustant sa distance.
+  useEffect(() => {
+    const scale = THREE.MathUtils.clamp(0.85 / (size.width / Math.max(1, size.height)), 1, 2.5);
+    const ratio = scale / framingScaleRef.current;
+    framingScaleRef.current = scale;
+    if (phaseRef.current === "outside") {
+      const target = controls.current?.target ?? DEFAULT_TARGET;
+      camera.position.sub(target).multiplyScalar(ratio).add(target);
+      controls.current?.update();
+    } else {
+      saved.current.pos.sub(saved.current.target).multiplyScalar(ratio).add(saved.current.target);
+    }
+  }, [camera, size.width, size.height]);
+
+  useEffect(() => {
+    if (resetViewRef.current === resetViewToken) return;
+    resetViewRef.current = resetViewToken;
+    activePointersRef.current.clear();
+    exteriorPointersRef.current.clear();
+    pinchStartDistRef.current = null;
+    look.current.dragging = false;
+    skyPitchRef.current = 0;
+    targetFovRef.current = 55;
+    if (phase === "outside" && controls.current) {
+      const control = controls.current;
+      control.minPolarAngle = 0;
+      control.target.set(0, 1.9, orbitTargetZ);
+      // Purger l'inertie du dernier geste avant de restaurer la position.
+      const damping = control.enableDamping;
+      control.enableDamping = false;
+      control.update();
+      camera.position.copy(DEFAULT_CAMERA_POS).sub(control.target).multiplyScalar(framingScaleRef.current).add(control.target);
+      control.update();
+      control.enableDamping = damping;
+    } else if (phase === "inside") {
+      const matrix = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
+      const rotation = new THREE.Euler().setFromRotationMatrix(matrix, "YXZ");
+      look.current.targetYaw = rotation.y;
+      look.current.targetPitch = rotation.x;
+    }
+  }, [resetViewToken, phase, camera, orbitTargetZ, activeEyePos, activeTvTarget]);
 
   // Support vue caméra optionnelle (ex: pour vérification ou captures tests)
   useEffect(() => {
@@ -159,6 +206,11 @@ export default function CameraRig({
       exteriorPointersRef.current.clear();
       if (controls.current) controls.current.minPolarAngle = 0;
     }
+    if (phaseChanged && phase !== "inside") {
+      activePointersRef.current.clear();
+      pinchStartDistRef.current = null;
+      look.current.dragging = false;
+    }
   }, [phase, camera, activeEyePos, activeTvTarget]);
 
   // Chaque déplacement dans l'allée oriente le regard vers le lecteur actif.
@@ -198,7 +250,7 @@ export default function CameraRig({
     };
 
     const move = (e: PointerEvent) => {
-      if (phaseRef.current !== "inside") return;
+      if (phaseRef.current !== "inside" || !pointers.has(e.pointerId)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       if (pointers.size === 2 && pinchStartDistRef.current !== null && pinchStartDistRef.current > 0) {
@@ -236,6 +288,12 @@ export default function CameraRig({
       }
     };
 
+    const cancelGesture = () => {
+      pointers.clear();
+      pinchStartDistRef.current = null;
+      l.dragging = false;
+    };
+
     // Zoom molette de la souris (uniquement sur la scène 3D, jamais dans un modal)
     const wheel = (e: WheelEvent) => {
       if (phaseRef.current !== "inside") return;
@@ -269,17 +327,22 @@ export default function CameraRig({
 
     const target = gl.domElement.parentElement ?? el;
     target.addEventListener("pointerdown", down);
+    target.addEventListener("lostpointercapture", up);
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
+    window.addEventListener("blur", cancelGesture);
     target.addEventListener("wheel", wheel, { passive: false });
     window.addEventListener("keydown", key);
 
     return () => {
       target.removeEventListener("pointerdown", down);
+      target.removeEventListener("lostpointercapture", up);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", up);
+      window.removeEventListener("blur", cancelGesture);
+      cancelGesture();
       target.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", key);
     };

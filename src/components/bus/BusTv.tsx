@@ -359,6 +359,7 @@ export function BusTvPlayer({
     <group position={pos}>
       <Html
         transform
+        pointerEvents={tvOn && phase === "inside" && !isMutedForFullscreen ? "auto" : "none"}
         occlude="blending"
         zIndexRange={[10, 0]}
         geometry={<planeGeometry args={[1.26, 0.70875]} />}
@@ -390,7 +391,6 @@ export function BusTvPlayer({
         scale={0.00225}
         style={{
           userSelect: "none",
-          pointerEvents: tvOn && phase === "inside" && !isMutedForFullscreen ? "auto" : "none",
         }}
       >
         <div

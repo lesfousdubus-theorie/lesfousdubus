@@ -45,6 +45,7 @@ body {
 }
 
 .theory-modal-backdrop {
+  --bus-modal-padding: 0.25rem;
   padding:
     max(0.25rem, env(safe-area-inset-top))
     max(0.25rem, env(safe-area-inset-right))
@@ -55,6 +56,7 @@ body {
 
 @media (min-width: 360px) {
   .theory-modal-backdrop {
+    --bus-modal-padding: 0.5rem;
     padding:
       max(0.5rem, env(safe-area-inset-top))
       max(0.5rem, env(safe-area-inset-right))
@@ -65,6 +67,7 @@ body {
 
 @media (min-width: 640px) {
   .theory-modal-backdrop {
+    --bus-modal-padding: 1.25rem;
     padding:
       max(1.25rem, env(safe-area-inset-top))
       max(1.25rem, env(safe-area-inset-right))
@@ -75,12 +78,35 @@ body {
 
 @media (min-width: 1024px) {
   .theory-modal-backdrop {
+    --bus-modal-padding: 2rem;
     padding:
       max(2rem, env(safe-area-inset-top))
       max(2rem, env(safe-area-inset-right))
       max(2rem, env(safe-area-inset-bottom))
       max(2rem, env(safe-area-inset-left));
   }
+}
+
+.bus-modal-backdrop {
+  --bus-modal-padding: 0.75rem;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+}
+
+.bus-modal-backdrop,
+.theory-modal-backdrop {
+  top: var(--bus-viewport-top, 0px);
+  bottom: auto;
+  height: var(--bus-viewport-height, 100dvh);
+  overscroll-behavior: contain;
+}
+
+.bus-modal-card,
+.theory-modal-window {
+  max-height: calc(var(--bus-viewport-height, 100dvh) - max(var(--bus-modal-padding), env(safe-area-inset-top)) - max(var(--bus-modal-padding), env(safe-area-inset-bottom)));
+}
+
+.bus-passenger-list {
+  max-height: min(72dvh, calc(var(--bus-viewport-height, 100dvh) - 1.5rem));
 }
 
 /* Les contrôles respectent les encoches, Dynamic Island et barres d'accueil. */
@@ -153,6 +179,14 @@ body {
   }
 }
 
+@media (min-width: 640px) and (max-width: 1023px) {
+  .bus-title-panel,
+  .bus-app[data-phase="inside"] .bus-title-panel,
+  .bus-app[data-phase="exiting"] .bus-title-panel {
+    top: calc(5.25rem + env(safe-area-inset-top)) !important;
+  }
+}
+
 /* Sur mobile, le blur au-dessus du WebGL coûte cher : on le garde léger. */
 @media (pointer: coarse) {
   .bus-glass {
@@ -171,6 +205,10 @@ body {
 
   .bus-title-panel h1,
   .bus-title-panel > p {
+    display: none !important;
+  }
+
+  .bus-title-copy {
     display: none !important;
   }
 
@@ -262,7 +300,24 @@ body {
 
   .bus-app *,
   .bus-app *::before,
-  .bus-app *::after {
+  .bus-app *::after,
+  .bus-modal-backdrop *,
+  .theory-modal-backdrop * {
+    animation: none !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* La lecture reste accessible même quand WebGL ne peut pas démarrer. */
+.bus-app[data-scene-available="false"] .bus-exterior-controls,
+.bus-app[data-scene-available="false"] .bus-interior-controls,
+.bus-app[data-scene-available="false"] .bus-row-nav,
+.bus-app[data-scene-available="false"] .bus-day-night,
+.bus-app[data-scene-available="false"] .bus-speed {
+  display: none !important;
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .bus-scene-fallback { top: 4.5rem; }
 }

@@ -15,6 +15,7 @@ import {
   type WorldState,
 } from "./constants";
 import type { PassengerProfile } from "@/types/passenger";
+import { THEORY_VIDEO_URL } from "@/lib/theory-video";
 
 interface SceneProps {
   phase: Phase;
@@ -34,28 +35,37 @@ interface SceneProps {
   currentPassengerSeatIndex?: number | null;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   modeOverride?: "day" | "night" | null;
+  resetViewToken?: number;
+  onAvailabilityChange?: (available: boolean) => void;
+  onReadTheory?: () => void;
 }
 
-function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil." }: { reason?: string }) {
+function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil.", onReadTheory }: { reason?: string; onReadTheory?: () => void }) {
   return (
-    <div className="absolute inset-0 grid place-items-center bg-gradient-to-b from-[#79c2ff] to-[#174f91] p-6 text-center text-white">
-      <div className="max-w-md rounded-2xl border border-white/20 bg-[#07142b]/85 p-6 shadow-2xl backdrop-blur-sm">
+    <div className="absolute inset-0 bg-gradient-to-b from-[#79c2ff] to-[#174f91] text-center text-white">
+      <div className="bus-scene-fallback absolute inset-x-3 bottom-3 top-48 grid place-items-center overflow-y-auto sm:top-52 lg:top-40">
+      <div role="status" className="max-w-md rounded-2xl border border-white/20 bg-[#07142b] p-5 shadow-2xl">
         <div className="mb-3 text-5xl" aria-hidden="true">🚌</div>
         <p className="text-lg font-black">Le bus reste au dépôt</p>
         <p className="mt-2 text-sm text-white/80">{reason}</p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+        {onReadTheory && <button type="button" onClick={onReadTheory} className="min-h-11 rounded-xl bg-[#ffd23f] px-4 py-2 font-black text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Lire la théorie</button>}
+        <a href={THEORY_VIDEO_URL} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-xl border border-white/30 px-4 py-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Voir la vidéo ↗</a>
         <button
           type="button"
-          className="mt-5 min-h-11 rounded-xl bg-[#ffd23f] px-4 py-2 font-black text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="min-h-11 rounded-xl border border-white/30 px-4 py-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           onClick={() => window.location.reload()}
         >
           Réessayer
         </button>
+        </div>
+      </div>
       </div>
     </div>
   );
 }
 
-class SceneErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+class SceneErrorBoundary extends Component<{ children: ReactNode; onAvailabilityChange?: (available: boolean) => void; onReadTheory?: () => void }, { failed: boolean }> {
   state = { failed: false };
 
   static getDerivedStateFromError() {
@@ -63,12 +73,13 @@ class SceneErrorBoundary extends Component<{ children: ReactNode }, { failed: bo
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    this.props.onAvailabilityChange?.(false);
     console.error("Impossible d’initialiser la scène 3D", error, info);
   }
 
   render() {
     return this.state.failed
-      ? <SceneFallback reason="Le chargement de la scène a échoué. Vous pouvez relancer l’expérience." />
+      ? <SceneFallback onReadTheory={this.props.onReadTheory} reason="Le chargement de la scène a échoué. Vous pouvez relancer l’expérience." />
       : this.props.children;
   }
 }
@@ -126,6 +137,28 @@ function useSceneRuntimeState() {
   }, []);
 
   return state;
+}
+
+function useWebGLSupport() {
+  const [supported, setSupported] = useState<boolean | null>(null);
+  useEffect(() => {
+    // Le fallback HTML d'un <canvas> reste invisible quand le navigateur
+    // sait afficher un canvas mais ne peut pas créer de contexte WebGL2.
+    const frame = requestAnimationFrame(() => {
+      const probe = document.createElement("canvas");
+      let context: WebGL2RenderingContext | null = null;
+      try {
+        context = probe.getContext("webgl2");
+        setSupported(Boolean(context));
+      } catch {
+        setSupported(false);
+      } finally {
+        context?.getExtension("WEBGL_lose_context")?.loseContext();
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  return supported;
 }
 
 function AdaptiveDpr({ lowPower }: { lowPower: boolean }) {
@@ -250,10 +283,17 @@ export default function Scene({
   currentPassengerSeatIndex = null,
   onPassengerSelect,
   modeOverride,
+  resetViewToken = 0,
+  onAvailabilityChange,
+  onReadTheory,
 }: SceneProps) {
   const { hidden, lowPower, reducedMotion } = useSceneRuntimeState();
+  const webGLSupported = useWebGLSupport();
   const [contextLost, setContextLost] = useState(false);
   const [canvasReady, setCanvasReady] = useState(false);
+  useEffect(() => {
+    onAvailabilityChange?.(canvasReady && !contextLost);
+  }, [canvasReady, contextLost, onAvailabilityChange]);
   const renderPaused = hidden || contextLost || uiPaused;
   const playbackSuspended = hidden || contextLost;
   // Calcul géométrique de la cabine pour la caméra
@@ -271,8 +311,11 @@ export default function Scene({
   const tvPositions = useMemo(() => getTvPositions(numRows, TV_POSITION), [numRows]);
   const tvTargetZ = tvPositions[getActiveTvIndex(tvPositions, clampedRow)][2];
 
+  if (webGLSupported === false) return <SceneFallback onReadTheory={onReadTheory} />;
+  if (webGLSupported === null) return <div role="status" className="sr-only">Préparation de la scène 3D…</div>;
+
   return (
-    <SceneErrorBoundary>
+    <SceneErrorBoundary onAvailabilityChange={onAvailabilityChange} onReadTheory={onReadTheory}>
       <div className="absolute inset-0">
       <Canvas
       shadows={lowPower ? false : "basic"}
@@ -282,7 +325,7 @@ export default function Scene({
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
       onCreated={() => setCanvasReady(true)}
-      fallback={<div aria-hidden={canvasReady}><SceneFallback /></div>}
+      fallback={<div aria-hidden={canvasReady}><SceneFallback onReadTheory={onReadTheory} /></div>}
     >
       <WebGLContextGuard setLost={setContextLost} />
       <CappedFrameLoop paused={renderPaused} />
@@ -312,6 +355,7 @@ export default function Scene({
       </Suspense>
       <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} />
       <CameraRig
+        resetViewToken={resetViewToken}
         phase={phase}
         onArrived={onArrived}
         cabinLength={cabinLength}
@@ -323,7 +367,7 @@ export default function Scene({
       />
       </Canvas>
       {contextLost && (
-        <SceneFallback reason="Le moteur graphique a été suspendu par l’appareil. Le contexte WebGL est en cours de restauration ; vous pouvez aussi relancer l’expérience." />
+        <SceneFallback onReadTheory={onReadTheory} reason="Le moteur graphique a été suspendu par l’appareil. Le contexte WebGL est en cours de restauration ; vous pouvez aussi relancer l’expérience." />
       )}
       </div>
     </SceneErrorBoundary>

@@ -55,6 +55,7 @@ Cliquez sur le bouton **« 📜 La Théorie »** en haut à gauche pour ouvrir l
 
 ### Avec la souris ou au doigt (sur smartphone / tablette) :
 - **Faire pivoter la vue** : cliquez et glissez pour tourner à 360° autour du minibus. Glissez vers le haut de l'écran au-delà de l'horizon pour regarder jusqu'au ciel au-dessus de vous ; glissez vers le bas pour retrouver la vue sur le bus.
+- **Recentrer la vue** : le bouton en forme de cible, à côté du jour/nuit, retrouve le bus à l’extérieur ou la télévision à l’intérieur. Le cadrage s’adapte aux écrans portrait.
 - **Zoomer / Dézoomer** : utilisez la molette de votre souris (ou écartez deux doigts sur mobile).
 - **Dans le bus** : glissez votre souris pour regarder autour de vous dans la cabine, et utilisez les flèches **◀ Rangée ▶** pour vous déplacer d'avant en arrière le long de l'allée.
 
@@ -99,8 +100,9 @@ npm run build:next -- --webpack
 `npm test` utilise une base D1 temporaire pour ses scénarios de places et ne
 modifie pas les passagers de la base locale. Le test d'interface `npm run test:ui`
 nécessite que `npm run dev` ou `npm run start` tourne dans un autre terminal ;
-il vérifie notamment les tailles et le centrage des commandes sur téléphone et
-ordinateur. Tous les contrôles sont lancés localement avant le déploiement ;
+il vérifie les commandes sur neuf tailles d’écran, les onglets et la position de
+lecture, les formulaires, le clavier, le parcours liste/fiche et le repli sans WebGL.
+Tous les contrôles sont lancés localement avant le déploiement ;
 aucun test automatique n'est exécuté lors d'un envoi sur GitHub.
 
 ## Organisation du code
@@ -116,6 +118,8 @@ aucun test automatique n'est exécuté lors d'un envoi sur GitHub.
 
 La revue détaillée des fichiers, des noms et des optimisations à mesurer se
 trouve dans [l'audit technique](docs/audit-technique-2026-09-28.md).
+Les corrections d’interface et la revue de la PR du 5 octobre sont documentées
+dans [l’audit UI/UX](docs/audit-interface-2026-10-05.md).
 
 ## Déploiement Cloudflare
 
