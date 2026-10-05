@@ -151,6 +151,17 @@ export default function BusExperience() {
     setToast(null);
   }, []);
 
+  useEffect(() => {
+    const handleToastEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ text: string; sub?: string; badge?: string }>).detail;
+      if (detail?.text) {
+        showToast(detail.text, detail.sub, detail.badge);
+      }
+    };
+    window.addEventListener("bus-show-toast", handleToastEvent);
+    return () => window.removeEventListener("bus-show-toast", handleToastEvent);
+  }, [showToast]);
+
   const updateSeatCapacity = useCallback((capacity: number) => {
     seatCapacityRef.current = capacity;
     setSeatCapacity(capacity);

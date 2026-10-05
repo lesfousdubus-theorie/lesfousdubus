@@ -19,6 +19,7 @@ import { BusTvFrame, BusTvPlayer } from "./BusTv";
 import { computeNumRows, getRenderedRowIndices, getActiveTvIndex, getTvPositions } from "@/lib/bus-layout";
 import { advanceWiperAngle } from "@/lib/bus-wipers";
 import BusExterior from "./BusExterior";
+import BusDrivers from "./BusDrivers";
 import { createStrawHatGeometry } from "./StrawHatGeometry";
 
 interface BusProps {
@@ -565,7 +566,7 @@ export default function Bus({
       />
 
       {/* ---------- POSTE DE CONDUITE & TABLEAU DE BORD COMPLET DU BUS ---------- */}
-      {/* Siège conducteur ergonomique avec appuie-tête et embase */}
+      {/* Siège conducteur ergonomique avec appuie-tête et embase (Kamal) */}
       <group position={[-0.72, 0, -3.8]}>
         {/* Embase métallique fixée au plancher */}
         <mesh material={mats.dark} position={[0, 0.82, 0]}>
@@ -588,6 +589,37 @@ export default function Bus({
           <boxGeometry args={[0.08, 0.10, 0.42]} />
         </mesh>
       </group>
+
+      {/* Siège co-pilote / navigateur ergonomique pour Kyta */}
+      <group position={[0.72, 0, -3.8]}>
+        {/* Embase métallique fixée au plancher */}
+        <mesh material={mats.dark} position={[0, 0.82, 0]}>
+          <boxGeometry args={[0.22, 0.40, 0.22]} />
+        </mesh>
+        {/* Coussin d'assise */}
+        <mesh material={mats.seat} position={[0, 1.05, 0]}>
+          <boxGeometry args={[0.76, 0.14, 0.68]} />
+        </mesh>
+        {/* Dossier du siège */}
+        <mesh material={mats.seat} position={[0, 1.54, 0.32]}>
+          <boxGeometry args={[0.74, 0.86, 0.12]} />
+        </mesh>
+        {/* Appuie-tête */}
+        <mesh material={mats.seat} position={[0, 2.05, 0.32]}>
+          <boxGeometry args={[0.34, 0.22, 0.10]} />
+        </mesh>
+        {/* Accoudoir côté fenêtre droite */}
+        <mesh material={mats.dark} position={[0.40, 1.25, 0.05]}>
+          <boxGeometry args={[0.08, 0.10, 0.42]} />
+        </mesh>
+      </group>
+
+      {/* CONDUCTEURS DU MONT CORVO : KAMAL AU VOLANT ET KYTA EN CO-PILOTE */}
+      <BusDrivers
+        hornPulse={hornPulse}
+        montCorvoTex={montCorvoTex}
+        reducedMotion={reducedMotion}
+      />
 
       {/* Planche de bord complète du bus (jointement continu avec le pare-brise) */}
       <group position={[0, 0, 0]}>
