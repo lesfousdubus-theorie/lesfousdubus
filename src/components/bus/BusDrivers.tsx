@@ -11,65 +11,76 @@ interface BusDriversProps {
   reducedMotion?: boolean;
 }
 
-// Couleurs de peau et vêtements de Kamal & Kyta (Le Mont Corvo)
-const SKIN_COLOR = "#cf936d"; // Teint méditerranéen chaleureux
-const DARK_HAIR_COLOR = "#151413"; // Cheveux et barbe noire soignée
-const KAMAL_HOODIE = "#181c25"; // Hoodie streetwear bleu nuit / noir
-const KYTA_HOODIE = "#631728"; // Hoodie streetwear bordeaux profond
+// Couleurs fidèles à la photo réelle de Kamal et Kyta
+const SKIN_COLOR = "#f2ccae"; // Teint clair naturel
+const HAIR_BROWN = "#543722"; // Châtain chaud texturé
+const HAIR_DARK_BROWN = "#422a1a"; // Châtain foncé naturel
+const GREY_HOODIE = "#9298a3"; // Hoodie chiné gris clair (BRONX)
+const BURGUNDY_SWEATER = "#5a1626"; // Pull bordeaux col V
+const LANYARD_WHITE = "#f8fafc"; // Tour de cou / badge blanc
+const EYE_BLUE = "#3d6494"; // Yeux bleu-gris expressifs
+const PUPIL_DARK = "#0d131f"; // Pupille sombre
+const MIC_FLESH = "#e8bfa0"; // Micro serre-tête scène couleur chair
 const PANTS_COLOR = "#22252e"; // Pantalon streetwear sombre
-const SHOES_COLOR = "#141519"; // Baskets streetwear
+const SHOES_COLOR = "#141519"; // Baskets
 const WHITE_SOLE_COLOR = "#f1f5f9"; // Semelle blanche
 const GOLD_COLOR = "#f59e0b"; // Détails dorés et Log Pose
 
-/** Génère une texture de badge au-dessus de la tête du conducteur / copilote */
-function makeDriverBadgeTexture(name: string, role: string, accentColor: string) {
+/** Génère une étiquette contenant UNIQUEMENT le prénom, sobre et élégante */
+function makeDriverNameTexture(name: string) {
+  const font = "900 64px ui-sans-serif, system-ui, -apple-system, sans-serif";
+  const measureCanvas = document.createElement("canvas");
+  const measureContext = measureCanvas.getContext("2d")!;
+  measureContext.font = font;
+  const measuredWidth = Math.ceil(measureContext.measureText(name).width + 56);
+  const width = Math.min(1024, Math.max(256, THREE.MathUtils.ceilPowerOfTwo(measuredWidth)));
+  const height = 128;
   const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 160;
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext("2d")!;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, width, height);
 
-  // Pilule de fond sombre semi-transparente avec ombre portée
-  ctx.save();
-  ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
-  ctx.shadowBlur = 12;
-  ctx.shadowOffsetY = 4;
-
-  const rx = 24;
+  // Pilule de fond sombre semi-transparente
+  const rx = 12;
   const ry = 16;
-  const rw = canvas.width - 48;
-  const rh = canvas.height - 32;
+  const rw = width - 24;
+  const rh = height - 32;
 
-  ctx.fillStyle = "rgba(9, 13, 24, 0.94)";
+  ctx.save();
+  ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetY = 3;
+
+  ctx.fillStyle = "rgba(7, 12, 24, 0.88)";
   ctx.beginPath();
   ctx.roundRect(rx, ry, rw, rh, 28);
   ctx.fill();
 
-  // Bordure dorée / accent
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = accentColor;
+  ctx.lineWidth = 3.5;
+  ctx.strokeStyle = "rgba(255, 210, 63, 0.85)"; // Liseré doré subtil
   ctx.stroke();
   ctx.restore();
 
-  // Nom principal en gras doré / blanc
+  // Nom pur (uniquement le prénom)
+  ctx.font = font;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = "900 48px ui-sans-serif, system-ui, -apple-system, sans-serif";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "rgba(2, 6, 23, 0.96)";
+  ctx.lineWidth = 10;
+  ctx.strokeText(name, width / 2, height / 2 + 1, width - 28);
   ctx.fillStyle = "#ffffff";
-  ctx.fillText(name, canvas.width / 2, ry + 42);
-
-  // Rôle et mention "Mont Corvo"
-  ctx.font = "800 22px ui-sans-serif, system-ui, -apple-system, sans-serif";
-  ctx.fillStyle = accentColor;
-  ctx.fillText(role.toUpperCase(), canvas.width / 2, ry + rh - 30);
+  ctx.fillText(name, width / 2, height / 2 + 1, width - 28);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
+  texture.anisotropy = 4;
 
-  return { texture, aspect: canvas.width / canvas.height };
+  return { texture, aspect: width / height };
 }
 
 /** Génère la bulle de dialogue BD pour les répliques cultes */
@@ -161,15 +172,9 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
   const kamalQuoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const kytaQuoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Textures des badges
-  const kamalBadgeTex = useMemo(
-    () => makeDriverBadgeTexture("KAMAL", "Conducteur · Le Mont Corvo", "#ffd23f"),
-    [],
-  );
-  const kytaBadgeTex = useMemo(
-    () => makeDriverBadgeTexture("KYTA", "Navigateur · Le Mont Corvo", "#38bdf8"),
-    [],
-  );
+  // Étiquettes contenant UNIQUEMENT le prénom de chacun
+  const kamalNameTex = useMemo(() => makeDriverNameTexture("Kamal"), []);
+  const kytaNameTex = useMemo(() => makeDriverNameTexture("Kyta"), []);
 
   // Textures des bulles de réplique
   const kamalQuoteTex = useMemo(
@@ -189,15 +194,15 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
 
   useEffect(() => {
     return () => {
-      kamalBadgeTex.texture.dispose();
-      kytaBadgeTex.texture.dispose();
+      kamalNameTex.texture.dispose();
+      kytaNameTex.texture.dispose();
       kamalQuoteTex.texture.dispose();
       kytaQuoteTex.texture.dispose();
       if (kamalQuoteTimer.current) clearTimeout(kamalQuoteTimer.current);
       if (kytaQuoteTimer.current) clearTimeout(kytaQuoteTimer.current);
       document.body.style.cursor = "auto";
     };
-  }, [kamalBadgeTex, kytaBadgeTex, kamalQuoteTex, kytaQuoteTex]);
+  }, [kamalNameTex, kytaNameTex, kamalQuoteTex, kytaQuoteTex]);
 
   // Clic interactif sur Kamal
   const handleKamalClick = useCallback((e?: { stopPropagation: () => void }) => {
@@ -210,9 +215,9 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
     window.dispatchEvent(
       new CustomEvent("bus-show-toast", {
         detail: {
-          badge: "👑 KAMAL · MONT CORVO",
+          badge: "👑 KAMAL",
           text: "« Accrochez-vous ! On fonce tout droit vers le Siècle Oublié ! »",
-          sub: "Conducteur officiel des Fous du Bus",
+          sub: "Le Mont Corvo",
         },
       }),
     );
@@ -229,9 +234,9 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
     window.dispatchEvent(
       new CustomEvent("bus-show-toast", {
         detail: {
-          badge: "🧭 KYTA · MONT CORVO",
+          badge: "🧭 KYTA",
           text: "« Le Log Pose s'affole ! La théorie du Mont Corvo se vérifie sous nos yeux ! »",
-          sub: "Co-pilote & Navigateur du convoi",
+          sub: "Le Mont Corvo",
         },
       }),
     );
@@ -239,39 +244,50 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
 
   const mats = useMemo(() => {
     return {
-      skin: new THREE.MeshStandardMaterial({ color: SKIN_COLOR, roughness: 0.62 }),
-      darkHair: new THREE.MeshStandardMaterial({ color: DARK_HAIR_COLOR, roughness: 0.78 }),
-      kamalHoodie: new THREE.MeshStandardMaterial({ color: KAMAL_HOODIE, roughness: 0.58 }),
-      kytaHoodie: new THREE.MeshStandardMaterial({ color: KYTA_HOODIE, roughness: 0.55 }),
+      skin: new THREE.MeshStandardMaterial({ color: SKIN_COLOR, roughness: 0.58 }),
+      hairKamal: new THREE.MeshStandardMaterial({ color: HAIR_BROWN, roughness: 0.72 }),
+      hairKyta: new THREE.MeshStandardMaterial({ color: HAIR_DARK_BROWN, roughness: 0.72 }),
+      hairHighlight: new THREE.MeshStandardMaterial({ color: "#6e472e", roughness: 0.68 }),
+      eyebrow: new THREE.MeshBasicMaterial({ color: "#482e1c" }),
+      greyHoodie: new THREE.MeshStandardMaterial({ color: GREY_HOODIE, roughness: 0.65 }),
+      burgundySweater: new THREE.MeshStandardMaterial({ color: BURGUNDY_SWEATER, roughness: 0.62 }),
+      lanyard: new THREE.MeshStandardMaterial({ color: LANYARD_WHITE, roughness: 0.5 }),
       pants: new THREE.MeshStandardMaterial({ color: PANTS_COLOR, roughness: 0.7 }),
       shoes: new THREE.MeshStandardMaterial({ color: SHOES_COLOR, roughness: 0.85 }),
       whiteSole: new THREE.MeshStandardMaterial({ color: WHITE_SOLE_COLOR, roughness: 0.45 }),
-      capBlack: new THREE.MeshStandardMaterial({ color: "#111317", roughness: 0.55 }),
       gold: new THREE.MeshStandardMaterial({ color: GOLD_COLOR, metalness: 0.8, roughness: 0.25 }),
       leather: new THREE.MeshStandardMaterial({ color: "#3e2417", roughness: 0.7 }),
       parchment: new THREE.MeshStandardMaterial({ color: "#fef3c7", roughness: 0.75 }),
-      eyes: new THREE.MeshBasicMaterial({
-        color: "#0a0a0c",
+      micWire: new THREE.MeshStandardMaterial({ color: MIC_FLESH, roughness: 0.6 }),
+      micFoam: new THREE.MeshStandardMaterial({ color: "#d1a384", roughness: 0.9 }),
+      eyesIris: new THREE.MeshBasicMaterial({
+        color: EYE_BLUE,
         depthWrite: false,
         polygonOffset: true,
         polygonOffsetFactor: -2,
         polygonOffsetUnits: -2,
       }),
-      eyeHighlight: new THREE.MeshBasicMaterial({
-        color: "#ffffff",
+      eyesPupil: new THREE.MeshBasicMaterial({
+        color: PUPIL_DARK,
         depthWrite: false,
         polygonOffset: true,
         polygonOffsetFactor: -3,
         polygonOffsetUnits: -3,
       }),
-      smile: new THREE.MeshBasicMaterial({
+      eyeHighlight: new THREE.MeshBasicMaterial({
         color: "#ffffff",
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        polygonOffsetUnits: -4,
+      }),
+      smile: new THREE.MeshBasicMaterial({
+        color: "#3b1e22",
         depthWrite: false,
         polygonOffset: true,
         polygonOffsetFactor: -2,
         polygonOffsetUnits: -2,
       }),
-      mustache: new THREE.MeshStandardMaterial({ color: DARK_HAIR_COLOR, roughness: 0.85 }),
       glassDome: new THREE.MeshStandardMaterial({
         color: "#bae6fd",
         transparent: true,
@@ -286,7 +302,7 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
   useFrame((state) => {
     const t = state.clock.elapsedTime;
 
-    // Réaction au klaxon : bond et hochement d'enthousiasme
+    // Réaction au klaxon : bond d'enthousiasme
     const sinceHorn = (performance.now() - hornPulse) / 1000;
     const isHonking = sinceHorn < 0.9;
     const hornBounce = isHonking ? Math.sin(sinceHorn * 20) * (0.9 - sinceHorn) * 0.08 : 0;
@@ -299,7 +315,7 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
     if (kamalHead.current) {
       const roadBob = Math.sin(t * 4.2) * 0.018;
       const lookRoad = Math.sin(t * 1.2) * 0.03;
-      kamalHead.current.position.y = 1.82 + hornBounce * 0.6;
+      kamalHead.current.position.y = 1.84 + hornBounce * 0.6;
       kamalHead.current.rotation.x = roadBob + (isHonking ? -0.12 : 0);
       kamalHead.current.rotation.y = lookRoad;
     }
@@ -317,9 +333,8 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
     }
     if (kytaHead.current) {
       const roadBob = Math.sin(t * 4.0 + 0.5) * 0.018;
-      // Kyta regarde vers la route puis tourne la tête avec enthousiasme vers Kamal à gauche
       const lookTowardsKamal = Math.sin(t * 0.8) * 0.14 - 0.1;
-      kytaHead.current.position.y = 1.82 + hornBounce * 0.6;
+      kytaHead.current.position.y = 1.84 + hornBounce * 0.6;
       kytaHead.current.rotation.x = roadBob + (isHonking ? -0.15 : 0);
       kytaHead.current.rotation.y = lookTowardsKamal;
     }
@@ -338,11 +353,14 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
 
   return (
     <group>
+      {/* Lumière dédiée douce au poste de conduite pour une excellente visibilité jour & nuit */}
+      <pointLight position={[0, 2.75, -4.0]} color="#fff7e6" intensity={2.6} distance={4.2} decay={1.5} />
+
       {/* ============================================================== */}
-      {/* 1. KAMAL (CONDUCTEUR AU VOLANT) - POSITION [-0.72, 0, -3.8]   */}
+      {/* 1. KAMAL (CONDUCTEUR AU VOLANT) - POSITION [-0.72, 0, -3.85]   */}
       {/* ============================================================== */}
       <group
-        position={[-0.72, 0, -3.8]}
+        position={[-0.72, 0, -3.85]}
         onClick={handleKamalClick}
         onPointerOver={(e) => {
           e.stopPropagation();
@@ -352,10 +370,10 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
           document.body.style.cursor = "auto";
         }}
       >
-        {/* Badge flottant conducteur au-dessus de la casquette */}
-        <sprite position={[0, 2.22, 0.14]} scale={[kamalBadgeTex.aspect * 0.14, 0.14, 1]}>
+        {/* Bulle avec UNIQUEMENT le prénom "Kamal" */}
+        <sprite position={[0, 2.22, 0.14]} scale={[kamalNameTex.aspect * 0.11, 0.11, 1]}>
           <spriteMaterial
-            map={kamalBadgeTex.texture}
+            map={kamalNameTex.texture}
             transparent
             alphaTest={0.06}
             depthTest
@@ -364,7 +382,7 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
           />
         </sprite>
 
-        {/* Bulle de réplique BD active au clic */}
+        {/* Bulle de réplique active au clic */}
         {kamalQuoteActive && (
           <sprite position={[0, 2.48, 0.08]} scale={[kamalQuoteTex.aspect * 0.22, 0.22, 1]}>
             <spriteMaterial
@@ -379,23 +397,19 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
         )}
 
         {/* --- JAMBES ET PIEDS DE CONDUITE --- */}
-        {/* Bassin posé sur le coussin du siège conducteur */}
         <mesh material={mats.pants} position={[0, 1.15, 0.12]}>
           <boxGeometry args={[0.34, 0.14, 0.28]} />
         </mesh>
-        {/* Cuisses vers l'avant */}
         {[-0.09, 0.09].map((lx) => (
           <mesh key={`kamal-thigh-${lx}`} material={mats.pants} position={[lx, 1.15, -0.06]}>
             <boxGeometry args={[0.13, 0.12, 0.32]} />
           </mesh>
         ))}
-        {/* Mollets vers les pédales */}
         {[-0.09, 0.09].map((lx) => (
           <mesh key={`kamal-calf-${lx}`} material={mats.pants} position={[lx, 0.88, -0.21]}>
             <boxGeometry args={[0.12, 0.42, 0.12]} />
           </mesh>
         ))}
-        {/* Baskets streetwear posées aux pédales avec liseré blanc */}
         {[-0.09, 0.09].map((lx) => (
           <group key={`kamal-shoe-${lx}`} position={[lx, 0.65, -0.24]}>
             <mesh material={mats.shoes}>
@@ -407,45 +421,46 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
           </group>
         ))}
 
-        {/* --- TORSE STREETWEAR (HOODIE KAMAL) --- */}
+        {/* --- TORSE : HOODIE GRIS CLAIR (PHOTO : SWEAT À CAPUCHE GRIS) --- */}
         <group ref={kamalTorso} position={[0, 1.42, 0.14]}>
-          <mesh material={mats.kamalHoodie} rotation={[-0.06, 0, 0]}>
+          <mesh material={mats.greyHoodie} rotation={[-0.06, 0, 0]}>
             <boxGeometry args={[0.34, 0.4, 0.22]} />
           </mesh>
-          {/* Poche kangourou ventrale */}
-          <mesh material={mats.kamalHoodie} position={[0, -0.08, -0.12]}>
+          {/* Poche ventrale du hoodie */}
+          <mesh material={mats.greyHoodie} position={[0, -0.08, -0.12]}>
             <boxGeometry args={[0.24, 0.13, 0.03]} />
           </mesh>
-          {/* Cordons de serrage du hoodie */}
+          {/* Cordons blancs de capuche */}
           {[-0.04, 0.04].map((cx) => (
             <mesh key={`kamal-cord-${cx}`} material={mats.whiteSole} position={[cx, 0.05, -0.12]}>
               <cylinderGeometry args={[0.006, 0.006, 0.12, 6]} />
             </mesh>
           ))}
-          {/* Petit logo Mont Corvo / corbeau stylisé sur la poitrine gauche */}
-          <mesh material={mats.gold} position={[-0.08, 0.09, -0.116]}>
-            <boxGeometry args={[0.045, 0.035, 0.008]} />
+          {/* Motif / lettrage noir "BRONX" style sportswear sur la poitrine */}
+          <mesh material={mats.shoes} position={[0, 0.07, -0.116]}>
+            <boxGeometry args={[0.16, 0.038, 0.006]} />
+          </mesh>
+          {/* Tour de cou / lanière blanche événementielle (visible sur la photo) */}
+          <mesh material={mats.lanyard} position={[0, 0.02, -0.118]}>
+            <boxGeometry args={[0.08, 0.22, 0.004]} />
           </mesh>
 
           {/* BRAS GAUCHE : ÉPAULE -> AVANT-BRAS -> MAIN GAUCHE SUR LE VOLANT (10h) */}
           <group ref={kamalLeftArm} position={[-0.19, 0.14, 0]}>
-            {/* Bras supérieur allant vers l'avant */}
             <mesh
-              material={mats.kamalHoodie}
+              material={mats.greyHoodie}
               position={[0, -0.08, -0.1]}
               rotation={[0.75, 0.1, -0.2]}
             >
               <cylinderGeometry args={[0.05, 0.045, 0.26, 8]} />
             </mesh>
-            {/* Avant-bras s'étendant directement vers le volant */}
             <mesh
-              material={mats.kamalHoodie}
+              material={mats.greyHoodie}
               position={[0.03, -0.04, -0.24]}
               rotation={[1.15, 0.25, -0.3]}
             >
               <cylinderGeometry args={[0.045, 0.04, 0.26, 8]} />
             </mesh>
-            {/* Main gauche fermée sur la jante du volant */}
             <mesh
               material={mats.skin}
               position={[0.05, 0.05, -0.34]}
@@ -457,23 +472,20 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
 
           {/* BRAS DROIT : ÉPAULE -> AVANT-BRAS -> MAIN DROITE SUR LE VOLANT (2h) */}
           <group ref={kamalRightArm} position={[0.19, 0.14, 0]}>
-            {/* Bras supérieur allant vers l'avant */}
             <mesh
-              material={mats.kamalHoodie}
+              material={mats.greyHoodie}
               position={[0, -0.08, -0.1]}
               rotation={[0.75, -0.1, 0.2]}
             >
               <cylinderGeometry args={[0.05, 0.045, 0.26, 8]} />
             </mesh>
-            {/* Avant-bras vers le volant */}
             <mesh
-              material={mats.kamalHoodie}
+              material={mats.greyHoodie}
               position={[-0.03, -0.04, -0.24]}
               rotation={[1.15, -0.25, 0.3]}
             >
               <cylinderGeometry args={[0.045, 0.04, 0.26, 8]} />
             </mesh>
-            {/* Main droite fermée sur le volant */}
             <mesh
               material={mats.skin}
               position={[-0.05, 0.05, -0.34]}
@@ -486,93 +498,115 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
 
         {/* Cou */}
         <mesh material={mats.skin} position={[0, 1.66, 0.14]}>
-          <cylinderGeometry args={[0.06, 0.06, 0.08, 8]} />
+          <cylinderGeometry args={[0.055, 0.055, 0.08, 8]} />
         </mesh>
 
-        {/* --- TÊTE, VISAGE & CASQUETTE DE KAMAL --- */}
-        <group ref={kamalHead} position={[0, 1.82, 0.14]}>
-          {/* Tête anatomique */}
+        {/* --- TÊTE RÉALISTE KAMAL (SANS BARBE, SANS CASQUETTE, CHEVEUX CHÂTAINS COIFFÉS) --- */}
+        <group ref={kamalHead} position={[0, 1.84, 0.14]}>
+          {/* Tête nette sans barbe */}
           <mesh material={mats.skin}>
-            <boxGeometry args={[0.22, 0.24, 0.2]} />
+            <boxGeometry args={[0.21, 0.24, 0.19]} />
           </mesh>
 
-          {/* Yeux stylisés concentrés sur la route */}
-          {[-0.055, 0.055].map((ex) => (
-            <group key={`kamal-eye-${ex}`} position={[ex, 0.02, -0.112]}>
-              <mesh material={mats.eyes}>
+          {/* Nez fin */}
+          <mesh material={mats.skin} position={[0, 0.0, -0.11]}>
+            <boxGeometry args={[0.024, 0.05, 0.024]} />
+          </mesh>
+
+          {/* Yeux bleu-gris expressifs de la photo */}
+          {[-0.052, 0.052].map((ex) => (
+            <group key={`kamal-eye-${ex}`} position={[ex, 0.022, -0.106]}>
+              {/* Fond de l'œil / iris bleu */}
+              <mesh material={mats.eyesIris}>
                 <boxGeometry args={[0.038, 0.038, 0.01]} />
               </mesh>
-              {/* Reflet blanc expressif */}
+              {/* Pupille */}
+              <mesh material={mats.eyesPupil} position={[0, 0, 0.003]}>
+                <boxGeometry args={[0.022, 0.022, 0.005]} />
+              </mesh>
+              {/* Éclat blanc vivant */}
               <mesh material={mats.eyeHighlight} position={[0.008, 0.008, 0.006]}>
-                <boxGeometry args={[0.012, 0.012, 0.005]} />
+                <boxGeometry args={[0.01, 0.01, 0.005]} />
               </mesh>
             </group>
           ))}
 
-          {/* Sourcils déterminés */}
-          {[-0.055, 0.055].map((bx, bi) => (
+          {/* Sourcils châtains soignés */}
+          {[-0.052, 0.052].map((bx, bi) => (
             <mesh
               key={`kamal-brow-${bi}`}
-              material={mats.mustache}
-              position={[bx, 0.055, -0.114]}
-              rotation={[0, 0, bi === 0 ? 0.1 : -0.1]}
+              material={mats.eyebrow}
+              position={[bx, 0.054, -0.108]}
+              rotation={[0, 0, bi === 0 ? 0.06 : -0.06]}
             >
-              <boxGeometry args={[0.045, 0.015, 0.008]} />
+              <boxGeometry args={[0.044, 0.012, 0.008]} />
             </mesh>
           ))}
 
-          {/* Sourire confiant de pirate au volant */}
-          <mesh material={mats.smile} position={[0, -0.05, -0.112]}>
-            <boxGeometry args={[0.09, 0.022, 0.01]} />
+          {/* Sourire concentré et naturel */}
+          <mesh material={mats.smile} position={[0, -0.052, -0.106]}>
+            <boxGeometry args={[0.075, 0.015, 0.008]} />
           </mesh>
 
-          {/* --- BARBE & MOUSTACHE SOIGNÉE (SIGNATURE LE MONT CORVO) --- */}
-          {/* Moustache taillée */}
-          <mesh material={mats.mustache} position={[0, -0.026, -0.114]}>
-            <boxGeometry args={[0.11, 0.024, 0.014]} />
-          </mesh>
-          {/* Bouc sous la lèvre et menton */}
-          <mesh material={mats.mustache} position={[0, -0.08, -0.106]}>
-            <boxGeometry args={[0.1, 0.07, 0.026]} />
-          </mesh>
-          {/* Barbe le long de la mâchoire */}
-          <mesh material={mats.mustache} position={[0, -0.07, 0.01]}>
-            <boxGeometry args={[0.228, 0.1, 0.19]} />
-          </mesh>
-          {/* Pattes remontant aux oreilles */}
-          {[-0.114, 0.114].map((sx) => (
-            <mesh key={`kamal-sideburn-${sx}`} material={mats.mustache} position={[sx, 0.01, -0.02]}>
-              <boxGeometry args={[0.016, 0.12, 0.07]} />
+          {/* Micro serre-tête scène (discret sur la joue droite comme sur la photo) */}
+          <group position={[0.108, -0.02, -0.04]} rotation={[0.1, -0.3, 0]}>
+            <mesh material={mats.micWire}>
+              <cylinderGeometry args={[0.004, 0.004, 0.12, 6]} />
             </mesh>
-          ))}
+            {/* Capsule micro au coin des lèvres */}
+            <mesh material={mats.micFoam} position={[0, -0.06, -0.02]}>
+              <sphereGeometry args={[0.014, 8, 8]} />
+            </mesh>
+          </group>
 
-          {/* --- CASQUETTE DE BASEBALL AVEC VISIÈRE COURBÉE À L'ENDROIT --- */}
-          {/* Calotte de la casquette */}
-          <mesh material={mats.capBlack} position={[0, 0.09, 0.01]}>
-            <boxGeometry args={[0.235, 0.13, 0.22]} />
-          </mesh>
-          {/* Bouton sommital de la casquette */}
-          <mesh material={mats.capBlack} position={[0, 0.16, 0.01]}>
-            <cylinderGeometry args={[0.02, 0.02, 0.014, 8]} />
-          </mesh>
-          {/* Visière courbée vers l'avant ombrant le regard */}
-          <group position={[0, 0.055, -0.16]} rotation={[0.2, 0, 0]}>
-            <mesh material={mats.capBlack}>
-              <boxGeometry args={[0.22, 0.016, 0.14]} />
+          {/* --- CHEVEUX CHÂTAINS COIFFÉS AVEC VOLUME ET MÈCHE LATÉRALE (PHOTO) --- */}
+          <group position={[0, 0.08, 0.01]}>
+            {/* Masse principale supérieure avec volume */}
+            <mesh material={mats.hairKamal} position={[0, 0.04, 0.01]}>
+              <boxGeometry args={[0.23, 0.13, 0.21]} />
             </mesh>
-            {/* Liseré brodé doré sur la visière */}
-            <mesh material={mats.gold} position={[0, 0.008, 0.04]}>
-              <boxGeometry args={[0.18, 0.005, 0.02]} />
+            {/* Mèche relevée et coiffée vers le côté (comme sur la photo de droite) */}
+            <mesh
+              material={mats.hairKamal}
+              position={[0.02, 0.1, -0.05]}
+              rotation={[-0.25, 0.15, -0.12]}
+            >
+              <boxGeometry args={[0.18, 0.065, 0.09]} />
+            </mesh>
+            <mesh
+              material={mats.hairHighlight}
+              position={[-0.03, 0.11, -0.04]}
+              rotation={[-0.2, 0.1, -0.08]}
+            >
+              <boxGeometry args={[0.12, 0.04, 0.07]} />
+            </mesh>
+            {/* Frange texturée sur le haut du front */}
+            <mesh
+              material={mats.hairKamal}
+              position={[0.01, 0.055, -0.102]}
+              rotation={[0.12, 0, -0.05]}
+            >
+              <boxGeometry args={[0.17, 0.045, 0.025]} />
+            </mesh>
+            {/* Côtés dégradés au-dessus des oreilles */}
+            {[-0.112, 0.112].map((hx) => (
+              <mesh key={`kamal-hairside-${hx}`} material={mats.hairKamal} position={[hx, -0.01, 0.01]}>
+                <boxGeometry args={[0.018, 0.12, 0.18]} />
+              </mesh>
+            ))}
+            {/* Nuque soignée à l'arrière */}
+            <mesh material={mats.hairKamal} position={[0, -0.03, 0.105]}>
+              <boxGeometry args={[0.21, 0.12, 0.025]} />
             </mesh>
           </group>
         </group>
       </group>
 
       {/* ============================================================== */}
-      {/* 2. KYTA (NAVIGATEUR & CO-PILOTE) - POSITION [0.72, 0, -3.8]    */}
+      {/* 2. KYTA (CO-PILOTE & NAVIGATEUR) - POSITION [0.72, 0, -3.85]   */}
       {/* ============================================================== */}
       <group
-        position={[0.72, 0, -3.8]}
+        position={[0.72, 0, -3.85]}
         onClick={handleKytaClick}
         onPointerOver={(e) => {
           e.stopPropagation();
@@ -582,10 +616,10 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
           document.body.style.cursor = "auto";
         }}
       >
-        {/* Badge flottant navigateur au-dessus de la casquette */}
-        <sprite position={[0, 2.22, 0.14]} scale={[kytaBadgeTex.aspect * 0.14, 0.14, 1]}>
+        {/* Bulle avec UNIQUEMENT le prénom "Kyta" */}
+        <sprite position={[0, 2.22, 0.14]} scale={[kytaNameTex.aspect * 0.11, 0.11, 1]}>
           <spriteMaterial
-            map={kytaBadgeTex.texture}
+            map={kytaNameTex.texture}
             transparent
             alphaTest={0.06}
             depthTest
@@ -594,7 +628,7 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
           />
         </sprite>
 
-        {/* Bulle de réplique BD active au clic */}
+        {/* Bulle de réplique active au clic */}
         {kytaQuoteActive && (
           <sprite position={[0, 2.48, 0.08]} scale={[kytaQuoteTex.aspect * 0.22, 0.22, 1]}>
             <spriteMaterial
@@ -609,23 +643,19 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
         )}
 
         {/* --- JAMBES ET PIEDS DU CO-PILOTE --- */}
-        {/* Bassin posé sur le siège co-pilote */}
         <mesh material={mats.pants} position={[0, 1.15, 0.12]}>
           <boxGeometry args={[0.34, 0.14, 0.28]} />
         </mesh>
-        {/* Cuisses vers l'avant */}
         {[-0.09, 0.09].map((lx) => (
           <mesh key={`kyta-thigh-${lx}`} material={mats.pants} position={[lx, 1.15, -0.06]}>
             <boxGeometry args={[0.13, 0.12, 0.32]} />
           </mesh>
         ))}
-        {/* Mollets verticaux */}
         {[-0.09, 0.09].map((lx) => (
           <mesh key={`kyta-calf-${lx}`} material={mats.pants} position={[lx, 0.88, -0.21]}>
             <boxGeometry args={[0.12, 0.42, 0.12]} />
           </mesh>
         ))}
-        {/* Baskets streetwear avec semelle blanche */}
         {[-0.09, 0.09].map((lx) => (
           <group key={`kyta-shoe-${lx}`} position={[lx, 0.65, -0.24]}>
             <mesh material={mats.shoes}>
@@ -637,95 +667,80 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
           </group>
         ))}
 
-        {/* --- TORSE STREETWEAR (HOODIE BORDEAUX KYTA) --- */}
+        {/* --- TORSE : PULL BORDEAUX COL V (PHOTO : PULL BORDEAUX + TOUR DE COU BLANC) --- */}
         <group ref={kytaTorso} position={[0, 1.42, 0.14]}>
-          <mesh material={mats.kytaHoodie} rotation={[-0.06, 0, 0]}>
+          <mesh material={mats.burgundySweater} rotation={[-0.06, 0, 0]}>
             <boxGeometry args={[0.34, 0.4, 0.22]} />
           </mesh>
-          {/* Poche kangourou */}
-          <mesh material={mats.kytaHoodie} position={[0, -0.08, -0.12]}>
-            <boxGeometry args={[0.24, 0.13, 0.03]} />
+          {/* Échancrure col V avec t-shirt gris clair en-dessous */}
+          <mesh material={mats.greyHoodie} position={[0, 0.14, -0.114]}>
+            <boxGeometry args={[0.1, 0.08, 0.008]} />
           </mesh>
-          {/* Cordons blancs */}
-          {[-0.04, 0.04].map((cx) => (
-            <mesh key={`kyta-cord-${cx}`} material={mats.whiteSole} position={[cx, 0.05, -0.12]}>
-              <cylinderGeometry args={[0.006, 0.006, 0.12, 6]} />
-            </mesh>
-          ))}
-          {/* Symbole Mont Corvo sur la poitrine */}
-          <mesh material={mats.gold} position={[-0.08, 0.09, -0.116]}>
-            <boxGeometry args={[0.045, 0.035, 0.008]} />
+          {/* Tour de cou / badge blanc événementiel (visible sur la photo) */}
+          <mesh material={mats.lanyard} position={[0, 0.02, -0.118]}>
+            <boxGeometry args={[0.08, 0.22, 0.004]} />
           </mesh>
 
-          {/* BRAS GAUCHE : TIENT LE ROULEAU DE CARTE DE LA GRAND LINE / LAUGH TALE */}
+          {/* BRAS GAUCHE : TIENT LA CARTE DU SIÈCLE OUBLIÉ */}
           <group position={[-0.19, 0.14, 0]}>
             <mesh
-              material={mats.kytaHoodie}
+              material={mats.burgundySweater}
               position={[-0.02, -0.1, -0.04]}
               rotation={[0.4, 0.1, 0.15]}
             >
               <cylinderGeometry args={[0.05, 0.045, 0.24, 8]} />
             </mesh>
             <mesh
-              material={mats.kytaHoodie}
+              material={mats.burgundySweater}
               position={[0.04, -0.19, -0.14]}
               rotation={[-0.6, 0.3, -0.2]}
             >
               <cylinderGeometry args={[0.045, 0.04, 0.24, 8]} />
             </mesh>
-            {/* Main gauche */}
             <mesh material={mats.skin} position={[0.06, -0.19, -0.25]}>
               <boxGeometry args={[0.065, 0.06, 0.065]} />
             </mesh>
-            {/* Rouleau de parchemin / Carte du Siècle Oublié */}
+            {/* Rouleau de carte marine du Siècle Oublié */}
             <group position={[0.06, -0.17, -0.25]} rotation={[0.3, 0.4, 0.9]}>
               <mesh material={mats.parchment}>
                 <cylinderGeometry args={[0.035, 0.035, 0.32, 12]} />
               </mesh>
-              {/* Ruban rouge au centre de la carte */}
-              <mesh material={mats.kytaHoodie} position={[0, 0, 0]}>
+              <mesh material={mats.burgundySweater} position={[0, 0, 0]}>
                 <cylinderGeometry args={[0.037, 0.037, 0.04, 12]} />
               </mesh>
             </group>
           </group>
 
-          {/* BRAS DROIT : POINTE L'HORIZON + ÉQUIPÉ DU TRIPLE LOG POSE DU NOUVEAU MONDE */}
+          {/* BRAS DROIT : POINTE L'HORIZON + TRIPLE LOG POSE DU NOUVEAU MONDE */}
           <group ref={kytaRightArm} position={[0.19, 0.14, 0]}>
-            {/* Épaule & bras montant vers l'avant */}
             <mesh
-              material={mats.kytaHoodie}
+              material={mats.burgundySweater}
               position={[0.05, -0.04, -0.12]}
               rotation={[1.1, -0.2, 0.25]}
             >
               <cylinderGeometry args={[0.05, 0.045, 0.26, 8]} />
             </mesh>
-            {/* Avant-bras pointé vers le pare-brise */}
             <mesh
-              material={mats.kytaHoodie}
+              material={mats.burgundySweater}
               position={[0.06, 0.06, -0.26]}
               rotation={[1.45, -0.1, 0.2]}
             >
               <cylinderGeometry args={[0.045, 0.04, 0.24, 8]} />
             </mesh>
 
-            {/* --- TRIPLE LOG POSE DU NOUVEAU MONDE AU POIGNET DROIT --- */}
+            {/* TRIPLE LOG POSE DU NOUVEAU MONDE AU POIGNET DROIT */}
             <group position={[0.07, 0.14, -0.36]} rotation={[0.3, -0.2, 0.1]}>
-              {/* Bracelet de cuir brun autour du poignet */}
               <mesh material={mats.leather}>
                 <cylinderGeometry args={[0.048, 0.048, 0.06, 12]} />
               </mesh>
-              {/* Platine dorée à 3 dômes */}
               <mesh material={mats.gold} position={[0, 0.032, 0]}>
                 <boxGeometry args={[0.11, 0.015, 0.045]} />
               </mesh>
-              {/* Les 3 globes de verre du Log Pose */}
               {[-0.035, 0, 0.035].map((cx, ci) => (
                 <group key={`compass-${ci}`} position={[cx, 0.05, 0]}>
-                  {/* Dôme de verre transparent */}
                   <mesh material={mats.glassDome}>
                     <sphereGeometry args={[0.018, 12, 12]} />
                   </mesh>
-                  {/* Aiguille magnétique pivotante */}
                   <mesh
                     ref={(el: THREE.Mesh | null) => {
                       kytaCompassNeedles.current[ci] = el;
@@ -739,12 +754,11 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
               ))}
             </group>
 
-            {/* Main droite avec index pointé fièrement vers l'avant ("Laugh Tale est là !") */}
+            {/* Main droite avec index pointé vers l'avant ("Laugh Tale est droit devant !") */}
             <group position={[0.08, 0.18, -0.42]} rotation={[0.2, -0.1, 0.1]}>
               <mesh material={mats.skin}>
                 <boxGeometry args={[0.06, 0.055, 0.06]} />
               </mesh>
-              {/* Index tendu vers la route */}
               <mesh material={mats.skin} position={[0.01, 0.015, -0.045]} rotation={[-0.2, 0, 0]}>
                 <cylinderGeometry args={[0.01, 0.009, 0.06, 6]} />
               </mesh>
@@ -754,91 +768,94 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
 
         {/* Cou */}
         <mesh material={mats.skin} position={[0, 1.66, 0.14]}>
-          <cylinderGeometry args={[0.06, 0.06, 0.08, 8]} />
+          <cylinderGeometry args={[0.055, 0.055, 0.08, 8]} />
         </mesh>
 
-        {/* --- TÊTE, VISAGE & CASQUETTE À L'ENVERS DE KYTA --- */}
-        <group ref={kytaHead} position={[0, 1.82, 0.14]}>
-          {/* Tête */}
+        {/* --- TÊTE RÉALISTE KYTA (SANS BARBE, SANS CASQUETTE, CHEVEUX CHÂTAINS COIFFÉS) --- */}
+        <group ref={kytaHead} position={[0, 1.84, 0.14]}>
           <mesh material={mats.skin}>
-            <boxGeometry args={[0.22, 0.24, 0.2]} />
+            <boxGeometry args={[0.21, 0.24, 0.19]} />
           </mesh>
 
-          {/* Yeux pétillants */}
-          {[-0.055, 0.055].map((ex) => (
-            <group key={`kyta-eye-${ex}`} position={[ex, 0.02, -0.112]}>
-              <mesh material={mats.eyes}>
+          {/* Nez fin */}
+          <mesh material={mats.skin} position={[0, 0.0, -0.11]}>
+            <boxGeometry args={[0.024, 0.05, 0.024]} />
+          </mesh>
+
+          {/* Yeux bleu-gris pétillants */}
+          {[-0.052, 0.052].map((ex) => (
+            <group key={`kyta-eye-${ex}`} position={[ex, 0.022, -0.106]}>
+              <mesh material={mats.eyesIris}>
                 <boxGeometry args={[0.038, 0.038, 0.01]} />
               </mesh>
+              <mesh material={mats.eyesPupil} position={[0, 0, 0.003]}>
+                <boxGeometry args={[0.022, 0.022, 0.005]} />
+              </mesh>
               <mesh material={mats.eyeHighlight} position={[0.008, 0.008, 0.006]}>
-                <boxGeometry args={[0.012, 0.012, 0.005]} />
+                <boxGeometry args={[0.01, 0.01, 0.005]} />
               </mesh>
             </group>
           ))}
 
-          {/* Sourcils expressifs enthousiastes */}
-          {[-0.055, 0.055].map((bx, bi) => (
+          {/* Sourcils expressifs */}
+          {[-0.052, 0.052].map((bx, bi) => (
             <mesh
               key={`kyta-brow-${bi}`}
-              material={mats.mustache}
-              position={[bx, 0.058, -0.114]}
-              rotation={[0, 0, bi === 0 ? 0.05 : -0.05]}
+              material={mats.eyebrow}
+              position={[bx, 0.054, -0.108]}
+              rotation={[0, 0, bi === 0 ? 0.04 : -0.04]}
             >
-              <boxGeometry args={[0.045, 0.015, 0.008]} />
+              <boxGeometry args={[0.044, 0.012, 0.008]} />
             </mesh>
           ))}
 
-          {/* Grand sourire communicatif avec dents */}
-          <mesh material={mats.smile} position={[0, -0.05, -0.112]}>
-            <boxGeometry args={[0.1, 0.03, 0.01]} />
+          {/* Grand sourire communicatif */}
+          <mesh material={mats.smile} position={[0, -0.052, -0.106]}>
+            <boxGeometry args={[0.08, 0.018, 0.008]} />
           </mesh>
 
-          {/* --- BARBE & MOUSTACHE SOIGNÉE (JUMEAU DE KAMAL) --- */}
-          <mesh material={mats.mustache} position={[0, -0.026, -0.114]}>
-            <boxGeometry args={[0.11, 0.024, 0.014]} />
-          </mesh>
-          <mesh material={mats.mustache} position={[0, -0.08, -0.106]}>
-            <boxGeometry args={[0.1, 0.07, 0.026]} />
-          </mesh>
-          <mesh material={mats.mustache} position={[0, -0.07, 0.01]}>
-            <boxGeometry args={[0.228, 0.1, 0.19]} />
-          </mesh>
-          {[-0.114, 0.114].map((sx) => (
-            <mesh key={`kyta-sideburn-${sx}`} material={mats.mustache} position={[sx, 0.01, -0.02]}>
-              <boxGeometry args={[0.016, 0.12, 0.07]} />
+          {/* Micro serre-tête scène (discret sur la joue comme sur la photo) */}
+          <group position={[-0.108, -0.02, -0.04]} rotation={[0.1, 0.3, 0]}>
+            <mesh material={mats.micWire}>
+              <cylinderGeometry args={[0.004, 0.004, 0.12, 6]} />
             </mesh>
-          ))}
-
-          {/* Mèches de cheveux noirs dépassant sur le front */}
-          <mesh material={mats.darkHair} position={[0, 0.085, -0.108]}>
-            <boxGeometry args={[0.18, 0.03, 0.02]} />
-          </mesh>
-
-          {/* --- CASQUETTE SNAPBACK PORTÉE À L'ENVERS (SIGNATURE KYTA) --- */}
-          {/* Calotte de la casquette */}
-          <mesh material={mats.capBlack} position={[0, 0.09, 0.01]}>
-            <boxGeometry args={[0.235, 0.13, 0.22]} />
-          </mesh>
-          {/* Bouton sommital */}
-          <mesh material={mats.capBlack} position={[0, 0.16, 0.01]}>
-            <cylinderGeometry args={[0.02, 0.02, 0.014, 8]} />
-          </mesh>
-          {/* Visière tournée vers l'ARRIÈRE de la tête */}
-          <group position={[0, 0.055, 0.16]} rotation={[-0.18, 0, 0]}>
-            <mesh material={mats.capBlack}>
-              <boxGeometry args={[0.22, 0.016, 0.14]} />
-            </mesh>
-            <mesh material={mats.gold} position={[0, 0.008, -0.04]}>
-              <boxGeometry args={[0.18, 0.005, 0.02]} />
+            <mesh material={mats.micFoam} position={[0, -0.06, -0.02]}>
+              <sphereGeometry args={[0.014, 8, 8]} />
             </mesh>
           </group>
-          {/* Languette snapback à encoches réglables visible sur le front */}
-          <mesh material={mats.capBlack} position={[0, 0.08, -0.114]}>
-            <boxGeometry args={[0.11, 0.018, 0.01]} />
-          </mesh>
-          <mesh material={mats.whiteSole} position={[0, 0.08, -0.12]}>
-            <boxGeometry args={[0.04, 0.008, 0.005]} />
-          </mesh>
+
+          {/* --- CHEVEUX CHÂTAIN FONCÉ AVEC MÈCHE NATURELLE (PHOTO DE GAUCHE) --- */}
+          <group position={[0, 0.08, 0.01]}>
+            {/* Masse principale */}
+            <mesh material={mats.hairKyta} position={[0, 0.04, 0.01]}>
+              <boxGeometry args={[0.23, 0.13, 0.21]} />
+            </mesh>
+            {/* Raie et mèche douce balayée sur le front */}
+            <mesh
+              material={mats.hairKyta}
+              position={[-0.02, 0.085, -0.05]}
+              rotation={[-0.15, -0.1, 0.08]}
+            >
+              <boxGeometry args={[0.19, 0.055, 0.09]} />
+            </mesh>
+            <mesh
+              material={mats.hairKyta}
+              position={[-0.03, 0.05, -0.102]}
+              rotation={[0.15, -0.08, 0.06]}
+            >
+              <boxGeometry args={[0.16, 0.04, 0.025]} />
+            </mesh>
+            {/* Côtés dégradés */}
+            {[-0.112, 0.112].map((hx) => (
+              <mesh key={`kyta-hairside-${hx}`} material={mats.hairKyta} position={[hx, -0.01, 0.01]}>
+                <boxGeometry args={[0.018, 0.12, 0.18]} />
+              </mesh>
+            ))}
+            {/* Nuque */}
+            <mesh material={mats.hairKyta} position={[0, -0.03, 0.105]}>
+              <boxGeometry args={[0.21, 0.12, 0.025]} />
+            </mesh>
+          </group>
         </group>
       </group>
     </group>
