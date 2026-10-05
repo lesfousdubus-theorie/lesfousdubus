@@ -61,6 +61,16 @@ export default function CameraRig({
   const preparedPhaseRef = useRef<Phase | null>(null);
   const framingScaleRef = useRef(1);
   const resetViewRef = useRef(resetViewToken);
+  const resetTransition = useRef({
+    active: false,
+    t: 0,
+    duration: 0.85,
+    fromPos: new THREE.Vector3(),
+    toPos: new THREE.Vector3(),
+    fromTarget: new THREE.Vector3(),
+    toTarget: new THREE.Vector3(),
+    fromSkyPitch: 0,
+  });
   const arrivedRef = useRef(onArrived);
   useEffect(() => {
     arrivedRef.current = onArrived;
@@ -122,26 +132,48 @@ export default function CameraRig({
     exteriorPointersRef.current.clear();
     pinchStartDistRef.current = null;
     look.current.dragging = false;
-    skyPitchRef.current = 0;
     targetFovRef.current = 55;
     if (phase === "outside" && controls.current) {
       const control = controls.current;
-      control.minPolarAngle = 0;
-      control.target.set(0, 1.9, orbitTargetZ);
-      // Purger l'inertie du dernier geste avant de restaurer la position.
-      const damping = control.enableDamping;
-      control.enableDamping = false;
-      control.update();
-      camera.position.copy(DEFAULT_CAMERA_POS).sub(control.target).multiplyScalar(framingScaleRef.current).add(control.target);
-      control.update();
-      control.enableDamping = damping;
+      const targetTarget = new THREE.Vector3(0, 1.9, orbitTargetZ);
+      const targetPos = DEFAULT_CAMERA_POS.clone()
+        .sub(targetTarget)
+        .multiplyScalar(framingScaleRef.current)
+        .add(targetTarget);
+
+      if (reducedMotion) {
+        control.minPolarAngle = 0;
+        control.target.copy(targetTarget);
+        const damping = control.enableDamping;
+        control.enableDamping = false;
+        control.update();
+        camera.position.copy(targetPos);
+        control.update();
+        control.enableDamping = damping;
+        skyPitchRef.current = 0;
+      } else {
+        const rt = resetTransition.current;
+        rt.active = true;
+        rt.t = 0;
+        rt.fromPos.copy(camera.position);
+        rt.toPos.copy(targetPos);
+        rt.fromTarget.copy(control.target);
+        rt.toTarget.copy(targetTarget);
+        rt.fromSkyPitch = skyPitchRef.current;
+        control.enabled = false;
+      }
     } else if (phase === "inside") {
       const matrix = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
       const rotation = new THREE.Euler().setFromRotationMatrix(matrix, "YXZ");
-      look.current.targetYaw = rotation.y;
+      // Chemin angulaire le plus court pour le recentrage fluide de la tête
+      const currentYaw = look.current.yaw;
+      let diffYaw = (rotation.y - currentYaw) % (Math.PI * 2);
+      if (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
+      if (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
+      look.current.targetYaw = currentYaw + diffYaw;
       look.current.targetPitch = rotation.x;
     }
-  }, [resetViewToken, phase, camera, orbitTargetZ, activeEyePos, activeTvTarget]);
+  }, [resetViewToken, phase, camera, orbitTargetZ, activeEyePos, activeTvTarget, reducedMotion]);
 
   // Support vue caméra optionnelle (ex: pour vérification ou captures tests)
   useEffect(() => {
@@ -356,6 +388,13 @@ export default function CameraRig({
 
     const down = (event: PointerEvent) => {
       if (phaseRef.current !== "outside") return;
+      if (resetTransition.current.active) {
+        resetTransition.current.active = false;
+        if (controls.current) {
+          controls.current.enabled = true;
+          controls.current.update();
+        }
+      }
       pointers.set(event.pointerId, event.clientY);
     };
 
@@ -452,9 +491,41 @@ export default function CameraRig({
       }
       return;
     }
+
+    if (p === "outside" && resetTransition.current.active) {
+      const rt = resetTransition.current;
+      const transitionDt = Math.min(dt, 0.05);
+      rt.t = Math.min(1, rt.t + transitionDt / rt.duration);
+      // Quintic smoothstep (démarrage et arrêt ultra-doux)
+      const t = rt.t;
+      const s = t * t * t * (t * (t * 6 - 15) + 10);
+
+      cam.position.lerpVectors(rt.fromPos, rt.toPos, s);
+      const curTarget = new THREE.Vector3().lerpVectors(rt.fromTarget, rt.toTarget, s);
+      cam.lookAt(curTarget);
+      skyPitchRef.current = THREE.MathUtils.lerp(rt.fromSkyPitch, 0, s);
+
+      if (controls.current) {
+        controls.current.target.copy(curTarget);
+      }
+
+      if (rt.t >= 1) {
+        rt.active = false;
+        skyPitchRef.current = 0;
+        if (controls.current) {
+          controls.current.enabled = true;
+          controls.current.minPolarAngle = 0;
+          controls.current.target.copy(rt.toTarget);
+          cam.position.copy(rt.toPos);
+          controls.current.update();
+        }
+      }
+      return;
+    }
+
     if (p === "inside") {
       const l = look.current;
-      const lookBlend = reducedMotion ? 1 : Math.min(1, dt * 10);
+      const lookBlend = reducedMotion ? 1 : Math.min(1, dt * 6.5);
       l.yaw += (l.targetYaw - l.yaw) * lookBlend;
       l.pitch += (l.targetPitch - l.pitch) * lookBlend;
       cam.rotation.set(l.pitch, l.yaw, 0, "YXZ");

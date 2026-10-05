@@ -17,6 +17,7 @@ import { TheoryAgeModal } from "./modals/TheoryAgeModal";
 import { getTheoryAgeInDays } from "@/lib/theory-age";
 import { useBusSync } from "./useBusSync";
 import { useVisualViewport } from "./useVisualViewport";
+import BackgroundMusicPlayer from "./audio/BackgroundMusicPlayer";
 
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
 
@@ -26,6 +27,7 @@ export default function BusExperience() {
   useVisualViewport();
   const [resetViewToken, setResetViewToken] = useState(0);
   const [sceneAvailable, setSceneAvailable] = useState(false);
+  const [bgmPlaying, setBgmPlaying] = useState(false);
   const [phase, setPhase] = useState<Phase>(() => {
     if (typeof window !== "undefined") {
       const p = new URLSearchParams(window.location.search).get("phase");
@@ -598,6 +600,16 @@ export default function BusExperience() {
     return () => clearTimeout(timer);
   }, [phase]);
 
+  const toggleBgm = useCallback(() => {
+    setBgmPlaying((prev) => {
+      const next = !prev;
+      if (next && tvOn) {
+        setTvOn(false);
+      }
+      return next;
+    });
+  }, [tvOn]);
+
   const effectiveCount = count ?? 0;
   const numRows = computeNumRows(seatCapacity);
   const busy = phase === "entering" || phase === "exiting";
@@ -669,6 +681,15 @@ export default function BusExperience() {
         openProfileModal={openProfileModal}
         exitBus={exitBus}
         resetView={() => setResetViewToken((token) => token + 1)}
+        bgmPlaying={bgmPlaying}
+        toggleBgm={toggleBgm}
+      />
+
+      {/* Lecteur de musique de fond (Howard Harper-Barnes - Life in Pieces) */}
+      <BackgroundMusicPlayer
+        playing={bgmPlaying}
+        onPlayingChange={setBgmPlaying}
+        mutedForOverlay={showTheoryModal || tvOn}
       />
 
       {/* Modal interactif complet de la théorie des Fous du Bus */}

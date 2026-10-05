@@ -46,6 +46,8 @@ interface BusHudProps {
   openProfileModal: (mode: "name" | "comment") => void;
   exitBus: () => void;
   resetView: () => void;
+  bgmPlaying: boolean;
+  toggleBgm: () => void;
 }
 
 export function BusHud({
@@ -55,7 +57,7 @@ export function BusHud({
   tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, setStatsLoadError,
   setStatsRetryToken, setSeatRow, setTvOn, openPassengerManifest,
   toggleDayNight, decelerateBus, accelerateBus, toggleHeadlights, honk,
-  enterBus, openProfileModal, exitBus, resetView,
+  enterBus, openProfileModal, exitBus, resetView, bgmPlaying, toggleBgm,
 }: BusHudProps) {
   return (
     <>
@@ -138,8 +140,8 @@ export function BusHud({
           </button>
         </div>
 
-        {/* Bouton interactif Jour / Nuit */}
-        <div className="bus-day-night pointer-events-auto absolute bottom-[4.5rem] left-3 flex h-11 items-center gap-2 sm:bottom-4 sm:left-4">
+        {/* Bouton interactif Jour / Nuit, Recentrer & Musique */}
+        <div className="bus-day-night pointer-events-auto absolute bottom-[4.5rem] left-3 flex h-11 items-center gap-1.5 sm:bottom-4 sm:left-4 sm:gap-2">
         <button
           type="button"
           onClick={toggleDayNight}
@@ -162,8 +164,35 @@ export function BusHud({
           <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
           <span className="bus-day-night-detail text-xs text-white/85">· {manualDayNight === null ? (isNight ? "Nuit" : "Jour") : "Manuel"}</span>
         </button>
-        <button type="button" onClick={resetView} disabled={busy} aria-label="Recentrer la vue" title="Recentrer la vue sur le bus" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/35 bg-[#07142b]/95 text-white shadow-lg hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60">
+        <button type="button" onClick={resetView} disabled={busy} aria-label="Recentrer la vue" title="Recentrer la vue sur le bus" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/35 bg-[#07142b]/95 text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60 cursor-pointer active:scale-95">
           <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="6" /><path d="M12 2v4m0 12v4M2 12h4m12 0h4" /></svg>
+        </button>
+        <button
+          type="button"
+          onClick={toggleBgm}
+          aria-label={bgmPlaying ? "Couper la musique de fond" : "Activer la musique de fond (Life in Pieces — Le Mont Corvo)"}
+          title={bgmPlaying ? "Couper la musique de fond (Life in Pieces)" : "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)"}
+          className={`bus-glass flex h-11 items-center gap-1.5 rounded-full border px-3 text-xs font-bold shadow-lg transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 sm:px-3.5 sm:text-sm cursor-pointer ${
+            bgmPlaying
+              ? "border-[#ffd23f] bg-[#07142b]/95 text-[#ffd23f] shadow-[0_0_15px_rgba(255,210,63,0.35)]"
+              : "border-white/35 bg-[#07142b]/95 text-white hover:border-[#ffd23f]/70 hover:text-[#ffd23f]"
+          }`}
+        >
+          {bgmPlaying ? (
+            <span className="flex items-end gap-0.5 h-3.5" aria-hidden="true">
+              <span className="inline-block h-3.5 w-1 rounded-full bg-[#ffd23f] animate-pulse" />
+              <span className="inline-block h-2 w-1 rounded-full bg-[#ffd23f] animate-pulse [animation-delay:150ms]" />
+              <span className="inline-block h-3 w-1 rounded-full bg-[#ffd23f] animate-pulse [animation-delay:300ms]" />
+            </span>
+          ) : (
+            <span aria-hidden="true" className="text-sm">🎵</span>
+          )}
+          <span>Musique</span>
+          {bgmPlaying && (
+            <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[10px] font-black uppercase text-[#0d2190]">
+              ON
+            </span>
+          )}
         </button>
         </div>
 
