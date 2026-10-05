@@ -10,6 +10,7 @@ import {
   makeLabelTexture,
   makeLicensePlateTexture,
   makeTvOffTexture,
+  makeBusContactShadowTexture,
 } from "@/lib/textures";
 import { TV_POSITION, type WorldState } from "./constants";
 import type { PassengerProfile } from "@/types/passenger";
@@ -287,6 +288,7 @@ export default function Bus({
   const tvOffTex = useMemo(() => makeTvOffTexture(), []);
   const dashTex = useMemo(() => makeDashboardTexture(), []);
   const licensePlateTex = useMemo(() => makeLicensePlateTexture(), []);
+  const contactShadowTex = useMemo(() => makeBusContactShadowTexture(), []);
 
   // Les 5 phrases exactes de la théorie taguées sur le bus
   // 1. Le siècle oublié c'est le présent
@@ -367,6 +369,7 @@ export default function Bus({
     tvOffTex.dispose();
     dashTex.dispose();
     licensePlateTex.dispose();
+    contactShadowTex.dispose();
     tagSiecleTex.dispose();
     tagBarbeNoireTex.dispose();
     tagLuffyNikaTex.dispose();
@@ -380,6 +383,7 @@ export default function Bus({
     tvOffTex,
     dashTex,
     licensePlateTex,
+    contactShadowTex,
     tagSiecleTex,
     tagBarbeNoireTex,
     tagLuffyNikaTex,
@@ -483,6 +487,7 @@ export default function Bus({
         tagLuffyNikaTex={tagLuffyNikaTex}
         tagPoneglyphesTex={tagPoneglyphesTex}
         tagTimingTex={tagTimingTex}
+        contactShadowTex={contactShadowTex}
       />
 
       {/* ---------- INTÉRIEUR DU BUS ---------- */}
@@ -559,46 +564,216 @@ export default function Bus({
         lowPower={lowPower}
       />
 
-      {/* Poste de conduite avec volant et tableau de bord */}
+      {/* ---------- POSTE DE CONDUITE & TABLEAU DE BORD COMPLET DU BUS ---------- */}
+      {/* Siège conducteur ergonomique avec appuie-tête et embase */}
       <group position={[-0.72, 0, -3.8]}>
+        {/* Embase métallique fixée au plancher */}
+        <mesh material={mats.dark} position={[0, 0.82, 0]}>
+          <boxGeometry args={[0.22, 0.40, 0.22]} />
+        </mesh>
+        {/* Coussin d'assise */}
         <mesh material={mats.seat} position={[0, 1.05, 0]}>
-          <boxGeometry args={[0.8, 0.15, 0.7]} />
+          <boxGeometry args={[0.76, 0.14, 0.68]} />
         </mesh>
-        <mesh material={mats.seat} position={[0, 1.5, 0.33]}>
-          <boxGeometry args={[0.8, 0.9, 0.12]} />
+        {/* Dossier du siège */}
+        <mesh material={mats.seat} position={[0, 1.54, 0.32]}>
+          <boxGeometry args={[0.74, 0.86, 0.12]} />
         </mesh>
-        {/* Volant 3 branches */}
-        <mesh
-          material={mats.dark}
-          position={[0, 1.65, -0.55]}
-          rotation={[-1.1, 0, 0]}
-        >
-          <torusGeometry args={[0.25, 0.035, 12, 32]} />
+        {/* Appuie-tête */}
+        <mesh material={mats.seat} position={[0, 2.05, 0.32]}>
+          <boxGeometry args={[0.34, 0.22, 0.10]} />
         </mesh>
-        <mesh
-          material={mats.chrome}
-          position={[0, 1.45, -0.5]}
-          rotation={[0.48, 0, 0]}
-        >
-          <cylinderGeometry args={[0.025, 0.025, 0.52, 10]} />
+        {/* Accoudoir côté fenêtre */}
+        <mesh material={mats.dark} position={[-0.40, 1.25, 0.05]}>
+          <boxGeometry args={[0.08, 0.10, 0.42]} />
         </mesh>
       </group>
 
-      {/* Meuble tableau de bord avec compteurs lumineux */}
-      <group position={[0, 1.42, -4.3]}>
-        <mesh material={mats.dark}>
-          <boxGeometry args={[2.4, 0.42, 0.45]} />
+      {/* Planche de bord complète du bus (jointement continu avec le pare-brise) */}
+      <group position={[0, 0, 0]}>
+        {/* Table supérieure de la planche de bord (Deck) : comble l'espace jusqu'au pare-brise */}
+        <mesh material={mats.dark} position={[0, 1.56, -4.32]}>
+          <boxGeometry args={[2.44, 0.08, 0.54]} />
         </mesh>
-        {/* Cadran d'instruments face au conducteur */}
-        <mesh position={[-0.72, 0.15, 0.23]} rotation={[-0.35, 0, 0]}>
-          <planeGeometry args={[0.8, 0.25]} />
-          <meshStandardMaterial
-            map={dashTex}
-            emissive="#ffffff"
-            emissiveMap={dashTex}
-            emissiveIntensity={0.65}
-          />
+        {/* Relevé avant sous la baie de pare-brise */}
+        <mesh material={mats.bodyDark} position={[0, 1.62, -4.54]}>
+          <boxGeometry args={[2.42, 0.06, 0.10]} />
         </mesh>
+        {/* Façade verticale descendante fermant l'avant du bus jusqu'au plancher */}
+        <mesh material={mats.dark} position={[0, 1.10, -4.06]}>
+          <boxGeometry args={[2.44, 0.92, 0.06]} />
+        </mesh>
+        {/* Flancs d'habillage latéraux */}
+        {[-1.20, 1.20].map((lx) => (
+          <mesh key={`dash-cheek-${lx}`} material={mats.dark} position={[lx, 1.10, -4.32]}>
+            <boxGeometry args={[0.06, 0.92, 0.54]} />
+          </mesh>
+        ))}
+
+        {/* Combiné d'instruments avec casquette biseautée face au conducteur */}
+        <group position={[-0.72, 1.60, -4.22]}>
+          {/* Casquette protectrice de compteur (pare-soleil du combiné) */}
+          <mesh material={mats.dark} position={[0, 0.16, -0.02]} rotation={[-0.18, 0, 0]}>
+            <boxGeometry args={[0.82, 0.04, 0.28]} />
+          </mesh>
+          <mesh material={mats.dark} position={[-0.40, 0.05, -0.02]}>
+            <boxGeometry args={[0.03, 0.22, 0.26]} />
+          </mesh>
+          <mesh material={mats.dark} position={[0.40, 0.05, -0.02]}>
+            <boxGeometry args={[0.03, 0.22, 0.26]} />
+          </mesh>
+          {/* Cadre de fond encastré du compteur */}
+          <mesh material={mats.dark} position={[0, 0.02, -0.01]} rotation={[-0.32, 0, 0]}>
+            <boxGeometry args={[0.80, 0.26, 0.03]} />
+          </mesh>
+          {/* Affichage des instruments rétroéclairés */}
+          <mesh position={[0, 0.02, 0.01]} rotation={[-0.32, 0, 0]}>
+            <planeGeometry args={[0.78, 0.24]} />
+            <meshStandardMaterial
+              map={dashTex}
+              emissive="#ffffff"
+              emissiveMap={dashTex}
+              emissiveIntensity={0.85}
+              roughness={0.25}
+            />
+          </mesh>
+        </group>
+
+        {/* Colonne de direction et volant réaliste à 3 branches */}
+        <group position={[-0.72, 0, 0]}>
+          {/* Colonne de direction inclinée sortant du tableau de bord vers le conducteur */}
+          <mesh material={mats.dark} position={[0, 1.34, -4.10]} rotation={[0.58, 0, 0]}>
+            <cylinderGeometry args={[0.032, 0.032, 0.42, 12]} />
+          </mesh>
+          <mesh material={mats.chrome} position={[0, 1.48, -3.98]} rotation={[0.58, 0, 0]}>
+            <cylinderGeometry args={[0.038, 0.038, 0.04, 12]} />
+          </mesh>
+          {/* Commodos de commande (clignotants / essuie-glaces) */}
+          <mesh material={mats.dark} position={[-0.09, 1.48, -3.98]} rotation={[0, 0, 0.35]}>
+            <boxGeometry args={[0.12, 0.018, 0.018]} />
+          </mesh>
+          <mesh material={mats.dark} position={[0.09, 1.48, -3.98]} rotation={[0, 0, -0.35]}>
+            <boxGeometry args={[0.12, 0.018, 0.018]} />
+          </mesh>
+
+          {/* Volant 3 branches complet */}
+          <group position={[0, 1.54, -3.94]} rotation={[-0.99, 0, 0]}>
+            {/* Jante torique du volant */}
+            <mesh material={mats.dark}>
+              <torusGeometry args={[0.23, 0.024, 14, 36]} />
+            </mesh>
+            {/* Moyeu central du volant */}
+            <mesh material={mats.dark}>
+              <cylinderGeometry args={[0.065, 0.065, 0.032, 18]} />
+            </mesh>
+            {/* Bouton de klaxon One Piece doré au centre du volant */}
+            <mesh material={mats.yellow} position={[0, 0, 0.018]}>
+              <cylinderGeometry args={[0.042, 0.042, 0.015, 18]} />
+            </mesh>
+            {/* 3 branches reliant le moyeu à la jante */}
+            <mesh material={mats.dark} position={[-0.11, 0, 0]}>
+              <boxGeometry args={[0.13, 0.028, 0.016]} />
+            </mesh>
+            <mesh material={mats.dark} position={[0.11, 0, 0]}>
+              <boxGeometry args={[0.13, 0.028, 0.016]} />
+            </mesh>
+            <mesh material={mats.dark} position={[0, -0.11, 0]}>
+              <boxGeometry args={[0.028, 0.13, 0.016]} />
+            </mesh>
+          </group>
+        </group>
+
+        {/* Console centrale du bus */}
+        <group position={[0, 0, 0]}>
+          {/* Bloc de console avancé vers l'habitacle */}
+          <mesh material={mats.dark} position={[0, 1.34, -4.04]}>
+            <boxGeometry args={[0.54, 0.58, 0.18]} />
+          </mesh>
+          {/* Écran multimédia / GPS Laugh Tale */}
+          <mesh material={mats.dark} position={[0, 1.50, -3.94]}>
+            <boxGeometry args={[0.42, 0.22, 0.02]} />
+          </mesh>
+          <mesh position={[0, 1.50, -3.928]}>
+            <planeGeometry args={[0.38, 0.18]} />
+            <meshStandardMaterial
+              color="#072214"
+              emissive="#10b981"
+              emissiveIntensity={0.65}
+              roughness={0.25}
+            />
+          </mesh>
+          {/* Double grille d'aération supérieure de climatisation */}
+          {[-0.13, 0.13].map((vx) => (
+            <group key={`vent-${vx}`} position={[vx, 1.59, -4.08]}>
+              <mesh material={mats.dark}>
+                <boxGeometry args={[0.16, 0.06, 0.02]} />
+              </mesh>
+              <mesh material={mats.chrome} position={[0, 0, 0.005]}>
+                <boxGeometry args={[0.14, 0.012, 0.01]} />
+              </mesh>
+            </group>
+          ))}
+          {/* Bouton d'arrêt d'urgence rouge "STOP" (champignon d'arrêt du bus) */}
+          <group position={[0, 1.32, -3.94]}>
+            <mesh material={mats.yellow}>
+              <boxGeometry args={[0.09, 0.09, 0.018]} />
+            </mesh>
+            <mesh material={mats.red} position={[0, 0, 0.018]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.032, 0.026, 0.024, 16]} />
+            </mesh>
+          </group>
+          {/* Rangée d'interrupteurs de bord à témoins lumineux */}
+          {[-0.15, -0.05, 0.05, 0.15].map((sx, idx) => (
+            <group key={`switch-${idx}`} position={[sx, 1.20, -3.94]}>
+              <mesh material={mats.dark}>
+                <boxGeometry args={[0.045, 0.06, 0.015]} />
+              </mesh>
+              <mesh
+                material={idx === 0 ? mats.yellow : idx === 1 ? mats.seat : mats.red}
+                position={[0, 0.015, 0.01]}
+              >
+                <boxGeometry args={[0.025, 0.015, 0.01]} />
+              </mesh>
+            </group>
+          ))}
+          {/* Levier de boîte de vitesses automatique */}
+          <group position={[-0.18, 1.14, -3.96]}>
+            <mesh material={mats.dark}>
+              <boxGeometry args={[0.10, 0.04, 0.14]} />
+            </mesh>
+            <mesh material={mats.chrome} position={[0, 0.08, 0]} rotation={[0.2, 0, 0]}>
+              <cylinderGeometry args={[0.012, 0.012, 0.14, 8]} />
+            </mesh>
+            <mesh material={mats.dark} position={[0, 0.15, 0.02]}>
+              <sphereGeometry args={[0.026, 12, 12]} />
+            </mesh>
+          </group>
+        </group>
+
+        {/* Côté passager avant : boîte à gants et barre de maintien */}
+        <group position={[0.72, 0, 0]}>
+          <mesh material={mats.dark} position={[0, 1.48, -4.04]}>
+            <boxGeometry args={[0.68, 0.18, 0.14]} />
+          </mesh>
+          {/* Liseré chromé de boîte à gants */}
+          <mesh material={mats.chrome} position={[0, 1.48, -3.96]}>
+            <boxGeometry args={[0.64, 0.012, 0.01]} />
+          </mesh>
+          {/* Barre de maintien passager avant jaune */}
+          <mesh material={mats.yellow} position={[0, 1.68, -4.10]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.018, 0.018, 0.60, 10]} />
+          </mesh>
+        </group>
+
+        {/* Rétroviseur intérieur panoramique fixé sous le pare-brise */}
+        <group position={[0, 2.76, -4.50]} rotation={[0.15, 0, 0]}>
+          <mesh material={mats.dark}>
+            <boxGeometry args={[0.55, 0.16, 0.03]} />
+          </mesh>
+          <mesh material={mats.chrome} position={[0, 0, 0.016]}>
+            <planeGeometry args={[0.52, 0.13]} />
+          </mesh>
+        </group>
       </group>
 
       {/* ---------- TÉLÉVISIONS DU BUS ---------- */}

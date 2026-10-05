@@ -33,6 +33,7 @@ interface BusExteriorProps {
   tagLuffyNikaTex: THREE.Texture;
   tagPoneglyphesTex: THREE.Texture;
   tagTimingTex: THREE.Texture;
+  contactShadowTex: THREE.Texture;
 }
 
 export default function BusExterior({
@@ -40,7 +41,7 @@ export default function BusExterior({
   pillars, wheelPositions, wheels, leftWiper, rightWiper, leftTarget, rightTarget,
   sideLabel, destLabel, licensePlateTex, montCorvoTex, hatGeo, ribbonGeo, hat,
   hatBasePos, hatBaseRot, tagSiecleTex, tagBarbeNoireTex, tagLuffyNikaTex,
-  tagPoneglyphesTex, tagTimingTex,
+  tagPoneglyphesTex, tagTimingTex, contactShadowTex,
 }: BusExteriorProps) {
   return (
     <>
@@ -236,7 +237,7 @@ export default function BusExterior({
         <mesh material={mats.glass} position={[0, 2.25, 0]} raycast={() => null}>
           <boxGeometry args={[2.56, 1.04, 0.02]} />
         </mesh>
-        <mesh material={mats.chrome} position={[0, 0.65, 0.1]}>
+        <mesh material={mats.chrome} castShadow position={[0, 0.65, 0.1]}>
           <boxGeometry args={[2.7, 0.28, 0.25]} />
         </mesh>
         {/* Plaque d'immatriculation arrière */}
@@ -264,11 +265,28 @@ export default function BusExterior({
       <mesh material={mats.bodyDark} castShadow position={[0, 3.29, cabinCenterZ]}>
         <boxGeometry args={[2.3, 0.12, cabinLength - 0.3]} />
       </mesh>
-      <mesh material={mats.floor} position={[0, 0.6, cabinCenterZ]}>
+      <mesh material={mats.floor} castShadow position={[0, 0.6, cabinCenterZ]}>
         <boxGeometry args={[2.6, 0.08, cabinLength]} />
       </mesh>
-      <mesh material={mats.dark} position={[0, 0.4, cabinCenterZ - 0.6]}>
+      <mesh material={mats.dark} castShadow position={[0, 0.4, cabinCenterZ - 0.6]}>
         <boxGeometry args={[2.4, 0.3, cabinLength + 1.2]} />
+      </mesh>
+
+      {/* Ombre de contact au sol sous le bus : ancre solidement le bus au sol */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.026, cabinCenterZ - 0.5]}
+        renderOrder={1}
+      >
+        <planeGeometry args={[3.2, cabinLength + 2.8]} />
+        <meshBasicMaterial
+          map={contactShadowTex}
+          transparent
+          opacity={0.88}
+          depthWrite={false}
+          polygonOffset
+          polygonOffsetFactor={-1}
+        />
       </mesh>
 
       <BusFront
