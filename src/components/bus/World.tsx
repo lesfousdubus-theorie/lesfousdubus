@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { WorldLandmark, type PropDef, type PropType } from "./WorldLandmark";
 import WorldSetPiece from "./WorldSetPiece";
@@ -182,6 +182,10 @@ interface WorldProps {
 export default function World({ worldRef, reducedMotion = false, lowPower = false }: WorldProps) {
   const allProps = useMemo(() => buildProps(), []);
   const terrains = useMemo(() => ZONES.map((_, index) => makeTerrain(index)), []);
+
+  useEffect(() => () => {
+    terrains.forEach((terrain) => terrain.dispose());
+  }, [terrains]);
   const props = useMemo(
     () => lowPower ? allProps.filter((_, index) => index % 2 === 0) : allProps,
     [allProps, lowPower],
@@ -273,7 +277,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       {ZONES.map((zone, i) => (
         <group
           key={zone.name}
-          ref={(el: any) => {
+          ref={(el: THREE.Group | null) => {
             zoneRefs.current[i] = el;
           }}
         >
@@ -329,7 +333,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       {props.map((p, i) => (
         <group
           key={i}
-          ref={(el: any) => {
+          ref={(el: THREE.Group | null) => {
             propRefs.current[i] = el;
           }}
           position={[p.x, 0, 0]}

@@ -101,6 +101,9 @@ export function JoinBusModal({
                 placeholder="Ex. NakamaBasque"
                 className="w-full select-text rounded-xl border border-white/20 bg-black/25 px-4 py-3 text-base text-white outline-none placeholder:text-[#9aabd2] focus:border-[#ffd23f] focus:ring-2 focus:ring-[#ffd23f]/25"
               />
+              <span className="mt-1.5 block text-right text-xs font-semibold tabular-nums text-[#aebde0]">
+                {name.length}/24
+              </span>
             </label>
           ) : (
             <label className="block">

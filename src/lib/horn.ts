@@ -18,18 +18,25 @@ export function unlockAudio() {
   getCtx();
 }
 
-let hornAudio: HTMLAudioElement | null = null;
+const HORN_POOL_SIZE = 3;
+let hornPool: HTMLAudioElement[] | null = null;
+let hornIndex = 0;
 
 /** Joue le klaxon officiel One Piece (Luffy Eyecatcher - Grand Line). */
 export function playHorn() {
   if (typeof window === "undefined") return;
   try {
-    if (!hornAudio) {
-      hornAudio = new Audio("/sounds/horn.mp3");
-      hornAudio.volume = 0.9;
+    if (!hornPool) {
+      hornPool = Array.from({ length: HORN_POOL_SIZE }, () => {
+        const audio = new Audio("/sounds/horn.mp3");
+        audio.volume = 0.9;
+        return audio;
+      });
     }
-    hornAudio.currentTime = 0;
-    const playPromise = hornAudio.play();
+    const audio = hornPool[hornIndex];
+    hornIndex = (hornIndex + 1) % HORN_POOL_SIZE;
+    audio.currentTime = 0;
+    const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
         playSynthHorn();

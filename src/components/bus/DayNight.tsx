@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { type WorldState } from "./constants";
 
 interface Props {
@@ -58,6 +58,10 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     return g;
   }, [lowPower]);
+
+  useEffect(() => () => {
+    starGeo.dispose();
+  }, [starGeo]);
 
   useFrame((state, dt) => {
     let targetSunY = 0.85;
