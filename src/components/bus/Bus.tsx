@@ -569,48 +569,48 @@ export default function Bus({
       {/* Siège conducteur ergonomique avec appuie-tête et embase (Kamal) */}
       <group position={[-0.72, 0, -3.8]}>
         {/* Embase métallique fixée au plancher */}
-        <mesh material={mats.dark} position={[0, 0.82, 0]}>
-          <boxGeometry args={[0.22, 0.40, 0.22]} />
+        <mesh material={mats.dark} position={[0, 0.77, 0]}>
+          <boxGeometry args={[0.22, 0.30, 0.22]} />
         </mesh>
-        {/* Coussin d'assise */}
-        <mesh material={mats.seat} position={[0, 1.05, 0]}>
-          <boxGeometry args={[0.76, 0.14, 0.68]} />
+        {/* Coussin d'assise abaissé */}
+        <mesh material={mats.seat} position={[0, 0.95, 0]}>
+          <boxGeometry args={[0.76, 0.12, 0.68]} />
         </mesh>
-        {/* Dossier du siège */}
-        <mesh material={mats.seat} position={[0, 1.54, 0.32]}>
-          <boxGeometry args={[0.74, 0.86, 0.12]} />
+        {/* Dossier du siège aux proportions harmonieuses */}
+        <mesh material={mats.seat} position={[0, 1.32, 0.32]}>
+          <boxGeometry args={[0.74, 0.62, 0.12]} />
         </mesh>
-        {/* Appuie-tête */}
-        <mesh material={mats.seat} position={[0, 2.05, 0.32]}>
-          <boxGeometry args={[0.34, 0.22, 0.10]} />
+        {/* Appuie-tête ajusté */}
+        <mesh material={mats.seat} position={[0, 1.70, 0.32]}>
+          <boxGeometry args={[0.32, 0.14, 0.10]} />
         </mesh>
         {/* Accoudoir côté fenêtre */}
-        <mesh material={mats.dark} position={[-0.40, 1.25, 0.05]}>
-          <boxGeometry args={[0.08, 0.10, 0.42]} />
+        <mesh material={mats.dark} position={[-0.40, 1.14, 0.05]}>
+          <boxGeometry args={[0.08, 0.08, 0.42]} />
         </mesh>
       </group>
 
       {/* Siège co-pilote / navigateur ergonomique pour Kyta */}
       <group position={[0.72, 0, -3.8]}>
         {/* Embase métallique fixée au plancher */}
-        <mesh material={mats.dark} position={[0, 0.82, 0]}>
-          <boxGeometry args={[0.22, 0.40, 0.22]} />
+        <mesh material={mats.dark} position={[0, 0.77, 0]}>
+          <boxGeometry args={[0.22, 0.30, 0.22]} />
         </mesh>
-        {/* Coussin d'assise */}
-        <mesh material={mats.seat} position={[0, 1.05, 0]}>
-          <boxGeometry args={[0.76, 0.14, 0.68]} />
+        {/* Coussin d'assise abaissé */}
+        <mesh material={mats.seat} position={[0, 0.95, 0]}>
+          <boxGeometry args={[0.76, 0.12, 0.68]} />
         </mesh>
-        {/* Dossier du siège */}
-        <mesh material={mats.seat} position={[0, 1.54, 0.32]}>
-          <boxGeometry args={[0.74, 0.86, 0.12]} />
+        {/* Dossier du siège aux proportions harmonieuses */}
+        <mesh material={mats.seat} position={[0, 1.32, 0.32]}>
+          <boxGeometry args={[0.74, 0.62, 0.12]} />
         </mesh>
-        {/* Appuie-tête */}
-        <mesh material={mats.seat} position={[0, 2.05, 0.32]}>
-          <boxGeometry args={[0.34, 0.22, 0.10]} />
+        {/* Appuie-tête ajusté */}
+        <mesh material={mats.seat} position={[0, 1.70, 0.32]}>
+          <boxGeometry args={[0.32, 0.14, 0.10]} />
         </mesh>
         {/* Accoudoir côté fenêtre droite */}
-        <mesh material={mats.dark} position={[0.40, 1.25, 0.05]}>
-          <boxGeometry args={[0.08, 0.10, 0.42]} />
+        <mesh material={mats.dark} position={[0.40, 1.14, 0.05]}>
+          <boxGeometry args={[0.08, 0.08, 0.42]} />
         </mesh>
       </group>
 

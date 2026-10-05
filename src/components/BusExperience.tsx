@@ -28,6 +28,31 @@ export default function BusExperience() {
   const [resetViewToken, setResetViewToken] = useState(0);
   const [sceneAvailable, setSceneAvailable] = useState(false);
   const [bgmPlaying, setBgmPlaying] = useState(false);
+  const [bgmVolume, setBgmVolume] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("fdb-bgm-volume");
+        if (stored !== null) {
+          const val = Number(stored);
+          if (Number.isFinite(val) && val >= 0 && val <= 100) return val;
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    return 50;
+  });
+
+  const handleSetBgmVolume = useCallback((val: number) => {
+    const clamped = Math.max(0, Math.min(100, Math.round(val)));
+    setBgmVolume(clamped);
+    try {
+      localStorage.setItem("fdb-bgm-volume", String(clamped));
+    } catch {
+      // Ignorer
+    }
+  }, []);
+
   const [phase, setPhase] = useState<Phase>(() => {
     if (typeof window !== "undefined") {
       const p = new URLSearchParams(window.location.search).get("phase");
@@ -683,6 +708,8 @@ export default function BusExperience() {
         resetView={() => setResetViewToken((token) => token + 1)}
         bgmPlaying={bgmPlaying}
         toggleBgm={toggleBgm}
+        bgmVolume={bgmVolume}
+        setBgmVolume={handleSetBgmVolume}
       />
 
       {/* Lecteur de musique de fond (Howard Harper-Barnes - Life in Pieces) */}
@@ -690,6 +717,7 @@ export default function BusExperience() {
         playing={bgmPlaying}
         onPlayingChange={setBgmPlaying}
         mutedForOverlay={showTheoryModal || tvOn}
+        volume={bgmVolume}
       />
 
       {/* Modal interactif complet de la théorie des Fous du Bus */}
