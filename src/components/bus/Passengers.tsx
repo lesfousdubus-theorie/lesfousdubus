@@ -242,6 +242,10 @@ function Passengers({
     [passengerProfiles],
   );
 
+  useEffect(() => () => {
+    document.body.style.cursor = "auto";
+  }, []);
+
   return (
     <group>
       <SimplifiedPassengers passengers={simplified} />
@@ -333,7 +337,10 @@ function Passenger({
   );
   const labelY = useMemo(() => getPassengerLabelY(archetype), [archetype]);
 
-  useEffect(() => () => nameTexture?.texture.dispose(), [nameTexture]);
+  useEffect(() => () => {
+    nameTexture?.texture.dispose();
+    document.body.style.cursor = "auto";
+  }, [nameTexture]);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
