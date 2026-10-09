@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { rmSync } from "node:fs";
+import { runMediaPlaybackChecks } from "./media-playback-checks.mjs";
+import { runHudLayoutChecks } from "./hud-layout-checks.mjs";
 
 const baseUrl = process.env.BASE_URL ?? "http://localhost:3000";
 const chromePath = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
@@ -52,7 +54,14 @@ function createCdp(ws) {
   });
   return (method, params = {}) => new Promise((resolve, reject) => {
     const requestId = id++;
-    pending.set(requestId, { resolve, reject });
+    const timeout = setTimeout(() => {
+      pending.delete(requestId);
+      reject(new Error(`Chrome did not respond to ${method} within 30 seconds.`));
+    }, 30_000);
+    pending.set(requestId, {
+      resolve: result => { clearTimeout(timeout); resolve(result); },
+      reject: error => { clearTimeout(timeout); reject(error); },
+    });
     ws.send(JSON.stringify({ id: requestId, method, params }));
   });
 }
@@ -130,12 +139,26 @@ try {
   const viewports = [
     { width: 320, height: 568, mobile: true },
     { width: 393, height: 852, mobile: true },
+    { width: 480, height: 800, mobile: true },
+    { width: 639, height: 900, mobile: true },
+    { width: 640, height: 900, mobile: true },
+    { width: 667, height: 900, mobile: true },
+    { width: 720, height: 900, mobile: false },
+    { width: 767, height: 1024, mobile: false },
     { width: 568, height: 320, mobile: true },
     { width: 667, height: 375, mobile: true },
     { width: 740, height: 360, mobile: true },
     { width: 844, height: 390, mobile: true },
     { width: 768, height: 1024, mobile: false },
+    { width: 900, height: 720, mobile: false },
+    { width: 1023, height: 768, mobile: false },
+    { width: 1024, height: 768, mobile: false },
+    { width: 1152, height: 720, mobile: false },
+    { width: 1240, height: 720, mobile: false },
+    { width: 1279, height: 720, mobile: false },
+    { width: 1280, height: 720, mobile: false },
     { width: 1366, height: 768, mobile: false },
+    { width: 1440, height: 900, mobile: false },
     { width: 1920, height: 1080, mobile: false },
   ];
 
@@ -166,6 +189,9 @@ try {
       `Bus UI at ${viewport.width}x${viewport.height}`,
       30_000,
     );
+
+    // Inspect the completed responsive frame, including ResizeObserver updates.
+    await evaluate(send, `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
 
     const layout = await evaluate(send, `
       (() => {
@@ -212,12 +238,14 @@ try {
           outside: outside.map(({ text, rect }) => ({ text, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom })),
           tooSmall,
           collisions,
+          hudLayout: document.querySelector('.bus-title-panel').parentElement.dataset.bottomLayout,
+          hudStyle: document.querySelector('.bus-title-panel').parentElement.getAttribute('style'),
         };
       })()
     `);
     assert(layout.hasEnter, `Enter button missing at ${viewport.width}x${viewport.height}`);
     assert(layout.overflow <= 2, `Horizontal overflow at ${viewport.width}x${viewport.height}: ${layout.overflow}px`);
-    assert.equal(layout.outside.length, 0, `Visible controls leave viewport at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.outside)}`);
+    assert.equal(layout.outside.length, 0, `Visible controls leave viewport at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout)}`);
     assert.equal(layout.tooSmall.length, 0, `Touch targets are too small at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.tooSmall)}`);
     assert(Math.abs(layout.controlHeights.speed - layout.controlHeights.dayNight) <= 1, `Speed and day/night controls have different heights at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
     assert(Math.abs(layout.controlHeights.speed - layout.controlHeights.exterior) <= 1, `Speed and exterior controls have different heights at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
@@ -239,7 +267,8 @@ try {
         return { top: dialog.top, bottom: dialog.bottom, tabs: tabs.map(rect => ({left: rect.left, right: rect.right, height: rect.height})) };
       })()
     `);
-    assert(theoryLayout.top >= -1 && theoryLayout.bottom <= viewport.height + 1, "Theory dialog leaves the visible screen.");
+    assert(theoryLayout.top >= -1 && theoryLayout.bottom <= viewport.height + 1,
+      `Theory dialog leaves the visible screen at ${viewport.width}x${viewport.height}: ${JSON.stringify(theoryLayout)}`);
     assert(theoryLayout.tabs.every(rect => rect.left >= 0 && rect.right <= viewport.width && rect.height >= 44),
       `Theory tabs are clipped at ${viewport.width}x${viewport.height}: ${JSON.stringify(theoryLayout)}`);
     await evaluate(send, `document.getElementById('theory-tab-thesis').click()`);
@@ -381,7 +410,7 @@ try {
   const inside = await evaluate(interactionSend, `
     (() => ({
       phase: document.querySelector("[data-phase]")?.getAttribute("data-phase"),
-      youtubeIframes: document.querySelectorAll('iframe[src*="youtube.com"], iframe[src*="youtube-nocookie.com"]').length,
+      youtubeIframes: document.querySelectorAll('#tv-frame iframe[src*="youtube.com"], #tv-frame iframe[src*="youtube-nocookie.com"]').length,
       hasTvFrame: Boolean(document.getElementById("tv-frame")),
       hasPrimaryIframe: Boolean(document.getElementById("tv-primary-iframe")),
       hasPlayerMount: Boolean(document.querySelector("[data-bus-youtube-player]")),
@@ -499,6 +528,9 @@ try {
   await waitForPageCondition(interactionSend, `Boolean(document.getElementById('passenger-list-title')) && document.getElementById('site-content').inert`, "Back to passenger list keeps background locked");
   await evaluate(interactionSend, `document.querySelector('button[aria-label="Fermer la fenêtre"]').click()`);
   await waitForPageCondition(interactionSend, `!document.querySelector('[role="dialog"]') && !document.getElementById('site-content').inert`, "Passenger list unlocks the page");
+
+  await runMediaPlaybackChecks({ send: interactionSend, evaluate, waitForPageCondition, baseUrl });
+  await runHudLayoutChecks({ send: interactionSend, evaluate, waitForPageCondition, viewports });
 
   // Un appareil sans WebGL doit garder une vraie voie de lecture.
   await send("Page.addScriptToEvaluateOnNewDocument", { source: `

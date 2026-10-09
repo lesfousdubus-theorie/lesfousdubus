@@ -6,7 +6,10 @@ import SyncedTheoryVideo from "./SyncedTheoryVideo";
 
 export type TheoryTab = "thesis" | "video" | "faq" | "participate";
 
-export default function TheoryPanelContent({ activeTab }: { activeTab: TheoryTab }) {
+export default function TheoryPanelContent({ activeTab, onVideoPlaybackChange }: {
+  activeTab: TheoryTab;
+  onVideoPlaybackChange?: (active: boolean) => void;
+}) {
   return (
     <>
       {/* 1. ONGLET THÈSE */}
@@ -104,7 +107,7 @@ export default function TheoryPanelContent({ activeTab }: { activeTab: TheoryTab
                 Vidéo fondatrice de la théorie
               </span>
             </div>
-            <SyncedTheoryVideo />
+            <SyncedTheoryVideo onPlaybackChange={onVideoPlaybackChange} />
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10">
               <span className="text-xs text-white/80">

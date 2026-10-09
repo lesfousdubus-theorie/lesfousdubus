@@ -28,6 +28,8 @@ export default function BusExperience() {
   const [resetViewToken, setResetViewToken] = useState(0);
   const [sceneAvailable, setSceneAvailable] = useState(false);
   const [bgmPlaying, setBgmPlaying] = useState(false);
+  const [theoryVideoPlaying, setTheoryVideoPlaying] = useState(false);
+  const [busVideoPlaying, setBusVideoPlaying] = useState(false);
   const [bgmVolume, setBgmVolume] = useState(() => {
     if (typeof window !== "undefined") {
       try {
@@ -626,14 +628,9 @@ export default function BusExperience() {
   }, [phase]);
 
   const toggleBgm = useCallback(() => {
-    setBgmPlaying((prev) => {
-      const next = !prev;
-      if (next && tvOn) {
-        setTvOn(false);
-      }
-      return next;
-    });
-  }, [tvOn]);
+    if (!bgmPlaying && tvOn) setTvOn(false);
+    setBgmPlaying(prev => !prev);
+  }, [bgmPlaying, tvOn]);
 
   const effectiveCount = count ?? 0;
   const numRows = computeNumRows(seatCapacity);
@@ -652,6 +649,7 @@ export default function BusExperience() {
         headlights={headlights}
         hornPulse={hornPulse}
         tvOn={tvOn}
+        onVideoPlaybackChange={setBusVideoPlaying}
         worldRef={worldRef}
         onArrived={onArrived}
         passengerCount={effectiveCount}
@@ -673,6 +671,7 @@ export default function BusExperience() {
       <BusHud
         phase={phase}
         hidden={overlayOpen}
+        sceneAvailable={sceneAvailable}
         toast={toast}
         passengerManifestButtonRef={passengerManifestButtonRef}
         statsLoadError={statsLoadError}
@@ -716,13 +715,14 @@ export default function BusExperience() {
       <BackgroundMusicPlayer
         playing={bgmPlaying}
         onPlayingChange={setBgmPlaying}
-        mutedForOverlay={showTheoryModal || tvOn}
+        suspendedForVideo={theoryVideoPlaying || busVideoPlaying}
         volume={bgmVolume}
       />
 
       {/* Modal interactif complet de la théorie des Fous du Bus */}
       <TheoryModal
         isOpen={showTheoryModal}
+        onVideoPlaybackChange={setTheoryVideoPlaying}
         onClose={() => setShowTheoryModal(false)}
         onLeaveBusPermanently={currentPassengerSeatIndex !== null ? leaveBusPermanently : undefined}
       />
