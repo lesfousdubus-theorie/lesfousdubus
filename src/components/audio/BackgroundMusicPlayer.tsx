@@ -8,21 +8,21 @@ export const BGM_YOUTUBE_ID = "63RzVcR1qHg"; // "Life in Pieces" - Howard Harper
 interface BackgroundMusicPlayerProps {
   playing: boolean;
   onPlayingChange: (playing: boolean) => void;
-  mutedForOverlay?: boolean;
+  suspendedForVideo?: boolean;
   volume?: number;
 }
 
 export default function BackgroundMusicPlayer({
   playing,
   onPlayingChange,
-  mutedForOverlay = false,
+  suspendedForVideo = false,
   volume = 50,
 }: BackgroundMusicPlayerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const readyRef = useRef(false);
   const desiredPlayingRef = useRef(playing);
-  const desiredMutedRef = useRef(mutedForOverlay);
+  const desiredSuspendedRef = useRef(suspendedForVideo);
   const desiredVolumeRef = useRef(volume);
 
   useEffect(() => {
@@ -58,32 +58,38 @@ export default function BackgroundMusicPlayer({
               iframe.setAttribute("allow", "autoplay; encrypted-media");
               iframe.style.display = "none";
 
-              if (desiredPlayingRef.current && !desiredMutedRef.current) {
+              if (desiredPlayingRef.current && !desiredSuspendedRef.current) {
                 event.target.playVideo();
               }
             },
             onStateChange: (event) => {
               if (cancelled) return;
-              // 1 = PLAYING, 2 = PAUSED, 0 = ENDED
-              if (event.data === 1) {
-                onPlayingChange(true);
-              } else if (event.data === 2) {
-                onPlayingChange(false);
+              // `playing` is the user's choice. A temporary pause for a video
+              // must not switch the music button off or prevent its resumption.
+              const shouldPlay = desiredPlayingRef.current && !desiredSuspendedRef.current;
+              if (event.data === 1 && !shouldPlay) {
+                event.target.pauseVideo();
               } else if (event.data === 0) {
-                // Relance en boucle continue
-                event.target.seekTo(0, true);
-                event.target.playVideo();
+                if (shouldPlay) {
+                  event.target.seekTo(0, true);
+                  event.target.playVideo();
+                }
+              }
+            },
+            onAutoplayBlocked: () => {
+              if (!cancelled && desiredPlayingRef.current && !desiredSuspendedRef.current) {
+                onPlayingChange(false);
               }
             },
             onError: () => {
-              onPlayingChange(false);
+              if (!cancelled) onPlayingChange(false);
             },
           },
         });
 
         playerRef.current = player;
       })
-      .catch(() => undefined);
+      .catch(() => { if (!cancelled) onPlayingChange(false); });
 
     return () => {
       cancelled = true;
@@ -100,11 +106,11 @@ export default function BackgroundMusicPlayer({
   // Synchronisation de l'état lecture / pause selon les props
   useEffect(() => {
     desiredPlayingRef.current = playing;
-    desiredMutedRef.current = mutedForOverlay;
+    desiredSuspendedRef.current = suspendedForVideo;
 
     if (!readyRef.current || !playerRef.current) return;
     try {
-      if (playing && !mutedForOverlay) {
+      if (playing && !suspendedForVideo) {
         playerRef.current.playVideo();
       } else {
         playerRef.current.pauseVideo();
@@ -112,7 +118,7 @@ export default function BackgroundMusicPlayer({
     } catch {
       // Ignorer si le lecteur est en cours d'initialisation
     }
-  }, [playing, mutedForOverlay]);
+  }, [playing, suspendedForVideo]);
 
   // Synchronisation dynamique du volume sonore (0 - 100)
   useEffect(() => {

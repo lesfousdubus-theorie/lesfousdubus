@@ -22,6 +22,7 @@ interface SceneProps {
   headlights: boolean;
   hornPulse: number;
   tvOn: boolean;
+  onVideoPlaybackChange?: (active: boolean) => void;
   worldRef: React.RefObject<WorldState>;
   onArrived: (phase: "inside" | "outside") => void;
   passengerCount?: number;
@@ -270,6 +271,7 @@ export default function Scene({
   headlights,
   hornPulse,
   tvOn,
+  onVideoPlaybackChange,
   worldRef,
   onArrived,
   passengerCount = 0,
@@ -337,6 +339,7 @@ export default function Scene({
           headlights={headlights}
           hornPulse={hornPulse}
           tvOn={tvOn}
+          onVideoPlaybackChange={onVideoPlaybackChange}
           phase={phase}
           worldRef={worldRef}
           passengerCount={passengerCount}

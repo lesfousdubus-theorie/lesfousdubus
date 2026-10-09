@@ -94,50 +94,102 @@ body {
 
 .bus-modal-backdrop,
 .theory-modal-backdrop {
+  --bus-modal-height: min(100dvh, var(--bus-viewport-height, 100dvh));
   top: var(--bus-viewport-top, 0px);
   bottom: auto;
-  height: var(--bus-viewport-height, 100dvh);
+  height: var(--bus-modal-height);
   overscroll-behavior: contain;
 }
 
 .bus-modal-card,
 .theory-modal-window {
-  max-height: calc(var(--bus-viewport-height, 100dvh) - max(var(--bus-modal-padding), env(safe-area-inset-top)) - max(var(--bus-modal-padding), env(safe-area-inset-bottom)));
+  max-height: calc(var(--bus-modal-height, 100dvh) - max(var(--bus-modal-padding), env(safe-area-inset-top)) - max(var(--bus-modal-padding), env(safe-area-inset-bottom)));
 }
 
 .bus-passenger-list {
-  max-height: min(72dvh, calc(var(--bus-viewport-height, 100dvh) - 1.5rem));
+  max-height: min(72dvh, calc(var(--bus-modal-height, 100dvh) - 1.5rem));
 }
+
+.bus-toast {
+  top: var(--bus-toast-top, 14.5rem);
+  left: var(--bus-toast-left, 0.75rem);
+  width: var(--bus-toast-width, min(28rem, calc(100vw - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right))));
+}
+
+.bus-toast-content {
+  max-height: var(--bus-toast-max-height, 30dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+}
+
+/* Place the volume panel above both rows of actions, not across their buttons. */
+.bus-volume-popup { bottom: var(--bus-volume-bottom, 7rem); }
 
 /* Les contrôles respectent les encoches, Dynamic Island et barres d'accueil. */
 .bus-top-stats {
   top: calc(0.75rem + env(safe-area-inset-top)) !important;
-  left: calc(0.75rem + env(safe-area-inset-left)) !important;
+  left: auto !important;
   right: calc(0.75rem + env(safe-area-inset-right)) !important;
+  max-width: calc(100vw - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right));
 }
 
+.bus-top-stats > button { flex: none; }
+
 .bus-title-panel {
+  top: var(--bus-title-top, 4.75rem) !important;
   left: calc(0.75rem + env(safe-area-inset-left)) !important;
 }
 
 .bus-row-nav {
+  top: var(--bus-row-top, 4.75rem) !important;
   right: calc(0.75rem + env(safe-area-inset-right)) !important;
 }
 
 .bus-day-night {
   left: calc(0.75rem + env(safe-area-inset-left)) !important;
-  bottom: calc(4.5rem + env(safe-area-inset-bottom)) !important;
+  bottom: var(--bus-utilities-bottom, calc(4.5rem + env(safe-area-inset-bottom))) !important;
 }
 
 .bus-speed {
-  left: calc(0.75rem + env(safe-area-inset-left)) !important;
+  left: auto !important;
   right: calc(0.75rem + env(safe-area-inset-right)) !important;
   bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important;
+  width: max-content;
+}
+
+.bus-speed button {
+  flex: none;
+  width: 90px;
+}
+
+[data-bottom-layout="stacked"] .bus-speed {
+  left: calc(0.75rem + env(safe-area-inset-left)) !important;
+  width: auto;
+}
+
+[data-bottom-layout="stacked"] .bus-speed button {
+  flex: 1;
+  width: auto;
 }
 
 .bus-exterior-controls,
 .bus-interior-controls {
-  bottom: calc(7.75rem + env(safe-area-inset-bottom)) !important;
+  bottom: var(--bus-actions-bottom, calc(7.75rem + env(safe-area-inset-bottom))) !important;
+  left: calc(50% + (env(safe-area-inset-left) - env(safe-area-inset-right)) / 2) !important;
+  max-width: calc(100vw - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+  padding-inline: 0;
+  translate: -50% 0;
+  transform: none !important;
+}
+
+.bus-exterior-controls {
+  width: max-content;
+}
+
+[data-bottom-layout="inline"] .bus-exterior-controls,
+[data-bottom-layout="inline"] .bus-interior-controls {
+  left: calc(50% + (var(--bus-utilities-width, 0px) - var(--bus-speed-width, 0px) + env(safe-area-inset-left) - env(safe-area-inset-right)) / 2) !important;
 }
 
 @media (min-width: 640px) {
@@ -157,7 +209,6 @@ body {
 
   .bus-day-night {
     left: calc(1rem + env(safe-area-inset-left)) !important;
-    bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
   }
 
   .bus-speed {
@@ -166,25 +217,24 @@ body {
     bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
   }
 
+  [data-bottom-layout="stacked"] .bus-speed {
+    left: calc(1rem + env(safe-area-inset-left)) !important;
+  }
+
   .bus-exterior-controls,
   .bus-interior-controls {
-    bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+    max-width: calc(100vw - 2rem - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
   }
 }
 
-@media (min-width: 1280px) {
-  .bus-exterior-controls,
-  .bus-interior-controls {
-    bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
-  }
+@media (max-width: 767px) {
+  .bus-day-night-detail { display: none; }
 }
 
-@media (min-width: 640px) and (max-width: 1023px) {
-  .bus-title-panel,
-  .bus-app[data-phase="inside"] .bus-title-panel,
-  .bus-app[data-phase="exiting"] .bus-title-panel {
-    top: calc(5.25rem + env(safe-area-inset-top)) !important;
-  }
+@media (max-width: 639px) and (orientation: portrait) {
+  .bus-exterior-controls > button:not(:last-child) { min-width: 0; }
+  .bus-exterior-tv { width: 4.5rem; }
+  .bus-exterior-tv > button { width: 100%; }
 }
 
 /* Sur mobile, le blur au-dessus du WebGL coûte cher : on le garde léger. */
@@ -199,7 +249,6 @@ body {
    Cette passe compacte évite que les contrôles se chevauchent comme sur tablette. */
 @media (orientation: landscape) and (max-height: 520px) {
   .bus-title-panel {
-    top: calc(0.35rem + env(safe-area-inset-top)) !important;
     max-width: 36vw !important;
   }
 
@@ -224,13 +273,11 @@ body {
   }
 
   .bus-row-nav {
-    top: calc(4rem + env(safe-area-inset-top)) !important;
     right: calc(0.35rem + env(safe-area-inset-right)) !important;
   }
 
   .bus-day-night {
     left: calc(0.35rem + env(safe-area-inset-left)) !important;
-    bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
     min-width: 2.75rem;
     justify-content: center;
   }
@@ -238,6 +285,14 @@ body {
   .bus-day-night-detail {
     display: none !important;
   }
+
+  .bus-music-badge { display: none !important; }
+  .bus-volume-popup { display: flex !important; }
+  .bus-toast-content { font-size: 0.875rem; }
+  .bus-toast-content > div > div:first-child { font-size: 0.875rem; }
+
+  .bus-volume-inline { display: none !important; }
+  .bus-volume-toggle { display: grid !important; }
 
   .bus-speed {
     left: auto !important;
@@ -266,23 +321,34 @@ body {
 
   .bus-exterior-controls,
   .bus-interior-controls {
-    bottom: calc(3.65rem + env(safe-area-inset-bottom)) !important;
-    left: calc(50% + (env(safe-area-inset-left) - env(safe-area-inset-right)) / 2) !important;
-    width: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 0.7rem) !important;
-    max-width: 36rem !important;
-    translate: -50% 0 !important;
-    transform: none !important;
-    padding-inline: 0.25rem !important;
+    max-width: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 0.7rem) !important;
     gap: 0.25rem !important;
   }
+
+  .bus-exterior-controls { width: 36rem; }
 
   .bus-interior-controls {
     max-width: 32rem !important;
+    flex-direction: row;
   }
 
   .bus-interior-controls > div {
-    gap: 0.25rem !important;
+    display: contents;
   }
+
+  .bus-interior-controls button,
+  .bus-exterior-controls button {
+    min-width: 0 !important;
+    width: auto !important;
+    flex: 1;
+    padding-inline: 0.375rem !important;
+  }
+
+  .bus-interior-controls > div:first-child > button { flex: 1.35; }
+  .bus-interior-controls button > span[aria-hidden="true"] { display: none; }
+  .bus-exterior-controls { flex-wrap: nowrap; }
+  .bus-exterior-controls > div { display: contents; }
+  .bus-exterior-controls > button:last-child { flex: 1.6; }
 
   .hud-label-long {
     display: none !important;

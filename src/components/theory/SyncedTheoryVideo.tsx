@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
-import { loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
+import { isYouTubePlaybackActive, loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
 
-export default function SyncedTheoryVideo() {
+export default function SyncedTheoryVideo({ onPlaybackChange }: { onPlaybackChange?: (active: boolean) => void }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
@@ -12,6 +12,11 @@ export default function SyncedTheoryVideo() {
 
   useEffect(() => {
     let cancelled = false;
+    let playbackActive = false;
+    const reportPlayback = (active: boolean) => {
+      playbackActive = active;
+      onPlaybackChange?.(active);
+    };
 
     void loadYouTubeIframeApi()
       .then((YT) => {
@@ -51,24 +56,35 @@ export default function SyncedTheoryVideo() {
               // affiché à 0:00 jusqu'au clic explicite de l'utilisateur.
             },
             onStateChange: (event) => {
+              if (cancelled) return;
+              reportPlayback(isYouTubePlaybackActive(event.data, playbackActive));
               if (event.data === 1) setAutoplayBlocked(false);
             },
-            onAutoplayBlocked: () => setAutoplayBlocked(true),
-            onError: () => setFailed(true),
+            onAutoplayBlocked: () => {
+              if (cancelled) return;
+              reportPlayback(false);
+              setAutoplayBlocked(true);
+            },
+            onError: () => {
+              if (cancelled) return;
+              reportPlayback(false);
+              setFailed(true);
+            },
           },
         });
         playerRef.current = player;
       })
       .catch(() => {
-        if (!cancelled) setFailed(true);
+        if (!cancelled) { reportPlayback(false); setFailed(true); }
       });
 
     return () => {
       cancelled = true;
+      reportPlayback(false);
       playerRef.current?.destroy();
       playerRef.current = null;
     };
-  }, []);
+  }, [onPlaybackChange]);
 
   const resume = () => {
     const player = playerRef.current;

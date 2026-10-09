@@ -6,7 +6,7 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import type { Phase } from "./constants";
 import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
-import { loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
+import { isYouTubePlaybackActive, loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
 
 interface BusTvFrameProps {
   pos: [number, number, number];
@@ -77,6 +77,7 @@ interface BusTvPlayerProps {
   isMutedForFullscreen: boolean;
   reducedMotion: boolean;
   playbackSuspended: boolean;
+  onPlaybackChange?: (active: boolean) => void;
 }
 
 export function BusTvPlayer({
@@ -87,6 +88,7 @@ export function BusTvPlayer({
   isMutedForFullscreen,
   reducedMotion,
   playbackSuspended,
+  onPlaybackChange,
 }: BusTvPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mountElement, setMountElement] = useState<HTMLDivElement | null>(null);
@@ -96,6 +98,11 @@ export function BusTvPlayer({
   const warmTimerRef = useRef<number | null>(null);
   const volumeTimerRef = useRef<number | null>(null);
   const warmingRef = useRef(true);
+  const playbackActiveRef = useRef(false);
+  const reportPlayback = useCallback((active: boolean) => {
+    playbackActiveRef.current = active;
+    onPlaybackChange?.(active);
+  }, [onPlaybackChange]);
   const desiredRef = useRef({
     tvOn,
     phase,
@@ -150,12 +157,14 @@ export function BusTvPlayer({
     const desired = desiredRef.current;
     try {
       if (!desired.hasEntered) {
+        reportPlayback(false);
         player.pauseVideo();
         player.seekTo(0, true);
         player.mute();
         return;
       }
       if (!desired.tvOn || desired.isMutedForFullscreen || desired.playbackSuspended) {
+        reportPlayback(false);
         player.pauseVideo();
         return;
       }
@@ -164,12 +173,13 @@ export function BusTvPlayer({
       rampVolume(targetVolume, desired.phase === "entering" || desired.phase === "exiting" ? 900 : 300);
       player.playVideo();
     } catch {
+      reportPlayback(false);
       playerRef.current = null;
       // L'échec peut arriver pendant un effet React ; notifier à la microtâche
       // suivante évite une mise à jour d'état synchrone pendant ce rendu.
       queueMicrotask(() => setApiFailed(true));
     }
-  }, [rampVolume]);
+  }, [rampVolume, reportPlayback]);
 
   useEffect(() => {
     desiredRef.current = {
@@ -283,36 +293,43 @@ export function BusTvPlayer({
               }, 900);
             },
             onStateChange: (event) => {
-              if (!cancelled && event.data === 1) {
+              if (cancelled) return;
+              const desired = desiredRef.current;
+              const audible = !warmingRef.current && desired.hasEntered && desired.tvOn
+                && !desired.isMutedForFullscreen && !desired.playbackSuspended;
+              reportPlayback(audible && isYouTubePlaybackActive(event.data, playbackActiveRef.current));
+              if (event.data === 1) {
                 setAutoplayBlocked(false);
               }
             },
             onAutoplayBlocked: () => {
               if (cancelled) return;
+              reportPlayback(false);
               const desired = desiredRef.current;
               if (desired.hasEntered && desired.tvOn && !desired.isMutedForFullscreen) {
                 setAutoplayBlocked(true);
               }
             },
             onError: () => {
-              if (!cancelled) setApiFailed(true);
+              if (!cancelled) { reportPlayback(false); setApiFailed(true); }
             },
           },
         });
       })
       .catch(() => {
-        if (!cancelled) setApiFailed(true);
+        if (!cancelled) { reportPlayback(false); setApiFailed(true); }
       });
 
     return () => {
       cancelled = true;
+      reportPlayback(false);
       if (warmTimerRef.current !== null) window.clearTimeout(warmTimerRef.current);
       if (volumeTimerRef.current !== null) window.clearTimeout(volumeTimerRef.current);
       createdPlayerRef.current?.destroy?.();
       createdPlayerRef.current = null;
       playerRef.current = null;
     };
-  }, [applyDesiredPlayback, mountElement]);
+  }, [applyDesiredPlayback, mountElement, reportPlayback]);
 
 
 
@@ -331,6 +348,7 @@ export function BusTvPlayer({
         player.playVideo();
         setAutoplayBlocked(false);
       } catch {
+        reportPlayback(false);
         playerRef.current = null;
         setApiFailed(true);
       }
@@ -339,7 +357,7 @@ export function BusTvPlayer({
     return () => {
       window.removeEventListener("bus-tv-user-play", onUserPlay);
     };
-  }, []);
+  }, [reportPlayback]);
 
   useFrame(({ camera }) => {
     const visible = tvOn && !isMutedForFullscreen;

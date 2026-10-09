@@ -2,6 +2,7 @@
 
 import { useState, type Dispatch, type RefObject, type SetStateAction } from "react";
 import type { Phase } from "./bus/constants";
+import { useHudLayout } from "./useHudLayout";
 
 export interface ToastMessage {
   id: number;
@@ -13,6 +14,7 @@ export interface ToastMessage {
 interface BusHudProps {
   phase: Phase;
   hidden: boolean;
+  sceneAvailable: boolean;
   toast: ToastMessage | null;
   passengerManifestButtonRef: RefObject<HTMLButtonElement | null>;
   statsLoadError: boolean;
@@ -53,7 +55,7 @@ interface BusHudProps {
 }
 
 export function BusHud({
-  phase, hidden, toast, passengerManifestButtonRef, statsLoadError, count,
+  phase, hidden, sceneAvailable, toast, passengerManifestButtonRef, statsLoadError, count,
   numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow,
   exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
   tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, setStatsLoadError,
@@ -63,24 +65,27 @@ export function BusHud({
   bgmVolume, setBgmVolume,
 }: BusHudProps) {
   const [showVolumePopup, setShowVolumePopup] = useState(false);
+  const hudRef = useHudLayout(phase, hidden, showVolumePopup, sceneAvailable);
+
   return (
     <>
       {/* ---------- HUD & INTERFACE UTILISATEUR (GARANTI TOUJOURS AU PREMIER PLAN Z-INDEX) ---------- */}
         <div
+          ref={hudRef}
           className={`pointer-events-none fixed inset-0 isolate select-none ${hidden ? "invisible" : ""}`}
           style={{ zIndex: 2147483647 }}
         >
         {/* Toast notification dynamique (allongement du bus) */}
         {toast && (
-          <div aria-hidden="true" className="pointer-events-none absolute left-3 right-3 top-[12rem] z-50 min-[480px]:left-auto min-[480px]:top-[4.75rem] min-[480px]:max-w-[calc(100vw-14rem)] sm:right-4 sm:top-20 sm:max-w-sm lg:left-1/2 lg:right-auto lg:top-24 lg:w-96 lg:max-w-[calc(100vw-2rem)] lg:-translate-x-1/2 xl:top-4">
-            <div className="bus-glass flex animate-[toast-in_300ms_cubic-bezier(0.25,1,0.5,1)_both] items-center gap-3 rounded-2xl border border-[#ffd23f] bg-black/80 px-4 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md sm:px-5">
+          <div aria-hidden="true" className="bus-toast pointer-events-none absolute z-50">
+            <div className="bus-toast-content bus-glass flex animate-[toast-in_300ms_cubic-bezier(0.25,1,0.5,1)_both] items-start gap-2 rounded-2xl border border-[#ffd23f] bg-black/90 px-3 py-3 shadow-[0_0_30px_rgba(255,210,63,0.35)] backdrop-blur-md sm:gap-3 sm:px-4">
               {toast.badge && (
-                <span className="rounded-md bg-[#ffd23f] px-2 py-0.5 text-xs font-black text-[#0d2190]">
+                <span className="shrink-0 rounded-md bg-[#ffd23f] px-2 py-0.5 text-xs font-black text-[#0d2190]">
                   {toast.badge}
                 </span>
               )}
-              <div>
-                <div className="text-base font-black text-white">{toast.text}</div>
+              <div className="min-w-0 break-words">
+                <div className="text-sm font-bold leading-5 text-white sm:text-base">{toast.text}</div>
                 {toast.sub && <div className="text-xs text-[#ffd23f] font-semibold">{toast.sub}</div>}
               </div>
             </div>
@@ -174,6 +179,7 @@ export function BusHud({
         <button
           type="button"
           onClick={toggleBgm}
+          aria-pressed={bgmPlaying}
           aria-label={bgmPlaying ? "Couper la musique de fond" : "Activer la musique de fond (Life in Pieces — Le Mont Corvo)"}
           title={bgmPlaying ? "Couper la musique de fond (Life in Pieces)" : "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)"}
           className={`bus-glass flex h-11 items-center gap-1.5 rounded-full border px-3 text-xs font-bold shadow-lg transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 sm:px-3.5 sm:text-sm cursor-pointer ${
@@ -193,7 +199,7 @@ export function BusHud({
           )}
           <span>Musique</span>
           {bgmPlaying && (
-            <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[10px] font-black uppercase text-[#0d2190]">
+            <span className="bus-music-badge hidden rounded bg-[#ffd23f] px-1 py-0.5 text-[10px] font-black uppercase text-[#0d2190] md:inline">
               ON
             </span>
           )}
@@ -203,14 +209,14 @@ export function BusHud({
         <div className="relative flex items-center">
           {/* Curseur direct sur grand écran (desktop / tablette) */}
           <div
-            className="hidden sm:flex h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2.5 shadow-lg backdrop-blur-md transition-colors hover:border-[#ffd23f]/70"
+            className="bus-volume-inline hidden xl:flex h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 pr-2.5 shadow-lg backdrop-blur-md transition-colors hover:border-[#ffd23f]/70"
             title={`Volume de la musique : ${bgmVolume}%`}
           >
             <button
               type="button"
               onClick={() => setBgmVolume(bgmVolume > 0 ? 0 : 50)}
               aria-label={bgmVolume === 0 ? "Réactiver le son" : "Couper le son de la musique"}
-              className="text-sm transition-transform hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#ffd23f] rounded-full p-0.5 cursor-pointer"
+              className="grid h-11 w-11 place-items-center rounded-full text-sm transition-transform hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#ffd23f] cursor-pointer"
             >
               {bgmVolume === 0 ? "🔇" : bgmVolume < 35 ? "🔉" : "🔊"}
             </button>
@@ -234,8 +240,9 @@ export function BusHud({
             type="button"
             onClick={() => setShowVolumePopup((v) => !v)}
             aria-label="Régler le volume de la musique"
+            aria-expanded={showVolumePopup}
             title={`Volume musique : ${bgmVolume}%`}
-            className={`bus-glass sm:hidden grid h-11 w-11 shrink-0 place-items-center rounded-full border text-xs font-bold shadow-lg transition-colors active:scale-95 cursor-pointer ${
+            className={`bus-volume-toggle bus-glass xl:hidden grid h-11 w-11 shrink-0 place-items-center rounded-full border text-xs font-bold shadow-lg transition-colors active:scale-95 cursor-pointer ${
               showVolumePopup
                 ? "border-[#ffd23f] bg-[#07142b]/95 text-[#ffd23f]"
                 : "border-white/35 bg-[#07142b]/95 text-white hover:border-[#ffd23f]/70"
@@ -247,7 +254,7 @@ export function BusHud({
           {/* Popover réglage de volume mobile au-dessus */}
           {showVolumePopup && (
             <div
-              className="bus-glass absolute bottom-14 left-0 flex w-52 flex-col gap-2 rounded-2xl border border-[#ffd23f]/50 bg-[#07142b]/95 p-3 shadow-2xl backdrop-blur-md z-50 animate-[hud-control-in-flow_180ms_cubic-bezier(0.25,1,0.5,1)_both]"
+              className="bus-volume-popup bus-glass absolute right-0 flex w-52 flex-col gap-2 rounded-2xl border border-[#ffd23f]/50 bg-[#07142b]/95 p-3 shadow-2xl backdrop-blur-md z-50 animate-[hud-control-in-flow_180ms_cubic-bezier(0.25,1,0.5,1)_both] xl:hidden"
             >
               <div className="flex items-center justify-between text-xs font-bold text-white">
                 <span className="flex items-center gap-1 text-[#ffd23f]">
@@ -260,7 +267,7 @@ export function BusHud({
                 <button
                   type="button"
                   onClick={() => setBgmVolume(Math.max(0, bgmVolume - 10))}
-                  className="text-xs text-white/70 hover:text-white cursor-pointer"
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-sm text-white hover:bg-white/10 cursor-pointer"
                   aria-label="Diminuer volume"
                 >
                   🔉
@@ -273,12 +280,12 @@ export function BusHud({
                   value={bgmVolume}
                   onChange={(e) => setBgmVolume(Number(e.target.value))}
                   aria-label="Volume de la musique"
-                  className="h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-white/25 accent-[#ffd23f]"
+                  className="h-2 w-0 min-w-0 flex-1 cursor-pointer appearance-none rounded-lg bg-white/25 accent-[#ffd23f]"
                 />
                 <button
                   type="button"
                   onClick={() => setBgmVolume(Math.min(100, bgmVolume + 10))}
-                  className="text-xs text-white/70 hover:text-white cursor-pointer"
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-sm text-white hover:bg-white/10 cursor-pointer"
                   aria-label="Augmenter volume"
                 >
                   🔊
@@ -387,14 +394,14 @@ export function BusHud({
               : "translate-y-2 opacity-0 [&_*]:!pointer-events-none"
           }`}
         >
-          <HudButton className="min-w-[96px] flex-1 sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={!exteriorControlsVisible}>
+          <HudButton className="min-w-[96px] flex-[1_0_auto] sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={!exteriorControlsVisible}>
             {headlights ? "Éteindre" : "Phares"}
           </HudButton>
-          <HudButton className="min-w-[104px] flex-1 sm:w-[112px] sm:flex-none" onClick={honk} icon="📯" disabled={!exteriorControlsVisible}>
-            Klaxonner
+          <HudButton className="min-w-[104px] flex-[1_0_auto] sm:w-[112px] sm:flex-none" onClick={honk} ariaLabel="Klaxonner" icon="📯" disabled={!exteriorControlsVisible}>
+            <span className="hud-label-short sm:hidden">Klaxon</span><span className="hud-label-long hidden sm:inline">Klaxonner</span>
           </HudButton>
           {hasEntered && phase === "outside" && (
-            <div className="animate-[hud-control-in-flow_220ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none">
+            <div className="bus-exterior-tv animate-[hud-control-in-flow_220ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none">
               <HudButton
                 className="w-[124px] sm:w-[132px]"
                 onClick={() => setTvOn((value) => !value)}
@@ -402,11 +409,11 @@ export function BusHud({
                 ariaLabel="Télévision"
                 icon="📺"
               >
-                {tvOn ? "Éteindre la TV" : "Allumer la TV"}
+                <span className="hud-label-short sm:hidden">TV</span><span className="hud-label-long hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
               </HudButton>
             </div>
           )}
-          <HudButton className="w-full sm:w-[190px]" onClick={() => void enterBus()} primary icon="🚪" disabled={joining || phase !== "outside"}>
+          <HudButton className="min-w-[190px] flex-[1_0_auto] sm:w-[190px] sm:flex-none" onClick={() => void enterBus()} primary icon="🚪" disabled={joining || phase !== "outside"}>
             {joining || phase === "entering" ? "Installation…" : "Entrer dans le bus"}
           </HudButton>
         </div>

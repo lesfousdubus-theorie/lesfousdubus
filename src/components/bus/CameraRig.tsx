@@ -24,6 +24,7 @@ const FOV_EPSILON = 0.01;
 const EXTERIOR_MAX_POLAR_ANGLE = Math.PI / 2 - 0.04;
 const EXTERIOR_SKY_PITCH_LIMIT = Math.PI - EXTERIOR_MAX_POLAR_ANGLE - 0.02;
 const EXTERIOR_SKY_DRAG_SPEED = 0.0045;
+const EXTERIOR_MIN_DISTANCE = 0.6;
 const LOCAL_X_AXIS = new THREE.Vector3(1, 0, 0);
 
 export default function CameraRig({
@@ -554,8 +555,9 @@ export default function CameraRig({
       domElement={gl.domElement.parentElement ?? gl.domElement}
       enabled={phase === "outside"}
       target={[0, 1.9, orbitTargetZ]}
-      minDistance={5}
+      minDistance={EXTERIOR_MIN_DISTANCE}
       maxDistance={maxOrbitDistance}
+      zoomToCursor
       maxPolarAngle={EXTERIOR_MAX_POLAR_ANGLE}
       enablePan={false}
       enableDamping={!reducedMotion}

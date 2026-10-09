@@ -16,12 +16,13 @@ import { useModalAccessibility } from "../modals/useModalAccessibility";
 interface TheoryModalProps {
   isOpen?: boolean;
   onClose?: () => void;
+  onVideoPlaybackChange?: (active: boolean) => void;
   onLeaveBusPermanently?: () => Promise<boolean>;
 }
 
 const THEORY_TABS: TheoryTab[] = ["thesis", "video", "faq", "participate"];
 
-export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBusPermanently }: TheoryModalProps) {
+export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPlaybackChange, onLeaveBusPermanently }: TheoryModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TheoryTab>("thesis");
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -230,7 +231,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
         >
           {THEORY_TABS.map((tab) => (
             <div key={tab} role="tabpanel" id={`theory-panel-${tab}`} aria-labelledby={`theory-tab-${tab}`} hidden={tab !== activeTab}>
-              {(tab !== "video" || activeTab === "video") && <TheoryPanelContent activeTab={tab} />}
+              {(tab !== "video" || activeTab === "video") && <TheoryPanelContent activeTab={tab} onVideoPlaybackChange={onVideoPlaybackChange} />}
             </div>
           ))}
         </div>

@@ -20,6 +20,13 @@ export interface YouTubePlayerEvent {
   data?: number;
 }
 
+/** A buffering video keeps the audio channel only after playback has started. */
+export function isYouTubePlaybackActive(state: number | undefined, wasActive: boolean): boolean {
+  if (state === 1) return true;
+  if (state === 0 || state === 2 || state === -1 || state === 5) return false;
+  return wasActive;
+}
+
 interface YouTubePlayerOptions {
   width?: string | number;
   height?: string | number;
