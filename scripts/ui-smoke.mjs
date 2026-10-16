@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { rmSync } from "node:fs";
 import { runMediaPlaybackChecks } from "./media-playback-checks.mjs";
 import { runHudLayoutChecks } from "./hud-layout-checks.mjs";
+import { runBusCameraChecks } from "./bus-camera-checks.mjs";
 
 const baseUrl = process.env.BASE_URL ?? "http://localhost:3000";
 const chromePath = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
@@ -68,7 +69,7 @@ function createCdp(ws) {
 
 async function evaluate(send, expression) {
   const result = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
-  if (result.exceptionDetails) throw new Error(result.exceptionDetails.text ?? "Runtime evaluation failed.");
+  if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text ?? "Runtime evaluation failed.");
   return result.result?.value;
 }
 
@@ -135,7 +136,11 @@ try {
   const send = createCdp(ws);
   await send("Page.enable");
   await send("Runtime.enable");
+  if(process.env.UI_LOW_POWER==="1")await send("Emulation.setHardwareConcurrencyOverride",{hardwareConcurrency:4});
 
+  await runBusCameraChecks({ send, evaluate, waitForPageCondition, baseUrl });
+
+  if (!["crew-seats", "extensions", "hands", "door-confetti", "party", "characters", "performance", "playback", "playback-zoom", "door-music", "music-live", "led"].includes(process.env.BUS_CAMERA_CHECKS)) {
   const viewports = [
     { width: 320, height: 568, mobile: true },
     { width: 393, height: 852, mobile: true },
@@ -522,6 +527,7 @@ try {
   await evaluate(interactionSend, `document.querySelector('button[aria-label="Fermer la fenêtre"]').click()`);
   await evaluate(interactionSend, `document.querySelector('.bus-top-stats button').click()`);
   await waitForPageCondition(interactionSend, `Boolean([...document.querySelectorAll('[role="dialog"] button')].find(button => button.textContent.includes('Test interface')))`, "Saved passenger appears in list");
+  assert.deepEqual(await evaluate(interactionSend, `[...document.querySelector('[aria-label="Équipage permanent"]').children].map(row => row.querySelector('span.block.font-black').textContent)`), ["Kamal", "Kyta", "FoudubusTV"], "The permanent crew must be first in the passenger manifest.");
   await evaluate(interactionSend, `[...document.querySelectorAll('[role="dialog"] button')].find(button => button.textContent.includes('Test interface')).click()`);
   await waitForPageCondition(interactionSend, `Boolean(document.getElementById('passenger-name'))`, "Passenger card opens");
   await evaluate(interactionSend, `[...document.querySelectorAll('[role="dialog"] button')].find(button => button.textContent.includes('Retour aux passagers')).click()`);
@@ -557,8 +563,10 @@ try {
   // un cycle extinction/rallumage de TV finit par épuiser son contexte WebGL.
   // Le contrat TV est couvert par les régressions statiques ; ici on valide le
   // vrai parcours utilisateur critique : chargement, entrée et player unique.
+  }
   ws.close();
-  console.log("Responsive/UI smoke checks passed.");
+  const targeted = ["crew-seats", "extensions", "hands", "door-confetti", "party", "playback", "playback-zoom", "door-music", "led"].includes(process.env.BUS_CAMERA_CHECKS);
+  console.log(process.env.BUS_CAMERA_CHECKS === "music-live" ? "Live music diagnostic completed." : targeted ? "Targeted bus interaction checks passed." : process.env.BUS_CAMERA_CHECKS === "performance" ? "Scene performance sample passed." : process.env.BUS_CAMERA_CHECKS === "characters" ? "Character visual checks passed." : "Responsive/UI smoke checks passed.");
 } finally {
   if (chrome.exitCode === null) chrome.kill("SIGTERM");
   try {

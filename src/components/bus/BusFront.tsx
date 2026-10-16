@@ -2,6 +2,7 @@
 
 import type { RefObject } from "react";
 import * as THREE from "three";
+import { RoundedBox } from "@react-three/drei";
 import {
   FRONT_BADGE_CENTER_Y,
   FRONT_BADGE_RADIUS,
@@ -27,12 +28,8 @@ export default function BusFront({
   return (
     <>
       {/* ---------- Capot avant & Calandre chromée ---------- */}
-      <mesh material={mats.body} castShadow position={[0, 1.0, -5.3]}>
-        <boxGeometry args={[2.4, 1.0, 1.4]} />
-      </mesh>
-      <mesh material={mats.bodyDark} position={[0, 1.52, -5.3]}>
-        <boxGeometry args={[2.2, 0.06, 1.3]} />
-      </mesh>
+      <RoundedBox args={[2.4, 1.0, 1.4]} radius={0.1} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 1.0, -5.3]} />
+      <RoundedBox args={[2.2, 0.06, 1.3]} radius={0.025} smoothness={2} bevelSegments={3} material={mats.bodyDark} position={[0, 1.52, -5.3]} />
       {/* Grille de calandre */}
       <mesh material={mats.dark} position={[0, FRONT_GRILLE_CENTER_Y, -6.0]}>
         <boxGeometry args={[1.1, FRONT_GRILLE_HEIGHT, 0.06]} />
@@ -46,6 +43,11 @@ export default function BusFront({
       {/* Le capot se termine à Z = -6 : le dos du badge entre légèrement
           dans cette face pour qu'aucun vide ne soit visible de profil. */}
       <group position={[0, FRONT_BADGE_CENTER_Y, -6.012]}>
+        {/* Solid backing joins the badge to the curved hood, including
+            the portion above the bonnet's upper edge. */}
+        <mesh material={mats.body} position={[0, 0, 0.122]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[FRONT_BADGE_RADIUS, FRONT_BADGE_RADIUS, 0.22, 32]} />
+        </mesh>
         {/* Cerclage chromé d'emblème */}
         <mesh material={mats.chrome} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[FRONT_BADGE_RADIUS, FRONT_BADGE_RADIUS, 0.025, 32]} />
@@ -66,18 +68,16 @@ export default function BusFront({
         </mesh>
       </group>
       {/* Pare-chocs chromé massif */}
-      <mesh material={mats.chrome} castShadow position={[0, 0.6, -6.05]}>
-        <boxGeometry args={[2.7, 0.28, 0.3]} />
-      </mesh>
+      <RoundedBox args={[2.7, 0.28, 0.3]} radius={0.11} smoothness={2} bevelSegments={3} material={mats.chrome} castShadow position={[0, 0.6, -6.05]} />
       {/* Plaque d'immatriculation avant */}
-      <mesh position={[0, 0.6, -6.21]}>
+      <mesh position={[0, 0.6, -6.21]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[0.85, 0.24]} />
         <meshStandardMaterial map={licensePlateTex} roughness={0.3} />
       </mesh>
       {/* Bandes jaunes sur le capot */}
       {[-1, 1].map((sx) => (
         <mesh key={sx} material={mats.yellow} position={[sx * 1.205, 1.2, -5.3]}>
-          <boxGeometry args={[0.02, 0.14, 1.4]} />
+          <boxGeometry args={[0.02, 0.14, 1.2]} />
         </mesh>
       ))}
 

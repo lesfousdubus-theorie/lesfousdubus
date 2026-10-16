@@ -1,30 +1,33 @@
 "use client";
 
+import { CharacterPart } from "./CharacterShapes";
 import type * as THREE from "three";
+import AnimatedCharacterMouth, { type FacialMotionRef } from "./AnimatedCharacterMouth";
 
 type Driver = "kamal" | "kyta";
 type Vec3 = [number, number, number];
 type Materials = Record<string, THREE.Material>;
 
-function Block({ material, size, position, rotation }: {
+function Block({ material, size, position, rotation, detail }: {
   material: THREE.Material;
   size: Vec3;
   position?: Vec3;
   rotation?: Vec3;
+  detail?: number;
 }) {
-  return <mesh material={material} position={position} rotation={rotation}>
-    <boxGeometry args={size} />
-  </mesh>;
+  return <CharacterPart material={material} position={position} rotation={rotation} size={size} detail={detail} />;
 }
 
 /** Photo references and the intended simple silhouette are recorded in docs/driver-design.md. */
-export function DriverHead({ driver, mats }: { driver: Driver; mats: Materials }) {
+export function DriverHead({ driver, mats, motion, reducedMotion = false }: {
+  driver: Driver; mats: Materials; motion?: FacialMotionRef; reducedMotion?: boolean;
+}) {
   const kamal = driver === "kamal";
   const hair = kamal ? mats.hairKamal : mats.hairKyta;
   const halfWidth = kamal ? 0.122 : 0.116;
 
   return <group>
-    <Block material={mats.skin} size={[halfWidth * 2, 0.27, 0.215]} />
+    <Block material={mats.skin} size={[halfWidth * 2, 0.27, 0.215]} detail={2} />
     {/* Small square ears keep the profile readable when orbiting the bus. */}
     {[-1, 1].map(side => <Block key={`ear-${side}`} material={mats.skin}
       position={[side * (halfWidth + 0.013), -0.006, 0.015]} size={[0.035, 0.061, 0.046]} />)}
@@ -40,9 +43,8 @@ export function DriverHead({ driver, mats }: { driver: Driver; mats: Materials }
       <Block material={mats.eyebrow} position={[0, 0.039, -0.003]} size={[0.055, 0.011, 0.008]}
         rotation={[0, 0, index === 0 ? 0.08 : -0.08]} />
     </group>)}
-    <Block material={mats.smile} position={[0, -0.073, -0.114]} size={[kamal ? 0.079 : 0.068, 0.012, 0.008]} />
-    {[-1, 1].map(side => <Block key={`smile-${side}`} material={mats.smile}
-      position={[side * (kamal ? 0.037 : 0.032), -0.066, -0.114]} size={[0.009, 0.017, 0.008]} />)}
+    <AnimatedCharacterMouth id={driver} index={kamal ? 18 : 19} motion={motion} reducedMotion={reducedMotion}
+      position={[0, -.073, -.114]} dark={mats.smile} teeth={mats.eyeHighlight}/>
 
     {/* Short sides, a low back and a few broad locks instead of a cubic helmet. */}
     <Block material={hair} position={[0, 0.129, 0.009]} size={[halfWidth * 2 + 0.012, 0.066, 0.228]} />

@@ -58,7 +58,7 @@ export const NAKAMA_ROSTER: NakamaArchetype[] = [
     skinColor: "#ffdfba",
     hairColor: "#ea580c", // Cheveux mandarine flamboyants
     hairStyle: "flowing",
-    shirtColor: "#0284c7", // Haut rayé bleu & blanc
+    shirtColor: "#399f4e", // Haut vert et blanc, jean et ceinture
     pantsColor: "#1d4ed8",
     accessory: "none",
     prop: "tangerine",
@@ -67,7 +67,7 @@ export const NAKAMA_ROSTER: NakamaArchetype[] = [
   {
     id: "usopp",
     name: "Usopp",
-    skinColor: "#d97706",
+    skinColor: "#c68b50",
     hairColor: "#18181b",
     hairStyle: "afro",
     shirtColor: "#92400e", // Salopette marron
@@ -81,7 +81,7 @@ export const NAKAMA_ROSTER: NakamaArchetype[] = [
     id: "sanji",
     name: "Sanji",
     skinColor: "#fcd5b5",
-    hairColor: "#eab308", // Mèche blonde tombante
+    hairColor: "#f2cd60", // Blond chaud, lisible sur les petites mèches
     hairStyle: "swoop",
     shirtColor: "#18181b", // Costume noir avec chemise bleue
     pantsColor: "#18181b",
@@ -94,8 +94,8 @@ export const NAKAMA_ROSTER: NakamaArchetype[] = [
     skinColor: "#b45309", // Pelage renne
     hairColor: "#78350f",
     hairStyle: "crop",
-    shirtColor: "#be185d", // Short bordeaux
-    pantsColor: "#9d174d",
+    shirtColor: "#b97739", // Fourrure, petit sac de médecin
+    pantsColor: "#ed8d2c", // Short orange
     accessory: "reindeer_hat",
     accessoryColor: "#ec4899",
     accessorySubColor: "#ffffff",
@@ -107,8 +107,8 @@ export const NAKAMA_ROSTER: NakamaArchetype[] = [
     skinColor: "#fed7aa",
     hairColor: "#09090b", // Longs cheveux sombres soyeux
     hairStyle: "flowing",
-    shirtColor: "#6b21a8", // Robe violette noble
-    pantsColor: "#581c87",
+    shirtColor: "#24549a", // Boléro bleu à fermeture dorée
+    pantsColor: "#de83af", // Jupe rose
     accessory: "sunglasses",
     accessoryColor: "#ea580c",
     prop: "book",
@@ -121,7 +121,7 @@ export const NAKAMA_ROSTER: NakamaArchetype[] = [
     hairColor: "#06b6d4", // Banane pompadour cyan
     hairStyle: "pompadour",
     shirtColor: "#dc2626", // Chemise hawaïenne rouge
-    pantsColor: "#0891b2",
+    pantsColor: "#1956a0", // Slip bleu et jambes nues de cyborg
     accessory: "sunglasses",
     accessoryColor: "#18181b",
     expression: "grin",
@@ -172,7 +172,7 @@ export const NAKAMA_ROSTER: NakamaArchetype[] = [
     skinColor: "#f8cb9c",
     hairColor: "#18181b",
     hairStyle: "wavy",
-    shirtColor: "#ea580c", // Torse d'acier & collier de perles
+    shirtColor: "#f8cb9c", // Torse découvert & collier de perles
     pantsColor: "#1e293b",
     accessory: "cowboy_hat",
     accessoryColor: "#ea580c",
@@ -229,5 +229,37 @@ export const NAKAMA_ROSTER: NakamaArchetype[] = [
     accessory: "clown_nose",
     accessoryColor: "#ef4444",
     expression: "funny",
+  },
+  {
+    id: "doflamingo",
+    name: "Donquixote Doflamingo",
+    skinColor: "#f3ca9f", hairColor: "#f6d657", hairStyle: "crop",
+    shirtColor: "#edc461", pantsColor: "#f4f1ed",
+    accessory: "sunglasses", accessoryColor: "#c52659", accessorySubColor: "#f38bb9",
+    expression: "grin",
+  },
+  {
+    id: "boa_hancock",
+    name: "Boa Hancock",
+    skinColor: "#f8d5ba", hairColor: "#15151c", hairStyle: "flowing",
+    shirtColor: "#b52c40", pantsColor: "#b52c40",
+    accessory: "earrings", accessoryColor: "#f7ca52",
+    expression: "smile",
+  },
+  {
+    id: "vivi",
+    name: "Nefertari Vivi",
+    skinColor: "#f8d8bc", hairColor: "#51afdf", hairStyle: "flowing",
+    shirtColor: "#ee98af", pantsColor: "#f1e8dc",
+    accessory: "none", accessoryColor: "#deba48",
+    expression: "smile",
+  },
+  {
+    id: "mihawk",
+    name: "Dracule Mihawk",
+    skinColor: "#e8be9b", hairColor: "#151719", hairStyle: "crop",
+    shirtColor: "#351e2b", pantsColor: "#29242c",
+    accessory: "cowboy_hat", accessoryColor: "#17151b", accessorySubColor: "#8f233b",
+    expression: "stoic",
   },
 ];

@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { WorldLandmark, type PropDef, type PropType } from "./WorldLandmark";
 import WorldSetPiece from "./WorldSetPiece";
 import { useFrame } from "@react-three/fiber";
-import { WORLD_SPEED, type WorldState } from "./constants";
+import { WORLD_SPEED, type Phase, type WorldState } from "./constants";
+import { obstructsBusView } from "@/lib/bus-camera";
+import { BRIDGE_MARKING_BOX } from "@/lib/world-geometry";
 
 export const ZONE_LEN = 160;
 const LOOP = ZONE_LEN * 5;
@@ -177,9 +179,11 @@ interface WorldProps {
   worldRef: React.RefObject<WorldState>;
   reducedMotion?: boolean;
   lowPower?: boolean;
+  phase?: Phase;
+  cabinCenterZ?: number;
 }
 
-export default function World({ worldRef, reducedMotion = false, lowPower = false }: WorldProps) {
+export default function World({ worldRef, reducedMotion = false, lowPower = false, phase = "outside", cabinCenterZ = 0 }: WorldProps) {
   const allProps = useMemo(() => buildProps(), []);
   const terrains = useMemo(() => ZONES.map((_, index) => makeTerrain(index)), []);
 
@@ -191,6 +195,15 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
     [allProps, lowPower],
   );
   const propRefs = useRef<(THREE.Group | null)[]>([]);
+  const propBounds = useRef<THREE.Box3[]>([]);
+  const occlusion = useMemo(() => ({ ray: new THREE.Ray(), box: new THREE.Box3(), shift: new THREE.Vector3(), hit: new THREE.Vector3() }), []);
+  useLayoutEffect(() => {
+    propBounds.current = propRefs.current.map((group) => {
+      if (!group) return new THREE.Box3();
+      group.updateWorldMatrix(true, true);
+      return new THREE.Box3().setFromObject(group).translate(new THREE.Vector3(0, 0, -group.position.z));
+    });
+  }, [props]);
   const zoneRefs = useRef<(THREE.Group | null)[]>([]);
   const dashRef = useRef<THREE.InstancedMesh>(null);
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
@@ -199,13 +212,18 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
   const dashes = useMemo(() => Array.from({ length: 48 }, (_, i) => i * 10), []);
 
   useFrame((state, dt) => {
-    const frameDt = Math.min(dt, 0.1);
-    const mult = worldRef.current?.speedMultiplier ?? 1.0;
+    const frameDt = Math.min(dt, phase==="entering"||phase==="exiting"?0.25:0.1);
+    const mult = (worldRef.current?.speedMultiplier ?? 1.0)*(worldRef.current.motionFactor??1);
     // Le déplacement du bus fait partie du fonctionnement principal de la scène :
     // la préférence système "réduire les animations" coupe seulement les effets
     // décoratifs, jamais l'avancement du véhicule.
     const scroll = (worldRef.current?.scroll ?? 0) + frameDt * WORLD_SPEED * mult;
     if (worldRef.current) worldRef.current.scroll = scroll;
+
+    occlusion.ray.origin.copy(state.camera.position);
+    occlusion.ray.direction.set(0, 1.9, cabinCenterZ).sub(state.camera.position);
+    const busDistance = occlusion.ray.direction.length();
+    occlusion.ray.direction.normalize();
 
     // Défilement des décors
     for (let i = 0; i < props.length; i++) {
@@ -214,6 +232,11 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       const z = (((props[i].base + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
       g.position.z = z;
       g.visible = z > -180 && z < 110;
+      const bounds = propBounds.current[i];
+      if (g.visible && phase !== "inside" && bounds && !bounds.isEmpty()) {
+        occlusion.box.copy(bounds).translate(occlusion.shift.set(0, 0, z));
+        g.visible = !obstructsBusView(occlusion.ray, occlusion.box, busDistance, occlusion.hit);
+      }
     }
 
     // Défilement des îles
@@ -307,8 +330,8 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
 
       {/* Bandes de rive jaunes */}
       {[-3.5, 3.5].map((x) => (
-        <mesh key={x} position={[x, 0.035, -200]}>
-          <boxGeometry args={[0.16, 0.02, 960]} />
+        <mesh key={x} name={`world-bridge-edge-marking-${x < 0 ? "left" : "right"}`} position={[x, 0.035, -200]}>
+          <boxGeometry args={BRIDGE_MARKING_BOX} />
           <meshStandardMaterial color="#ffc107" roughness={0.8} />
         </mesh>
       ))}

@@ -4,14 +4,21 @@ export interface YouTubePlayer {
   playVideo(): void;
   pauseVideo(): void;
   seekTo(seconds: number, allowSeekAhead: boolean): void;
+  cueVideoById?(video: { videoId: string; startSeconds?: number }): void;
+  loadVideoById?(video: { videoId: string; startSeconds?: number }): void;
   mute(): void;
   unMute(): void;
   setVolume(volume: number): void;
   getVolume(): number;
   getCurrentTime(): number;
+  getVideoUrl(): string;
   getDuration(): number;
+  getVideoLoadedFraction?(): number;
   getPlayerState(): number;
   getIframe(): HTMLIFrameElement;
+  getOptions?(module?: string): string[];
+  setOption?(module: string, option: string, value: unknown): void;
+  unloadModule?(module: string): void;
   destroy(): void;
 }
 
@@ -38,6 +45,31 @@ interface YouTubePlayerOptions {
     onStateChange?: (event: YouTubePlayerEvent) => void;
     onError?: (event: YouTubePlayerEvent) => void;
     onAutoplayBlocked?: (event: YouTubePlayerEvent) => void;
+    onApiChange?: (event: YouTubePlayerEvent) => void;
+  };
+}
+
+/** cc_load_policy=0 still follows stored preferences. Clear the initial track
+ * once its module is available, then leave the native CC control to the viewer.
+ * Module options vary between YouTube versions, so check them before use. */
+export function createInitialCaptionReset(): (player: YouTubePlayer) => void {
+  let applied = false;
+  return (player) => {
+    if (applied) return;
+    try {
+      if (!player.getOptions?.().includes("captions")) return;
+      if (player.getOptions("captions").includes("track") && player.setOption) {
+        // `track` is exposed by the current iframe API's captions module.
+        player.setOption("captions", "track", {});
+      } else if (player.unloadModule) {
+        player.unloadModule("captions");
+      } else {
+        return;
+      }
+      applied = true;
+    } catch {
+      // onApiChange/first playback retries when the module finishes loading.
+    }
   };
 }
 

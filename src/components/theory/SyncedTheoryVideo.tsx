@@ -12,10 +12,23 @@ export default function SyncedTheoryVideo({ onPlaybackChange }: { onPlaybackChan
 
   useEffect(() => {
     let cancelled = false;
+    let playbackFailed = false;
+    let playbackTimer = 0;
     let playbackActive = false;
     const reportPlayback = (active: boolean) => {
+      if (playbackActive === active) return;
       playbackActive = active;
       onPlaybackChange?.(active);
+    };
+    // Cross-frame state events can be delayed or missed. Read the same public
+    // player state as a backup, only while this video tab is mounted.
+    const observePlayback = () => {
+      if (cancelled || playbackFailed || !playerRef.current) return;
+      try {
+        reportPlayback(isYouTubePlaybackActive(playerRef.current.getPlayerState(), playbackActive));
+      } catch {
+        // The iframe may be starting or being removed.
+      }
     };
 
     void loadYouTubeIframeApi()
@@ -39,6 +52,8 @@ export default function SyncedTheoryVideo({ onPlaybackChange }: { onPlaybackChan
             onReady: (event) => {
               if (cancelled) return;
               playerRef.current = event.target;
+              observePlayback();
+              playbackTimer = window.setInterval(observePlayback, 250);
               const iframe = event.target.getIframe();
               iframe.title = "La Théorie des Fous du Bus — Vidéo officielle Le Mont Corvo";
               iframe.setAttribute(
@@ -56,7 +71,7 @@ export default function SyncedTheoryVideo({ onPlaybackChange }: { onPlaybackChan
               // affiché à 0:00 jusqu'au clic explicite de l'utilisateur.
             },
             onStateChange: (event) => {
-              if (cancelled) return;
+              if (cancelled || playbackFailed) return;
               reportPlayback(isYouTubePlaybackActive(event.data, playbackActive));
               if (event.data === 1) setAutoplayBlocked(false);
             },
@@ -67,6 +82,8 @@ export default function SyncedTheoryVideo({ onPlaybackChange }: { onPlaybackChan
             },
             onError: () => {
               if (cancelled) return;
+              playbackFailed = true;
+              window.clearInterval(playbackTimer);
               reportPlayback(false);
               setFailed(true);
             },
@@ -80,6 +97,7 @@ export default function SyncedTheoryVideo({ onPlaybackChange }: { onPlaybackChan
 
     return () => {
       cancelled = true;
+      window.clearInterval(playbackTimer);
       reportPlayback(false);
       playerRef.current?.destroy();
       playerRef.current = null;

@@ -3,6 +3,7 @@
 import { useState, type Dispatch, type RefObject, type SetStateAction } from "react";
 import type { Phase } from "./bus/constants";
 import { useHudLayout } from "./useHudLayout";
+import { countPeopleOnBoard } from "@/lib/bus-crew";
 
 export interface ToastMessage {
   id: number;
@@ -13,6 +14,8 @@ export interface ToastMessage {
 
 interface BusHudProps {
   phase: Phase;
+  freeView: boolean;
+  toggleFreeView: () => void;
   hidden: boolean;
   sceneAvailable: boolean;
   toast: ToastMessage | null;
@@ -29,6 +32,8 @@ interface BusHudProps {
   interiorControlsVisible: boolean;
   headlights: boolean;
   hasEntered: boolean;
+  partyOn: boolean;
+  toggleParty: () => void;
   tvOn: boolean;
   joining: boolean;
   busy: boolean;
@@ -55,7 +60,7 @@ interface BusHudProps {
 }
 
 export function BusHud({
-  phase, hidden, sceneAvailable, toast, passengerManifestButtonRef, statsLoadError, count,
+  phase, freeView, toggleFreeView, hidden, sceneAvailable, toast, passengerManifestButtonRef, statsLoadError, count,
   numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow,
   exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
   tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, setStatsLoadError,
@@ -63,6 +68,7 @@ export function BusHud({
   toggleDayNight, decelerateBus, accelerateBus, toggleHeadlights, honk,
   enterBus, openProfileModal, exitBus, resetView, bgmPlaying, toggleBgm,
   bgmVolume, setBgmVolume,
+  partyOn, toggleParty,
 }: BusHudProps) {
   const [showVolumePopup, setShowVolumePopup] = useState(false);
   const hudRef = useHudLayout(phase, hidden, showVolumePopup, sceneAvailable);
@@ -94,7 +100,11 @@ export function BusHud({
 
         {/* Titre + zone (Responsive mobile) */}
         <div className={`bus-title-panel pointer-events-none absolute left-3 max-w-[calc(100vw-1.5rem)] sm:left-4 sm:top-4 sm:max-w-[calc(100vw-2rem)] lg:max-w-[calc(100vw-26rem)] ${phase === "inside" ? "top-[8.25rem]" : "top-[4.75rem]"}`}>
-          <div className={`bus-title-copy rounded-xl bg-[#07142b]/95 px-3 py-2 shadow-lg ${phase === "inside" ? "hidden sm:inline-block" : "inline-block"}`}>
+          <div
+            className={`bus-title-copy pointer-events-auto select-text cursor-text rounded-xl bg-[#07142b]/95 px-3 py-2 shadow-lg ${phase === "inside" ? "hidden sm:inline-block" : "inline-block"}`}
+            onPointerDown={(event) => event.stopPropagation()}
+            onWheel={(event) => event.stopPropagation()}
+          >
           <h1 className="break-words text-base font-black uppercase leading-[1.15] tracking-tight sm:text-xl lg:text-3xl">
             <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
             <span className="text-white">des Fous du Bus</span>
@@ -133,7 +143,7 @@ export function BusHud({
                 </span>
               </span>
               <span className="block text-base font-black tabular-nums text-white sm:text-xl">
-                {count === null ? (statsLoadError ? "Réessayer" : "…") : count.toLocaleString("fr-FR")}
+                {count === null ? (statsLoadError ? "Réessayer" : "…") : countPeopleOnBoard(count).toLocaleString("fr-FR")}
               </span>
             </span>
           </button>
@@ -179,16 +189,17 @@ export function BusHud({
         <button
           type="button"
           onClick={toggleBgm}
-          aria-pressed={bgmPlaying}
-          aria-label={bgmPlaying ? "Couper la musique de fond" : "Activer la musique de fond (Life in Pieces — Le Mont Corvo)"}
-          title={bgmPlaying ? "Couper la musique de fond (Life in Pieces)" : "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)"}
+          disabled={partyOn}
+          aria-pressed={bgmPlaying || partyOn}
+          aria-label={partyOn ? "Musique de fête active — arrêter avec le bouton Fête" : bgmPlaying ? "Couper la musique de fond" : "Activer la musique de fond (Life in Pieces — Le Mont Corvo)"}
+          title={partyOn ? "Party At Baratie — utilisez Fête pour arrêter la musique" : bgmPlaying ? "Couper la musique de fond (Life in Pieces)" : "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)"}
           className={`bus-glass flex h-11 items-center gap-1.5 rounded-full border px-3 text-xs font-bold shadow-lg transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 sm:px-3.5 sm:text-sm cursor-pointer ${
-            bgmPlaying
+            bgmPlaying || partyOn
               ? "border-[#ffd23f] bg-[#07142b]/95 text-[#ffd23f] shadow-[0_0_15px_rgba(255,210,63,0.35)]"
               : "border-white/35 bg-[#07142b]/95 text-white hover:border-[#ffd23f]/70 hover:text-[#ffd23f]"
           }`}
         >
-          {bgmPlaying ? (
+          {bgmPlaying || partyOn ? (
             <span className="flex items-end gap-0.5 h-3.5" aria-hidden="true">
               <span className="inline-block h-3.5 w-1 rounded-full bg-[#ffd23f] animate-pulse" />
               <span className="inline-block h-2 w-1 rounded-full bg-[#ffd23f] animate-pulse [animation-delay:150ms]" />
@@ -214,7 +225,7 @@ export function BusHud({
           >
             <button
               type="button"
-              onClick={() => setBgmVolume(bgmVolume > 0 ? 0 : 50)}
+              onClick={() => setBgmVolume(bgmVolume > 0 ? 0 : 85)}
               aria-label={bgmVolume === 0 ? "Réactiver le son" : "Couper le son de la musique"}
               className="grid h-11 w-11 place-items-center rounded-full text-sm transition-transform hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#ffd23f] cursor-pointer"
             >
@@ -352,7 +363,7 @@ export function BusHud({
               <button
                 type="button"
                 onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
-                disabled={seatRow <= 0}
+                disabled={freeView || seatRow <= 0}
                 aria-label="Rangée précédente"
                 className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
                 title="Rangée précédente"
@@ -371,7 +382,7 @@ export function BusHud({
               <button
                 type="button"
                 onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
-                disabled={seatRow >= numRows - 1}
+                disabled={freeView || seatRow >= numRows - 1}
                 aria-label="Rangée suivante"
                 className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
                 title="Rangée suivante"
@@ -400,6 +411,9 @@ export function BusHud({
           <HudButton className="min-w-[104px] flex-[1_0_auto] sm:w-[112px] sm:flex-none" onClick={honk} ariaLabel="Klaxonner" icon="📯" disabled={!exteriorControlsVisible}>
             <span className="hud-label-short sm:hidden">Klaxon</span><span className="hud-label-long hidden sm:inline">Klaxonner</span>
           </HudButton>
+          <HudButton className="min-w-[96px] flex-[1_0_auto] sm:w-[100px] sm:flex-none" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? "Arrêter la fête" : "Lancer la fête"} icon="🎉" disabled={(!partyOn && busy) || !exteriorControlsVisible}>
+            {partyOn ? "Stop" : "Fête"}
+          </HudButton>
           {hasEntered && phase === "outside" && (
             <div className="bus-exterior-tv animate-[hud-control-in-flow_220ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none">
               <HudButton
@@ -408,6 +422,7 @@ export function BusHud({
                 active={tvOn}
                 ariaLabel="Télévision"
                 icon="📺"
+                disabled={partyOn}
               >
                 <span className="hud-label-short sm:hidden">TV</span><span className="hud-label-long hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
               </HudButton>
@@ -431,21 +446,27 @@ export function BusHud({
               <span className="hud-label-short sm:hidden">Prénom</span><span className="hud-label-long hidden sm:inline">Ajouter un prénom</span>
             </HudButton>
             <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("comment")} ariaLabel="Mettre un commentaire" icon="💬" disabled={busy || !interiorControlsVisible}>
-              <span className="hud-label-short sm:hidden">Commenter</span><span className="hud-label-long hidden sm:inline">Mettre un commentaire</span>
+              Commenter
+            </HudButton>
+            <HudButton compact className="min-w-0 flex-1" onClick={toggleFreeView} ariaLabel={freeView ? "Revenir à ma place" : "Explorer en vue libre"} active={freeView} icon={freeView ? "👁️" : "🧭"} disabled={busy || !interiorControlsVisible}>
+              <span className="hud-label-short sm:hidden">{freeView ? "Ma place" : "Vue libre"}</span><span className="hud-label-long hidden sm:inline">{freeView ? "Revenir à ma place" : "Vue libre"}</span>
             </HudButton>
           </div>
-          <div className="grid w-full grid-cols-4 items-center gap-1.5 sm:grid-cols-[1.25fr_1fr_0.82fr_1.08fr] sm:gap-2">
-            <HudButton compact className="min-w-0 w-full" onClick={() => setTvOn((v) => !v)} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} icon="📺" disabled={busy || !interiorControlsVisible}>
-              <span className="hud-label-short sm:hidden">TV</span><span className="hud-label-long hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
+          <div className="grid w-full grid-cols-5 items-center gap-1.5 sm:gap-2">
+            <HudButton compact className="min-w-0 w-full" onClick={() => setTvOn((v) => !v)} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} icon="📺" disabled={partyOn || busy || !interiorControlsVisible}>
+              TV
             </HudButton>
             <HudButton compact className="min-w-0 w-full" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={busy || !interiorControlsVisible}>
-              {headlights ? "Éteindre" : "Phares"}
+              Phares
             </HudButton>
             <HudButton compact className="min-w-0 w-full" onClick={honk} ariaLabel="Klaxonner" icon="📯" disabled={busy || !interiorControlsVisible}>
               Klaxon
             </HudButton>
+            <HudButton compact className="min-w-0 w-full" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? "Arrêter la fête" : "Lancer la fête"} icon="🎉" disabled={(!partyOn && busy) || !interiorControlsVisible}>
+              {partyOn ? "Stop" : "Fête"}
+            </HudButton>
             <HudButton compact className="min-w-0 w-full" onClick={exitBus} ariaLabel="Sortir du bus" primary icon="🏝️" disabled={busy || !interiorControlsVisible}>
-              <span className="hud-label-short sm:hidden">{phase === "exiting" ? "Descente…" : "Sortir"}</span><span className="hud-label-long hidden sm:inline">{phase === "exiting" ? "Descente…" : "Sortir du bus"}</span>
+              {phase === "exiting" ? "Sortie" : "Sortir"}
             </HudButton>
           </div>
         </div>

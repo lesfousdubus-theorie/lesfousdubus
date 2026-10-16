@@ -1,9 +1,20 @@
 "use client";
 
-import { useLayoutEffect, useRef, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
+import { RoundedBox } from "@react-three/drei";
 import { WIPER_PARK_ANGLE } from "@/lib/bus-wipers";
 import BusFront from "./BusFront";
+import BusCoachDetails from "./BusCoachDetails";
+import BusWheels from "./BusWheels";
+import BusDoors from "./BusDoors";
+import BusSpanMeshes from "./BusSpanMeshes";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import BusDestination from "./BusDestination";
+import { BUS_DOOR, BUS_FRONT_Z, splitAtDoors, type BusDoorLayout } from "@/lib/bus-layout";
+import { createLowerBodyGeometry, SIDE_LABEL_Y } from "./BusBodyGeometry";
+import { isWindowPillarClearOfDoor } from "@/lib/bus-interior-geometry";
+import type { JourneyState } from "@/lib/bus-journey";
 
 interface BusExteriorProps {
   headlights: boolean;
@@ -12,15 +23,21 @@ interface BusExteriorProps {
   cabinLength: number;
   cabinCenterZ: number;
   rearWallZ: number;
+  doors: BusDoorLayout[];
+  numRows: number;
+  focusZ: number;
+  lowPower: boolean;
   pillars: number[];
   wheelPositions: [number, number][];
-  wheels: RefObject<(THREE.Mesh | null)[]>;
+  wheels: RefObject<(THREE.Group | null)[]>;
   leftWiper: RefObject<THREE.Group | null>;
   rightWiper: RefObject<THREE.Group | null>;
   leftTarget: RefObject<THREE.Object3D | null>;
   rightTarget: RefObject<THREE.Object3D | null>;
   sideLabel: THREE.Texture;
-  destLabel: THREE.Texture;
+  reducedMotion: boolean;
+  freeView: boolean;
+  journey:RefObject<JourneyState>;
   licensePlateTex: THREE.Texture;
   montCorvoTex: THREE.Texture;
   hatGeo: THREE.BufferGeometry;
@@ -37,12 +54,23 @@ interface BusExteriorProps {
 }
 
 export default function BusExterior({
-  headlights, phase, mats, cabinLength, cabinCenterZ, rearWallZ,
+  headlights, phase, journey, mats, cabinLength, cabinCenterZ, rearWallZ, doors, numRows, focusZ, lowPower,
   pillars, wheelPositions, wheels, leftWiper, rightWiper, leftTarget, rightTarget,
-  sideLabel, destLabel, licensePlateTex, montCorvoTex, hatGeo, ribbonGeo, hat,
+  sideLabel, reducedMotion, freeView, licensePlateTex, montCorvoTex, hatGeo, ribbonGeo, hat,
   hatBasePos, hatBaseRot, tagSiecleTex, tagBarbeNoireTex, tagLuffyNikaTex,
   tagPoneglyphesTex, tagTimingTex, contactShadowTex,
 }: BusExteriorProps) {
+  const sidePanels = useMemo(() => [-1, 1].map(side => {
+    const pieces = splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, side > 0).map(([from, to]) => {
+      const center = (from + to) / 2;
+      return createLowerBodyGeometry(to - from, [...new Set(wheelPositions.map(([, z]) => z - center))]).translate(0, 0, center);
+    });
+    const geometry = mergeGeometries(pieces, false)!;
+    pieces.forEach(piece => piece.dispose());
+    return { side, geometry };
+  }), [rearWallZ, wheelPositions, doors]);
+  useEffect(() => () => sidePanels.forEach(({ geometry }) => geometry.dispose()), [sidePanels]);
+
   return (
     <>
       {/* Cibles des phares positionnées dans l'axe de marche du bus */}
@@ -53,24 +81,13 @@ export default function BusExterior({
       {[-1, 1].map((sx) => (
         <group key={sx}>
           {/* Panneau latéral bas extensible */}
-          <mesh material={mats.body} castShadow position={[sx * 1.3, 1.125, cabinCenterZ]}>
-            <boxGeometry args={[0.08, 1.25, cabinLength]} />
-          </mesh>
+          {sidePanels.filter(({ side }) => side === sx).map(({ geometry }) =>
+            <mesh key={sx} name={`bus-body-side-${sx}-${BUS_FRONT_Z}`} geometry={geometry} material={mats.body} castShadow position={[sx * 1.3, 0, 0]} />
+          )}
           {/* Panneau latéral haut extensible */}
-          <mesh material={mats.body} castShadow position={[sx * 1.3, 2.975, cabinCenterZ]}>
-            <boxGeometry args={[0.08, 0.45, cabinLength]} />
-          </mesh>
-          {/* Vitres teintées continues extensibles */}
-          <mesh material={mats.glass} position={[sx * 1.3, 2.25, cabinCenterZ]} raycast={() => null}>
-            <boxGeometry args={[0.02, 1.0, cabinLength]} />
-          </mesh>
-          {/* Bandes jaunes qui encadrent les tags sans jamais les recouvrir */}
-          <mesh material={mats.yellow} position={[sx * 1.36, 1.68, cabinCenterZ]}>
-            <boxGeometry args={[0.02, 0.14, cabinLength]} />
-          </mesh>
-          <mesh material={mats.yellow} position={[sx * 1.36, 0.57, cabinCenterZ]}>
-            <boxGeometry args={[0.02, 0.07, cabinLength]} />
-          </mesh>
+          <RoundedBox args={[0.08, 0.45, cabinLength]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[sx * 1.3, 2.975, cabinCenterZ]} />
+          <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, sx > 0)} material={mats.windowGlass} x={sx * 1.3} y={2.25} width={0} height={1} planeSide={sx} />
+          <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, sx > 0)} material={mats.yellow} x={sx * 1.35} y={1.72} width={0.024} height={0.08} />
 
           {/* Slogans de la théorie tagués en grand style graffiti street art : 3 phrases à gauche, 2 phrases à droite */}
           {sx < 0 ? (
@@ -78,10 +95,10 @@ export default function BusExterior({
               {/* CÔTÉ GAUCHE (3 phrases grandes et artistiques) */}
               {/* 1. Le siècle oublié c'est le présent (avant gauche) */}
               <mesh
-                position={[sx * 1.352, 1.25, -2.7]}
+                name="bus-side-slogan-siecle" position={[sx * 1.352, SIDE_LABEL_Y, -2.45]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.7, 0.62]} />
+                <planeGeometry args={[2.9, 0.725]} />
                 <meshStandardMaterial
                   map={tagSiecleTex}
                   transparent
@@ -93,10 +110,10 @@ export default function BusExterior({
               </mesh>
               {/* 2. Barbe Noire est Davy D. Jones (milieu gauche) */}
               <mesh
-                position={[sx * 1.352, 1.25, 0.0]}
+                name="bus-side-slogan-barbe-noire" position={[sx * 1.352, SIDE_LABEL_Y, 0.0]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.5, 0.62]} />
+                <planeGeometry args={[2.7, 0.675]} />
                 <meshStandardMaterial
                   map={tagBarbeNoireTex}
                   transparent
@@ -108,10 +125,10 @@ export default function BusExterior({
               </mesh>
               {/* 3. Luffy est Nika et Joy Boy (arrière gauche) */}
               <mesh
-                position={[sx * 1.352, 1.25, 2.7]}
+                name="bus-side-slogan-luffy" position={[sx * 1.352, SIDE_LABEL_Y, 2.7]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <planeGeometry args={[2.5, 0.62]} />
+                <planeGeometry args={[2.7, 0.675]} />
                 <meshStandardMaterial
                   map={tagLuffyNikaTex}
                   transparent
@@ -127,10 +144,10 @@ export default function BusExterior({
               {/* CÔTÉ DROIT (2 phrases grandes et artistiques) */}
               {/* 4. Les ponéglyphes viennent du futur (avant/milieu droit) */}
               <mesh
-                position={[sx * 1.352, 1.25, -1.5]}
+                name="bus-side-slogan-poneglyphes" position={[sx * 1.352, SIDE_LABEL_Y, -0.7]}
                 rotation={[0, Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.6, 0.62]} />
+                <planeGeometry args={[3.1, 0.775]} />
                 <meshStandardMaterial
                   map={tagPoneglyphesTex}
                   transparent
@@ -142,10 +159,10 @@ export default function BusExterior({
               </mesh>
               {/* 5. Tout est une question de timing (milieu/arrière droit) */}
               <mesh
-                position={[sx * 1.352, 1.25, 2.4]}
+                name="bus-side-slogan-timing" position={[sx * 1.352, SIDE_LABEL_Y, 2.35]}
                 rotation={[0, Math.PI / 2, 0]}
               >
-                <planeGeometry args={[3.4, 0.62]} />
+                <planeGeometry args={[3, 0.75]} />
                 <meshStandardMaterial
                   map={tagTimingTex}
                   transparent
@@ -158,33 +175,14 @@ export default function BusExterior({
             </>
           )}
 
-          {/* Grands rétroviseurs incurvés (restent à l'avant) */}
-          <mesh material={mats.body} position={[sx * 1.62, 2.42, -4.35]}>
-            <boxGeometry args={[0.15, 0.44, 0.28]} />
-          </mesh>
-          <mesh
-            material={mats.chrome}
-            position={[sx * 1.45, 2.42, -4.35]}
-            rotation={[0, 0, Math.PI / 2]}
-          >
-            <cylinderGeometry args={[0.02, 0.02, 0.35, 12]} />
-          </mesh>
-          {/* Miroir réfléchissant */}
-          <mesh material={mats.chrome} position={[sx * 1.62, 2.42, -4.2]}>
-            <planeGeometry args={[0.13, 0.4]} />
-          </mesh>
         </group>
       ))}
 
-      <PillarInstances positions={pillars} material={mats.bodyDark} />
+      <PillarInstances positions={pillars} doors={doors} material={mats.bodyDark} />
 
       {/* Face avant : pare-brise panoramique */}
-      <mesh material={mats.body} castShadow position={[0, 1.125, -4.6]}>
-        <boxGeometry args={[2.6, 1.25, 0.08]} />
-      </mesh>
-      <mesh material={mats.body} castShadow position={[0, 2.975, -4.6]}>
-        <boxGeometry args={[2.6, 0.45, 0.08]} />
-      </mesh>
+      <RoundedBox args={[2.6, 1.25, 0.08]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 1.125, -4.6]} />
+      <RoundedBox args={[2.6, 0.45, 0.08]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 2.975, -4.6]} />
       {[-1, 1].map((sx) => (
         <mesh key={sx} material={mats.bodyDark} position={[sx * 1.225, 2.25, -4.6]}>
           <boxGeometry args={[0.15, 1.02, 0.08]} />
@@ -193,8 +191,8 @@ export default function BusExterior({
       <mesh material={mats.bodyDark} position={[0, 2.25, -4.6]}>
         <boxGeometry args={[0.05, 1.02, 0.08]} />
       </mesh>
-      <mesh material={mats.glass} position={[0, 2.25, -4.6]} raycast={() => null}>
-        <boxGeometry args={[2.3, 1.0, 0.02]} />
+      <mesh material={mats.windowGlass} position={[0, 2.25, -4.6]} raycast={() => null}>
+        <planeGeometry args={[2.3, 1.0]} />
       </mesh>
       {/* Finition intérieure du bandeau de pare-brise, dans le prolongement
           exact des habillages latéraux. */}
@@ -216,41 +214,25 @@ export default function BusExterior({
         </mesh>
       </group>
       {/* Girouette de destination lumineuse */}
-      <mesh position={[0, 2.98, -4.65]}>
-        <planeGeometry args={[2.1, 0.32]} />
-        <meshStandardMaterial
-          map={destLabel}
-          emissive="#ffb700"
-          emissiveMap={destLabel}
-          emissiveIntensity={0.8}
-        />
-      </mesh>
+      <BusDestination mats={mats} reducedMotion={reducedMotion} />
+      <BusDoors doors={doors} numRows={numRows} focusZ={focusZ} lowPower={lowPower} mats={mats} phase={phase} journey={journey} reducedMotion={reducedMotion} />
 
       {/* ---------- Face arrière dynamique (se recule avec la longueur) ---------- */}
-      <group position={[0, 0, rearWallZ]}>
-        <mesh material={mats.body} castShadow position={[0, 1.125, 0]}>
-          <boxGeometry args={[2.6, 1.25, 0.08]} />
+      <group name="bus-rear-face" position={[0, 0, rearWallZ]}>
+        <RoundedBox args={[2.6, 1.25, 0.08]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 1.125, 0]} />
+        <RoundedBox args={[2.6, 0.45, 0.08]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 2.975, 0]} />
+        {[-1.255, 1.255].map((x) => <mesh key={x} material={mats.bodyDark} castShadow position={[x, 1.875, 0.02]}>
+          <boxGeometry args={[0.09, 2.75, 0.12]} />
+        </mesh>)}
+        <mesh material={mats.windowGlass} position={[0, 2.25, 0]} raycast={() => null}>
+          <planeGeometry args={[2.56, 1.04]} />
         </mesh>
-        <mesh material={mats.body} castShadow position={[0, 2.975, 0]}>
-          <boxGeometry args={[2.6, 0.45, 0.08]} />
-        </mesh>
-        <mesh material={mats.glass} position={[0, 2.25, 0]} raycast={() => null}>
-          <boxGeometry args={[2.56, 1.04, 0.02]} />
-        </mesh>
-        <mesh material={mats.chrome} castShadow position={[0, 0.65, 0.1]}>
-          <boxGeometry args={[2.7, 0.28, 0.25]} />
-        </mesh>
+        <RoundedBox args={[2.7, 0.28, 0.25]} radius={0.1} smoothness={2} bevelSegments={3} material={mats.chrome} castShadow position={[0, 0.65, 0.1]} />
         {/* Plaque d'immatriculation arrière */}
         <mesh position={[0, 0.65, 0.23]}>
           <planeGeometry args={[0.85, 0.24]} />
           <meshStandardMaterial map={licensePlateTex} roughness={0.3} />
         </mesh>
-        {/* Feux arrière rouges */}
-        {[-0.95, 0.95].map((rx) => (
-          <mesh key={rx} material={mats.red} position={[rx, 1.05, 0.05]}>
-            <boxGeometry args={[0.35, 0.2, 0.06]} />
-          </mesh>
-        ))}
         {/* Affiche à l'arrière du bus */}
         <mesh position={[0, 2.3, 0.035]}>
           <planeGeometry args={[1.8, 0.38]} />
@@ -259,18 +241,17 @@ export default function BusExterior({
       </group>
 
       {/* ---------- Toit et plancher extensibles ---------- */}
-      <mesh material={mats.body} castShadow position={[0, 3.2, cabinCenterZ]}>
-        <boxGeometry args={[2.6, 0.08, cabinLength]} />
+      <RoundedBox args={[2.68, 0.22, cabinLength + 0.12]} radius={0.1} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 3.26, cabinCenterZ]} />
+      <RoundedBox args={[2.3, 0.12, cabinLength - 0.3]} radius={0.05} smoothness={2} bevelSegments={3} material={mats.bodyDark} castShadow position={[0, 3.36, cabinCenterZ]} />
+      {/* Plancher et châssis découpés à droite pour le puits des marches. */}
+      <mesh material={mats.floor} castShadow position={[-0.45, 0.6, cabinCenterZ]}>
+        <boxGeometry args={[1.7, 0.08, cabinLength]} />
       </mesh>
-      <mesh material={mats.bodyDark} castShadow position={[0, 3.29, cabinCenterZ]}>
-        <boxGeometry args={[2.3, 0.12, cabinLength - 0.3]} />
+      <mesh material={mats.dark} castShadow position={[-0.4, 0.4, cabinCenterZ - 0.6]}>
+        <boxGeometry args={[1.6, 0.3, cabinLength + 1.2]} />
       </mesh>
-      <mesh material={mats.floor} castShadow position={[0, 0.6, cabinCenterZ]}>
-        <boxGeometry args={[2.6, 0.08, cabinLength]} />
-      </mesh>
-      <mesh material={mats.dark} castShadow position={[0, 0.4, cabinCenterZ - 0.6]}>
-        <boxGeometry args={[2.4, 0.3, cabinLength + 1.2]} />
-      </mesh>
+      <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors)} material={mats.floor} x={(BUS_DOOR.innerX + 1.3) / 2} y={0.6} width={1.3 - BUS_DOOR.innerX} height={0.08} castShadow />
+      <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z - 1.2, rearWallZ, doors)} material={mats.dark} x={0.8} y={0.4} width={0.8} height={0.3} castShadow />
 
       {/* Ombre de contact au sol sous le bus : ancre solidement le bus au sol */}
       <mesh
@@ -298,45 +279,8 @@ export default function BusExterior({
         montCorvoTex={montCorvoTex}
       />
 
-      {/* ---------- Roues stylisées (adaptées à la longueur) ---------- */}
-      {wheelPositions.map(([x, z], i) => (
-        <group key={`wheel-${i}`} position={[x, 0.55, z]} visible={phase !== "inside"}>
-          <mesh
-            ref={(el: THREE.Mesh | null) => {
-              wheels.current[i] = el;
-            }}
-            castShadow
-            rotation={[0, 0, Math.PI / 2]}
-          >
-            {/* Pneu noir à cannelures */}
-            <cylinderGeometry args={[0.55, 0.55, 0.4, 32]} />
-            <meshStandardMaterial color="#19191d" roughness={0.92} />
-
-            {/* Enjoliveur chromé bombé */}
-            <mesh material={mats.chrome} position={[0, 0, 0]}>
-              <cylinderGeometry args={[0.34, 0.34, 0.42, 28]} />
-            </mesh>
-            {/* Centre de roue doré One Piece */}
-            <mesh material={mats.yellow} position={[0, 0, 0]}>
-              <sphereGeometry args={[0.14, 16, 16]} />
-            </mesh>
-            {/* 5 écrous chromés */}
-            {[0, 1, 2, 3, 4].map((k) => (
-              <mesh
-                key={k}
-                material={mats.dark}
-                position={[
-                  0,
-                  Math.cos((k / 5) * Math.PI * 2) * 0.22,
-                  Math.sin((k / 5) * Math.PI * 2) * 0.22,
-                ]}
-              >
-                <cylinderGeometry args={[0.03, 0.03, 0.44, 8]} />
-              </mesh>
-            ))}
-          </mesh>
-        </group>
-      ))}
+      <BusCoachDetails mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ} rearWallZ={rearWallZ} wheelPositions={wheelPositions} doors={doors} />
+      <BusWheels positions={wheelPositions} wheels={wheels} mats={mats} visible={phase !== "inside" || freeView} />
 
       {/* ---------- CHAPEAU DE PAILLE DE LUFFY (AGRANDI ET DROIT) ---------- */}
       <group
@@ -346,7 +290,9 @@ export default function BusExterior({
         scale={[1.35, 1.35, 1.35]}
       >
         {/* Chapeau de Luffy complet et continu */}
-        <mesh geometry={hatGeo} material={mats.straw} castShadow receiveShadow />
+        {/* The thin closed shell casts onto the bus, but cannot reliably
+            receive its own shadow map without concentric shadow acne. */}
+        <mesh geometry={hatGeo} material={mats.straw} castShadow />
 
         {/* Ruban rouge écarlate ceignant la calotte */}
         <mesh
@@ -361,7 +307,7 @@ export default function BusExterior({
   );
 }
 
-function PillarInstances({ positions, material }: { positions: number[]; material: THREE.Material }) {
+function PillarInstances({ positions, doors, material }: { positions: number[]; doors: BusDoorLayout[]; material: THREE.Material }) {
   const ref = useRef<THREE.InstancedMesh>(null);
   useLayoutEffect(() => {
     if (!ref.current) return;
@@ -369,15 +315,17 @@ function PillarInstances({ positions, material }: { positions: number[]; materia
     let index = 0;
     for (const x of [-1.3, 1.3]) {
       for (const z of positions) {
+        if (x > 0 && !isWindowPillarClearOfDoor(z, doors)) continue;
         matrix.makeTranslation(x, 2.25, z);
         ref.current.setMatrixAt(index++, matrix);
       }
     }
+    ref.current.count = index;
     ref.current.instanceMatrix.needsUpdate = true;
     ref.current.computeBoundingSphere();
-  }, [positions]);
+  }, [positions, doors]);
   return (
-    <instancedMesh ref={ref} args={[undefined, undefined, 183 * 2]} count={positions.length * 2} material={material}>
+    <instancedMesh ref={ref} args={[undefined, undefined, Math.max(1, positions.length * 2)]} count={positions.length * 2} material={material}>
       <boxGeometry args={[0.08, 1.02, 0.1]} />
     </instancedMesh>
   );
