@@ -1,32 +1,44 @@
 "use client";
 
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import type { PassengerProfile } from "@/types/passenger";
 import { NAKAMA_ROSTER, type NakamaArchetype } from "./passenger-archetypes";
-import { HairStyle, Accessory, NakamaProp } from "./PassengerAppearance";
+import { NakamaProp } from "./PassengerAppearance";
+import PassengerHead from "./PassengerHead";
+import { getCharacterShape } from "./CharacterShapes";
+import { PassengerNeck, PassengerTorso } from "./PassengerAnatomy";
+import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import type { SeatInfo } from "@/lib/bus-layout";
+import { getBusOccupancy, type BusOccupant } from "@/lib/bus-occupancy";
+import PassengerLowerBody from "./PassengerLowerBody";
+import { PassengerUpperArm, PassengerForearm } from "./PassengerIdentity";
+import PassengerSignatureProp from "./PassengerSignatureProp";
+import PassengerCardGame, { getPassengerCardActor, type PassengerCardActors } from "./PassengerCardGame";
+import { getPassengerCardPairs } from "@/lib/passenger-card-game";
+import { BODY_BEHIND_HIP } from "@/lib/passenger-gait";
+import { blendPassengerPose, createPassengerPose, samplePassengerPose } from "@/lib/passenger-motion";
 
 /** Hauteur visuelle du sommet de chaque passager assis, accessoires compris. */
 function getPassengerLabelY(archetype: NakamaArchetype): number {
   const hairTop = {
     spiky: 2.04,
-    crop: 1.98,
-    flowing: 1.98,
-    swoop: 1.98,
+    crop: 2.03,
+    flowing: 2.03,
+    swoop: 2.03,
     afro: 2.14,
     pompadour: 2.13,
     topknot: 2.08,
-    wavy: 1.98,
-    shaggy: 1.98,
+    wavy: 2.03,
+    shaggy: 2.03,
   }[archetype.hairStyle];
 
   const accessoryTops: Partial<Record<NonNullable<NakamaArchetype["accessory"]>, number>> = {
-    straw_hat: 2.09,
-    reindeer_hat: 2.19,
+    straw_hat: 2.12,
+    reindeer_hat: 2.28,
     top_hat: 2.27,
-    white_cap: 2.01,
+    white_cap: 2.13,
     cowboy_hat: 2.11,
     horns: 2.07,
   };
@@ -34,12 +46,15 @@ function getPassengerLabelY(archetype: NakamaArchetype): number {
 
   // Le centre du sprite tient compte de sa demi-hauteur (0,055 pour une hauteur de 0,11)
   // et garde environ 0,05 d'air au-dessus des cheveux ou du chapeau.
-  return Math.max(hairTop, accessoryTop ?? 0) + 0.105;
+  const rig = getPassengerSkeleton(archetype.id), adult = getPassengerSkeleton("");
+  const headOffset = rig.seatedHipHeight + rig.neckAboveHip + rig.headAboveNeck
+    - adult.seatedHipHeight - adult.neckAboveHip - adult.headAboveNeck;
+  return Math.max(hairTop, accessoryTop ?? 0) + 0.105 + headOffset;
 }
 
 const ARCHETYPE_MATS_CACHE = new Map<string, Record<string, THREE.Material>>();
 
-function getArchetypeMaterials(archetype: NakamaArchetype): Record<string, THREE.Material> {
+export function getArchetypeMaterials(archetype: NakamaArchetype): Record<string, THREE.Material> {
   const existing = ARCHETYPE_MATS_CACHE.get(archetype.id);
   if (existing) return existing;
 
@@ -79,28 +94,20 @@ function getArchetypeMaterials(archetype: NakamaArchetype): Record<string, THREE
     }),
     eyes: new THREE.MeshBasicMaterial({
       color: "#111113",
-      depthWrite: false,
-      polygonOffset: true,
-      polygonOffsetFactor: -2,
-      polygonOffsetUnits: -2,
+      depthWrite: true,
     }),
     teeth: new THREE.MeshBasicMaterial({
       color: "#ffffff",
-      depthWrite: false,
-      polygonOffset: true,
-      polygonOffsetFactor: -2,
-      polygonOffsetUnits: -2,
+      depthWrite: true,
     }),
     faceDark: new THREE.MeshBasicMaterial({
       color: "#1c1917",
-      depthWrite: false,
-      polygonOffset: true,
-      polygonOffsetFactor: -2,
-      polygonOffsetUnits: -2,
+      depthWrite: true,
     }),
     dark: new THREE.MeshStandardMaterial({ color: "#1c1917", roughness: 0.8 }),
     steel: new THREE.MeshStandardMaterial({ color: "#cbd5e1", metalness: 0.8, roughness: 0.2 }),
     red: new THREE.MeshStandardMaterial({ color: "#dc2626", roughness: 0.5 }),
+    turquoise: new THREE.MeshStandardMaterial({ color: "#32c9c1", roughness: .65 }),
   };
 
   ARCHETYPE_MATS_CACHE.set(archetype.id, mats);
@@ -109,178 +116,86 @@ function getArchetypeMaterials(archetype: NakamaArchetype): Record<string, THREE
 
 interface PassengersProps {
   passengerCount: number;
+  seatCapacity: number;
   numRows: number;
   renderedRowIndices?: number[];
   vacantSeatRanges?: Array<[number, number, number]>;
   hornPulse: number;
+  partyOn?: boolean;
   reservedRow?: number;
   passengerProfiles?: PassengerProfile[];
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   activePassengerIndex?: number | null;
   lowPower?: boolean;
+  reducedMotion?: boolean;
+  excludedPassengerIndex?: number | null;
+  avatarAboard?: boolean;
 }
 
-function Passengers({
-  passengerCount,
-  numRows,
-  renderedRowIndices,
-  vacantSeatRanges = [],
-  hornPulse,
-  reservedRow = 3,
-  passengerProfiles = [],
-  onPassengerSelect,
-  activePassengerIndex = null,
-  lowPower = false,
-}: PassengersProps) {
-  const detailLimit = lowPower ? 12 : 24;
-  const capacity = numRows * 4;
-  const vacantRanges = useMemo(() => {
-    return vacantSeatRanges
-      .map(([start, end, before]) => ({
-        start: Math.max(0, start),
-        end: Math.min(capacity - 1, end),
-        before,
-      }))
-      .filter(({ start, end }) => start <= end)
-      .sort((left, right) => left.start - right.start);
-  }, [capacity, vacantSeatRanges]);
-  const vacantCount = vacantRanges.reduce((total, range) => total + range.end - range.start + 1, 0);
-  const occupiedCount = Math.min(Math.max(0, passengerCount), capacity - vacantCount);
-  const vacantCountThrough = useCallback((seatIndex: number) => {
-    let low = 0;
-    let high = vacantRanges.length;
-    while (low < high) {
-      const middle = (low + high) >>> 1;
-      if (vacantRanges[middle].start <= seatIndex) low = middle + 1;
-      else high = middle;
-    }
-    if (low === 0) return 0;
-    const range = vacantRanges[low - 1];
-    return range.before + Math.min(range.end, seatIndex) - range.start + 1;
-  }, [vacantRanges]);
-  const seatIndexForOccupiedRank = useCallback((rank: number) => {
-    let low = Math.max(0, rank);
-    let high = Math.max(low, capacity - 1);
-    while (low < high) {
-      const middle = Math.floor((low + high) / 2);
-      const occupiedThrough = middle + 1 - vacantCountThrough(middle);
-      if (occupiedThrough > rank) high = middle;
-      else low = middle + 1;
-    }
-    return low;
-  }, [capacity, vacantCountThrough]);
-  const seatAt = (index: number): SeatInfo => {
-    const row = Math.floor(index / 4);
-    return {
-      x: [-0.94, -0.5, 0.5, 0.94][index % 4],
-      z: -2.6 + row * 1.2,
-      row,
-      seatInRow: index % 4,
-    };
-  };
-  const renderedRows = useMemo(
-    () => new Set(renderedRowIndices ?? Array.from({ length: numRows }, (_, row) => row)),
-    [numRows, renderedRowIndices],
-  );
-  const detailed = useMemo(() => {
-    if (occupiedCount <= detailLimit) {
-      return Array.from({ length: occupiedCount }, (_, rank) => seatIndexForOccupiedRank(rank))
-        .filter((index) => renderedRows.has(Math.floor(index / 4)))
-        .map((index) => ({ seat: seatAt(index), index }));
-    }
-    const focusRow = Math.max(0, Math.min(numRows - 1, reservedRow));
-    const focusSeat = focusRow * 4;
-    const rankNearFocus = Math.max(0, Math.min(occupiedCount - 1, focusSeat - vacantCountThrough(focusSeat)));
-    const ranks = new Set<number>();
-    if (activePassengerIndex !== null && activePassengerIndex >= 0 && activePassengerIndex < capacity) {
-      ranks.add(activePassengerIndex - vacantCountThrough(activePassengerIndex));
-    }
-    for (let distance = 0; ranks.size < detailLimit; distance++) {
-      const candidates = distance === 0
-        ? [rankNearFocus]
-        : [rankNearFocus - distance, rankNearFocus + distance];
-      for (const rank of candidates) {
-        if (rank >= 0 && rank < occupiedCount) ranks.add(rank);
-      }
-    }
-    return Array.from(ranks, (rank) => {
-      const index = seatIndexForOccupiedRank(rank);
-      return { seat: seatAt(index), index };
-    }).filter(({ index }) =>
-      index === activePassengerIndex || renderedRows.has(Math.floor(index / 4)));
-  }, [activePassengerIndex, capacity, detailLimit, numRows, occupiedCount, renderedRows, reservedRow, seatIndexForOccupiedRank, vacantCountThrough]);
-  const simplified = useMemo(() => {
-    const detailedIndices = new Set(detailed.map(({ index }) => index));
-    if (occupiedCount - detailed.length <= 160) {
-      const remaining: Array<{ seat: SeatInfo; index: number }> = [];
-      for (let rank = 0; rank < occupiedCount; rank++) {
-        const index = seatIndexForOccupiedRank(rank);
-        if (!detailedIndices.has(index) && renderedRows.has(Math.floor(index / 4))) {
-          remaining.push({ seat: seatAt(index), index });
-        }
-      }
-      return remaining;
-    }
-    const candidates: number[] = [];
-    for (const row of renderedRows) {
-      for (let seat = 0; seat < 4; seat++) {
-        const index = row * 4 + seat;
-        if (index >= capacity || detailedIndices.has(index)) continue;
-        const vacantBefore = index === 0 ? 0 : vacantCountThrough(index - 1);
-        if (vacantCountThrough(index) === vacantBefore) candidates.push(index);
-      }
-    }
-    if (candidates.length <= 160) return candidates.map((index) => ({ seat: seatAt(index), index }));
-    const sampled = new Set<number>();
-    for (let sample = 0; sample < 160; sample++) {
-      sampled.add(candidates[Math.floor((sample * (candidates.length - 1)) / 159)]);
-    }
-    return Array.from(sampled, (index) => ({ seat: seatAt(index), index }));
-  }, [capacity, detailed, occupiedCount, renderedRows, seatIndexForOccupiedRank, vacantCountThrough]);
-  const profilesBySeatIndex = useMemo(
-    () => new Map(passengerProfiles.map((profile) => [profile.seatIndex, profile])),
-    [passengerProfiles],
-  );
-
-  useEffect(() => () => {
-    document.body.style.cursor = "auto";
-  }, []);
-
-  return (
-    <group>
-      <SimplifiedPassengers passengers={simplified} />
-      {detailed.map(({ seat, index }) => {
-        const archetype = NAKAMA_ROSTER[index % NAKAMA_ROSTER.length];
-        const isCurrentPassenger = activePassengerIndex === index && reservedRow >= 0;
-        const displayedSeat = isCurrentPassenger
-          ? { x: 0.72, z: -2.6 + reservedRow * 1.2 + 0.15, row: reservedRow, seatInRow: 3 }
-          : seat;
-        return (
-          <Passenger
-            key={`p-${index}-${archetype.id}`}
-            seat={displayedSeat}
-            index={index}
-            archetype={archetype}
-            hornPulse={hornPulse}
-            profile={profilesBySeatIndex.get(index)}
-            onSelect={onPassengerSelect}
-            firstPerson={isCurrentPassenger}
-          />
-        );
-      })}
-    </group>
-  );
+function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSeatRanges = [], hornPulse,
+  partyOn = false, reservedRow = 3, passengerProfiles = [], onPassengerSelect,
+  lowPower = false, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
+  const { detailed, simplified } = useMemo(() => getBusOccupancy({ passengerCount, seatCapacity,
+    vacantSeatRanges, renderedRowIndices, reservedRow, currentPassengerIndex: excludedPassengerIndex,
+    avatarAboard, lowPower }), [passengerCount, seatCapacity, vacantSeatRanges, renderedRowIndices,
+      reservedRow, excludedPassengerIndex, avatarAboard, lowPower]);
+  const profilesBySeatIndex = useMemo(() => new Map(passengerProfiles.map(profile => [profile.seatIndex, profile])), [passengerProfiles]);
+  const detailedSeats = new Set(detailed.map(occupant => occupant.physicalSeatIndex));
+  const cardActors = useMemo<PassengerCardActors>(() => new Map(), []);
+  const cardPairs = useMemo(() => getPassengerCardPairs(detailed, NAKAMA_ROSTER.map(archetype => archetype.id)), [detailed]);
+  const cardPairBySeat = useMemo(() => new Map(cardPairs.flatMap(pair => [[pair.firstSeat, pair.pairIndex], [pair.secondSeat, pair.pairIndex]])), [cardPairs]);
+  useEffect(() => () => { document.body.style.cursor = "auto"; }, []);
+  return <group name="bus-seated-passengers" userData={{ detailedCount: detailed.length, simplifiedCount: simplified.length }}>
+    <SimplifiedPassengers passengers={simplified} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
+    {detailed.map(({ seat, index, physicalSeatIndex, passengerKind }) => {
+      const archetype = NAKAMA_ROSTER[index % NAKAMA_ROSTER.length];
+      return <Passenger key={`${passengerKind}-${index}`} seat={seat} index={index} archetype={archetype}
+        name={passengerKind === "nakama" ? `crew-nakama-${archetype.id}-${index}` : undefined}
+        passengerKind={passengerKind} physicalSeatIndex={physicalSeatIndex}
+        cardActors={cardActors} cardPairIndex={cardPairBySeat.get(physicalSeatIndex) ?? null}
+        label={passengerKind === "nakama" ? (["shanks", "buggy"].includes(archetype.id)
+          ? archetype.name.split(" ")[0] : archetype.name.split(" ").at(-1)) : undefined}
+        hornPulse={hornPulse} partyOn={partyOn}
+        peerSide={detailedSeats.has(physicalSeatIndex ^ 1) ? (seat.seatInRow % 2 === 0 ? 1 : -1) : 0}
+        reducedMotion={reducedMotion} profile={passengerKind === "visitor" ? profilesBySeatIndex.get(index) : undefined}
+        onSelect={onPassengerSelect}/>;
+    })}
+    {cardPairs.map(pair => <PassengerCardGame key={pair.pairIndex} pair={pair} actors={cardActors}
+      hornPulse={hornPulse} partyOn={partyOn} reducedMotion={reducedMotion}/>)}
+  </group>;
 }
 
-function SimplifiedPassengers({ passengers }: { passengers: Array<{ seat: SeatInfo; index: number }> }) {
+export function SimplifiedPassengers({ passengers, partyOn, hornPulse, reducedMotion }: { passengers: BusOccupant[]; partyOn: boolean; hornPulse: number; reducedMotion: boolean }) {
   const bodies = useRef<THREE.InstancedMesh>(null);
   const heads = useRef<THREE.InstancedMesh>(null);
+  const arms = useRef<THREE.InstancedMesh>(null),hands = useRef<THREE.InstancedMesh>(null);
+  const celebrating = useRef(false);
+  // Resolve the compact rig only when this bounded instance list changes, not
+  // during its animation. Distant Choppers must not turn into adult silhouettes.
+  const instanceProfiles = useMemo(() => passengers.map(({ index }) => {
+    const id = NAKAMA_ROSTER[index % NAKAMA_ROSTER.length].id;
+    const small = id === "chopper";
+    const rig = getPassengerSkeleton(id), proportions = getPassengerProportions(id);
+    return { id, bodyY: small ? .64 + rig.seatedHipHeight + rig.torsoAboveHip : 1.35,
+      headY: small ? .64 + rig.seatedHipHeight + rig.neckAboveHip + rig.headAboveNeck : 1.82,
+      bodyZ: small ? rig.seatedHipZ + BODY_BEHIND_HIP : .12,
+      headZ: small ? rig.seatedHipZ + BODY_BEHIND_HIP : .14,
+      bodyScale: small ? new THREE.Vector3(proportions.torsoWidth/.32, proportions.torsoHeight/.42, proportions.torsoDepth/.22) : new THREE.Vector3(1,1,1),
+      headScale: small ? new THREE.Vector3(proportions.headWidth/.24, proportions.headHeight/.27, proportions.headDepth/.23) : new THREE.Vector3(1,1,1),
+      armScale: new THREE.Vector3(rig.armWidthScale,rig.armScale,rig.armWidthScale),
+      shoulderY: small ? .64 + rig.seatedHipHeight + rig.torsoAboveHip + rig.shoulderY : 1.55,
+      shoulderX: small ? proportions.torsoWidth/2-.018 : .17,
+      shoulderZ: small ? rig.seatedHipZ + BODY_BEHIND_HIP : .12,
+      armLengthScale: rig.armScale,
+    };
+  }), [passengers]);
   useLayoutEffect(() => {
     const matrix = new THREE.Matrix4();
     passengers.forEach(({ seat }, index) => {
-      matrix.makeTranslation(seat.x, 1.35, seat.z + 0.12);
+      const profile = instanceProfiles[index];
+      matrix.makeScale(profile.bodyScale.x,profile.bodyScale.y,profile.bodyScale.z).setPosition(seat.x, profile.bodyY, seat.z + profile.bodyZ);
       bodies.current?.setMatrixAt(index, matrix);
-      matrix.makeTranslation(seat.x, 1.82, seat.z + 0.14);
+      matrix.makeScale(profile.headScale.x,profile.headScale.y,profile.headScale.z).setPosition(seat.x, profile.headY, seat.z + profile.headZ);
       heads.current?.setMatrixAt(index, matrix);
     });
     if (bodies.current) {
@@ -291,46 +206,133 @@ function SimplifiedPassengers({ passengers }: { passengers: Array<{ seat: SeatIn
       heads.current.instanceMatrix.needsUpdate = true;
       heads.current.computeBoundingSphere();
     }
-  }, [passengers]);
+  }, [passengers,instanceProfiles]);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const armScratch=useMemo(()=>({matrix:new THREE.Matrix4(),position:new THREE.Vector3(),quaternion:new THREE.Quaternion(),scale:new THREE.Vector3(1,1,1),rotation:new THREE.Euler(),pose:createPassengerPose()}),[]);
+  const updateArms=useCallback((time:number)=>{
+    for(let i=0;i<passengers.length;i++){
+      const {seat,index}=passengers[i];
+      const profile=instanceProfiles[i];
+      const pose=armScratch.pose;
+      samplePassengerPose(pose,time,index,0,.34,hornPulse>0?(performance.now()-hornPulse)/1000:Infinity,partyOn,reducedMotion,profile.id);
+      for(let arm=0;arm<2;arm++){
+      const side=arm===0?-1:1;
+      const angle=side<0?pose.leftX:pose.rightX;
+      const scratch=armScratch,instance=i*2+(side>0?1:0);
+      scratch.scale.copy(profile.armScale);
+      scratch.rotation.set(angle,0,side<0?pose.leftZ:pose.rightZ);scratch.quaternion.setFromEuler(scratch.rotation);
+      scratch.position.set(0,-.19*profile.armLengthScale,0).applyQuaternion(scratch.quaternion).add(dummy.position.set(seat.x+side*profile.shoulderX,profile.shoulderY,seat.z+profile.shoulderZ));
+      scratch.matrix.compose(scratch.position,scratch.quaternion,scratch.scale);arms.current?.setMatrixAt(instance,scratch.matrix);
+      scratch.position.set(0,-.38*profile.armLengthScale,0).applyQuaternion(scratch.quaternion).add(dummy.position.set(seat.x+side*profile.shoulderX,profile.shoulderY,seat.z+profile.shoulderZ));
+      scratch.matrix.compose(scratch.position,scratch.quaternion,scratch.scale);hands.current?.setMatrixAt(instance,scratch.matrix);
+      }
+    }
+    if(arms.current)arms.current.instanceMatrix.needsUpdate=true;
+    if(hands.current)hands.current.instanceMatrix.needsUpdate=true;
+  },[armScratch,dummy,passengers,instanceProfiles,hornPulse,partyOn,reducedMotion]);
+  useLayoutEffect(()=>{updateArms(0);for(const ref of [arms,hands]){ref.current?.computeBoundingSphere();if(ref.current?.boundingSphere)ref.current.boundingSphere.radius+=.3;}},[updateArms,reducedMotion]);
+  useFrame(({clock}) => {
+    const active=partyOn||(!reducedMotion&&hornPulse>0&&performance.now()-hornPulse<1800);
+    if(arms.current)arms.current.visible=active;
+    if(hands.current)hands.current.visible=active;
+    if(active&&!reducedMotion)updateArms(clock.elapsedTime);
+    if(active&&reducedMotion&&celebrating.current)return;
+    if(!active&&!celebrating.current)return;
+    celebrating.current=active;
+    for (let i=0;i<passengers.length;i++) {
+      const {seat,index}=passengers[i], sway=active&&!reducedMotion?Math.sin(clock.elapsedTime*7+index)*.09:0;
+      const profile=instanceProfiles[i];
+      dummy.scale.copy(profile.bodyScale);dummy.position.set(seat.x,profile.bodyY,seat.z+profile.bodyZ);dummy.rotation.set(0,sway,sway*.45);dummy.updateMatrix();bodies.current?.setMatrixAt(i,dummy.matrix);
+      dummy.scale.copy(profile.headScale);dummy.position.set(seat.x,profile.headY,seat.z+profile.headZ);dummy.rotation.set(0,sway,0);dummy.updateMatrix();heads.current?.setMatrixAt(i,dummy.matrix);
+    }
+    if(bodies.current)bodies.current.instanceMatrix.needsUpdate=true;
+    if(heads.current)heads.current.instanceMatrix.needsUpdate=true;
+  });
+  // Restaurer les matrices immobiles à l'arrêt, sans laisser de danse figée.
+  useLayoutEffect(()=>{
+    if(partyOn&&!reducedMotion)return;
+    passengers.forEach(({seat},i)=>{const profile=instanceProfiles[i];dummy.rotation.set(0,0,0);dummy.scale.copy(profile.bodyScale);dummy.position.set(seat.x,profile.bodyY,seat.z+profile.bodyZ);dummy.updateMatrix();bodies.current?.setMatrixAt(i,dummy.matrix);dummy.scale.copy(profile.headScale);dummy.position.set(seat.x,profile.headY,seat.z+profile.headZ);dummy.updateMatrix();heads.current?.setMatrixAt(i,dummy.matrix);});
+    if(bodies.current)bodies.current.instanceMatrix.needsUpdate=true;
+    if(heads.current)heads.current.instanceMatrix.needsUpdate=true;
+  },[dummy,passengers,instanceProfiles,partyOn,reducedMotion]);
   if (passengers.length === 0) return null;
   return (
     <>
-      <instancedMesh ref={bodies} args={[undefined, undefined, 160]} count={passengers.length}>
+      <instancedMesh name="bus-distant-passenger-bodies" userData={{ occupants: passengers.map(({ index, physicalSeatIndex, passengerKind, seat }) => ({ seatIndex: index, physicalSeatIndex, passengerKind, row: seat.row, seatInRow: seat.seatInRow })) }} ref={bodies} args={[undefined, undefined, 160]} count={passengers.length}>
         <boxGeometry args={[0.32, 0.42, 0.22]} />
         <meshStandardMaterial color="#314ba5" roughness={0.7} />
       </instancedMesh>
-      <instancedMesh ref={heads} args={[undefined, undefined, 160]} count={passengers.length}>
-        <boxGeometry args={[0.26, 0.24, 0.2]} />
+      <instancedMesh name="bus-distant-passenger-heads" ref={heads} geometry={getCharacterShape([0.24, 0.27, 0.23], 0.038)} dispose={null} args={[undefined, undefined, 160]} count={passengers.length}>
         <meshStandardMaterial color="#d9a27e" roughness={0.7} />
+      </instancedMesh>
+      <instancedMesh name="bus-distant-party-arms" ref={arms} args={[undefined,undefined,320]} count={passengers.length*2} visible={false}>
+        <boxGeometry args={[.075,.38,.075]}/><meshStandardMaterial color="#314ba5" roughness={.7}/>
+      </instancedMesh>
+      <instancedMesh name="bus-distant-party-hands" ref={hands} args={[undefined,undefined,320]} count={passengers.length*2} visible={false}>
+        <boxGeometry args={[.085,.075,.08]}/><meshStandardMaterial color="#d9a27e" roughness={.7}/>
       </instancedMesh>
     </>
   );
 }
 
-function Passenger({
+export function Passenger({
   seat,
   index,
   archetype,
   hornPulse,
+  partyOn = false,
+  peerSide = 0,
+  cardActors,
+  cardPairIndex = null,
+  reducedMotion,
   profile,
   onSelect,
   firstPerson = false,
+  passengerKind,
+  physicalSeatIndex,
+  name,
+  label,
+  onActivate,
+  head,
+  children,
 }: {
   seat: SeatInfo;
   index: number;
   archetype: NakamaArchetype;
   hornPulse: number;
+  partyOn?: boolean;
+  peerSide?: number;
+  cardActors?: PassengerCardActors;
+  cardPairIndex?: number | null;
+  reducedMotion: boolean;
   profile?: PassengerProfile;
   onSelect?: (passenger: PassengerProfile) => void;
   firstPerson?: boolean;
+  passengerKind?: "visitor" | "nakama";
+  physicalSeatIndex?: number;
+  name?: string;
+  label?: string;
+  onActivate?: () => void;
+  head?: ReactNode;
+  children?: ReactNode;
 }) {
   const group = useRef<THREE.Group>(null);
   const headGroup = useRef<THREE.Group>(null);
   const torsoGroup = useRef<THREE.Group>(null);
+  const upperBody = useRef<THREE.Group>(null);
+  const arms = useRef<Array<THREE.Group | null>>([]);
+  const elbows = useRef<Array<THREE.Group | null>>([]);
+  const heldProps = useRef<THREE.Group>(null);
+  const signatureProps = useRef<Array<THREE.Group|null>>([]);
+  const targetPose = useRef(createPassengerPose());
+  const currentPose = useRef(createPassengerPose());
 
   // Matériaux partagés et mis en cache par archetype
   const mats = useMemo(() => getArchetypeMaterials(archetype), [archetype]);
-  const displayName = profile?.displayName;
+  const proportions = getPassengerProportions(archetype.id);
+  const skeleton = getPassengerSkeleton(archetype.id);
+  const displayName = label ?? profile?.displayName;
+  const interactive = Boolean(profile || onActivate);
   const nameTexture = useMemo(
     () => displayName ? makePassengerNameTexture(displayName) : null,
     [displayName],
@@ -342,38 +344,48 @@ function Passenger({
     document.body.style.cursor = "auto";
   }, [nameTexture]);
 
-  useFrame((state) => {
+  useLayoutEffect(() => {
+    if (!cardActors || physicalSeatIndex === undefined || !group.current) return;
+    const actor = getPassengerCardActor(group.current);
+    if (!actor) return;
+    cardActors.set(physicalSeatIndex, actor);
+    return () => { if (cardActors.get(physicalSeatIndex) === actor) cardActors.delete(physicalSeatIndex); };
+  }, [cardActors, physicalSeatIndex, archetype.id]);
+
+  useFrame((state, dt) => {
     const t = state.clock.elapsedTime;
     const seed = index * 0.73;
 
-    // Réaction au klaxon : bond de joie synchronisé
-    const sinceHorn = (performance.now() - hornPulse) / 1000;
-    const isHonking = sinceHorn < 0.85;
-    const cheerBounce = isHonking ? Math.sin(sinceHorn * 24) * (0.85 - sinceHorn) * 0.14 : 0;
-    const cheerLean = isHonking ? Math.sin(sinceHorn * 16) * 0.12 : 0;
-
+    samplePassengerPose(targetPose.current,t,index,peerSide,proportions.torsoWidth,hornPulse>0?(performance.now()-hornPulse)/1000:Infinity,partyOn,reducedMotion,archetype.id,cardPairIndex);
+    blendPassengerPose(currentPose.current,targetPose.current,dt,reducedMotion);
+    const pose=currentPose.current;
     if (group.current) {
-      group.current.position.y = cheerBounce;
+      group.current.position.y = pose.bob;
+      group.current.rotation.y = pose.rootYaw;
+      group.current.userData.activity = pose.activity;
+      group.current.userData.gesture = pose.gesture;
     }
-
-    // Balancement naturel de la tête (respiration & regard par la fenêtre ou voisin)
+    if(upperBody.current)upperBody.current.rotation.set(pose.torsoPitch,pose.torsoYaw,pose.torsoRoll);
     if (headGroup.current) {
-      const bob = Math.sin(t * 3.2 + seed) * 0.025;
-      const sway = Math.sin(t * 1.1 + seed * 1.5) * 0.07;
-      headGroup.current.rotation.x = bob + (isHonking ? -0.15 : 0);
-      headGroup.current.rotation.y = sway + (seat.x < 0 ? -0.05 : 0.05) + cheerLean;
+      headGroup.current.rotation.set(pose.headPitch,pose.headYaw,0);
     }
-
-    // Mouvement subtil de respiration du torse
+    arms.current[0]?.rotation.set(pose.leftX,0,pose.leftZ);
+    arms.current[1]?.rotation.set(pose.rightX,0,pose.rightZ);
+    elbows.current[0]?.rotation.set(pose.leftElbowX,0,pose.leftElbowZ);
+    elbows.current[1]?.rotation.set(pose.rightElbowX,0,pose.rightElbowZ);
+    if(heldProps.current)heldProps.current.visible=!pose.celebrating&&!pose.games&&pose.activity!=="check";
+    for(const prop of signatureProps.current)if(prop)prop.visible=pose.celebrating;
     if (torsoGroup.current) {
-      const breath = 1 + Math.sin(t * 2.2 + seed) * 0.015;
+      const breath = reducedMotion || pose.games ? 1 : 1 + Math.sin(t * 2.2 + seed) * 0.015;
       torsoGroup.current.scale.set(breath, 1, breath);
     }
-  });
+  }, -2);
 
   return (
     <group
       ref={group}
+      name={name ?? `nakama-${archetype.id}-${index}`}
+      userData={{ physicalSeatIndex, passengerKind, cardPairIndex, seatIndex: passengerKind === "visitor" ? index : undefined, archetypeId: archetype.id, row: seat.row, seatInRow: seat.seatInRow }}
       position={[seat.x, 0, seat.z]}
       onClick={
         profile
@@ -381,25 +393,28 @@ function Passenger({
               event.stopPropagation();
               onSelect?.(profile);
             }
-          : undefined
+          : onActivate ? (event: { stopPropagation: () => void }) => { event.stopPropagation(); onActivate(); } : undefined
       }
     >
-      {!firstPerson && profile && nameTexture && (
+      {!firstPerson && nameTexture && (
         <sprite
+          name="nakama-name-label"
+          userData={{ label: displayName, textureAspect: nameTexture.aspect }}
           position={[0, labelY, 0.14]}
-          scale={[nameTexture.aspect * 0.11, 0.11, 1]}
+          scale={[Math.min(0.4, nameTexture.aspect * 0.11), Math.min(0.11, 0.4 / nameTexture.aspect), 1]}
           renderOrder={20}
-          onClick={(event: { stopPropagation: () => void }) => {
+          onClick={interactive ? (event: { stopPropagation: () => void }) => {
             event.stopPropagation();
-            onSelect?.(profile);
-          }}
-          onPointerOver={(event: { stopPropagation: () => void }) => {
+            if (profile) onSelect?.(profile);
+            else onActivate?.();
+          } : undefined}
+          onPointerOver={interactive ? (event: { stopPropagation: () => void }) => {
             event.stopPropagation();
             document.body.style.cursor = "pointer";
-          }}
-          onPointerOut={() => {
+          } : undefined}
+          onPointerOut={interactive ? () => {
             document.body.style.cursor = "auto";
-          }}
+          } : undefined}
         >
           <spriteMaterial
             map={nameTexture.texture}
@@ -412,138 +427,34 @@ function Passenger({
           />
         </sprite>
       )}
-      {/* ---------- JAMBES ASSISES & PIEDS ---------- */}
-      {/* Bassin posé sur le coussin du siège */}
-      <mesh material={mats.pants} position={[0, 1.15, 0.12]}>
-        <boxGeometry args={[0.34, 0.14, 0.28]} />
-      </mesh>
+      <group name="nakama-hips" position={[0, 0.64 + skeleton.seatedHipHeight, skeleton.seatedHipZ]}>
+        <PassengerLowerBody mats={mats} archetype={archetype} kickPose={archetype.id==="sanji"?currentPose:undefined} />
 
-      {/* Cuisses horizontales allant vers l'avant */}
-      {[-0.09, 0.09].map((lx) => (
-        <mesh key={lx} material={mats.pants} position={[lx, 1.15, -0.06]}>
-          <boxGeometry args={[0.13, 0.12, 0.32]} />
-        </mesh>
-      ))}
+        <group ref={upperBody} name="nakama-upper-body" position={[0, skeleton.torsoAboveHip, BODY_BEHIND_HIP]}>
+        <group ref={torsoGroup}>
+          <PassengerTorso archetype={archetype} mats={mats} />
+          {[-1, 1].map((side,index) => <group key={side} ref={node=>{arms.current[index]=node;}} name={`nakama-arm-${index===0?"left":"right"}`} position={[side * (proportions.torsoWidth / 2 - 0.018), skeleton.shoulderY, 0]} rotation={[0.12, 0, side * 0.08]}>
+            <group scale={[skeleton.armWidthScale,skeleton.armScale,skeleton.armWidthScale]}><PassengerUpperArm archetype={archetype} mats={mats} side={side} width={proportions.armWidth}/></group>
+            <group ref={node=>{elbows.current[index]=node;}} name={`nakama-elbow-${index===0?"left":"right"}`} position={[0, -skeleton.upperArmLength, 0]} rotation={[1.05, 0, 0]}>
+              <group scale={[skeleton.armWidthScale,skeleton.armScale,skeleton.armWidthScale]}><PassengerForearm archetype={archetype} mats={mats} side={side} width={proportions.armWidth} handName={`nakama-hand-${index===0?"left":"right"}`}/></group>
+              <group ref={node=>{signatureProps.current[index]=node;}} name={`nakama-signature-${index===0?"left":"right"}`} position={[0,-skeleton.forearmLength,0]} visible={false}>
+                <PassengerSignatureProp id={archetype.id} side={side} mats={mats}/>
+              </group>
+            </group>
+          </group>)}
+        </group>
 
-      {/* Mollets verticaux descendant vers le sol */}
-      {[-0.09, 0.09].map((lx) => (
-        <mesh key={lx} material={mats.pants} position={[lx, 0.88, -0.21]}>
-          <boxGeometry args={[0.12, 0.42, 0.12]} />
-        </mesh>
-      ))}
-
-      {/* Chaussures posées au sol */}
-      {[-0.09, 0.09].map((lx) => (
-        <mesh key={lx} material={mats.shoes} position={[lx, 0.65, -0.24]}>
-          <boxGeometry args={[0.13, 0.08, 0.2]} />
-        </mesh>
-      ))}
-
-      {/* ---------- TORSE & BRAS ---------- */}
-      <group ref={torsoGroup} position={[0, 1.42, 0.14]}>
-        {/* Buste adossé au dossier */}
-        <mesh material={mats.shirt} rotation={[-0.05, 0, 0]}>
-          <boxGeometry args={[0.34, 0.4, 0.22]} />
-        </mesh>
-
-        {/* Détail torse Luffy : croix cicatrice ou torse ouvert */}
-        {archetype.id === "luffy" && (
-          <mesh position={[0, 0.02, -0.122]} renderOrder={2}>
-            <planeGeometry args={[0.12, 0.24]} />
-            <meshStandardMaterial
-              color={archetype.skinColor}
-              polygonOffset
-              polygonOffsetFactor={-2}
-              polygonOffsetUnits={-2}
-            />
-          </mesh>
-        )}
-
-        {/* Épaules & bras */}
-        {[-0.2, 0.2].map((ax, ai) => (
-          <group key={ai} position={[ax, 0.14, 0]}>
-            {/* Bras supérieur */}
-            <mesh
-              material={mats.shirt}
-              position={[0, -0.1, 0]}
-              rotation={[0.25, 0, ai === 0 ? -0.15 : 0.15]}
-            >
-              <cylinderGeometry args={[0.05, 0.045, 0.24, 8]} />
-            </mesh>
-            {/* Avant-bras reposant sur les genoux */}
-            <mesh
-              material={mats.skin}
-              position={[0, -0.22, -0.12]}
-              rotation={[-0.8, 0, 0]}
-            >
-              <cylinderGeometry args={[0.045, 0.04, 0.24, 8]} />
-            </mesh>
-          </group>
-        ))}
+        {!firstPerson && <group ref={headGroup} position={[0, skeleton.neckAboveHip-skeleton.torsoAboveHip, 0]}>
+          <PassengerNeck archetype={archetype} mats={mats} />
+          <group position={[0, skeleton.headAboveNeck, 0]}>{head ?? <PassengerHead archetype={archetype} mats={mats}
+            motion={currentPose} index={index} reducedMotion={reducedMotion}/>}</group>
+        </group>}
+        </group>
       </group>
 
-      {!firstPerson && <>
-        {/* Cou */}
-        <mesh material={mats.skin} position={[0, 1.66, 0.14]}>
-          <cylinderGeometry args={[0.06, 0.06, 0.08, 8]} />
-        </mesh>
-
-        {/* ---------- TÊTE & VISAGE ANIMÉ ---------- */}
-        <group ref={headGroup} position={[0, 1.82, 0.14]}>
-        {/* Tête */}
-        <mesh material={mats.skin}>
-          <boxGeometry args={[0.22, 0.24, 0.2]} />
-        </mesh>
-
-        {/* Yeux stylisés animés */}
-        {[-0.055, 0.055].map((ex) => (
-          <mesh key={ex} material={mats.eyes} position={[ex, 0.02, -0.112]}>
-            <boxGeometry args={[0.035, 0.035, 0.01]} />
-          </mesh>
-        ))}
-
-        {/* Expressions du visage */}
-        {archetype.expression === "grin" ? (
-          // Grand sourire éclatant avec dents (Luffy, Franky, Ace)
-          <mesh material={mats.teeth} position={[0, -0.05, -0.112]}>
-            <boxGeometry args={[0.11, 0.035, 0.01]} />
-          </mesh>
-        ) : archetype.expression === "smile" ? (
-          // Sourire bienveillant (Nami, Robin, Chopper)
-          <mesh material={mats.faceDark} position={[0, -0.05, -0.112]}>
-            <boxGeometry args={[0.08, 0.015, 0.01]} />
-          </mesh>
-        ) : archetype.expression === "funny" ? (
-          // Expression drôle (Usopp, Buggy)
-          <mesh material={mats.faceDark} position={[0, -0.05, -0.112]}>
-            <boxGeometry args={[0.09, 0.03, 0.01]} />
-          </mesh>
-        ) : null}
-
-        {/* Nez long d'Usopp */}
-        {archetype.id === "usopp" && (
-          <mesh material={mats.skin} position={[0, 0, -0.18]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.025, 0.03, 0.16, 8]} />
-          </mesh>
-        )}
-
-        {/* Nez rouge de Buggy */}
-        {archetype.accessory === "clown_nose" && (
-          <mesh material={mats.red} position={[0, 0, -0.12]}>
-            <sphereGeometry args={[0.045, 12, 12]} />
-          </mesh>
-        )}
-
-        {/* ---------- CHEVEUX SELON ARCHETYPE ---------- */}
-        <HairStyle style={archetype.hairStyle} mats={mats} />
-
-        {/* ---------- ACCESSOIRES DISTINCTIFS ---------- */}
-        <Accessory archetype={archetype} mats={mats} />
-        </group>
-      </>}
-
       {/* ---------- PROPS & OBJETS TENUS ---------- */}
-      <NakamaProp prop={archetype.prop} mats={mats} />
+      <group ref={heldProps}><NakamaProp id={archetype.id} prop={archetype.prop} mats={mats} />{children}</group>
+
     </group>
   );
 }

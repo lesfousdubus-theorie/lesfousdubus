@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Scene from "./bus/Scene";
 import { BusHud, type ToastMessage } from "./BusHud";
 import { computeNumRows } from "@/lib/bus-layout";
+import { getBusPhysicalRows } from "@/lib/bus-occupancy";
 import { type Phase, type WorldState } from "./bus/constants";
 import type { PassengerManifestEntry, PassengerProfile } from "@/types/passenger";
 import { playDing, playStretch, unlockAudio } from "@/lib/horn";
@@ -18,6 +19,7 @@ import { getTheoryAgeInDays } from "@/lib/theory-age";
 import { useBusSync } from "./useBusSync";
 import { useVisualViewport } from "./useVisualViewport";
 import BackgroundMusicPlayer from "./audio/BackgroundMusicPlayer";
+import { useBusParty } from "./useBusParty";
 
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
 
@@ -26,6 +28,7 @@ const MAX_DEBUG_PASSENGERS = 10_000;
 export default function BusExperience() {
   useVisualViewport();
   const [resetViewToken, setResetViewToken] = useState(0);
+  const [freeView, setFreeView] = useState(false);
   const [sceneAvailable, setSceneAvailable] = useState(false);
   const [bgmPlaying, setBgmPlaying] = useState(false);
   const [theoryVideoPlaying, setTheoryVideoPlaying] = useState(false);
@@ -34,7 +37,7 @@ export default function BusExperience() {
     if (typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem("fdb-bgm-volume");
-        if (stored !== null) {
+        if (stored !== null && stored.trim() !== "") {
           const val = Number(stored);
           if (Number.isFinite(val) && val >= 0 && val <= 100) return val;
         }
@@ -42,7 +45,7 @@ export default function BusExperience() {
         // Fallback
       }
     }
-    return 50;
+    return 85;
   });
 
   const handleSetBgmVolume = useCallback((val: number) => {
@@ -72,6 +75,7 @@ export default function BusExperience() {
     }
     return false;
   });
+  const { partyOn, partyDancing, toggleParty, stopParty } = useBusParty({ busVideoPlaying, theoryVideoPlaying, tvOn, hasEntered, phase });
   const [showTheoryModal, setShowTheoryModal] = useState(false);
   const [showPassengerList, setShowPassengerList] = useState(false);
   const [showTheoryAge, setShowTheoryAge] = useState(false);
@@ -132,7 +136,7 @@ export default function BusExperience() {
           ? Math.min(debugCount, MAX_DEBUG_PASSENGERS)
           : 0;
         if (Number.isSafeInteger(parsed) && parsed >= 0) {
-          return Math.min(parsed, computeNumRows(debugCapacity) - 1);
+          return Math.min(parsed, getBusPhysicalRows(debugCapacity) - 1);
         }
       }
     }
@@ -194,7 +198,7 @@ export default function BusExperience() {
   const updateSeatCapacity = useCallback((capacity: number) => {
     seatCapacityRef.current = capacity;
     setSeatCapacity(capacity);
-    setSeatRow((row) => Math.min(row, computeNumRows(capacity) - 1));
+    setSeatRow((row) => Math.min(row, getBusPhysicalRows(capacity) - 1));
   }, [setSeatRow]);
 
   const applyBusSnapshot = useCallback((data: BusApiState, updateCount = true) => {
@@ -276,15 +280,14 @@ export default function BusExperience() {
     };
   }, []);
 
-  // L'entrée et la lecture vidéo partent pendant le geste utilisateur, sans
-  // attendre Cloudflare. L'inscription se synchronise ensuite en arrière-plan.
+  // Préparer le lecteur en muet pendant le geste utilisateur. La lecture
+  // attend l'arrivée aux yeux du passager ; l'inscription reste en arrière-plan.
   const enterBus = useCallback(async () => {
     if (phase !== "outside" || joining || !sceneAvailable) return;
     dismissToast();
     unlockAudio();
-    window.dispatchEvent(new Event("bus-tv-user-play"));
+    window.dispatchEvent(new Event("bus-tv-user-prepare"));
     setJoining(true);
-    setHasEntered(true);
     setTvOn(true);
     setPhase("entering");
     playDing();
@@ -302,8 +305,8 @@ export default function BusExperience() {
         cache: "no-store",
         body: JSON.stringify({ visitorId }),
       });
-      const prevRows = computeNumRows(seatCapacityRef.current);
-      const nextRows = computeNumRows(d.seatCapacity);
+      const prevRows = getBusPhysicalRows(seatCapacityRef.current);
+      const nextRows = getBusPhysicalRows(d.seatCapacity);
 
       if (d.added && nextRows > prevRows) {
         playStretch();
@@ -607,6 +610,8 @@ export default function BusExperience() {
   }, [dismissToast, phase]);
 
   const onArrived = useCallback((p: "inside" | "outside") => {
+    setFreeView(false);
+    if (p === "inside") setHasEntered(true);
     setPhase(p);
   }, []);
 
@@ -617,37 +622,55 @@ export default function BusExperience() {
   // indéfiniment à cause de `busy = true`.
   useEffect(() => {
     if (phase !== "entering" && phase !== "exiting") return;
-    const timer = setTimeout(() => {
-      setPhase((current) => {
-        if (current === "entering") return "inside";
-        if (current === "exiting") return "outside";
-        return current;
-      });
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [phase]);
+    const timer = setInterval(() => {
+      // Une scène visible et lente doit pouvoir terminer son embarquement.
+      if(!document.hidden&&sceneAvailable)return;
+      onArrived(phase === "entering" ? "inside" : "outside");
+    }, 12000);
+    return () => clearInterval(timer);
+  }, [phase, sceneAvailable, onArrived]);
 
   const toggleBgm = useCallback(() => {
-    if (!bgmPlaying && tvOn) setTvOn(false);
-    setBgmPlaying(prev => !prev);
-  }, [bgmPlaying, tvOn]);
+    if (partyOn) { stopParty(); return; }
+    const playing = !bgmPlaying;
+    if (playing && tvOn) {
+      setTvOn(false);
+      setBusVideoPlaying(false);
+    }
+    // La commande sonore doit partir dans le clic, avant les effets React.
+    window.dispatchEvent(new CustomEvent("bus-music-user-toggle", {
+      detail: { playing, suspendedForVideo: theoryVideoPlaying },
+    }));
+    setBgmPlaying(playing);
+  }, [bgmPlaying, tvOn, theoryVideoPlaying, partyOn, stopParty]);
+
+  useEffect(() => {
+    if (partyOn && !sceneAvailable) stopParty();
+  }, [partyOn, sceneAvailable, stopParty]);
+
+  const handleMusicError = useCallback((message: string) => {
+    showToast("Musique indisponible", message, "🎵");
+  }, [showToast]);
 
   const effectiveCount = count ?? 0;
-  const numRows = computeNumRows(seatCapacity);
+  const numRows = getBusPhysicalRows(seatCapacity);
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
   const overlayOpen = showTheoryModal || showJoinModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
 
   return (
-    <div data-phase={phase} data-scene-available={sceneAvailable} data-tv-on={tvOn ? "true" : "false"} className="bus-app fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
+    <div data-party={partyOn ? "true" : "false"} data-party-dancing={partyDancing ? "true" : "false"} data-phase={phase} data-view={phase === "inside" && freeView ? "free" : "seat"} data-scene-available={sceneAvailable} data-tv-on={tvOn ? "true" : "false"} className="bus-app fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {toast ? [toast.badge, toast.text, toast.sub].filter(Boolean).join(". ") : ""}
       </div>
       <Scene
         phase={phase}
+        freeView={phase === "inside" && freeView}
         headlights={headlights}
         hornPulse={hornPulse}
+        partyOn={partyOn}
+        partyDancing={partyDancing}
         tvOn={tvOn}
         onVideoPlaybackChange={setBusVideoPlaying}
         worldRef={worldRef}
@@ -659,6 +682,7 @@ export default function BusExperience() {
         isMutedForFullscreen={overlayOpen}
         uiPaused={overlayOpen}
         hasEntered={hasEntered}
+        boardingPending={joining}
         passengerProfiles={passengerProfiles}
         currentPassengerSeatIndex={currentPassengerSeatIndex}
         onPassengerSelect={(passenger) => { setPassengerOpenedFromList(false); void openPassengerCard(passenger); }}
@@ -670,6 +694,8 @@ export default function BusExperience() {
 
       <BusHud
         phase={phase}
+        freeView={freeView}
+        toggleFreeView={() => setFreeView(value => !value)}
         hidden={overlayOpen}
         sceneAvailable={sceneAvailable}
         toast={toast}
@@ -688,6 +714,8 @@ export default function BusExperience() {
         hasEntered={hasEntered}
         tvOn={tvOn}
         joining={joining}
+        partyOn={partyOn}
+        toggleParty={toggleParty}
         busy={busy}
         setShowTheoryModal={setShowTheoryModal}
         setShowTheoryAge={setShowTheoryAge}
@@ -714,7 +742,10 @@ export default function BusExperience() {
       {/* Lecteur de musique de fond (Howard Harper-Barnes - Life in Pieces) */}
       <BackgroundMusicPlayer
         playing={bgmPlaying}
+        partyOn={partyOn}
+        onPartyPlaybackError={stopParty}
         onPlayingChange={setBgmPlaying}
+        onPlaybackError={handleMusicError}
         suspendedForVideo={theoryVideoPlaying || busVideoPlaying}
         volume={bgmVolume}
       />

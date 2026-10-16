@@ -80,7 +80,7 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
   for (const phase of ['inside', 'outside']) {
     if (phase === 'outside') {
       await run(`document.querySelector('button[aria-label="Sortir du bus"]').click()`);
-      await waitForPageCondition(send, `document.querySelector('[data-phase]').dataset.phase === 'outside'`, "Exit before exterior layout checks", 10_000);
+      await waitForPageCondition(send, `document.querySelector('[data-phase]').dataset.phase === 'outside'`, "Exit before exterior layout checks", 90_000);
     }
     for (const viewport of viewports) {
       await send("Emulation.setDeviceMetricsOverride", {

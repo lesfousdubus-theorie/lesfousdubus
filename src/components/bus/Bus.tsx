@@ -15,19 +15,30 @@ import {
 import { TV_POSITION, type WorldState } from "./constants";
 import type { PassengerProfile } from "@/types/passenger";
 import Passengers from "./Passengers";
+import BusRelayPassenger from "./BusRelayPassenger";
+import BusConfetti from "./BusConfetti";
+import type { JourneyState } from "@/lib/bus-journey";
 import { BusTvFrame, BusTvPlayer } from "./BusTv";
-import { computeNumRows, getRenderedRowIndices, getActiveTvIndex, getTvPositions } from "@/lib/bus-layout";
+import { getRenderedRowIndices, getActiveTvIndex, getTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelZClearOfDoors, BUS_FRONT_Z, CREW_SEATS, SEAT_CUSHION_DEPTH, SEAT_CUSHION_Z, SEAT_BASE_DEPTH } from "@/lib/bus-layout";
+import { getBusPhysicalRows } from "@/lib/bus-occupancy";
+import { getInteriorRailSpans, INTERIOR_RAIL_X, INTERIOR_RAIL_DEPTH } from "@/lib/bus-interior-geometry";
 import { advanceWiperAngle } from "@/lib/bus-wipers";
 import BusExterior from "./BusExterior";
+import BusSpanMeshes from "./BusSpanMeshes";
 import BusDrivers from "./BusDrivers";
+import { DRIVER_DASHBOARD, DRIVER_SEAT_POSITIONS, NAVIGATOR_BAR, STEERING_WHEEL } from "@/lib/driver-arms";
+import BusCabinDetails from "./BusCabinDetails";
 import { createStrawHatGeometry } from "./StrawHatGeometry";
 
 interface BusProps {
   headlights: boolean;
   hornPulse: number;
+  partyOn?: boolean;
+  partyDancing?: boolean;
   tvOn: boolean;
   onVideoPlaybackChange?: (active: boolean) => void;
   phase: "outside" | "entering" | "inside" | "exiting";
+  freeView?: boolean;
   worldRef: React.RefObject<WorldState>;
   passengerCount?: number;
   seatCapacity?: number;
@@ -35,8 +46,10 @@ interface BusProps {
   reservedRow?: number;
   isMutedForFullscreen?: boolean;
   hasEntered?: boolean;
+  boardingPending?: boolean;
   passengerProfiles?: PassengerProfile[];
   currentPassengerSeatIndex?: number | null;
+  journey:React.RefObject<JourneyState>;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   reducedMotion?: boolean;
   lowPower?: boolean;
@@ -51,9 +64,12 @@ const DARK = "#12141a";
 export default function Bus({
   headlights,
   hornPulse,
+  partyOn = false,
+  partyDancing = false,
   tvOn,
   onVideoPlaybackChange,
   phase,
+  freeView = false,
   worldRef,
   passengerCount = 0,
   seatCapacity = passengerCount,
@@ -61,8 +77,10 @@ export default function Bus({
   reservedRow = 3,
   isMutedForFullscreen = false,
   hasEntered = false,
+  boardingPending = false,
   passengerProfiles = [],
   currentPassengerSeatIndex = null,
+  journey,
   onPassengerSelect,
   reducedMotion = false,
   lowPower = false,
@@ -70,7 +88,7 @@ export default function Bus({
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
   const hat = useRef<THREE.Group>(null);
-  const wheels = useRef<(THREE.Mesh | null)[]>([]);
+  const wheels = useRef<(THREE.Group | null)[]>([]);
   const interiorLights = useRef<THREE.PointLight[]>([]);
   const leftWiper = useRef<THREE.Group>(null);
   const rightWiper = useRef<THREE.Group>(null);
@@ -92,7 +110,8 @@ export default function Bus({
   });
 
   // Calcul dynamique de la longueur et des rangées du bus
-  const numRows = computeNumRows(seatCapacity);
+  const numRows = getBusPhysicalRows(seatCapacity);
+  const doors = useMemo(() => getBusDoors(numRows), [numRows]);
 
   // Position Z de chaque rangée de sièges
   const renderedRowIndices = useMemo(
@@ -100,7 +119,7 @@ export default function Bus({
     [numRows, reservedRow],
   );
   const SEAT_ROWS = useMemo(
-    () => renderedRowIndices.map((row) => -2.6 + row * 1.2),
+    () => renderedRowIndices.map(getSeatRowZ),
     [renderedRowIndices],
   );
 
@@ -115,22 +134,22 @@ export default function Bus({
     return getActiveTvIndex(tvPositions, reservedRow);
   }, [phase, reservedRow, tvPositions]);
   const activeTvPosition = tvPositions[activeTvIndex] ?? tvPositions[0];
-  const viewerZ = -2.6 + reservedRow * 1.2 + 0.15;
+  const viewerZ = getSeatRowZ(reservedRow) + 0.15;
 
   // Coordonnées Z dynamiques du bus
-  const rearWallZ = -2.6 + numRows * 1.2; // pour 6 rangées: 4.6
-  const cabinLength = rearWallZ + 4.6; // pour 6 rangées: 9.2
-  const cabinCenterZ = (-4.6 + rearWallZ) / 2; // pour 6 rangées: 0
+  const rearWallZ = getBusRearWallZ(numRows);
+  const cabinLength = rearWallZ - BUS_FRONT_Z;
+  const cabinCenterZ = (BUS_FRONT_Z + rearWallZ) / 2;
 
   // Piliers de vitres : 2 avant + 1 par jointure de rangée
   const PILLARS = useMemo(() => {
     const arr = [-4.55, -3.85];
     for (const row of renderedRowIndices) {
-      arr.push(-2.65 + row * 1.2);
+      arr.push(getSeatRowZ(row) - 0.05);
     }
-    arr.push(-2.65 + numRows * 1.2);
+    arr.push(rearWallZ - 0.05);
     return arr;
-  }, [numRows, renderedRowIndices]);
+  }, [rearWallZ, renderedRowIndices]);
 
   // Points lumineux de plafond répartis le long de l'habitacle
   const interiorLightZs = useMemo(() => {
@@ -148,21 +167,20 @@ export default function Bus({
     const arr: [number, number][] = [
       [-1.2, -4.3],
       [1.2, -4.3],
-      [-1.2, rearWallZ - 1.6],
-      [1.2, rearWallZ - 1.6],
+      [-1.2, getWheelZClearOfDoors(rearWallZ - 1.6, doors, rearWallZ)],
+      [1.2, getWheelZClearOfDoors(rearWallZ - 1.6, doors, rearWallZ)],
     ];
     if (numRows >= 10) {
-      arr.push([-1.2, cabinCenterZ]);
-      arr.push([1.2, cabinCenterZ]);
+      arr.push([-1.2, getWheelZClearOfDoors(cabinCenterZ, doors, rearWallZ)]);
+      arr.push([1.2, getWheelZClearOfDoors(cabinCenterZ, doors, rearWallZ)]);
     }
     return arr;
-  }, [numRows, rearWallZ, cabinCenterZ]);
+  }, [numRows, rearWallZ, cabinCenterZ, doors]);
 
   // Détection du moment d'extension pour animer le rebond
   const stretchRef = useRef(0);
   const prevRows = useRef(numRows);
   const bouncePhase = useRef(0);
-  const rollPhase = useRef(0);
   const wiperMotion = useRef({ phase: 0, running: false, cyclesPerSecond: 0.4 });
   useEffect(() => {
     if (numRows > prevRows.current) {
@@ -209,6 +227,11 @@ export default function Bus({
         metalness: 0.05,
         depthWrite: false,
       }),
+      windowGlass: new THREE.MeshStandardMaterial({
+        color: "#9ec9ff", transparent: true, opacity: 0.22,
+        roughness: 0.04, metalness: 0.05, depthWrite: false, side: THREE.DoubleSide,
+        forceSinglePass: true,
+      }),
       floor: new THREE.MeshStandardMaterial({
         color: "#2f323a",
         roughness: 0.9,
@@ -231,13 +254,13 @@ export default function Bus({
         color: "#fff5d2",
         roughness: 0.78,
         metalness: 0.02,
-        side: THREE.DoubleSide,
+        side: THREE.FrontSide,
       }),
       band: new THREE.MeshStandardMaterial({
         color: "#e61924",
         roughness: 0.35,
         metalness: 0.05,
-        side: THREE.DoubleSide,
+        side: THREE.FrontSide,
       }),
       orange: new THREE.MeshStandardMaterial({
         color: "#ff8c00",
@@ -257,6 +280,10 @@ export default function Bus({
     };
   }, [strawMap]);
 
+  useEffect(() => () => {
+    Object.values(mats).forEach((material) => material.dispose());
+  }, [mats]);
+
   // Position et orientation de base du chapeau (droit et centré sur le toit du bus)
   const HAT_BASE_POS: [number, number, number] = useMemo(() => [0, 3.40, -3.55], []);
   const HAT_BASE_ROT: [number, number, number] = useMemo(() => [0, 0, 0], []);
@@ -270,20 +297,6 @@ export default function Bus({
         sub: "GRAND LINE EXPRESS",
         bg: BLUE,
         fg: YELLOW,
-      }),
-    [],
-  );
-
-  const destLabel = useMemo(
-    () =>
-      makeLabelTexture({
-        text: "GRAND LINE ➜ LAUGH TALE",
-        sub: "SERVICE DIRECT · TOUS À BORD",
-        width: 1024,
-        height: 160,
-        bg: "#090c14",
-        fg: "#ffb700",
-        font: "bold 72px 'Courier New', monospace",
       }),
     [],
   );
@@ -332,6 +345,7 @@ export default function Bus({
         stroke: "#34145f",
         accent: "#22d3ee",
         angle: -0.055,
+        decorationWidthScale: 0.65,
       }),
     [],
   );
@@ -368,7 +382,6 @@ export default function Bus({
     hatGeo.dispose();
     ribbonGeo.dispose();
     sideLabel.dispose();
-    destLabel.dispose();
     tvOffTex.dispose();
     dashTex.dispose();
     licensePlateTex.dispose();
@@ -382,7 +395,6 @@ export default function Bus({
     hatGeo,
     ribbonGeo,
     sideLabel,
-    destLabel,
     tvOffTex,
     dashTex,
     licensePlateTex,
@@ -403,25 +415,23 @@ export default function Bus({
     const t = state.clock.elapsedTime;
     const frameDt = Math.min(dt, 0.1);
 
-    const mult = worldRef.current?.speedMultiplier ?? 1.0;
+    const mult = (worldRef.current?.speedMultiplier ?? 1.0)*(worldRef.current.motionFactor??1);
     bouncePhase.current = (bouncePhase.current + frameDt * 8.5 * mult) % (Math.PI * 2);
-    rollPhase.current = (rollPhase.current + frameDt * 1.6 * mult) % (Math.PI * 2);
 
-    // Roulis, tangage et rebond d'extension dynamique du minibus (adapté à la vitesse)
+    // La caisse reste d’équerre ; seule la suspension se déplace verticalement.
     if (group.current) {
       const sinceStretch = (performance.now() - stretchRef.current) / 1000;
       const stretchBounce = !reducedMotion &&
         sinceStretch < 0.9 ? Math.sin(sinceStretch * 20) * (0.9 - sinceStretch) * 0.05 : 0;
 
-      const cabinIsStable = phase === "inside" || phase === "entering";
+      const cabinIsStable = phase === "inside" || phase === "entering" || mult<0.02;
       const targetY = cabinIsStable || reducedMotion
         ? 0
         : (Math.sin(bouncePhase.current) * 0.014 + Math.sin(t * 2.1) * 0.008)
           * Math.min(1.4, Math.max(0.7, mult)) + stretchBounce;
-      const targetRoll = cabinIsStable || reducedMotion ? 0 : Math.sin(rollPhase.current) * 0.0035;
       const settle = Math.min(1, frameDt * 10);
       group.current.position.y += (targetY - group.current.position.y) * settle;
-      group.current.rotation.z += (targetRoll - group.current.rotation.z) * settle;
+      group.current.rotation.set(0, 0, 0);
     }
 
     // Une même phase garde les deux balais parallèles ; seule la cadence varie
@@ -446,9 +456,10 @@ export default function Bus({
     }
 
     // Rotation des roues du bus adaptée à la vitesse de défilement
-    if (phase !== "inside") {
+    if (phase !== "inside" || freeView) {
       wheels.current.forEach((w) => {
-        if (w) w.rotation.x = (w.rotation.x - frameDt * 12 * mult) % (Math.PI * 2);
+        // Le support tourne Y local vers -X monde : +Y fait rouler vers -Z.
+        if (w) w.rotation.y = (w.rotation.y + frameDt * 12 * mult) % (Math.PI * 2);
       });
     }
 
@@ -461,14 +472,19 @@ export default function Bus({
   });
 
   return (
-    <group ref={group}>
+    <group ref={group} name="bus-vehicle">
       <BusExterior
         headlights={headlights}
         phase={phase}
+        journey={journey}
         mats={mats}
         cabinLength={cabinLength}
         cabinCenterZ={cabinCenterZ}
         rearWallZ={rearWallZ}
+        doors={doors}
+        numRows={numRows}
+        focusZ={viewerZ}
+        lowPower={lowPower}
         pillars={PILLARS}
         wheelPositions={wheelPositions}
         wheels={wheels}
@@ -477,7 +493,8 @@ export default function Bus({
         leftTarget={leftTarget}
         rightTarget={rightTarget}
         sideLabel={sideLabel}
-        destLabel={destLabel}
+        reducedMotion={reducedMotion}
+        freeView={freeView}
         licensePlateTex={licensePlateTex}
         montCorvoTex={montCorvoTex}
         hatGeo={hatGeo}
@@ -494,6 +511,7 @@ export default function Bus({
       />
 
       {/* ---------- INTÉRIEUR DU BUS ---------- */}
+      <BusCabinDetails mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ} rearWallZ={rearWallZ} rowZs={SEAT_ROWS} wheelPositions={wheelPositions} tvPositions={tvPositions} />
       {/* Habillage intérieur du toit extensible */}
       <mesh material={mats.interiorWall} position={[0, 3.15, cabinCenterZ]}>
         <boxGeometry args={[2.5, 0.02, cabinLength - 0.1]} />
@@ -506,12 +524,8 @@ export default function Bus({
           <mesh material={mats.interiorWall} position={[sx * 1.248, 2.98, cabinCenterZ]}>
             <boxGeometry args={[0.012, 0.4, cabinLength - 0.12]} />
           </mesh>
-          <mesh material={mats.bodyDark} position={[sx * 1.235, 2.76, cabinCenterZ]}>
-            <boxGeometry args={[0.03, 0.08, cabinLength - 0.1]} />
-          </mesh>
-          <mesh material={mats.bodyDark} position={[sx * 1.235, 1.74, cabinCenterZ]}>
-            <boxGeometry args={[0.03, 0.08, cabinLength - 0.1]} />
-          </mesh>
+          <BusSpanMeshes spans={getInteriorRailSpans(BUS_FRONT_Z + 0.05, rearWallZ - 0.05, sx > 0, doors)} name="bus-interior-window-top-rail" material={mats.bodyDark} x={sx * INTERIOR_RAIL_X} y={2.74} width={INTERIOR_RAIL_DEPTH} height={0.072} />
+          <BusSpanMeshes spans={getInteriorRailSpans(BUS_FRONT_Z + 0.05, rearWallZ - 0.05, sx > 0, doors)} name="bus-interior-window-bottom-rail" material={mats.bodyDark} x={sx * INTERIOR_RAIL_X} y={1.74} width={INTERIOR_RAIL_DEPTH} height={0.072} />
         </group>
       ))}
 
@@ -537,46 +551,40 @@ export default function Bus({
         />
       ))}
 
-      {/* Barres de maintien jaunes & poignées extensibles */}
-      {[-0.35, 0.35].map((x) => (
-        <group key={x}>
-          <mesh
-            material={mats.yellow}
-            position={[x, 2.9, cabinCenterZ + 0.4]}
-            rotation={[Math.PI / 2, 0, 0]}
-          >
-            <cylinderGeometry args={[0.022, 0.022, cabinLength - 1.6, 12]} />
-          </mesh>
-        </group>
-      ))}
-
       {/* Les sièges gardent leur quantité exacte mais partagent quatre draw calls. */}
       <SeatInstances rows={SEAT_ROWS} seatMaterial={mats.seat} frameMaterial={mats.seatFrame} />
 
       {/* PASSAGERS NAKAMA ASSIS DANS LE BUS */}
       <Passengers
         passengerCount={passengerCount}
+        seatCapacity={seatCapacity}
         numRows={numRows}
         renderedRowIndices={renderedRowIndices}
         vacantSeatRanges={vacantSeatRanges}
         hornPulse={hornPulse}
-        reservedRow={phase === "inside" || phase === "entering" ? reservedRow : -1}
+        partyOn={partyDancing}
+        reservedRow={reservedRow}
+        avatarAboard={phase !== "outside" && !boardingPending}
         activePassengerIndex={phase === "inside" || phase === "entering" ? currentPassengerSeatIndex : null}
         passengerProfiles={passengerProfiles}
         onPassengerSelect={onPassengerSelect}
         lowPower={lowPower}
+        reducedMotion={reducedMotion}
+        excludedPassengerIndex={currentPassengerSeatIndex}
       />
 
       {/* ---------- POSTE DE CONDUITE & TABLEAU DE BORD COMPLET DU BUS ---------- */}
+      <BusRelayPassenger hornPulse={hornPulse} reducedMotion={reducedMotion} partyOn={partyDancing} />
+      {partyOn&&<BusConfetti focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion}/>}
       {/* Siège conducteur ergonomique avec appuie-tête et embase (Kamal) */}
-      <group position={[-0.72, 0, -3.8]}>
+      <group name="bus-driver-seat" position={DRIVER_SEAT_POSITIONS.kamal}>
         {/* Embase métallique fixée au plancher */}
         <mesh material={mats.dark} position={[0, 0.77, 0]}>
           <boxGeometry args={[0.22, 0.30, 0.22]} />
         </mesh>
         {/* Coussin d'assise abaissé */}
-        <mesh material={mats.seat} position={[0, 0.95, 0]}>
-          <boxGeometry args={[0.76, 0.12, 0.68]} />
+        <mesh material={mats.seat} position={[0, 1.05, SEAT_CUSHION_Z]}>
+          <boxGeometry args={[0.76, 0.12, SEAT_CUSHION_DEPTH]} />
         </mesh>
         {/* Dossier du siège aux proportions harmonieuses */}
         <mesh material={mats.seat} position={[0, 1.32, 0.32]}>
@@ -592,15 +600,15 @@ export default function Bus({
         </mesh>
       </group>
 
-      {/* Siège co-pilote / navigateur ergonomique pour Kyta */}
-      <group position={[0.72, 0, -3.8]}>
+      {/* Les deux navigateurs sont côte à côte, devant le vestibule. */}
+      <group name="bus-guide-seat" position={DRIVER_SEAT_POSITIONS.kyta}>
         {/* Embase métallique fixée au plancher */}
         <mesh material={mats.dark} position={[0, 0.77, 0]}>
           <boxGeometry args={[0.22, 0.30, 0.22]} />
         </mesh>
         {/* Coussin d'assise abaissé */}
-        <mesh material={mats.seat} position={[0, 0.95, 0]}>
-          <boxGeometry args={[0.76, 0.12, 0.68]} />
+        <mesh material={mats.seat} position={[0, 1.05, SEAT_CUSHION_Z]}>
+          <boxGeometry args={[0.76, 0.12, SEAT_CUSHION_DEPTH]} />
         </mesh>
         {/* Dossier du siège aux proportions harmonieuses */}
         <mesh material={mats.seat} position={[0, 1.32, 0.32]}>
@@ -619,49 +627,53 @@ export default function Bus({
       {/* CONDUCTEURS DU MONT CORVO : KAMAL AU VOLANT ET KYTA EN CO-PILOTE */}
       <BusDrivers
         hornPulse={hornPulse}
+        partyOn={partyDancing}
         reducedMotion={reducedMotion}
       />
 
       {/* Planche de bord complète du bus (jointement continu avec le pare-brise) */}
-      <group position={[0, 0, 0]}>
+      <group name="bus-dashboard" position={[0, 0, 0]}>
         {/* Table supérieure de la planche de bord (Deck) : comble l'espace jusqu'au pare-brise */}
-        <mesh material={mats.dark} position={[0, 1.56, -4.32]}>
-          <boxGeometry args={[2.44, 0.08, 0.54]} />
+        <mesh name="bus-dashboard-deck" material={mats.dark} position={DRIVER_DASHBOARD.deck.position}>
+          <boxGeometry args={DRIVER_DASHBOARD.deck.size} />
         </mesh>
         {/* Relevé avant sous la baie de pare-brise */}
         <mesh material={mats.bodyDark} position={[0, 1.62, -4.54]}>
           <boxGeometry args={[2.42, 0.06, 0.10]} />
         </mesh>
-        {/* Façade verticale descendante fermant l'avant du bus jusqu'au plancher */}
-        <mesh material={mats.dark} position={[0, 1.10, -4.06]}>
-          <boxGeometry args={[2.44, 0.92, 0.06]} />
+        {/* Façade courte ; la paroi basse recule pour laisser les pieds sous le tableau. */}
+        <mesh name="bus-dashboard-fascia" material={mats.dark} position={DRIVER_DASHBOARD.fascia.position}>
+          <boxGeometry args={DRIVER_DASHBOARD.fascia.size} />
+        </mesh>
+        <mesh name="bus-dashboard-footwell" material={mats.dark} position={DRIVER_DASHBOARD.footwell.position}>
+          <boxGeometry args={DRIVER_DASHBOARD.footwell.size} />
         </mesh>
         {/* Flancs d'habillage latéraux */}
         {[-1.20, 1.20].map((lx) => (
-          <mesh key={`dash-cheek-${lx}`} material={mats.dark} position={[lx, 1.10, -4.32]}>
-            <boxGeometry args={[0.06, 0.92, 0.54]} />
+          <mesh key={`dash-cheek-${lx}`} material={mats.dark} position={[lx, 1.10, -4.47]}>
+            <boxGeometry args={[0.06, 0.92, 0.26]} />
           </mesh>
         ))}
 
         {/* Combiné d'instruments avec casquette biseautée face au conducteur */}
-        <group position={[-0.72, 1.60, -4.22]}>
+        <group name="bus-dashboard-instruments" position={[CREW_SEATS.kamal[0], 1.60, -4.48]}>
           {/* Casquette protectrice de compteur (pare-soleil du combiné) */}
           <mesh material={mats.dark} position={[0, 0.16, -0.02]} rotation={[-0.18, 0, 0]}>
-            <boxGeometry args={[0.82, 0.04, 0.28]} />
+            <boxGeometry args={[0.72, 0.04, 0.20]} />
           </mesh>
-          <mesh material={mats.dark} position={[-0.40, 0.05, -0.02]}>
-            <boxGeometry args={[0.03, 0.22, 0.26]} />
+          <mesh material={mats.dark} position={[-0.35, 0.05, -0.02]}>
+            <boxGeometry args={[0.03, 0.22, 0.20]} />
           </mesh>
-          <mesh material={mats.dark} position={[0.40, 0.05, -0.02]}>
-            <boxGeometry args={[0.03, 0.22, 0.26]} />
+          <mesh material={mats.dark} position={[0.35, 0.05, -0.02]}>
+            <boxGeometry args={[0.03, 0.22, 0.20]} />
           </mesh>
           {/* Cadre de fond encastré du compteur */}
           <mesh material={mats.dark} position={[0, 0.02, -0.01]} rotation={[-0.32, 0, 0]}>
-            <boxGeometry args={[0.80, 0.26, 0.03]} />
+            <boxGeometry args={[0.70, 0.26, 0.03]} />
           </mesh>
           {/* Affichage des instruments rétroéclairés */}
           <mesh position={[0, 0.02, 0.01]} rotation={[-0.32, 0, 0]}>
-            <planeGeometry args={[0.78, 0.24]} />
+            <planeGeometry args={[0.68, 0.24]} />
             <meshStandardMaterial
               map={dashTex}
               emissive="#ffffff"
@@ -673,34 +685,34 @@ export default function Bus({
         </group>
 
         {/* Colonne de direction et volant réaliste à 3 branches */}
-        <group position={[-0.72, 0, 0]}>
+        <group position={[CREW_SEATS.kamal[0], 0, -0.15]}>
           {/* Colonne de direction inclinée sortant du tableau de bord vers le conducteur */}
-          <mesh material={mats.dark} position={[0, 1.34, -4.10]} rotation={[0.58, 0, 0]}>
-            <cylinderGeometry args={[0.032, 0.032, 0.42, 12]} />
+          <mesh material={mats.dark} position={[0, 1.465, -4.125]} rotation={[0.873, 0, 0]}>
+            <cylinderGeometry args={[0.032, 0.032, 0.483, 12]} />
           </mesh>
-          <mesh material={mats.chrome} position={[0, 1.48, -3.98]} rotation={[0.58, 0, 0]}>
+          <mesh material={mats.chrome} position={[0, 1.58, -3.985]} rotation={[0.873, 0, 0]}>
             <cylinderGeometry args={[0.038, 0.038, 0.04, 12]} />
           </mesh>
           {/* Commodos de commande (clignotants / essuie-glaces) */}
-          <mesh material={mats.dark} position={[-0.09, 1.48, -3.98]} rotation={[0, 0, 0.35]}>
+          <mesh material={mats.dark} position={[-0.09, 1.58, -3.985]} rotation={[0, 0, 0.35]}>
             <boxGeometry args={[0.12, 0.018, 0.018]} />
           </mesh>
-          <mesh material={mats.dark} position={[0.09, 1.48, -3.98]} rotation={[0, 0, -0.35]}>
+          <mesh material={mats.dark} position={[0.09, 1.58, -3.985]} rotation={[0, 0, -0.35]}>
             <boxGeometry args={[0.12, 0.018, 0.018]} />
           </mesh>
 
           {/* Volant 3 branches complet */}
-          <group position={[0, 1.54, -3.94]} rotation={[-0.99, 0, 0]}>
+          <group name="bus-steering-wheel" position={[0, STEERING_WHEEL.y, STEERING_WHEEL.z + .15]} rotation={[STEERING_WHEEL.tilt, 0, 0]}>
             {/* Jante torique du volant */}
             <mesh material={mats.dark}>
-              <torusGeometry args={[0.23, 0.024, 14, 36]} />
+              <torusGeometry args={[STEERING_WHEEL.radius, 0.024, 14, 36]} />
             </mesh>
             {/* Moyeu central du volant */}
-            <mesh material={mats.dark}>
+            <mesh material={mats.dark} rotation={[Math.PI / 2, 0, 0]}>
               <cylinderGeometry args={[0.065, 0.065, 0.032, 18]} />
             </mesh>
             {/* Bouton de klaxon One Piece doré au centre du volant */}
-            <mesh material={mats.yellow} position={[0, 0, 0.018]}>
+            <mesh material={mats.yellow} position={[0, 0, 0.018]} rotation={[Math.PI / 2, 0, 0]}>
               <cylinderGeometry args={[0.042, 0.042, 0.015, 18]} />
             </mesh>
             {/* 3 branches reliant le moyeu à la jante */}
@@ -717,7 +729,7 @@ export default function Bus({
         </group>
 
         {/* Console centrale du bus */}
-        <group position={[0, 0, 0]}>
+        <group position={[0, 0, -.30]}>
           {/* Bloc de console avancé vers l'habitacle */}
           <mesh material={mats.dark} position={[0, 1.34, -4.04]}>
             <boxGeometry args={[0.54, 0.58, 0.18]} />
@@ -784,17 +796,17 @@ export default function Bus({
         </group>
 
         {/* Côté passager avant : boîte à gants et barre de maintien */}
-        <group position={[0.72, 0, 0]}>
-          <mesh material={mats.dark} position={[0, 1.48, -4.04]}>
+        <group position={[CREW_SEATS.kyta[0], 0, 0]}>
+          <mesh material={mats.dark} position={[0, 1.48, -4.42]}>
             <boxGeometry args={[0.68, 0.18, 0.14]} />
           </mesh>
           {/* Liseré chromé de boîte à gants */}
-          <mesh material={mats.chrome} position={[0, 1.48, -3.96]}>
+          <mesh material={mats.chrome} position={[0, 1.48, -4.34]}>
             <boxGeometry args={[0.64, 0.012, 0.01]} />
           </mesh>
           {/* Barre de maintien passager avant jaune */}
-          <mesh material={mats.yellow} position={[0, 1.68, -4.10]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.018, 0.018, 0.60, 10]} />
+          <mesh name="bus-navigator-bar" material={mats.yellow} position={[0, NAVIGATOR_BAR.y, NAVIGATOR_BAR.z]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[NAVIGATOR_BAR.radius, NAVIGATOR_BAR.radius, NAVIGATOR_BAR.width, 10]} />
           </mesh>
         </group>
 
@@ -815,9 +827,9 @@ export default function Bus({
           key={`tv-unit-${idx}-${pos[2]}`}
           pos={pos}
           idx={idx}
-          tvOn={tvOn}
+          tvOn={tvOn && !partyOn}
           isActive={idx === activeTvIndex}
-          visible={idx === activeTvIndex || phase !== "inside"
+          visible={freeView || idx === activeTvIndex || phase !== "inside"
             || viewerZ <= pos[2] || viewerZ - pos[2] >= 2.5}
           mats={mats}
           tvOffTex={tvOffTex}
@@ -830,6 +842,7 @@ export default function Bus({
         onPlaybackChange={onVideoPlaybackChange}
         phase={phase}
         hasEntered={hasEntered}
+        journey={journey}
         isMutedForFullscreen={isMutedForFullscreen}
         reducedMotion={reducedMotion}
         playbackSuspended={playbackSuspended}
@@ -853,7 +866,7 @@ function SeatInstances({
   const headrest = useRef<THREE.InstancedMesh>(null);
   useLayoutEffect(() => {
     const refs = [cushion, back, base, headrest];
-    const offsets = [[1.05, 0], [1.38, 0.33], [0.82, 0], [1.7, 0.33]];
+    const offsets = [[1.05, SEAT_CUSHION_Z], [1.38, 0.33], [0.82, SEAT_CUSHION_Z], [1.7, 0.33]];
     const matrix = new THREE.Matrix4();
     refs.forEach((meshRef, part) => {
       if (!meshRef.current) return;
@@ -874,14 +887,14 @@ function SeatInstances({
   const capacity = 180 * 2;
   return (
     <>
-      <instancedMesh ref={cushion} args={[undefined, undefined, capacity]} count={count} material={seatMaterial} castShadow>
-        <boxGeometry args={[0.95, 0.15, 0.7]} />
+      <instancedMesh name="bus-seat-cushions" ref={cushion} args={[undefined, undefined, capacity]} count={count} material={seatMaterial} castShadow>
+        <boxGeometry args={[0.95, 0.15, SEAT_CUSHION_DEPTH]} />
       </instancedMesh>
       <instancedMesh ref={back} args={[undefined, undefined, capacity]} count={count} material={seatMaterial} castShadow>
         <boxGeometry args={[0.95, 0.58, 0.12]} />
       </instancedMesh>
       <instancedMesh ref={base} args={[undefined, undefined, capacity]} count={count} material={frameMaterial}>
-        <boxGeometry args={[0.85, 0.36, 0.6]} />
+        <boxGeometry args={[0.85, 0.36, SEAT_BASE_DEPTH]} />
       </instancedMesh>
       <instancedMesh ref={headrest} args={[undefined, undefined, capacity]} count={count} material={frameMaterial}>
         <boxGeometry args={[0.95, 0.05, 0.08]} />

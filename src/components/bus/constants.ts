@@ -4,11 +4,11 @@ export type Phase = "outside" | "entering" | "inside" | "exiting";
 export type WeatherType = "clear" | "rain" | "snow";
 
 /** Position des yeux quand on est assis dans le bus (siège côté droit, 4e rangée). */
-export const SEAT_EYE = new THREE.Vector3(0.72, 2.02, 1.15);
+export const SEAT_EYE = new THREE.Vector3(0.72, 1.84, 2.08);
 /** Point regardé à l'arrivée dans le bus : la TV. */
 export const TV_POSITION = new THREE.Vector3(0, 2.55, -4.2);
 
-export const DEFAULT_CAMERA_POS = new THREE.Vector3(-7.5, 3.2, -10.5);
+export const DEFAULT_CAMERA_POS = new THREE.Vector3(7.5, 3.2, -10.5);
 export const DEFAULT_TARGET = new THREE.Vector3(0, 1.9, -2.5);
 
 export const WORLD_SPEED = 16; // unités / seconde
@@ -20,6 +20,7 @@ export interface WorldState {
   zone: number;
   scroll: number;
   speedMultiplier: number; // Vitesse de déplacement du bus
+  motionFactor?: number; // Arrêt et reprise pendant l'embarquement
   weather: WeatherType;
   weatherIntensity: number; // 0 ciel clair → 1 intempéries soutenues
 }

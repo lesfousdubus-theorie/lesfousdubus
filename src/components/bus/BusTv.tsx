@@ -5,8 +5,9 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import type { Phase } from "./constants";
+import type { JourneyState } from "@/lib/bus-journey";
 import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
-import { isYouTubePlaybackActive, loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
+import { createInitialCaptionReset, isYouTubePlaybackActive, loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
 
 interface BusTvFrameProps {
   pos: [number, number, number];
@@ -30,7 +31,7 @@ export function BusTvFrame({
   posterTex,
 }: BusTvFrameProps) {
   return (
-    <group key={`tv-frame-${idx}-${pos[2]}`} position={pos} visible={visible}>
+    <group name="bus-tv-frame" userData={{ index: idx }} key={`tv-frame-${idx}-${pos[2]}`} position={pos} visible={visible}>
       <mesh material={mats.dark} castShadow>
         <boxGeometry args={[1.36, 0.82, 0.08]} />
       </mesh>
@@ -48,7 +49,7 @@ export function BusTvFrame({
         <planeGeometry args={[1.28, 0.73]} />
         <meshBasicMaterial color="#05070c" side={THREE.DoubleSide} />
       </mesh>
-      <mesh position={[0, 0, 0.053]}>
+      <mesh name="bus-tv-display" position={[0, 0, 0.053]}>
         <planeGeometry args={[1.26, 0.70875]} />
         <meshStandardMaterial
           map={tvOn ? posterTex : tvOffTex}
@@ -74,6 +75,7 @@ interface BusTvPlayerProps {
   tvOn: boolean;
   phase: Phase;
   hasEntered: boolean;
+  journey: React.RefObject<JourneyState>;
   isMutedForFullscreen: boolean;
   reducedMotion: boolean;
   playbackSuspended: boolean;
@@ -85,6 +87,7 @@ export function BusTvPlayer({
   tvOn,
   phase,
   hasEntered,
+  journey,
   isMutedForFullscreen,
   reducedMotion,
   playbackSuspended,
@@ -97,10 +100,15 @@ export function BusTvPlayer({
   const createdPlayerRef = useRef<YouTubePlayer | null>(null);
   const warmTimerRef = useRef<number | null>(null);
   const volumeTimerRef = useRef<number | null>(null);
+  const exitVolumeRef = useRef<number | null>(null);
   const warmingRef = useRef(true);
   const playbackActiveRef = useRef(false);
+  const partyAudioRef = useRef(false);
+  const resumeAfterPartyRef = useRef(false);
   const reportPlayback = useCallback((active: boolean) => {
+    if (playbackActiveRef.current === active) return;
     playbackActiveRef.current = active;
+    window.dispatchEvent(new CustomEvent("bus-tv-audio-focus", { detail: active }));
     onPlaybackChange?.(active);
   }, [onPlaybackChange]);
   const desiredRef = useRef({
@@ -113,6 +121,11 @@ export function BusTvPlayer({
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const [apiFailed, setApiFailed] = useState(false);
   const shaderUniforms = useMemo(() => ({ uVisible: { value: 1.0 } }), []);
+
+  const stopVolumeRamp = useCallback(() => {
+    if (volumeTimerRef.current !== null) window.clearTimeout(volumeTimerRef.current);
+    volumeTimerRef.current = null;
+  }, []);
 
   const rampVolume = useCallback((target: number, duration = 650) => {
     const player = playerRef.current;
@@ -155,22 +168,31 @@ export function BusTvPlayer({
     const player = playerRef.current;
     if (!player || warmingRef.current) return;
     const desired = desiredRef.current;
+    stopVolumeRamp();
+    exitVolumeRef.current = null;
     try {
       if (!desired.hasEntered) {
-        reportPlayback(false);
         player.pauseVideo();
+        reportPlayback(false);
         player.seekTo(0, true);
         player.mute();
         return;
       }
-      if (!desired.tvOn || desired.isMutedForFullscreen || desired.playbackSuspended) {
-        reportPlayback(false);
+      if (partyAudioRef.current) {
+        player.pauseVideo();reportPlayback(false);return;
+      }
+      if (desired.phase === "entering" || !desired.tvOn || desired.isMutedForFullscreen || desired.playbackSuspended) {
         player.pauseVideo();
+        reportPlayback(false);
         return;
       }
 
-      const targetVolume = desired.phase === "outside" || desired.phase === "exiting" ? 25 : 100;
-      rampVolume(targetVolume, desired.phase === "entering" || desired.phase === "exiting" ? 900 : 300);
+      // La caméra reste aux yeux au début de la sortie. Son mouvement, suivi
+      // dans useFrame, commande ensuite le fondu vers le volume extérieur.
+      reportPlayback(true);
+      if (desired.phase === "outside") { player.setVolume(25); player.unMute(); }
+      else if (desired.phase === "exiting") player.unMute();
+      else rampVolume(100, 300);
       player.playVideo();
     } catch {
       reportPlayback(false);
@@ -179,9 +201,11 @@ export function BusTvPlayer({
       // suivante évite une mise à jour d'état synchrone pendant ce rendu.
       queueMicrotask(() => setApiFailed(true));
     }
-  }, [rampVolume, reportPlayback]);
+  }, [rampVolume, reportPlayback, stopVolumeRamp]);
 
   useEffect(() => {
+    const previous=desiredRef.current;
+    if(partyAudioRef.current&&hasEntered&&tvOn&&phase!=="entering"&&(previous.tvOn!==tvOn||previous.hasEntered!==hasEntered||previous.phase!==phase))resumeAfterPartyRef.current=true;
     desiredRef.current = {
       tvOn,
       phase,
@@ -195,13 +219,35 @@ export function BusTvPlayer({
         window.clearTimeout(warmTimerRef.current);
         warmTimerRef.current = null;
       }
+      // Un premier embarquement rapide peut arriver avant la fin du tampon.
+      // Revenir au début avant de rendre le préchargement muet audible.
+      try { playerRef.current?.seekTo(0, true); } catch { /* API encore en chargement. */ }
     }
     applyDesiredPlayback();
   }, [tvOn, phase, hasEntered, isMutedForFullscreen, playbackSuspended, applyDesiredPlayback]);
 
+  // Certains contrôles intégrés mettent à jour l'état sans émettre d'événement.
+  // Une pause ou une fin de vidéo doit néanmoins libérer la musique de fond.
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const player = playerRef.current;
+      const desired = desiredRef.current;
+      if (!player || warmingRef.current) return;
+      try {
+        const state = player.getPlayerState();
+        if (state === -1 || state === 5) return; // Lecture demandée, encore en préparation.
+        const audible = !partyAudioRef.current && desired.hasEntered && desired.tvOn && desired.phase !== "entering"
+          && !desired.isMutedForFullscreen && !desired.playbackSuspended;
+        reportPlayback(audible && isYouTubePlaybackActive(state, playbackActiveRef.current));
+      } catch { /* Le lecteur peut être détruit pendant sa réponse. */ }
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, [reportPlayback]);
+
   useEffect(() => {
     let cancelled = false;
     if (!mountElement) return;
+    const resetInitialCaptions = createInitialCaptionReset();
 
     void loadYouTubeIframeApi()
       .then((YT) => {
@@ -224,6 +270,7 @@ export function BusTvPlayer({
             onReady: (event) => {
               if (cancelled) return;
               const readyPlayer = event.target;
+              resetInitialCaptions(readyPlayer);
               if (
                 typeof readyPlayer.playVideo !== "function"
                 || typeof readyPlayer.pauseVideo !== "function"
@@ -255,17 +302,16 @@ export function BusTvPlayer({
               iframe.style.border = "0";
               iframe.style.display = "block";
 
-              // Si l'utilisateur est déjà entré pendant le chargement de l'API,
-              // on honore immédiatement l'état demandé au lieu d'ajouter 900 ms
-              // de préchauffage muet après coup.
+              // Une API prête pendant ou après l'embarquement doit respecter
+              // cette phase, sans ajouter un nouveau préchauffage en lecture.
               if (desiredRef.current.hasEntered) {
                 warmingRef.current = false;
+                if(partyAudioRef.current&&desiredRef.current.tvOn)resumeAfterPartyRef.current=true;
                 applyDesiredPlayback();
                 return;
               }
 
-              // Préchargement réel avant l'entrée : le lecteur démarre brièvement
-              // en muet pour amorcer le flux, puis revient exactement à 0.
+              // Précharger le début du flux en muet dès l'arrivée sur le site.
               try {
                 readyPlayer.mute();
                 readyPlayer.setVolume(0);
@@ -275,8 +321,22 @@ export function BusTvPlayer({
                 setApiFailed(true);
                 return;
               }
-              warmTimerRef.current = window.setTimeout(() => {
+              const deadline = performance.now() + 15000;
+              const waitForBuffer = () => {
                 warmTimerRef.current = null;
+                if (cancelled || !warmingRef.current) return;
+                let buffered = false;
+                try {
+                  const duration = readyPlayer.getDuration();
+                  const fraction = readyPlayer.getVideoLoadedFraction?.() ?? 0;
+                  buffered = readyPlayer.getPlayerState() === 1 && (duration > 0
+                    ? fraction * duration >= Math.min(8, duration)
+                    : readyPlayer.getCurrentTime() > 0.5);
+                } catch { /* Attendre la prochaine réponse du lecteur. */ }
+                if (!buffered && performance.now() < deadline) {
+                  warmTimerRef.current = window.setTimeout(waitForBuffer, 200);
+                  return;
+                }
                 if (!desiredRef.current.hasEntered) {
                   try {
                     readyPlayer.pauseVideo();
@@ -290,12 +350,15 @@ export function BusTvPlayer({
                 }
                 warmingRef.current = false;
                 applyDesiredPlayback();
-              }, 900);
+              };
+              warmTimerRef.current = window.setTimeout(waitForBuffer, 200);
             },
             onStateChange: (event) => {
               if (cancelled) return;
+              if (event.data === 1) resetInitialCaptions(event.target);
               const desired = desiredRef.current;
-              const audible = !warmingRef.current && desired.hasEntered && desired.tvOn
+              const audible = !partyAudioRef.current && !warmingRef.current && desired.hasEntered && desired.tvOn
+                && desired.phase !== "entering"
                 && !desired.isMutedForFullscreen && !desired.playbackSuspended;
               reportPlayback(audible && isYouTubePlaybackActive(event.data, playbackActiveRef.current));
               if (event.data === 1) {
@@ -306,9 +369,12 @@ export function BusTvPlayer({
               if (cancelled) return;
               reportPlayback(false);
               const desired = desiredRef.current;
-              if (desired.hasEntered && desired.tvOn && !desired.isMutedForFullscreen) {
+              if (!partyAudioRef.current && desired.hasEntered && desired.phase !== "entering" && desired.tvOn && !desired.isMutedForFullscreen && !desired.playbackSuspended) {
                 setAutoplayBlocked(true);
               }
+            },
+            onApiChange: (event) => {
+              if (!cancelled) resetInitialCaptions(event.target);
             },
             onError: () => {
               if (!cancelled) { reportPlayback(false); setApiFailed(true); }
@@ -334,33 +400,71 @@ export function BusTvPlayer({
 
 
   useEffect(() => {
-    const onUserPlay = () => {
+    const onPartyFocus = (event: Event) => {
+      const active = (event as CustomEvent<boolean>).detail;
+      if (active) {
+        resumeAfterPartyRef.current = playbackActiveRef.current;
+        partyAudioRef.current = true;
+        stopVolumeRamp();
+        try { playerRef.current?.pauseVideo(); } catch { /* API encore en préparation. */ }
+        reportPlayback(false);
+      } else {
+        partyAudioRef.current = false;
+        if (resumeAfterPartyRef.current) applyDesiredPlayback();
+        resumeAfterPartyRef.current = false;
+      }
+    };
+    window.addEventListener("bus-party-audio-focus", onPartyFocus);
+    return () => window.removeEventListener("bus-party-audio-focus", onPartyFocus);
+  }, [applyDesiredPlayback, reportPlayback, stopVolumeRamp]);
+
+  useEffect(() => {
+    const onUserPrepare = () => {
       const player = playerRef.current;
       if (!player) return;
-      if (warmTimerRef.current !== null) {
-        window.clearTimeout(warmTimerRef.current);
-        warmTimerRef.current = null;
-      }
-      warmingRef.current = false;
+      stopVolumeRamp();
       try {
-        player.unMute();
-        player.setVolume(100);
+        player.mute();
+        player.setVolume(0);
         player.playVideo();
-        setAutoplayBlocked(false);
+        if (!warmingRef.current) {
+          player.pauseVideo();
+          if (!desiredRef.current.hasEntered) player.seekTo(0, true);
+        }
+        reportPlayback(false);
       } catch {
         reportPlayback(false);
         playerRef.current = null;
         setApiFailed(true);
       }
     };
+    const onUserPlay = () => {
+      if (!desiredRef.current.hasEntered || desiredRef.current.phase === "entering") return;
+      applyDesiredPlayback();
+      setAutoplayBlocked(false);
+    };
+    window.addEventListener("bus-tv-user-prepare", onUserPrepare);
     window.addEventListener("bus-tv-user-play", onUserPlay);
     return () => {
+      window.removeEventListener("bus-tv-user-prepare", onUserPrepare);
       window.removeEventListener("bus-tv-user-play", onUserPlay);
     };
-  }, [reportPlayback]);
+  }, [applyDesiredPlayback, reportPlayback, stopVolumeRamp]);
 
   useFrame(({ camera }) => {
-    const visible = tvOn && !isMutedForFullscreen;
+    const desired = desiredRef.current;
+    const trip = journey.current;
+    if (!partyAudioRef.current && desired.phase === "exiting" && trip.phase === "exiting" && desired.hasEntered
+      && desired.tvOn && !desired.isMutedForFullscreen && !desired.playbackSuspended && !warmingRef.current) {
+      const volume = Math.round(25 + 75 * trip.cameraBlend);
+      if (volume !== exitVolumeRef.current && playerRef.current) {
+        try {
+          playerRef.current.setVolume(volume);
+          exitVolumeRef.current = volume;
+        } catch { /* Le lecteur peut être détruit entre deux images. */ }
+      }
+    }
+    const visible = tvOn && !partyAudioRef.current && !isMutedForFullscreen && !warmingRef.current;
     if (shaderMatRef.current?.uniforms?.uVisible) {
       shaderMatRef.current.uniforms.uVisible.value = visible ? 1.0 : 0.0;
     }

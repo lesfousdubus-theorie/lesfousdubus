@@ -7,7 +7,12 @@ import World from "./World";
 import DayNight from "./DayNight";
 import Weather from "./Weather";
 import CameraRig from "./CameraRig";
-import { computeNumRows, getActiveTvIndex, getTvPositions } from "@/lib/bus-layout";
+import BoardingController from "./BoardingController";
+import BoardingAvatar from "./BoardingAvatar";
+import { createJourneyState } from "@/lib/bus-journey";
+import { getAvatarSeat, getBusPhysicalRows } from "@/lib/bus-occupancy";
+import { getBusCameraFar } from "@/lib/bus-camera";
+import { getActiveTvIndex, getTvPositions, getBusRearWallZ, BUS_FRONT_Z } from "@/lib/bus-layout";
 import {
   DEFAULT_CAMERA_POS,
   TV_POSITION,
@@ -16,11 +21,15 @@ import {
 } from "./constants";
 import type { PassengerProfile } from "@/types/passenger";
 import { THEORY_VIDEO_URL } from "@/lib/theory-video";
+import { createDprSample, sampleSceneDpr } from "@/lib/scene-performance";
 
 interface SceneProps {
   phase: Phase;
+  freeView?: boolean;
   headlights: boolean;
   hornPulse: number;
+  partyOn?: boolean;
+  partyDancing?: boolean;
   tvOn: boolean;
   onVideoPlaybackChange?: (active: boolean) => void;
   worldRef: React.RefObject<WorldState>;
@@ -32,6 +41,7 @@ interface SceneProps {
   isMutedForFullscreen?: boolean;
   uiPaused?: boolean;
   hasEntered?: boolean;
+  boardingPending?: boolean;
   passengerProfiles?: PassengerProfile[];
   currentPassengerSeatIndex?: number | null;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
@@ -162,44 +172,20 @@ function useWebGLSupport() {
   return supported;
 }
 
-function AdaptiveDpr({ lowPower }: { lowPower: boolean }) {
+function AdaptiveDpr({ lowPower, onDprChange }: { lowPower: boolean; onDprChange: (value: number) => void }) {
   const setDpr = useThree((state) => state.setDpr);
   const baseDpr = Math.min(window.devicePixelRatio || 1, lowPower ? 1.15 : 1.6);
-  const sampleRef = useRef({ elapsed: 0, frames: 0, dpr: baseDpr, slowSamples: 0, fastSamples: 0, cooldown: 0 });
+  const sampleRef = useRef(createDprSample(baseDpr));
 
   useEffect(() => {
-    sampleRef.current = { elapsed: 0, frames: 0, dpr: baseDpr, slowSamples: 0, fastSamples: 0, cooldown: 0 };
+    sampleRef.current = createDprSample(baseDpr);
     setDpr(baseDpr);
-  }, [baseDpr, setDpr]);
+    onDprChange(baseDpr);
+  }, [baseDpr, setDpr, onDprChange]);
 
   useFrame((_, dt) => {
-    if (!Number.isFinite(dt) || dt <= 0 || dt > 0.25) return;
-    const sample = sampleRef.current;
-    sample.elapsed += dt;
-    sample.frames += 1;
-    if (sample.elapsed < 2) return;
-
-    const fps = sample.frames / sample.elapsed;
-    sample.cooldown = Math.max(0, sample.cooldown - sample.elapsed);
-    sample.slowSamples = fps < 46 ? sample.slowSamples + 1 : 0;
-    sample.fastSamples = fps > 57 ? sample.fastSamples + 1 : 0;
-    let nextDpr = sample.dpr;
-    if (sample.cooldown === 0 && sample.slowSamples >= 2) {
-      nextDpr = Math.max(0.85, sample.dpr - 0.15);
-    } else if (sample.cooldown === 0 && sample.fastSamples >= 4 && sample.dpr < baseDpr) {
-      nextDpr = Math.min(baseDpr, sample.dpr + 0.1);
-    }
-
-    if (Math.abs(nextDpr - sample.dpr) >= 0.04) {
-      sample.dpr = nextDpr;
-      sample.slowSamples = 0;
-      sample.fastSamples = 0;
-      // Changer le DPR recrée des buffers WebGL : laisser le rendu se stabiliser.
-      sample.cooldown = 8;
-      setDpr(nextDpr);
-    }
-    sample.elapsed = 0;
-    sample.frames = 0;
+    const next = sampleSceneDpr(sampleRef.current, dt, baseDpr, lowPower ? 0.65 : 0.75);
+    if (next !== null) { setDpr(next); onDprChange(next); }
   });
 
   return null;
@@ -268,8 +254,11 @@ function WebGLContextGuard({ setLost }: { setLost: (lost: boolean) => void }) {
 
 export default function Scene({
   phase,
+  freeView = false,
   headlights,
   hornPulse,
+  partyOn = false,
+  partyDancing = false,
   tvOn,
   onVideoPlaybackChange,
   worldRef,
@@ -281,6 +270,7 @@ export default function Scene({
   isMutedForFullscreen = false,
   uiPaused = false,
   hasEntered = false,
+  boardingPending = false,
   passengerProfiles = [],
   currentPassengerSeatIndex = null,
   onPassengerSelect,
@@ -293,23 +283,25 @@ export default function Scene({
   const webGLSupported = useWebGLSupport();
   const [contextLost, setContextLost] = useState(false);
   const [canvasReady, setCanvasReady] = useState(false);
+  const [sceneDpr, setSceneDpr] = useState(1);
   useEffect(() => {
     onAvailabilityChange?.(canvasReady && !contextLost);
   }, [canvasReady, contextLost, onAvailabilityChange]);
   const renderPaused = hidden || contextLost || uiPaused;
   const playbackSuspended = hidden || contextLost;
   // Calcul géométrique de la cabine pour la caméra
-  const numRows = useMemo(() => computeNumRows(seatCapacity), [seatCapacity]);
-  const rearWallZ = useMemo(() => -2.6 + numRows * 1.2, [numRows]);
-  const cabinLength = useMemo(() => rearWallZ + 4.6, [rearWallZ]);
-  const cabinCenterZ = useMemo(() => (-4.6 + rearWallZ) / 2, [rearWallZ]);
-  // OrbitControls peut s'éloigner de 2,2 longueurs depuis le centre. La marge
-  // supplémentaire couvre alors l'extrémité opposée du bus, même à grande capacité.
-  const cameraFar = useMemo(() => Math.max(2000, cabinLength * 3 + 100), [cabinLength]);
+  const numRows = useMemo(() => getBusPhysicalRows(seatCapacity), [seatCapacity]);
+  const rearWallZ = useMemo(() => getBusRearWallZ(numRows), [numRows]);
+  const cabinLength = useMemo(() => rearWallZ - BUS_FRONT_Z, [rearWallZ]);
+  const cabinCenterZ = useMemo(() => (BUS_FRONT_Z + rearWallZ) / 2, [rearWallZ]);
+  const cameraFar = useMemo(() => getBusCameraFar(cabinLength), [cabinLength]);
+  const journey=useRef(createJourneyState());
 
   // Position Z du regard du passager (rangée choisie)
   const clampedRow = Math.max(0, Math.min(numRows - 1, currentSeatRow));
-  const currentSeatZ = -2.6 + clampedRow * 1.2 + 0.15;
+  const avatarSeat = getAvatarSeat(seatCapacity, clampedRow, currentPassengerSeatIndex);
+  const currentSeatZ = avatarSeat.seat.z + 0.03;
+  const currentSeatX = avatarSeat.seat.x;
   const tvPositions = useMemo(() => getTvPositions(numRows, TV_POSITION), [numRows]);
   const tvTargetZ = tvPositions[getActiveTvIndex(tvPositions, clampedRow)][2];
 
@@ -322,7 +314,7 @@ export default function Scene({
       <Canvas
       shadows={lowPower ? false : "basic"}
       frameloop="never"
-      dpr={Math.min(window.devicePixelRatio, lowPower ? 1.15 : 1.6)}
+      dpr={sceneDpr}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: cameraFar }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
@@ -331,16 +323,22 @@ export default function Scene({
     >
       <WebGLContextGuard setLost={setContextLost} />
       <CappedFrameLoop paused={renderPaused} />
-      <AdaptiveDpr lowPower={lowPower} />
+      <AdaptiveDpr lowPower={lowPower} onDprChange={setSceneDpr} />
+      <BoardingController phase={phase} journey={journey} worldRef={worldRef} seatZ={currentSeatZ-0.03} seatX={currentSeatX}
+        numRows={numRows} boardingPending={boardingPending} reducedMotion={reducedMotion}/>
       <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Suspense fallback={null}>
         <Bus
           headlights={headlights}
           hornPulse={hornPulse}
+          partyOn={partyOn}
+          partyDancing={partyDancing}
           tvOn={tvOn}
           onVideoPlaybackChange={onVideoPlaybackChange}
           phase={phase}
+          freeView={freeView}
+          journey={journey}
           worldRef={worldRef}
           passengerCount={passengerCount}
           seatCapacity={seatCapacity}
@@ -348,6 +346,7 @@ export default function Scene({
           reservedRow={clampedRow}
           isMutedForFullscreen={isMutedForFullscreen}
           hasEntered={hasEntered}
+          boardingPending={boardingPending}
           passengerProfiles={passengerProfiles}
           currentPassengerSeatIndex={currentPassengerSeatIndex}
           onPassengerSelect={onPassengerSelect}
@@ -356,15 +355,20 @@ export default function Scene({
           playbackSuspended={playbackSuspended}
         />
       </Suspense>
-      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} />
+      <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
+      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={freeView ? "outside" : phase} cabinCenterZ={cabinCenterZ} />
       <CameraRig
         resetViewToken={resetViewToken}
         phase={phase}
+        freeView={freeView}
+        journey={journey}
         onArrived={onArrived}
         cabinLength={cabinLength}
         cabinCenterZ={cabinCenterZ}
         cameraFar={cameraFar}
         currentSeatZ={currentSeatZ}
+        currentSeatX={currentSeatX}
+        currentPassengerSeatIndex={currentPassengerSeatIndex}
         tvTargetZ={tvTargetZ}
         reducedMotion={reducedMotion}
       />
