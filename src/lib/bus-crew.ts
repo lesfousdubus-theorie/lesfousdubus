@@ -6,8 +6,6 @@ export const BUS_RELAY = {
   url: "https://x.com/FoudubusTV_",
 } as const;
 
-export const BUS_NAKAMA_SEATS = 20;
-
 export const BUS_CREW = [
   { name: "Kamal", role: "Conducteur · Le Mont Corvo" },
   { name: "Kyta", role: "Copilote · Le Mont Corvo" },
@@ -15,5 +13,5 @@ export const BUS_CREW = [
 ] as const;
 
 export function countPeopleOnBoard(visitors: number): number {
-  return visitors + BUS_CREW.length + BUS_NAKAMA_SEATS;
+  return visitors + BUS_CREW.length;
 }

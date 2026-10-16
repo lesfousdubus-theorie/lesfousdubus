@@ -1,14 +1,10 @@
 import { BASE_ROWS, getRenderedRowIndices, getSeatRowZ, type SeatInfo } from "./bus-layout";
-import { BUS_NAKAMA_SEATS } from "./bus-crew";
-
-export const PERMANENT_NAKAMA_COUNT = BUS_NAKAMA_SEATS;
-export const PERMANENT_NAKAMA_ROWS = PERMANENT_NAKAMA_COUNT / 4;
 export const PASSENGER_SEAT_X = [-0.94, -0.5, 0.5, 0.94] as const;
 
-/** Les personnages suivent immédiatement les places persistantes des visiteurs. */
+/** Les places correspondent uniquement aux visiteurs enregistrés. */
 export const getVisitorRows = (seatCapacity: number) => Math.max(1, Math.ceil(Math.max(0, seatCapacity) / 4));
-/** Une seule place de secours vient après l'équipage, sans rangée vide au milieu. */
-export const getBusPhysicalRows = (seatCapacity: number) => Math.max(BASE_ROWS, Math.ceil((Math.max(0, seatCapacity) + PERMANENT_NAKAMA_COUNT + 1) / 4));
+/** Une place de secours permet un échange local avant l'attribution d'un siège. */
+export const getBusPhysicalRows = (seatCapacity: number) => Math.max(BASE_ROWS, Math.ceil((Math.max(0, seatCapacity) + 1) / 4));
 
 export function getPhysicalSeat(physicalSeatIndex: number): SeatInfo {
   const row = Math.floor(physicalSeatIndex / 4), seatInRow = physicalSeatIndex % 4;
@@ -17,7 +13,7 @@ export function getPhysicalSeat(physicalSeatIndex: number): SeatInfo {
 
 export function getAvatarSeat(seatCapacity: number, row: number, passengerIndex: number | null) {
   const assigned = passengerIndex !== null && passengerIndex >= 0 && passengerIndex < seatCapacity;
-  const originSeatIndex = assigned ? passengerIndex : Math.max(0, seatCapacity) + PERMANENT_NAKAMA_COUNT;
+  const originSeatIndex = assigned ? passengerIndex : Math.max(0, seatCapacity);
   const seatInRow = assigned ? passengerIndex % 4 : 3;
   const clampedRow = Math.max(0, Math.min(getBusPhysicalRows(seatCapacity) - 1, row));
   const physicalSeatIndex = clampedRow * 4 + seatInRow;
@@ -63,13 +59,11 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
     && index - vacantThrough(index) < occupiedCount;
   const avatar = getAvatarSeat(capacity, reservedRow, currentPassengerIndex);
   const relocate = (index: number) => avatarAboard && index === avatar.physicalSeatIndex ? avatar.originSeatIndex : index;
-  const make = (index: number, kind: BusOccupant["passengerKind"], canonical: number): BusOccupant => {
-    const physicalSeatIndex = relocate(canonical);
-    return { index, passengerKind: kind, physicalSeatIndex, seat: getPhysicalSeat(physicalSeatIndex) };
+  const make = (index: number): BusOccupant => {
+    const physicalSeatIndex = relocate(index);
+    return { index, passengerKind: "visitor", physicalSeatIndex, seat: getPhysicalSeat(physicalSeatIndex) };
   };
-  const nakama = Array.from({ length: PERMANENT_NAKAMA_COUNT }, (_, index) => make(index, "nakama", capacity + index));
-  const detailLimit = nakama.length + (lowPower ? 2 : 8);
-  const visitorDetailLimit = detailLimit - nakama.length;
+  const detailLimit = lowPower ? 2 : 8;
   // Les rangées visibles sont bornées par la virtualisation. Partir de leurs
   // places évite de parcourir tous les rangs occupés quand un long bus est vide
   // à l'avant, même si ses seuls visiteurs visibles sont tout à l'arrière.
@@ -77,19 +71,19 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
   for (const row of renderedRows) for (let column = 0; column < 4; column++) {
     const index = row * 4 + column;
     if ((avatarAboard && index === currentPassengerIndex) || !occupied(index)) continue;
-    const occupant = make(index, "visitor", index);
+    const occupant = make(index);
     if (renderedRows.has(occupant.seat.row)) candidates.push(occupant);
   }
   // Un passager échangé peut se trouver hors des rangées normalement visibles.
   if (avatarAboard && occupied(avatar.physicalSeatIndex) && avatar.physicalSeatIndex !== currentPassengerIndex
     && !candidates.some(occupant => occupant.index === avatar.physicalSeatIndex)) {
-    candidates.push(make(avatar.physicalSeatIndex, "visitor", avatar.physicalSeatIndex));
+    candidates.push(make(avatar.physicalSeatIndex));
   }
   const focusIndex = Math.max(0, reservedRow * 4);
   const detailedVisitors = [...candidates].sort((left, right) =>
     Math.abs(left.physicalSeatIndex - focusIndex) - Math.abs(right.physicalSeatIndex - focusIndex) || left.index - right.index)
-    .slice(0, visitorDetailLimit);
-  const detailed = [...nakama, ...detailedVisitors];
+    .slice(0, detailLimit);
+  const detailed = detailedVisitors;
   const detailedIds = new Set(detailedVisitors.map(occupant => occupant.index));
   const distant = candidates.filter(occupant => !detailedIds.has(occupant.index));
   const simplified = distant.length <= 160 ? distant : Array.from({ length: 160 }, (_, sample) =>

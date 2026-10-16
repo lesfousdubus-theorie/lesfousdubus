@@ -46,7 +46,7 @@ export async function runCrewSeatDesignChecks({ send, evaluate, waitForPageCondi
         seatCapacity: Math.max(count, window.crewSeatJoined ? seatIndex + 1 : 0),
         profileRevision: 1, vacantSeatRanges: [], passengers: [] };
       if(url.searchParams.has('manifest')) {
-        snapshot.passengers=Array.from({length:Math.min(snapshot.count,100)},(_,seatIndex)=>({seatIndex,displayName:null,hasComment:false}));
+        snapshot.passengers=Array.from({length:Math.min(snapshot.count,100)},(_,seatIndex)=>({seatIndex,displayName:['Epic Games','Kirito'][seatIndex]??null,hasComment:false}));
         snapshot.nextFrom=snapshot.passengers.length;snapshot.hasMore=snapshot.count>100;
       }
       if (method === 'GET' || method === 'HEAD') return Promise.resolve(response(snapshot));
@@ -171,9 +171,9 @@ export async function runCrewSeatDesignChecks({ send, evaluate, waitForPageCondi
     await frames();
   };
   try {
-    if (process.env.BUS_REVIEW_STAGE === "corrections") {
+    if (!process.env.BUS_REVIEW_STAGE || ["corrections", "real-passengers"].includes(process.env.BUS_REVIEW_STAGE)) {
       return await runMugiwaraCabinChecks({ send, evaluate, waitForPageCondition, baseUrl, open, frames,
-        pose, screenshot, click, freeView, resourceSnapshot, layout, roster, directory });
+        pose, screenshot, click, enter, freeView, resourceSnapshot, layout, roster, directory });
     }
     if (portraitOnly) {
       assert(directory, "Targeted portraits require BUS_VISUAL_OUTPUT.");

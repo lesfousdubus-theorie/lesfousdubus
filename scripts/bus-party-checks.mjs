@@ -1,15 +1,15 @@
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { build } from "esbuild";
 import { installTestYouTube } from "./media-playback-checks.mjs";
 
 export async function runBusPartyChecks({send,evaluate,waitForPageCondition,baseUrl}) {
   const run=expression=>evaluate(send,expression);
   const wait=(expression,label)=>waitForPageCondition(send,expression,label,30_000);
-  const rosterBuild=await build({entryPoints:["src/components/bus/passenger-archetypes.ts"],bundle:true,format:"esm",platform:"node",write:false,logLevel:"silent"});
-  const {NAKAMA_ROSTER}=await import(`data:text/javascript;base64,${Buffer.from(rosterBuild.outputFiles[0].text).toString("base64")}`);
-  const partyActorNames=[...NAKAMA_ROSTER.map((character,index)=>`crew-nakama-${character.id}-${index}`),'bus-entry-passenger'];
+  // Inspect only the actual detailed visitor models and the permanent relay.
+  // The complete archetype catalogue must never imply artificial passengers.
+  const partyActors=`(()=>{const scene=window.busCameraTestState()?.scene,passengers=scene?.getObjectByName('bus-seated-passengers'),relay=scene?.getObjectByName('bus-entry-passenger');return passengers&&relay?[...passengers.children.filter(object=>object.userData.passengerKind==='visitor'),relay]:[];})()`;
+  const population=()=>run(`(()=>{const scene=window.busCameraTestState().scene,group=scene.getObjectByName('bus-seated-passengers');let artificial=0;scene.traverse(object=>{if(object.userData.passengerKind==='nakama')artificial++;});return {...group.userData,actualDetailed:group.children.filter(object=>object.userData.passengerKind==='visitor').length,actualSimplified:scene.getObjectByName('bus-distant-passenger-bodies')?.count??0,artificial};})()`);
   const injection=await send('Page.addScriptToEvaluateOnNewDocument',{source:`(${installTestYouTube.toString()})();
     const fetchNative=fetch.bind(window);window.fetch=(input,init)=>{
       const url=new URL(typeof input==='string'?input:input.url,location.href);
@@ -29,20 +29,26 @@ export async function runBusPartyChecks({send,evaluate,waitForPageCondition,base
   const stop=async()=>{await click('Arrêter la fête');await wait(`document.querySelector('.bus-app').dataset.party==='false'&&!window.busCameraTestState().scene.getObjectByName('bus-party-confetti')`,'Party stops and removes confetti');};
   const directory=process.env.BUS_VISUAL_OUTPUT;
   const screenshot=async name=>{if(!directory)return;await mkdir(directory,{recursive:true});const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await writeFile(resolve(directory,name),Buffer.from(shot.data,'base64'));};
-  const poses=()=>run(`(()=>{const scene=window.busCameraTestState().scene,result=[];for(const name of ${JSON.stringify(partyActorNames)}){const object=scene.getObjectByName(name);result.push({name:object.name,activity:object.userData.activity,gesture:object.userData.gesture,bob:object.position.y,left:object.getObjectByName('nakama-arm-left').rotation.toArray(),right:object.getObjectByName('nakama-arm-right').rotation.toArray()});}return result;})()`);
+  const poses=()=>run(`${partyActors}.map(object=>({name:object.name,activity:object.userData.activity,gesture:object.userData.gesture,bob:object.position.y,left:object.getObjectByName('nakama-arm-left').rotation.toArray(),right:object.getObjectByName('nakama-arm-right').rotation.toArray()}))`);
   try {
     await send('Emulation.setHardwareConcurrencyOverride',{hardwareConcurrency:8});
     await send('Emulation.setDeviceMetricsOverride',{width:1240,height:900,deviceScaleFactor:1,mobile:false});
     await send('Page.navigate',{url:`${baseUrl}/?phase=inside&count=16&row=0`});
-    await wait(`${JSON.stringify(partyActorNames)}.every(name=>Boolean(window.busCameraTestState()?.scene.getObjectByName(name)))&&Boolean(${music})&&Boolean(${tv})`,'Party scene and players ready');
+    await wait(`${partyActors}.length>1&&Boolean(${music})&&Boolean(${tv})`,'Real visitors, relay and players ready');
     await wait(`window.busCameraTestState().gl.info.render.frame>15`,'Warm up the software-rendered scene');
+    const desktopPopulation=await population();
+    assert.equal(desktopPopulation.actualDetailed,desktopPopulation.detailedCount,'Detailed metadata must match the mounted visitor models.');
+    assert.equal(desktopPopulation.actualSimplified,desktopPopulation.simplifiedCount,'Simplified metadata must match the actual visitor instances.');
+    assert(desktopPopulation.detailedCount>0&&desktopPopulation.detailedCount<=8,'Desktop visitors use at most eight detailed models.');
+    assert.equal(desktopPopulation.detailedCount+desktopPopulation.simplifiedCount,16,'The fixture contains exactly its sixteen registered visitors.');
+    assert.equal(desktopPopulation.artificial,0,'No artificial permanent passengers may be mounted.');
     await click('Klaxonner');
-    await wait(`${JSON.stringify(partyActorNames)}.every(name=>window.busCameraTestState().scene.getObjectByName(name)?.userData.activity==='horn')`,'Every permanent character reacts to the horn together');
+    await wait(`${partyActors}.every(object=>object.userData.activity==='horn')`,'Every detailed visitor and the relay react to the horn together');
     await start();
-    await wait(`${JSON.stringify(partyActorNames)}.every(name=>window.busCameraTestState().scene.getObjectByName(name)?.userData.activity==='party')`,'Party gestures begin');
+    await wait(`${partyActors}.every(object=>object.userData.activity==='party')`,'Party gestures begin');
     const first=await poses();
-    assert.equal(first.length,partyActorNames.length);assert(first.every(pose=>pose.activity==='party'),'Every permanent character and FoudubusTV must join the party.');
-    assert.equal(new Set(first.map(pose=>pose.gesture)).size,partyActorNames.length,'Every permanent character and FoudubusTV must use a distinct signature.');
+    assert.equal(first.length,desktopPopulation.detailedCount+1);assert(first.every(pose=>pose.activity==='party'),'Every detailed visitor and FoudubusTV must join the party.');
+    assert.equal(new Set(first.map(pose=>pose.gesture)).size,first.length,'The fixture visitors and FoudubusTV must use distinct signatures.');
     const effects=await run(`(()=>{const scene=window.busCameraTestState().scene,confetti=scene.getObjectByName('bus-party-confetti'),colors=new Set();for(let i=0;i<confetti.instanceColor.array.length;i+=3)colors.add(Array.from(confetti.instanceColor.array.slice(i,i+3)).join(','));return {count:confetti.count,colors:colors.size,instanced:confetti.isInstancedMesh,crew:['kamal','kyta'].map(name=>scene.getObjectByName('bus-crew-'+name).userData.activity)};})()`);
     assert(effects.instanced&&effects.count===420&&effects.crew.every(activity=>activity==='party'),'Confetti use one bounded instanced mesh and both guides join.');
     assert.equal(effects.colors,10,'Confetti cover the full rainbow, pink and white.');
@@ -120,9 +126,16 @@ export async function runBusPartyChecks({send,evaluate,waitForPageCondition,base
 
     await send('Emulation.setHardwareConcurrencyOverride',{hardwareConcurrency:4});
     await send('Page.navigate',{url:`${baseUrl}/?phase=inside&count=16&row=0`});await wait(`Boolean(window.busCameraTestState()?.scene.getObjectByName('bus-entry-passenger'))&&Boolean(${music})`,'Low-power party scene ready');
+    await wait(`window.busCameraTestState().scene.getObjectByName('bus-seated-passengers')?.userData.simplifiedCount>0`,'Low-power visitor instances are mounted');
+    const lowPowerPopulation=await population();
+    assert.equal(lowPowerPopulation.actualDetailed,lowPowerPopulation.detailedCount);
+    assert.equal(lowPowerPopulation.actualSimplified,lowPowerPopulation.simplifiedCount);
+    assert(lowPowerPopulation.detailedCount<=2,'Constrained devices use at most two detailed visitor models.');
+    assert.equal(lowPowerPopulation.detailedCount+lowPowerPopulation.simplifiedCount,16);
+    assert.equal(lowPowerPopulation.artificial,0);
     await start();await wait(`window.busCameraTestState().scene.getObjectByName('bus-distant-party-arms')?.visible`,'Distant passengers also raise their hands');
     assert.equal(await run(`window.busCameraTestState().scene.getObjectByName('bus-party-confetti').count`),120,'Constrained devices use fewer confetti.');
-    if(directory)await writeFile(resolve(directory,'verification-fete.json'),JSON.stringify({effects,first,later,partyPlay,staticPose,confettiReducedVersion:version},null,2));
+    if(directory)await writeFile(resolve(directory,'verification-fete.json'),JSON.stringify({desktopPopulation,lowPowerPopulation,effects,first,later,partyPlay,staticPose,confettiReducedVersion:version},null,2));
     await stop();
     console.log('Party checks passed: horn hands, ongoing dance, crew, bounded confetti, audio handoffs and saved choices, paused TV, reduced motion, mobile controls, errors and distant low-power passengers.');
   } finally {

@@ -6,7 +6,6 @@ import type { PassengerManifestEntry } from "@/types/passenger";
 import { useModalAccessibility } from "./useModalAccessibility";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { BUS_CREW, countPeopleOnBoard } from "@/lib/bus-crew";
-import { NAKAMA_ROSTER } from "../bus/passenger-archetypes";
 
 export function PassengerListModal({
   isOpen,
@@ -65,12 +64,6 @@ export function PassengerListModal({
               </div>
             ))}
           </div>
-          <section aria-label="Personnages One Piece à bord" className="mb-3 border-b border-white/15 px-2 pb-3">
-            <h3 className="mb-2 text-sm font-black text-[#ffd23f]">Personnages One Piece</h3>
-            <ul className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm text-white/90">
-              {NAKAMA_ROSTER.map(character => <li key={character.id} className="min-w-0 break-words">{character.name}</li>)}
-            </ul>
-          </section>
           {loading && passengers.length === 0 ? (
             <div role="status" aria-live="polite" aria-atomic="true" className="grid min-h-32 place-items-center p-6">
               <div className="flex flex-col items-center gap-3 text-center text-sm font-bold text-white/70">

@@ -12,11 +12,28 @@ export const INTERIOR_RAIL_X = 1.225;
 export const INTERIOR_RAIL_DEPTH = 0.026;
 export const INTERIOR_RAIL_JOINT_GAP = 0.012;
 
-// Les poignées restent au-dessus des sièges, hors du cône entre chaque œil et l'écran.
-export const GRAB_HANDLE_X = 1.10;
+// Anneaux et barres d'origine, de part et d'autre de l'allée centrale.
+export const GRAB_HANDLE_X = 0.35;
 export const TV_HANDLE_CLEARANCE_Z = 3.2;
 export function isGrabHandleClearOfTv(z: number, televisions: readonly TvPosition[]): boolean {
-  return televisions.every(([, , screenZ]) => z < screenZ - .15 || z > screenZ + TV_HANDLE_CLEARANCE_Z);
+  const halfDepth = .015;
+  return televisions.every(([, , screenZ]) => z + halfDepth < screenZ - .15 || z - halfDepth > screenZ + TV_HANDLE_CLEARANCE_Z);
+}
+
+/** Les barres ne traversent pas la zone dégagée devant chaque écran. */
+export function getGrabRailSpans(from: number, to: number, televisions: readonly TvPosition[]): Array<[number, number]> {
+  let spans: Array<[number, number]> = [[from, to]];
+  for (const [, , screenZ] of televisions) {
+    const front = screenZ - .15, rear = screenZ + TV_HANDLE_CLEARANCE_Z;
+    spans = spans.flatMap(([start, end]): Array<[number, number]> => {
+      if (end <= front || start >= rear) return [[start, end]];
+      const remaining: Array<[number, number]> = [];
+      if (start < front) remaining.push([start, front]);
+      if (end > rear) remaining.push([rear, end]);
+      return remaining;
+    });
+  }
+  return spans;
 }
 
 /** Arrête les rails avant les habillages des jambages, avec un vrai jeu. */

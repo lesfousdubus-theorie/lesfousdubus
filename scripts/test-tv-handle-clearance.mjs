@@ -10,7 +10,7 @@ const compiled = await build({
     export { getRenderedRowIndices, getSeatRowZ, getTvPositions, getBusRearWallZ, BUS_FRONT_Z } from './src/lib/bus-layout';
     export { PASSENGER_SEAT_X } from './src/lib/bus-occupancy';
     export { getPassengerSkeleton } from './src/lib/passenger-proportions';
-    export { TV_HANDLE_CLEARANCE_Z } from './src/lib/bus-interior-geometry';
+    export { GRAB_HANDLE_X, TV_HANDLE_CLEARANCE_Z, getGrabRailSpans } from './src/lib/bus-interior-geometry';
     export { TV_POSITION } from './src/components/bus/constants';`,
     resolveDir: process.cwd(), sourcefile: "tv-handle-clearance.ts" },
   bundle: true, platform: "node", format: "esm", write: false, jsx: "automatic", logLevel: "silent",
@@ -27,7 +27,7 @@ const compiled = await build({
   } }],
 });
 const { THREE, BusCabinDetails, BusTvFrame, getRenderedRowIndices, getSeatRowZ, getTvPositions,
-  getBusRearWallZ, BUS_FRONT_Z, PASSENGER_SEAT_X, getPassengerSkeleton, TV_HANDLE_CLEARANCE_Z, TV_POSITION } = await import(
+  getBusRearWallZ, BUS_FRONT_Z, PASSENGER_SEAT_X, getPassengerSkeleton, GRAB_HANDLE_X, TV_HANDLE_CLEARANCE_Z, getGrabRailSpans, TV_POSITION } = await import(
   `data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`,
 );
 const context = new Proxy({ createLinearGradient: () => ({ addColorStop() {} }) }, { get: (target, key) => target[key] ?? (() => {}) });
@@ -67,49 +67,58 @@ const eyes = ["luffy", "chopper"].map(id => {
 const raycaster = new THREE.Raycaster(), target = new THREE.Vector3(), direction = new THREE.Vector3();
 const gridColumns = 19, gridRows = 11;
 const report = { eyeHeights: eyes, columns: PASSENGER_SEAT_X, screenGrid: [gridColumns, gridRows], rays: 0,
-  mountedRings: 0, mountedStraps: 0, mountedRails: 0, legacyRailObstructions: 0, minimumSideClearance: Infinity, minimumScreenDepthGap: Infinity, cases: [] };
-assert(TV_HANDLE_CLEARANCE_Z >= 3.2, "Every television must retain at least 3.2 m of longitudinal handle clearance behind its mount.");
+  mountedRings: 0, mountedStraps: 0, mountedRails: 0, unsplitRailObstructions: 0, centralHandleX: GRAB_HANDLE_X, cases: [] };
+assert.equal(GRAB_HANDLE_X, .35, "Restore the original aisle grab-handle location instead of moving it beside the windows.");
+assert(TV_HANDLE_CLEARANCE_Z >= 3.2, "Every television retains its local longitudinal handle clearance.");
+assert.deepEqual(getGrabRailSpans(-5, 12, [[0, 2.55, 0], [0, 2.55, 2]]), [[-5, -.15], [5.2, 12]], "Overlapping television gaps merge without duplicate rail fragments.");
+assert.deepEqual(getGrabRailSpans(-5, 12, []), [[-5, 12]], "With no screen, the original grab rails remain continuous.");
 for (const rows of [6, 18, 256, 2000]) for (const focusRow of new Set([0, Math.floor(rows / 2), rows - 1])) {
   const rowZs = getRenderedRowIndices(rows, focusRow).map(getSeatRowZ);
   const tvPositions = getTvPositions(rows, TV_POSITION), rearWallZ = getBusRearWallZ(rows);
-  const cabin = mount({ type: BusCabinDetails, props: { mats, cabinLength: rearWallZ - BUS_FRONT_Z,
-    cabinCenterZ: (BUS_FRONT_Z + rearWallZ) / 2, rearWallZ, rowZs, wheelPositions: [], tvPositions } });
+  const cabinLength = rearWallZ - BUS_FRONT_Z, cabinCenterZ = (BUS_FRONT_Z + rearWallZ) / 2;
+  const cabin = mount({ type: BusCabinDetails, props: { mats, cabinLength,
+    cabinCenterZ, rearWallZ, rowZs, wheelPositions: [], tvPositions } });
   const handles = cabin.getObjectsByProperty("name", "bus-grab-handle");
   const rings = cabin.getObjectsByProperty("name", "bus-grab-handle-ring");
   const rails = cabin.getObjectsByProperty("name", "bus-grab-rail");
-  // Positive control: the same production cylinders at the previous aisle
-  // location must reproduce the obscured upper display that prompted the fix.
-  const legacyRails = rows === 18 && focusRow === 0 ? rails.map(rail => {
-    const clone = rail.clone(); clone.position.x = Math.sign(rail.position.x) * .35;
-    clone.updateMatrixWorld(true); return clone;
-  }) : [];
   const handleMeshes = handles.flatMap(handle => handle.children.filter(child => child.isMesh));
   const occluders = [...handleMeshes, ...rails];
   cabin.updateMatrixWorld(true);
-  const handleBounds = handleMeshes.map(mesh => new THREE.Box3().setFromObject(mesh));
-  assert(rings.length === handles.length && handleMeshes.length === rings.length * 2, "Each actual handle consists of its torus and its suspension strap.");
-  assert(new Set(handles.map(handle => handle.userData.z)).size <= 10 && handles.length <= 20, "Cabin decoration remains capped at ten detailed rows, with two handles per row.");
-  assert(rings.every(ring => ring.geometry.type === "TorusGeometry"), "Raycasts must use the production torus triangles.");
-  assert(rails.length === 2 && rails.every(rail => rail.geometry.type === "CylinderGeometry"), "Both production longitudinal grab rails must be included in the sightline check.");
-  for (const rail of rails) {
-    const bounds = new THREE.Box3().setFromObject(rail);
-    const sideClearance = Math.min(Math.abs(bounds.min.x), Math.abs(bounds.max.x)) - Math.max(...PASSENGER_SEAT_X.map(Math.abs));
-    assert(sideClearance > .025, "The real grab rails must stay outside the eye-to-display cone, rather than crossing the display's upper corners.");
-    assert(Math.abs(rail.position.y - 2.9) < 1e-8
-      && Math.abs(rail.geometry.parameters.height - (rearWallZ - BUS_FRONT_Z - 1.6)) < 1e-8,
-    "Moving the rails sideways must preserve their roof height and full cabin length.");
-  }
-  for (const handle of handles) {
-    const z = handle.userData.z;
+  assert(rings.length === handles.length && handleMeshes.length === rings.length * 2, "Each handle retains its original ring and suspension strap.");
+  assert(new Set(handles.map(handle => handle.userData.z)).size <= 10 && handles.length <= 20, "Decoration stays capped at ten detailed rows, with two handles per row.");
+  assert(rings.every(ring => ring.geometry.type === "TorusGeometry" && ring.geometry.parameters.radius === .09
+    && ring.geometry.parameters.tube === .015 && ring.scale.y === .85), "Preserve the original torus shape and size.");
+  const expectedSpans = getGrabRailSpans(BUS_FRONT_Z + 1.2, rearWallZ - .4, tvPositions);
+  assert(rails.length === expectedSpans.length * 2 && rails.length <= (tvPositions.length + 1) * 2,
+    "Only the screen gaps split the two original rails, with a bounded number of fragments.");
+  for (const mesh of occluders) {
+    assert(Math.abs(Math.abs(mesh.position.x) - .35) < 1e-8, "Every rail, strap and ring returns to the original central aisle position.");
+    const bounds = new THREE.Box3().setFromObject(mesh);
     for (const [, , screenZ] of tvPositions) {
-      assert(z < screenZ - .15 || z > screenZ + TV_HANDLE_CLEARANCE_Z, "Front and rear repeat screens must receive the same actual empty handle zone.");
+      assert(bounds.max.z <= screenZ - .15 + 1e-4 || bounds.min.z >= screenZ + TV_HANDLE_CLEARANCE_Z - 1e-4,
+        `Actual ${mesh.name} at ${mesh.position.toArray()} spans ${bounds.min.z}..${bounds.max.z}, inside local TV zone ${screenZ - .15}..${screenZ + TV_HANDLE_CLEARANCE_Z}.`);
     }
   }
-  for (const bounds of handleBounds) {
-    const sideClearance = Math.min(Math.abs(bounds.min.x), Math.abs(bounds.max.x)) - Math.max(...PASSENGER_SEAT_X.map(Math.abs));
-    report.minimumSideClearance = Math.min(report.minimumSideClearance, sideClearance);
-    assert(sideClearance > .025, "Actual straps and ring triangles stay outside all four seat-eye columns, even before aiming toward the central screen.");
+  for (const side of [-1, 1]) {
+    const sideRails = rails.filter(rail => Math.sign(rail.position.x) === side).sort((a, b) => a.position.z - b.position.z);
+    sideRails.forEach((rail, index) => {
+      const bounds = new THREE.Box3().setFromObject(rail);
+      assert(Math.abs(bounds.min.z - expectedSpans[index][0]) < 1e-4
+        && Math.abs(bounds.max.z - expectedSpans[index][1]) < 1e-4,
+        "The original full-length rail remains everywhere outside the television gaps.");
+    });
   }
+  for (const rail of rails) {
+    assert(rail.geometry.type === "CylinderGeometry" && Math.abs(rail.position.y - 2.9) < 1e-8
+      && rail.geometry.parameters.radiusTop === .022, "Splitting the original rails preserves their roof height and thickness.");
+  }
+  // Positive control: intact original rails must recreate an obstruction at a
+  // secondary screen, proving the local clearance test can detect a missing gap.
+  const unsplitRails = [-1, 1].map(side => {
+    const rail = new THREE.Mesh(new THREE.CylinderGeometry(.022, .022, cabinLength - 1.6, 12), material);
+    rail.position.set(side * .35, 2.9, cabinCenterZ + .4); rail.rotation.x = Math.PI / 2;
+    rail.updateMatrixWorld(true); return rail;
+  });
   let caseRays = 0;
   for (let screenIndex = 0; screenIndex < tvPositions.length; screenIndex++) {
     const pos = tvPositions[screenIndex];
@@ -119,20 +128,13 @@ for (const rows of [6, 18, 256, 2000]) for (const focusRow of new Set([0, Math.f
     const screen = frame.getObjectByName("bus-tv-display");
     screen.geometry.computeBoundingBox();
     const screenBounds = screen.geometry.boundingBox;
-    const screenZ = screen.getWorldPosition(new THREE.Vector3()).z;
-    for (const bounds of handleBounds) {
-      const before = screenZ - bounds.max.z, after = bounds.min.z - screenZ;
-      // Check the actual mesh extremities, allowing only the physical thickness
-      // between the television mount, display surface and handle triangle skin.
-      assert(before > .15 || after > TV_HANDLE_CLEARANCE_Z - .08, "Real ring and strap geometry must stay out of the screen's empty longitudinal zone.");
-      if (after > 0) report.minimumScreenDepthGap = Math.min(report.minimumScreenDepthGap, after);
-    }
     assert(Math.abs(screenBounds.max.x - screenBounds.min.x - 1.26) < 1e-6
-      && Math.abs(screenBounds.max.y - screenBounds.min.y - .70875) < 1e-6, "The sightline grid covers the real television display, including all four corners.");
-    const eligibleRows = Array.from({ length: rows }, (_, row) => row).filter(row => getSeatRowZ(row) + .03 - pos[2] >= 2.5);
-    assert(eligibleRows.length > 0, "Every mounted television has real rows behind it.");
-    // Near, middle and far eyes exercise both steep and almost parallel views.
-    const viewerRows = new Set([eligibleRows[0], eligibleRows[Math.floor(eligibleRows.length / 2)], eligibleRows.at(-1)]);
+      && Math.abs(screenBounds.max.y - screenBounds.min.y - .70875) < 1e-6, "Raycasts cover the actual display and its corners.");
+    const viewerRows = Array.from({ length: rows }, (_, row) => row).filter(row => {
+      const distance = getSeatRowZ(row) + .03 - pos[2];
+      return distance > .1 && distance <= TV_HANDLE_CLEARANCE_Z;
+    });
+    assert(viewerRows.length > 0, `TV ${screenIndex} at ${pos[2]} in ${rows} rows has no real seat within its cleared viewing zone.`);
     for (const row of viewerRows) for (const x of PASSENGER_SEAT_X) for (const eye of eyes) {
       raycaster.ray.origin.set(x, eye.y, getSeatRowZ(row) + .03);
       for (let gx = 0; gx < gridColumns; gx++) for (let gy = 0; gy < gridRows; gy++) {
@@ -142,23 +144,22 @@ for (const rows of [6, 18, 256, 2000]) for (const focusRow of new Set([0, Math.f
         raycaster.far = direction.length() - 1e-6;
         raycaster.ray.direction.copy(direction).normalize();
         const intersections = raycaster.intersectObjects(occluders, false);
-        assert(intersections.length === 0, `${rows} rows / focus ${focusRow} / screen ${screenIndex} / row ${row} / column ${x} / ${eye.id}: a real handle, strap or grab rail obscures the display grid.`);
-        if (legacyRails.length && raycaster.intersectObjects(legacyRails, false).length) report.legacyRailObstructions++;
+        assert(intersections.length === 0, `${rows} rows / focus ${focusRow} / screen ${screenIndex} / row ${row} / column ${x} / ${eye.id}: a handle or rail intrudes into the local TV clearance.`);
+        if (raycaster.intersectObjects(unsplitRails, false).length) report.unsplitRailObstructions++;
         report.rays++; caseRays++;
       }
     }
     frame.traverse(object => { if (object.isMesh) object.geometry.dispose(); });
   }
+  for (const rail of unsplitRails) rail.geometry.dispose();
   report.mountedRings += rings.length;
   report.mountedStraps += handleMeshes.length - rings.length;
   report.mountedRails += rails.length;
   report.cases.push({ rows, focusRow, renderedRows: rowZs.length, televisions: tvPositions.length, rings: rings.length, rails: rails.length, rays: caseRays });
   cabin.traverse(object => { if (object.isMesh && object.geometry.type !== "RoundedBoxGeometry") object.geometry.dispose(); });
 }
-assert(report.rays > 10000 && report.mountedRings > 0 && report.mountedStraps > 0, "The test must cover real rings, real straps and thousands of screen sightlines.");
-assert(report.legacyRailObstructions > 0, "The same raycast grid must detect the prior rail obstruction, rather than passing an insensitive fixture.");
-report.minimumSideClearance = Number(report.minimumSideClearance.toFixed(6));
-report.minimumScreenDepthGap = Number(report.minimumScreenDepthGap.toFixed(6));
+assert(report.rays > 10000 && report.mountedRings > 0 && report.mountedStraps > 0, "Exercise real rings, straps and thousands of rays within the cleared TV zones.");
+assert(report.unsplitRailObstructions > 0, "The same ray grid detects an original continuous rail crossing a secondary display.");
 if (process.env.BUS_TV_HANDLE_OUTPUT) await writeFile(process.env.BUS_TV_HANDLE_OUTPUT, `${JSON.stringify(report, null, 2)}\n`);
 material.dispose(); texture.dispose(); delete globalThis.document;
-console.log("Mounted TV/handle clearance passed:", JSON.stringify(report));
+console.log("Original central handles and local TV clearance passed:", JSON.stringify(report));

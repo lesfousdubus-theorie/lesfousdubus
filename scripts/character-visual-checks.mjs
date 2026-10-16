@@ -1,44 +1,58 @@
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { build } from "esbuild";
+import { installTestYouTube } from "./media-playback-checks.mjs";
 
 /** Contrôle le raccord des cous sur chaque modèle réellement rendu, sans modifier la base. */
 export async function runCharacterVisualChecks({ send, evaluate, waitForPageCondition, baseUrl }) {
   const run = expression => evaluate(send, expression);
-  const rosterBuild = await build({ entryPoints: ["src/components/bus/passenger-archetypes.ts"], bundle: true, format: "esm", platform: "node", write: false, logLevel: "silent" });
-  const { NAKAMA_ROSTER } = await import(`data:text/javascript;base64,${Buffer.from(rosterBuild.outputFiles[0].text).toString("base64")}`);
-  const permanentNames = NAKAMA_ROSTER.map((character, index) => `crew-nakama-${character.id}-${index}`);
   const injection = await send("Page.addScriptToEvaluateOnNewDocument", {source:`
+    (${installTestYouTube.toString()})();
     const nativeFetch=window.fetch.bind(window);window.characterMutationRequests=[];
+    window.characterFixtureRequests=[];
     window.fetch=(input,init)=>{
       const url=new URL(input instanceof Request?input.url:String(input),location.href);
       const method=(init?.method||(input instanceof Request?input.method:'GET')).toUpperCase();
       if(url.origin!==location.origin||!url.pathname.startsWith('/api/bus-entries'))return nativeFetch(input,init);
+      window.characterFixtureRequests.push({method,path:url.pathname,fixture:true});
+      const snapshot={count:20,seatCapacity:20,profileRevision:1,vacantSeatRanges:[],passengers:[]};
+      if(url.searchParams.has('manifest')){
+        snapshot.passengers=Array.from({length:20},(_,seatIndex)=>({seatIndex,displayName:['Epic Games','Kirito'][seatIndex]??null,hasComment:false}));
+        snapshot.nextFrom=20;snapshot.hasMore=false;
+      }
+      if(method==='POST')return Promise.resolve(new Response(JSON.stringify({...snapshot,seatIndex:0,added:false,passenger:null}),{headers:{'Content-Type':'application/json'}}));
       if(method!=='GET'&&method!=='HEAD'){
         window.characterMutationRequests.push({method,path:url.pathname});
         return Promise.resolve(new Response(JSON.stringify({error:'The character fixture cannot change visitor records.'}),{status:405,headers:{'Content-Type':'application/json'}}));
       }
-      return Promise.resolve(new Response(JSON.stringify({count:0,seatCapacity:0,profileRevision:1,vacantSeatRanges:[],passengers:[]}),{headers:{'Content-Type':'application/json'}}));
+      return Promise.resolve(new Response(JSON.stringify(snapshot),{headers:{'Content-Type':'application/json'}}));
     };
   `});
   try {
-    // Inspect every detailed archetype, then restore the constrained-device
-    // setting used by the rest of the gesture and responsive checks.
+    // Inspect the visitors actually selected by the production detail budget.
+    // Pure geometry tests cover the full archetype catalog separately.
     await send("Emulation.setHardwareConcurrencyOverride", {hardwareConcurrency:8});
     await send("Emulation.setDeviceMetricsOverride", {width:1240,height:900,deviceScaleFactor:1,mobile:false});
-    await send("Page.navigate", {url:`${baseUrl}/?phase=inside&count=0&row=0`});
-    await waitForPageCondition(send, `${JSON.stringify(permanentNames)}.every(name=>Boolean(window.busCameraTestState()?.scene.getObjectByName(name))) && document.querySelector('.bus-app').dataset.sceneAvailable==='true'`, "All permanent character models load", 30_000);
+    await send("Page.navigate", {url:`${baseUrl}/?count=20&seat=0&row=0`});
+    await waitForPageCondition(send, `window.busCameraTestState()?.scene.getObjectByName('bus-seated-passengers')?.userData.detailedCount>0 && document.querySelector('.bus-app').dataset.sceneAvailable==='true'&&Boolean(window.mediaTestPlayers?.bus)`, "The isolated registered visitors load", 30_000);
+    await run(`[...document.querySelectorAll('button')].find(button=>!button.disabled&&button.textContent.includes('Entrer dans le bus')).click()`);
+    await waitForPageCondition(send, `document.querySelector('.bus-app').dataset.phase==='inside'`, "Fixture visitor zero boards without a database write", 30_000);
     await run(`document.querySelector('button[aria-label="Explorer en vue libre"]').click()`);
     await waitForPageCondition(send, `window.busCameraTestState().controls.enabled`, "Character inspection starts in free view", 15_000);
     await run(`new Promise(resolve=>{
       const s=window.busCameraTestState();let frame=s.gl.info.render.frame,last=s.camera.position.clone(),stable=0;
       const check=()=>{if(s.gl.info.render.frame!==frame){frame=s.gl.info.render.frame;stable=s.camera.position.distanceTo(last)<.000001?stable+1:0;last.copy(s.camera.position);if(stable>=3&&s.camera.position.distanceTo(s.controls.target)>5){resolve(true);return;}}requestAnimationFrame(check);};requestAnimationFrame(check);
     })`);
+    const mounted = await run(`(()=>{const scene=window.busCameraTestState().scene,passengers=scene.getObjectByName('bus-seated-passengers'),synthetic=[];
+      scene.traverse(object=>{if(object.name.startsWith('crew-nakama-'))synthetic.push(object.name);});
+      return {...passengers.userData,synthetic};})()`);
+    assert.deepEqual(mounted.synthetic,[],"No synthetic permanent passengers are added to the visitor fixture.");
+    assert.equal(mounted.detailedCount+mounted.simplifiedCount,19,"The seated visitors and the current visitor avatar represent the same twenty registrations.");
     const characters = await run(`(() => {
       const scene=window.busCameraTestState().scene, characters=[];
+      scene.updateMatrixWorld(true);
       scene.traverse(object=>{
-        if(!/^crew-nakama-.*-[0-9]+$/.test(object.name))return;
+        if(!/^nakama-.*-[0-9]+$/.test(object.name)||object.userData.passengerKind!=='visitor'||!Number.isInteger(object.userData.physicalSeatIndex))return;
         const neck=object.getObjectByName('nakama-neck'), face=object.getObjectByName('nakama-face'), torso=object.getObjectByName('nakama-torso').children[0];
         const box=object=>{let bounds;object.traverse(mesh=>{if(!mesh.geometry)return;mesh.geometry.computeBoundingBox();const b=mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld);if(bounds)bounds.union(b);else bounds=b;});return bounds;};
         const n=box(neck), f=box(face), t=box(torso);
@@ -54,7 +68,8 @@ export async function runCharacterVisualChecks({ send, evaluate, waitForPageCond
       });
       return characters;
     })()`);
-    assert.equal(characters.length,NAKAMA_ROSTER.length,"Each permanent archetype must be inspected.");
+    assert(mounted.detailedCount>0,"The production detail budget must mount visible visitor models.");
+    assert.equal(characters.length,mounted.detailedCount,"Every actually detailed registered visitor must be inspected.");
     for(const character of characters) {
       assert(character.neckToHead && character.neckToBody, `${character.name}: the neck must join the animated head and shoulders.`);
       assert(character.hatJoined, `${character.name}: the hat must sit on the hair without a gap.`);
@@ -75,10 +90,10 @@ export async function runCharacterVisualChecks({ send, evaluate, waitForPageCond
     await waitForPageCondition(send, `window.busDestinationTestReducedMotion()===true`, "Reduced-motion preference reaches the character scene");
     await run(`new Promise(resolve=>{const s=window.busCameraTestState(),frame=s.gl.info.render.frame;const check=()=>s.gl.info.render.frame>frame+1?resolve(true):requestAnimationFrame(check);requestAnimationFrame(check);})`);
     const still=await run(`(() => {const scene=window.busCameraTestState().scene, poses=[];scene.traverse(object=>{
-      if(!/^crew-nakama-.*-[0-9]+$/.test(object.name))return;
+      if(!/^nakama-.*-[0-9]+$/.test(object.name)||object.userData.passengerKind!=='visitor'||!Number.isInteger(object.userData.physicalSeatIndex))return;
       poses.push({breath:object.getObjectByName('nakama-torso').parent.scale.x,bob:object.getObjectByName('nakama-neck').parent.rotation.x});
     });return poses;})()`);
-    assert(still.length===NAKAMA_ROSTER.length&&still.every(pose=>pose.breath===1&&pose.bob===0),"Reduced-motion mode must suspend decorative body and head motion on every archetype.");
+    assert(still.length===characters.length&&still.every(pose=>pose.breath===1&&pose.bob===0),"Reduced-motion mode must suspend decorative body and head motion on every mounted visitor.");
     await send("Emulation.setEmulatedMedia",{features:[]});
     const details=await run(`(() => {
       const scene=window.busCameraTestState().scene, bus=scene.getObjectByName('bus-vehicle'), slogans=[];
@@ -181,7 +196,8 @@ export async function runCharacterVisualChecks({ send, evaluate, waitForPageCond
       }
     }
     assert.deepEqual(await run("window.characterMutationRequests"), [], "Character inspection must never mutate visitor records.");
-    console.log("All permanent rendered characters checked: necks, centered pelvis, connected legs, adult shoes on the floor and Chopper's short dangling feet; enlarged slogans and extra entry chair checked.");
+    assert((await run("window.characterFixtureRequests")).every(request=>request.fixture),"All passenger API interactions stay inside the isolated twenty-visitor fixture.");
+    console.log(`${characters.length} detailed registered visitors checked: necks, hats, centered pelvis, connected legs and appropriate foot heights; enlarged slogans and the human hosts' entry chair checked.`);
   } finally {
     await send("Page.removeScriptToEvaluateOnNewDocument",{identifier:injection.identifier});
     if (process.env.UI_LOW_POWER === "1") {

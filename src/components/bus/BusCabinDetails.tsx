@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { makeLabelTexture } from "@/lib/textures";
 import { ENTRY_SEAT_POSITION, SEAT_CUSHION_DEPTH, SEAT_CUSHION_Z, SEAT_BASE_DEPTH, type TvPosition } from "@/lib/bus-layout";
-import { GRAB_HANDLE_X, isGrabHandleClearOfTv } from "@/lib/bus-interior-geometry";
+import { GRAB_HANDLE_X, getGrabRailSpans, isGrabHandleClearOfTv } from "@/lib/bus-interior-geometry";
 import { CharacterPart } from "./CharacterShapes";
 
 interface Props {
@@ -20,6 +20,11 @@ interface Props {
 export default function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearWallZ, rowZs, wheelPositions, tvPositions }: Props) {
   // Quantité plafonnée, même quand le bus accueille des centaines de rangées.
   const detailZs = useMemo(() => rowZs.filter((_, index) => index % Math.max(1, Math.ceil(rowZs.length / 10)) === 0).slice(0, 10), [rowZs]);
+  const grabRailSpans = useMemo(() => getGrabRailSpans(
+    cabinCenterZ + .4 - (cabinLength - 1.6) / 2,
+    cabinCenterZ + .4 + (cabinLength - 1.6) / 2,
+    tvPositions,
+  ), [cabinCenterZ, cabinLength, tvPositions]);
   const exitTexture = useMemo(() => makeLabelTexture({ text: "ISSUE DE SECOURS", bg: "#087449", fg: "#ffffff", width: 512, height: 96, font: "bold 38px Arial, sans-serif" }), []);
   useEffect(() => () => exitTexture.dispose(), [exitTexture]);
 
@@ -42,10 +47,11 @@ export default function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearW
       <mesh material={mats.chrome} position={[side * 0.89, 2.94, cabinCenterZ + 0.2]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.018, 0.018, cabinLength - 1.1, 8]} />
       </mesh>
-      {/* La barre rejoint les poignées latérales et libère le haut des écrans. */}
-      <mesh name="bus-grab-rail" material={mats.yellow} position={[side * GRAB_HANDLE_X, 2.9, cabinCenterZ + 0.4]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.022, 0.022, cabinLength - 1.6, 12]} />
-      </mesh>
+      {/* Les barres centrales gardent seulement une interruption devant les télés. */}
+      {grabRailSpans.map(([start, end]) => <mesh key={start} name="bus-grab-rail" material={mats.yellow}
+        position={[side * GRAB_HANDLE_X, 2.9, (start + end) / 2]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.022, 0.022, end - start, 12]} />
+      </mesh>)}
       {detailZs.map((z) => <group key={z}>
         <mesh material={mats.chrome} position={[side * 1.055, 2.96, z]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.014, 0.014, 0.32, 8]} />
