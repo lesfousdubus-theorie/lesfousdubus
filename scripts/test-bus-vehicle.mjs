@@ -23,7 +23,7 @@ const { getCharacterShape } = await load("src/components/bus/CharacterShapes.tsx
 const { encodeLedText, DESTINATION_MESSAGE, LED_COLUMNS, getLedOffset, GRAND_LINE_STOPS, getRandomDestinationStart, getDestinationStartOffset } = await load("src/lib/bus-destinations.ts");
 const { getExteriorMaxDistance, getBusCameraFar, obstructsBusView } = await load("src/lib/bus-camera.ts");
 const {createJourneyState,updateJourney,getPassengerWalkPath,getJourneyTiming,ENTRY_WALK_START,EXIT_WALK_START,ARRIVAL_STOP_TIME}=await load("src/lib/bus-journey.ts");
-const { BUS_CREW, BUS_RELAY, BUS_NAKAMA_SEATS, countPeopleOnBoard } = await load("src/lib/bus-crew.ts");
+const { BUS_CREW, BUS_RELAY, countPeopleOnBoard } = await load("src/lib/bus-crew.ts");
 const {createPassengerPose,samplePassengerPose,blendPassengerPose,getHighFiveArm}=await load("src/lib/passenger-motion.ts");
 const {NAKAMA_ROSTER}=await load("src/components/bus/passenger-archetypes.ts");
 const signatures=[...NAKAMA_ROSTER.map(character=>character.id),"foudubustv","kamal","kyta"];
@@ -65,9 +65,8 @@ const settle=createPassengerPose(),raised=createPassengerPose();samplePassengerP
 blendPassengerPose(settle,raised,1/60,false);assert(settle.leftX>.12&&settle.leftX<raised.leftX,"Gesture changes must ease into their target pose.");
 assert.deepEqual(BUS_CREW.map(member=>member.name),["Kamal","Kyta","FoudubusTV"],"The relay must be credited as permanent crew after the two guides.");
 assert.equal(BUS_RELAY.url,"https://x.com/FoudubusTV_");
-assert.equal(BUS_NAKAMA_SEATS,NAKAMA_ROSTER.length,"Every permanent model needs its own physical place.");
-assert.equal(countPeopleOnBoard(0),BUS_CREW.length+BUS_NAKAMA_SEATS,"An empty visitor list still includes the guides and all permanent models.");
-assert.equal(countPeopleOnBoard(12),12+BUS_CREW.length+BUS_NAKAMA_SEATS,"Permanent models must not consume or renumber registered visitor seats.");
+assert.equal(countPeopleOnBoard(0),BUS_CREW.length,"An empty visitor list contains only the three human hosts.");
+assert.equal(countPeopleOnBoard(12),12+BUS_CREW.length,"Only registered visitors and the human hosts contribute to the displayed total.");
 
 for (const rows of [6, 10, 180, 2000]) {
   const rearWall = getBusRearWallZ(rows);
