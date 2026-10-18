@@ -204,6 +204,15 @@ vérifie aussi les trajets sur les volumes réels, les proportions et les choré
 Sans sélection `BUS_CAMERA_CHECKS`, `npm run test:ui` couvre les onglets et
 la position de lecture, les formulaires, le clavier,
 le parcours liste/fiche et le repli sans WebGL.
+`npm run test:comfort` vérifie, sur une compilation de production servie par
+`npm run start`, le chargement 3D bloqué ou échoué, la lecture sans JavaScript,
+l’aide, le focus, les préférences conservées, les raccourcis et les médias avec
+le décor figé. Les visiteurs et les lecteurs YouTube de ce scénario sont des
+fixtures isolées ; aucun inscrit réel n’est modifié. Les captures et le rapport
+sont écrits dans `BUS_VISUAL_OUTPUT` (par défaut `/tmp/lesfousdubus-comfort`).
+Le [protocole sur téléphone](docs/validation-mobile.md) précise les contrôles
+physiques qui complètent l’émulation. Le [test de charge isolé](docs/test-charge-local.md)
+mesure les véritables routes API et une D1 temporaire, sans toucher la production.
 Tous les contrôles sont lancés localement avant le déploiement ;
 aucun test automatique n'est exécuté lors d'un envoi sur GitHub.
 
