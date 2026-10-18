@@ -8,6 +8,7 @@ import type { Phase } from "./constants";
 import type { JourneyState } from "@/lib/bus-journey";
 import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
 import { createInitialCaptionReset, isYouTubePlaybackActive, loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
+import { emitBusAudioEvent, onBusAudioEvent } from "@/lib/bus-audio";
 
 interface BusTvFrameProps {
   pos: [number, number, number];
@@ -108,7 +109,7 @@ export function BusTvPlayer({
   const reportPlayback = useCallback((active: boolean) => {
     if (playbackActiveRef.current === active) return;
     playbackActiveRef.current = active;
-    window.dispatchEvent(new CustomEvent("bus-tv-audio-focus", { detail: active }));
+    emitBusAudioEvent("tvFocus", active);
     onPlaybackChange?.(active);
   }, [onPlaybackChange]);
   const desiredRef = useRef({
@@ -399,24 +400,19 @@ export function BusTvPlayer({
 
 
 
-  useEffect(() => {
-    const onPartyFocus = (event: Event) => {
-      const active = (event as CustomEvent<boolean>).detail;
-      if (active) {
-        resumeAfterPartyRef.current = playbackActiveRef.current;
-        partyAudioRef.current = true;
-        stopVolumeRamp();
-        try { playerRef.current?.pauseVideo(); } catch { /* API encore en préparation. */ }
-        reportPlayback(false);
-      } else {
-        partyAudioRef.current = false;
-        if (resumeAfterPartyRef.current) applyDesiredPlayback();
-        resumeAfterPartyRef.current = false;
-      }
-    };
-    window.addEventListener("bus-party-audio-focus", onPartyFocus);
-    return () => window.removeEventListener("bus-party-audio-focus", onPartyFocus);
-  }, [applyDesiredPlayback, reportPlayback, stopVolumeRamp]);
+  useEffect(() => onBusAudioEvent("partyFocus", active => {
+    if (active) {
+      resumeAfterPartyRef.current = playbackActiveRef.current;
+      partyAudioRef.current = true;
+      stopVolumeRamp();
+      try { playerRef.current?.pauseVideo(); } catch { /* API encore en préparation. */ }
+      reportPlayback(false);
+    } else {
+      partyAudioRef.current = false;
+      if (resumeAfterPartyRef.current) applyDesiredPlayback();
+      resumeAfterPartyRef.current = false;
+    }
+  }), [applyDesiredPlayback, reportPlayback, stopVolumeRamp]);
 
   useEffect(() => {
     const onUserPrepare = () => {
@@ -443,11 +439,11 @@ export function BusTvPlayer({
       applyDesiredPlayback();
       setAutoplayBlocked(false);
     };
-    window.addEventListener("bus-tv-user-prepare", onUserPrepare);
-    window.addEventListener("bus-tv-user-play", onUserPlay);
+    const stopPrepare = onBusAudioEvent("tvPrepare", onUserPrepare);
+    const stopPlay = onBusAudioEvent("tvPlay", onUserPlay);
     return () => {
-      window.removeEventListener("bus-tv-user-prepare", onUserPrepare);
-      window.removeEventListener("bus-tv-user-play", onUserPlay);
+      stopPrepare();
+      stopPlay();
     };
   }, [applyDesiredPlayback, reportPlayback, stopVolumeRamp]);
 
@@ -533,7 +529,7 @@ export function BusTvPlayer({
           {autoplayBlocked && !apiFailed && tvOn && hasEntered && (
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new Event("bus-tv-user-play"))}
+              onClick={() => emitBusAudioEvent("tvPlay")}
               style={{
                 position: "absolute",
                 inset: 0,

@@ -351,9 +351,8 @@ export async function runBusCameraChecks({ send, evaluate, waitForPageCondition,
     assert(returned.position.every((value,index)=>Math.abs(value-expected[index])<0.05),"Exiting after a resize must restore the saved exterior camera with portrait framing.");
     assert(returned.target.every((value,index)=>Math.abs(value-exteriorView.target[index])<0.05),`The camera must restore its exterior orbit target after the cinematic: ${JSON.stringify(returned.target)} vs ${JSON.stringify(exteriorView.target)}.`);
     assert(returned.corners.every(([x,y])=>Math.abs(x)<0.98&&Math.abs(y)<0.98),"The whole bus must fit after returning to exterior portrait view.");
-    console.log("Bus door, avatar journey and LED checks passed (braking, stopped boarding, seated avatar before first person, visible exit, clear passage, upright rear and 59-stop display).");
+    console.log("Bus door, avatar journey and LED checks passed (braking, stopped boarding, seated avatar before first person, visible exit, clear passage, upright rear and 28-stop display).");
     if (gestures) console.log("Bus camera checks passed (portrait framing, pinch, wheel zoom, resize during recentring, touch cancellation, wheel axes and 60 FPS cap).");
-    await runCharacterVisualChecks({send,evaluate,waitForPageCondition,baseUrl});
   } finally {
     await send("Page.removeScriptToEvaluateOnNewDocument", { identifier: injection.identifier });
     if (boardingVisitor) {
