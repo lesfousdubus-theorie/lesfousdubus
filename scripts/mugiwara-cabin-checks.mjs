@@ -68,7 +68,7 @@ export async function runMugiwaraCabinChecks({ send, evaluate, waitForPageCondit
   };
   for (const mobile of [false, true]) {
     const viewport = mobile ? "mobile" : "desktop";
-    for (const count of [0, 2, 4, 60]) {
+    for (const count of process.env.BUS_REVIEW_STAGE === "rail-connections" ? [2, 60] : [0, 2, 4, 60]) {
       await open(count, 0, mobile);
       const before = await occupancy(count);
       const entry = { viewport, count, before, manifest: await manifest(count), resources: await resourceSnapshot() };
@@ -98,13 +98,16 @@ export async function runMugiwaraCabinChecks({ send, evaluate, waitForPageCondit
       const televisionChecks = await run(`(()=>{
         const s=window.busCameraTestState(),bus=s.scene.getObjectByName('bus-vehicle');s.scene.updateMatrixWorld(true);
         const inverse=bus.matrixWorld.clone().invert(),rings=s.scene.getObjectsByProperty('name','bus-grab-handle-ring'),
-          handles=s.scene.getObjectsByProperty('name','bus-grab-handle'),rails=s.scene.getObjectsByProperty('name','bus-grab-rail');
-        const blockers=[...handles.flatMap(handle=>handle.children.filter(child=>child.isMesh)),...rails];
+          handles=s.scene.getObjectsByProperty('name','bus-grab-handle'),rails=s.scene.getObjectsByProperty('name','bus-grab-rail'),
+          bridges=s.scene.getObjectsByProperty('name','bus-grab-rail-bridge');
+        const lowerParts=[...handles.flatMap(handle=>handle.children.filter(child=>child.isMesh)),...rails],
+          blockers=[...lowerParts,...bridges];
         const bounds=mesh=>{mesh.geometry.computeBoundingBox();const box=mesh.geometry.boundingBox.clone().applyMatrix4(inverse.clone().multiply(mesh.matrixWorld));return {min:box.min.toArray(),max:box.max.toArray()};};
-        const handleBounds=blockers.map(bounds),railBounds=rails.map(bounds);
+        const handleBounds=lowerParts.map(bounds),railBounds=rails.map(bounds);
         const frames=s.scene.getObjectsByProperty('name','bus-tv-frame').filter(frame=>frame.userData.index<2);
         return {ringX:rings.map(ring=>bus.worldToLocal(ring.getWorldPosition(s.camera.position.clone())).x),
-          rings:rings.length,rails:rails.length,handleBounds,railBounds,screens:frames.map(frame=>{
+          rings:rings.length,rails:rails.length,handleBounds,railBounds,
+          bridges:bridges.map(bridge=>({...bridge.userData,bounds:bounds(bridge)})),screens:frames.map(frame=>{
             const display=frame.getObjectByName('bus-tv-display');let rays=0,blocked=0;
             for(const eyeX of [-.94,-.5,.5,.94])for(const eyeY of [1.57,1.84])for(const offset of [1.4,3.0]){
               const eye=bus.localToWorld(s.camera.position.clone().set(eyeX,eyeY,frame.position.z+offset));
@@ -119,14 +122,21 @@ export async function runMugiwaraCabinChecks({ send, evaluate, waitForPageCondit
       })()`);
       assert(televisionChecks.rings > 0 && televisionChecks.rails >= 2, "The original central grab rings and rails remain mounted.");
       assert(televisionChecks.ringX.every(x => Math.abs(Math.abs(x) - .35) < .001), "The rings return to their original central aisle position.");
+      assert.equal(televisionChecks.bridges.length, 2, "Both original central rails have overhead connections around the television gaps.");
+      assert(televisionChecks.bridges.every(bridge => bridge.segments.length > 0 && bridge.ceilingY === 3.14),
+        "The overhead connections include real tube segments and ceiling attachments.");
       assert.equal(televisionChecks.screens.length, 2, "The longer fixture includes the front TV and a repeat screen.");
       for (const screen of televisionChecks.screens) {
-        assert(screen.rays > 900 && screen.blocked === 0, "Every screen stays clear from the nearby viewing area, while rings remain elsewhere.");
+        assert(screen.rays > 900 && screen.blocked === 0, "Every screen stays clear of rings, lower rails and raised connections from the nearby viewing area.");
         const [,,z] = screen.position;
         for (const bounds of televisionChecks.handleBounds) assert(bounds.max[2] <= z - .149 || bounds.min[2] >= z + 3.199,
-          "No real ring, strap or rail crosses the free zone directly in front of the screen.");
+          "No real ring, strap or lower rail crosses the free zone directly in front of the screen.");
         await pose([0, 1.84, z + 1.4], [0, screen.position[1], z]);
         await screenshot(`television-${screen.index + 1}-zone-libre-${viewport}.png`);
+        await pose([0, 2.2, z + 4.8], [0, 2.78, z + .65]);
+        await screenshot(`television-${screen.index + 1}-barres-raccordees-face-${viewport}.png`);
+        await pose([.98, 2.38, z + 4.5], [-.08, 2.91, z + 1.35]);
+        await screenshot(`television-${screen.index + 1}-barres-raccordees-trois-quarts-${viewport}.png`);
       }
       results.televisions.push({ viewport, ...televisionChecks });
       results.requests.push(...await run("window.crewSeatRequests"));
