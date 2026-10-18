@@ -21,6 +21,7 @@ export interface WorldState {
   scroll: number;
   speedMultiplier: number; // Vitesse de déplacement du bus
   motionFactor?: number; // Arrêt et reprise pendant l'embarquement
+  sceneryPaused?: boolean; // Fige seulement le défilement, sans interrompre les médias ou l'embarquement
   weather: WeatherType;
   weatherIntensity: number; // 0 ciel clair → 1 intempéries soutenues
 }

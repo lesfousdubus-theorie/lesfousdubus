@@ -6,6 +6,15 @@ import type { PassengerProfile } from "@/types/passenger";
 import { useModalAccessibility } from "./useModalAccessibility";
 import { ModalCloseButton } from "./ModalCloseButton";
 
+export function getPassengerReportHref(passenger: PassengerProfile) {
+  const message = [
+    "Bonjour,", "", "Je souhaite signaler le passager suivant :",
+    `Place : ${passenger.seatIndex}`, `Nom : ${passenger.displayName}`,
+    `Message : ${passenger.comment ?? "aucun"}`, "", "Motif du signalement :", "",
+  ].join("\r\n");
+  return `mailto:contact@lesfousdubus.sbs?subject=${encodeURIComponent(`Signalement passager #${passenger.seatIndex}`)}&body=${encodeURIComponent(message)}`;
+}
+
 export function PassengerCard({
   passenger,
   loading,
@@ -81,7 +90,7 @@ export function PassengerCard({
         {!loading && !error && (passenger.comment || passenger.displayName) && (
           <div className="mt-2 text-right">
             <a
-              href={`mailto:contact@lesfousdubus.sbs?subject=${encodeURIComponent(`Signalement passager #${passenger.seatIndex}`)}&body=${encodeURIComponent(`Bonjour,\n\nJe souhaite signaler le passager suivant :\nPlace : ${passenger.seatIndex}\nNom : ${passenger.displayName}\nMessage : ${passenger.comment ?? "aucun"}\n\nMotif du signalement :\n`)}`}
+              href={getPassengerReportHref(passenger)}
               className="text-xs text-white/50 hover:text-red-300 underline transition-colors"
             >
               Signaler ce contenu

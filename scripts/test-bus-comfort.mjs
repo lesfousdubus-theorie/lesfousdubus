@@ -1,0 +1,193 @@
+import assert from "node:assert/strict";
+import {spawn} from "node:child_process";
+import {rmSync, readdirSync, statSync} from "node:fs";
+import {mkdir, writeFile} from "node:fs/promises";
+import {resolve} from "node:path";
+import {installTestYouTube} from "./media-playback-checks.mjs";
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function waitForJson(url, attempts = 120) {
+  let lastError;
+  for (let i = 0; i < attempts; i += 1) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) return await response.json();
+    } catch (error) {
+      lastError = error;
+    }
+    await sleep(250);
+  }
+  throw lastError ?? new Error(`Unable to reach ${url}`);
+}
+
+function createCdp(ws) {
+  let id = 1;
+  const pending = new Map();
+  ws.addEventListener("message", (event) => {
+    const data = JSON.parse(event.data);
+    if (!data.id) return;
+    const waiter = pending.get(data.id);
+    if (!waiter) return;
+    pending.delete(data.id);
+    if (data.error) waiter.reject(new Error(data.error.message ?? JSON.stringify(data.error)));
+    else waiter.resolve(data.result);
+  });
+  return (method, params = {}) => new Promise((resolve, reject) => {
+    const requestId = id++;
+    const timeout = setTimeout(() => {
+      pending.delete(requestId);
+      reject(new Error(`Chrome did not respond to ${method} within 30 seconds.`));
+    }, 30_000);
+    pending.set(requestId, {
+      resolve: result => { clearTimeout(timeout); resolve(result); },
+      reject: error => { clearTimeout(timeout); reject(error); },
+    });
+    ws.send(JSON.stringify({ id: requestId, method, params }));
+  });
+}
+
+async function evaluate(send, expression) {
+  const result = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
+  if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text ?? "Runtime evaluation failed.");
+  return result.result?.value;
+}
+
+async function waitForPageCondition(send, expression, label, timeoutMs = 8_000) {
+  const startedAt = Date.now();
+  let lastValue = null;
+  while (Date.now() - startedAt < timeoutMs) {
+    lastValue = await evaluate(send, expression);
+    if (lastValue) return lastValue;
+    await sleep(150);
+  }
+  const diagnostics = await evaluate(send, `
+    (() => ({
+      readyState: document.readyState,
+      phase: document.querySelector("[data-phase]")?.getAttribute("data-phase") ?? null,
+      bodyText: document.body.innerText.slice(0, 600),
+      buttons: [...document.querySelectorAll("button")].map((button) => button.textContent?.trim() ?? ""),
+    }))()
+  `);
+  throw new Error(`${label} timed out after ${timeoutMs}ms: ${JSON.stringify(diagnostics)}`);
+}
+
+
+
+// Isolated browser fixtures: these checks never register or modify real visitors.
+const baseUrl=process.env.BASE_URL??'http://localhost:3000';
+const output=resolve(process.env.BUS_VISUAL_OUTPUT??'/tmp/lesfousdubus-comfort');
+await mkdir(output,{recursive:true});
+const chunk=readdirSync('.next/static/chunks').filter(name=>name.endsWith('.js')).sort((a,b)=>statSync('.next/static/chunks/'+b).size-statSync('.next/static/chunks/'+a).size)[0];
+assert(statSync('.next/static/chunks/'+chunk).size>500000,'Build the production site before these chunk recovery tests.');
+const profile='/tmp/bus-comfort-'+process.pid,port=Number(process.env.CDP_PORT??9444);
+const chrome=spawn(process.env.CHROME_PATH??'/usr/bin/google-chrome',['--headless=new','--remote-debugging-port='+port,'--remote-debugging-address=127.0.0.1','--user-data-dir='+profile,'--no-first-run','--no-default-browser-check','--no-sandbox','--disable-dev-shm-usage','--disable-background-networking','--use-angle=swiftshader','--enable-unsafe-swiftshader','--mute-audio','about:blank'],{stdio:'ignore'});
+let ws;const report={checks:[],viewports:[],errors:[],externalMedia:'YouTube replaced by controlled player fixtures; no hardware performance claim.'};
+try{
+ const tabs=await waitForJson('http://127.0.0.1:'+port+'/json/list');
+ ws=new WebSocket(tabs.find(x=>x.type==='page').webSocketDebuggerUrl);
+ await new Promise((resolve,reject)=>{ws.addEventListener('open',resolve,{once:true});ws.addEventListener('error',reject,{once:true});});
+ const send=createCdp(ws),run=expr=>evaluate(send,expr),wait=(expr,label)=>waitForPageCondition(send,expr,label,60000);
+ const capture=async name=>{const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await writeFile(output+'/'+name,Buffer.from(shot.data,'base64'));};
+ const key=async(key,modifiers=0)=>{await send('Input.dispatchKeyEvent',{type:'keyDown',key,modifiers});await send('Input.dispatchKeyEvent',{type:'keyUp',key,modifiers});};
+ const click=async(selector)=>{const p=await run(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});e.scrollIntoView({block:"center"});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...p});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...p});};
+ const sceneReady=()=>wait("document.querySelector('.bus-app')?.dataset.sceneAvailable==='true'&&Boolean(window.comfortScene())",'Scene ready');
+ const close=async()=>{await key('Escape');await wait("!document.querySelector('[role=dialog]')&&!document.getElementById('site-content').inert",'Help closes and unlocks background');};
+ await send('Page.enable');await send('Runtime.enable');await send('Emulation.setHardwareConcurrencyOverride',{hardwareConcurrency:4});await send('Network.enable');await send('Network.setCacheDisabled',{cacheDisabled:true});
+ await send('Emulation.setDeviceMetricsOverride',{width:1240,height:900,deviceScaleFactor:1,mobile:false});
+ await send('Page.addScriptToEvaluateOnNewDocument',{source:`
+ (${installTestYouTube.toString()})();
+ const roots=new Map();let rendererId=0;
+ window.__REACT_DEVTOOLS_GLOBAL_HOOK__={supportsFiber:true,renderers:new Map(),inject(renderer){const id=++rendererId;this.renderers.set(id,renderer);return id;},onCommitFiberRoot(id,root){roots.set(id,root);},onCommitFiberUnmount(){}};
+ window.comfortFind=fn=>{for(const root of roots.values()){const queue=[root.current];while(queue.length){const f=queue.pop();if(!f)continue;const found=fn(f);if(found)return found;queue.push(f.child,f.sibling);}}return null;};
+ window.comfortScene=()=>comfortFind(f=>{const store=f.memoizedProps?.store??f.memoizedProps?.value;if(typeof store?.getState==='function'){const s=store.getState();if(s.scene?.isScene&&s.camera?.isCamera)return s;}});
+ window.comfortWorld=()=>comfortFind(f=>f.memoizedProps?.worldRef?.current);
+ const nativeFetch=fetch.bind(window);window.comfortApiCalls=[];
+ window.fetch=(input,init)=>{const url=new URL(input instanceof Request?input.url:String(input),location.href);if(url.origin!==location.origin||!url.pathname.startsWith('/api/bus-entries'))return nativeFetch(input,init);const method=(init?.method||'GET').toUpperCase();window.comfortApiCalls.push({method,fixture:true});const data={count:2,seatCapacity:2,profileRevision:1,vacantSeatRanges:[],passengers:[]};if(method==='POST')Object.assign(data,{seatIndex:0,added:false,passenger:null});else if(method!=='GET'&&method!=='HEAD')throw new Error('Fixture disallows this write');return Promise.resolve(new Response(JSON.stringify(data),{headers:{'Content-Type':'application/json'}}));};
+ `});
+ let chunkAction='hold';let intercepted=0;
+ ws.addEventListener('message',event=>{const e=JSON.parse(event.data);if(e.method==='Fetch.requestPaused'){intercepted++;if(chunkAction==='fail')void send('Fetch.failRequest',{requestId:e.params.requestId,errorReason:'BlockedByClient'});}});
+ await send('Fetch.enable',{patterns:[{urlPattern:baseUrl+'/_next/static/chunks/'+chunk,requestStage:'Request'}]});
+ await send('Page.navigate',{url:baseUrl});
+ await wait("document.querySelector('#bus-loading-title')&&document.querySelector('a[href=\"/theorie\"]')",'Reading available before 3D');
+ await wait("document.body.innerText.includes('Réessayer le chargement')",'Slow network offers manual retry');
+ assert(intercepted>0,'The actual 3D chunk must be retained.');
+ await capture('chargement-lent-desktop.png');
+ await click('a[href="/theorie"]');
+ await wait("Boolean(document.getElementById('theory-reading'))",'Theory opens while 3D chunk is unavailable');
+ report.checks.push('Reading link and slow-loading recovery work before 3D.');
+ await send('Fetch.disable');
+ await send('Emulation.setDeviceMetricsOverride',{width:320,height:568,deviceScaleFactor:1,mobile:true});
+ await send('Emulation.setScriptExecutionDisabled',{value:true});
+ await send('Page.navigate',{url:baseUrl+'/theorie'});
+ await wait("Boolean(document.querySelector('#theory-reading details summary'))",'Theory renders without JavaScript');
+ assert.equal(await run("document.querySelectorAll('#theory-chapters h3').length"),21);
+ await click('#theory-reading details summary');
+ assert.equal(await run("document.querySelector('#theory-reading details').open"),true);
+ assert.equal(await run("document.documentElement.scrollWidth>innerWidth"),false);
+ await capture('theorie-mobile-sans-javascript.png');
+ report.checks.push('Complete 21-part theory and 7 native FAQs usable without JavaScript at 320px.');
+ await send('Emulation.setScriptExecutionDisabled',{value:false});
+ chunkAction='fail';await send('Fetch.enable',{patterns:[{urlPattern:baseUrl+'/_next/static/chunks/'+chunk,requestStage:'Request'}]});
+ await send('Page.navigate',{url:baseUrl});
+ await wait("document.querySelector('#bus-loading-title')?.textContent.includes('pas pu')",'Chunk error has clear recovery');
+ await capture('erreur-chargement-mobile.png');
+ await send('Fetch.disable');
+ await click('section[aria-labelledby="bus-loading-title"] button');
+ await sceneReady();
+ report.checks.push('Failed 3D chunk offers theory and explicit retry; retry successfully loads the scene.');
+ await send('Emulation.setDeviceMetricsOverride',{width:1240,height:900,deviceScaleFactor:1,mobile:false});
+ await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+ await send('Page.navigate',{url:baseUrl+'/?count=2&phase=inside'});await sceneReady();
+ await wait("window.mediaTestPlayers.bus?.state===2",'TV preloaded silently');
+ await click('button[aria-label="Aide et confort"]');
+ await wait("document.activeElement?.id==='bus-help-title'",'Help receives focus');
+ assert.equal(await run("document.getElementById('site-content').inert"),true);
+ await capture('aide-desktop.png');
+ await click('[role="dialog"] input:nth-of-type(1)');
+ // The checkbox labels contain their own input; select by order for preferences.
+ await run("document.querySelectorAll('[role=dialog] input')[1].click()");
+ await close();
+ await wait("document.activeElement?.getAttribute('aria-label')==='Aide et confort'",'Help trigger regains focus');
+ assert.equal(await run("localStorage.getItem('fdb-scenery-paused')"),'true');
+ assert.equal(await run("localStorage.getItem('fdb-letter-shortcuts')"),'false');
+ const settle=async()=>{const frame=await run('comfortScene().gl.info.render.frame');await wait('comfortScene().gl.info.render.frame>'+Number(frame+2),'Rendered frames after interaction');};await settle();
+ const fov=await run('window.comfortScene().camera.fov');
+ await key('-',2);await settle();assert(Math.abs(await run('window.comfortScene().camera.fov')-fov)<.01,'Ctrl-minus must preserve scene FOV.');
+ await key('-',4);await settle();assert(Math.abs(await run('window.comfortScene().camera.fov')-fov)<.01,'Meta-minus must preserve scene FOV.');
+ await run("window.comfortKeys=[];window.addEventListener('keydown',e=>queueMicrotask(()=>comfortKeys.push({key:e.key,ctrl:e.ctrlKey,meta:e.metaKey,alt:e.altKey,prevented:e.defaultPrevented,focus:document.activeElement.tagName})));");await key('-');await settle();report.keyboard=await run('({fov:comfortScene().camera.fov,frame:comfortScene().gl.info.render.frame,phase:document.querySelector(".bus-app").dataset.phase,keys:comfortKeys})');assert(report.keyboard.fov>fov+4,'Unmodified minus still zooms: '+JSON.stringify({fov,...report.keyboard}));
+ const rotation=await run('window.comfortScene().camera.quaternion.toArray()');
+ await key('q');await settle();assert.deepEqual(await run('window.comfortScene().camera.quaternion.toArray()'),rotation,'Disabled Q must not turn the head.');
+ await key('ArrowLeft');await settle();assert.notDeepEqual(await run('window.comfortScene().camera.quaternion.toArray()'),rotation,'Arrows remain available.');
+ const wheelFov=await run('window.comfortScene().camera.fov');
+ const prevented=await run("(()=>{const e=new WheelEvent('wheel',{deltaY:200,ctrlKey:true,bubbles:true,cancelable:true});document.querySelector('canvas').dispatchEvent(e);return e.defaultPrevented;})()");
+ await settle();assert.equal(prevented,false);assert(Math.abs(await run('window.comfortScene().camera.fov')-wheelFov)<.01);
+ await click('button[aria-label="Allumer la télévision"]');
+ await wait('window.mediaTestPlayers.bus?.state===1','TV plays with scenery paused');
+ const before=await run('({scroll:comfortWorld().scroll,frame:comfortScene().gl.info.render.frame,time:mediaTestPlayers.bus.getCurrentTime()})');
+ await run('new Promise(resolve=>setTimeout(resolve,1200))');
+ const after=await run('({scroll:comfortWorld().scroll,frame:comfortScene().gl.info.render.frame,time:mediaTestPlayers.bus.getCurrentTime()})');
+ assert.equal(after.scroll,before.scroll);assert(after.frame>before.frame);assert(after.time>before.time+0.8);
+ report.pausedScenery={before,after};
+ report.checks.push('Ctrl/Meta zoom preserved; unmodified zoom and arrows work; disabled letters stay inactive; TV and rendering continue with scenery frozen.');
+ for(const viewport of [{width:1240,height:900,mobile:false},{width:320,height:568,mobile:true},{width:393,height:852,mobile:true},{width:667,height:375,mobile:true},{width:568,height:320,mobile:true}]){
+   await send('Emulation.setDeviceMetricsOverride',{...viewport,deviceScaleFactor:1});
+   await run('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
+   const hud=await run(`(()=>{const b=document.querySelector('button[aria-label="Aide et confort"]'),r=b.getBoundingClientRect();return {rect:[r.x,r.y,r.width,r.height],overflow:document.documentElement.scrollWidth>innerWidth};})()`);assert(!hud.overflow&&hud.rect[0]>=0&&hud.rect[1]>=0&&hud.rect[0]+hud.rect[2]<=viewport.width&&hud.rect[1]+hud.rect[3]<=viewport.height,'Help button remains in the viewport.');
+   await capture('commandes-'+viewport.width+'x'+viewport.height+'.png');
+   await click('button[aria-label="Aide et confort"]');
+   await wait("document.activeElement?.id==='bus-help-title'",'Help visible at '+viewport.width);
+   const scan=await run(`(()=>{const d=document.querySelector('[role=dialog]'),r=d.getBoundingClientRect();return {width:innerWidth,height:innerHeight,overflow:document.documentElement.scrollWidth>innerWidth,dialog:[r.x,r.y,r.width,r.height],text:d.innerText};})()`);
+   assert.equal(scan.overflow,false);assert(scan.dialog[0]>=0&&scan.dialog[1]>=0&&scan.dialog[0]+scan.dialog[2]<=viewport.width+.5&&scan.dialog[1]+scan.dialog[3]<=viewport.height+.5);
+   report.viewports.push(scan);await capture('aide-'+viewport.width+'x'+viewport.height+'.png');await close();
+ }
+ await send('Page.reload',{ignoreCache:true});await sceneReady();
+ assert.equal(await run('comfortWorld().sceneryPaused'),true,'Scenery preference survives reload.');
+ await click('button[aria-label="Aide et confort"]');await wait("document.activeElement?.id==='bus-help-title'",'Help focus after reload');assert.equal(await run("document.querySelectorAll('[role=dialog] input')[1].checked"),false);await close();
+ await click('button[aria-label="Sortir du bus"]');await wait("document.querySelector('.bus-app').dataset.phase==='outside'",'Exit unaffected by frozen scenery');
+ await run("[...document.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.includes('Entrer dans le bus')).click()");
+ await wait("document.querySelector('.bus-app').dataset.phase==='inside'",'Boarding unaffected by frozen scenery');
+ report.checks.push('Preferences persist; entry/exit finish while scenery is paused; help fits desktop, narrow mobile and landscape.');
+ report.apiCalls=await run('window.comfortApiCalls');
+ await writeFile(output+'/confort.json',JSON.stringify(report,null,2)+'\n');
+ console.log(JSON.stringify({...report,viewports:report.viewports.map(({text,...viewport})=>viewport)},null,2));
+}catch(error){report.error=String(error.stack||error);await writeFile(output+'/confort.json',JSON.stringify(report,null,2));throw error;}finally{ws?.close();chrome.kill('SIGTERM');try{rmSync(profile,{recursive:true,force:true});}catch{}}

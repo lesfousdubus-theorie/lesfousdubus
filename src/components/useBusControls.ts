@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { playBoost, playDing, playHorn } from "@/lib/horn";
 import type { Phase, WorldState } from "./bus/constants";
+import { shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts";
 
 const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
 
 /** Commandes du véhicule, avec le moteur 3D comme source de lumière et de météo. */
-export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>) {
+export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>, letterShortcutsEnabled = true) {
   const [headlights, setHeadlights] = useState(false);
   const [hornPulse, setHornPulse] = useState(0);
   // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
@@ -127,19 +128,8 @@ export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>) {
   // et à l'intérieur, où les flèches et +/- contrôlent exclusivement la caméra.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // Ctrl/Cmd/Alt appartiennent au navigateur (zoom, barre d'adresse, masquage)
-      // et une touche maintenue ne doit pas répéter klaxon ou boost.
-      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
-      const active = document.activeElement;
-      if (
-        document.querySelector("[role='dialog']") ||
-        active?.tagName === "INPUT" ||
-        active?.tagName === "TEXTAREA" ||
-        active?.tagName === "SELECT" ||
-        (active instanceof HTMLElement && active.isContentEditable)
-      ) {
-        return;
-      }
+      if (shouldIgnoreBusShortcut(e, document.activeElement,
+        Boolean(document.querySelector("[role='dialog']")), letterShortcutsEnabled)) return;
 
       if (e.key === "h" || e.key === "H") honk();
       if (e.key === "l" || e.key === "L") toggleHeadlights();
@@ -162,7 +152,7 @@ export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase, honk, toggleHeadlights, accelerateBus, decelerateBus]);
+  }, [phase, honk, toggleHeadlights, accelerateBus, decelerateBus, letterShortcutsEnabled]);
 
   return {
     headlights, hornPulse, speedMultiplier, isNight, manualDayNight,
