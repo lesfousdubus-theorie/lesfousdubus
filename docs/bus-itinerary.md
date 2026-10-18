@@ -21,20 +21,30 @@ L'affichage utilise une police bitmap 5×7 sur une matrice de 72×9 points : une
 seule texture, aucun éclairage supplémentaire, environ 18 mises à jour par
 seconde. Avec `prefers-reduced-motion`, le nom choisi au départ reste affiché sans défilement.
 
-L'entrée se trouve sur le côté droit, derrière l'essieu avant. La carrosserie,
+La porte avant se trouve sur le côté droit, derrière l’essieu avant. Quand le bus dépasse huit rangées, une porte et un vestibule libre sont ajoutés toutes les huit rangées. L’entrée et la sortie utilisent la porte la plus proche de la place choisie, sans changer les numéros des sièges. La carrosserie,
 les vitres, le plancher et le châssis comportent une véritable ouverture. Kamal et
 Kyta sont assis côte à côte, chacun près d'un bord du pare-brise, devant le vestibule. Les
 rangées commencent à Z = −1,55 m ; leurs indices et la capacité logique du bus
 sont conservés.
 
-L'embarquement dure environ dix secondes : le bus freine devant le passager,
+La durée d’embarquement dépend du chemin entre la porte choisie et le siège :
+`getJourneyTiming` calcule la distance réelle et garde une vitesse de marche
+régulière. Les phases de freinage, d’ouverture, d’assise et de caméra encadrent
+ce trajet ; les durées nominales minimales du scénario standard sont d’environ
+dix secondes à l’entrée et treize à la sortie, et non des délais fixes pour
+toutes les places. Le bus freine devant le passager,
 s'arrête, ouvre les portes, déploie les marches à plat et le laisse monter puis s'asseoir. La
 caméra observe depuis l'extérieur puis glisse directement jusqu'à ses yeux dès
 qu'il est assis, sans refaire l'entrée par la porte. À l'intérieur, la vue démarre
 à la première personne. Le bouton « Vue libre » permet d'explorer en laissant
 le personnage assis ; « Revenir à ma place » ramène directement aux yeux.
 La sortie
-inverse cette mise en scène et dure environ treize secondes. Le personnage
+inverse cette mise en scène et adapte également son temps de marche à la distance. Le personnage
 conserve son apparence pendant la marche et en vue subjective ; il n'est pas
 dupliqué sur son siège. Les décors et les roues partagent l'arrêt et le redémarrage.
 Le mode d'animations réduites utilise une transition courte de 0,6 seconde.
+
+Le bouton Aide permet de figer uniquement le défilement du décor. Ce choix
+mémorisé ne suspend ni les lecteurs, ni les personnages, ni l’embarquement. Les
+limites de rendu et de ressources sont décrites dans le
+[guide d’architecture](architecture.md).

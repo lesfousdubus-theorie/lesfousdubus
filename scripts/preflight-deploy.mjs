@@ -32,4 +32,8 @@ if (!Array.isArray(secrets) || !secrets.some((secret) => secret?.name === "RATE_
   process.exit(1);
 }
 
-console.log("Préflight Cloudflare validé : RATE_LIMIT_SECRET est configuré.");
+console.log("Préflight Cloudflare validé : RATE_LIMIT_SECRET requis présent (quotas uniquement).");
+console.log(secrets.some((secret) => secret?.name === "MODERATION_TOKEN")
+  ? "MODERATION_TOKEN facultatif présent : la modération exige une valeur distincte, d'au moins 32 caractères."
+  : "MODERATION_TOKEN facultatif absent : suppression administrative désactivée ; suppression personnelle disponible.");
+console.log("Ce contrôle vérifie les noms, jamais les valeurs des secrets. Contrôlez /api/health après le déploiement.");

@@ -20,5 +20,6 @@ declare global {
   interface CloudflareEnv {
     DB_BUS?: CloudflareD1Database;
     RATE_LIMIT_SECRET?: string;
+    MODERATION_TOKEN?: string;
   }
 }

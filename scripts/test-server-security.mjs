@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { build } from "esbuild";
+import { runServerAuthorizationChecks } from "./test-server-authorization.mjs";
 
 async function loadTsModule(entryPoint) {
   const compiled = await build({
@@ -52,3 +53,4 @@ assert.equal(findModerationIssue("C'est technique."), null);
 assert.equal(findModerationIssue("Trop bien. De plus, vive Oda."), null);
 
 console.log("Server security & moderation unit tests passed.");
+await runServerAuthorizationChecks();

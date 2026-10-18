@@ -7,13 +7,10 @@ import { BusHud, type ToastMessage } from "./BusHud";
 import { computeNumRows } from "@/lib/bus-layout";
 import { getBusPhysicalRows } from "@/lib/bus-occupancy";
 import { type Phase, type WorldState } from "./bus/constants";
-import type { PassengerManifestEntry, PassengerProfile } from "@/types/passenger";
+import type { PassengerProfile } from "@/types/passenger";
 import { playDing, playStretch, unlockAudio } from "@/lib/horn";
 import { useBusControls } from "./useBusControls";
 import { getOrCreateVisitorId, isRetryableRegistrationError, fetchJson, ApiError, type BusApiState } from "@/lib/client/bus-api";
-import { JoinBusModal } from "./modals/JoinBusModal";
-import { PassengerCard } from "./modals/PassengerCard";
-import { PassengerListModal } from "./modals/PassengerListModal";
 import { TheoryAgeModal } from "./modals/TheoryAgeModal";
 import { getTheoryAgeInDays } from "@/lib/theory-age";
 import { useBusSync } from "./useBusSync";
@@ -22,6 +19,10 @@ import BackgroundMusicPlayer from "./audio/BackgroundMusicPlayer";
 import { useBusParty } from "./useBusParty";
 import { useBusPreferences } from "./useBusPreferences";
 import { BusHelpModal } from "./modals/BusHelpModal";
+import { PassengerDialogs } from "./modals/PassengerDialogs";
+import { usePassengerDirectory } from "./usePassengerDirectory";
+import { usePassengerProfile } from "./usePassengerProfile";
+import { emitBusAudioEvent } from "@/lib/bus-audio";
 
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
 
@@ -81,30 +82,10 @@ export default function BusExperience() {
   });
   const { partyOn, partyDancing, toggleParty, stopParty } = useBusParty({ busVideoPlaying, theoryVideoPlaying, tvOn, hasEntered, phase });
   const [showTheoryModal, setShowTheoryModal] = useState(false);
-  const [showPassengerList, setShowPassengerList] = useState(false);
   const [showTheoryAge, setShowTheoryAge] = useState(false);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [profileModalMode, setProfileModalMode] = useState<"name" | "comment">("name");
-  const [joinName, setJoinName] = useState("");
-  const [joinComment, setJoinComment] = useState("");
-  const [joinError, setJoinError] = useState("");
   const [joining, setJoining] = useState(false);
-  const [profileSaving, setProfileSaving] = useState(false);
-  const [savedProfile, setSavedProfile] = useState(() => {
-    try { return { name: localStorage.getItem("fdb-display-name") ?? "", comment: localStorage.getItem("fdb-comment") ?? "" }; }
-    catch { return { name: "", comment: "" }; }
-  });
   const [passengerProfiles, setPassengerProfiles] = useState<PassengerProfile[]>([]);
-  const [selectedPassenger, setSelectedPassenger] = useState<PassengerProfile | null>(null);
-  const [passengerOpenedFromList, setPassengerOpenedFromList] = useState(false);
-  const [passengerCardLoading, setPassengerCardLoading] = useState(false);
-  const [passengerCardError, setPassengerCardError] = useState("");
   const [currentPassengerSeatIndex, setCurrentPassengerSeatIndex] = useState<number | null>(null);
-  const [passengerManifest, setPassengerManifest] = useState<PassengerManifestEntry[]>([]);
-  const [manifestLoading, setManifestLoading] = useState(false);
-  const [manifestError, setManifestError] = useState("");
-  const [manifestNextFrom, setManifestNextFrom] = useState(0);
-  const [manifestHasMore, setManifestHasMore] = useState(false);
   const [seatCapacity, setSeatCapacity] = useState(() => {
     if (typeof window === "undefined") return 0;
     const value = Number(new URLSearchParams(window.location.search).get("count"));
@@ -149,11 +130,6 @@ export default function BusExperience() {
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const passengerManifestButtonRef = useRef<HTMLButtonElement>(null);
-  const passengerCardRequest = useRef<AbortController | null>(null);
-  const manifestRequest = useRef<AbortController | null>(null);
-  const profileRequest = useRef<AbortController | null>(null);
-  const profileMutationLock = useRef(false);
   const registrationRetryDelayRef = useRef(10_000);
   const seatCapacityRef = useRef(seatCapacity);
   const profileRevisionRef = useRef(profileRevision);
@@ -235,6 +211,11 @@ export default function BusExperience() {
     return true;
   }, [updateSeatCapacity]);
 
+  const profile = usePassengerProfile({ applyBusSnapshot, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow, showToast });
+  const { showJoinModal, openProfileModal, restoreSavedProfile, clearProfile } = profile;
+  const directory = usePassengerDirectory(applyBusSnapshot);
+  const { selectedPassenger, showPassengerList, passengerManifestButtonRef, openPassengerManifest, selectPassenger, clearDirectory } = directory;
+
   // Actualise le compteur d'âge exactement au prochain minuit local.
   useEffect(() => {
     let timer = 0;
@@ -253,9 +234,6 @@ export default function BusExperience() {
 
   useEffect(() => () => {
     if (toastTimeout.current) clearTimeout(toastTimeout.current);
-    passengerCardRequest.current?.abort();
-    manifestRequest.current?.abort();
-    profileRequest.current?.abort();
   }, []);
 
   useBusSync({
@@ -294,7 +272,7 @@ export default function BusExperience() {
     if (phase !== "outside" || joining || !sceneAvailable) return;
     dismissToast();
     unlockAudio();
-    window.dispatchEvent(new Event("bus-tv-user-prepare"));
+    emitBusAudioEvent("tvPrepare");
     setJoining(true);
     setTvOn(true);
     setPhase("entering");
@@ -324,17 +302,7 @@ export default function BusExperience() {
       setCurrentPassengerSeatIndex(d.seatIndex);
       // Synchronise le profil depuis la base : restaure le commentaire existant
       // même si le visiteur a vidé ses cookies ou changé d'onglet.
-      const restoredComment = d.passenger?.comment ?? "";
-      setSavedProfile((previous) => ({
-        name: d.passenger?.displayName ?? previous.name,
-        comment: restoredComment || previous.comment,
-      }));
-      try {
-        if (d.passenger?.displayName) localStorage.setItem("fdb-display-name", d.passenger.displayName);
-        if (restoredComment) localStorage.setItem("fdb-comment", restoredComment);
-      } catch {
-        // Le stockage local reste optionnel.
-      }
+      restoreSavedProfile(d.passenger);
       if (d.seatIndex !== null) {
         setSeatRow(Math.min(computeNumRows(d.seatCapacity) - 1, Math.floor(d.seatIndex / 4)));
       }
@@ -362,217 +330,7 @@ export default function BusExperience() {
     } finally {
       setJoining(false);
     }
-  }, [applyBusSnapshot, dismissToast, phase, joining, sceneAvailable, showToast]);
-
-  const openProfileModal = useCallback((mode: "name" | "comment") => {
-    if (profileMutationLock.current) return;
-    setJoinName(savedProfile.name);
-    setJoinComment(savedProfile.comment);
-    setProfileModalMode(mode);
-    setJoinError("");
-    setShowJoinModal(true);
-  }, [savedProfile]);
-
-  const submitProfile = useCallback(async () => {
-    if (profileMutationLock.current) return;
-    const name = joinName.replace(/\s+/g, " ").trim();
-    const comment = joinComment.replace(/\s+/g, " ").trim();
-    if (profileModalMode === "name" && !name) {
-      setJoinError("Choisis un nom à afficher au-dessus de ton personnage.");
-      return;
-    }
-    if (profileModalMode === "comment" && !comment) {
-      setJoinError("Écris un petit message avant de l’enregistrer.");
-      return;
-    }
-
-    profileMutationLock.current = true;
-    const controller = new AbortController();
-    profileRequest.current = controller;
-    setProfileSaving(true);
-    setJoinError("");
-    try {
-      const visitorId = getOrCreateVisitorId();
-      const payload =
-        profileModalMode === "name"
-          ? { visitorId, displayName: name }
-          : { visitorId, comment };
-      const data = await fetchJson<BusApiState & {
-        passenger: PassengerProfile | null;
-        seatIndex: number | null;
-      }>("/api/bus-entries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-      if (controller.signal.aborted) return;
-      const acceptedSnapshot = applyBusSnapshot(data);
-      setCurrentPassengerSeatIndex(data.seatIndex);
-      setSavedProfile((previous) => profileModalMode === "name" ? { ...previous, name } : { ...previous, comment });
-      try {
-        if (profileModalMode === "name") localStorage.setItem("fdb-display-name", name);
-        if (profileModalMode === "comment") localStorage.setItem("fdb-comment", comment);
-      } catch {
-        // L'enregistrement D1 reste valide même si le stockage local est bloqué.
-      }
-      if (acceptedSnapshot && data.passenger) {
-        setPassengerProfiles((profiles) => [
-          ...profiles.filter((profile) => profile.seatIndex !== data.passenger!.seatIndex),
-          data.passenger!,
-        ]);
-        if (profileModalMode === "name") {
-          setSeatRow(
-            Math.min(computeNumRows(data.seatCapacity) - 1, Math.floor(data.passenger.seatIndex / 4)),
-          );
-        }
-      }
-      setShowJoinModal(false);
-      showToast(
-        profileModalMode === "name" ? "Prénom ajouté !" : "Message enregistré !",
-        profileModalMode === "name"
-          ? "Il apparaît maintenant au-dessus de ton personnage."
-          : "Il sera visible lorsqu’on cliquera sur ton personnage.",
-        "✅ PROFIL",
-      );
-    } catch (error) {
-      if (controller.signal.aborted) return;
-      setJoinError(error instanceof ApiError ? error.message : "Impossible d’enregistrer pour le moment. Réessaie dans quelques instants.");
-    } finally {
-      profileMutationLock.current = false;
-      profileRequest.current = null;
-      setProfileSaving(false);
-    }
-  }, [applyBusSnapshot, joinComment, joinName, profileModalMode, showToast]);
-
-  const removeProfileField = useCallback(async () => {
-    if (profileMutationLock.current) return;
-    profileMutationLock.current = true;
-    const controller = new AbortController();
-    profileRequest.current = controller;
-    setProfileSaving(true);
-    setJoinError("");
-    try {
-      const visitorId = getOrCreateVisitorId();
-      const payload =
-        profileModalMode === "name"
-          ? { visitorId, displayName: "" }
-          : { visitorId, comment: "" };
-      const data = await fetchJson<BusApiState & {
-        passenger: PassengerProfile | null;
-        seatIndex: number | null;
-      }>("/api/bus-entries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-      if (controller.signal.aborted) return;
-      const acceptedSnapshot = applyBusSnapshot(data);
-      setSavedProfile((previous) => profileModalMode === "name" ? { ...previous, name: "" } : { ...previous, comment: "" });
-      try {
-        localStorage.removeItem(profileModalMode === "name" ? "fdb-display-name" : "fdb-comment");
-      } catch {
-        // La suppression D1 reste valide même si le stockage local est bloqué.
-      }
-
-      if (acceptedSnapshot) {
-        setPassengerProfiles((profiles) => {
-          if (data.seatIndex === null) return profiles;
-          const others = profiles.filter((profile) => profile.seatIndex !== data.seatIndex);
-          return data.passenger ? [...others, data.passenger] : others;
-        });
-      }
-      if (profileModalMode === "name") setJoinName("");
-      else setJoinComment("");
-      setShowJoinModal(false);
-      showToast(
-        profileModalMode === "name" ? "Prénom retiré" : "Commentaire retiré",
-        profileModalMode === "name"
-          ? "Tu gardes ta place dans le bus, sans étiquette publique."
-          : "Ton prénom reste affiché, mais ton message a été supprimé.",
-        "✓ PROFIL",
-      );
-    } catch (error) {
-      if (controller.signal.aborted) return;
-      setJoinError(error instanceof ApiError ? error.message : "Impossible de supprimer pour le moment. Réessaie dans quelques instants.");
-    } finally {
-      profileMutationLock.current = false;
-      profileRequest.current = null;
-      setProfileSaving(false);
-    }
-  }, [applyBusSnapshot, profileModalMode, showToast]);
-
-  const openPassengerCard = useCallback(async (summary: PassengerProfile) => {
-    passengerCardRequest.current?.abort();
-    const controller = new AbortController();
-    passengerCardRequest.current = controller;
-    setSelectedPassenger(summary);
-    setPassengerCardError("");
-    setPassengerCardLoading(true);
-
-    try {
-      const data = await fetchJson<{ passenger: PassengerProfile }>(`/api/bus-entries?seat=${summary.seatIndex}`, {
-        cache: "no-store",
-        signal: controller.signal,
-      });
-      if (passengerCardRequest.current !== controller) return;
-      setSelectedPassenger(data.passenger);
-    } catch {
-      if (controller.signal.aborted) return;
-      setPassengerCardError("Impossible de charger ce message pour le moment.");
-    } finally {
-      if (passengerCardRequest.current === controller) setPassengerCardLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!selectedPassenger) passengerCardRequest.current?.abort();
-  }, [selectedPassenger]);
-
-  const loadPassengerManifest = useCallback(async (from = 0) => {
-    if (from === 0) manifestRequest.current?.abort();
-    const controller = new AbortController();
-    manifestRequest.current = controller;
-    setManifestLoading(true);
-    setManifestError("");
-    try {
-      const data = await fetchJson<BusApiState & {
-        passengers: PassengerManifestEntry[];
-        nextFrom: number;
-        hasMore: boolean;
-      }>(`/api/bus-entries?manifest=1&from=${from}&limit=100`, {
-        cache: "no-store",
-        signal: controller.signal,
-      });
-
-      if (manifestRequest.current !== controller) return;
-      if (!applyBusSnapshot(data)) return;
-      setPassengerManifest((current) => from === 0 ? data.passengers : [...current, ...data.passengers]);
-      setManifestNextFrom(data.nextFrom);
-      setManifestHasMore(data.hasMore);
-    } catch {
-      if (controller.signal.aborted) return;
-      setManifestError("Impossible de charger les passagers pour le moment.");
-    } finally {
-      if (manifestRequest.current === controller) setManifestLoading(false);
-    }
-  }, [applyBusSnapshot]);
-
-  const openPassengerManifest = useCallback(() => {
-    setPassengerManifest([]);
-    setShowPassengerList(true);
-    void loadPassengerManifest(0);
-  }, [loadPassengerManifest]);
-
-  const closePassengerManifest = useCallback(() => {
-    manifestRequest.current?.abort();
-    manifestRequest.current = null;
-    setManifestLoading(false);
-    setShowPassengerList(false);
-  }, []);
+  }, [applyBusSnapshot, dismissToast, phase, joining, sceneAvailable, showToast, restoreSavedProfile]);
 
   const leaveBusPermanently = useCallback(async () => {
     try {
@@ -583,20 +341,11 @@ export default function BusExperience() {
         cache: "no-store",
         body: JSON.stringify({ visitorId }),
       });
-      try {
-        localStorage.removeItem("fdb-display-name");
-        localStorage.removeItem("fdb-comment");
-      } catch {
-        // La suppression D1 est déjà effective.
-      }
       applyBusSnapshot(data);
       setRegistrationPending(false);
       setPassengerProfiles([]);
-      setPassengerManifest([]);
-      setSelectedPassenger(null);
-      setJoinName("");
-      setJoinComment("");
-      setSavedProfile({ name: "", comment: "" });
+      clearDirectory();
+      clearProfile();
       setTvOn(false);
       setHasEntered(false);
       setCurrentPassengerSeatIndex(null);
@@ -607,7 +356,7 @@ export default function BusExperience() {
     } catch {
       return false;
     }
-  }, [applyBusSnapshot, dismissToast]);
+  }, [applyBusSnapshot, dismissToast, clearDirectory, clearProfile]);
 
   // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
   const exitBus = useCallback(() => {
@@ -646,9 +395,7 @@ export default function BusExperience() {
       setBusVideoPlaying(false);
     }
     // La commande sonore doit partir dans le clic, avant les effets React.
-    window.dispatchEvent(new CustomEvent("bus-music-user-toggle", {
-      detail: { playing, suspendedForVideo: theoryVideoPlaying },
-    }));
+    emitBusAudioEvent("musicToggle", { playing, suspendedForVideo: theoryVideoPlaying });
     setBgmPlaying(playing);
   }, [bgmPlaying, tvOn, theoryVideoPlaying, partyOn, stopParty]);
 
@@ -694,7 +441,7 @@ export default function BusExperience() {
         boardingPending={joining}
         passengerProfiles={passengerProfiles}
         currentPassengerSeatIndex={currentPassengerSeatIndex}
-        onPassengerSelect={(passenger) => { setPassengerOpenedFromList(false); void openPassengerCard(passenger); }}
+        onPassengerSelect={selectPassenger}
         modeOverride={manualDayNight}
         resetViewToken={resetViewToken}
         onAvailabilityChange={setSceneAvailable}
@@ -768,60 +515,7 @@ export default function BusExperience() {
         onClose={() => setShowTheoryModal(false)}
         onLeaveBusPermanently={currentPassengerSeatIndex !== null ? leaveBusPermanently : undefined}
       />
-      <JoinBusModal
-        isOpen={showJoinModal}
-        mode={profileModalMode}
-        name={joinName}
-        comment={joinComment}
-        error={joinError}
-        joining={profileSaving}
-        hasSavedValue={Boolean(profileModalMode === "name" ? savedProfile.name : savedProfile.comment)}
-        onNameChange={(value) => { setJoinName(value); setJoinError(""); }}
-        onCommentChange={(value) => { setJoinComment(value); setJoinError(""); }}
-        onClose={() => { if (!profileMutationLock.current) setShowJoinModal(false); }}
-        onSubmit={() => void submitProfile()}
-        onRemove={() => void removeProfileField()}
-      />
-      <PassengerCard
-        passenger={selectedPassenger}
-        loading={passengerCardLoading}
-        error={passengerCardError}
-        returnFocusRef={passengerManifestButtonRef}
-        onRetry={() => selectedPassenger && void openPassengerCard(selectedPassenger)}
-        onBack={passengerOpenedFromList ? () => {
-          passengerCardRequest.current?.abort();
-          passengerCardRequest.current = null;
-          setSelectedPassenger(null);
-          setShowPassengerList(true);
-        } : undefined}
-        onClose={() => {
-          passengerCardRequest.current?.abort();
-          passengerCardRequest.current = null;
-          setSelectedPassenger(null);
-          window.requestAnimationFrame(() => passengerManifestButtonRef.current?.focus({ preventScroll: true }));
-        }}
-      />
-      <PassengerListModal
-        isOpen={showPassengerList}
-        count={count}
-        passengers={passengerManifest}
-        loading={manifestLoading}
-        error={manifestError}
-        hasMore={manifestHasMore}
-        returnFocusRef={passengerManifestButtonRef}
-        onLoadMore={() => void loadPassengerManifest(manifestNextFrom)}
-        onRetry={() => void loadPassengerManifest(passengerManifest.length === 0 ? 0 : manifestNextFrom)}
-        onPassengerClick={(passenger) => {
-          closePassengerManifest();
-          setPassengerOpenedFromList(true);
-          void openPassengerCard({
-            seatIndex: passenger.seatIndex,
-            displayName: passenger.displayName ?? "Anonyme",
-            comment: null,
-          });
-        }}
-        onClose={closePassengerManifest}
-      />
+      <PassengerDialogs profile={profile} directory={directory} count={count} />
       <TheoryAgeModal isOpen={showTheoryAge} onClose={() => setShowTheoryAge(false)} />
     </div>
   );

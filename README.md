@@ -123,6 +123,7 @@ des porte-bagages, un extincteur et un panneau de sortie de secours.
 - **Girouette à LED** : au-dessus du pare-brise, les 28 étapes défilent de Shells Town à Laugh Tale. À chaque visite, une étape est choisie au hasard pour commencer ; la suite conserve l'ordre de la liste et boucle après le terminus. La [liste et les détails](docs/bus-itinerary.md) sont conservés dans le dépôt.
 - **Vue dégagée** : les petits décors qui passent entre la caméra extérieure et le bus sont temporairement masqués ; ceux à l'arrière-plan restent visibles.
 - **Dans le bus** : glissez votre souris pour regarder autour de vous dans la cabine, et utilisez les flèches **◀ Rangée ▶** pour vous déplacer d'avant en arrière le long de l'allée.
+- **Aide et confort** : le bouton **Aide** explique les gestes et les commandes. Vous pouvez désactiver les raccourcis à lettres ou figer le défilement du décor pour regarder la télé ; les médias et les trajets restent actifs. Ces préférences sont mémorisées dans ce navigateur.
 - **Vue libre** : explorez la cabine et le paysage tout en laissant votre personnage assis. Glissez pour tourner, utilisez la molette pour approcher et le bouton droit de la souris (ou deux doigts sur mobile) pour déplacer la caméra. **Revenir à ma place** rejoint directement vos yeux, face à la télévision.
 
 ### Raccourcis clavier (sur ordinateur) :
@@ -133,126 +134,97 @@ des porte-bagages, un extincteur et un panneau de sortie de secours.
 - **`B`** : Activer / désactiver le Turbo Boost
 - **`H`** : Klaxonner (*Honk*)
 - **`L`** : Allumer / éteindre les phares (*Lights*)
-- **`Échap`** : Quitter le plein écran
+- **`Échap`** : Fermer une fenêtre ou quitter le plein écran
+
+Les raccourcis restent inactifs pendant la saisie et dans les fenêtres. Ctrl/Cmd et les commandes de zoom du navigateur sont respectés.
 
 ---
 
-## 🛠️ Pour les curieux (lancer le site sur sa machine)
+## Lancer le projet
 
-Si vous souhaitez faire tourner le site en local sur votre ordinateur, utilisez Node.js 22 :
+Prérequis : **Node.js 22 ou plus récent**, npm et un navigateur avec WebGL pour
+la scène. La lecture de la théorie reste disponible sur `/theorie` sans WebGL
+et sans JavaScript.
 
 ```bash
-# 1. Installer exactement les versions du dépôt
 npm ci
-
-# 2. Initialiser la base D1 locale (une seule fois)
+# Crée deux secrets locaux distincts dans .dev.vars, ignoré par Git
+npm run setup:local
+# Initialiser la base puis appliquer les futures migrations manquantes
 npm run db:migrate:local
-
-# 3. Lancer le serveur local
 npm run dev
 ```
 
-Ouvrez ensuite [http://localhost:3000](http://localhost:3000) dans votre navigateur web préféré !
+Ouvrir [http://localhost:3000](http://localhost:3000). Le diagnostic
+[http://localhost:3000/api/health](http://localhost:3000/api/health) doit répondre
+`200` et `{"ok":true}`. Si le statut est `503`, consulter le
+[guide de configuration et d’exploitation](docs/exploitation.md).
 
-Avant de proposer une modification, vérifiez-la localement :
+Pour servir la compilation de production localement :
 
 ```bash
-npm run typecheck
+npm run build:next
+npm run start
+```
+
+## Vérifier les changements
+
+Ces commandes sont **manuelles** ; ni le push GitHub ni `npm run deploy` ne
+lancent les suites de tests :
+
+```bash
 npm run lint
 npm test
-npm run build:next -- --webpack
+npm run build:next
+npm run typecheck
 ```
 
-`npm test` utilise une base D1 temporaire pour ses scénarios de places et ne
-modifie pas les passagers de la base locale. Le test d'interface `npm run test:ui`
-nécessite que `npm run dev` ou `npm run start` tourne dans un autre terminal ;
-il vérifie les commandes sur vingt-trois tailles d’écran, à l’intérieur et à
-l’extérieur, avec la musique active, le volume ouvert et les notifications.
-Il contrôle aussi que le titre et les commandes restent côte à côte lorsque
-leur largeur réelle le permet, y compris après la fermeture des fenêtres.
-Les essais 3D couvrent le pincement tactile, le recul maximal à la molette,
-le cadrage portrait pendant le recentrage, les gestes annulés, l'axe des roues
-et le plafond de 60 FPS sur le rendu réel. Ils vérifient également le passage
-libre sur toute la largeur de la porte, les battants articulés, l’entrée/sortie
-par les marches, les montants arrière et le défilement des LED.
-Le scénario ciblé `BUS_CAMERA_CHECKS=playback-zoom npm run test:ui` vérifie
-le dézoom/rezoom à la souris et au toucher, le trait de Luffy près de la roue,
-et les commandes de lecture/volume pendant l'entrée et la sortie. Il remplace
-uniquement l'API YouTube externe pour observer ces commandes de façon répétable.
-`BUS_CAMERA_CHECKS=door-music npm run test:ui` vérifie aussi le volume initial,
-sa mémorisation, les erreurs de lecture, le tampon vidéo et la porte corrigée.
-`BUS_CAMERA_CHECKS=led npm run test:ui` vérifie le départ choisi et les LED en
-mode d'animations réduites. Le diagnostic facultatif `BUS_CAMERA_CHECKS=music-live npm run test:ui`
-utilise les vrais lecteurs YouTube. Pour cet aperçu local, utilisez
-`http://localhost:3000/` : lors des vérifications, YouTube refusait les lecteurs
-sur `127.0.0.1`, alors que la même source fonctionnait sur `localhost`.
-`BUS_CAMERA_CHECKS=party npm run test:ui` couvre les réactions au klaxon, la
-danse à huit secondes et à chaque boucle, les confettis, les transitions audio, les choix de lecture
-mémorisés, les commandes mobiles, les erreurs YouTube et les animations réduites.
-`BUS_CAMERA_CHECKS=hands npm run test:ui` inspecte les quatre mains des guides
-et leurs contacts avec le tableau de bord pendant leurs réactions.
-`BUS_CAMERA_CHECKS=door-confetti npm run test:ui` vérifie les raccords de la
-porte et la couverture des confettis dans les cabines courtes et longues.
-`BUS_CAMERA_CHECKS=extensions npm run test:ui` vérifie les portes d’un grand bus,
-les trajets vers la porte la plus proche et les expressions pendant la fête,
-les discussions et les animations réduites, sans modifier les visiteurs.
-`BUS_CAMERA_CHECKS=crew-seats npm run test:ui` contrôle des populations de
-0, 2, 4 et 60 visiteurs sur ordinateur et mobile : aucun passager artificiel,
-deux places par banquette, changements de rangée, compteurs, manifeste,
-anneaux centraux et espaces libres devant les télés. `npm run test:crew`
-vérifie aussi les trajets sur les volumes réels, les proportions et les chorégraphies.
-Sans sélection `BUS_CAMERA_CHECKS`, `npm run test:ui` couvre les onglets et
-la position de lecture, les formulaires, le clavier,
-le parcours liste/fiche et le repli sans WebGL.
-`npm run test:comfort` vérifie, sur une compilation de production servie par
-`npm run start`, le chargement 3D bloqué ou échoué, la lecture sans JavaScript,
-l’aide, le focus, les préférences conservées, les raccourcis et les médias avec
-le décor figé. Les visiteurs et les lecteurs YouTube de ce scénario sont des
-fixtures isolées ; aucun inscrit réel n’est modifié. Les captures et le rapport
-sont écrits dans `BUS_VISUAL_OUTPUT` (par défaut `/tmp/lesfousdubus-comfort`).
-Le [protocole sur téléphone](docs/validation-mobile.md) précise les contrôles
-physiques qui complètent l’émulation. Le [test de charge isolé](docs/test-charge-local.md)
-mesure les véritables routes API et une D1 temporaire, sans toucher la production.
-Tous les contrôles sont lancés localement avant le déploiement ;
-aucun test automatique n'est exécuté lors d'un envoi sur GitHub.
+Les tests navigateur demandent **Chrome ou Chromium installé séparément** :
+`npm ci` ne l’installe pas. Les scripts utilisent `/usr/bin/google-chrome` par
+défaut. Avec un autre chemin, définir `CHROME_PATH` (exemple Bash) :
 
-## Organisation du code
+```bash
+CHROME_PATH=/usr/bin/chromium npm run test:comfort
+```
 
-| Dossier | Responsabilité |
+`test:comfort` nécessite une compilation de production et `npm run start` dans
+un autre terminal. Il utilise des visiteurs et lecteurs simulés dans un profil
+isolé et n’écrit pas dans la base réelle. `test:ui` couvre davantage de parcours,
+avec une inscription temporaire pour certains scénarios : le lancer uniquement
+contre une base locale de test. Le [guide des tests](docs/tests.md) décrit les
+commandes, les scénarios ciblés, les sorties et leur isolation.
+
+## Organisation et documentation
+
+| Emplacement | Responsabilité |
 | --- | --- |
-| `src/app/` | Pages, API, métadonnées et styles globaux Next.js. |
-| `src/components/` | Orchestration de l'expérience et commandes de l'interface. |
-| `src/components/bus/` | Scène 3D : véhicule, passagers, caméra, paysages, météo et télévision. `BusFront.tsx` contient la face avant ; `BusBodyGeometry.ts` les découpes de carrosserie ; `BusWheels.tsx`, `BusCoachDetails.tsx` et `BusCabinDetails.tsx` les roues et les équipements. |
-| `src/components/modals/`, `src/components/theory/` | Fenêtres passagers et présentation de la théorie. |
-| `src/lib/` | Calculs et ressources partagés, dont `bus-camera.ts` pour les limites de recul et de visibilité ; `client/` et `server/` séparent les accès spécifiques. |
-| `src/types/`, `migrations/`, `scripts/` | Types partagés, schéma D1 et contrôles locaux. |
+| `src/app/` | Pages, routes API, métadonnées et styles globaux. |
+| `src/components/` | Assemblage de l’expérience, HUD et hooks des commandes, profils et listes. |
+| `src/components/bus/` | Scène 3D, véhicule, habitacle, ressources, personnages, caméra et télévision. |
+| `src/components/modals/`, `src/components/theory/`, `src/components/audio/` | Présentation des fenêtres, contenu de la théorie et lecteur de musique. |
+| `src/lib/` | Calculs, ressources et contrats partagés ; `client/` pour l’API navigateur et `server/` pour D1, quotas et modération. |
+| `src/types/`, `migrations/`, `scripts/` | Types, migrations D1 et outils de vérification. |
 
-La revue détaillée des fichiers, des noms et des optimisations à mesurer se
-trouve dans [l'audit technique](docs/audit-technique-2026-09-28.md).
-Les corrections d’interface et la revue de la PR du 5 octobre sont documentées
-dans [l’audit UI/UX](docs/audit-interface-2026-10-05.md).
+Le [guide d’architecture](docs/architecture.md) décrit les propriétaires d’état,
+les échanges audio et les règles à préserver. L’[index documentaire](docs/README.md)
+sépare les guides actuels des audits historiques.
 
-## Déploiement Cloudflare
+## Déploiement
 
-Le rate limiting utilise un secret HMAC côté Worker. Il doit être créé une fois
-avant le premier déploiement :
+La cible est un Worker Cloudflare avec une base D1 liée sous `DB_BUS`. La
+configuration versionnée vise le site existant ; une installation indépendante
+doit renseigner son propre Worker et sa base avant une commande distante.
 
-```bash
-openssl rand -hex 32 | npx wrangler secret put RATE_LIMIT_SECRET
-```
+Deux variables ont des rôles distincts :
 
-Pour les previews Cloudflare locales, copiez `.dev.vars.example` vers
-`.dev.vars`, puis renseignez `RATE_LIMIT_SECRET` avec une valeur aléatoire. Le
-fichier `.dev.vars` et ses variantes par environnement sont ignorés par Git.
+- `RATE_LIMIT_SECRET` : secret HMAC requis pour les quotas, au moins 32 caractères ;
+- `MODERATION_TOKEN` : jeton facultatif pour supprimer administrativement un siège,
+  au moins 32 caractères et différent du secret des quotas. Sans lui, la
+  suppression personnelle des visiteurs reste disponible.
 
-Déployez ensuite uniquement avec la commande suivante :
-
-```bash
-npm run deploy
-```
-
-Cette commande vérifie d'abord que le secret existe sur le Worker, construit
-l'application, applique les migrations D1 distantes, puis déploie le Worker. Cet
-ordre évite qu'une version de l'API utilise un schéma qui n'a pas encore été
-migré. Pour initialiser la base D1 locale, utilisez
-`npm run db:migrate:local`.
+Configurer les secrets **dans Cloudflare**, vérifier localement les changements,
+puis utiliser `npm run deploy`. Le préflight contrôle la présence du secret
+requis ; la commande construit l’adaptateur, applique les migrations distantes
+et déploie le Worker. Elle ne valide pas les valeurs secrètes ni les tests.
+Le [guide d’exploitation](docs/exploitation.md) détaille la configuration, la
+rotation des secrets, la modération et le contrôle de santé après déploiement.

@@ -1,5 +1,7 @@
 # Audit de l’interface — 5 octobre 2026
 
+> Archive historique : ce document décrit la revue à sa date, pas l’état actuel du projet. Voir le [guide d’architecture](architecture.md), les [tests actuels](tests.md) et le [guide d’exploitation](exploitation.md). Les priorités et conclusions ci-dessous peuvent avoir été traitées depuis.
+
 ## Base vérifiée et revue de la PR
 
 Au début de la revue, `main` local et `origin/main` pointaient sur

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
 import { PARTY_YOUTUBE_ID, PARTY_TITLE, createPartyDanceGate, samplePartyDanceGate } from "@/lib/bus-party";
+import { emitBusAudioEvent, onBusAudioEvent } from "@/lib/bus-audio";
 
 export const BGM_YOUTUBE_ID = "63RzVcR1qHg"; // "Life in Pieces" - Howard Harper-Barnes (Thème Le Mont Corvo)
 export { PARTY_YOUTUBE_ID } from "@/lib/bus-party";
@@ -49,7 +50,7 @@ export default function BackgroundMusicPlayer({
   const reportDance = useCallback((dancing: boolean) => {
     if(dancingRef.current===dancing)return;
     dancingRef.current=dancing;
-    window.dispatchEvent(new CustomEvent("bus-party-dance",{detail:dancing}));
+    emitBusAudioEvent("partyDance", dancing);
   },[]);
   const updateDance = useCallback(() => {
     if(!desiredPartyRef.current){reportDance(false);return;}
@@ -270,41 +271,27 @@ export default function BackgroundMusicPlayer({
     return()=>window.clearInterval(timer);
   },[updateDance]);
 
-  useEffect(() => {
-    const onUserToggle = (event: Event) => {
-      if (desiredPartyRef.current) return;
-      const detail = (event as CustomEvent<{playing:boolean;suspendedForVideo:boolean}>).detail;
-      desiredPlayingRef.current = detail.playing;
-      desiredSuspendedRef.current = detail.suspendedForVideo;
-      if (apiFailedRef.current) reportFailure("Le lecteur YouTube n’a pas pu être chargé. Actualisez la page pour réessayer.");
-      else applyDesiredPlayback();
-    };
-    window.addEventListener("bus-music-user-toggle", onUserToggle);
-    return () => window.removeEventListener("bus-music-user-toggle", onUserToggle);
-  }, [applyDesiredPlayback, reportFailure]);
+  useEffect(() => onBusAudioEvent("musicToggle", detail => {
+    if (desiredPartyRef.current) return;
+    desiredPlayingRef.current = detail.playing;
+    desiredSuspendedRef.current = detail.suspendedForVideo;
+    if (apiFailedRef.current) reportFailure("Le lecteur YouTube n’a pas pu être chargé. Actualisez la page pour réessayer.");
+    else applyDesiredPlayback();
+  }), [applyDesiredPlayback, reportFailure]);
 
-  useEffect(() => {
-    const onPartyToggle = (event: Event) => {
-      const detail = (event as CustomEvent<{ enabled: boolean; suspendedForVideo: boolean }>).detail;
-      desiredPartyRef.current = detail.enabled;
-      desiredSuspendedRef.current = detail.suspendedForVideo;
-      if (apiFailedRef.current) reportFailure("Le lecteur YouTube n’a pas pu être chargé. Actualisez la page pour réessayer.");
-      else applyDesiredPlayback();
-    };
-    window.addEventListener("bus-music-party-toggle", onPartyToggle);
-    return () => window.removeEventListener("bus-music-party-toggle", onPartyToggle);
-  }, [applyDesiredPlayback, reportFailure]);
+  useEffect(() => onBusAudioEvent("partyToggle", detail => {
+    desiredPartyRef.current = detail.enabled;
+    desiredSuspendedRef.current = detail.suspendedForVideo;
+    if (apiFailedRef.current) reportFailure("Le lecteur YouTube n’a pas pu être chargé. Actualisez la page pour réessayer.");
+    else applyDesiredPlayback();
+  }), [applyDesiredPlayback, reportFailure]);
 
   // Les deux lecteurs vivent dans des racines React différentes. Couper le son
   // dans la même commande, avant que la télévision ne devienne audible.
-  useEffect(() => {
-    const onBusAudioFocus = (event: Event) => {
-      busAudioFocusRef.current = (event as CustomEvent<boolean>).detail;
-      applyDesiredPlayback();
-    };
-    window.addEventListener("bus-tv-audio-focus", onBusAudioFocus);
-    return () => window.removeEventListener("bus-tv-audio-focus", onBusAudioFocus);
-  }, [applyDesiredPlayback]);
+  useEffect(() => onBusAudioEvent("tvFocus", active => {
+    busAudioFocusRef.current = active;
+    applyDesiredPlayback();
+  }), [applyDesiredPlayback]);
 
   // Synchronisation de l'état lecture / pause selon les props
   useLayoutEffect(() => {

@@ -37,12 +37,12 @@ assert.match(busTv, /desiredRef\.current\.hasEntered[\s\S]*applyDesiredPlayback\
 assert.doesNotMatch(busTv, /inset:\s*"0 0 46px 0"/, "The TV must not have a full-surface interception layer over YouTube controls.");
 assert.doesNotMatch(busTv, /bus-tv-toggle-playback/, "Playback must be handled by YouTube's native controls instead of an overlay.");
 assert.doesNotMatch(busTv, /bus-video-state|bus-video-seek/, "Obsolete synchronized-video state must stay removed.");
-assert.match(experience, /bus-tv-user-prepare/, "The boarding gesture must prepare the player silently.");
-assert.doesNotMatch(experience, /bus-tv-user-play/, "Boarding must not start playback before first-person arrival.");
+assert.match(experience, /emitBusAudioEvent\("tvPrepare"\)/, "The boarding gesture must prepare the player silently.");
+assert.doesNotMatch(experience, /emitBusAudioEvent\("tvPlay"/, "Boarding must not start playback before first-person arrival.");
 assert.match(hud, /hasEntered && phase === "outside"/, "The exterior TV toggle must remain available after the first ride.");
 assert.match(hud, /Allumer la TV/, "The exterior TV control must be able to turn the TV back on.");
 assert.ok(
-  experience.indexOf('window.dispatchEvent(new Event("bus-tv-user-prepare"))') < experience.indexOf('fetchJson<BusApiState & {', experience.indexOf("const enterBus")),
+  experience.indexOf('emitBusAudioEvent("tvPrepare")') < experience.indexOf('fetchJson<BusApiState & {', experience.indexOf("const enterBus")),
   "Silent preparation must not wait for registration.",
 );
 assert.match(theoryContent, /<SyncedTheoryVideo\b/, "The theory modal must keep its dedicated video player.");

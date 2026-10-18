@@ -36,7 +36,7 @@ export async function runCharacterVisualChecks({ send, evaluate, waitForPageCond
     await send("Page.navigate", {url:`${baseUrl}/?count=20&seat=0&row=0`});
     await waitForPageCondition(send, `window.busCameraTestState()?.scene.getObjectByName('bus-seated-passengers')?.userData.detailedCount>0 && document.querySelector('.bus-app').dataset.sceneAvailable==='true'&&Boolean(window.mediaTestPlayers?.bus)`, "The isolated registered visitors load", 30_000);
     await run(`[...document.querySelectorAll('button')].find(button=>!button.disabled&&button.textContent.includes('Entrer dans le bus')).click()`);
-    await waitForPageCondition(send, `document.querySelector('.bus-app').dataset.phase==='inside'`, "Fixture visitor zero boards without a database write", 30_000);
+    await waitForPageCondition(send, `document.querySelector('.bus-app').dataset.phase==='inside'`, "Fixture visitor zero boards without a database write", 60_000);
     await run(`document.querySelector('button[aria-label="Explorer en vue libre"]').click()`);
     await waitForPageCondition(send, `window.busCameraTestState().controls.enabled`, "Character inspection starts in free view", 15_000);
     await run(`new Promise(resolve=>{

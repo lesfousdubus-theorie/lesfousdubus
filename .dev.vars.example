@@ -1,3 +1,6 @@
-# Copy this file to .dev.vars for Cloudflare preview commands.
-# Generate a different long random value for each environment.
+# Copy this file to .dev.vars for local Next.js and Cloudflare previews.
+# Required: at least 32 random characters; used only for anonymous quotas.
 RATE_LIMIT_SECRET=
+# Optional: a different random token of at least 32 characters.
+# Leave empty to disable administrative deletion. Personal deletion still works.
+MODERATION_TOKEN=
