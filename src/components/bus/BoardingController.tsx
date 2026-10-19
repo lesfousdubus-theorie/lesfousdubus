@@ -6,9 +6,9 @@ import { JOURNEY_MAX_DT, beginJourney, ease, updateJourney, type JourneyState } 
 import { getNearestBusDoor } from "@/lib/bus-layout";
 import type { Phase, WorldState } from "./constants";
 
-export default function BoardingController({phase,journey,worldRef,seatZ,seatX,numRows,boardingPending=false,reducedMotion}: {
+export default function BoardingController({phase,journey,worldRef,seatZ,seatX,numRows,boardingPending=false,boardingFromSeat=false,reducedMotion}: {
   phase:Phase; journey:React.RefObject<JourneyState>; worldRef:React.RefObject<WorldState>;
-  seatZ:number; seatX:number; numRows:number; boardingPending?:boolean; reducedMotion:boolean;
+  seatZ:number; seatX:number; numRows:number; boardingPending?:boolean; boardingFromSeat?:boolean; reducedMotion:boolean;
 }) {
   const previous=useRef<Phase>(phase);
   const elapsed=useRef(0);
@@ -36,14 +36,14 @@ export default function BoardingController({phase,journey,worldRef,seatZ,seatX,n
       if(previous.current==="exiting"&&phase==="outside")departing.current={active:true,time:0,z:state.position.z,scroll:worldRef.current.scroll};
       if(phase==="entering")departing.current.active=false;
       previous.current=phase; elapsed.current=0;
-      if(cinematic)beginJourney(state,phase,seatZ,getNearestBusDoor(seatZ,numRows),seatX);
+      if(cinematic)beginJourney(state,phase,seatZ,getNearestBusDoor(seatZ,numRows),seatX,boardingFromSeat);
       else state.waitingForSeat=false;
       if(!cinematic)resume.current=state.drive*2;
     }
     if(cinematic) elapsed.current+=Math.min(dt,JOURNEY_MAX_DT);
     if(reducedMotion&&cinematic&&elapsed.current>=0.6)elapsed.current=phase==="entering"?state.timing.entryDuration:state.timing.exitDuration;
     updateJourney(state,phase,elapsed.current,seatZ,worldRef.current.speedMultiplier,undefined,seatX);
-    if(reducedMotion&&cinematic){state.avatarVisible=false;state.drive=0;}
+    if(reducedMotion&&cinematic){state.avatarVisible=phase==="entering"&&state.entryFromSeat;state.drive=0;}
     if(!cinematic) {
       resume.current=Math.min(2,resume.current+Math.min(dt,JOURNEY_MAX_DT));
       state.drive=reducedMotion?1:ease(resume.current/2);

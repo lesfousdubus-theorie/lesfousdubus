@@ -86,6 +86,7 @@ export default function BusExperience() {
   const [showTheoryModal, setShowTheoryModal] = useState(false);
   const [showTheoryAge, setShowTheoryAge] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [boardingFromSeat, setBoardingFromSeat] = useState(false);
   const [passengerProfiles, setPassengerProfiles] = useState<PassengerProfile[]>([]);
   const [currentPassengerSeatIndex, setCurrentPassengerSeatIndex] = useState<number | null>(null);
   const [seatCapacity, setSeatCapacity] = useState(() => {
@@ -277,6 +278,7 @@ export default function BusExperience() {
     unlockAudio();
     emitBusAudioEvent("tvPrepare");
     setJoining(true);
+    setBoardingFromSeat(false);
     setTvOn(true);
     setPhase("entering");
     playDing();
@@ -301,6 +303,10 @@ export default function BusExperience() {
         playStretch();
       }
       applyBusSnapshot(d);
+      // Une inscription déjà présente au chargement correspond au personnage
+      // que l'on voit assis depuis l'extérieur. Seule la caméra le rejoint.
+      // Après une sortie dans cette session, il doit en revanche remonter à pied.
+      setBoardingFromSeat(!hasEntered && d.added === false && d.seatIndex !== null);
       setRegistrationPending(false);
       setCurrentPassengerSeatIndex(d.seatIndex);
       // Synchronise le profil depuis la base : restaure le commentaire existant
@@ -333,7 +339,7 @@ export default function BusExperience() {
     } finally {
       setJoining(false);
     }
-  }, [applyBusSnapshot, dismissToast, phase, joining, sceneAvailable, showToast, restoreSavedProfile]);
+  }, [applyBusSnapshot, dismissToast, phase, joining, sceneAvailable, hasEntered, showToast, restoreSavedProfile]);
 
   const leaveBusPermanently = useCallback(async () => {
     try {
@@ -453,6 +459,7 @@ export default function BusExperience() {
         uiPaused={overlayOpen}
         hasEntered={hasEntered}
         boardingPending={joining}
+        boardingFromSeat={boardingFromSeat}
         passengerProfiles={passengerProfiles}
         currentPassengerSeatIndex={currentPassengerSeatIndex}
         currentPassengerAvatarId={profile.savedAvatarId}
