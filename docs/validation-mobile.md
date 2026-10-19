@@ -11,7 +11,7 @@ milieu de gamme. Noter le modèle, le système, le navigateur, le réseau et le
 commit. Désactiver le cache pour le premier passage seulement.
 
 1. En réseau mobile, vérifier que « Lire la théorie » est accessible pendant
-   l’attente. Ouvrir le lien : les 21 sections et les questions doivent être
+   l’attente. Ouvrir le lien : les 22 sections et les questions doivent être
    lisibles. Avec JavaScript désactivé, cette page doit encore fonctionner.
 2. Entrer dans le bus. Vérifier que la télé attend l’arrivée en première personne,
    que la musique de fond se coupe à la lecture, puis reprend progressivement à

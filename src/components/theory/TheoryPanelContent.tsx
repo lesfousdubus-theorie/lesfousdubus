@@ -32,7 +32,7 @@ export default function TheoryPanelContent({ activeTab, onVideoPlaybackChange }:
             </span>
           </aside>
 
-          {/* Une seule introduction avant le détail des 21 points. */}
+          {/* Une seule introduction avant le détail des points. */}
           <section className="space-y-4 rounded-2xl border border-[#ffd23f]/45 border-l-4 border-l-[#ffd23f] bg-[#171a19] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.2)] sm:p-7 lg:p-8">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#ffd23f] text-[#071b5b] shadow-[inset_0_0_0_1px_rgba(7,27,91,0.22)]" aria-hidden="true">
@@ -53,22 +53,27 @@ export default function TheoryPanelContent({ activeTab, onVideoPlaybackChange }:
             <p className="max-w-4xl text-sm leading-7 text-[#f1f4f8] sm:text-[15px]">
               {CENTRAL_THESIS.overview}
             </p>
+            <p className="max-w-4xl text-xs leading-6 text-white/75">
+              Résumé de la théorie du Mont Corvo. Les liens dans chaque point renvoient au
+              chapitre correspondant de sa vidéo.
+            </p>
           </section>
 
-          {/* Citations clés du manga */}
+          {/* Repères du manga reformulés, sans les présenter comme des citations exactes. */}
           <div>
+            <h4 className="mb-3 text-sm font-bold text-white">Repères du manga, reformulés</h4>
             <div className="grid gap-3 sm:grid-cols-3">
-              {CENTRAL_THESIS.quotes.map((q, idx) => (
-                <blockquote
+              {CENTRAL_THESIS.mangaReadings.map((q, idx) => (
+                <div
                   key={idx}
                   className="flex min-h-[164px] flex-col justify-between rounded-xl border border-white/20 bg-[#070c16] p-5"
                 >
-                  <p className="text-sm italic leading-relaxed text-[#eef1f5]">« {q.text} »</p>
-                  <footer className="mt-4 border-t border-white/20 pt-3 text-xs font-bold text-[#ffd23f]">
+                  <p className="text-sm leading-relaxed text-[#eef1f5]">{q.text}</p>
+                  <p className="mt-4 border-t border-white/20 pt-3 text-xs font-bold text-[#ffd23f]">
                     {q.author} <span className="font-normal text-white/75">· {q.chapter}</span>
                     <span className="mt-1.5 block font-semibold leading-relaxed text-[#cbd8ee]">{q.relevance}</span>
-                  </footer>
-                </blockquote>
+                  </p>
+                </div>
               ))}
             </div>
           </div>
@@ -104,7 +109,7 @@ export default function TheoryPanelContent({ activeTab, onVideoPlaybackChange }:
                 Le Mont Corvo
               </span>
               <span className="text-xs font-semibold text-white/85">
-                Vidéo fondatrice de la théorie
+                La théorie expliquée en détail
               </span>
             </div>
             <SyncedTheoryVideo onPlaybackChange={onVideoPlaybackChange} />
@@ -212,6 +217,15 @@ function TheoryDetailCard({
       <p className="mt-4 border-t border-white/20 pt-4 text-sm leading-7 text-[#e4e9f0]">
         {section.summary}
       </p>
+      <a
+        href={`${THEORY_VIDEO_URL}&t=${section.sourceSeconds}s`}
+        aria-label={`Voir dans la vidéo : ${section.title}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 inline-flex min-h-11 items-center text-xs font-bold text-[#ffd23f] underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ffd23f]"
+      >
+        Voir ce passage dans la vidéo ↗
+      </a>
     </details>
   );
 }

@@ -1,4 +1,5 @@
 import { THEORY_VIDEO_URL, THEORY_VIDEO_EMBED_URL, THEORY_VIDEO_THUMBNAIL_URL } from "@/lib/theory-video";
+import { THEORY_FAQ } from "@/lib/theory-data";
 
 /**
  * Données structurées Schema.org (JSON-LD) pour le site officiel de la Théorie des Fous du Bus.
@@ -42,7 +43,7 @@ export const articleJsonLd = {
   description: THEORY_DESCRIPTION,
   image: [`${SITE_URL}/og-image.jpg`, `${SITE_URL}/logo.png`],
   datePublished: "2024-05-26T00:00:00+02:00",
-  dateModified: "2026-10-05T14:00:00+02:00",
+  dateModified: "2026-10-19T16:40:00+02:00",
   inLanguage: "fr-FR",
   mainEntityOfPage: {
     "@type": "WebPage",
@@ -77,7 +78,7 @@ export const videoJsonLd = {
   "@type": "VideoObject",
   name: "La théorie One Piece qui explique tout. (Théorie des fous du bus)",
   description:
-    "Explication et démonstration vidéo complète de la théorie des Fous du Bus : comment le Siècle Oublié est en réalité le présent de One Piece, pourquoi Roger est arrivé trop tôt de 25 ans et pourquoi Joy Boy est Luffy.",
+    "La théorie des Fous du Bus expliquée par le Mont Corvo : le Siècle Oublié serait le présent de One Piece, Laugh Tale serait Roadstar à une autre époque et Joy Boy serait Luffy.",
   thumbnailUrl: [
     THEORY_VIDEO_THUMBNAIL_URL,
     `${SITE_URL}/og-image.jpg`,
@@ -96,46 +97,12 @@ export const videoJsonLd = {
 export const faqJsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "Qu'est-ce que la Théorie des Fous du Bus sur One Piece ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "La Théorie des Fous du Bus est une thèse globale sur l'œuvre d'Eiichiro Oda démontrant que le Siècle Oublié n'a jamais eu lieu dans le passé il y a 800 ans, mais qu'il se déroule en direct dans le manga depuis le chapitre 1. Les éléments historiques et les prophéties sont en réalité des fragments de mémoire envoyés depuis le futur.",
-      },
+  mainEntity: THEORY_FAQ.map(({ question, answer }) => ({
+    "@type": "Question",
+    name: question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: answer,
     },
-    {
-      "@type": "Question",
-      name: "Pourquoi Gol D. Roger est-il arrivé 'trop tôt' de 25 ans à Laugh Tale ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Selon la théorie, Laugh Tale n'est pas une île cachée dans l'espace mais un point précis dans le temps. C'est Roadstar dans le futur. Roger et son équipage sont arrivés au bon endroit mais 25 ans trop tôt, car Joy Boy (Monkey D. Luffy) n'était pas encore né pour accomplir le serment.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Pourquoi les Ponéglyphes sont-ils indestructibles ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Les Ponéglyphes sont 'la mémoire de l'avenir'. Ils sont inviolables et indestructibles depuis 800 ans car ils ont été taillés dans un matériau et avec une technologie qui n'existent pas encore à cette époque. Ils ont été rédigés par Nico Robin, taillés par le clan Kozuki (Momonosuke) et envoyés dans le passé par Nefertari Lili / Vivi.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Qui est véritablement Joy Boy selon la théorie ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Joy Boy n'a jamais existé il y a 800 ans : Joy Boy est le nom de règne que l'histoire donnera à Monkey D. Luffy après la libération des peuples et l'effondrement du Gouvernement Mondial. Nika est son nom divin et Luffy son nom de naissance.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Quel est le lien entre Barbe Noire et Davy D. Jones ?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Selon la théorie, Marshall D. Teach est le dernier survivant du clan Davy et deviendrait Davy D. Jones en renversant Imu pour prendre le Trône Vacant.",
-      },
-    },
-  ],
+  })),
 };

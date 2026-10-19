@@ -52,12 +52,12 @@ try{
  await send('Emulation.setScriptExecutionDisabled',{value:true});
  await send('Page.navigate',{url:baseUrl+'/theorie'});
  await wait("Boolean(document.querySelector('#theory-reading details summary'))",'Theory renders without JavaScript');
- assert.equal(await run("document.querySelectorAll('#theory-chapters h3').length"),21);
+ assert.equal(await run("document.querySelectorAll('#theory-chapters h3').length"),22);
  await click('#theory-reading details summary');
  assert.equal(await run("document.querySelector('#theory-reading details').open"),true);
  assert.equal(await run("document.documentElement.scrollWidth>innerWidth"),false);
  await capture('theorie-mobile-sans-javascript.png');
- report.checks.push('Complete 21-part theory and 7 native FAQs usable without JavaScript at 320px.');
+ report.checks.push('Complete 22-part theory and 7 native FAQs usable without JavaScript at 320px.');
  await send('Emulation.setScriptExecutionDisabled',{value:false});
  chunkAction='fail';await send('Fetch.enable',{patterns:[{urlPattern:baseUrl+'/_next/static/chunks/'+chunk,requestStage:'Request'}]});
  await send('Page.navigate',{url:baseUrl});

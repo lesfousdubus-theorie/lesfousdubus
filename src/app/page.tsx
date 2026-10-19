@@ -30,16 +30,16 @@ export default function HomePage() {
           <p className="mt-2 text-white/80">{CENTRAL_THESIS.overview}</p>
         </header>
 
-        {/* Citations canoniques */}
+        {/* Repères du manga reformulés */}
         <section className="mt-6">
-          <h2 className="text-xl font-bold text-[#ffd23f]">Citations Fondatrices du Manga One Piece</h2>
-          {CENTRAL_THESIS.quotes.map((q, i) => (
-            <blockquote key={i} className="mt-2 border-l-4 border-[#ffd23f] pl-3 italic">
-              <p>« {q.text} »</p>
-              <cite className="not-italic text-sm font-semibold text-white/70">
+          <h2 className="text-xl font-bold text-[#ffd23f]">Repères du manga dans la théorie — reformulés</h2>
+          {CENTRAL_THESIS.mangaReadings.map((q, i) => (
+            <div key={i} className="mt-2 border-l-4 border-[#ffd23f] pl-3">
+              <p>{q.text}</p>
+              <p className="text-sm font-semibold text-white/70">
                 — {q.author}, {q.chapter}
-              </cite>
-            </blockquote>
+              </p>
+            </div>
           ))}
         </section>
 
@@ -59,7 +59,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Les 21 axes issus de la transcription complète */}
+        {/* Les points résumés de la vidéo */}
         <section className="mt-8">
           <h2 className="text-xl font-bold text-[#ffd23f]">
             La Théorie Complète en {FULL_THEORY_SECTIONS.length} Étapes
