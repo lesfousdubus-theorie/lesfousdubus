@@ -17,33 +17,23 @@ interface TheoryModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   onVideoPlaybackChange?: (active: boolean) => void;
-  onLeaveBusPermanently?: () => Promise<boolean>;
+  onManagePlace?: () => void;
 }
 
 const THEORY_TABS: TheoryTab[] = ["thesis", "video", "faq", "participate"];
 
-export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPlaybackChange, onLeaveBusPermanently }: TheoryModalProps) {
+export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPlaybackChange, onManagePlace }: TheoryModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TheoryTab>("thesis");
-  const [confirmLeave, setConfirmLeave] = useState(false);
-  const [leaving, setLeaving] = useState(false);
-  const [leaveError, setLeaveError] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const dialogTitleRef = useRef<HTMLHeadingElement>(null);
-  const confirmDialogRef = useRef<HTMLElement>(null);
-  const confirmTitleRef = useRef<HTMLHeadingElement>(null);
-  const leaveButtonRef = useRef<HTMLButtonElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const scrollPositions = useRef<Partial<Record<TheoryTab, number>>>({});
-  const leaveLock = useRef(false);
 
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalOpen;
 
   const handleClose = useCallback(() => {
-    if (leaveLock.current) return;
-    setConfirmLeave(false);
-    setLeaveError("");
     if (onClose) {
       onClose();
     } else {
@@ -51,40 +41,12 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
     }
   }, [onClose]);
 
-  const closeLeaveConfirmation = useCallback(() => {
-    if (leaveLock.current) return;
-    setConfirmLeave(false);
-    window.requestAnimationFrame(() => leaveButtonRef.current?.focus());
-  }, []);
-
-  const leavePermanently = useCallback(async () => {
-    if (!onLeaveBusPermanently || leaveLock.current) return;
-    leaveLock.current = true;
-    setLeaving(true);
-    setLeaveError("");
-    try {
-      const left = await onLeaveBusPermanently();
-      if (!left) setLeaveError("La place n’a pas pu être supprimée. Réessaie dans un instant.");
-    } catch {
-      setLeaveError("La place n’a pas pu être supprimée. Réessaie dans un instant.");
-    } finally {
-      leaveLock.current = false;
-      setLeaving(false);
-    }
-  }, [onLeaveBusPermanently]);
-
   const selectTab = useCallback((tab: TheoryTab) => {
     scrollPositions.current[activeTab] = contentRef.current?.scrollTop ?? 0;
     setActiveTab(tab);
   }, [activeTab]);
 
-  const closeFromKeyboard = () => {
-    if (confirmLeave) closeLeaveConfirmation();
-    else handleClose();
-  };
-  const handleDialogKeyDown = useModalAccessibility(
-    isOpen, closeFromKeyboard, confirmLeave ? confirmDialogRef : dialogRef, dialogTitleRef,
-  );
+  const handleDialogKeyDown = useModalAccessibility(isOpen, handleClose, dialogRef, dialogTitleRef);
 
   // Écoute de l'événement global pour ouvrir le modal depuis n'importe quel composant
   useEffect(() => {
@@ -99,13 +61,6 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
     window.addEventListener("open-theory-modal", handleOpenEvent);
     return () => window.removeEventListener("open-theory-modal", handleOpenEvent);
   }, [selectTab]);
-
-  // Le dialogue de confirmation prend temporairement le focus à la fenêtre principale.
-  useEffect(() => {
-    if (!confirmLeave) return;
-    const frame = window.requestAnimationFrame(() => confirmTitleRef.current?.focus());
-    return () => window.cancelAnimationFrame(frame);
-  }, [confirmLeave]);
 
   const selectTabFromKeyboard = useCallback((index: number) => {
     const tab = THEORY_TABS[index];
@@ -152,7 +107,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
         onTouchMove={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
-        <div inert={confirmLeave ? true : undefined} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="flex min-h-[64px] shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-[#070c16]/95 px-3 py-2.5 min-[360px]:gap-4 min-[360px]:px-4 min-[360px]:py-3 sm:min-h-[76px] sm:px-7 sm:py-4 lg:px-9">
           <div className="flex min-w-0 items-center gap-3 sm:gap-4">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#ffd23f]/25 bg-[#ffd23f]/10 text-xl sm:h-11 sm:w-11 sm:text-2xl" aria-hidden="true">📜</span>
@@ -238,16 +193,10 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
 
         {/* Pied de page du modal */}
         <div className="flex min-h-14 shrink-0 flex-col items-stretch justify-between gap-2 border-t border-white/15 bg-[#070c16]/95 px-3 py-2 min-[360px]:flex-row min-[360px]:items-center min-[360px]:gap-4 min-[360px]:px-4 min-[360px]:py-2.5 sm:px-7 lg:px-9">
-          {onLeaveBusPermanently ? (
-            <button
-              type="button"
-              ref={leaveButtonRef}
-              onClick={() => setConfirmLeave(true)}
-              className="min-h-11 rounded-lg px-2 text-left text-xs font-semibold text-white/80 underline-offset-4 transition hover:text-red-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
-            >
-              Se retirer définitivement du bus
-            </button>
-          ) : <span />}
+          {onManagePlace ? <button type="button" onClick={onManagePlace}
+            className="min-h-11 rounded-lg px-2 text-left text-xs font-semibold text-white/80 underline underline-offset-4 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">
+            Gérer ma place
+          </button> : <span />}
           <button
             type="button"
             onClick={handleClose}
@@ -258,33 +207,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
         </div>
         </div>
 
-        {confirmLeave && (
-          <div className="absolute inset-0 z-20 grid place-items-center overflow-y-auto bg-[#020617]/55 p-2 backdrop-blur-[2px] min-[360px]:p-4" onClick={() => !leaving && closeLeaveConfirmation()}>
-            <section
-              ref={confirmDialogRef}
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="leave-bus-title"
-              aria-describedby="leave-bus-description"
-              tabIndex={-1}
-              className="w-full max-w-md rounded-xl border border-red-300/45 bg-[#101827] p-4 shadow-2xl min-[360px]:rounded-2xl min-[360px]:p-5 sm:p-6"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-red-200">Sortie définitive</p>
-              <h3 ref={confirmTitleRef} tabIndex={-1} id="leave-bus-title" className="mt-2 text-xl font-black text-white focus:outline-none">Supprimer ta place du bus ?</h3>
-              <p id="leave-bus-description" className="mt-3 text-sm leading-6 text-white/75">
-                Ton nom, ton commentaire et ta place seront supprimés du site. Le compteur diminuera aussi. Avec « Sortir du bus », ta place reste enregistrée.
-              </p>
-              {leaveError && <p role="alert" className="mt-3 text-sm font-bold text-red-200">{leaveError}</p>}
-              <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <button type="button" disabled={leaving} onClick={closeLeaveConfirmation} className="min-h-11 rounded-lg border border-white/15 px-4 text-sm font-bold text-white/80 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-80">Annuler</button>
-                <button type="button" disabled={leaving} onClick={() => void leavePermanently()} className="min-h-11 rounded-lg bg-red-600 px-4 text-sm font-black text-white hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-wait disabled:opacity-80">
-                  {leaving ? "Suppression…" : "Supprimer ma place"}
-                </button>
-              </div>
-            </section>
-          </div>
-        )}
+
       </div>
     </div>,
     document.body,

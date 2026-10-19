@@ -5,6 +5,11 @@ Une expérience web en 3D autour de la théorie One Piece « Le Siècle Oublié 
 - Explorer le bus, monter à bord et regarder la vidéo de la théorie.
 - Rejoindre les autres passagers avec un avatar et un profil.
 - Lire le dossier de la théorie et profiter de la musique et du mode fête.
+- Activer le mode immersif pour masquer les commandes, puis les retrouver avec
+  le bouton « Afficher les commandes » ou Échap.
+
+Sortir conserve la place et le profil enregistrés. « Ma place » permet de
+supprimer son inscription et son profil après une confirmation distincte.
 
 ## Développement
 

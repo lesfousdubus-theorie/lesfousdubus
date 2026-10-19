@@ -20,8 +20,14 @@ export async function runLiveMusicCheck({send,evaluate,waitForPageCondition,base
     }return null;
   })()`;
   await waitForPageCondition(send,`${playerState}!==null&&Boolean(document.querySelector('button[aria-label^="Activer la musique de fond"]'))`,"Real music player ready",30_000);
+  let preloaded = false;
+  try {
+    await waitForPageCondition(send,`(()=>{const p=${playerState};return p?.state===2&&p.loaded>0&&p.muted;})()`,"Real music buffer prepared before clicking",25_000);
+    preloaded = true;
+  } catch { /* Report remote preload restrictions separately from playback. */ }
   const before=await run(playerState);
   const point=await run(`(()=>{const r=document.querySelector('button[aria-label^="Activer la musique de fond"]').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
+  const clickedAt=Date.now();
   await send("Input.dispatchMouseEvent",{type:"mousePressed",button:"left",clickCount:1,...point});
   await send("Input.dispatchMouseEvent",{type:"mouseReleased",button:"left",clickCount:1,...point});
   let after;
@@ -31,11 +37,12 @@ export async function runLiveMusicCheck({send,evaluate,waitForPageCondition,base
   } catch {
     after=await run(playerState);
   }
+  const startLatencyMs=Date.now()-clickedAt;
   const tvState=`(()=>{const p=window.busYoutubeTestPlayer?.('tv-primary-iframe');return p&&{state:p.getPlayerState(),time:p.getCurrentTime(),loaded:p.getVideoLoadedFraction(),duration:p.getDuration(),muted:p.isMuted(),volume:p.getVolume(),error:p.getVideoData?.().errorCode};})()`;
   try {
     await waitForPageCondition(send,`(()=>{const p=${tvState};return p?.state===2&&p.loaded>0&&p.muted;})()`,"Real bus TV preloads silently and pauses",25_000);
   } catch { /* Record remote loading failures without treating them as local regressions. */ }
-  const result={before,after,played:after?.state===1&&after?.time>0&&after?.loaded>0&&!after?.muted,tvPreloaded:await run(tvState)};
+  const result={before,after,preloaded,startLatencyMs,played:after?.state===1&&after?.time>0&&after?.loaded>0&&!after?.muted,tvPreloaded:await run(tvState)};
   const directory=process.env.BUS_VISUAL_OUTPUT;
   if(directory){
     await mkdir(directory,{recursive:true});

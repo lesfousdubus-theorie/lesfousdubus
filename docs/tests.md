@@ -50,6 +50,7 @@ CHROME_PATH=/usr/bin/chromium npm run test:overlays
 CHROME_PATH=/usr/bin/chromium npm run test:avatars
 CHROME_PATH=/usr/bin/chromium npm run test:music-controls
 CHROME_PATH=/usr/bin/chromium npm run test:passenger-lifecycle
+CHROME_PATH=/usr/bin/chromium npm run test:immersive-place
 ```
 
 `test:ui` peut également utiliser le serveur `npm run dev`, mais les mesures de
@@ -81,8 +82,17 @@ Aide.
 
 `test:avatars` couvre la rotation, les flèches, l’enregistrement, la restauration
 et la hauteur de vue de Chopper. `test:music-controls` couvre la préparation muette
-des deux pistes, la recherche via le curseur, les priorités et les changements
-de format d’écran. Ces deux suites utilisent également des données isolées.
+des deux pistes, y compris un tampon lent et les notifications de la TV pendant
+le préchargement, la commande de lecture synchrone au clic, la recherche via le
+curseur, les priorités et les changements de format d’écran. Ces deux suites
+utilisent également des données isolées.
+
+`test:immersive-place` vérifie le mode immersif à l’extérieur et à l’intérieur,
+le retour au clavier ou au clic et le focus, sur ordinateur, téléphone étroit et
+paysage. La sortie ordinaire conserve l’inscription ; la suppression demande
+une confirmation, peut être annulée et reste réessayable après une erreur.
+Toutes ses requêtes de profil et de suppression sont interceptées par une
+fixture : aucune donnée réelle n’est modifiée.
 
 `test:passenger-lifecycle` vérifie qu’un visiteur déjà inscrit reste assis pendant
 que la caméra rejoint sa place, qu’une première entrée ou une remontée après

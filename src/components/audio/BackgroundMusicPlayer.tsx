@@ -8,6 +8,8 @@ import { emitBusAudioEvent, onBusAudioEvent, type BusMusicTrack } from "@/lib/bu
 export const BGM_YOUTUBE_ID = "63RzVcR1qHg";
 export { PARTY_YOUTUBE_ID } from "@/lib/bus-party";
 const MUSIC_RESUME_MS = 1800;
+const MUSIC_PRELOAD_SECONDS = 15;
+const MUSIC_PRELOAD_TIMEOUT_MS = 20_000;
 
 interface MusicSlot {
   track: BusMusicTrack;
@@ -160,6 +162,7 @@ export default function BackgroundMusicPlayer({
       // synchronously, before unmuting the selected one inside the click.
       for (const slot of Object.values(slotsRef.current)) {
         if (slot.track === nextTrack || !slot.ready || !slot.player) continue;
+        if (slot.warming && !desiredPlayingRef.current && !desiredPartyRef.current) continue;
         stopWarmup(slot); slot.player.mute(); slot.player.pauseVideo();
       }
       const slot = slotsRef.current[nextTrack], player = slot.player;
@@ -183,7 +186,10 @@ export default function BackgroundMusicPlayer({
       } else {
         if (requested) resumeAfterVideoRef.current = true;
         else resumeAfterVideoRef.current = false;
-        stopWarmup(slot); clearFade(); reportDance(false); player.mute(); player.pauseVideo();
+        clearFade(); reportDance(false);
+        // TV initialization and focus notifications must not cancel a silent
+        // preload before its buffer is ready. An explicit play takes over above.
+        if (!slot.warming) { player.mute(); player.pauseVideo(); }
       }
       publishPlayback();
     } catch { reportFailure("Le lecteur YouTube n’est pas prêt. Réessayez dans un instant."); }
@@ -199,7 +205,7 @@ export default function BackgroundMusicPlayer({
         if (!mount) continue;
         const player = new YT.Player(mount, {
           width: 200, height: 200, videoId: slot.videoId, host: "https://www.youtube-nocookie.com",
-          playerVars: { autoplay: 0, controls: 0, rel: 0, playsinline: 1, origin: window.location.origin },
+          playerVars: { autoplay: 1, mute: 1, controls: 0, rel: 0, playsinline: 1, origin: window.location.origin },
           events: {
             onReady: event => {
               if (cancelled) return;
@@ -208,19 +214,23 @@ export default function BackgroundMusicPlayer({
               const iframe = event.target.getIframe();
               iframe.title = `Musique ${slot.track === "party" ? "de fête" : "de fond"} — ${slot.title}`;
               iframe.setAttribute("allow", "autoplay; encrypted-media");
+              iframe.tabIndex = -1;
+              iframe.setAttribute("loading", "eager");
               iframe.id = slot.track === "party" ? "party-music-iframe" : "bgm-iframe";
               Object.assign(iframe.style, { display: "block", width: "200px", height: "200px" });
               if (shouldPlay(slot)) { applyDesiredPlayback(); return; }
-              // Cueing alone loads no media. A brief muted warmup prepares an
-              // initial buffer, then parks each song at zero. The browser may
-              // refuse it; an explicit click can still retry normal playback.
+              // Prepare actual media before the first click, not just the API.
+              // A nonzero fraction can be a tiny partial segment: keep warming
+              // until there is enough buffered audio for an immediate start.
               slot.warming = true;
               const started = performance.now();
               slot.warmTimer = window.setInterval(() => {
                 if (cancelled || shouldPlay(slot)) { stopWarmup(slot); return; }
                 try {
-                  const buffered = (event.target.getVideoLoadedFraction?.() ?? 0) > 0;
-                  if (!buffered && performance.now() - started < 6000) return;
+                  const duration = event.target.getDuration();
+                  const bufferedSeconds = (event.target.getVideoLoadedFraction?.() ?? 0) * duration;
+                  const buffered = duration > 0 && bufferedSeconds >= Math.min(MUSIC_PRELOAD_SECONDS, duration);
+                  if (!buffered && performance.now() - started < MUSIC_PRELOAD_TIMEOUT_MS) return;
                   stopWarmup(slot); event.target.mute(); event.target.pauseVideo(); event.target.seekTo(0, true);
                   publishPlayback();
                 } catch { stopWarmup(slot); }
@@ -228,7 +238,7 @@ export default function BackgroundMusicPlayer({
               event.target.playVideo(); publishPlayback();
             },
             onStateChange: event => {
-              if (cancelled) return;
+              if (cancelled || !slot.ready) return;
               const audible = shouldPlay(slot);
               if (slot.track === "party" && event.data === 0) {
                 danceGateRef.current.waitingForIntro = true; slot.restart = true;

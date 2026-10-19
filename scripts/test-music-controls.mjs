@@ -46,6 +46,8 @@ try {
   await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   await send("Page.addScriptToEvaluateOnNewDocument", { source: `
     (${installTestYouTube.toString()})();
+    window.mediaTestMusicBufferDelay = 3500;
+    window.mediaTestInitialBufferFraction = .001;
     window.musicSnapshots = [];
     window.addEventListener('bus-music-playback', event => { window.musicSnapshots.push(event.detail); if(musicSnapshots.length>80)musicSnapshots.shift(); });
     const nativeFetch=fetch.bind(window); window.fetch=(input,init)=>{
@@ -55,16 +57,24 @@ try {
     };
   ` });
   await send("Page.navigate", { url: `${baseUrl}/?phase=inside&count=0` });
-  await wait("document.querySelector('.bus-app')?.dataset.sceneAvailable==='true'&&Boolean(mediaTestPlayers.background)&&Boolean(mediaTestPlayers.party)&&Boolean(document.querySelector('.bus-music-playback button'))", "Scene and both independent song players ready");
+  await wait("Boolean(mediaTestPlayers.background)&&Boolean(mediaTestPlayers.party)", "Music players initialize before the scene is required");
+  await run("window.dispatchEvent(new CustomEvent('bus-tv-audio-focus',{detail:false}))");
+  assert.equal(await run("mediaTestPlayers.background.state===1&&mediaTestPlayers.background.muted"), true, "TV initialization must not interrupt silent music preloading.");
   await wait("[mediaTestPlayers.background,mediaTestPlayers.party].every(p=>p.state===2&&p.muted&&p.getCurrentTime()===0)", "Both songs warm silently and park at zero");
   const warmup = await run("[mediaTestPlayers.background,mediaTestPlayers.party].map(p=>({videoId:p.videoId,commands:p.commands}))");
   for (const slot of warmup) {
     assert(slot.commands.find(command => command.command === 'play')?.muted, 'Every pre-click warmup must be muted.');
     assert(!slot.commands.some(command => ['load','cue'].includes(command.command)), 'A song must be mounted at its final ID.');
+    assert(slot.commands.find(command => command.command === 'pause').time - slot.commands.find(command => command.command === 'play').time >= 3000, 'A tiny initial segment must not end preloading before the playable buffer arrives.');
   }
+  await wait("document.querySelector('.bus-app')?.dataset.sceneAvailable==='true'&&Boolean(document.querySelector('.bus-music-playback button'))", "Scene ready for native controls");
+  await run(`window.addEventListener('click',event=>{if(event.target.closest('button[aria-label^="Activer la musique de fond"]'))window.musicClickTime=performance.now();},true)`);
   report.checks.push("Both persistent song players prepare a muted buffer and return to zero before any click.");
   await nativeClick('button[aria-label^="Activer la musique de fond"]');
   await wait("mediaTestPlayers.background.state===1&&!mediaTestPlayers.background.muted&&mediaTestPlayers.background.volume===85", "Background starts from native click");
+  const clickLatency = await run("mediaTestPlayers.background.commands.findLast(c=>c.command==='play').time-window.musicClickTime");
+  assert(clickLatency>=0&&clickLatency<100, 'The prepared player must receive play synchronously in the click, without waiting for React or a network request.');
+  report.clickLatencyMs = clickLatency;
   await nativeClick('.bus-music-playback button');
   await wait("Boolean(document.querySelector('[aria-label=\"Position dans Life in Pieces\"]'))", "Current title and progress panel opens");
   for (const viewport of [{ width: 1440, height: 900, mobile: false }, { width: 320, height: 568, mobile: true }, { width: 568, height: 320, mobile: true }]) {
