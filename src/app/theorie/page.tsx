@@ -35,6 +35,7 @@ export default function TheoryReadingPage() {
                 <section key={section.title}>
                   <h3 className="text-xl font-bold leading-7 text-[#ffd23f]">{section.title}</h3>
                   <p className="mt-3 text-base leading-8 text-white/85">{section.summary}</p>
+                  <a href={`${THEORY_VIDEO_URL}&t=${section.sourceSeconds}s`} aria-label={`Voir dans la vidéo : ${section.title}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-11 items-center text-sm font-bold text-[#ffd23f] underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ffd23f]">Voir ce passage dans la vidéo ↗</a>
                 </section>
               ))}
             </div>
