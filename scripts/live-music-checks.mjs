@@ -11,8 +11,10 @@ export async function runLiveMusicCheck({send,evaluate,waitForPageCondition,base
     const root=document.querySelector('.bus-app');if(!root)return null;
     const key=Object.keys(root).find(k=>k.startsWith('__reactFiber')),queue=[root[key]];
     while(queue.length){const f=queue.pop();if(!f)continue;let h=f.memoizedState;
-      while(h){const p=h.memoizedState?.current;
+      while(h){const value=h.memoizedState?.current;
+        for(const p of [value,value?.background?.player,value?.party?.player]){
         if(typeof p?.getIframe==='function'&&p.getIframe().id==='bgm-iframe')return {state:p.getPlayerState(),volume:p.getVolume(),muted:p.isMuted?.(),time:p.getCurrentTime(),loaded:p.getVideoLoadedFraction?.(),error:p.getVideoData?.().errorCode,title:p.getVideoData?.().title};
+        }
         h=h.next;
       }queue.push(f.child,f.sibling);
     }return null;

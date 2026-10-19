@@ -24,7 +24,7 @@ et les choix des lecteurs. Les modules spécialisés possèdent leurs opération
 | Module | Responsabilité |
 | --- | --- |
 | `useBusSync` | Statistiques, profils proches, polling suspendu hors onglet et réessai d’inscription. |
-| `usePassengerProfile` | Formulaire, validation, sauvegarde/verrou de mutation, brouillons locaux et annulation au démontage. |
+| `usePassengerProfile` | Profil et personnage choisi, validation, sauvegarde/verrou de mutation, cache local et annulation au démontage. |
 | `usePassengerDirectory` | Manifeste paginé, fiches chargées à la demande, annulations et navigation entre fenêtres. |
 | `PassengerDialogs` | Branchement des composants de présentation sur ces deux hooks, sans accès D1. |
 | `useBusControls`, `useBusPreferences` | Commandes de conduite et préférences conservées dans le navigateur. |
@@ -61,6 +61,11 @@ mêmes. Les calculs de géométrie et de mouvements sont principalement dans
 `src/lib/`. Les utilitaires Canvas, YouTube et audio ont besoin du navigateur ;
 ils ne doivent pas être exécutés pendant le rendu serveur de `/theorie`.
 
+`AvatarSelectionModal` réutilise le rig de `BoardingAvatar` dans un Canvas à la
+demande : seuls le changement de personnage et la rotation rendent l’aperçu.
+`WorldSetPiece` fusionne les géométries des cinq destinations par matériau ;
+`one-piece-scenery.ts` fournit aussi les détails allégés pour les appareils modestes.
+
 ## Contrat audio entre les racines React
 
 Le Canvas et l’interface ont des racines React distinctes. `src/lib/bus-audio.ts`
@@ -79,12 +84,24 @@ qu’une fois l’avatar installé. Le fond est coupé pendant la vidéo, puis r
 progressivement sans écraser le volume choisi. La danse suit l’horloge réelle
 de la fête à partir de huit secondes, y compris après une boucle.
 
+Les deux pistes musicales ont chacune un lecteur persistant, préparé en muet dès
+l’arrivée. Leur démarrage reste soumis à YouTube et aux règles du navigateur.
+`MusicPlaybackControls` reçoit le titre et la progression via le contrat audio
+et envoie des recherches associées à la piste active. Les fenêtres de lecture,
+de passagers et d’âge suspendent la 3D ; seule la lecture de la vidéo de théorie
+prend la priorité sur la télé du bus.
+
 ## Serveur et données
 
 Les routes Next.js délèguent les accès D1, la validation et les quotas aux modules
 de `src/lib/server/`. Les requêtes SQL sont préparées et les migrations
 versionnées. Le navigateur passe par `src/lib/client/bus-api.ts` avec délai,
 annulation et identité locale ; il n’importe pas les modules serveur.
+
+La migration `0007_passenger_avatar.sql` ajoute `avatar_id`, validé sur une liste
+d’identifiants stables. Le choix survit aux visites avec la même identité locale.
+Changer de personnage conserve le prénom, le commentaire et la place ; les
+anciens visiteurs sans choix explicite gardent leur apparence calculée.
 
 Le secret HMAC des quotas et le jeton de suppression administrative sont
 distincts. Leur configuration et les parcours de suppression sont documentés

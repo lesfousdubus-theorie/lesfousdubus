@@ -6,7 +6,6 @@ import { BUS_RELAY } from "@/lib/bus-crew";
 import { ENTRY_SEAT_POSITION } from "@/lib/bus-layout";
 import { Passenger, getArchetypeMaterials } from "./Passengers";
 import { Accessory } from "./PassengerAppearance";
-import { CharacterPart } from "./CharacterShapes";
 import type { NakamaArchetype } from "./passenger-archetypes";
 
 const archetype: NakamaArchetype = {
@@ -52,13 +51,7 @@ function BusRelayPassenger({ hornPulse, reducedMotion, partyOn }: { hornPulse: n
     head={<group name="bus-relay-puzzle-head">
       <mesh name="nakama-face" material={mats.skin} geometry={getPuzzleGeometry()} dispose={null} castShadow />
       <Accessory archetype={archetype} mats={mats} />
-    </group>}>
-    <group name="bus-relay-phone" position={[.14, 1.30, -.2]} rotation={[.15, 0, -.08]}>
-      <CharacterPart material={mats.dark} size={[.105, .17, .028]} radius={.015} />
-      <CharacterPart material={mats.shirt} size={[.087, .139, .007]} position={[0, .005, -.018]} radius={.008} />
-      {[-1, 1].map(side => <CharacterPart key={side} material={mats.teeth} size={[.009, .065, .006]} position={[0, .008, -.024]} rotation={[0, 0, side * .55]} />)}
-    </group>
-  </Passenger>;
+    </group>} />;
 }
 
 export default memo(BusRelayPassenger);

@@ -4,7 +4,7 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, type Re
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import type { PassengerProfile } from "@/types/passenger";
-import { NAKAMA_ROSTER, type NakamaArchetype } from "./passenger-archetypes";
+import { NAKAMA_ROSTER, getNakamaArchetype, type NakamaArchetype } from "./passenger-archetypes";
 import { NakamaProp } from "./PassengerAppearance";
 import PassengerHead from "./PassengerHead";
 import { getCharacterShape } from "./CharacterShapes";
@@ -142,13 +142,16 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
   const profilesBySeatIndex = useMemo(() => new Map(passengerProfiles.map(profile => [profile.seatIndex, profile])), [passengerProfiles]);
   const detailedSeats = new Set(detailed.map(occupant => occupant.physicalSeatIndex));
   const cardActors = useMemo<PassengerCardActors>(() => new Map(), []);
-  const cardPairs = useMemo(() => getPassengerCardPairs(detailed, NAKAMA_ROSTER.map(archetype => archetype.id)), [detailed]);
+  const cardPairs = useMemo(() => getPassengerCardPairs(detailed.map(occupant => ({ ...occupant,
+    archetypeId: getNakamaArchetype(occupant.index, occupant.passengerKind === "visitor"
+      ? profilesBySeatIndex.get(occupant.index)?.avatarId : null).id,
+  })), NAKAMA_ROSTER.map(archetype => archetype.id)), [detailed, profilesBySeatIndex]);
   const cardPairBySeat = useMemo(() => new Map(cardPairs.flatMap(pair => [[pair.firstSeat, pair.pairIndex], [pair.secondSeat, pair.pairIndex]])), [cardPairs]);
   useEffect(() => () => { document.body.style.cursor = "auto"; }, []);
   return <group name="bus-seated-passengers" userData={{ detailedCount: detailed.length, simplifiedCount: simplified.length }}>
-    <SimplifiedPassengers passengers={simplified} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
+    <SimplifiedPassengers passengers={simplified} profilesBySeatIndex={profilesBySeatIndex} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
     {detailed.map(({ seat, index, physicalSeatIndex, passengerKind }) => {
-      const archetype = NAKAMA_ROSTER[index % NAKAMA_ROSTER.length];
+      const archetype = getNakamaArchetype(index, passengerKind === "visitor" ? profilesBySeatIndex.get(index)?.avatarId : null);
       return <Passenger key={`${passengerKind}-${index}`} seat={seat} index={index} archetype={archetype}
         name={passengerKind === "nakama" ? `crew-nakama-${archetype.id}-${index}` : undefined}
         passengerKind={passengerKind} physicalSeatIndex={physicalSeatIndex}
@@ -165,15 +168,15 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
   </group>;
 }
 
-export function SimplifiedPassengers({ passengers, partyOn, hornPulse, reducedMotion }: { passengers: BusOccupant[]; partyOn: boolean; hornPulse: number; reducedMotion: boolean }) {
+export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn, hornPulse, reducedMotion }: { passengers: BusOccupant[]; profilesBySeatIndex?: Map<number, PassengerProfile>; partyOn: boolean; hornPulse: number; reducedMotion: boolean }) {
   const bodies = useRef<THREE.InstancedMesh>(null);
   const heads = useRef<THREE.InstancedMesh>(null);
   const arms = useRef<THREE.InstancedMesh>(null),hands = useRef<THREE.InstancedMesh>(null);
   const celebrating = useRef(false);
   // Resolve the compact rig only when this bounded instance list changes, not
   // during its animation. Distant Choppers must not turn into adult silhouettes.
-  const instanceProfiles = useMemo(() => passengers.map(({ index }) => {
-    const id = NAKAMA_ROSTER[index % NAKAMA_ROSTER.length].id;
+  const instanceProfiles = useMemo(() => passengers.map(({ index, passengerKind }) => {
+    const id = getNakamaArchetype(index, passengerKind === "visitor" ? profilesBySeatIndex?.get(index)?.avatarId : null).id;
     const small = id === "chopper";
     const rig = getPassengerSkeleton(id), proportions = getPassengerProportions(id);
     return { id, bodyY: small ? .64 + rig.seatedHipHeight + rig.torsoAboveHip : 1.35,
@@ -188,7 +191,7 @@ export function SimplifiedPassengers({ passengers, partyOn, hornPulse, reducedMo
       shoulderZ: small ? rig.seatedHipZ + BODY_BEHIND_HIP : .12,
       armLengthScale: rig.armScale,
     };
-  }), [passengers]);
+  }), [passengers, profilesBySeatIndex]);
   useLayoutEffect(() => {
     const matrix = new THREE.Matrix4();
     passengers.forEach(({ seat }, index) => {
@@ -374,7 +377,7 @@ export function Passenger({
     elbows.current[0]?.rotation.set(pose.leftElbowX,0,pose.leftElbowZ);
     elbows.current[1]?.rotation.set(pose.rightElbowX,0,pose.rightElbowZ);
     if(heldProps.current)heldProps.current.visible=!pose.celebrating&&!pose.games&&pose.activity!=="check";
-    for(const prop of signatureProps.current)if(prop)prop.visible=pose.celebrating;
+    for(const prop of signatureProps.current)if(prop)prop.visible=pose.celebrating||archetype.id==="foudubustv";
     if (torsoGroup.current) {
       const breath = reducedMotion || pose.games ? 1 : 1 + Math.sin(t * 2.2 + seed) * 0.015;
       torsoGroup.current.scale.set(breath, 1, breath);
@@ -437,7 +440,7 @@ export function Passenger({
             <group scale={[skeleton.armWidthScale,skeleton.armScale,skeleton.armWidthScale]}><PassengerUpperArm archetype={archetype} mats={mats} side={side} width={proportions.armWidth}/></group>
             <group ref={node=>{elbows.current[index]=node;}} name={`nakama-elbow-${index===0?"left":"right"}`} position={[0, -skeleton.upperArmLength, 0]} rotation={[1.05, 0, 0]}>
               <group scale={[skeleton.armWidthScale,skeleton.armScale,skeleton.armWidthScale]}><PassengerForearm archetype={archetype} mats={mats} side={side} width={proportions.armWidth} handName={`nakama-hand-${index===0?"left":"right"}`}/></group>
-              <group ref={node=>{signatureProps.current[index]=node;}} name={`nakama-signature-${index===0?"left":"right"}`} position={[0,-skeleton.forearmLength,0]} visible={false}>
+              <group ref={node=>{signatureProps.current[index]=node;}} name={`nakama-signature-${index===0?"left":"right"}`} position={[0,-skeleton.forearmLength,0]} visible={archetype.id==="foudubustv"}>
                 <PassengerSignatureProp id={archetype.id} side={side} mats={mats}/>
               </group>
             </group>

@@ -46,6 +46,9 @@ Dans un second terminal :
 # Remplacer le chemin si nécessaire
 CHROME_PATH=/usr/bin/chromium npm run test:ui
 CHROME_PATH=/usr/bin/chromium npm run test:comfort
+CHROME_PATH=/usr/bin/chromium npm run test:overlays
+CHROME_PATH=/usr/bin/chromium npm run test:avatars
+CHROME_PATH=/usr/bin/chromium npm run test:music-controls
 ```
 
 `test:ui` peut également utiliser le serveur `npm run dev`, mais les mesures de
@@ -68,7 +71,17 @@ inscription locale temporaire pour certains parcours, supprimée dans le
 nettoyage. Une interruption brutale peut laisser ce profil dans la base locale :
 utiliser une base de test, sans données personnelles à préserver. Les scènes
 à fixtures remplacent les requêtes dans le navigateur avant la navigation.
-`test:comfort` utilise exclusivement des visiteurs et lecteurs simulés.
+`test:comfort` et `test:overlays` utilisent exclusivement des visiteurs et
+lecteurs simulés. `test:overlays` vérifie que les fenêtres Passagers et âge de
+la théorie arrêtent les images WebGL tout en laissant avancer la télé, sur
+ordinateur et mobile. La vidéo de la théorie conserve sa priorité sonore.
+Les réglages de confort restent accessibles avec F1 après le retrait du bouton
+Aide.
+
+`test:avatars` couvre la rotation, les flèches, l’enregistrement, la restauration
+et la hauteur de vue de Chopper. `test:music-controls` couvre la préparation muette
+des deux pistes, la recherche via le curseur, les priorités et les changements
+de format d’écran. Ces deux suites utilisent également des données isolées.
 
 ## Scénarios ciblés
 

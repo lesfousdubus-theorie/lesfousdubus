@@ -1,6 +1,7 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { PassengerProfile } from "@/types/passenger";
 import { isValidVisitorId } from "@/lib/visitor-id";
+import { isPassengerAvatarId } from "@/lib/passenger-avatar";
 import { findModerationIssue, MODERATION_MESSAGES } from "@/lib/server/moderation";
 import { isModerationAuthorized } from "@/lib/server/moderation-auth";
 import {
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
         return Response.json({ error: "Passager invalide." }, { status: 400, headers: WRITE_HEADERS });
       }
       const row = await database.prepare(
-        `SELECT seat_index, display_name, comment FROM bus_entries WHERE seat_index = ?`,
+        `SELECT seat_index, display_name, comment, avatar_id FROM bus_entries WHERE seat_index = ?`,
       ).bind(seatIndex).first<PassengerRow>();
       if (!row) {
         return Response.json({ error: "Passager introuvable." }, { status: 404, headers: WRITE_HEADERS });
@@ -33,6 +34,7 @@ export async function GET(request: Request) {
         seatIndex: Number(row.seat_index),
         displayName: row.display_name || "Anonyme",
         comment: row.comment || null,
+        avatarId: isPassengerAvatarId(row.avatar_id) ? row.avatar_id : null,
       } }, { headers: READ_HEADERS });
     }
 
@@ -64,11 +66,11 @@ export async function GET(request: Request) {
       const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
       const limit = Math.min(48, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 32, 48)));
       const rows = await database.prepare(
-        `SELECT seat_index, display_name,
+        `SELECT seat_index, display_name, avatar_id,
                 CASE WHEN comment IS NOT NULL THEN '' ELSE NULL END AS comment
          FROM bus_entries
          WHERE seat_index >= ? AND seat_index < ?
-           AND (display_name IS NOT NULL OR comment IS NOT NULL)
+           AND (display_name IS NOT NULL OR comment IS NOT NULL OR avatar_id IS NOT NULL)
          ORDER BY seat_index ASC`,
       ).bind(from, from + limit).all<PassengerRow>();
       const passengers = rows.results.map((row) => toNamedPassengerProfile(row))
@@ -97,9 +99,11 @@ export async function POST(request: Request) {
     const visitorId = typeof body.visitorId === "string" ? body.visitorId.trim() : "";
     const hasDisplayName = Object.prototype.hasOwnProperty.call(body, "displayName");
     const hasComment = Object.prototype.hasOwnProperty.call(body, "comment");
+    const hasAvatar = Object.prototype.hasOwnProperty.call(body, "avatarId");
     if (
       (hasDisplayName && typeof body.displayName !== "string")
       || (hasComment && typeof body.comment !== "string")
+      || (hasAvatar && !isPassengerAvatarId(body.avatarId))
     ) {
       return Response.json({ error: "Profil invalide." }, { status: 400, headers: WRITE_HEADERS });
     }
@@ -140,8 +144,8 @@ export async function POST(request: Request) {
     let added = false;
     if (!existing) {
       const insertion = await database.prepare(
-        `INSERT INTO bus_entries (visitor_id, display_name, comment, seat_index)
-         VALUES (?, ?, ?, COALESCE(
+        `INSERT INTO bus_entries (visitor_id, display_name, comment, avatar_id, seat_index)
+         VALUES (?, ?, ?, ?, COALESCE(
            (SELECT start_index FROM bus_vacant_seat_ranges ORDER BY start_index ASC LIMIT 1),
            (SELECT COALESCE(MAX(seat_index) + 1, 0) FROM bus_entries)
          ))
@@ -150,22 +154,25 @@ export async function POST(request: Request) {
         visitorId,
         hasDisplayName ? displayName || null : null,
         hasComment ? comment || null : null,
+        hasAvatar ? body.avatarId : null,
       ).run();
       added = (insertion.meta.changes ?? 0) > 0;
-    } else if (hasDisplayName && hasComment) {
+    } else if (hasDisplayName || hasComment || hasAvatar) {
+      // Seuls les champs fournis changent : choisir un personnage conserve le
+      // prénom, le commentaire et la place du visiteur.
       await database.prepare(
-        "UPDATE bus_entries SET display_name = ?, comment = ? WHERE visitor_id = ?",
-      ).bind(displayName || null, comment || null, visitorId).run();
-    } else if (hasDisplayName) {
-      await database.prepare("UPDATE bus_entries SET display_name = ? WHERE visitor_id = ?")
-        .bind(displayName || null, visitorId).run();
-    } else if (hasComment) {
-      await database.prepare("UPDATE bus_entries SET comment = ? WHERE visitor_id = ?")
-        .bind(comment || null, visitorId).run();
+        `UPDATE bus_entries SET
+          display_name = CASE WHEN ? THEN ? ELSE display_name END,
+          comment = CASE WHEN ? THEN ? ELSE comment END,
+          avatar_id = CASE WHEN ? THEN ? ELSE avatar_id END
+         WHERE visitor_id = ?`,
+      ).bind(hasDisplayName ? 1 : 0, displayName || null,
+        hasComment ? 1 : 0, comment || null,
+        hasAvatar ? 1 : 0, hasAvatar ? body.avatarId : null, visitorId).run();
     }
 
     const passengerRow = await database.prepare(
-      `SELECT seat_index, display_name, comment FROM bus_entries WHERE visitor_id = ?`,
+      `SELECT seat_index, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
     ).bind(visitorId).first<PassengerRow>();
     const stats = await readBusStats(database);
     return Response.json({
