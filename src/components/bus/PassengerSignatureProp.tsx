@@ -49,9 +49,11 @@ export default function PassengerSignatureProp({ id, side, mats }: {id:string;si
     {[-1,0,1].map(fan=><CharacterPart key={fan} material={mats.teeth} size={[.22,.003,.003]}
       position={[side*.11,fan*.013,-.052]} rotation={[0,0,fan*.12]}/>) }
   </group>;
-  if(id==="foudubustv"&&side<0)return <>
-    <CharacterPart material={mats.dark} size={[.071,.12,.015]} radius={.01}/>
-    <CharacterPart material={mats.turquoise} size={[.058,.093,.004]} position={[0,0,-.01]}/>
-  </>;
+  if(id==="foudubustv"&&side<0)return <group name="bus-relay-phone" position={[0,.038,-.058]}>
+    <CharacterPart name="nakama-foudubustv-phone-grip" material={mats.dark} size={[.105,.17,.028]} radius={.015}/>
+    <CharacterPart name="bus-relay-phone-screen" material={mats.shirt} size={[.087,.139,.007]} position={[0,.005,-.018]} radius={.008}/>
+    {[-1,1].map(direction=><CharacterPart key={direction} material={mats.teeth} size={[.009,.065,.006]}
+      position={[0,.008,-.024]} rotation={[0,0,direction*.55]}/>)}
+  </group>;
   return null;
 }

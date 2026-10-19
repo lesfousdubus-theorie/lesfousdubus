@@ -7,7 +7,26 @@ export const BUS_AUDIO_EVENTS = {
   musicToggle: "bus-music-user-toggle",
   partyToggle: "bus-music-party-toggle",
   partyDance: "bus-party-dance",
+  musicPlayback: "bus-music-playback",
+  musicSnapshot: "bus-music-snapshot",
+  musicSeek: "bus-music-seek",
 } as const;
+
+export type BusMusicTrack = "background" | "party";
+export interface BusMusicPlayback {
+  track: BusMusicTrack;
+  title: string;
+  requested: boolean;
+  ready: boolean;
+  state: "loading" | "playing" | "paused" | "suspended" | "error";
+  elapsed: number;
+  duration: number;
+}
+
+export const INITIAL_MUSIC_PLAYBACK: BusMusicPlayback = {
+  track: "background", title: "Life in Pieces", requested: false,
+  ready: false, state: "loading", elapsed: 0, duration: 0,
+};
 
 interface BusAudioDetails {
   tvPrepare: undefined;
@@ -17,6 +36,9 @@ interface BusAudioDetails {
   musicToggle: { playing: boolean; suspendedForVideo: boolean };
   partyToggle: { enabled: boolean; suspendedForVideo: boolean };
   partyDance: boolean;
+  musicPlayback: BusMusicPlayback;
+  musicSnapshot: undefined;
+  musicSeek: { track: BusMusicTrack; seconds: number };
 }
 
 type AudioEvent = keyof BusAudioDetails;

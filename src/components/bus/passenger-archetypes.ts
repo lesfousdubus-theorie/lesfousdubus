@@ -1,3 +1,5 @@
+import { isPassengerAvatarId, type PassengerAvatarId } from "@/lib/passenger-avatar";
+
 export interface NakamaArchetype {
   id: string;
   name: string;
@@ -24,7 +26,7 @@ export interface NakamaArchetype {
   expression?: "grin" | "cool" | "smile" | "funny" | "stoic" | "singing";
 }
 
-export const NAKAMA_ROSTER: NakamaArchetype[] = [
+export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> = [
   {
     id: "luffy",
     name: "Monkey D. Luffy",
@@ -263,3 +265,9 @@ export const NAKAMA_ROSTER: NakamaArchetype[] = [
     expression: "stoic",
   },
 ];
+
+/** Un choix sauvegardé prévaut ; les anciens visiteurs gardent leur apparence. */
+export function getNakamaArchetype(index: number | null, avatarId?: string | null) {
+  return (isPassengerAvatarId(avatarId) && NAKAMA_ROSTER.find(archetype => archetype.id === avatarId))
+    || NAKAMA_ROSTER[Math.max(0, index ?? 0) % NAKAMA_ROSTER.length];
+}

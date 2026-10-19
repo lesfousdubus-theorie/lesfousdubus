@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { JOURNEY_MAX_DT, type JourneyState } from "@/lib/bus-journey";
 import { getWalkingLegPose, BODY_BEHIND_HIP } from "@/lib/passenger-gait";
-import { NAKAMA_ROSTER } from "./passenger-archetypes";
+import { getNakamaArchetype } from "./passenger-archetypes";
 import { getArchetypeMaterials } from "./Passengers";
 import { CharacterPart } from "./CharacterShapes";
 import PassengerHead from "./PassengerHead";
@@ -16,8 +16,9 @@ import { PassengerUpperArm, PassengerForearm, PassengerFoot, passengerCalfMateri
 import { blendPassengerPose, createPassengerPose, samplePassengerPose } from "@/lib/passenger-motion";
 
 /** Le même nakama attend, marche, s'assoit, puis devient le corps en vue subjective. */
-export default function BoardingAvatar({ journey, passengerIndex, physicalSeatIndex, partyOn, hornPulse, reducedMotion }: {
+export default function BoardingAvatar({ journey, passengerIndex, avatarId, physicalSeatIndex, partyOn, hornPulse, reducedMotion }: {
   journey: React.RefObject<JourneyState>; passengerIndex: number | null;
+  avatarId?: string | null;
   physicalSeatIndex: number;
   partyOn: boolean; hornPulse: number; reducedMotion: boolean;
 }) {
@@ -33,7 +34,7 @@ export default function BoardingAvatar({ journey, passengerIndex, physicalSeatIn
   const motion = useRef({ previous: new THREE.Vector3(), phase: "", distance: 0, strength: 0 });
   const headWorld = useMemo(() => new THREE.Vector3(), []);
   const targetPose=useRef(createPassengerPose()),pose=useRef(createPassengerPose());
-  const archetype = NAKAMA_ROSTER[Math.max(0, passengerIndex ?? 0) % NAKAMA_ROSTER.length];
+  const archetype = getNakamaArchetype(passengerIndex, avatarId);
   const mats = useMemo(() => getArchetypeMaterials(archetype), [archetype]);
   const proportions = getPassengerProportions(archetype.id);
   const skeleton = getPassengerSkeleton(archetype.id);

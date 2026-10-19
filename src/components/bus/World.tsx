@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { WorldLandmark, type PropDef, type PropType } from "./WorldLandmark";
-import WorldSetPiece from "./WorldSetPiece";
+import WorldSetPiece, { WorldForeground } from "./WorldSetPiece";
 import { useFrame } from "@react-three/fiber";
 import { WORLD_SPEED, type Phase, type WorldState } from "./constants";
 import { obstructsBusView } from "@/lib/bus-camera";
@@ -87,60 +87,6 @@ function makeTerrain(zone: number) {
   return geometry;
 }
 
-function ZoneDetails({ zone }: { zone: number }) {
-  if (zone === 0) {
-    return <>
-      {[-1, 1].map((side) => [-48, -10, 30, 58].map((z, index) =>
-        <mesh key={`${side}-${z}`} position={[side * (27 + (index % 2) * 7), 0.18, z]} rotation={[0, z * 0.035, 0]} scale={[8, 0.28, 4.2]}>
-          <sphereGeometry args={[1, 12, 8]} />
-          <meshStandardMaterial color={index % 2 ? "#f2cb7b" : "#dcae5b"} roughness={1} />
-        </mesh>))}
-    </>;
-  }
-  if (zone === 1) {
-    return <>
-      {[-22, 22].map((x) => <group key={x}>
-        <mesh position={[x, 0.16, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[3.4, 132]} />
-          <meshStandardMaterial color="#278fbb" roughness={0.28} metalness={0.15} />
-        </mesh>
-        {[-2.1, 2.1].map((offset) => <mesh key={offset} position={[x + offset, 0.18, 0]}>
-          <boxGeometry args={[0.35, 0.22, 132]} />
-          <meshStandardMaterial color="#e7d8b5" roughness={0.9} />
-        </mesh>)}
-      </group>)}
-    </>;
-  }
-  if (zone === 2) {
-    return <>
-      {[-1, 1].map((side) => [-50, -12, 34].map((z, index) =>
-        <mesh key={`${side}-${z}`} position={[side * (26 + index * 5), 0.35 + index * 0.12, z]} scale={[6.2, 0.6, 3.8]}>
-          <sphereGeometry args={[1, 12, 8]} />
-          <meshStandardMaterial color="#ffffff" roughness={1} />
-        </mesh>))}
-    </>;
-  }
-  if (zone === 3) {
-    return <>
-      {[-1, 1].map((side) => [-34, -18, -2, 14, 30, 46].map((z) =>
-        <mesh key={`${side}-${z}`} position={[side * 31, 0.22, z]}>
-          <boxGeometry args={[15, 0.1, 1.1]} />
-          <meshStandardMaterial color="#c5b483" roughness={1} />
-        </mesh>))}
-    </>;
-  }
-  if (zone === 4) {
-    return <>
-      {[-1, 1].map((side) => [-42, 2, 46].map((z, index) =>
-        <mesh key={`${side}-${z}`} position={[side * (25 + index * 6), 0.22, z]} scale={[5.5, 0.42, 4]}>
-          <sphereGeometry args={[1, 10, 8]} />
-          <meshStandardMaterial color="#ffffff" roughness={1} />
-        </mesh>))}
-    </>;
-  }
-  return null;
-}
-
 function buildProps(): PropDef[] {
   const rnd = mulberry32(2026);
   const out: PropDef[] = [];
@@ -205,6 +151,15 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
     });
   }, [props]);
   const zoneRefs = useRef<(THREE.Group | null)[]>([]);
+  const sceneryRefs = useRef<(THREE.Group | null)[]>([]);
+  const sceneryBounds = useRef<THREE.Box3[]>([]);
+  useLayoutEffect(() => {
+    sceneryBounds.current = sceneryRefs.current.map((group) => {
+      if (!group) return new THREE.Box3();
+      group.updateWorldMatrix(true, true);
+      return new THREE.Box3().setFromObject(group).translate(new THREE.Vector3(0, 0, -group.parent!.position.z));
+    });
+  }, [lowPower]);
   const dashRef = useRef<THREE.InstancedMesh>(null);
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
   const oceanMat = useRef<THREE.MeshStandardMaterial>(null);
@@ -246,6 +201,19 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       let z = (((center + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
       if (z > 160) z -= LOOP;
       g.position.z = z;
+      // Buildings and foliage share the same exterior visibility protection as
+      // loose props. Separate left/right bounds never span across the bus.
+      for (let part = 0; part < 3; part++) {
+        const index = i * 3 + part;
+        const scenery = sceneryRefs.current[index];
+        if (!scenery) continue;
+        scenery.visible = z > -300 && z < 220;
+        const bounds = sceneryBounds.current[index];
+        if (scenery.visible && phase !== "inside" && bounds && !bounds.isEmpty()) {
+          occlusion.box.copy(bounds).translate(occlusion.shift.set(0, 0, z));
+          scenery.visible = !obstructsBusView(occlusion.ray, occlusion.box, busDistance, occlusion.hit);
+        }
+      }
     }
 
     // Défilement des lignes blanches du pont
@@ -311,8 +279,15 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
           <mesh geometry={terrains[i]} receiveShadow>
             <meshStandardMaterial vertexColors roughness={0.95} side={THREE.DoubleSide} />
           </mesh>
-          <WorldSetPiece zone={i} />
-          {!lowPower && <ZoneDetails zone={i} />}
+          <group ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3] = element; }}>
+            <WorldSetPiece zone={i} lowPower={lowPower} />
+          </group>
+          {[-1, 1].map((side, part) => <group
+            key={side}
+            ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3 + part + 1] = element; }}
+          >
+            <WorldForeground zone={i} side={side} lowPower={lowPower} />
+          </group>)}
           {/* Plage / bordure d'île */}
           <mesh position={[0, -0.44, 0]}>
             <boxGeometry args={[104, 0.32, ZONE_LEN - 8]} />

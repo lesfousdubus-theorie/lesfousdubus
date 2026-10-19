@@ -14,13 +14,16 @@
     "deploy": "npm run deploy:preflight && npm run build && npm run db:migrate:remote && opennextjs-cloudflare deploy",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "start": "next start",
-    "test": "node scripts/test-local-setup.mjs && node scripts/test-bus-audio.mjs && node scripts/test-bus-shortcuts.mjs && node scripts/test-seat-reuse.mjs && node scripts/test-tv-layout.mjs && node scripts/test-tv-handle-clearance.mjs && node scripts/test-bus-wipers.mjs && node scripts/test-bus-front.mjs && node scripts/test-bus-vehicle.mjs && node scripts/test-bus-occupancy.mjs && node scripts/test-passenger-design.mjs && node scripts/test-chopper-rig.mjs && node scripts/test-passenger-card-game.mjs && node scripts/test-copilot-dance.mjs && node scripts/test-roster-motion.mjs && node scripts/test-passenger-walk-clearance.mjs && node scripts/test-straw-hat.mjs && node scripts/test-server-security.mjs && node scripts/static-regression.mjs",
+    "test": "node scripts/test-local-setup.mjs && node scripts/test-bus-audio.mjs && node scripts/test-bus-shortcuts.mjs && node scripts/test-seat-reuse.mjs && node scripts/test-tv-layout.mjs && node scripts/test-tv-handle-clearance.mjs && node scripts/test-bus-wipers.mjs && node scripts/test-bus-front.mjs && node scripts/test-bus-vehicle.mjs && node scripts/test-bus-occupancy.mjs && node scripts/test-passenger-design.mjs && node scripts/test-chopper-rig.mjs && node scripts/test-passenger-card-game.mjs && node scripts/test-copilot-dance.mjs && node scripts/test-roster-motion.mjs && node scripts/test-passenger-walk-clearance.mjs && node scripts/test-straw-hat.mjs && node scripts/test-server-security.mjs && node scripts/test-one-piece-scenery.mjs && node scripts/static-regression.mjs",
     "test:crew": "node scripts/test-bus-occupancy.mjs && node scripts/test-passenger-design.mjs && node scripts/test-chopper-rig.mjs && node scripts/test-passenger-card-game.mjs && node scripts/test-copilot-dance.mjs && node scripts/test-roster-motion.mjs && node scripts/test-passenger-walk-clearance.mjs && node scripts/test-tv-handle-clearance.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:ui": "node scripts/ui-smoke.mjs",
     "test:comfort": "node scripts/test-bus-comfort.mjs",
-    "setup:local": "node scripts/setup-local.mjs"
+    "test:overlays": "node scripts/test-bus-overlays.mjs",
+    "setup:local": "node scripts/setup-local.mjs",
+    "test:avatars": "node scripts/test-avatar-selection.mjs",
+    "test:music-controls": "node scripts/test-music-controls.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.6",

@@ -9,7 +9,7 @@ import { DEFAULT_CAMERA_POS, DEFAULT_TARGET, SEAT_EYE, TV_POSITION, type Phase }
 import { getExteriorMaxDistance } from "@/lib/bus-camera";
 import { ARRIVAL_STOP_TIME, ease, type JourneyState } from "@/lib/bus-journey";
 import { getPassengerSkeleton } from "@/lib/passenger-proportions";
-import { NAKAMA_ROSTER } from "./passenger-archetypes";
+import { getNakamaArchetype } from "./passenger-archetypes";
 import { isBrowserZoomWheel, shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts";
 
 interface Props {
@@ -22,6 +22,7 @@ interface Props {
   currentSeatZ?: number;
   currentSeatX?: number;
   currentPassengerSeatIndex?: number | null;
+  currentPassengerAvatarId?: string | null;
   tvTargetZ?: number;
   reducedMotion?: boolean;
   letterShortcutsEnabled?: boolean;
@@ -47,6 +48,7 @@ export default function CameraRig({
   currentSeatZ,
   currentSeatX = SEAT_EYE.x,
   currentPassengerSeatIndex = null,
+  currentPassengerAvatarId = null,
   tvTargetZ = TV_POSITION.z,
   reducedMotion = false,
   letterShortcutsEnabled = true,
@@ -103,7 +105,7 @@ export default function CameraRig({
   const seatZRef = useRef(currentSeatZ ?? SEAT_EYE.z);
 
   // Position cible des yeux
-  const characterId = NAKAMA_ROSTER[Math.max(0,currentPassengerSeatIndex ?? 0)%NAKAMA_ROSTER.length].id;
+  const characterId = getNakamaArchetype(currentPassengerSeatIndex, currentPassengerAvatarId).id;
   const skeleton = getPassengerSkeleton(characterId), adultSkeleton = getPassengerSkeleton("");
   const eyeY = SEAT_EYE.y + skeleton.seatedHipHeight + skeleton.neckAboveHip + skeleton.headAboveNeck
     - adultSkeleton.seatedHipHeight - adultSkeleton.neckAboveHip - adultSkeleton.headAboveNeck;

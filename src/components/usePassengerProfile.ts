@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateA
 import { computeNumRows } from "@/lib/bus-layout";
 import { ApiError, fetchJson, getOrCreateVisitorId, type BusApiState } from "@/lib/client/bus-api";
 import type { PassengerProfile } from "@/types/passenger";
+import { isPassengerAvatarId, type PassengerAvatarId } from "@/lib/passenger-avatar";
 
 interface PassengerProfileOptions {
   applyBusSnapshot: (data: BusApiState) => boolean;
@@ -21,6 +22,12 @@ export function usePassengerProfile({ applyBusSnapshot, setCurrentPassengerSeatI
   const [joinComment, setJoinComment] = useState("");
   const [joinError, setJoinError] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+  const [savedAvatarId, setSavedAvatarId] = useState<PassengerAvatarId | null>(() => {
+    try { const value = localStorage.getItem("fdb-avatar-id"); return isPassengerAvatarId(value) ? value : null; }
+    catch { return null; }
+  });
   const [savedProfile, setSavedProfile] = useState(() => {
     try { return { name: localStorage.getItem("fdb-display-name") ?? "", comment: localStorage.getItem("fdb-comment") ?? "" }; }
     catch { return { name: "", comment: "" }; }
@@ -172,25 +179,73 @@ export function usePassengerProfile({ applyBusSnapshot, setCurrentPassengerSeatI
 
   const restoreSavedProfile = useCallback((passenger: PassengerProfile | null) => {
     const comment = passenger?.comment ?? "";
+    const avatarId = isPassengerAvatarId(passenger?.avatarId) ? passenger.avatarId : null;
+    setSavedAvatarId(avatarId);
     setSavedProfile(previous => ({ name: passenger?.displayName ?? previous.name, comment: comment || previous.comment }));
     try {
       if (passenger?.displayName) localStorage.setItem("fdb-display-name", passenger.displayName);
       if (comment) localStorage.setItem("fdb-comment", comment);
+      if (avatarId) localStorage.setItem("fdb-avatar-id", avatarId);
+      else localStorage.removeItem("fdb-avatar-id");
     } catch { /* Le stockage local reste optionnel. */ }
   }, []);
 
   const clearProfile = useCallback(() => {
     profileRequest.current?.abort();
-    try { localStorage.removeItem("fdb-display-name"); localStorage.removeItem("fdb-comment"); } catch { /* Profil déjà supprimé du serveur. */ }
+    try { localStorage.removeItem("fdb-display-name"); localStorage.removeItem("fdb-comment"); localStorage.removeItem("fdb-avatar-id"); } catch { /* Profil déjà supprimé du serveur. */ }
     setJoinName(""); setJoinComment(""); setSavedProfile({ name: "", comment: "" });
     setShowJoinModal(false);
+    setSavedAvatarId(null); setShowAvatarModal(false); setAvatarError("");
   }, []);
 
   const closeProfile = useCallback(() => {
     if (!profileMutationLock.current) setShowJoinModal(false);
   }, []);
 
+  const openAvatarModal = useCallback(() => {
+    if (profileMutationLock.current) return;
+    setAvatarError("");
+    setShowAvatarModal(true);
+  }, []);
+
+  const closeAvatarModal = useCallback(() => {
+    if (!profileMutationLock.current) setShowAvatarModal(false);
+  }, []);
+
+  const submitAvatar = useCallback(async (avatarId: PassengerAvatarId) => {
+    if (profileMutationLock.current || !isPassengerAvatarId(avatarId)) return;
+    profileMutationLock.current = true;
+    const controller = new AbortController();
+    profileRequest.current = controller;
+    setProfileSaving(true);
+    setAvatarError("");
+    try {
+      const data = await fetchJson<BusApiState & { passenger: PassengerProfile | null; seatIndex: number | null }>("/api/bus-entries", {
+        method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
+        body: JSON.stringify({ visitorId: getOrCreateVisitorId(), avatarId }), signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      if (data.passenger?.avatarId !== avatarId) throw new ApiError("Le personnage n’a pas été enregistré. Réessaie.", 502);
+      const accepted = applyBusSnapshot(data);
+      setCurrentPassengerSeatIndex(data.seatIndex);
+      setSavedAvatarId(avatarId);
+      try { localStorage.setItem("fdb-avatar-id", avatarId); } catch { /* Le choix est conservé en base. */ }
+      if (accepted) {
+        setPassengerProfiles(profiles => [...profiles.filter(profile => profile.seatIndex !== data.passenger!.seatIndex), data.passenger!]);
+      }
+      setShowAvatarModal(false);
+      showToast("Personnage enregistré !", "Tu le retrouveras lors de ta prochaine visite.", "✓ PROFIL");
+    } catch (error) {
+      if (!controller.signal.aborted) setAvatarError(error instanceof ApiError ? error.message : "Impossible d’enregistrer ton personnage. Réessaie dans quelques instants.");
+    } finally {
+      profileMutationLock.current = false;
+      profileRequest.current = null;
+      setProfileSaving(false);
+    }
+  }, [applyBusSnapshot, setCurrentPassengerSeatIndex, setPassengerProfiles, showToast]);
+
   return { showJoinModal, profileModalMode, joinName, joinComment, joinError, profileSaving, savedProfile,
+    showAvatarModal, avatarError, savedAvatarId, openAvatarModal, closeAvatarModal, submitAvatar,
     openProfileModal, submitProfile, removeProfileField, restoreSavedProfile, clearProfile, closeProfile,
     changeName: (value: string) => { setJoinName(value); setJoinError(""); },
     changeComment: (value: string) => { setJoinComment(value); setJoinError(""); },

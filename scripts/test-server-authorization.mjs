@@ -76,6 +76,37 @@ export async function runServerAuthorizationChecks() {
       assert.equal(own.status, 200);
       assert.equal(target.status, 200);
       const targetSeat = target.data.seatIndex;
+      if (configuration.name === "enabled") {
+        const named = await request("POST", { visitorId: ownId, displayName: "Nakama Test", comment: "Vive le bus !" });
+        assert.equal(named.status, 200);
+        const chosen = await request("POST", { visitorId: ownId, avatarId: "chopper" });
+        assert.equal(chosen.status, 200);
+        assert.equal(chosen.data.added, false, "Changing avatar must never add a visitor.");
+        assert.equal(chosen.data.count, own.data.count + 1);
+        assert.equal(chosen.data.seatIndex, own.data.seatIndex);
+        assert.equal(chosen.data.passenger.avatarId, "chopper");
+        assert.equal(chosen.data.passenger.displayName, "Nakama Test");
+        assert.equal(chosen.data.passenger.comment, "Vive le bus !");
+        assert(chosen.data.profileRevision > named.data.profileRevision, "Avatar changes invalidate nearby public profiles.");
+        const revisited = await request("POST", { visitorId: ownId });
+        assert.equal(revisited.data.added, false);
+        assert.deepEqual(revisited.data.passenger, chosen.data.passenger, "The same browser identity restores its DB avatar on boarding.");
+        const repeated = await request("POST", { visitorId: ownId, avatarId: "chopper" });
+        assert.equal(repeated.data.profileRevision, chosen.data.profileRevision, "Saving the same avatar must not churn the revision.");
+        for (const avatarId of ["unknown-avatar", "", null, 0, { id: "luffy" }]) {
+          assert.equal((await request("POST", { visitorId: ownId, avatarId })).status, 400);
+        }
+        const unchanged = await request("POST", { visitorId: ownId });
+        assert.deepEqual(unchanged.data.passenger, chosen.data.passenger);
+        assert.equal(unchanged.data.profileRevision, chosen.data.profileRevision, "Invalid choices never mutate the DB.");
+        const anonymous = await request("POST", { visitorId: ownId, displayName: "", comment: "" });
+        assert.equal(anonymous.data.passenger.avatarId, "chopper", "Removing text must preserve the chosen avatar.");
+        const profiles = await worker.fetch("http://isolated.test/api/bus-entries?profiles=1&from=0&limit=48");
+        const ownProfile = (await profiles.json()).passengers.find(profile => profile.seatIndex === own.data.seatIndex);
+        assert.equal(ownProfile.avatarId, "chopper", "An avatar-only profile must reach other visitors' renderers.");
+        assert.equal(ownProfile.displayName, "", "An avatar choice must not add an anonymous name label.");
+        await assert.rejects(database.prepare("UPDATE bus_entries SET avatar_id = 'not-in-roster' WHERE seat_index = ?").bind(own.data.seatIndex).run());
+      }
       for (const token of [undefined, quotaSecret, randomUUID() + randomUUID()]) {
         const result = await request("DELETE", { seatIndex: targetSeat, visitorId: ownId }, token);
         assert.equal(result.status, 403, `${configuration.name}: missing/wrong/quota credentials must never delete by seat`);
@@ -119,7 +150,7 @@ export async function runServerAuthorizationChecks() {
         assert(refusals.every(result => Number(result.retryAfter) > 0));
       }
     }
-    console.log("Server authorization integration passed: separate optional moderation token, denied quota key, personal deletion, health and unchanged quotas (workerd + four isolated D1 databases).");
+    console.log("Server authorization integration passed: moderation, quotas, deletion, health, avatar persistence, stable seats, preserved text, anonymous avatars and rejected invalid choices (workerd + four isolated D1 databases).");
   } finally {
     await runtime?.dispose();
     rmSync(directory, { recursive: true, force: true });

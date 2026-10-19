@@ -27,12 +27,15 @@ assert.deepEqual(BUS_AUDIO_EVENTS, {
   tvPrepare: "bus-tv-user-prepare", tvPlay: "bus-tv-user-play", tvFocus: "bus-tv-audio-focus",
   partyFocus: "bus-party-audio-focus", musicToggle: "bus-music-user-toggle",
   partyToggle: "bus-music-party-toggle", partyDance: "bus-party-dance",
+  musicPlayback: "bus-music-playback", musicSnapshot: "bus-music-snapshot", musicSeek: "bus-music-seek",
 });
 
 const target = new EventTarget();
 const payloads = { tvPrepare: undefined, tvPlay: undefined, tvFocus: false, partyFocus: true,
   musicToggle: { playing: true, suspendedForVideo: false },
-  partyToggle: { enabled: false, suspendedForVideo: true }, partyDance: false };
+  partyToggle: { enabled: false, suspendedForVideo: true }, partyDance: false,
+  musicPlayback: {track:"party",title:"Party At Baratie",requested:true,ready:true,state:"playing",elapsed:12,duration:180},
+  musicSnapshot: undefined, musicSeek: {track:"background",seconds:42} };
 for (const [name, detail] of Object.entries(payloads)) {
   let calls = 0;
   const stop = onBusAudioEvent(name, received => {

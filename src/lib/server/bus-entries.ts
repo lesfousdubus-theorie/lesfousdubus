@@ -2,6 +2,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { CloudflareD1Database } from "@/types/cloudflare";
 import type { PassengerProfile } from "@/types/passenger";
 import { normalizeRateAddress } from "./rate-address";
+import { isPassengerAvatarId } from "@/lib/passenger-avatar";
 
 export const READ_HEADERS = { "Cache-Control": "public, max-age=5, s-maxage=5, stale-while-revalidate=10" };
 export const WRITE_HEADERS = { "Cache-Control": "no-store, max-age=0" };
@@ -64,15 +65,17 @@ export async function readBusStats(database: CloudflareD1Database) {
   };
 }
 
-export interface PassengerRow { seat_index: number; display_name: string | null; comment: string | null }
+export interface PassengerRow { seat_index: number; display_name: string | null; comment: string | null; avatar_id?: string | null }
 export interface PassengerManifestRow { seat_index: number; display_name: string | null; has_comment: number }
 
 export function toNamedPassengerProfile(row: PassengerRow, includeComment = false): PassengerProfile | null {
-  if (!row.display_name && row.comment === null) return null;
+  const avatarId = isPassengerAvatarId(row.avatar_id) ? row.avatar_id : null;
+  if (!row.display_name && row.comment === null && !avatarId) return null;
   return {
     seatIndex: Number(row.seat_index),
-    displayName: row.display_name || "Anonyme",
+    displayName: row.display_name || (row.comment !== null ? "Anonyme" : ""),
     comment: includeComment ? row.comment || null : null,
+    avatarId,
   };
 }
 

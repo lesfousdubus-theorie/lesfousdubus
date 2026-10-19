@@ -231,6 +231,18 @@ body {
   .bus-day-night-detail { display: none; }
 }
 
+/* Garder les cinq commandes et leurs cibles tactiles sur les petits écrans. */
+@media (max-width: 380px) {
+  .bus-day-night { gap: 4px; }
+  .bus-day-night > button:first-child {
+    width: 44px;
+    min-width: 44px;
+    justify-content: center;
+    padding-inline: 0;
+  }
+  .bus-day-night > button:first-child > span { display: none; }
+}
+
 @media (max-width: 639px) and (orientation: portrait) {
   .bus-exterior-controls > button:not(:last-child) { min-width: 0; }
   .bus-exterior-tv { width: 4.5rem; }
@@ -249,7 +261,7 @@ body {
    Cette passe compacte évite que les contrôles se chevauchent comme sur tablette. */
 @media (orientation: landscape) and (max-height: 520px) {
   .bus-title-panel {
-    /* La théorie et l'aide tiennent côte à côte, laissant la hauteur libre
+    /* Les accès à la théorie et au personnage gardent la hauteur libre
        pour les notifications sur les téléphones en paysage étroit. */
     max-width: 48vw !important;
   }

@@ -115,7 +115,7 @@ for (const { id } of NAKAMA_ROSTER) for (const face of [false, true]) {
 }
 
 let attachedWeapons = 0;
-for (const [id, side] of [["nami", 1], ["zoro", -1], ["zoro", 1], ["usopp", -1], ["law",1], ["shanks",1], ["mihawk",1], ["sabo",1], ["yamato",1], ["vivi",-1], ["vivi",1]]) {
+for (const [id, side] of [["nami", 1], ["zoro", -1], ["zoro", 1], ["usopp", -1], ["law",1], ["shanks",1], ["mihawk",1], ["sabo",1], ["yamato",1], ["vivi",-1], ["vivi",1], ["foudubustv",-1]]) {
   const width = getPassengerProportions(id).armWidth;
   const forearm = mount({ type: PassengerForearm, props: { archetype: { id }, mats, side, width, handName: "actual-square-hand" } });
   const attachment = new THREE.Group(); attachment.position.y = -.22;
@@ -123,7 +123,7 @@ for (const [id, side] of [["nami", 1], ["zoro", -1], ["zoro", 1], ["usopp", -1],
   attachment.add(weapon); forearm.add(attachment); forearm.updateMatrixWorld(true);
   assertConnected(weapon, id);
   const hand = forearm.getObjectByName("actual-square-hand");
-  const type = { nami: "staff", usopp: "slingshot", sabo: "pipe", yamato: "mace", vivi: "slasher" }[id] ?? "sword";
+  const type = { nami: "staff", usopp: "slingshot", sabo: "pipe", yamato: "mace", vivi: "slasher", foudubustv: "phone" }[id] ?? "sword";
   const grip = weapon.getObjectByName(`nakama-${id}-${type}-grip`);
   assert(hand && grip && bounds(hand).intersectsBox(bounds(grip)), `${id}: the actual grip must intersect the square palm.`);
   attachedWeapons++;

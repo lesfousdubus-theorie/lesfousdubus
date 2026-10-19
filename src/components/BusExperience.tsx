@@ -23,6 +23,8 @@ import { PassengerDialogs } from "./modals/PassengerDialogs";
 import { usePassengerDirectory } from "./usePassengerDirectory";
 import { usePassengerProfile } from "./usePassengerProfile";
 import { emitBusAudioEvent } from "@/lib/bus-audio";
+import { shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts";
+import { AvatarSelectionModal } from "./modals/AvatarSelectionModal";
 
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
 
@@ -252,6 +254,7 @@ export default function BusExperience() {
     registrationRetryDelayRef,
     setCurrentPassengerSeatIndex,
     setRegistrationPending,
+    restoreSavedProfile,
   });
 
   // Empêche tout scroll de la page
@@ -412,7 +415,18 @@ export default function BusExperience() {
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
-  const overlayOpen = showHelp || showTheoryModal || showJoinModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
+  const overlayOpen = showHelp || showTheoryModal || showJoinModal || profile.showAvatarModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
+
+  // Les préférences de confort restent disponibles au clavier sans encombrer le HUD.
+  useEffect(() => {
+    const openComfort = (event: KeyboardEvent) => {
+      if (event.key !== "F1" || busy || shouldIgnoreBusShortcut(event, document.activeElement as HTMLElement | null, overlayOpen)) return;
+      event.preventDefault();
+      setShowHelp(true);
+    };
+    window.addEventListener("keydown", openComfort);
+    return () => window.removeEventListener("keydown", openComfort);
+  }, [busy, overlayOpen]);
 
   return (
     <div data-party={partyOn ? "true" : "false"} data-party-dancing={partyDancing ? "true" : "false"} data-phase={phase} data-view={phase === "inside" && freeView ? "free" : "seat"} data-scene-available={sceneAvailable} data-tv-on={tvOn ? "true" : "false"} className="bus-app fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
@@ -435,12 +449,13 @@ export default function BusExperience() {
         seatCapacity={seatCapacity}
         vacantSeatRanges={vacantSeatRanges}
         currentSeatRow={seatRow}
-        isMutedForFullscreen={overlayOpen}
+        isMutedForFullscreen={theoryVideoPlaying}
         uiPaused={overlayOpen}
         hasEntered={hasEntered}
         boardingPending={joining}
         passengerProfiles={passengerProfiles}
         currentPassengerSeatIndex={currentPassengerSeatIndex}
+        currentPassengerAvatarId={profile.savedAvatarId}
         onPassengerSelect={selectPassenger}
         modeOverride={manualDayNight}
         resetViewToken={resetViewToken}
@@ -449,7 +464,7 @@ export default function BusExperience() {
       />
 
       <BusHud
-        openHelp={() => setShowHelp(true)}
+        openAvatarModal={profile.openAvatarModal}
         phase={phase}
         freeView={freeView}
         toggleFreeView={() => setFreeView(value => !value)}
@@ -516,6 +531,9 @@ export default function BusExperience() {
         onLeaveBusPermanently={currentPassengerSeatIndex !== null ? leaveBusPermanently : undefined}
       />
       <PassengerDialogs profile={profile} directory={directory} count={count} />
+      {profile.showAvatarModal && <AvatarSelectionModal avatarId={profile.savedAvatarId} seatIndex={currentPassengerSeatIndex}
+        saving={profile.profileSaving} error={profile.avatarError} onClose={profile.closeAvatarModal}
+        onChoose={avatarId => void profile.submitAvatar(avatarId)} />}
       <TheoryAgeModal isOpen={showTheoryAge} onClose={() => setShowTheoryAge(false)} />
     </div>
   );
