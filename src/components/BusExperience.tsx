@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Scene from "./bus/Scene";
 import { BusHud, type ToastMessage } from "./BusHud";
 import { computeNumRows } from "@/lib/bus-layout";
 import { getBusPhysicalRows } from "@/lib/bus-occupancy";
@@ -25,7 +24,9 @@ import { usePassengerProfile } from "./usePassengerProfile";
 import { emitBusAudioEvent } from "@/lib/bus-audio";
 import { shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts";
 import { AvatarSelectionModal } from "./modals/AvatarSelectionModal";
+import { ManagePlaceModal } from "./modals/ManagePlaceModal";
 
+const Scene = dynamic(() => import("./bus/Scene"), { ssr: false });
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
 
 const MAX_DEBUG_PASSENGERS = 10_000;
@@ -34,6 +35,7 @@ export default function BusExperience() {
   useVisualViewport();
   const preferences = useBusPreferences();
   const [showHelp, setShowHelp] = useState(false);
+  const [showPlaceModal, setShowPlaceModal] = useState(false);
   const [resetViewToken, setResetViewToken] = useState(0);
   const [freeView, setFreeView] = useState(false);
   const [sceneAvailable, setSceneAvailable] = useState(false);
@@ -359,6 +361,7 @@ export default function BusExperience() {
       setHasEntered(false);
       setCurrentPassengerSeatIndex(null);
       setShowTheoryModal(false);
+      setShowPlaceModal(false);
       setPhase((current) => current === "inside" ? "exiting" : "outside");
       dismissToast();
       return true;
@@ -373,7 +376,8 @@ export default function BusExperience() {
     dismissToast();
     setPhase("exiting");
     playDing();
-  }, [dismissToast, phase]);
+    showToast("Tu sors du bus", "Ta place et ton profil restent enregistrés.");
+  }, [dismissToast, phase, showToast]);
 
   const onArrived = useCallback((p: "inside" | "outside") => {
     setFreeView(false);
@@ -421,7 +425,7 @@ export default function BusExperience() {
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
-  const overlayOpen = showHelp || showTheoryModal || showJoinModal || profile.showAvatarModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
+  const overlayOpen = showHelp || showPlaceModal || showTheoryModal || showJoinModal || profile.showAvatarModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
 
   // Les préférences de confort restent disponibles au clavier sans encombrer le HUD.
   useEffect(() => {
@@ -471,6 +475,8 @@ export default function BusExperience() {
       />
 
       <BusHud
+        hasSavedPlace={currentPassengerSeatIndex !== null}
+        openPlaceModal={() => setShowPlaceModal(true)}
         openAvatarModal={profile.openAvatarModal}
         phase={phase}
         freeView={freeView}
@@ -535,8 +541,10 @@ export default function BusExperience() {
         isOpen={showTheoryModal}
         onVideoPlaybackChange={setTheoryVideoPlaying}
         onClose={() => setShowTheoryModal(false)}
-        onLeaveBusPermanently={currentPassengerSeatIndex !== null ? leaveBusPermanently : undefined}
+        onManagePlace={currentPassengerSeatIndex !== null ? () => { setShowTheoryModal(false); setShowPlaceModal(true); } : undefined}
       />
+      {showPlaceModal && <ManagePlaceModal inside={phase === "inside"} onClose={() => setShowPlaceModal(false)}
+        onExit={() => { setShowPlaceModal(false); exitBus(); }} onDelete={leaveBusPermanently} />}
       <PassengerDialogs profile={profile} directory={directory} count={count} />
       {profile.showAvatarModal && <AvatarSelectionModal avatarId={profile.savedAvatarId} seatIndex={currentPassengerSeatIndex}
         saving={profile.profileSaving} error={profile.avatarError} onClose={profile.closeAvatarModal}
