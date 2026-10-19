@@ -15,7 +15,7 @@ await mkdir(output, { recursive: true });
 const chrome = spawn(process.env.CHROME_PATH ?? "/usr/bin/google-chrome", [
   "--headless=new", `--remote-debugging-port=${port}`, "--remote-debugging-address=127.0.0.1",
   `--user-data-dir=${profile}`, "--no-first-run", "--no-default-browser-check", "--no-sandbox",
-  "--disable-dev-shm-usage", "--disable-background-networking", "--use-angle=swiftshader",
+  "--disable-dev-shm-usage", "--disable-background-networking", "--disable-gpu-watchdog", "--use-angle=swiftshader",
   "--enable-unsafe-swiftshader", "--mute-audio", "about:blank",
 ], { stdio: "ignore" });
 let ws;
@@ -157,12 +157,30 @@ try {
   await open();
   assert.equal(await run("document.querySelector('[data-avatar-id]').dataset.avatarId"), "luffy");
   assert.equal(await run("avatarPreview().userData.archetypeId"), "luffy");
+  // Check the real face orientation, not just the slider's zero value. All
+  // characters share a -Z face while the preview camera sits on the +Z side.
+  const frontFacing = () => run(`(()=>{const actor=avatarPreview();actor.updateWorldMatrix(true,true);const face=actor.getObjectByName('nakama-face');return -face.getWorldDirection(face.position.clone()).z;})()`);
+  const rosterSize = await run("Number(document.querySelector('[aria-live=polite] p').textContent.split('/')[1])");
+  for(let index=0;index<rosterSize;index++) {
+    const selected=await run("document.querySelector('[data-avatar-id]').dataset.avatarId");
+    await wait("avatarPreview()?.visible===true", `Selected character ${selected} is rendered`);
+    assert((await frontFacing())>.99,"Every character must face the preview camera at the default angle.");
+    const current=await run("document.querySelector('[data-avatar-id]').dataset.avatarId");
+    if(index===0) await capture('avatar-face-luffy.png');
+    await click('button[aria-label="Personnage suivant"]');
+    await wait(`Boolean(avatarPreview())&&avatarPreview().userData.archetypeId!==${JSON.stringify(current)}`, "Next real character renders");
+    assert.equal(await run("Number(document.querySelector('[data-avatar-id]').dataset.avatarRotation)"),0,"Each selection resets to a front view.");
+    await delay(150);
+  }
+  report.checks.push(`${rosterSize} actual character faces point toward the camera at the default angle.`);
   await click('button[aria-label="Personnage précédent"]');
   await wait("avatarPreview()?.userData.archetypeId === 'mihawk'", "Previous wraps roster");
   await click('button[aria-label="Personnage suivant"]');
   await wait("avatarPreview()?.userData.archetypeId === 'luffy'", "Next wraps roster");
   for (let index = 0; index < 5; index++) await click('button[aria-label="Personnage suivant"]');
   await wait("avatarPreview()?.userData.archetypeId === 'chopper'", "Preview uses chosen Chopper rig");
+  assert((await frontFacing())>.99,"Chopper also opens facing the viewer.");
+  await capture('avatar-face-chopper.png');
   const before = await run("Number(document.querySelector('[data-avatar-id]').dataset.avatarRotation)");
   const position = await run("(() => { const r = document.querySelector('[data-avatar-id]').getBoundingClientRect(); return {x:r.x+r.width/2,y:r.y+r.height/2}; })()");
   await send("Input.dispatchMouseEvent", { type: "mousePressed", ...position, button: "left", clickCount: 1 });
@@ -175,6 +193,11 @@ try {
   assert.notEqual(await run("document.querySelector('input[aria-label=\"Rotation du personnage\"]').value"), rangeBefore, "Keyboard range rotates the avatar.");
   assert.equal(await run("document.querySelector('[data-avatar-id]').dataset.avatarId"), "chopper", "Rotation keys do not change characters.");
   report.checks.push("Current character, roster wraparound, actual Chopper preview rig, pointer rotation and keyboard rotation.");
+  await click('button[aria-label="Personnage suivant"]');
+  await wait("avatarPreview()?.userData.archetypeId !== 'chopper'", "Leave the rotated character");
+  await click('button[aria-label="Personnage précédent"]');
+  await wait("avatarPreview()?.userData.archetypeId === 'chopper'", "Return to a front-facing Chopper");
+  assert((await frontFacing())>.99,"Changing characters restores the front view after manual rotation.");
   for (const viewport of [
     { width: 1240, height: 900, mobile: false }, { width: 393, height: 852, mobile: true },
     { width: 320, height: 568, mobile: true }, { width: 667, height: 375, mobile: true },
@@ -207,6 +230,7 @@ try {
   report.camera = { adultEyeY, chopperEyeY, restoredEyeY };
   await open();
   assert.equal(await run("document.querySelector('[data-avatar-id]').dataset.avatarId"), "chopper", "Reopening begins on restored character.");
+  assert((await frontFacing())>.99,"Reopening returns the saved character to a front view.");
   await key("Escape"); await wait("!document.querySelector('[aria-modal=true]')", "Escape closes avatar selection");
   report.checks.push("Save updates main actor; fixture restores through boarding API after local avatar cache removal; current selection reopens correctly.");
   assert.deepEqual(report.errors, []);
