@@ -43,6 +43,7 @@ interface SceneProps {
   uiPaused?: boolean;
   hasEntered?: boolean;
   boardingPending?: boolean;
+  boardingFromSeat?: boolean;
   passengerProfiles?: PassengerProfile[];
   currentPassengerSeatIndex?: number | null;
   currentPassengerAvatarId?: string | null;
@@ -274,6 +275,7 @@ export default function Scene({
   uiPaused = false,
   hasEntered = false,
   boardingPending = false,
+  boardingFromSeat = false,
   passengerProfiles = [],
   currentPassengerSeatIndex = null,
   currentPassengerAvatarId = null,
@@ -329,7 +331,7 @@ export default function Scene({
       <CappedFrameLoop paused={renderPaused} />
       <AdaptiveDpr lowPower={lowPower} onDprChange={setSceneDpr} />
       <BoardingController phase={phase} journey={journey} worldRef={worldRef} seatZ={currentSeatZ-0.03} seatX={currentSeatX}
-        numRows={numRows} boardingPending={boardingPending} reducedMotion={reducedMotion}/>
+        numRows={numRows} boardingPending={boardingPending} boardingFromSeat={boardingFromSeat} reducedMotion={reducedMotion}/>
       <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Suspense fallback={null}>

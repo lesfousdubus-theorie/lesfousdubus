@@ -49,6 +49,7 @@ CHROME_PATH=/usr/bin/chromium npm run test:comfort
 CHROME_PATH=/usr/bin/chromium npm run test:overlays
 CHROME_PATH=/usr/bin/chromium npm run test:avatars
 CHROME_PATH=/usr/bin/chromium npm run test:music-controls
+CHROME_PATH=/usr/bin/chromium npm run test:passenger-lifecycle
 ```
 
 `test:ui` peut également utiliser le serveur `npm run dev`, mais les mesures de
@@ -82,6 +83,13 @@ Aide.
 et la hauteur de vue de Chopper. `test:music-controls` couvre la préparation muette
 des deux pistes, la recherche via le curseur, les priorités et les changements
 de format d’écran. Ces deux suites utilisent également des données isolées.
+
+`test:passenger-lifecycle` vérifie qu’un visiteur déjà inscrit reste assis pendant
+que la caméra rejoint sa place, qu’une première entrée ou une remontée après
+sortie emprunte la porte, et qu’aucun double ne réapparaît sur les banquettes
+après le départ. Il couvre ordinateur, mobile et animations réduites avec des
+visiteurs simulés ; aucune inscription réelle n’est modifiée.
+`BUS_LIFECYCLE_SCENARIOS=returning,new,reduced` permet de sélectionner ces cas.
 
 ## Scénarios ciblés
 

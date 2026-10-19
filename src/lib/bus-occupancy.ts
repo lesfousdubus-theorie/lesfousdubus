@@ -70,7 +70,10 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
   const candidates: BusOccupant[] = [];
   for (const row of renderedRows) for (let column = 0; column < 4; column++) {
     const index = row * 4 + column;
-    if ((avatarAboard && index === currentPassengerIndex) || !occupied(index)) continue;
+    // Dès que son identité est connue, le visiteur local est représenté par
+    // BoardingAvatar, y compris pendant sa sortie et après son départ.
+    // Le réinsérer ici quand la caméra passe dehors le faisait réapparaître assis.
+    if (index === currentPassengerIndex || !occupied(index)) continue;
     const occupant = make(index);
     if (renderedRows.has(occupant.seat.row)) candidates.push(occupant);
   }

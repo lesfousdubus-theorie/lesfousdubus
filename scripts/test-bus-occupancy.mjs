@@ -71,8 +71,13 @@ for (let capacity = 0; capacity <= 32; capacity++) {
   assert.equal(getBusPhysicalRows(capacity), Math.max(6, Math.ceil((capacity + 1) / 4)), "The bus reserves only visitor rows and one fallback slot.");
 }
 const outside = check({...base,avatarAboard:false});
-assert.equal(outside.detailed.filter(person=>person.passengerKind==="visitor").length,4,
-  "A stored visitor is hidden only when the boarding avatar actually represents them.");
+assert.deepEqual(outside.detailed.map(person=>person.index).sort(),[1,2,3],
+  "A local visitor who has left must not respawn as a seated registry passenger.");
+for (const lowPower of [false,true]) {
+  const departed=check({...occupiedBase,avatarAboard:false,lowPower,reservedRow:1});
+  assert([...departed.detailed,...departed.simplified].every(person=>person.index!==0),
+    "The departed visitor stays absent in both detailed and instanced rendering.");
+}
 check({ ...base, passengerCount: 3, seatCapacity: 8, currentPassengerIndex: 1, vacantSeatRanges: [[0, 0, 0], [4, 7, 1]], reservedRow: 0 });
 
 const sparse = check({ ...base, passengerCount: 50000, seatCapacity: 100000, currentPassengerIndex: null, avatarAboard: false, vacantSeatRanges: [[0, 49999, 0]] });
@@ -90,5 +95,23 @@ for (let column = 0; column < 4; column++) {
     "The locked boarding path must end in the assigned column even if props subsequently change.");
   updateJourney(state, "inside", 0, avatar.seat.z, 1, undefined, avatar.seat.x);
   assert.equal(state.position.x, getPhysicalSeat(avatar.physicalSeatIndex).x);
+
+  beginJourney(state,"entering",avatar.seat.z,door,avatar.seat.x,true);
+  for(let time=0;time<=state.timing.entryDuration+0.1;time+=0.1){
+    updateJourney(state,"entering",time,0,1,undefined,0.72);
+    assert.equal(state.sitting,1);
+    assert.equal(state.walking,false);
+    assert.equal(state.avatarVisible,true);
+    assert.equal(state.doorOpen,false);
+    assert.deepEqual(state.position.toArray(),[avatar.seat.x,0.64,avatar.seat.z],
+      "An already seated visitor must never teleport to the pavement while the camera boards.");
+  }
+  assert.equal(state.completed,true);
+  beginJourney(state,"exiting",avatar.seat.z,door,avatar.seat.x);
+  assert.equal(state.entryFromSeat,false,"Exiting still uses the real door after a seated entry.");
+  updateJourney(state,"exiting",state.timing.exitWalkEnd,avatar.seat.z,1,door,avatar.seat.x);
+  assert.deepEqual(state.position.toArray(),[3.3,0,door.z]);
+  beginJourney(state,"entering",avatar.seat.z,door,avatar.seat.x);
+  assert.equal(state.entryFromSeat,false,"Reboarding after leaving must restore the walking entry.");
 }
 console.log("Bus occupancy passed: no artificial passengers, unchanged visitor IDs, real avatar columns, local visitor swaps, max two per bench, sparse vacancies and bounded rendering through 100000000 visitors.");
