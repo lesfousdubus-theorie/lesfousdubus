@@ -6,8 +6,10 @@ import { ApiError, fetchJson, getOrCreateVisitorId, isRetryableRegistrationError
 import type { PassengerProfile } from "@/types/passenger";
 import type { Phase } from "./bus/constants";
 import { getBusPhysicalRows } from "@/lib/bus-occupancy";
+import type { PassengerAvatarId } from "@/lib/passenger-avatar";
 
 interface BusSyncOptions {
+  pendingAvatarId: PassengerAvatarId | null;
   applyBusSnapshot: (data: BusApiState, updateCount?: boolean) => boolean;
   statsRetryToken: number;
   setStatsLoadError: Dispatch<SetStateAction<boolean>>;
@@ -31,6 +33,7 @@ export function useBusSync({
   profileRevision, setPassengerProfiles, seatCapacityRef, count, setCount, showToast,
   registrationPending, registrationRetryDelayRef, setCurrentPassengerSeatIndex,
   setRegistrationPending, restoreSavedProfile,
+  pendingAvatarId,
 }: BusSyncOptions) {
   const countRef = useRef(count);
   useEffect(() => {
@@ -160,9 +163,11 @@ export function useBusSync({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
-          body: JSON.stringify({ visitorId: getOrCreateVisitorId() }),
+          body: JSON.stringify({ visitorId: getOrCreateVisitorId(), ...(pendingAvatarId ? { avatarId: pendingAvatarId } : {}) }),
           signal: controller.signal,
         });
+        if (controller.signal.aborted) return;
+        if (pendingAvatarId && data.passenger?.avatarId !== pendingAvatarId) throw new ApiError("Le personnage choisi n’a pas pu être enregistré.", 502);
         applyBusSnapshot(data);
         setCurrentPassengerSeatIndex(data.seatIndex);
         restoreSavedProfile(data.passenger);
@@ -195,6 +200,6 @@ export function useBusSync({
       document.removeEventListener("visibilitychange", resume);
       controller.abort();
     };
-  }, [applyBusSnapshot, registrationPending, registrationRetryDelayRef, restoreSavedProfile, setCurrentPassengerSeatIndex, setRegistrationPending, showToast]);
+  }, [applyBusSnapshot, registrationPending, registrationRetryDelayRef, restoreSavedProfile, setCurrentPassengerSeatIndex, setRegistrationPending, showToast, pendingAvatarId]);
 
 }

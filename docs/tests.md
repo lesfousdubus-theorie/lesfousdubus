@@ -82,7 +82,9 @@ Aide.
 
 `test:avatars` couvre l’orientation de face de chaque personnage réel dans
 l’aperçu, la rotation, les flèches, l’enregistrement, la restauration et la
-hauteur de vue de Chopper. `test:music-controls` couvre la préparation muette
+hauteur de vue de Chopper. Le choix avant la montée ne produit aucun POST,
+survit au rechargement et accompagne ensuite la requête d’inscription.
+`test:music-controls` couvre la préparation muette
 des deux pistes, y compris un tampon lent et les notifications de la TV pendant
 le préchargement, la commande de lecture synchrone au clic, la recherche via le
 curseur, les priorités et les changements de format d’écran. Ces deux suites

@@ -18,3 +18,4 @@ pas les guides actuels et leurs listes de travaux restants peuvent être dépass
 
 - [Revue technique du 28 septembre 2026](audit-technique-2026-09-28.md).
 - [Revue de l’interface du 5 octobre 2026](audit-interface-2026-10-05.md).
+- [Revue des commandes du 20 octobre 2026](revue-commandes-2026-10-20.md).

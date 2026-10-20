@@ -103,6 +103,12 @@ d’identifiants stables. Le choix survit aux visites avec la même identité lo
 Changer de personnage conserve le prénom, le commentaire et la place ; les
 anciens visiteurs sans choix explicite gardent leur apparence calculée.
 
+Le sélecteur est accessible avant et après la montée. Avant l’attribution
+d’une place, le choix reste un brouillon local (`fdb-avatar-draft`) : aucune
+inscription n’est créée. L’embarquement et ses réessais transmettent ce choix
+avec l’identité du visiteur. Une réponse confirmant le personnage efface le
+brouillon et restaure le profil enregistré.
+
 Le secret HMAC des quotas et le jeton de suppression administrative sont
 distincts. Leur configuration et les parcours de suppression sont documentés
 dans le [guide d’exploitation](exploitation.md). Les identifiants d’inscription

@@ -56,7 +56,7 @@ try {
     window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
       supportsFiber: true, renderers: new Map(),
       inject(renderer) { const id = ++rendererId; this.renderers.set(id, renderer); return id; },
-      onCommitFiberRoot(id, root) { roots.set(id, root); }, onCommitFiberUnmount() {},
+      onCommitFiberRoot(id, root) { roots.set(root, root); }, onCommitFiberUnmount() {},
     };
     window.avatarFind = predicate => {
       for (const root of roots.values()) { const stack = [root.current];
@@ -93,7 +93,29 @@ try {
         { headers: { 'Content-Type': 'application/json' } }));
     };
   ` });
-  await send("Page.navigate", { url: `${baseUrl}/?phase=inside&count=2` });
+  await send("Page.navigate", { url: `${baseUrl}/?count=2` });
+  await wait("document.querySelector('.bus-app')?.dataset.sceneAvailable === 'true'", "Arrival ready before registration");
+  await click('button[aria-label="Choisir mon personnage"]');
+  await wait("Boolean(document.getElementById('avatar-selection-title')) && Boolean(avatarPreview())", "Character selection is available outside");
+  await click('button[aria-label="Personnage suivant"]');
+  await wait("avatarPreview()?.userData.archetypeId === 'zoro'", "Choose Zoro before boarding");
+  await run("[...document.querySelectorAll('[aria-modal=true] button')].find(b=>b.textContent.includes('Choisir ce personnage')).click()");
+  await wait("!document.querySelector('[aria-modal=true]')", "Preboarding choice closes");
+  assert.equal(await run("avatarApiCalls.filter(c=>c.method==='POST').length"),0,"Choosing before boarding must not create or update a passenger.");
+  assert.equal(await run("localStorage.getItem('fdb-avatar-draft')"),'zoro',"Preboarding choice is saved locally.");
+  await send("Page.reload", {ignoreCache:true});
+  await wait("document.querySelector('.bus-app')?.dataset.sceneAvailable === 'true'", "Unregistered choice survives reload");
+  await click('button[aria-label="Choisir mon personnage"]');
+  await wait("avatarPreview()?.userData.archetypeId === 'zoro'", "Selection reopens on the pending character");
+  await click('button[aria-label="Personnage précédent"]');
+  await wait("avatarPreview()?.userData.archetypeId === 'luffy'", "Choose adult Luffy for the remaining scene checks");
+  await run("[...document.querySelectorAll('[aria-modal=true] button')].find(b=>b.textContent.includes('Choisir ce personnage')).click()");
+  await wait("!document.querySelector('[aria-modal=true]')", "Pending Luffy is selected");
+  await run("[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Entrer dans le bus')).click()");
+  await wait("document.querySelector('.bus-app')?.dataset.phase === 'inside'", "Board with the preselected character");
+  assert.equal(await run("avatarApiCalls.find(c=>c.method==='POST').payload.avatarId"),'luffy',"Boarding sends the pending avatar in the registration request.");
+  assert.equal(await run("localStorage.getItem('fdb-avatar-draft')"),null,"Successful registration clears the pending choice.");
+  report.checks.push("Character selection is available before boarding; no premature registration; local choice survives reload and is sent on entry.");
   await wait("document.querySelector('.bus-app')?.dataset.sceneAvailable === 'true' && Boolean(avatarScene())", "Real bus scene ready");
   await delay(350);
   const adultEyeY = await run("avatarScene().camera.position.y");
@@ -211,7 +233,7 @@ try {
   }
   // Save via the actual control and assert the main bus actor, profile and count.
   await run("[...document.querySelectorAll('[aria-modal=true] button')].find(button => button.textContent.includes('Choisir ce personnage')).click()");
-  await wait("!document.querySelector('[aria-modal=true]') && avatarScene().scene.getObjectByName('bus-boarding-avatar')?.userData.archetypeId === 'chopper'", "Saved character appears in main scene");
+  await wait("!document.querySelector('[aria-modal=true]') && avatarScene()?.scene.getObjectByName('bus-boarding-avatar')?.userData.archetypeId === 'chopper'", "Saved character appears in main scene");
   await wait(`avatarScene().camera.position.y < ${adultEyeY - 0.2}`, "First-person camera follows Chopper eye height");
   const chopperEyeY = await run("avatarScene().camera.position.y");
   assert.equal(await run("JSON.parse(localStorage.getItem('avatar-test-fixture')).displayName"), "Nakama Test");

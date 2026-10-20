@@ -14,9 +14,10 @@ const AvatarPreview = dynamic(() => import("../bus/AvatarPreview"), {
 });
 
 /** Montée uniquement à l'ouverture pour toujours commencer sur le choix actuel. */
-export function AvatarSelectionModal({ avatarId, seatIndex, saving, error, onClose, onChoose }: {
+export function AvatarSelectionModal({ avatarId, seatIndex, hasRegisteredPlace, saving, error, onClose, onChoose }: {
   avatarId: PassengerAvatarId | null;
   seatIndex: number | null;
+  hasRegisteredPlace: boolean;
   saving: boolean;
   error: string;
   onClose: () => void;
@@ -50,8 +51,8 @@ export function AvatarSelectionModal({ avatarId, seatIndex, saving, error, onClo
       className="bus-modal-card my-auto w-full max-w-[32rem] overflow-y-auto rounded-2xl border border-[#ffd23f]/60 bg-[#081127] text-white shadow-[0_30px_90px_rgba(0,0,0,0.65)]">
       <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6 sm:py-5">
         <div>
-          <h2 id="avatar-selection-title" className="text-xl font-black leading-tight sm:text-2xl">Changer de personnage</h2>
-          <p id="avatar-selection-description" className="mt-2 text-sm leading-relaxed text-[#d8e3ff]">Choisis qui prendra ta place dans le bus.</p>
+          <h2 id="avatar-selection-title" className="text-xl font-black leading-tight sm:text-2xl">{hasRegisteredPlace ? "Changer de personnage" : "Choisir mon personnage"}</h2>
+          <p id="avatar-selection-description" className="mt-2 text-sm leading-relaxed text-[#d8e3ff]">{hasRegisteredPlace ? "Choisis qui prendra ta place dans le bus." : "Prépare ton personnage avant de monter. Ce choix ne réserve pas encore de place."}</p>
         </div>
         <ModalCloseButton onClick={close} disabled={saving} />
       </div>
@@ -98,7 +99,7 @@ export function AvatarSelectionModal({ avatarId, seatIndex, saving, error, onClo
           className="mt-5 flex min-h-12 w-full items-center justify-center rounded-xl bg-[#ffd23f] px-4 py-3 text-base font-black text-[#09216d] transition-colors hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-wait disabled:opacity-80">
           {saving ? "Enregistrement…" : "Choisir ce personnage"}
         </button>
-        <p className="mt-2 text-center text-xs leading-relaxed text-[#c2cee8]">Ton choix sera conservé pour tes prochaines visites sur ce navigateur.</p>
+        <p className="mt-2 text-center text-xs leading-relaxed text-[#c2cee8]">{hasRegisteredPlace ? "Ton choix sera conservé pour tes prochaines visites sur ce navigateur." : "Ton choix est gardé sur ce navigateur. Tu monteras à bord avec ce personnage."}</p>
       </div>
     </section>
   </div>, document.body);
