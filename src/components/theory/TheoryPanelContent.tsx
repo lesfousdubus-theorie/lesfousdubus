@@ -57,6 +57,9 @@ export default function TheoryPanelContent({ activeTab, onVideoPlaybackChange }:
               Résumé de la théorie du Mont Corvo. Les liens dans chaque point renvoient au
               chapitre correspondant de sa vidéo.
             </p>
+            <a href="/theorie" className="inline-flex min-h-11 items-center text-sm font-bold text-[#ffd23f] underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ffd23f]">
+              Lire la théorie sur une page dédiée ↗
+            </a>
           </section>
 
           {/* Repères du manga reformulés, sans les présenter comme des citations exactes. */}

@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "lesfousdubus",
-  "main": ".open-next/worker.js",
+  "main": "custom-worker.mjs",
   "compatibility_date": "2026-09-03",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {

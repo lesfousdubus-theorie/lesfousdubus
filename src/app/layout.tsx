@@ -5,10 +5,7 @@ import {
   SITE_URL,
   THEORY_TITLE,
   THEORY_DESCRIPTION,
-  websiteJsonLd,
-  articleJsonLd,
-  videoJsonLd,
-  faqJsonLd,
+  SOCIAL_IMAGE,
 } from "@/lib/schema-ld";
 
 export const metadata: Metadata = {
@@ -43,9 +40,6 @@ export const metadata: Metadata = {
   ],
   creator: "Les Fous du Bus",
   publisher: "Les Fous du Bus",
-  alternates: {
-    canonical: SITE_URL,
-  },
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png", sizes: "192x192" },
@@ -61,15 +55,7 @@ export const metadata: Metadata = {
     siteName: "Les Fous du Bus — La Théorie One Piece",
     title: THEORY_TITLE,
     description: THEORY_DESCRIPTION,
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "La Théorie des Fous du Bus — Le Siècle Oublié est le Présent",
-        type: "image/jpeg",
-      },
-    ],
+    images: [SOCIAL_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
@@ -111,23 +97,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="dns-prefetch" href="//www.youtube-nocookie.com" />
         <link rel="dns-prefetch" href="//img.youtube.com" />
         <link rel="dns-prefetch" href="//i.ytimg.com" />
-        {/* Données structurées Schema.org (JSON-LD) */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(videoJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
       </head>
       <body className="h-full overflow-hidden overscroll-none bg-[#79c2ff] text-white antialiased">
         {children}

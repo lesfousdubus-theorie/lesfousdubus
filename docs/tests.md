@@ -26,6 +26,24 @@ Les tests d’autorisation exécutent les véritables handlers dans workerd :
 modération activée, absente, trop faible ou configurée avec la clé des quotas,
 suppression personnelle et limites IP/visiteur inchangées.
 
+## Référencement
+
+```bash
+npm run test:seo
+# Après compilation, sur le serveur local :
+BASE_URL=http://localhost:3000 npm run test:seo
+# Vérification publique en lecture seule après déploiement :
+BASE_URL=https://lesfousdubus.sbs npm run test:seo
+```
+
+Cette suite vérifie l’horodatage YouTube avec fuseau, l’identité de l’article,
+les dates stables du sitemap et le véritable point d’entrée Worker avec un
+handler Next simulé. Avec `BASE_URL`, elle contrôle aussi les documents HTML,
+les aperçus sociaux, le sitemap, les erreurs 404 et les redirections HTTP du
+domaine public. Elle n’exécute pas JavaScript et n’inscrit aucun visiteur.
+Définir `SEO_REPORT` pour conserver le résultat dans un fichier JSON.
+Le [guide SEO](seo.md) précise le périmètre et la validation Search Console.
+
 ## Navigateur
 
 Installer Chrome ou Chromium séparément ; npm ne télécharge pas le navigateur.

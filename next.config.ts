@@ -29,6 +29,12 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   agentRules: false,
   poweredByHeader: false,
+  async redirects() {
+    return [
+      // Ancienne adresse encore enregistrée dans la Search Console.
+      { source: "/sitemap-index.xml", destination: "/sitemap.xml", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

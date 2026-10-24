@@ -19,6 +19,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:ui": "node scripts/ui-smoke.mjs",
+    "test:seo": "node scripts/test-seo.mjs",
     "test:comfort": "node scripts/test-bus-comfort.mjs",
     "test:overlays": "node scripts/test-bus-overlays.mjs",
     "setup:local": "node scripts/setup-local.mjs",
