@@ -21,6 +21,9 @@ export default function BusLoadingScreen({ failed = false }: { failed?: boolean 
         <h1 id="bus-loading-title" className="text-3xl font-black leading-tight text-[#ffd23f] sm:text-4xl">
           {failed ? "Le bus n’a pas pu démarrer" : "Le bus arrive…"}
         </h1>
+        <p className="mt-4 text-sm leading-6 text-white/85">
+          La théorie One Piece du Mont Corvo : le Siècle Oublié serait le présent.
+        </p>
         <p role={failed ? "alert" : "status"} className="mt-5 text-base leading-7 text-white/85">
           {failed
             ? "Le chargement a échoué. Tu peux réessayer ou continuer avec la théorie."
