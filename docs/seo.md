@@ -1,8 +1,9 @@
 # Référencement et données structurées
 
 L’accueil présente l’expérience interactive ; `/theorie` contient la lecture
-complète rendue sur le serveur, accessible sans JavaScript. Le chargement et
-le panneau de théorie proposent un vrai lien vers cette page. Aucun article
+complète rendue sur le serveur, accessible sans JavaScript. Le panneau de théorie
+propose un vrai lien vers cette page. Le chargement affiche uniquement le
+gouvernail animé ; un échec donne accès au bouton de nouvelle tentative. Aucun article
 invisible destiné uniquement aux moteurs n’est ajouté à l’accueil.
 
 ## Contenu de la théorie
