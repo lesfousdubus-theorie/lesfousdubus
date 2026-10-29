@@ -1,6 +1,7 @@
 "use client";
 
-import { CENTRAL_THESIS, FULL_THEORY_SECTIONS, THEORY_FAQ } from "@/lib/theory-data";
+import { THEORY_FAQ } from "@/lib/theory-data";
+import TheorySummary from "./TheorySummary";
 import { THEORY_VIDEO_URL } from "@/lib/theory-video";
 import SyncedTheoryVideo from "./SyncedTheoryVideo";
 
@@ -32,74 +33,7 @@ export default function TheoryPanelContent({ activeTab, onVideoPlaybackChange }:
             </span>
           </aside>
 
-          {/* Une seule introduction avant le détail des points. */}
-          <section className="space-y-4 rounded-2xl border border-[#ffd23f]/45 border-l-4 border-l-[#ffd23f] bg-[#171a19] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.2)] sm:p-7 lg:p-8">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#ffd23f] text-[#071b5b] shadow-[inset_0_0_0_1px_rgba(7,27,91,0.22)]" aria-hidden="true">
-                <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current" focusable="false">
-                  <path d="M13.2 2 5.5 13.1h5.1L9.8 22l8.7-12.5h-5.2L13.2 2Z" />
-                </svg>
-              </span>
-              <span className="rounded-full bg-[#ffd23f] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#0d2190] sm:text-xs">
-                L&apos;idée centrale
-              </span>
-            </div>
-            <h3 className="max-w-4xl text-xl font-black leading-tight text-white sm:text-2xl lg:text-[28px]">
-              {CENTRAL_THESIS.title}
-            </h3>
-            <p className="max-w-4xl text-sm font-semibold leading-relaxed text-[#ffd23f] sm:text-[15px]">
-              {CENTRAL_THESIS.subtitle}
-            </p>
-            <p className="max-w-4xl text-sm leading-7 text-[#f1f4f8] sm:text-[15px]">
-              {CENTRAL_THESIS.overview}
-            </p>
-            <p className="max-w-4xl text-xs leading-6 text-white/75">
-              Résumé de la théorie du Mont Corvo. Les liens dans chaque point renvoient au
-              chapitre correspondant de sa vidéo.
-            </p>
-            <a href="/theorie" className="inline-flex min-h-11 items-center text-sm font-bold text-[#ffd23f] underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ffd23f]">
-              Lire la théorie sur une page dédiée ↗
-            </a>
-          </section>
-
-          {/* Repères du manga reformulés, sans les présenter comme des citations exactes. */}
-          <div>
-            <h4 className="mb-3 text-sm font-bold text-white">Repères du manga, reformulés</h4>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {CENTRAL_THESIS.mangaReadings.map((q, idx) => (
-                <div
-                  key={idx}
-                  className="flex min-h-[164px] flex-col justify-between rounded-xl border border-white/20 bg-[#070c16] p-5"
-                >
-                  <p className="text-sm leading-relaxed text-[#eef1f5]">{q.text}</p>
-                  <p className="mt-4 border-t border-white/20 pt-3 text-xs font-bold text-[#ffd23f]">
-                    {q.author} <span className="font-normal text-white/75">· {q.chapter}</span>
-                    <span className="mt-1.5 block font-semibold leading-relaxed text-[#cbd8ee]">{q.relevance}</span>
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile : ordre naturel. Desktop : deux piles indépendantes,
-              pour qu'ouvrir une carte à gauche ne décale jamais la colonne de droite. */}
-          <section className="space-y-3 sm:hidden">
-            {FULL_THEORY_SECTIONS.map((section) => (
-              <TheoryDetailCard key={section.title} section={section} />
-            ))}
-          </section>
-          <section className="hidden items-start gap-3 sm:grid sm:grid-cols-2">
-            <div className="space-y-3">
-              {FULL_THEORY_SECTIONS.slice(0, Math.ceil(FULL_THEORY_SECTIONS.length / 2)).map((section) => (
-                <TheoryDetailCard key={section.title} section={section} />
-              ))}
-            </div>
-            <div className="space-y-3">
-              {FULL_THEORY_SECTIONS.slice(Math.ceil(FULL_THEORY_SECTIONS.length / 2)).map((section) => (
-                <TheoryDetailCard key={section.title} section={section} />
-              ))}
-            </div>
-          </section>
+          <TheorySummary mode="modal" />
         </div>
       )}
 
@@ -194,41 +128,5 @@ export default function TheoryPanelContent({ activeTab, onVideoPlaybackChange }:
         </div>
       )}
     </>
-  );
-}
-
-function TheoryDetailCard({
-  section,
-}: {
-  section: (typeof FULL_THEORY_SECTIONS)[number];
-}) {
-  return (
-    <details className="group rounded-xl border border-white/20 bg-[#101827] p-4 transition hover:border-white/35 hover:bg-[#142033] open:border-[#ffd23f]/60 open:bg-[#1c1d19] sm:p-5">
-      <summary className="flex min-h-11 cursor-pointer list-none items-start gap-3 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1220]">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050912] text-lg shadow-inner shadow-white/5">
-          {section.icon}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-bold leading-snug text-white group-open:text-[#ffd23f]">
-            {section.title}
-          </span>
-        </span>
-        <span className="mt-2 text-sm text-[#ffd23f] transition-transform group-open:rotate-180" aria-hidden="true">
-          ▼
-        </span>
-      </summary>
-      <p className="mt-4 border-t border-white/20 pt-4 text-sm leading-7 text-[#e4e9f0]">
-        {section.summary}
-      </p>
-      <a
-        href={`${THEORY_VIDEO_URL}&t=${section.sourceSeconds}s`}
-        aria-label={`Voir dans la vidéo : ${section.title}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-2 inline-flex min-h-11 items-center text-xs font-bold text-[#ffd23f] underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ffd23f]"
-      >
-        Voir ce passage dans la vidéo ↗
-      </a>
-    </details>
   );
 }

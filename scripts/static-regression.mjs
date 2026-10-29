@@ -9,6 +9,7 @@ const bus = read("src/components/bus/Bus.tsx");
 const experience = read("src/components/BusExperience.tsx");
 const theory = read("src/components/theory/TheoryModal.tsx");
 const theoryContent = read("src/components/theory/TheoryPanelContent.tsx");
+const theorySummary = read("src/components/theory/TheorySummary.tsx");
 const hud = read("src/components/BusHud.tsx");
 const syncedVideo = read("src/components/theory/SyncedTheoryVideo.tsx");
 const scene = read("src/components/bus/Scene.tsx");
@@ -47,7 +48,8 @@ assert.ok(
 );
 assert.match(theoryContent, /<SyncedTheoryVideo\b/, "The theory modal must keep its dedicated video player.");
 assert.doesNotMatch(theoryContent, /Étape \{idx \+ 1\}/, "Theory cards must not display numbered step labels.");
-assert.match(theoryContent, /slice\(0, Math\.ceil[\s\S]*slice\(Math\.ceil/, "Desktop theory cards must use two independent sequential columns.");
+assert.match(theoryContent, /<TheorySummary mode="modal"/, "The modal must use the shared theory summary.");
+assert.match(theorySummary, /slice\(0, Math\.ceil[\s\S]*slice\(Math\.ceil/, "Desktop theory cards must use two independent sequential columns.");
 assert.doesNotMatch(theory, /modestbranding|cc_load_policy/, "Deprecated/forced YouTube parameters must stay removed.");
 assert.match(syncedVideo, /min-h-\[200px\]/, "The modal player must meet YouTube's mobile minimum height.");
 assert.doesNotMatch(syncedVideo, /getBusVideoSnapshot|requestBusVideoSeek/, "The modal video must stay independent from the bus TV timeline.");

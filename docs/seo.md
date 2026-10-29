@@ -5,6 +5,18 @@ complète rendue sur le serveur, accessible sans JavaScript. Le chargement et
 le panneau de théorie proposent un vrai lien vers cette page. Aucun article
 invisible destiné uniquement aux moteurs n’est ajouté à l’accueil.
 
+## Contenu de la théorie
+
+La modale et `/theorie` utilisent le même composant `TheorySummary` et les données
+de `src/lib/theory-data.ts`. Les points courts sont regroupés par thème ; les
+références détaillées restent dans les liens d’approfondissement. Les pistes de
+FoudubusTV sont attribuées, avec leurs incertitudes et les spoilers signalés.
+
+Après une modification éditoriale, lancer `npm run content:sync` pour régénérer
+`public/llms.txt` et `public/llms-full.txt` depuis ces mêmes données.
+`npm run content:check` vérifie leur synchronisation ; ce contrôle fait aussi
+partie de `npm run test:seo`.
+
 ## Métadonnées
 
 Les deux pages possèdent leur propre adresse canonique. La page de lecture
