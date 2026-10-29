@@ -1,6 +1,6 @@
 "use client";
 
-/** Inline SVG stays available before the 3D chunk and needs no asset request. */
+/** The wheel is inline; the retrieved crew emblem is preloaded by the root layout. */
 export default function BusLoadingScreen({ failed = false }: { failed?: boolean }) {
   return (
     <section
@@ -29,27 +29,11 @@ export default function BusLoadingScreen({ failed = false }: { failed?: boolean 
           {/* The straw-hat skull stays upright while the wheel turns around it. */}
           <circle cx="128" cy="128" r="49" fill="#07142b" stroke="#633d22" strokeWidth="8" />
           <circle cx="128" cy="128" r="47" fill="none" stroke="#f4c86b" strokeWidth="3" />
-          <g fill="#fff6df" stroke="#07142b" strokeWidth="2.5" strokeLinejoin="round">
-            <path d="m99 115 59 45m-59 0 59-45" fill="none" stroke="#fff6df" strokeWidth="7" strokeLinecap="round" />
-            <circle cx="96" cy="112" r="5" /><circle cx="101" cy="116" r="5" />
-            <circle cx="155" cy="158" r="5" /><circle cx="160" cy="163" r="5" />
-            <circle cx="96" cy="163" r="5" /><circle cx="101" cy="158" r="5" />
-            <circle cx="155" cy="116" r="5" /><circle cx="160" cy="112" r="5" />
-            <path d="M107 138h42l-5 25q-16 12-32 0Z" />
-            <path d="M102 124c0-18 11-24 26-24s26 6 26 24c0 15-8 23-26 23s-26-8-26-23Z" />
-          </g>
-          <g fill="#07142b">
-            <ellipse cx="117" cy="129" rx="7" ry="9" />
-            <ellipse cx="139" cy="129" rx="7" ry="9" />
-            <path d="m128 139-4 6h8Z" />
-          </g>
-          <g fill="none" stroke="#07142b" strokeWidth="2">
-            <path d="M110 153q18 7 36 0m-26 2v10m8-9v12m8-12v9" />
-          </g>
-          <path d="M103 106q0-23 25-23t25 23" fill="#e9b94f" stroke="#07142b" strokeWidth="2.5" />
-          <path d="M104 98q24 6 48 0l1 9h-50Z" fill="#d9443f" />
-          <ellipse cx="128" cy="109" rx="38" ry="7" fill="#e9b94f" stroke="#07142b" strokeWidth="2.5" />
-          <path d="M98 108q30 6 60 0" fill="none" stroke="#ffe091" strokeWidth="2" strokeLinecap="round" />
+          <defs>
+            <clipPath id="bus-loading-logo-clip"><circle cx="128" cy="128" r="45" /></clipPath>
+          </defs>
+          <image href="/images/luffy-jolly-roger.png" x="74" y="74" width="108" height="108"
+            preserveAspectRatio="xMidYMid meet" clipPath="url(#bus-loading-logo-clip)" />
         </svg>
 
         <div role={failed ? "alert" : "status"}>

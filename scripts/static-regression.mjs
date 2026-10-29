@@ -48,7 +48,7 @@ assert.ok(
 );
 assert.match(theoryContent, /<SyncedTheoryVideo\b/, "The theory modal must keep its dedicated video player.");
 assert.doesNotMatch(theoryContent, /Étape \{idx \+ 1\}/, "Theory cards must not display numbered step labels.");
-assert.match(theoryContent, /<TheorySummary mode="modal"/, "The modal must use the shared theory summary.");
+assert.match(theoryContent, /<TheorySummary\s*\//, "The modal must use the shared theory summary.");
 assert.match(theorySummary, /slice\(0, Math\.ceil[\s\S]*slice\(Math\.ceil/, "Desktop theory cards must use two independent sequential columns.");
 assert.doesNotMatch(theory, /modestbranding|cc_load_policy/, "Deprecated/forced YouTube parameters must stay removed.");
 assert.match(syncedVideo, /min-h-\[200px\]/, "The modal player must meet YouTube's mobile minimum height.");

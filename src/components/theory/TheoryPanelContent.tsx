@@ -33,7 +33,7 @@ export default function TheoryPanelContent({ activeTab, onVideoPlaybackChange }:
             </span>
           </aside>
 
-          <TheorySummary mode="modal" />
+          <TheorySummary />
         </div>
       )}
 

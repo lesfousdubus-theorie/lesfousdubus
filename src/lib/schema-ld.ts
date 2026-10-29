@@ -1,14 +1,13 @@
 import { THEORY_VIDEO_URL, THEORY_VIDEO_EMBED_URL, THEORY_VIDEO_THUMBNAIL_URL, THEORY_VIDEO_UPLOAD_DATE } from "@/lib/theory-video";
 
 /**
- * Données structurées des pages publiques. La vidéo et l’article ont chacun
- * leur page ; la présence de balisage ne garantit pas un résultat enrichi.
+ * Données structurées de l’accueil ; la présence de balisage ne garantit pas
+ * un résultat enrichi.
  */
 
 export const SITE_URL = "https://lesfousdubus.sbs";
-export const THEORY_READING_URL = `${SITE_URL}/theorie`;
 /** Dernière modification significative des pages et de leurs métadonnées. */
-export const SITE_UPDATED_AT = "2026-10-29T15:38:56Z";
+export const SITE_UPDATED_AT = "2026-10-29T16:04:48Z";
 export const SITE_NAME = "Les Fous du Bus — La Théorie One Piece";
 export const THEORY_TITLE = "La Théorie des Fous du Bus — Le Siècle Oublié est le Présent";
 export const THEORY_DESCRIPTION =
@@ -45,46 +44,6 @@ export const websiteJsonLd = {
       url: `${SITE_URL}/logo.png`,
     },
   },
-};
-
-export const articleJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "@id": `${THEORY_READING_URL}#article`,
-  url: THEORY_READING_URL,
-  headline: THEORY_TITLE,
-  description: THEORY_DESCRIPTION,
-  image: [`${SITE_URL}/og-image.jpg`, `${SITE_URL}/logo.png`],
-  // Le 26 mai 2024 est la date de la première vidéo, pas celle de cet article.
-  dateModified: SITE_UPDATED_AT,
-  inLanguage: "fr-FR",
-  mainEntityOfPage: {
-    "@type": "WebPage",
-    "@id": THEORY_READING_URL,
-  },
-  isPartOf: { "@id": `${SITE_URL}/#website` },
-  author: {
-    "@type": "Organization",
-    name: "Les Fous du Bus",
-    url: SITE_URL,
-  },
-  publisher: {
-    "@type": "Organization",
-    name: "Les Fous du Bus",
-    url: SITE_URL,
-    logo: {
-      "@type": "ImageObject",
-      url: `${SITE_URL}/logo.png`,
-    },
-  },
-  about: [
-    { "@type": "Thing", name: "One Piece" },
-    { "@type": "Person", name: "Eiichiro Oda" },
-    { "@type": "Thing", name: "Joy Boy" },
-    { "@type": "Thing", name: "Siècle Oublié" },
-    { "@type": "Thing", name: "Laugh Tale" },
-    { "@type": "Thing", name: "Ponéglyphes" },
-  ],
 };
 
 export const videoJsonLd = {

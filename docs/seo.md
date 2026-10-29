@@ -1,17 +1,17 @@
 # Référencement et données structurées
 
-L’accueil présente l’expérience interactive ; `/theorie` contient la lecture
-complète rendue sur le serveur, accessible sans JavaScript. Le panneau de théorie
-propose un vrai lien vers cette page. Le chargement affiche uniquement le
-gouvernail animé ; un échec donne accès au bouton de nouvelle tentative. Aucun article
-invisible destiné uniquement aux moteurs n’est ajouté à l’accueil.
+L’accueil présente l’expérience interactive et donne accès à la théorie dans
+une modale. L’ancienne page de lecture dédiée a été supprimée et renvoie une 404.
+Le chargement affiche uniquement le gouvernail animé ; un échec donne accès au
+bouton de nouvelle tentative. Aucun article invisible destiné uniquement aux
+moteurs n’est ajouté à l’accueil.
 
 ## Contenu de la théorie
 
-La modale et `/theorie` utilisent le même composant `TheorySummary` et les données
-de `src/lib/theory-data.ts`. Les points courts sont regroupés par thème ; les
-références détaillées restent dans les liens d’approfondissement. Les pistes de
-FoudubusTV sont attribuées, avec leurs incertitudes et les spoilers signalés.
+La modale utilise `TheorySummary` et les données de `src/lib/theory-data.ts`.
+Les points courts sont regroupés par thème. Les liens vers X sont conservés
+sous les points concernés ; le lien vers la vidéo complète apparaît dans les
+sources générales. Les incertitudes et les spoilers restent signalés.
 
 Après une modification éditoriale, lancer `npm run content:sync` pour régénérer
 `public/llms.txt` et `public/llms-full.txt` depuis ces mêmes données.
@@ -20,9 +20,8 @@ partie de `npm run test:seo`.
 
 ## Métadonnées
 
-Les deux pages possèdent leur propre adresse canonique. La page de lecture
-définit aussi son titre, sa description et son image Open Graph/Twitter.
-Le sitemap contient les deux URL. `SITE_UPDATED_AT` dans `src/lib/schema-ld.ts`
+L’accueil possède son adresse canonique et son image Open Graph/Twitter.
+Le sitemap contient uniquement son URL. `SITE_UPDATED_AT` dans `src/lib/schema-ld.ts`
 doit être actualisé lors d’une modification significative ; il ne doit pas
 prendre la date de chaque requête ou compilation.
 L’ancienne adresse `/sitemap-index.xml`, encore enregistrée dans Google,
@@ -32,12 +31,9 @@ Les scripts JSON-LD sont placés sur la page qu’ils décrivent :
 
 - accueil : `WebSite` et `VideoObject`, pour la vidéo disponible dans le bus
   et dans le panneau de la théorie ;
-- `/theorie` : `Article`, avec cette URL comme `mainEntityOfPage` ;
 - erreur 404 : aucun article ni vidéo déclarés.
 
-Le 26 mai 2024 correspond à la première vidéo de la théorie, pas à la
-publication de l’article de ce site. La date de publication de l’article
-n’est pas déclarée faute d’horodatage public vérifié.
+Le site ne déclare plus de balisage `Article` pour la page supprimée.
 
 ## Vidéo
 
@@ -48,8 +44,16 @@ Il comprend l’heure et le fuseau attendus par le type `DateTime`.
 
 La vidéo est attribuée à Mont Corvo. `embedUrl` pointe vers son lecteur ;
 l’adresse de la page YouTube n’est pas déclarée comme `contentUrl`, propriété
-réservée à un fichier vidéo directement accessible. La page de lecture n’intègre
-pas de lecteur et n’annonce donc pas de `VideoObject`.
+réservée à un fichier vidéo directement accessible.
+
+## Emblème du chargement
+
+`public/images/luffy-jolly-roger.png` reprend sans retouche le fichier de
+[l’emblème de l’équipage au chapeau de paille sur Seeklogo](https://seeklogo.com/vector-logo/440813/one-piece-mugiwara-flag),
+[source PNG](https://images.seeklogo.com/logo-png/44/1/one-piece-mugiwara-flag-logo-png_seeklogo-440813.png).
+Il est préchargé et affiché au centre du gouvernail avec un masque circulaire.
+Le gouvernail tourne ; l’emblème reste droit. La préférence de réduction des
+animations désactive la rotation.
 
 ## Validation
 
