@@ -21,7 +21,6 @@ const resources = [
 const point = section => [
   `### ${section.title}`,
   section.summary,
-  ...(section.note ? [section.note] : []),
   ...(section.sources ?? []).map(source => `${source.label} : ${source.url}`),
 ];
 const full = [
