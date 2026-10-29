@@ -19,14 +19,16 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:ui": "node scripts/ui-smoke.mjs",
-    "test:seo": "node scripts/test-seo.mjs",
+    "test:seo": "npm run content:check && node scripts/test-seo.mjs",
     "test:comfort": "node scripts/test-bus-comfort.mjs",
     "test:overlays": "node scripts/test-bus-overlays.mjs",
     "setup:local": "node scripts/setup-local.mjs",
     "test:avatars": "node scripts/test-avatar-selection.mjs",
     "test:music-controls": "node scripts/test-music-controls.mjs",
     "test:passenger-lifecycle": "node scripts/test-passenger-lifecycle.mjs",
-    "test:immersive-place": "node scripts/test-immersive-place.mjs"
+    "test:immersive-place": "node scripts/test-immersive-place.mjs",
+    "content:sync": "node scripts/generate-theory-text.mjs",
+    "content:check": "node scripts/generate-theory-text.mjs --check"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.6",
