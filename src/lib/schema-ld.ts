@@ -8,7 +8,7 @@ import { THEORY_VIDEO_URL, THEORY_VIDEO_EMBED_URL, THEORY_VIDEO_THUMBNAIL_URL, T
 export const SITE_URL = "https://lesfousdubus.sbs";
 export const THEORY_READING_URL = `${SITE_URL}/theorie`;
 /** Dernière modification significative des pages et de leurs métadonnées. */
-export const SITE_UPDATED_AT = "2026-10-29T15:23:25Z";
+export const SITE_UPDATED_AT = "2026-10-29T15:38:56Z";
 export const SITE_NAME = "Les Fous du Bus — La Théorie One Piece";
 export const THEORY_TITLE = "La Théorie des Fous du Bus — Le Siècle Oublié est le Présent";
 export const THEORY_DESCRIPTION =
