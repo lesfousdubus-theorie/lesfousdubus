@@ -75,7 +75,6 @@ function PointCard({ section }: { section: TheoryPoint }) {
       </summary>
       <div className="mt-3 border-t border-white/20 pt-1">
         <p className="mt-3 text-sm leading-7 text-[#e4e9f0] sm:text-[15px]">{section.summary}</p>
-        {section.note && <p className="mt-2 text-xs leading-6 text-[#a5e4ff]">{section.note}</p>}
         {section.sources && section.sources.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-x-4">
             {section.sources.map(source => (
