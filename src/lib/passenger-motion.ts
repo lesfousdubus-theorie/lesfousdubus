@@ -17,12 +17,921 @@ export function blendPassengerPose(current: PassengerPose, target: PassengerPose
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const smooth = (value: number) => { const t = clamp(value); return t * t * (3 - 2 * t); };
 const windowGain = (time: number, start: number, end: number) => smooth((time - start) / .7) * smooth((end - time) / .7);
-// Les mêmes temps musicaux sont interprétés avec des accents propres à chacun.
 const danceCadence: Record<string, number> = {
   luffy: 1, zoro: .6, nami: .9, usopp: 1.15, sanji: .85, chopper: 1.1, robin: .65,
   franky: .8, brook: 1.05, jinbe: .55, law: .7, ace: .95, sabo: .88, yamato: 1.02,
   shanks: .62, buggy: 1.18, doflamingo: .82, boa_hancock: .67, vivi: .97, mihawk: .5,
+  foudubustv: 1, kamal: .9, kyta: .95,
 };
+export const DANCE_PHASE_DURATION = 3.5;
+export const DANCE_TRANSITION_DURATION = 0.8;
+
+export const CHARACTER_DANCES: Record<string, readonly string[]> = {
+  luffy: ["gatling-punch", "nika-joyboy", "gomu-ufo", "meat-feast", "baka-song", "gear4-bounce"],
+  zoro: ["oni-giri", "108-pound-ho", "asura-slashes", "sake-toast", "stoic-groove", "tatsu-maki"],
+  nami: ["clima-tact-wave", "berry-money-rub", "mirage-pop", "wink-peace", "tangerine-breeze", "thunder-tempo"],
+  usopp: ["slingshot-sniper", "goofy-panic", "god-usopp-praise", "sogeking-salute", "rubber-band", "10ton-hammer"],
+  sanji: ["diable-jambe", "mellorine-love", "chef-saute", "cigarette-flick", "concasse-beat", "gentleman-bow"],
+  chopper: ["hoof-cheer", "kung-fu-chops", "brain-point", "cotton-candy-hop", "doctor-stethoscope", "monster-roar"],
+  robin: ["crossed-arms-blossom", "clutch-snap", "gigantesco-mano", "archaeology-read", "dark-humor-giggle", "cien-fleur-wings"],
+  franky: ["super-star", "strong-right", "cola-chug", "centaur-gallop", "radical-beam", "robot-pop-lock"],
+  brook: ["violin-virtuoso", "yohoho-45-lean", "soul-solid-slash", "rock-guitar", "top-hat-salute", "binks-sake-toast"],
+  jinbe: ["fishman-karate", "water-current-throw", "helmsman-wheel", "martial-arts-bow", "sun-pirates-roar", "tea-toast"],
+  law: ["room-tact", "shambles-snap", "kikoku-rest", "scan-field", "straw-hat-facepalm", "counter-shock"],
+  ace: ["hiken-fire-fist", "firefly-sparkle", "cowboy-hat-tip", "cross-fire-guns", "narcoleptic-nod", "entei-sun-pillar"],
+  sabo: ["ryusoken-claw", "flame-dragon-king", "top-hat-flourish", "iron-pipe-twirl", "freedom-fist", "brother-smile"],
+  yamato: ["thunder-bagua", "oden-logbook", "deity-wolf-howl", "oni-horns-flex", "shackles-freedom", "eager-cheer"],
+  shanks: ["gryphon-guard", "conqueror-pulse", "pirate-feast-toast", "straw-hat-nostalgia", "relaxed-shrug", "kamusari-stance"],
+  buggy: ["bara-bara-flying", "circus-juggling", "trembling-emperor", "red-nose-honk", "muggy-cannon", "treasure-greed"],
+  doflamingo: ["puppet-strings", "feather-coat-shrug", "overheat-whip", "birdcage-maestro", "sunglasses-smirk", "awakened-strings"],
+  boa_hancock: ["mero-mellow-heart", "looking-down-pose", "imperial-wave", "luffy-swoon", "slave-arrow", "salome-petting"],
+  vivi: ["peacock-slasher", "alabasta-x-salute", "desert-princess", "carue-riding", "rain-celebration", "nakama-wave"],
+  mihawk: ["black-blade-cut", "crucifix-dagger", "red-wine-swirl", "hawk-eyes-gaze", "tsunami-cleave", "master-nod"],
+  foudubustv: ["smartphone-filming", "theory-board-point", "puzzle-frame", "live-tweet-frenzy", "mont-corvo-shout", "grand-fleet-beat"],
+  kamal: ["two-fist-pump", "wheel-groove", "horn-slam-beat", "boost-throttle", "window-pirate-wave", "horizon-point"],
+  kyta: ["destination-point", "navigator-sway", "party-clap", "log-pose-check", "crew-hype-pump", "sea-chart-trace"],
+  nakama: ["raised-arms-pump", "overhead-sway", "victory-cheer", "roof-raise-push", "alternating-fists", "pirate-anthem"],
+};
+
+export function getCharacterDanceCount(characterId: string): number {
+  return CHARACTER_DANCES[characterId]?.length ?? 6;
+}
+
+export function getCharacterDanceName(characterId: string, stage: number): string {
+  const dances = CHARACTER_DANCES[characterId] ?? CHARACTER_DANCES.nakama;
+  return dances[Math.abs(stage) % dances.length] ?? "dance";
+}
+
+interface DanceTarget {
+  leftX: number; rightX: number; leftZ: number; rightZ: number;
+  leftElbowX: number; rightElbowX: number; leftElbowZ: number; rightElbowZ: number;
+  torsoYaw: number; torsoPitch: number; torsoRoll: number;
+  headYaw: number; headPitch: number; rightKick: number;
+}
+
+const dancePoseA: DanceTarget = {
+  leftX: 0, rightX: 0, leftZ: 0, rightZ: 0,
+  leftElbowX: 0, rightElbowX: 0, leftElbowZ: 0, rightElbowZ: 0,
+  torsoYaw: 0, torsoPitch: 0, torsoRoll: 0, headYaw: 0, headPitch: 0, rightKick: 0,
+};
+const dancePoseB: DanceTarget = {
+  leftX: 0, rightX: 0, leftZ: 0, rightZ: 0,
+  leftElbowX: 0, rightElbowX: 0, leftElbowZ: 0, rightElbowZ: 0,
+  torsoYaw: 0, torsoPitch: 0, torsoRoll: 0, headYaw: 0, headPitch: 0, rightKick: 0,
+};
+
+function initDanceTarget(target: DanceTarget, wave: number) {
+  target.leftX = 2.55 + wave * .25; target.rightX = 2.55 - wave * .25;
+  target.leftZ = -.35; target.rightZ = .35;
+  target.leftElbowX = .3; target.rightElbowX = .3;
+  target.leftElbowZ = 0; target.rightElbowZ = 0;
+  target.torsoYaw = 0; target.torsoPitch = 0; target.torsoRoll = 0;
+  target.headYaw = 0; target.headPitch = 0; target.rightKick = 0;
+}
+
+function sampleCharacterDance(
+  target: DanceTarget, characterId: string, stage: number,
+  wave: number, counter: number, reducedMotion: boolean
+) {
+  const s = stage % 6;
+  switch (characterId) {
+    case "luffy":
+      switch (s) {
+        case 0:
+          target.leftX = 1.5 - wave * .35;
+          target.rightX = 1.5 + wave * .35;
+          target.leftElbowX = .45 + (1 + wave) * .45; target.rightElbowX = .45 + (1 - wave) * .45;
+          target.leftZ = -.16; target.rightZ = .16; break;
+        case 1:
+          target.leftX = 2.70 + wave * .20; target.rightX = 2.70 + wave * .20;
+          target.leftZ = -.24 + counter * .08; target.rightZ = .24 + counter * .08;
+          target.leftElbowX = .50 + wave * .20; target.rightElbowX = .50 - wave * .20;
+          target.torsoRoll = counter * .05; target.headPitch = -.06 + wave * .04; break;
+        case 2:
+          target.leftX = 1.65 + wave * .30; target.rightX = 1.65 - wave * .30;
+          target.leftZ = -.30; target.rightZ = .30;
+          target.leftElbowX = .25; target.rightElbowX = .25;
+          target.torsoYaw = counter * .10; target.torsoPitch = wave * .03; target.headYaw = counter * .07; break;
+        case 3:
+          target.leftX = 2.25 + wave * .14; target.rightX = 2.65 + counter * .24;
+          target.leftElbowX = 1.05 + wave * .12; target.rightElbowX = .35;
+          target.leftZ = -.16; target.rightZ = .20;
+          target.headPitch = -.08 + wave * .05; target.torsoPitch = -.03; break;
+        case 4:
+          target.leftX = 1.30 + wave * .35; target.rightX = 1.30 - wave * .35;
+          target.leftElbowX = .90 + counter * .20; target.rightElbowX = .90 - counter * .20;
+          target.leftZ = -.25 + counter * .07; target.rightZ = .25 + counter * .07;
+          target.headYaw = wave * .15; target.torsoRoll = wave * .04; break;
+        case 5:
+          target.leftX = 2.10 + wave * .20; target.rightX = 2.10 + wave * .20;
+          target.leftZ = -.28; target.rightZ = .28;
+          target.leftElbowX = 1.15; target.rightElbowX = 1.15;
+          target.torsoPitch = -.05 + counter * .03; target.torsoYaw = wave * .05; break;
+      }
+      break;
+
+    case "zoro":
+      switch (s) {
+        case 0:
+          target.leftX = 1.45 + wave * .20; target.rightX = 1.45 - wave * .20;
+          target.leftZ = .38; target.rightZ = -.38;
+          target.leftElbowX = .32; target.rightElbowX = .32; target.torsoYaw = counter * .08; break;
+        case 1:
+          target.leftX = 1.35 + wave * .15; target.rightX = 1.35 + wave * .15;
+          target.leftZ = -.15; target.rightZ = .15;
+          target.leftElbowX = .15 + counter * .15; target.rightElbowX = .15 + counter * .15;
+          target.torsoPitch = -.04 + wave * .03; break;
+        case 2:
+          target.leftX = 1.75 + wave * .25; target.rightX = 1.25 - wave * .25;
+          target.leftZ = -.25 + counter * .08; target.rightZ = .25 - counter * .08;
+          target.leftElbowX = .65 + counter * .20; target.rightElbowX = .65 - counter * .20;
+          target.torsoYaw = wave * .08; break;
+        case 3:
+          target.leftX = .35; target.rightX = 2.35 + wave * .16;
+          target.leftZ = -.10; target.rightZ = .22;
+          target.leftElbowX = 1.15; target.rightElbowX = .50 + wave * .12;
+          target.headYaw = -.09; target.torsoRoll = -.03; break;
+        case 4:
+          target.leftX = 1.10; target.rightX = 1.10;
+          target.leftZ = .30; target.rightZ = -.30;
+          target.leftElbowX = 1.40; target.rightElbowX = 1.40;
+          target.headPitch = -.06 + wave * .03; target.torsoPitch = wave * .02; break;
+        case 5:
+          target.leftX = 2.25 + wave * .22; target.rightX = 2.05 - wave * .22;
+          target.leftZ = -.20 + counter * .12; target.rightZ = .20 + counter * .12;
+          target.leftElbowX = .35 + wave * .14; target.rightElbowX = .35 - wave * .14;
+          target.torsoRoll = counter * .06; target.torsoYaw = wave * .08; break;
+      }
+      break;
+
+    case "nami":
+      switch (s) {
+        case 0:
+          target.leftX = .55 + counter * .1; target.rightX = 2.55 + wave * .35;
+          target.rightZ = .38 + counter * .14; target.leftElbowX = 1.3; target.headYaw = -.13; break;
+        case 1:
+          target.leftX = 1.25 + wave * .12; target.rightX = 1.25 - wave * .12;
+          target.leftZ = .22; target.rightZ = -.22;
+          target.leftElbowX = 1.35; target.rightElbowX = 1.35;
+          target.torsoPitch = -.05 + counter * .03; target.headPitch = -.07 + wave * .04; break;
+        case 2:
+          target.leftX = 1.75 + wave * .28; target.rightX = .85 - wave * .28;
+          target.leftZ = -.24; target.rightZ = .24;
+          target.leftElbowX = .80 + counter * .18; target.rightElbowX = 1.10 - counter * .18;
+          target.torsoRoll = wave * .05; target.headYaw = counter * .10; break;
+        case 3:
+          target.leftX = 1.90 + wave * .10; target.rightX = 1.95 - wave * .10;
+          target.leftZ = -.16; target.rightZ = .16;
+          target.leftElbowX = 1.30; target.rightElbowX = 1.30;
+          target.headYaw = .09; target.headPitch = -.05; break;
+        case 4:
+          target.leftX = 1.55 + wave * .22; target.rightX = 1.55 + counter * .22;
+          target.leftZ = -.28 + counter * .08; target.rightZ = .28 - counter * .08;
+          target.leftElbowX = .55; target.rightElbowX = .55;
+          target.torsoYaw = counter * .07; target.torsoRoll = wave * .04; break;
+        case 5:
+          target.leftX = 2.15 + wave * .30; target.rightX = 2.15 + wave * .30;
+          target.leftZ = -.18; target.rightZ = .18;
+          target.leftElbowX = .35 + wave * .25; target.rightElbowX = .35 + wave * .25;
+          target.torsoPitch = -.05 + wave * .03; target.headPitch = -.06 + wave * .03; break;
+      }
+      break;
+
+    case "usopp":
+      switch (s) {
+        case 0:
+          target.leftX = 1.5; target.leftZ = -.25; target.leftElbowX = .12;
+          target.rightX = 1.25; target.rightZ = .4; target.rightElbowX = 1.45 + wave * .35;
+          target.headYaw = -.16; target.torsoYaw = -.12; break;
+        case 1:
+          target.leftX = 1.75 + wave * .40; target.rightX = 1.75 - wave * .40;
+          target.leftZ = -.16 + counter * .10; target.rightZ = .16 - counter * .10;
+          target.leftElbowX = .75 + counter * .25; target.rightElbowX = .75 - counter * .25;
+          target.headYaw = wave * .14; target.headPitch = -.07; break;
+        case 2:
+          target.leftX = 2.55 + wave * .14; target.rightX = 2.55 + wave * .14;
+          target.leftZ = -.30; target.rightZ = .30;
+          target.leftElbowX = .30; target.rightElbowX = .30;
+          target.torsoPitch = .07; target.headPitch = .10 + wave * .03; break;
+        case 3:
+          target.leftX = .45; target.rightX = 2.15 + wave * .12;
+          target.leftZ = -.10; target.rightZ = .20;
+          target.leftElbowX = 1.30; target.rightElbowX = 1.40;
+          target.headYaw = .12; target.torsoYaw = .07; break;
+        case 4:
+          target.leftX = 1.35 + wave * .16; target.rightX = 1.35 - wave * .16;
+          target.leftZ = -.14; target.rightZ = .14;
+          target.leftElbowX = 1.05 + counter * .22; target.rightElbowX = .55 - counter * .22;
+          target.torsoYaw = wave * .07; break;
+        case 5:
+          target.leftX = 1.65 + wave * .30; target.rightX = 1.65 + wave * .30;
+          target.leftZ = -.18 + wave * .15; target.rightZ = .07 + wave * .15;
+          target.leftElbowX = .75; target.rightElbowX = .75;
+          target.torsoYaw = wave * .12; target.torsoPitch = -.05 + counter * .03; break;
+      }
+      break;
+
+    case "sanji":
+      switch (s) {
+        case 0:
+          target.leftX = .55; target.rightX = 1.7 + wave * .25; target.rightElbowX = .9;
+          target.leftElbowX = 1.4; target.rightZ = .4; target.torsoRoll = -.06;
+          target.rightKick = reducedMotion ? 0 : .45 * Math.max(0, wave); break;
+        case 1:
+          target.leftX = 1.85 + wave * .30; target.rightX = 1.85 - wave * .30;
+          target.leftZ = -.25 + counter * .12; target.rightZ = .25 + counter * .12;
+          target.leftElbowX = .70 + counter * .22; target.rightElbowX = .70 - counter * .22;
+          target.torsoRoll = wave * .06; target.headPitch = -.07 + wave * .03; break;
+        case 2:
+          target.leftX = 1.25 + wave * .20; target.rightX = 1.25 - wave * .20;
+          target.leftZ = -.14; target.rightZ = .14;
+          target.leftElbowX = 1.05 + counter * .25; target.rightElbowX = 1.05 - counter * .25;
+          target.torsoPitch = -.04 + wave * .02; break;
+        case 3:
+          target.leftX = .25; target.rightX = 1.45 + wave * .12;
+          target.leftZ = -.06; target.rightZ = .16;
+          target.leftElbowX = 1.10; target.rightElbowX = 1.25 + wave * .14;
+          target.headYaw = -.12; target.torsoRoll = .03; break;
+        case 4:
+          target.leftX = 1.05 + wave * .14; target.rightX = 1.05 - wave * .14;
+          target.leftZ = -.22; target.rightZ = .22;
+          target.leftElbowX = .55; target.rightElbowX = .55;
+          target.rightKick = reducedMotion ? 0 : .38 * Math.max(0, counter);
+          target.torsoPitch = -.06; break;
+        case 5:
+          target.leftX = .20; target.rightX = 1.75 + wave * .22;
+          target.leftZ = -.05; target.rightZ = .26 + counter * .07;
+          target.leftElbowX = .85; target.rightElbowX = .40;
+          target.torsoPitch = -.07 + wave * .02; target.headPitch = -.09; break;
+      }
+      break;
+
+    case "chopper":
+      switch (s) {
+        case 0:
+          target.leftX = 2.15 + wave * .45; target.rightX = 2.15 + wave * .45;
+          target.leftZ = -.43; target.rightZ = .43;
+          target.leftElbowX = .65; target.rightElbowX = .65; break;
+        case 1:
+          target.leftX = 1.55 + wave * .28; target.rightX = 1.55 - wave * .28;
+          target.leftZ = -.20; target.rightZ = .20;
+          target.leftElbowX = .28 + counter * .22; target.rightElbowX = .28 - counter * .22;
+          target.torsoYaw = wave * .10; target.headYaw = wave * .12; break;
+        case 2:
+          target.leftX = 1.25 + wave * .16; target.rightX = 1.25 + wave * .16;
+          target.leftZ = .16; target.rightZ = -.16;
+          target.leftElbowX = 1.40; target.rightElbowX = 1.40;
+          target.headPitch = -.09 + counter * .04; target.torsoPitch = -.04; break;
+        case 3:
+          target.leftX = 1.95 + counter * .22; target.rightX = 2.35 + wave * .18;
+          target.leftZ = -.26; target.rightZ = .26;
+          target.leftElbowX = .85; target.rightElbowX = .45;
+          target.headPitch = -.07 + wave * .05; target.torsoRoll = wave * .04; break;
+        case 4:
+          target.leftX = 1.35; target.rightX = 1.65 + wave * .20;
+          target.leftZ = .10; target.rightZ = .14;
+          target.leftElbowX = 1.30; target.rightElbowX = .85 + wave * .18;
+          target.headPitch = -.05 + counter * .03; target.torsoYaw = -.05; break;
+        case 5:
+          target.leftX = 2.35 + wave * .14; target.rightX = 2.35 + wave * .14;
+          target.leftZ = -.32; target.rightZ = .32;
+          target.leftElbowX = .80; target.rightElbowX = .80;
+          target.torsoPitch = .05; target.headPitch = .10 + wave * .03; break;
+      }
+      break;
+
+    case "robin":
+      switch (s) {
+        case 0:
+          target.leftX = 1.25; target.rightX = 1.25;
+          target.leftZ = .48; target.rightZ = -.48;
+          target.leftElbowX = 1.15; target.rightElbowX = 1.15; target.headPitch = -.04; break;
+        case 1:
+          target.leftX = 1.45 + wave * .12; target.rightX = 1.45 - wave * .12;
+          target.leftZ = -.24; target.rightZ = .24;
+          target.leftElbowX = .48 + counter * .16; target.rightElbowX = .48 - counter * .16;
+          target.torsoYaw = wave * .05; break;
+        case 2:
+          target.leftX = 2.35 + wave * .20; target.rightX = 2.35 - wave * .20;
+          target.leftZ = -.28 + counter * .08; target.rightZ = .28 + counter * .08;
+          target.leftElbowX = .38; target.rightElbowX = .38;
+          target.torsoRoll = wave * .04; target.headPitch = -.05; break;
+        case 3:
+          target.leftX = .85; target.rightX = 1.65 + wave * .16;
+          target.leftZ = -.08; target.rightZ = .20;
+          target.leftElbowX = 1.30; target.rightElbowX = .65 + wave * .14;
+          target.headPitch = -.05; target.headYaw = .07; break;
+        case 4:
+          target.leftX = 1.45 + wave * .07; target.rightX = .45;
+          target.leftZ = .18; target.rightZ = -.08;
+          target.leftElbowX = 1.40; target.rightElbowX = 1.00;
+          target.torsoPitch = -.03 + counter * .02; target.headPitch = -.06; break;
+        case 5:
+          target.leftX = 1.75 + counter * .16; target.rightX = 1.75 + counter * .16;
+          target.leftZ = -.30 + wave * .07; target.rightZ = .30 - wave * .07;
+          target.leftElbowX = 1.15 + wave * .14; target.rightElbowX = 1.15 - wave * .14;
+          target.torsoRoll = counter * .03; break;
+      }
+      break;
+
+    case "franky":
+      switch (s) {
+        case 0:
+          target.leftX = 2.9 + wave * .12; target.rightX = 2.9 + wave * .12;
+          target.leftZ = .25; target.rightZ = -.25; target.leftElbowX = .6; target.rightElbowX = .6; break;
+        case 1:
+          target.leftX = 1.25; target.rightX = 1.35 + wave * .32;
+          target.leftZ = -.08; target.rightZ = .16;
+          target.leftElbowX = 1.15; target.rightElbowX = .18 + counter * .18;
+          target.torsoYaw = counter * .09; target.torsoPitch = -.04; break;
+        case 2:
+          target.leftX = 1.75 + wave * .18; target.rightX = 1.75 - wave * .18;
+          target.leftZ = .16; target.rightZ = -.16;
+          target.leftElbowX = 1.30; target.rightElbowX = 1.30;
+          target.headPitch = .08 + counter * .05; target.torsoPitch = -.03; break;
+        case 3:
+          target.leftX = 2.15 + wave * .25; target.rightX = 1.35 - wave * .25;
+          target.leftZ = -.26; target.rightZ = .26;
+          target.leftElbowX = .75; target.rightElbowX = .75;
+          target.torsoPitch = -.06 + counter * .03; target.torsoYaw = wave * .07; break;
+        case 4:
+          target.leftX = 1.45 + wave * .10; target.rightX = 1.45 + wave * .10;
+          target.leftZ = .08; target.rightZ = -.08;
+          target.leftElbowX = .25; target.rightElbowX = .25;
+          target.headPitch = -.04; target.torsoPitch = -.03; break;
+        case 5:
+          target.leftX = 2.30; target.rightX = 1.15;
+          target.leftZ = -.28; target.rightZ = .28;
+          target.leftElbowX = .7 + wave * .5; target.rightElbowX = .7 - wave * .5;
+          target.torsoYaw = counter * .07; target.headYaw = wave * .10; break;
+      }
+      break;
+
+    case "brook":
+      switch (s) {
+        case 0:
+          target.leftX = 1.3; target.leftElbowX = 1.4; target.rightX = 1.4 + wave * .32;
+          target.rightZ = .34 + counter * .12; target.rightElbowX = .5; target.headPitch = -.12; break;
+        case 1:
+          target.leftX = 1.65 + wave * .16; target.rightX = 1.65 - wave * .16;
+          target.leftZ = -.20; target.rightZ = .20;
+          target.leftElbowX = .65; target.rightElbowX = .65;
+          target.torsoPitch = .10 + counter * .02; target.headPitch = .14; break;
+        case 2:
+          target.leftX = .55; target.rightX = 1.55 + wave * .22;
+          target.leftZ = -.08; target.rightZ = .22;
+          target.leftElbowX = 1.05; target.rightElbowX = .25 + counter * .18;
+          target.torsoYaw = wave * .08; break;
+        case 3:
+          target.leftX = 1.45 + counter * .18; target.rightX = 1.15 + wave * .30;
+          target.leftZ = -.16; target.rightZ = .18;
+          target.leftElbowX = 1.15; target.rightElbowX = .55 + wave * .22;
+          target.headPitch = -.09 + wave * .05; target.torsoRoll = counter * .05; break;
+        case 4:
+          target.leftX = .35; target.rightX = 2.25 + wave * .12;
+          target.leftZ = -.07; target.rightZ = .20;
+          target.leftElbowX = 1.05; target.rightElbowX = 1.40;
+          target.torsoPitch = -.05 + counter * .02; target.headPitch = -.10; break;
+        case 5:
+          target.leftX = 2.15 + wave * .20; target.rightX = 2.45 + counter * .18;
+          target.leftZ = -.24; target.rightZ = .24;
+          target.leftElbowX = .55; target.rightElbowX = .35;
+          target.torsoRoll = wave * .04; target.headPitch = -.07; break;
+      }
+      break;
+
+    case "jinbe":
+      switch (s) {
+        case 0:
+          target.leftX = 1.3 + wave * .18; target.rightX = 1.3 - wave * .18;
+          target.leftZ = -.45; target.rightZ = .45; target.leftElbowX = .75; target.rightElbowX = .75;
+          target.torsoYaw = wave * .07; break;
+        case 1:
+          target.leftX = 2.05 + wave * .22; target.rightX = 2.05 - wave * .22;
+          target.leftZ = -.24; target.rightZ = .24;
+          target.leftElbowX = .40; target.rightElbowX = .40;
+          target.torsoPitch = -.04 + counter * .02; break;
+        case 2:
+          target.leftX = 1.45 + counter * .18; target.rightX = 1.45 - counter * .18;
+          target.leftZ = -.16; target.rightZ = .16;
+          target.leftElbowX = .85; target.rightElbowX = .85;
+          target.torsoRoll = counter * .05; target.torsoYaw = wave * .05; break;
+        case 3:
+          target.leftX = 1.05; target.rightX = 1.05;
+          target.leftZ = .14; target.rightZ = -.14;
+          target.leftElbowX = 1.35; target.rightElbowX = 1.35;
+          target.torsoPitch = -.05 + wave * .02; target.headPitch = -.05; break;
+        case 4:
+          target.leftX = 1.35 + wave * .10; target.rightX = 1.35 + wave * .10;
+          target.leftZ = .20; target.rightZ = -.20;
+          target.leftElbowX = 1.25; target.rightElbowX = 1.25;
+          target.torsoPitch = -.03; target.headPitch = .04; break;
+        case 5:
+          target.leftX = .75 + wave * .07; target.rightX = .75 + wave * .07;
+          target.leftZ = .12; target.rightZ = -.12;
+          target.leftElbowX = 1.20; target.rightElbowX = 1.20;
+          target.headPitch = -.04 + wave * .02; target.torsoPitch = wave * .02; break;
+      }
+      break;
+
+    case "law":
+      switch (s) {
+        case 0:
+          target.leftX = .7; target.leftElbowX = 1.2; target.rightX = 1.55 + wave * .12;
+          target.rightElbowX = .12; target.rightZ = .38 + counter * .12; target.headYaw = .15; break;
+        case 1:
+          target.leftX = .38; target.rightX = 1.55 + wave * .16;
+          target.leftZ = -.07; target.rightZ = .22;
+          target.leftElbowX = .95; target.rightElbowX = .85 + counter * .18;
+          target.headYaw = .11; target.torsoYaw = .05; break;
+        case 2:
+          target.leftX = .28; target.rightX = 1.75 + wave * .08;
+          target.leftZ = -.05; target.rightZ = .15;
+          target.leftElbowX = 1.05; target.rightElbowX = 1.35;
+          target.headPitch = -.04 + wave * .02; target.torsoRoll = -.03; break;
+        case 3:
+          target.leftX = 1.15 + wave * .22; target.rightX = .45;
+          target.leftZ = -.22 + counter * .08; target.rightZ = .10;
+          target.leftElbowX = .38; target.rightElbowX = 1.05;
+          target.torsoYaw = wave * .07; break;
+        case 4:
+          target.leftX = .28; target.rightX = 1.85 + wave * .05;
+          target.leftZ = -.05; target.rightZ = .12;
+          target.leftElbowX = .95; target.rightElbowX = 1.45;
+          target.headPitch = -.07; target.torsoPitch = -.03; break;
+        case 5:
+          target.leftX = 1.35 + wave * .14; target.rightX = 1.35 + wave * .14;
+          target.leftZ = -.10; target.rightZ = .10;
+          target.leftElbowX = .55 + counter * .18; target.rightElbowX = .55 + counter * .18;
+          target.torsoPitch = -.03; break;
+      }
+      break;
+
+    case "ace":
+      switch (s) {
+        case 0:
+          target.leftX = .7 + counter * .15; target.rightX = 1.8 + wave * .35;
+          target.leftElbowX = 1.35; target.rightElbowX = .15; target.torsoYaw = -.065; break;
+        case 1:
+          target.leftX = 1.75 + wave * .22; target.rightX = 1.75 - wave * .22;
+          target.leftZ = -.24 + counter * .08; target.rightZ = .24 - counter * .08;
+          target.leftElbowX = .60; target.rightElbowX = .60;
+          target.torsoRoll = wave * .04; break;
+        case 2:
+          target.leftX = .38; target.rightX = 2.15 + wave * .10;
+          target.leftZ = -.07; target.rightZ = .16;
+          target.leftElbowX = 1.05; target.rightElbowX = 1.35;
+          target.headYaw = -.09; target.headPitch = -.04; break;
+        case 3:
+          target.leftX = 1.45 + counter * .12; target.rightX = 1.45 - counter * .12;
+          target.leftZ = .16; target.rightZ = -.16;
+          target.leftElbowX = .35; target.rightElbowX = .35;
+          target.torsoYaw = wave * .07; break;
+        case 4:
+          target.leftX = .75 + wave * .08; target.rightX = .75 + wave * .08;
+          target.leftZ = -.10; target.rightZ = .10;
+          target.leftElbowX = 1.15; target.rightElbowX = 1.15;
+          target.headPitch = .06 + wave * .16; target.torsoPitch = -.04 + wave * .02; break;
+        case 5:
+          target.leftX = 2.55 + wave * .16; target.rightX = 2.55 + wave * .16;
+          target.leftZ = -.25; target.rightZ = .25;
+          target.leftElbowX = .40; target.rightElbowX = .40;
+          target.torsoPitch = .05; target.headPitch = .07; break;
+      }
+      break;
+
+    case "sabo":
+      switch (s) {
+        case 0:
+          target.leftX = 2.5 + wave * .2; target.leftElbowX = .8; target.rightX = 1.35;
+          target.rightElbowX = 1.15 + counter * .25; target.rightZ = .25; break;
+        case 1:
+          target.leftX = 1.65 + wave * .25; target.rightX = 2.15 - wave * .25;
+          target.leftZ = -.22 + counter * .10; target.rightZ = .22 + counter * .10;
+          target.leftElbowX = .55; target.rightElbowX = .35;
+          target.torsoYaw = wave * .08; break;
+        case 2:
+          target.leftX = .38; target.rightX = 2.05 + wave * .12;
+          target.leftZ = -.07; target.rightZ = .20;
+          target.leftElbowX = .95; target.rightElbowX = 1.35;
+          target.torsoPitch = -.05; target.headPitch = -.07; break;
+        case 3:
+          target.leftX = 1.25 + counter * .18; target.rightX = 1.55 + wave * .22;
+          target.leftZ = -.14; target.rightZ = .18;
+          target.leftElbowX = 1.05; target.rightElbowX = .65 + counter * .18;
+          target.torsoRoll = counter * .04; break;
+        case 4:
+          target.leftX = .45; target.rightX = 2.65 + wave * .15;
+          target.leftZ = -.07; target.rightZ = .16;
+          target.leftElbowX = 1.15; target.rightElbowX = .20;
+          target.headYaw = .07; target.torsoYaw = .04; break;
+        case 5:
+          target.leftX = 1.05 + wave * .07; target.rightX = 1.05 - wave * .07;
+          target.leftZ = .25; target.rightZ = -.25;
+          target.leftElbowX = 1.30; target.rightElbowX = 1.30;
+          target.headYaw = -.10; target.headPitch = -.03; break;
+      }
+      break;
+
+    case "yamato":
+      switch (s) {
+        case 0:
+          target.leftX = 2.5; target.rightX = 2.1 + wave * .4;
+          target.leftZ = -.18; target.rightZ = .46; target.leftElbowX = .95; target.rightElbowX = .35;
+          target.torsoYaw = counter * .10; break;
+        case 1:
+          target.leftX = 2.25 + wave * .15; target.rightX = 2.25 + wave * .15;
+          target.leftZ = -.15; target.rightZ = .15;
+          target.leftElbowX = 1.05; target.rightElbowX = 1.05;
+          target.headPitch = .09 + wave * .04; target.torsoPitch = -.03; break;
+        case 2:
+          target.leftX = 1.95 + wave * .20; target.rightX = 1.95 + wave * .20;
+          target.leftZ = -.28; target.rightZ = .28;
+          target.leftElbowX = 1.15; target.rightElbowX = 1.15;
+          target.headPitch = .14 + counter * .04; target.torsoPitch = .05; break;
+        case 3:
+          target.leftX = 2.15 + wave * .10; target.rightX = 2.15 + wave * .10;
+          target.leftZ = -.12; target.rightZ = .12;
+          target.leftElbowX = 1.40; target.rightElbowX = 1.40;
+          target.headYaw = counter * .08; target.torsoPitch = -.04; break;
+        case 4:
+          target.leftX = 1.75 + wave * .30; target.rightX = 1.75 - wave * .30;
+          target.leftZ = -.25 + counter * .10; target.rightZ = .25 - counter * .10;
+          target.leftElbowX = .45; target.rightElbowX = .45;
+          target.torsoRoll = wave * .06; break;
+        case 5:
+          target.leftX = 2.55 + wave * .22; target.rightX = 2.55 - wave * .22;
+          target.leftZ = -.18; target.rightZ = .18;
+          target.leftElbowX = .60; target.rightElbowX = .60;
+          target.torsoPitch = -.05 + counter * .02; target.headPitch = -.07; break;
+      }
+      break;
+
+    case "shanks":
+      switch (s) {
+        case 0:
+          target.leftX = .12; target.leftZ = -.08; target.leftElbowX = 1.05;
+          target.rightX = 2.4 + wave * .18; target.rightZ = .44; target.rightElbowX = .65; break;
+        case 1:
+          target.leftX = .12; target.rightX = 1.75 + wave * .10;
+          target.leftZ = -.08; target.rightZ = .18;
+          target.leftElbowX = 1.05; target.rightElbowX = .35;
+          target.torsoPitch = -.03; target.headPitch = -.05 + wave * .02; break;
+        case 2:
+          target.leftX = .12; target.rightX = 2.55 + wave * .18;
+          target.leftZ = -.08; target.rightZ = .22;
+          target.leftElbowX = 1.05; target.rightElbowX = .50 + wave * .10;
+          target.headPitch = .08 + counter * .04; target.torsoRoll = -.03; break;
+        case 3:
+          target.leftX = .12; target.rightX = 1.35 + wave * .08;
+          target.leftZ = -.08; target.rightZ = -.04;
+          target.leftElbowX = 1.05; target.rightElbowX = 1.35;
+          target.headPitch = -.05; target.torsoYaw = -.04; break;
+        case 4:
+          target.leftX = .12; target.rightX = 1.15 + wave * .20;
+          target.leftZ = -.08; target.rightZ = .24 + counter * .08;
+          target.leftElbowX = 1.05; target.rightElbowX = .75;
+          target.headYaw = .10; target.torsoRoll = wave * .03; break;
+        case 5:
+          target.leftX = .12; target.rightX = 1.95 + wave * .25;
+          target.leftZ = -.08; target.rightZ = .14 + counter * .12;
+          target.leftElbowX = 1.05; target.rightElbowX = .22;
+          target.torsoYaw = counter * .08; target.torsoPitch = -.04; break;
+      }
+      break;
+
+    case "buggy":
+      switch (s) {
+        case 0:
+          target.leftX = 2.1 + wave * .45; target.rightX = 2.1 + counter * .45;
+          target.leftZ = -.52; target.rightZ = .52;
+          target.leftElbowX = .85 + counter * .28; target.rightElbowX = .85 + wave * .28;
+          target.headYaw = counter * .2; break;
+        case 1:
+          target.leftX = 1.55 + wave * .32; target.rightX = 1.55 - wave * .32;
+          target.leftZ = -.22 + counter * .08; target.rightZ = .22 - counter * .08;
+          target.leftElbowX = 1.15 - wave * .25; target.rightElbowX = 1.15 + wave * .25;
+          target.torsoRoll = wave * .05; break;
+        case 2:
+          target.leftX = 2.45 + counter * .12; target.rightX = 2.45 + counter * .12;
+          target.leftZ = -.25; target.rightZ = .25;
+          target.leftElbowX = .55 + wave * .18; target.rightElbowX = .55 - wave * .18;
+          target.torsoPitch = -.05 + counter * .03; target.headPitch = -.08; break;
+        case 3:
+          target.leftX = 1.35; target.rightX = 1.45 + wave * .16;
+          target.leftZ = -.12; target.rightZ = .12;
+          target.leftElbowX = 1.30; target.rightElbowX = 1.40;
+          target.headYaw = -.12; target.headPitch = .06; break;
+        case 4:
+          target.leftX = 1.65 + wave * .25; target.rightX = 1.65 + wave * .25;
+          target.leftZ = -.14; target.rightZ = .14;
+          target.leftElbowX = .18; target.rightElbowX = .18;
+          target.torsoPitch = -.05; target.headPitch = -.04; break;
+        case 5:
+          target.leftX = 1.15 + wave * .10; target.rightX = 1.15 - wave * .10;
+          target.leftZ = .22; target.rightZ = -.22;
+          target.leftElbowX = 1.35; target.rightElbowX = 1.35;
+          target.torsoRoll = counter * .04; target.headPitch = -.07; break;
+      }
+      break;
+
+    case "doflamingo":
+      switch (s) {
+        case 0:
+          target.leftX = 1.45 + wave * .23; target.rightX = 1.45 - wave * .23;
+          target.leftZ = -.45; target.rightZ = .45;
+          target.leftElbowX = 1.0 + counter * .20; target.rightElbowX = 1.0 - counter * .20;
+          target.torsoPitch = .075; target.headPitch = -.09; target.headYaw = counter * .16; break;
+        case 1:
+          target.leftX = .85 + wave * .12; target.rightX = .85 - wave * .12;
+          target.leftZ = -.28; target.rightZ = .28;
+          target.leftElbowX = .75; target.rightElbowX = .75;
+          target.torsoPitch = .08; target.headPitch = .08 + wave * .03; break;
+        case 2:
+          target.leftX = .55; target.rightX = 2.25 + wave * .25;
+          target.leftZ = -.10; target.rightZ = .22 + counter * .10;
+          target.leftElbowX = 1.05; target.rightElbowX = .30;
+          target.torsoYaw = counter * .08; break;
+        case 3:
+          target.leftX = 2.15 + wave * .18; target.rightX = 2.15 - wave * .18;
+          target.leftZ = -.24 + counter * .08; target.rightZ = .24 + counter * .08;
+          target.leftElbowX = .65; target.rightElbowX = .65;
+          target.torsoRoll = counter * .04; break;
+        case 4:
+          target.leftX = .45; target.rightX = 1.85 + wave * .07;
+          target.leftZ = -.08; target.rightZ = .12;
+          target.leftElbowX = 1.15; target.rightElbowX = 1.40;
+          target.headYaw = .12; target.headPitch = -.04; break;
+        case 5:
+          target.leftX = 1.75 + wave * .20; target.rightX = 1.75 + wave * .20;
+          target.leftZ = -.25; target.rightZ = .25;
+          target.leftElbowX = .85 + counter * .16; target.rightElbowX = .85 + counter * .16;
+          target.torsoPitch = -.03; break;
+      }
+      break;
+
+    case "boa_hancock":
+      switch (s) {
+        case 0:
+          target.leftX = .8; target.leftZ = .16; target.leftElbowX = 1.4;
+          target.rightX = 2.35 + wave * .24; target.rightZ = .3 + counter * .10; target.rightElbowX = .75;
+          target.torsoRoll = .045; target.headPitch = -.13; target.headYaw = -.14; break;
+        case 1:
+          target.leftX = .65; target.rightX = .65;
+          target.leftZ = -.18; target.rightZ = .18;
+          target.leftElbowX = .95; target.rightElbowX = .95;
+          target.torsoPitch = .10; target.headPitch = .24 + wave * .03; target.headYaw = -.07; break;
+        case 2:
+          target.leftX = 1.45 + wave * .10; target.rightX = 1.45 + wave * .10;
+          target.leftZ = .16; target.rightZ = -.16;
+          target.leftElbowX = 1.30; target.rightElbowX = 1.30;
+          target.headPitch = -.08; target.headYaw = -.10; break;
+        case 3:
+          target.leftX = 1.55 + wave * .08; target.rightX = 1.75 + wave * .08;
+          target.leftZ = .20; target.rightZ = .10;
+          target.leftElbowX = 1.35; target.rightElbowX = 1.35;
+          target.torsoRoll = .07 + wave * .02; target.headPitch = -.10; break;
+        case 4:
+          target.leftX = 1.55; target.rightX = 1.35 + wave * .25;
+          target.leftZ = -.20; target.rightZ = .26;
+          target.leftElbowX = .25; target.rightElbowX = 1.25 + counter * .20;
+          target.torsoYaw = -.08; break;
+        case 5:
+          target.leftX = 1.05 + wave * .12; target.rightX = 1.05 - wave * .12;
+          target.leftZ = -.14; target.rightZ = .14;
+          target.leftElbowX = 1.15; target.rightElbowX = 1.15;
+          target.headPitch = -.05 + counter * .02; break;
+      }
+      break;
+
+    case "vivi":
+      switch (s) {
+        case 0:
+          target.leftX = 1.5 + wave * .18; target.rightX = 1.5 + wave * .18;
+          target.leftZ = .28 + counter * .08; target.rightZ = -.28 - counter * .08;
+          target.leftElbowX = 1.15; target.rightElbowX = 1.15; target.headYaw = counter * .13; break;
+        case 1:
+          target.leftX = 2.65 + wave * .12; target.rightX = .45;
+          target.leftZ = -.16; target.rightZ = .10;
+          target.leftElbowX = .20; target.rightElbowX = 1.15;
+          target.headYaw = -.10; target.torsoPitch = -.04; break;
+        case 2:
+          target.leftX = 1.75 + wave * .20; target.rightX = 1.75 - wave * .20;
+          target.leftZ = -.22 + counter * .10; target.rightZ = .22 + counter * .10;
+          target.leftElbowX = .75 + counter * .18; target.rightElbowX = .75 - counter * .18;
+          target.torsoRoll = wave * .05; break;
+        case 3:
+          target.leftX = 1.25 + wave * .18; target.rightX = 1.25 + wave * .18;
+          target.leftZ = -.14; target.rightZ = .14;
+          target.leftElbowX = 1.05 + counter * .20; target.rightElbowX = 1.05 + counter * .20;
+          target.torsoPitch = -.05 + wave * .03; break;
+        case 4:
+          target.leftX = 1.85 + wave * .12; target.rightX = 1.85 + wave * .12;
+          target.leftZ = -.22; target.rightZ = .22;
+          target.leftElbowX = .45; target.rightElbowX = .45;
+          target.headPitch = .10 + wave * .03; target.torsoPitch = .03; break;
+        case 5:
+          target.leftX = 2.35 + wave * .20; target.rightX = 2.35 - wave * .20;
+          target.leftZ = -.22; target.rightZ = .22;
+          target.leftElbowX = .60; target.rightElbowX = .60;
+          target.torsoYaw = counter * .07; break;
+      }
+      break;
+
+    case "mihawk":
+      switch (s) {
+        case 0:
+          target.leftX = .4; target.leftZ = -.08; target.leftElbowX = 1.0;
+          target.rightX = 1.85 + wave * .15; target.rightZ = .16 + counter * .06; target.rightElbowX = .42;
+          target.torsoYaw = counter * .055; target.headPitch = -.025; target.headYaw = .10; break;
+        case 1:
+          target.leftX = .35; target.rightX = 1.35 + wave * .15;
+          target.leftZ = -.06; target.rightZ = .16;
+          target.leftElbowX = 1.00; target.rightElbowX = 1.15 + counter * .15;
+          target.headYaw = .07; break;
+        case 2:
+          target.leftX = .35; target.rightX = 1.15 + wave * .07;
+          target.leftZ = -.06; target.rightZ = .14;
+          target.leftElbowX = 1.00; target.rightElbowX = 1.30 + wave * .08;
+          target.headPitch = -.03; break;
+        case 3:
+          target.leftX = 1.00; target.rightX = 1.00;
+          target.leftZ = .25; target.rightZ = -.25;
+          target.leftElbowX = 1.35; target.rightElbowX = 1.35;
+          target.torsoPitch = wave * .015; target.headPitch = -.02; break;
+        case 4:
+          target.leftX = 2.15 + wave * .10; target.rightX = 2.15 + wave * .10;
+          target.leftZ = -.09; target.rightZ = .09;
+          target.leftElbowX = .35; target.rightElbowX = .35;
+          target.torsoPitch = -.04; target.headPitch = -.03; break;
+        case 5:
+          target.leftX = .35; target.rightX = 1.45 + wave * .05;
+          target.leftZ = -.06; target.rightZ = .11;
+          target.leftElbowX = 1.00; target.rightElbowX = 1.40;
+          target.headPitch = -.05 + wave * .02; break;
+      }
+      break;
+
+    case "foudubustv":
+      switch (s) {
+        case 0:
+          target.leftX = 1.1; target.leftElbowX = 1.3; target.leftZ = -.2;
+          target.rightX = 2.8 + wave * .25; target.rightZ = .5; target.rightElbowX = .35; break;
+        case 1:
+          target.leftX = .55; target.rightX = 2.15 + wave * .18;
+          target.leftZ = -.09; target.rightZ = .20;
+          target.leftElbowX = 1.05; target.rightElbowX = .35 + counter * .12;
+          target.headYaw = .12; target.torsoYaw = .07; break;
+        case 2:
+          target.leftX = 1.75 + wave * .10; target.rightX = 1.75 - wave * .10;
+          target.leftZ = -.14; target.rightZ = .14;
+          target.leftElbowX = 1.30; target.rightElbowX = 1.30;
+          target.headPitch = -.07 + wave * .03; target.torsoPitch = -.03; break;
+        case 3:
+          target.leftX = 1.15 + wave * .12; target.rightX = 1.15 - wave * .12;
+          target.leftZ = .14; target.rightZ = -.14;
+          target.leftElbowX = 1.25; target.rightElbowX = 1.25;
+          target.headPitch = -.07; target.torsoPitch = -.04; break;
+        case 4:
+          target.leftX = 1.55 + wave * .08; target.rightX = 1.55 + wave * .08;
+          target.leftZ = .16; target.rightZ = -.16;
+          target.leftElbowX = 1.35; target.rightElbowX = 1.35;
+          target.headPitch = .07 + wave * .03; target.torsoPitch = .03; break;
+        case 5:
+          target.leftX = 1.35 + wave * .22; target.rightX = 1.35 + wave * .22;
+          target.leftZ = -.18; target.rightZ = .18;
+          target.leftElbowX = .55 + counter * .18; target.rightElbowX = .55 + counter * .18;
+          target.torsoPitch = -.05 + wave * .03; break;
+      }
+      break;
+
+    case "kamal":
+      switch (s) {
+        case 0:
+          target.leftX = 2.6 + wave * .45; target.rightX = 2.6 - wave * .45;
+          target.leftZ = -.2; target.rightZ = .2; target.leftElbowX = .8; target.rightElbowX = .8; break;
+        case 1:
+          target.leftX = 2.50 + counter * .20; target.rightX = 2.50 - counter * .20;
+          target.leftZ = -.16; target.rightZ = .16;
+          target.leftElbowX = .85; target.rightElbowX = .85;
+          target.torsoYaw = counter * .06; target.torsoRoll = wave * .04; break;
+        case 2:
+          target.leftX = 2.45 + wave * .15; target.rightX = 2.65 - wave * .15;
+          target.leftZ = -.14; target.rightZ = .14;
+          target.leftElbowX = .90; target.rightElbowX = .75;
+          target.headPitch = -.06 + wave * .03; break;
+        case 3:
+          target.leftX = 2.40; target.rightX = 2.70 + wave * .18;
+          target.leftZ = -.15; target.rightZ = .18;
+          target.leftElbowX = .85; target.rightElbowX = .70 + counter * .15;
+          target.torsoPitch = .02; target.headPitch = .05; break;
+        case 4:
+          target.leftX = 2.65 + wave * .18; target.rightX = 2.40;
+          target.leftZ = -.20; target.rightZ = .14;
+          target.leftElbowX = .65; target.rightElbowX = .90;
+          target.headYaw = -.10; break;
+        case 5:
+          target.leftX = 2.40; target.rightX = 2.65 + wave * .15;
+          target.leftZ = -.14; target.rightZ = .16;
+          target.leftElbowX = .85; target.rightElbowX = .60;
+          target.headYaw = .06; target.torsoPitch = -.02; break;
+      }
+      break;
+
+    case "kyta":
+      switch (s) {
+        case 0:
+          target.leftX = 2.8; target.leftElbowX = .5; target.leftZ = -.4;
+          target.rightX = 1.4 + counter * .15; target.rightElbowX = .2; target.rightZ = .12; break;
+        case 1:
+          target.leftX = 2.60 + wave * .18; target.rightX = 1.80 - wave * .18;
+          target.leftZ = -.28; target.rightZ = .20;
+          target.leftElbowX = .65; target.rightElbowX = .65;
+          target.torsoRoll = wave * .03; target.torsoYaw = counter * .05; break;
+        case 2:
+          target.leftX = 2.50 + wave * .12; target.rightX = 1.70 + wave * .12;
+          target.leftZ = -.22; target.rightZ = .16;
+          target.leftElbowX = .80; target.rightElbowX = .80;
+          target.headPitch = -.06; break;
+        case 3:
+          target.leftX = 2.45; target.rightX = 2.55 + wave * .15;
+          target.leftZ = -.20; target.rightZ = .18;
+          target.leftElbowX = .85; target.rightElbowX = .45;
+          target.headPitch = -.04; target.headYaw = .10; break;
+        case 4:
+          target.leftX = 2.70 + wave * .20; target.rightX = 2.10 - wave * .20;
+          target.leftZ = -.25; target.rightZ = .18;
+          target.leftElbowX = .60; target.rightElbowX = .60;
+          target.torsoPitch = -.03; break;
+        case 5:
+          target.leftX = 2.50 + counter * .15; target.rightX = 1.90 + wave * .16;
+          target.leftZ = -.22; target.rightZ = .16;
+          target.leftElbowX = .75; target.rightElbowX = .35 + wave * .12;
+          target.torsoYaw = wave * .05; break;
+      }
+      break;
+
+    default:
+      switch (s) {
+        case 0:
+          target.leftX = 2.55 + wave * .25; target.rightX = 2.55 - wave * .25;
+          target.leftZ = -.30; target.rightZ = .30;
+          target.leftElbowX = .30; target.rightElbowX = .30; break;
+        case 1:
+          target.leftX = 2.60 + counter * .20; target.rightX = 2.60 + counter * .20;
+          target.leftZ = -.24 + wave * .08; target.rightZ = .24 + wave * .08;
+          target.leftElbowX = .38; target.rightElbowX = .38;
+          target.torsoRoll = wave * .04; break;
+        case 2:
+          target.leftX = 2.45 + wave * .16; target.rightX = 2.45 + wave * .16;
+          target.leftZ = -.20; target.rightZ = .20;
+          target.leftElbowX = .75; target.rightElbowX = .75;
+          target.headPitch = -.07 + wave * .03; break;
+        case 3:
+          target.leftX = 2.70 + wave * .18; target.rightX = 2.70 + wave * .18;
+          target.leftZ = -.26; target.rightZ = .26;
+          target.leftElbowX = .20 + counter * .12; target.rightElbowX = .20 + counter * .12;
+          target.torsoPitch = -.03; break;
+        case 4:
+          target.leftX = 2.50 + wave * .30; target.rightX = 2.50 - wave * .30;
+          target.leftZ = -.22; target.rightZ = .22;
+          target.leftElbowX = .48 + counter * .18; target.rightElbowX = .48 - counter * .18;
+          target.torsoYaw = wave * .05; break;
+        case 5:
+          target.leftX = 2.35 + wave * .14; target.rightX = 2.35 + wave * .14;
+          target.leftZ = -.30; target.rightZ = .30;
+          target.leftElbowX = .42; target.rightElbowX = .42;
+          target.headPitch = .07 + wave * .03; target.torsoPitch = .03; break;
+      }
+      break;
+  }
+}
+
+function blendDanceTarget(pose: PassengerPose, a: DanceTarget, b: DanceTarget, blend: number) {
+  if (blend >= 1) {
+    pose.leftX = b.leftX; pose.rightX = b.rightX;
+    pose.leftZ = b.leftZ; pose.rightZ = b.rightZ;
+    pose.leftElbowX = b.leftElbowX; pose.rightElbowX = b.rightElbowX;
+    pose.leftElbowZ = b.leftElbowZ; pose.rightElbowZ = b.rightElbowZ;
+    pose.torsoYaw = b.torsoYaw; pose.torsoPitch = b.torsoPitch; pose.torsoRoll = b.torsoRoll;
+    pose.headYaw = b.headYaw; pose.headPitch = b.headPitch; pose.rightKick = b.rightKick;
+  } else {
+    pose.leftX = a.leftX + (b.leftX - a.leftX) * blend;
+    pose.rightX = a.rightX + (b.rightX - a.rightX) * blend;
+    pose.leftZ = a.leftZ + (b.leftZ - a.leftZ) * blend;
+    pose.rightZ = a.rightZ + (b.rightZ - a.rightZ) * blend;
+    pose.leftElbowX = a.leftElbowX + (b.leftElbowX - a.leftElbowX) * blend;
+    pose.rightElbowX = a.rightElbowX + (b.rightElbowX - a.rightElbowX) * blend;
+    pose.leftElbowZ = a.leftElbowZ + (b.leftElbowZ - a.leftElbowZ) * blend;
+    pose.rightElbowZ = a.rightElbowZ + (b.rightElbowZ - a.rightElbowZ) * blend;
+    pose.torsoYaw = a.torsoYaw + (b.torsoYaw - a.torsoYaw) * blend;
+    pose.torsoPitch = a.torsoPitch + (b.torsoPitch - a.torsoPitch) * blend;
+    pose.torsoRoll = a.torsoRoll + (b.torsoRoll - a.torsoRoll) * blend;
+    pose.headYaw = a.headYaw + (b.headYaw - a.headYaw) * blend;
+    pose.headPitch = a.headPitch + (b.headPitch - a.headPitch) * blend;
+    pose.rightKick = a.rightKick + (b.rightKick - a.rightKick) * blend;
+  }
+}
 
 /** Deux articulations amènent les deux mains au milieu du banc pour le check. */
 const highFivePoses = new Map<number, { shoulder: number; elbow: number }>();
@@ -58,98 +967,34 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
   if (party || horn > 0) {
     pose.activity = party ? "party" : "horn"; pose.celebrating = true;
     const gain = party ? 1 : horn;
-    // Le klaxon déclenche immédiatement la signature ; la fête alterne signature et danse.
-    const signature = !party || reducedMotion ? 1 : windowGain((time + index * .41) % 7, 0, 3.2);
     const beat = reducedMotion ? 0 : (party ? time : hornElapsed) * Math.PI * 3.6 * (danceCadence[characterId] ?? 1) + seed;
     const wave = reducedMotion ? 0 : Math.sin(beat), counter = reducedMotion ? 0 : Math.cos(beat);
-    pose.leftX = 2.55 + wave * .25; pose.rightX = 2.55 - wave * .25;
-    pose.leftZ = -.35; pose.rightZ = .35; pose.leftElbowX = .3; pose.rightElbowX = .3;
     pose.gesture = characterId;
-    switch (characterId) {
-      case "luffy": // Gatling : poings alternés, sans étirer les os.
-        pose.leftX = 2.65 + wave * .28 + (1.5 - wave * .35 - 2.65 - wave * .28) * signature;
-        pose.rightX = 2.65 - wave * .28 + (1.5 + wave * .35 - 2.65 + wave * .28) * signature;
-        pose.leftElbowX = .45 + (1 + wave) * .45; pose.rightElbowX = .45 + (1 - wave) * .45;
-        pose.leftZ = -.16; pose.rightZ = .16; break;
-      case "zoro": // Coupe croisée devant le buste.
-        pose.leftX = 1.45 + wave * .20; pose.rightX = 1.45 - wave * .20;
-        pose.leftZ = -.38 + .76 * signature; pose.rightZ = .38 - .76 * signature;
-        pose.leftElbowX = .32; pose.rightElbowX = .32; pose.torsoYaw = counter * .08; break;
-      case "nami":
-        pose.leftX = .55 + counter * .1; pose.rightX = 2.55 + wave * .35;
-        pose.rightZ = .38 + counter * .14; pose.leftElbowX = 1.3; pose.headYaw = -.13; break;
-      case "usopp": // Vise puis tire sur son lance-pierre imaginaire.
-        pose.leftX = 1.5; pose.leftZ = -.25; pose.leftElbowX = .12;
-        pose.rightX = 1.25; pose.rightZ = .4; pose.rightElbowX = 1.45 + wave * .35;
-        pose.headYaw = -.16; pose.torsoYaw = -.12; break;
-      case "sanji":
-        pose.leftX = .55; pose.rightX = 1.7 + wave * .25; pose.rightElbowX = .9;
-        pose.leftElbowX = 1.4; pose.rightZ = .4; pose.torsoRoll = -.06;
-        pose.rightKick = reducedMotion ? 0 : .45 * Math.max(0, wave); break;
-      case "chopper":
-        pose.leftX = 2.15 + wave * .45; pose.rightX = 2.15 + wave * .45;
-        pose.leftZ = -.43; pose.rightZ = .43; pose.leftElbowX = .65; pose.rightElbowX = .65; break;
-      case "robin": // Bras croisés, puis éventail Hana Hana.
-        pose.leftX = 2.3 - 1.05 * signature; pose.rightX = pose.leftX;
-        pose.leftZ = -.48 + .96 * signature; pose.rightZ = -pose.leftZ;
-        pose.leftElbowX = 1.15; pose.rightElbowX = 1.15; pose.headPitch = -.04; break;
-      case "franky": // SUPER : avant-bras réunis au-dessus du visage.
-        pose.leftX = 2.9 + wave * .12; pose.rightX = 2.9 + wave * .12;
-        pose.leftZ = .25; pose.rightZ = -.25; pose.leftElbowX = .6; pose.rightElbowX = .6; break;
-      case "brook": // Violon et salut de musicien.
-        pose.leftX = 1.3; pose.leftElbowX = 1.4; pose.rightX = 1.4 + wave * .32;
-        pose.rightZ = .34 + counter * .12; pose.rightElbowX = .5; pose.headPitch = -.12; break;
-      case "jinbe": // Paumes du karaté des hommes-poissons.
-        pose.leftX = 1.3 + wave * .18; pose.rightX = 1.3 - wave * .18;
-        pose.leftZ = -.45; pose.rightZ = .45; pose.leftElbowX = .75; pose.rightElbowX = .75;
-        pose.torsoYaw = wave * .07; break;
-      case "law":
-        pose.leftX = .7; pose.leftElbowX = 1.2; pose.rightX = 1.55 + wave * .12;
-        pose.rightElbowX = .12; pose.rightZ = .38 + counter * .12; pose.headYaw = .15; break;
-      case "ace":
-        pose.leftX = .7 + counter * .15; pose.rightX = 2.8 + (1.8 + wave * .35 - 2.8) * signature;
-        pose.leftElbowX = 1.35; pose.rightElbowX = .15; pose.torsoYaw = -.065; break;
-      case "sabo":
-        pose.leftX = 2.5 + wave * .2; pose.leftElbowX = .8; pose.rightX = 1.35;
-        pose.rightElbowX = 1.15 + counter * .25; pose.rightZ = .25; break;
-      case "yamato":
-        pose.leftX = 2.5; pose.rightX = 2.1 + wave * .4;
-        pose.leftZ = -.18; pose.rightZ = .46; pose.leftElbowX = .95; pose.rightElbowX = .35;
-        pose.torsoYaw = counter * .10; break;
-      case "shanks":
-        pose.leftX = .12; pose.leftZ = -.08; pose.leftElbowX = 1.05;
-        pose.rightX = 2.4 + wave * .18; pose.rightZ = .44; pose.rightElbowX = .65; break;
-      case "buggy":
-        pose.leftX = 2.1 + wave * .45; pose.rightX = 2.1 + counter * .45;
-        pose.leftZ = -.52; pose.rightZ = .52; pose.leftElbowX = .85 + counter * .28; pose.rightElbowX = .85 + wave * .28;
-        pose.headYaw = counter * .2; break;
-      case "doflamingo": // Dirige ses fils avec les deux mains, installé avec assurance.
-        pose.leftX = 1.45 + wave * .23; pose.rightX = 1.45 - wave * .23;
-        pose.leftZ = -.45; pose.rightZ = .45; pose.leftElbowX = 1.0 + counter * .20; pose.rightElbowX = 1.0 - counter * .20;
-        pose.torsoPitch = .075; pose.headPitch = -.09; pose.headYaw = counter * .16; break;
-      case "boa_hancock": // Salut royal d'une main, autre paume près du cœur.
-        pose.leftX = .8; pose.leftZ = .16; pose.leftElbowX = 1.4;
-        pose.rightX = 2.35 + wave * .24; pose.rightZ = .3 + counter * .10; pose.rightElbowX = .75;
-        pose.torsoRoll = .045; pose.headPitch = -.13; pose.headYaw = -.14; break;
-      case "vivi": // Encourage l'équipage en rapprochant les paumes devant elle.
-        pose.leftX = 1.5 + wave * .18; pose.rightX = 1.5 + wave * .18;
-        pose.leftZ = .28 + counter * .08; pose.rightZ = -.28 - counter * .08;
-        pose.leftElbowX = 1.15; pose.rightElbowX = 1.15; pose.headYaw = counter * .13; break;
-      case "mihawk": // Salut et coupe mesurée, la grande lame reste devant son propre siège.
-        pose.leftX = .4; pose.leftZ = -.08; pose.leftElbowX = 1.0;
-        pose.rightX = 1.85 + wave * .15; pose.rightZ = .16 + counter * .06; pose.rightElbowX = .42;
-        pose.torsoYaw = counter * .055; pose.headPitch = -.025; pose.headYaw = .10; break;
-      case "foudubustv": // Filmer d'une main, saluer de l'autre.
-        pose.leftX = 1.1; pose.leftElbowX = 1.3; pose.leftZ = -.2;
-        pose.rightX = 2.8 + wave * .25; pose.rightZ = .5; pose.rightElbowX = .35; break;
-      case "kamal": // Encourager l'équipage des deux poings.
-        pose.leftX = 2.6 + wave * .45; pose.rightX = 2.6 - wave * .45;
-        pose.leftZ = -.2; pose.rightZ = .2; pose.leftElbowX = .8; pose.rightElbowX = .8; break;
-      case "kyta": // Montrer la destination puis lever le Log Pose.
-        pose.leftX = 2.8; pose.leftElbowX = .5; pose.leftZ = -.4;
-        pose.rightX = 1.4 + counter * .15; pose.rightElbowX = .2; pose.rightZ = .12; break;
+
+    if (!party || reducedMotion) {
+      initDanceTarget(dancePoseB, wave);
+      sampleCharacterDance(dancePoseB, characterId, 0, wave, counter, reducedMotion);
+      blendDanceTarget(pose, dancePoseB, dancePoseB, 1);
+    } else {
+      const danceTime = Number.isFinite(time) ? Math.max(0, time) : 0;
+      const cycleTime = danceTime % (6 * DANCE_PHASE_DURATION);
+      const stage = Math.floor(cycleTime / DANCE_PHASE_DURATION);
+      const prevStage = (stage + 5) % 6;
+      const stageProgress = cycleTime - stage * DANCE_PHASE_DURATION;
+      const transition = danceTime < DANCE_TRANSITION_DURATION ? 1 : Math.min(1, stageProgress / DANCE_TRANSITION_DURATION);
+      const blend = transition * transition * (3 - 2 * transition);
+
+      initDanceTarget(dancePoseB, wave);
+      sampleCharacterDance(dancePoseB, characterId, stage, wave, counter, false);
+      if (blend >= 1) {
+        blendDanceTarget(pose, dancePoseB, dancePoseB, 1);
+      } else {
+        initDanceTarget(dancePoseA, wave);
+        sampleCharacterDance(dancePoseA, characterId, prevStage, wave, counter, false);
+        blendDanceTarget(pose, dancePoseA, dancePoseB, blend);
+      }
     }
-    // Une signature reste stable en mouvement réduit ; les membres gardent leurs proportions.
+
     if (!reducedMotion) {
       pose.bob = (.018 + .018 * wave) * gain;
       pose.rootYaw = Math.sin(beat * .5) * .08 * gain;
@@ -157,13 +1002,17 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
       pose.torsoPitch += -.035 + counter * .025;
       pose.headPitch += -.08 + wave * .035;
       pose.headYaw += Math.sin(beat * .45) * .10;
+
+      pose.torsoPitch = Math.max(-.115, Math.min(.115, pose.torsoPitch));
+      pose.torsoRoll = Math.max(-.115, Math.min(.115, pose.torsoRoll));
+      pose.torsoYaw = Math.max(-.24, Math.min(.24, pose.torsoYaw));
+      pose.rootYaw = Math.max(-.08, Math.min(.08, pose.rootYaw));
+      pose.headPitch = Math.max(-.42, Math.min(.42, pose.headPitch));
+      pose.headYaw = Math.max(-.90, Math.min(.90, pose.headYaw));
     }
-    if (characterId in danceCadence) {
-      // Les gestes restent dans une banquette étroite, sans projeter les avant-bras par les vitres.
-      const outwardLimit = Math.max(.06, .15 - Math.max(0, torsoWidth - .33));
-      pose.leftZ = Math.max(-outwardLimit, pose.leftZ);
-      pose.rightZ = Math.min(outwardLimit, pose.rightZ);
-    }
+    const outwardLimit = Math.max(.06, .15 - Math.max(0, torsoWidth - .33));
+    pose.leftZ = Math.max(-outwardLimit, pose.leftZ);
+    pose.rightZ = Math.min(outwardLimit, pose.rightZ);
     for (const key of poseFields) {
       if (key === "bob") continue;
       const baseline = key === "leftX" || key === "rightX" ? .12 : key === "leftElbowX" || key === "rightElbowX" ? 1.05 : key === "leftZ" ? -.08 : key === "rightZ" ? .08 : 0;
