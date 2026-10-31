@@ -96,7 +96,6 @@ export function BusTvPlayer({
 }: BusTvPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mountElement, setMountElement] = useState<HTMLDivElement | null>(null);
-  const shaderMatRef = useRef<THREE.ShaderMaterial>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const createdPlayerRef = useRef<YouTubePlayer | null>(null);
   const warmTimerRef = useRef<number | null>(null);
@@ -121,7 +120,6 @@ export function BusTvPlayer({
   });
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const [apiFailed, setApiFailed] = useState(false);
-  const shaderUniforms = useMemo(() => ({ uVisible: { value: 1.0 } }), []);
 
   const stopVolumeRamp = useCallback(() => {
     if (volumeTimerRef.current !== null) window.clearTimeout(volumeTimerRef.current);
@@ -461,9 +459,6 @@ export function BusTvPlayer({
       }
     }
     const visible = tvOn && !partyAudioRef.current && !isMutedForFullscreen && !warmingRef.current;
-    if (shaderMatRef.current?.uniforms?.uVisible) {
-      shaderMatRef.current.uniforms.uVisible.value = visible ? 1.0 : 0.0;
-    }
     if (!containerRef.current) return;
 
     const isBehindTv = phase !== "inside" && camera.position.z < pos[2] + 0.04;
@@ -478,32 +473,6 @@ export function BusTvPlayer({
       <Html
         transform
         pointerEvents={tvOn && phase === "inside" && !isMutedForFullscreen ? "auto" : "none"}
-        occlude="blending"
-        zIndexRange={[10, 0]}
-        geometry={<planeGeometry args={[1.26, 0.70875]} />}
-        material={
-          <shaderMaterial
-            ref={shaderMatRef}
-            transparent
-            blending={THREE.NoBlending}
-            side={THREE.DoubleSide}
-            depthTest
-            depthWrite={false}
-            uniforms={shaderUniforms}
-            vertexShader={`
-              void main() {
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-              }
-            `}
-            fragmentShader={`
-              uniform float uVisible;
-              void main() {
-                if (uVisible < 0.5) discard;
-                gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-              }
-            `}
-          />
-        }
         distanceFactor={400}
         position={[0, 0, 0.054]}
         scale={0.00225}
@@ -520,6 +489,8 @@ export function BusTvPlayer({
             height: 315,
             background: "#000",
             overflow: "hidden",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
             opacity: tvOn && !isMutedForFullscreen ? 1 : 0,
             visibility: tvOn && !isMutedForFullscreen ? "visible" : "hidden",
             transition: reducedMotion ? "none" : "opacity 0.2s ease",
