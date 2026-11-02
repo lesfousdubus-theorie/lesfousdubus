@@ -13,7 +13,8 @@ import { PassengerNeck, PassengerTorso } from "./PassengerAnatomy";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import { PassengerPelvis } from "./PassengerLowerBody";
 import { PassengerUpperArm, PassengerForearm, PassengerFoot, passengerCalfMaterial } from "./PassengerIdentity";
-import { blendPassengerPose, createPassengerPose, samplePassengerPose } from "@/lib/passenger-motion";
+import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, samplePassengerPose } from "@/lib/passenger-motion";
+import PassengerSignatureProp from "./PassengerSignatureProp";
 
 /** Le même nakama attend, marche, s'assoit, puis devient le corps en vue subjective. */
 export default function BoardingAvatar({ journey, passengerIndex, avatarId, physicalSeatIndex, partyOn, hornPulse, reducedMotion }: {
@@ -31,6 +32,7 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
   const feet = useRef<(THREE.Group | null)[]>([]);
   const arms = useRef<(THREE.Group | null)[]>([]);
   const elbows = useRef<(THREE.Group | null)[]>([]);
+  const signatureProps = useRef<(THREE.Group | null)[]>([]);
   const motion = useRef({ previous: new THREE.Vector3(), phase: "", distance: 0, strength: 0 });
   const headWorld = useMemo(() => new THREE.Vector3(), []);
   const targetPose=useRef(createPassengerPose()),pose=useRef(createPassengerPose());
@@ -69,7 +71,11 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
     root.current.rotation.y += turn * (1 - Math.exp(-24 * Math.min(dt, 0.25)));
     const bob = Math.sin(cycle * 2) * 0.009 * gait.strength * (1 - sit);
     hips.current.position.set(0, THREE.MathUtils.lerp(skeleton.standingHipHeight, skeleton.seatedHipHeight, sit) + bob, skeleton.seatedHipZ * sit);
-    if(upperBody.current)upperBody.current.rotation.z=pose.current.torsoRoll;
+    if(upperBody.current){
+      upperBody.current.position.y=skeleton.torsoAboveHip+pose.current.bob*.5*sit;
+      upperBody.current.rotation.set(pose.current.torsoPitch,pose.current.torsoYaw+pose.current.rootYaw,pose.current.torsoRoll);
+    }
+    head.current.rotation.set(pose.current.headPitch,pose.current.headYaw,0);
     // getWorldPosition ne met à jour que la chaîne des parents de la tête.
     head.current.getWorldPosition(headWorld);
     // La tête disparaît avant que l'objectif ne puisse traverser sa géométrie.
@@ -81,14 +87,16 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
       if (leg) leg.rotation.x = upper;
       const shin = shins.current[index];
       const kick = celebrate && index===1 ? pose.current.rightKick : 0;
-      if (shin) shin.rotation.x = lower - kick;
+      if (shin) shin.rotation.x = lower + kick;
       const foot = feet.current[index];
-      if (foot) foot.rotation.x = -upper - lower + kick;
+      if (foot) foot.rotation.x = -upper - lower - kick;
       const arm = arms.current[index];
       if (arm) arm.rotation.x = (1 - sit) * Math.cos(cycle + index * Math.PI) * 0.3 * gait.strength + (index===0?pose.current.leftX:pose.current.rightX)*sit;
       if (arm) arm.rotation.z = sit*(index===0?pose.current.leftZ:pose.current.rightZ);
       const elbow = elbows.current[index];
-      if (elbow) elbow.rotation.x = 0.15*(1-sit) + sit*(index===0?pose.current.leftElbowX:pose.current.rightElbowX);
+      if (elbow) elbow.rotation.set(0.15*(1-sit) + sit*(index===0?pose.current.leftElbowX:pose.current.rightElbowX),0,sit*(index===0?pose.current.leftElbowZ:pose.current.rightElbowZ));
+      const prop=signatureProps.current[index];
+      if(prop){const gain=celebrate&&sit>.95?getPassengerSignatureGain(clock.elapsedTime,archetype.id,partyOn,reducedMotion):0;prop.visible=gain>.001;prop.scale.setScalar(gain);}
     });
   });
   return <group ref={root} name="bus-boarding-avatar" userData={{ passengerKind: "visitor", physicalSeatIndex,
@@ -104,15 +112,18 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
           </group>
         </group>
       </group>)}
-      <group ref={upperBody}>
-      <group position={[0, skeleton.torsoAboveHip, BODY_BEHIND_HIP]}><PassengerTorso archetype={archetype} mats={mats} /></group>
-      {[-1, 1].map((side, index) => <group key={side} ref={node => { arms.current[index] = node; }} position={[side * (proportions.torsoWidth / 2 - 0.018), skeleton.torsoAboveHip + skeleton.shoulderY, BODY_BEHIND_HIP]}>
+      <group ref={upperBody} name="nakama-upper-body" position={[0,skeleton.torsoAboveHip,BODY_BEHIND_HIP]}>
+      <PassengerTorso archetype={archetype} mats={mats} />
+      {[-1, 1].map((side, index) => <group key={side} name={`nakama-arm-${index===0?"left":"right"}`} ref={node => { arms.current[index] = node; }} position={[side * (proportions.torsoWidth / 2 - 0.018), skeleton.shoulderY, 0]}>
         <group scale={[skeleton.armWidthScale,skeleton.armScale,skeleton.armWidthScale]}><PassengerUpperArm archetype={archetype} mats={mats} side={side} width={proportions.armWidth}/></group>
-        <group ref={node => { elbows.current[index] = node; }} position={[0, -skeleton.upperArmLength, 0]}>
-          <group scale={[skeleton.armWidthScale,skeleton.armScale,skeleton.armWidthScale]}><PassengerForearm archetype={archetype} mats={mats} side={side} width={proportions.armWidth}/></group>
+        <group ref={node => { elbows.current[index] = node; }} name={`nakama-elbow-${index===0?"left":"right"}`} position={[0, -skeleton.upperArmLength, 0]}>
+          <group scale={[skeleton.armWidthScale,skeleton.armScale,skeleton.armWidthScale]}><PassengerForearm archetype={archetype} mats={mats} side={side} width={proportions.armWidth} handName={`nakama-hand-${index===0?"left":"right"}`}/></group>
+          <group ref={node=>{signatureProps.current[index]=node;}} name={`nakama-signature-${index===0?"left":"right"}`} position={[0,-skeleton.forearmLength,0]} visible={false}>
+            <PassengerSignatureProp id={archetype.id} side={side} mats={mats}/>
+          </group>
         </group>
       </group>)}
-      <group ref={head} name="bus-boarding-avatar-head" position={[0, skeleton.neckAboveHip, BODY_BEHIND_HIP]}>
+      <group ref={head} name="bus-boarding-avatar-head" position={[0, skeleton.neckAboveHip-skeleton.torsoAboveHip, 0]}>
         <PassengerNeck archetype={archetype} mats={mats} />
         <group position={[0, skeleton.headAboveNeck, 0]}><PassengerHead archetype={archetype} mats={mats}
           motion={pose} index={passengerIndex ?? 0} reducedMotion={reducedMotion}/></group>

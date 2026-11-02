@@ -1,4 +1,6 @@
-import { applyPassengerCardPose } from "./passenger-card-game";
+import { applyPassengerCardPose, setCardArm } from "./passenger-card-game";
+import { getPassengerSkeleton } from "./passenger-proportions";
+import { BODY_BEHIND_HIP } from "./passenger-gait";
 
 export type PassengerActivity = "idle" | "chat" | "check" | "game" | "horn" | "party";
 export function createPassengerPose() {
@@ -10,8 +12,9 @@ export function createPassengerPose() {
 export type PassengerPose = ReturnType<typeof createPassengerPose>;
 const poseFields = ["headYaw","headPitch","torsoYaw","torsoPitch","torsoRoll","rootYaw","bob","leftX","leftZ","rightX","rightZ","leftElbowX","leftElbowZ","rightElbowX","rightElbowZ","rightKick"] as const;
 export function blendPassengerPose(current: PassengerPose, target: PassengerPose, dt: number, reducedMotion: boolean) {
-  const mix = reducedMotion ? 1 : 1 - Math.exp(-12 * Math.max(0, Math.min(dt, .25)));
-  for (const key of poseFields) current[key] = reducedMotion ? target[key] : current[key] + (target[key] - current[key]) * mix;
+  // Même les poses statiques passent par une courte transition, sans saut de bras.
+  const mix = 1 - Math.exp((reducedMotion ? -18 : -12) * Math.max(0, Math.min(dt, .25)));
+  for (const key of poseFields) current[key] += (target[key] - current[key]) * mix;
   current.activity = target.activity; current.games = target.games; current.celebrating = target.celebrating; current.gesture = target.gesture;
 }
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
@@ -25,6 +28,26 @@ const danceCadence: Record<string, number> = {
 };
 export const DANCE_PHASE_DURATION = 3.5;
 export const DANCE_TRANSITION_DURATION = 0.8;
+
+// Les gestes libres (salut, toast, lecture, cœur…) ne gardent pas une arme
+// devant le visage. L'accessoire se range pendant le fondu entre deux gestes.
+const signatureStages: Record<string, readonly number[]> = {
+  zoro: [0, 1, 2, 5], nami: [0, 2, 5], usopp: [0], brook: [0, 3],
+  law: [2], sabo: [3], yamato: [0], shanks: [0, 5], mihawk: [0, 1, 4],
+  vivi: [0], doflamingo: [0, 2, 3, 5],
+};
+export function getPassengerSignatureGain(time: number, id: string, party: boolean, reducedMotion: boolean) {
+  if (id === "foudubustv") return 1;
+  const stages = signatureStages[id];
+  if (!stages) return 1;
+  if (!party || reducedMotion) return stages.includes(0) ? 1 : 0;
+  const danceTime = Number.isFinite(time) ? Math.max(0, time) : 0;
+  const cycle = danceTime % (6 * DANCE_PHASE_DURATION), stage = Math.floor(cycle / DANCE_PHASE_DURATION);
+  const progress = cycle - stage * DANCE_PHASE_DURATION;
+  const blend = danceTime < DANCE_TRANSITION_DURATION ? 1 : smooth(progress / DANCE_TRANSITION_DURATION);
+  const previous = stages.includes((stage + 5) % 6) ? 1 : 0, current = stages.includes(stage) ? 1 : 0;
+  return previous + (current - previous) * blend;
+}
 
 export const CHARACTER_DANCES: Record<string, readonly string[]> = {
   luffy: ["gatling-punch", "nika-joyboy", "gomu-ufo", "meat-feast", "baka-song", "gear4-bounce"],
@@ -933,24 +956,19 @@ function blendDanceTarget(pose: PassengerPose, a: DanceTarget, b: DanceTarget, b
   }
 }
 
-/** Deux articulations amènent les deux mains au milieu du banc pour le check. */
-const highFivePoses = new Map<number, { shoulder: number; elbow: number }>();
-export function getHighFiveArm(side: number, torsoWidth: number) {
-  const key = Math.round(torsoWidth * 1000) + (side > 0 ? 1000 : 0);
-  const cached = highFivePoses.get(key);
-  if (cached) return cached;
-  const dx = side * (.22 - (torsoWidth / 2 - .018)), dy = .20;
-  const upperLength = .20, lowerLength = .22, distance = Math.hypot(dx, dy);
-  const shoulder = Math.atan2(dx, -dy) + side * Math.acos(clamp((upperLength ** 2 + distance ** 2 - lowerLength ** 2) / (2 * upperLength * distance)));
-  const elbow = -side * (Math.PI - Math.acos(Math.max(-1, Math.min(1, (upperLength ** 2 + lowerLength ** 2 - distance ** 2) / (2 * upperLength * lowerLength)))));
-  const pose = { shoulder: Math.atan2(Math.sin(shoulder), Math.cos(shoulder)), elbow };
-  highFivePoses.set(key, pose);
-  return pose;
+/** Une cible commune atteignable par les deux silhouettes, y compris Chopper. */
+export function getHighFiveTarget(id: string, peerId: string) {
+  const own = getPassengerSkeleton(id), peer = getPassengerSkeleton(peerId);
+  return {
+    y: .64 + Math.min(own.seatedHipHeight + own.torsoAboveHip + own.shoulderY, peer.seatedHipHeight + peer.torsoAboveHip + peer.shoulderY) + .10,
+    z: Math.min(own.seatedHipZ, peer.seatedHipZ) + BODY_BEHIND_HIP - .18,
+  };
 }
 
 /** Modifie un objet réutilisé ; aucun état React n'est mis à jour par image. */
 export function samplePassengerPose(pose: PassengerPose, time: number, index: number, peerSide: number,
-  torsoWidth: number, hornElapsed: number, party: boolean, reducedMotion: boolean, characterId = "nakama", cardPairIndex: number | null = null) {
+  torsoWidth: number, hornElapsed: number, party: boolean, reducedMotion: boolean, characterId = "nakama", cardPairIndex: number | null = null,
+  peerCharacterId = characterId, interactionPairIndex = cardPairIndex ?? Math.floor(index / 2)) {
   pose.activity = "idle"; pose.games = false; pose.celebrating = false;
   pose.gesture = "rest"; pose.rightKick = 0;
   pose.headYaw = peerSide ? -peerSide * .04 : -.04;
@@ -1022,8 +1040,9 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
   }
   if (reducedMotion) return;
   // Les voisins partagent la même horloge, les autres bancs sont décalés.
-  const cycle = (time + (cardPairIndex ?? Math.floor(index / 2)) * 5.1) % 26;
-  const chat = windowGain(cycle, 1, 7), check = peerSide ? windowGain(cycle, 10, 13) : 0;
+  const cycle = ((time + interactionPairIndex * 5.1) % 26 + 26) % 26;
+  const canCheck = peerSide && !(characterId === "shanks" && peerSide < 0) && !(peerCharacterId === "shanks" && peerSide > 0);
+  const chat = peerSide ? windowGain(cycle, 1, 7) : 0, check = canCheck ? windowGain(cycle, 10, 13) : 0;
   if (chat > 0) {
     pose.activity = "chat";
     pose.headYaw -= chat * peerSide * .62;
@@ -1057,10 +1076,8 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
   }
   if (check > 0) {
     pose.activity = "check"; pose.headYaw -= peerSide * .5 * check;
-    const arm = getHighFiveArm(peerSide, torsoWidth);
-    // Le check se fait devant les épaules, sans faire passer le coude dans le cou.
-    if (peerSide > 0) { pose.rightX += (1.3-pose.rightX)*check; pose.rightZ += (arm.shoulder - pose.rightZ) * check; pose.rightElbowX *= 1 - check; pose.rightElbowZ = arm.elbow * check; }
-    else { pose.leftX += (1.3-pose.leftX)*check; pose.leftZ += (arm.shoulder - pose.leftZ) * check; pose.leftElbowX *= 1 - check; pose.leftElbowZ = arm.elbow * check; }
+    const target = getHighFiveTarget(characterId, peerCharacterId);
+    setCardArm(pose, peerSide, characterId, peerSide * .22, target.y, target.z, check);
   }
   if (cardPairIndex !== null) applyPassengerCardPose(pose, time, cardPairIndex, peerSide, characterId);
 }

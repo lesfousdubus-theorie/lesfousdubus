@@ -32,8 +32,8 @@ export default function PassengerLowerBody({ mats, kickPose, archetype }: { mats
   const shapes = seatedShapes ??= makeSeatedShapes();
   const knee=useRef<THREE.Group>(null),foot=useRef<THREE.Group>(null);
   useFrame(()=>{
-    if(knee.current)knee.current.rotation.x=-(kickPose?.current.rightKick??0);
-    if(foot.current)foot.current.rotation.x=kickPose?.current.rightKick??0;
+    if(knee.current)knee.current.rotation.x=kickPose?.current.rightKick??0;
+    if(foot.current)foot.current.rotation.x=-(kickPose?.current.rightKick??0);
   });
   if(archetype?.id === "chopper") {
     const rig = getPassengerSkeleton(archetype.id);
@@ -83,13 +83,13 @@ export default function PassengerLowerBody({ mats, kickPose, archetype }: { mats
       {[-.09,.09].map(x=><CharacterPart key={x} material={mats.pants} size={[.13,.14,THIGH_LENGTH+.025]} position={[x,0,-THIGH_LENGTH/2]}/>)}
       <CharacterPart material={mats.pants} size={[.12,SHIN_LENGTH+.02,.12]} position={[-.09,-SHIN_LENGTH/2,-THIGH_LENGTH]}/>
       <group ref={knee} position={[.09,0,-THIGH_LENGTH]}>
-        <CharacterPart material={mats.pants} size={[.12,SHIN_LENGTH+.02,.12]} position={[0,-SHIN_LENGTH/2,0]}/>
+        <CharacterPart name="nakama-kicking-calf" material={mats.pants} size={[.12,SHIN_LENGTH+.02,.12]} position={[0,-SHIN_LENGTH/2,0]}/>
         <group ref={foot} position={[0,-SHIN_LENGTH,0]}>
           <CharacterPart name="nakama-shoes" material={mats.shoes} size={[.15,.1,.23]} position={[0,-.03,-.035]}/>
         </group>
       </group>
     </group>
-    <CharacterPart material={mats.shoes} size={[.15,.1,.23]} position={[-.09,-SHIN_LENGTH-.03,-THIGH_LENGTH-.035]}/>
+    <CharacterPart name="nakama-left-shoe" material={mats.shoes} size={[.15,.1,.23]} position={[-.09,-SHIN_LENGTH-.03,-THIGH_LENGTH-.035]}/>
   </>;
   return <>
     <PassengerPelvis material={mats.pants} archetype={archetype}/>

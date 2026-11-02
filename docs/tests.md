@@ -20,6 +20,16 @@ la base distante. `npm run test:crew` limite l’exécution aux personnages et �
 l’occupation. `npm run build` construit aussi l’adaptateur Cloudflare, sans
 déployer ; `npm run build:next` vérifie l’application Next.js seule.
 
+`test-passenger-animation.mjs` assemble les véritables modèles Three.js : pieds
+ancrés pendant la danse, coup de pied vers l'avant, bras rigides, rencontre des
+mains adulte/Chopper, alternance parole/écoute des voisins, accessoires adaptés
+aux six séquences, mêmes mouvements pour l'avatar et coudes attachés au fond du
+bus. Il respecte l'ordre des callbacks d'animation comme le moteur réel.
+Pour le contrôle visuel, `npm run dev:animations` ouvre un banc local sur
+`http://127.0.0.1:4173` : vingt personnages, sélection individuelle, temps figé,
+check entre voisins et mouvements réduits. Ce banc n'appelle aucune API et ne
+fait pas partie des routes publiées.
+
 Les tests de contrat audio vérifient l’ordre des priorités, les payloads et la
 distribution synchrone entre racines, ainsi que le nettoyage des abonnements.
 Les tests d’autorisation exécutent les véritables handlers dans workerd :
