@@ -22,14 +22,14 @@ const compiled = await build({
   plugins: [{ name: "test-hooks", setup(builder) {
     builder.onResolve({ filter: /^(react|react\/jsx-runtime|@react-three\/fiber)$/ }, args => ({ path: args.path, namespace: "test-hooks" }));
     builder.onLoad({ filter: /.*/, namespace: "test-hooks" }, ({ path }) => ({ contents: path === "react"
-      ? `export const useRef = current => ({ current });
+      ? `export const useRef = current => ({ current }); export const useState=initial=>[typeof initial==="function"?initial():initial,()=>{}];
          export const useMemo = fn => fn(); export const useCallback = fn => fn;
          export const useEffect = () => {}; export const useLayoutEffect = () => {};
          export const memo = component => component;`
       : path === "react/jsx-runtime"
         ? `export const Fragment = Symbol.for('walk-test-fragment');
            export const jsx = (type, props) => ({ type, props }); export const jsxs = jsx;`
-        : `export const useFrame = callback => globalThis.__passengerWalkFrames.push(callback);` }));
+        : `export const useThree=selector=>selector({camera:{position:{x:7.5,z:-10.5}}});export const useFrame = callback => globalThis.__passengerWalkFrames.push(callback);` }));
   } }],
 });
 const { THREE, OBB, BoardingAvatar, Passenger, NAKAMA_ROSTER, createJourneyState,

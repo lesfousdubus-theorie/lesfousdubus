@@ -22,7 +22,7 @@ function RigStage({ mode, time, paused, focus, reduced, horn }: { mode:string;ti
       return <group key={archetype.id} position={[x,y,0]}>
         <Passenger seat={{x:0,z:0,row:0,seatInRow:i%2}} index={index} physicalSeatIndex={i} archetype={archetype} label={archetype.name}
           partyOn={mode==="party"} hornPulse={mode==="horn"?horn:0} reducedMotion={reduced}
-          peerSide={pair?(i===0?1:-1):0} peerCharacterId={pair?roster[1-i].id:undefined} interactionPairIndex={0}/>
+          peerSide={pair?(i===0?1:-1):0} interactionPairIndex={0}/>
         <mesh position={[0,1.075,.21]}><boxGeometry args={[.40,.09,.34]}/><meshStandardMaterial color="#334651"/></mesh>
         <mesh position={[0,1.38,.39]}><boxGeometry args={[.40,.58,.08]}/><meshStandardMaterial color="#334651"/></mesh>
         <mesh position={[0,.60,0]}><boxGeometry args={[pair?.44:1.1,.04,.9]}/><meshStandardMaterial color="#172731"/></mesh>
@@ -35,7 +35,7 @@ function Lab(){
   return <main>
     <header><b>Animations du bus · 20 personnages réels</b><span>Fixture locale, sans inscription</span></header>
     <nav>
-      <label>Scène <select value={mode} onChange={e=>{setMode(e.target.value);if(e.target.value==="check"){setTime(11.5);setPaused(true);setFocus("chopper");}if(e.target.value==="horn")setHorn(performance.now());}}><option value="party">Danse</option><option value="social">Repos</option><option value="check">Check entre voisins</option><option value="horn">Klaxon</option></select></label>
+      <label>Scène <select value={mode} onChange={e=>{setMode(e.target.value);if(e.target.value==="check"){setTime(11.5);setPaused(true);setFocus("chopper");}if(e.target.value==="horn")setHorn(performance.now());}}><option value="party">Danse</option><option value="social">Repos</option><option value="check">Voisins</option><option value="horn">Klaxon</option></select></label>
       <label>Personnage <select value={focus} onChange={e=>setFocus(e.target.value)}><option value="all">Les vingt personnages</option>{NAKAMA_ROSTER.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
       <button onClick={()=>{setPaused(!paused);setTime(time+1);}}>{paused?"Reprendre":"Pause"}</button>
       <label>Temps <input aria-label="Temps" type="range" min="0" max="26" step=".1" value={time} onChange={e=>{setTime(Number(e.target.value));setPaused(true);}}/>{time.toFixed(1)} s</label>

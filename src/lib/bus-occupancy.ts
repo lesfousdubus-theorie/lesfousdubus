@@ -36,11 +36,12 @@ interface OccupancyOptions {
   currentPassengerIndex: number | null;
   avatarAboard: boolean;
   lowPower: boolean;
+  detailFocus?: { x: number; z: number };
 }
 
 /** Attribue chaque position physique une seule fois, sans modifier les identifiants persistants. */
 export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges = [], renderedRowIndices,
-  reservedRow, currentPassengerIndex, avatarAboard, lowPower }: OccupancyOptions) {
+  reservedRow, currentPassengerIndex, avatarAboard, lowPower, detailFocus }: OccupancyOptions) {
   const capacity = Math.max(0, seatCapacity), numRows = getBusPhysicalRows(capacity), visitorRows = getVisitorRows(capacity);
   const renderedRows = new Set(renderedRowIndices ?? getRenderedRowIndices(numRows, reservedRow));
   const vacant = vacantSeatRanges.map(([start, end, before]) => ({ start: Math.max(0, start), end: Math.min(capacity - 1, end), before }))
@@ -82,9 +83,13 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
     && !candidates.some(occupant => occupant.index === avatar.physicalSeatIndex)) {
     candidates.push(make(avatar.physicalSeatIndex));
   }
-  const focusIndex = Math.max(0, reservedRow * 4);
+  const focus = detailFocus ?? avatar.seat;
+  // Une banquette proche est détaillée ensemble. Le rang réservé ne décrit
+  // pas la position de la caméra quand on explore le bus avant d'entrer.
+  const distance = (occupant: BusOccupant) => (occupant.seat.z - focus.z) ** 2
+    + ((occupant.seat.seatInRow < 2 ? -.72 : .72) - focus.x) ** 2;
   const detailedVisitors = [...candidates].sort((left, right) =>
-    Math.abs(left.physicalSeatIndex - focusIndex) - Math.abs(right.physicalSeatIndex - focusIndex) || left.index - right.index)
+    distance(left) - distance(right) || left.index - right.index)
     .slice(0, detailLimit);
   const detailed = detailedVisitors;
   const detailedIds = new Set(detailedVisitors.map(occupant => occupant.index));

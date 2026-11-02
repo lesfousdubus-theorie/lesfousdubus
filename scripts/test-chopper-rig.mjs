@@ -15,10 +15,10 @@ const compiled=await build({
   plugins:[{name:"real-rig-hooks",setup(builder){
     builder.onResolve({filter:/^(react|react\/jsx-runtime|@react-three\/fiber)$/},args=>({path:args.path,namespace:"real-rig-hooks"}));
     builder.onLoad({filter:/.*/,namespace:"real-rig-hooks"},({path})=>({contents:path==="react"
-      ?`export const useRef=current=>({current});export const useMemo=fn=>fn();export const useCallback=fn=>fn;
+      ?`export const useRef=current=>({current});export const useState=initial=>[typeof initial==="function"?initial():initial,()=>{}];export const useMemo=fn=>fn();export const useCallback=fn=>fn;
         export const useEffect=()=>{};export const useLayoutEffect=fn=>globalThis.__chopperRigLayoutEffects.push(fn);export const memo=c=>c;`
       :path==="react/jsx-runtime"?`export const Fragment=Symbol.for('chopper-rig-fragment');export const jsx=(type,props)=>({type,props});export const jsxs=jsx;`
-      :`export const useFrame=callback=>globalThis.__chopperRigFrames.push(callback);`}));
+      :`export const useThree=selector=>selector({camera:{position:{x:7.5,z:-10.5}}});export const useFrame=callback=>globalThis.__chopperRigFrames.push(callback);`}));
   }}],
 });
 const {THREE,Passenger,SimplifiedPassengers,BoardingAvatar,NAKAMA_ROSTER,getPassengerSkeleton,getPassengerProportions,getWalkingLegPose,createJourneyState}=await import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);

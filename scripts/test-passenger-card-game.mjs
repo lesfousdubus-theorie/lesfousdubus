@@ -38,7 +38,7 @@ function palm(out, pose, id, side, seatX) {
 const state = cards.createCardGameState(), poses = [motion.createPassengerPose(), motion.createPassengerPose()];
 const targets = [motion.createPassengerPose(), motion.createPassengerPose()], palms = [new THREE.Vector3(), new THREE.Vector3()];
 const card = new THREE.Vector3(), previous = new THREE.Vector3();
-let exchanges = 0, maximumContactDistance = 0, maximumCardStep = 0, maximumCardStepAt = null, samples = 0;
+let exchanges = 0, minimumPalmDistance = Infinity, maximumCardStep = 0, maximumCardStepAt = null, samples = 0;
 for (let firstIndex = 0; firstIndex < ids.length; firstIndex++) {
   if (ids[firstIndex] === "shanks") continue;
   const first = ids[firstIndex], second = ids[(firstIndex + 1) % ids.length] === "shanks" ? "chopper" : ids[(firstIndex + 1) % ids.length];
@@ -59,7 +59,7 @@ for (let firstIndex = 0; firstIndex < ids.length; firstIndex++) {
       card.lerpVectors(palms[0], palms[1], state.handoff);
       if (priorActive && card.distanceTo(previous) > maximumCardStep) { maximumCardStep = card.distanceTo(previous); maximumCardStepAt = { first, second, time, handoff: state.handoff }; }
       previous.copy(card);
-      if (state.transfer) maximumContactDistance = Math.max(maximumContactDistance, palms[0].distanceTo(palms[1]));
+      if (state.transfer) minimumPalmDistance = Math.min(minimumPalmDistance, palms[0].distanceTo(palms[1]));
       if (priorOwner !== null && priorOwner !== state.owner) exchanges++;
       priorOwner = state.owner;
     }
@@ -67,7 +67,7 @@ for (let firstIndex = 0; firstIndex < ids.length; firstIndex++) {
   }
 }
 assert.equal(exchanges, 38, "Every pair must deal once in each direction in a round.");
-assert(maximumContactDistance < .012, `Palms must actually meet when ownership changes, measured ${maximumContactDistance} m.`);
+assert(minimumPalmDistance > .18, `Cards cross a visible gap without bringing palms together, measured ${minimumPalmDistance} m.`);
 assert(maximumCardStep < .014, `An attached card must not teleport, measured ${maximumCardStep} m/frame at 120 Hz.`);
 for (const blocked of [true]) {
   cards.sampleCardGame(state, 17.9, 0, blocked); assert.equal(state.active, false);
@@ -96,11 +96,11 @@ const mountedCode = await build({
   plugins: [{ name: "card-hooks", setup(builder) {
     builder.onResolve({ filter: /^(react|react\/jsx-runtime|@react-three\/fiber)$/ }, args => ({ path: args.path, namespace: "card-hooks" }));
     builder.onLoad({ filter: /.*/, namespace: "card-hooks" }, ({ path }) => ({ contents: path === "react"
-      ? `export const useRef = current => ({current}); export const useMemo = fn => fn();
+      ? `export const useRef = current => ({current}); export const useState=initial=>[typeof initial==="function"?initial():initial,()=>{}]; export const useMemo = fn => fn();
          export const useCallback = fn => fn; export const memo = fn => fn; export const useEffect = () => {};
          export const useLayoutEffect = fn => globalThis.__cardLayouts.push(fn);`
       : path === "react/jsx-runtime" ? "export const Fragment = Symbol.for('card-fragment'); export const jsx = (type, props) => ({type, props}); export const jsxs = jsx;"
-        : "export const useFrame = (callback, priority = 0) => globalThis.__cardFrames.push({callback, priority});" }));
+        : "export const useThree=selector=>selector({camera:{position:{x:7.5,z:-10.5}}});export const useFrame = (callback, priority = 0) => globalThis.__cardFrames.push({callback, priority});" }));
   } }],
 });
 const mounted = await import(`data:text/javascript;base64,${Buffer.from(mountedCode.outputFiles[0].text).toString("base64")}`);
@@ -121,7 +121,7 @@ function mount(element) {
   else if (props.ref) props.ref.current = node;
   return node;
 }
-let actualContactGap = 0, mountedPairs = 0;
+let minimumActualHandGap = Infinity, mountedPairs = 0;
 for (const [firstId, secondId] of [["luffy", "zoro"], ["nami", "usopp"], ["chopper", "robin"], ["brook", "franky"], ["jinbe", "chopper"]]) {
   const world = new THREE.Group(), registry = new Map(), rigs = [];
   for (const [actor, id] of [firstId, secondId].entries()) {
@@ -156,14 +156,15 @@ for (const [firstId, secondId] of [["luffy", "zoro"], ["nami", "usopp"], ["chopp
       assert(actual.distanceTo(expected) < 1e-8, "The actual fan must remain exactly attached to the rendered outer palm.");
     }
     if (game.userData.transfer) {
-      const cardBox = new THREE.Box3().setFromObject(game.getObjectByName("card-exchange-0"));
+      const card=game.getObjectByName("card-exchange-0"),position=card.getWorldPosition(new THREE.Vector3());
       const firstHand = registry.get(0).hands[1].object, secondHand = registry.get(1).hands[0].object;
-      for (const hand of [firstHand, secondHand]) {
-        const box = new THREE.Box3().setFromObject(hand);
-        const gap = Math.max(0, box.min.x - cardBox.max.x, cardBox.min.x - box.max.x, box.min.y - cardBox.max.y, cardBox.min.y - box.max.y, box.min.z - cardBox.max.z, cardBox.min.z - box.max.z);
-        actualContactGap = Math.max(actualContactGap, gap);
-      }
-      assert(actualContactGap < .003, `Transferred card contact gap ${actualContactGap} m for ${firstId}/${secondId} at ${time}, including actual Chopper/Brook/Franky palms.`);
+      const firstBounds=new THREE.Box3().setFromObject(firstHand),secondBounds=new THREE.Box3().setFromObject(secondHand);
+      const gap=secondBounds.min.x-firstBounds.max.x;minimumActualHandGap=Math.min(minimumActualHandGap,gap);
+      assert(gap>.04,`${firstId}/${secondId}: real palms remain apart during the deal (${gap} m).`);
+      const start=firstHand.localToWorld(registry.get(0).hands[1].grip.clone()),end=secondHand.localToWorld(registry.get(1).hands[0].grip.clone());
+      const expected=start.lerp(end,game.userData.handoff);expected.y+=Math.sin(game.userData.handoff*Math.PI)*.035;
+      assert(position.distanceTo(expected)<1e-8,"The visible card follows a continuous short arc between the two real hands.");
+
     }
   }
   mountedPairs++;
@@ -205,7 +206,7 @@ for (let frame = 0; frame < 9 * 120; frame++) {
   }
   checkedPriorityFrames++;
 }
-assert(actualPalmTravel > .05 && checkedPriorityFrames > 500, "The priority check must cover moving hands and both deals rather than a static rest pose.");
-console.log("Card games passed: real rendered neighbors only, fourteen-pair bound, shared physical-bench clocks, two alternating transfers, palms in contact, fixed bones, continuous cards, reduced motion and party/horn interruption.");
-console.log(JSON.stringify({ samples, exchanges, maximumContactDistance, maximumCardStep, maximumCardStepAt, maximumPairs: pairs.length, mountedPairs, actualContactGap,
+assert(actualPalmTravel > .02 && checkedPriorityFrames > 500, `The priority check must cover moving hands and both deals: ${actualPalmTravel} m, ${checkedPriorityFrames} frames.`);
+console.log("Card games passed: real rendered neighbors only, fourteen-pair bound, shared physical-bench clocks, two alternating transfers, separated palms and a short card toss, fixed bones, continuous cards, reduced motion and party/horn interruption.");
+console.log(JSON.stringify({ samples, exchanges, minimumPalmDistance, maximumCardStep, maximumCardStepAt, maximumPairs: pairs.length, mountedPairs, minimumActualHandGap,
   checkedPriorityFrames, maximumSameFrameAttachmentError, actualPalmTravel }));

@@ -15,6 +15,7 @@ import { PassengerPelvis } from "./PassengerLowerBody";
 import { PassengerUpperArm, PassengerForearm, PassengerFoot, passengerCalfMaterial } from "./PassengerIdentity";
 import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, samplePassengerPose } from "@/lib/passenger-motion";
 import PassengerSignatureProp from "./PassengerSignatureProp";
+import { keepPassengerHandsApart } from "@/lib/passenger-space";
 
 /** Le même nakama attend, marche, s'assoit, puis devient le corps en vue subjective. */
 export default function BoardingAvatar({ journey, passengerIndex, avatarId, physicalSeatIndex, partyOn, hornPulse, reducedMotion }: {
@@ -64,7 +65,9 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
     if(!celebrate){targetPose.current.torsoRoll=0;targetPose.current.leftX=.12;targetPose.current.rightX=.12;targetPose.current.leftElbowX=1.05;targetPose.current.rightElbowX=1.05;}
     // A walking avatar stays quiet; seated free-view keeps the same social face as its companions.
     if(s.phase!=="inside") targetPose.current.activity="idle";
+    if(sit>.95)keepPassengerHandsApart(targetPose.current,archetype.id,physicalSeatIndex%2===0?1:-1);
     blendPassengerPose(pose.current,targetPose.current,dt,reducedMotion);
+    if(sit>.95)keepPassengerHandsApart(pose.current,archetype.id,physicalSeatIndex%2===0?1:-1);
     root.current.position.copy(s.position);
     const heading = s.heading * (1 - sit);
     const turn = Math.atan2(Math.sin(heading - root.current.rotation.y), Math.cos(heading - root.current.rotation.y));

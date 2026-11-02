@@ -28,10 +28,10 @@ export function sampleCardGame(state: CardGameState, time: number, pairIndex: nu
     smooth((cycle - 16.5) / .9) * smooth((19.3 - cycle) / .9),
     smooth((cycle - 20) / .9) * smooth((22.8 - cycle) / .9),
   );
-  const first = smooth((cycle - 17.65) / .5), second = smooth((cycle - 21.15) / .5);
+  const first = smooth((cycle - 17.77) / .26), second = smooth((cycle - 21.27) / .26);
   state.handoff = cycle < 20 ? first : 1 - second;
   state.owner = state.handoff < .5 ? 0 : 1;
-  state.transfer = cycle >= 17.65 && cycle <= 18.15 ? 1 : cycle >= 21.15 && cycle <= 21.65 ? 2 : 0;
+  state.transfer = cycle >= 17.77 && cycle <= 18.03 ? 1 : cycle >= 21.27 && cycle <= 21.53 ? 2 : 0;
   return state;
 }
 
@@ -90,6 +90,6 @@ export function applyPassengerCardPose(pose: PassengerPose, time: number, pairIn
   pose.headPitch += gain * .2;
   pose.headYaw -= gain * peerSide * .25;
   pose.rootYaw *= 1 - gain; pose.torsoYaw *= 1 - gain; pose.torsoPitch *= 1 - gain; pose.torsoRoll *= 1 - gain; pose.bob *= 1 - gain;
-  setCardArm(pose, peerSide, id, peerSide * (.10 + .12 * reach), 1.32, -.14, gain);
+  setCardArm(pose, peerSide, id, peerSide * (.09 + .025 * reach), 1.32, -.14, gain);
   setCardArm(pose, -peerSide, id, -peerSide * .11, id === "chopper" ? 1.28 : 1.31, -.10, gain);
 }
