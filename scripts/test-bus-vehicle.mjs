@@ -24,7 +24,7 @@ const { encodeLedText, DESTINATION_MESSAGE, LED_COLUMNS, getLedOffset, GRAND_LIN
 const { getExteriorMaxDistance, getBusCameraFar, obstructsBusView } = await load("src/lib/bus-camera.ts");
 const {createJourneyState,updateJourney,getPassengerWalkPath,getJourneyTiming,ENTRY_WALK_START,EXIT_WALK_START,ARRIVAL_STOP_TIME}=await load("src/lib/bus-journey.ts");
 const { BUS_CREW, BUS_RELAY, countPeopleOnBoard } = await load("src/lib/bus-crew.ts");
-const {createPassengerPose,samplePassengerPose,blendPassengerPose,getHighFiveArm}=await load("src/lib/passenger-motion.ts");
+const {createPassengerPose,samplePassengerPose,blendPassengerPose}=await load("src/lib/passenger-motion.ts");
 const {NAKAMA_ROSTER}=await load("src/components/bus/passenger-archetypes.ts");
 const signatures=[...NAKAMA_ROSTER.map(character=>character.id),"foudubustv","kamal","kyta"];
 for(const party of [false,true]) {
@@ -45,12 +45,7 @@ for(const party of [false,true]) {
   }
   assert.equal(distinct.size,signatures.length,'All sixteen characters and the three guides must have different choreographies.');
 }
-for(const width of [.30,.34,.36,.38])for(const side of [-1,1]){
-  const {shoulder,elbow}=getHighFiveArm(side,width);
-  const x=side*(width/2-.018)+.20*Math.sin(shoulder)+.22*Math.sin(shoulder+elbow);
-  const y=-.20*Math.cos(shoulder)-.22*Math.cos(shoulder+elbow);
-  assert(Math.abs(x-side*.22)<1e-8&&Math.abs(y-.20)<1e-8,"Neighbour greetings must place both hands at the middle of the same bench.");
-}
+// Actual adult/Chopper palm contact is covered by test-passenger-animation.
 for(let t=0;t<80;t+=.03)for(const mode of ["normal","horn","party","reduced"]){
   const pose=createPassengerPose();samplePassengerPose(pose,t,3,-1,.34,mode==='horn'?.5:Infinity,mode==='party',mode==='reduced');
   assert(Object.values(pose).filter(value=>typeof value==='number').every(Number.isFinite),"Every social/party joint must remain finite.");
