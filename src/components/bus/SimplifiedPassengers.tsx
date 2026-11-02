@@ -10,6 +10,7 @@ import { BODY_BEHIND_HIP } from "@/lib/passenger-gait";
 import { blendPassengerPose, createPassengerPose, samplePassengerPose } from "@/lib/passenger-motion";
 import { getNakamaArchetype } from "./passenger-archetypes";
 import { getCharacterShape } from "./CharacterShapes";
+import { keepPassengerHandsApart } from "@/lib/passenger-space";
 
 /** Un seul lot borné par membre, avec les mêmes articulations que les passagers proches. */
 export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn, hornPulse, reducedMotion }: {
@@ -36,6 +37,7 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
     };
     passengers.forEach(({ seat }, i) => {
       const { rig, shape, archetype, pose } = profiles[i];
+      keepPassengerHandsApart(pose, archetype.id, seat.seatInRow % 2 === 0 ? 1 : -1);
       local.position.set(seat.x, .64 + rig.seatedHipHeight + rig.torsoAboveHip + pose.bob * .5, seat.z + rig.seatedHipZ + BODY_BEHIND_HIP);
       local.rotation.set(pose.torsoPitch, pose.torsoYaw + pose.rootYaw, pose.torsoRoll); local.scale.set(1, 1, 1); local.updateMatrix(); body.copy(local.matrix);
       part(bodies.current, i, body, 0, 0, 0, shape.torsoWidth / .32, shape.torsoHeight / .42, shape.torsoDepth / .22);
@@ -86,6 +88,7 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
     if ((!active || reducedMotion) && clock.elapsedTime > mode.current.settleUntil) return;
     profiles.forEach(({ archetype, shape, pose, target }, i) => {
       samplePassengerPose(target, clock.elapsedTime, passengers[i].index, 0, shape.torsoWidth, hornElapsed, partyOn, reducedMotion || !active, archetype.id);
+      keepPassengerHandsApart(target,archetype.id,passengers[i].seat.seatInRow%2===0?1:-1);
       blendPassengerPose(pose, target, dt, reducedMotion);
     });
     writeMatrices();

@@ -37,6 +37,13 @@ const first = check(base);
 assert.equal(first.avatar.seat.x, -0.94, "The assigned first visitor uses the left outer slot.");
 assert.deepEqual(first.detailed.filter(person => person.passengerKind === "visitor").map(person => person.index).sort(), [1, 2, 3]);
 const occupiedBase = { ...base, passengerCount: 16, seatCapacity: 16 };
+for(const lowPower of [false,true])for(const row of [0,1,3])for(const x of [-.72,.72]){
+  const options={...occupiedBase,currentPassengerIndex:null,avatarAboard:false,lowPower,reservedRow:3,
+    detailFocus:{x,z:getSeatRowZ(row)}};
+  const focused=check(options),firstSeat=row*4+(x<0?0:2);
+  assert([firstSeat,firstSeat+1].every(seat=>focused.detailed.some(person=>person.physicalSeatIndex===seat)),
+    "A nearby bench has both complete costumes before boarding, independent of the reserved row and device budget.");
+}
 const moved = check({ ...occupiedBase, reservedRow: 1 });
 const swapped = moved.detailed.find(person => person.passengerKind === "visitor" && person.index === 4);
 assert(swapped && swapped.physicalSeatIndex === 0, "Moving to an occupied local slot swaps its visitor into the avatar's original place.");
