@@ -102,7 +102,7 @@ export async function runCrewSeatDesignChecks({ send, evaluate, waitForPageCondi
           const p=object.getWorldPosition(s.camera.position.clone());bus.worldToLocal(p);
           people.push({name:object.name,position:p.toArray(),metadata:object.userData});
         }
-        if(object.name==='bus-distant-passenger-bodies'&&visible(object)) {
+        if(object.name==='bus-distant-passenger-bodies'&&visible(object.parent)) {
           const matrix=object.matrixWorld.clone(), point=s.camera.position.clone();
           for(let index=0;index<object.count;index++){
             object.getMatrixAt(index,matrix);point.setFromMatrixPosition(matrix);object.localToWorld(point);bus.worldToLocal(point);
