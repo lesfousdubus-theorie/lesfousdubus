@@ -95,7 +95,7 @@ try {
     await runBusCameraChecks({ send, evaluate, waitForPageCondition, baseUrl });
   }
 
-  if (!["camera", "crew-seats", "extensions", "hands", "door-confetti", "party", "characters", "performance", "playback", "playback-zoom", "door-music", "music-live", "led"].includes(process.env.BUS_CAMERA_CHECKS)) {
+  if (!["camera", "crew-seats", "extensions", "hands", "door-confetti", "party", "characters", "performance", "playback", "playback-zoom", "door-music", "media-recovery", "music-live", "led"].includes(process.env.BUS_CAMERA_CHECKS)) {
   const viewports = [
     { width: 320, height: 568, mobile: true },
     { width: 393, height: 852, mobile: true },
@@ -520,7 +520,7 @@ try {
   // vrai parcours utilisateur critique : chargement, entrée et player unique.
   }
   ws.close();
-  const targeted = ["camera", "crew-seats", "extensions", "hands", "door-confetti", "party", "playback", "playback-zoom", "door-music", "led"].includes(process.env.BUS_CAMERA_CHECKS);
+  const targeted = ["camera", "crew-seats", "extensions", "hands", "door-confetti", "party", "playback", "playback-zoom", "door-music", "media-recovery", "led"].includes(process.env.BUS_CAMERA_CHECKS);
   console.log(process.env.BUS_CAMERA_CHECKS === "music-live" ? "Live music diagnostic completed." : targeted ? "Targeted bus interaction checks passed." : process.env.BUS_CAMERA_CHECKS === "performance" ? "Scene performance sample passed." : process.env.BUS_CAMERA_CHECKS === "characters" ? "Character visual checks passed." : "Responsive/UI smoke checks passed.");
 } finally {
   if (chrome.exitCode === null) chrome.kill("SIGTERM");
