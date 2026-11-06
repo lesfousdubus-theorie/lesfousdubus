@@ -64,27 +64,18 @@ export async function runMediaRecoveryChecks({ send, evaluate, waitForPageCondit
     await wait("Boolean(window.busCameraTestState()?.scene)&&Boolean(window.mediaTestPlayers?.bus)", "Fresh scene for the depth check");
     await click("Allumer la télévision");
     await wait("window.mediaTestPlayers.bus.state===1&&getComputedStyle(document.getElementById('tv-frame')).visibility==='visible'", "The TV is visible from the seat");
-    await click("Explorer en vue libre");
-    await wait("window.busCameraTestState().controls.enabled", "Free camera enables a controlled depth test");
-    const cameraFrame = await run(`(() => {
-      const { scene, gl, camera, controls } = window.busCameraTestState();
+    const result = await run(`(() => {
+      const { scene, gl, camera } = window.busCameraTestState();
       const screen = scene.getObjectByName('bus-tv-depth-aperture');
-      controls.enabled = false;
+      const originalPosition = camera.position.clone(), originalRotation = camera.quaternion.clone();
       const vec = (x,y,z) => camera.position.clone().set(x,y,z);
       camera.position.copy(screen.localToWorld(vec(0,0,1.2)));
       camera.lookAt(screen.getWorldPosition(vec(0,0,0)));
       camera.updateMatrixWorld(true);
-      return gl.info.render.frame;
-    })()`);
-    await wait(`(()=>{const s=window.busCameraTestState();return s.gl.info.render.frame>${cameraFrame + 1}&&s.scene.getObjectByName('bus-tv-depth-aperture').visible;})()`, "The camera settles in front of the physical TV");
-    const result = await run(`(() => {
-      const { scene, gl, camera } = window.busCameraTestState();
-      const screen = scene.getObjectByName('bus-tv-depth-aperture');
-      const vec = (x,y,z) => camera.position.clone().set(x,y,z);
-      const context = gl.getContext();
+      const context = gl.getContext(), canvas = gl.domElement, rect = canvas.getBoundingClientRect();
+      const project = x => screen.localToWorld(vec(x,0,0)).project(camera);
       const alphaAt = x => {
-        const projected = screen.localToWorld(vec(x,0,0)).project(camera);
-        const pixel = new Uint8Array(4);
+        const projected = project(x), pixel = new Uint8Array(4);
         context.readPixels(Math.floor((projected.x+1)/2*context.drawingBufferWidth),
           Math.floor((projected.y+1)/2*context.drawingBufferHeight), 1,1,context.RGBA,context.UNSIGNED_BYTE,pixel);
         return pixel[3];
@@ -100,27 +91,25 @@ export async function runMediaRecoveryChecks({ send, evaluate, waitForPageCondit
       screen.add(cover);
       gl.render(scene,camera);
       const covered = [-.30,.30].map(alphaAt);
-      window.tvTestCover = cover;
-      const rect = gl.domElement.getBoundingClientRect();
-      const points = [-.30,.30].map(x => {
-        const point = screen.localToWorld(vec(x,0,0)).project(camera);
-        return {x:rect.x+(point.x+1)*rect.width/2,y:rect.y+(1-point.y)*rect.height/2};
+      // Keep the pose and DOM pointer samples in a single frame. The regular
+      // seat camera resumes as soon as this evaluation returns to the page.
+      const hits = [-.30,.30].map(x => {
+        const point = project(x);
+        const clientX = rect.x + (point.x+1)*rect.width/2, clientY = rect.y + (1-point.y)*rect.height/2;
+        canvas.parentElement.dispatchEvent(new PointerEvent('pointermove', {clientX,clientY,bubbles:true,pointerType:'mouse'}));
+        return document.elementFromPoint(clientX,clientY)?.id === 'tv-primary-iframe';
       });
-      return {clear,covered,points,canvasLayer:Number(getComputedStyle(gl.domElement).zIndex),tvCount:document.querySelectorAll('#tv-primary-iframe').length};
+      cover.removeFromParent();
+      cover.material.dispose();
+      camera.position.copy(originalPosition);
+      camera.quaternion.copy(originalRotation);
+      camera.updateMatrixWorld(true);
+      return {clear,covered,hits,canvasLayer:Number(getComputedStyle(canvas).zIndex),tvCount:document.querySelectorAll('#tv-primary-iframe').length};
     })()`);
     assert.deepEqual(result.clear, [0, 0], "The unoccluded display reveals its iframe through the WebGL canvas");
     assert.deepEqual(result.covered, [255, 0], "Foreground geometry covers only the matching TV pixels");
+    assert.deepEqual(result.hits, [false, true], "Native controls receive the pointer only on the exposed part of the TV");
     assert(result.canvasLayer > 1 && result.tvCount === 1, "The canvas is above a single TV iframe");
-    // The React frame updates the CSS projection after the direct render above.
-    const renderedAt = await run("window.busCameraTestState().gl.info.render.frame");
-    await wait(`window.busCameraTestState().gl.info.render.frame>${renderedAt + 1}`, "The iframe projection catches up with the test camera");
-    for (const [index, point] of result.points.entries()) {
-      await send("Input.dispatchMouseEvent", { type: "mouseMoved", ...point });
-      const target = await run(`(()=>{const el=document.elementFromPoint(${point.x},${point.y}),frame=document.getElementById('tv-frame');return {id:el?.id,tag:el?.tagName,pointer:frame.style.pointerEvents,rect:frame.getBoundingClientRect().toJSON()};})()`);
-      assert.equal(target.id === "tv-primary-iframe", index === 1,
-        `Native controls receive the pointer only on the exposed part of the TV: ${JSON.stringify(target)}`);
-    }
-    await run("window.tvTestCover.removeFromParent();window.tvTestCover.material.dispose();delete window.tvTestCover;");
     console.log("YouTube recovery passed: shared API failure, independent reloads, audio focus, initial iframe permissions and pixel-level TV occlusion.");
   } finally {
     if (depthFixture) await send("Page.removeScriptToEvaluateOnNewDocument", { identifier: depthFixture.identifier });
