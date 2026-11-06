@@ -7,27 +7,31 @@ import type { BusOccupant } from "@/lib/bus-occupancy";
 import type { PassengerProfile } from "@/types/passenger";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import { BODY_BEHIND_HIP } from "@/lib/passenger-gait";
-import { blendPassengerPose, createPassengerPose, samplePassengerPose } from "@/lib/passenger-motion";
+import { blendPassengerPose, createPassengerPose, getRegisteredPassengerPose, samplePassengerPose, type PassengerPoseRegistry } from "@/lib/passenger-motion";
 import { getNakamaArchetype } from "./passenger-archetypes";
-import { getCharacterShape } from "./CharacterShapes";
 import { keepPassengerHandsApart } from "@/lib/passenger-space";
+import PassengerIdentityInstances from "./PassengerIdentityInstances";
 
 /** Un seul lot borné par membre, avec les mêmes articulations que les passagers proches. */
-export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn, hornPulse, reducedMotion }: {
+export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn, hornPulse, reducedMotion, poses }: {
   passengers: BusOccupant[]; profilesBySeatIndex?: Map<number, PassengerProfile>;
   partyOn: boolean; hornPulse: number; reducedMotion: boolean;
+  poses?:PassengerPoseRegistry;
 }) {
   const bodies = useRef<THREE.InstancedMesh>(null), heads = useRef<THREE.InstancedMesh>(null);
-  const necks = useRef<THREE.InstancedMesh>(null), arms = useRef<THREE.InstancedMesh>(null);
+  const arms = useRef<THREE.InstancedMesh>(null);
   const forearms = useRef<THREE.InstancedMesh>(null), hands = useRef<THREE.InstancedMesh>(null);
   const mode = useRef({ key: "", settleUntil: 0 });
+  const revision=useRef(0),celebration=useRef(false);
   const profiles = useMemo(() => passengers.map(({ index, passengerKind }) => {
     const archetype = getNakamaArchetype(index, passengerKind === "visitor" ? profilesBySeatIndex?.get(index)?.avatarId : null);
     return { archetype, rig: getPassengerSkeleton(archetype.id), shape: getPassengerProportions(archetype.id),
-      pose: createPassengerPose(), target: createPassengerPose() };
-  }), [passengers, profilesBySeatIndex]);
+      pose: getRegisteredPassengerPose(poses,index), target: createPassengerPose() };
+  }), [passengers, profilesBySeatIndex,poses]);
+  const ids=useMemo(()=>profiles.map(profile=>profile.archetype.id),[profiles]);
+  const drivers=useMemo(()=>({bodies,heads,arms,forearms,hands,revision,celebration}),[]);
   const scratch = useMemo(() => ({ body: new THREE.Matrix4(), shoulder: new THREE.Matrix4(), elbow: new THREE.Matrix4(),
-    local: new THREE.Object3D(), matrix: new THREE.Matrix4(), color: new THREE.Color() }), []);
+    local: new THREE.Object3D(), matrix: new THREE.Matrix4() }), []);
   const writeMatrices = useCallback(() => {
     const { body, shoulder, elbow, local, matrix } = scratch;
     const part = (mesh: THREE.InstancedMesh | null, index: number, parent: THREE.Matrix4,
@@ -42,7 +46,6 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
       local.rotation.set(pose.torsoPitch, pose.torsoYaw + pose.rootYaw, pose.torsoRoll); local.scale.set(1, 1, 1); local.updateMatrix(); body.copy(local.matrix);
       part(bodies.current, i, body, 0, 0, 0, shape.torsoWidth / .32, shape.torsoHeight / .42, shape.torsoDepth / .22);
       const neckY = rig.neckAboveHip - rig.torsoAboveHip;
-      part(necks.current, i, body, 0, neckY, 0, shape.neckRadius / .055, rig.neckHeight / .12, shape.neckRadius / .055);
       local.position.set(0, neckY, 0); local.rotation.set(pose.headPitch, pose.headYaw, 0); local.scale.set(1, 1, 1); local.updateMatrix();
       shoulder.multiplyMatrices(body, local.matrix);
       part(heads.current, i, shoulder, 0, rig.headAboveNeck, 0, shape.headWidth / .24, shape.headHeight / .27, shape.headDepth / .23);
@@ -59,29 +62,13 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
         part(hands.current, at, elbow, 0, -rig.forearmLength, 0, rig.armWidthScale * present, rig.armScale * present, rig.armWidthScale * present);
       }
     });
-    for (const ref of [bodies, heads, necks, arms, forearms, hands]) if (ref.current) ref.current.instanceMatrix.needsUpdate = true;
+    revision.current++;
   }, [passengers, profiles, scratch]);
-  useLayoutEffect(() => {
-    writeMatrices();
-    profiles.forEach(({ archetype }, i) => {
-      for (const ref of [bodies, arms, forearms]) {
-        scratch.color.set(archetype.shirtColor);
-        if (ref === bodies) ref.current?.setColorAt(i, scratch.color);
-        else for (let arm = 0; arm < 2; arm++) ref.current?.setColorAt(i * 2 + arm, scratch.color);
-      }
-      scratch.color.set(archetype.skinColor);
-      for (const ref of [heads, necks]) ref.current?.setColorAt(i, scratch.color);
-      for (let arm = 0; arm < 2; arm++) hands.current?.setColorAt(i * 2 + arm, scratch.color);
-    });
-    for (const ref of [bodies, heads, necks, arms, forearms, hands]) {
-      if (ref.current?.instanceColor) ref.current.instanceColor.needsUpdate = true;
-      ref.current?.computeBoundingSphere();
-      if (ref.current?.boundingSphere) ref.current.boundingSphere.radius += .6;
-    }
-  }, [profiles, scratch, writeMatrices]);
+  useLayoutEffect(writeMatrices, [writeMatrices]);
   useFrame(({ clock }, dt) => {
     const hornElapsed = hornPulse > 0 ? (performance.now() - hornPulse) / 1000 : Infinity;
     const active = partyOn || (!reducedMotion && hornElapsed < 1.8);
+    celebration.current=active;
     const key = `${active}:${reducedMotion}:${partyOn}:${hornPulse}`;
     if (mode.current.key !== key) { mode.current.key = key; mode.current.settleUntil = clock.elapsedTime + 2; }
     // Les poses immobiles cessent d'écrire les matrices après leur transition.
@@ -92,26 +79,15 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
       blendPassengerPose(pose, target, dt, reducedMotion);
     });
     writeMatrices();
-  });
+  },-2);
   if (!passengers.length) return null;
   return <>
-    <instancedMesh name="bus-distant-passenger-bodies" userData={{ occupants: passengers.map(({ index, physicalSeatIndex, passengerKind, seat }) => ({ seatIndex: index, physicalSeatIndex, passengerKind, row: seat.row, seatInRow: seat.seatInRow })) }} ref={bodies} args={[undefined, undefined, 160]} count={passengers.length}>
-      <boxGeometry args={[.32, .42, .22]} /><meshStandardMaterial roughness={.7} />
-    </instancedMesh>
-    <instancedMesh name="bus-distant-passenger-heads" ref={heads} geometry={getCharacterShape([.24, .27, .23], .038)} dispose={null} args={[undefined, undefined, 160]} count={passengers.length}>
-      <meshStandardMaterial roughness={.7} />
-    </instancedMesh>
-    <instancedMesh name="bus-distant-passenger-necks" ref={necks} args={[undefined, undefined, 160]} count={passengers.length}>
-      <cylinderGeometry args={[.055, .055, .12, 8]} /><meshStandardMaterial roughness={.7} />
-    </instancedMesh>
-    <instancedMesh name="bus-distant-party-arms" ref={arms} args={[undefined, undefined, 320]} count={passengers.length * 2}>
-      <boxGeometry args={[.075, .20, .075]} /><meshStandardMaterial roughness={.7} />
-    </instancedMesh>
-    <instancedMesh name="bus-distant-passenger-forearms" ref={forearms} args={[undefined, undefined, 320]} count={passengers.length * 2}>
-      <boxGeometry args={[.07, .22, .07]} /><meshStandardMaterial roughness={.7} />
-    </instancedMesh>
-    <instancedMesh name="bus-distant-party-hands" ref={hands} args={[undefined, undefined, 320]} count={passengers.length * 2}>
-      <boxGeometry args={[.085, .075, .08]} /><meshStandardMaterial roughness={.7} />
-    </instancedMesh>
+    <PassengerIdentityInstances ids={ids} passengers={passengers} drivers={drivers} partyOn={partyOn} reducedMotion={reducedMotion}/>
+    {/* Ces matrices servent aux lots de costumes et restent côté CPU. */}
+    <instancedMesh visible={false} name="bus-distant-passenger-bodies" userData={{ occupants: passengers.map(({ index, physicalSeatIndex, passengerKind, seat }) => ({ seatIndex: index, physicalSeatIndex, passengerKind, row: seat.row, seatInRow: seat.seatInRow })) }} ref={bodies} args={[undefined, undefined, 160]} count={passengers.length}/>
+    <instancedMesh visible={false} name="bus-distant-passenger-heads" ref={heads} args={[undefined, undefined, 160]} count={passengers.length}/>
+    <instancedMesh visible={false} name="bus-distant-party-arms" ref={arms} args={[undefined, undefined, 320]} count={passengers.length * 2}/>
+    <instancedMesh visible={false} name="bus-distant-passenger-forearms" ref={forearms} args={[undefined, undefined, 320]} count={passengers.length * 2}/>
+    <instancedMesh visible={false} name="bus-distant-party-hands" ref={hands} args={[undefined, undefined, 320]} count={passengers.length * 2}/>
   </>;
 }

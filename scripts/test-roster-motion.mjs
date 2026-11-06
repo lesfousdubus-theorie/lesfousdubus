@@ -7,7 +7,7 @@ async function load(path) {
   return import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);
 }
 const motion = await load("src/lib/passenger-motion.ts"), facial = await load("src/lib/passenger-expressions.ts");
-const { getPassengerProportions } = await load("src/lib/passenger-proportions.ts");
+const { getPassengerProportions, getPassengerSkeleton } = await load("src/lib/passenger-proportions.ts");
 const ids = ["luffy", "zoro", "nami", "usopp", "sanji", "chopper", "robin", "franky", "brook", "jinbe", "law", "ace", "sabo", "yamato", "shanks", "buggy", "doflamingo", "boa_hancock", "vivi", "mihawk"];
 const fields = Object.keys(motion.createPassengerPose()).filter(key => typeof motion.createPassengerPose()[key] === "number");
 const pose = motion.createPassengerPose(), previous = motion.createPassengerPose(), expression = facial.createFacialExpression();
@@ -15,11 +15,11 @@ const partySignatures = new Set(), hornSignatures = new Set(), chatSignatures = 
 const shoulder = new THREE.Quaternion(), elbow = new THREE.Quaternion(), body = new THREE.Quaternion(), root = new THREE.Quaternion();
 const vector = new THREE.Vector3(), shoulderPoint = new THREE.Vector3(), elbowPoint = new THREE.Vector3(), handPoint = new THREE.Vector3();
 const euler = new THREE.Euler(), axis = new THREE.Vector3(0, 1, 0);
-const handRotation = new THREE.Quaternion(), handMatrix = new THREE.Matrix4(), handScale = new THREE.Vector3(1.015, 1, 1.015);
+const handRotation = new THREE.Quaternion(), handMatrix = new THREE.Matrix4(), handScale = new THREE.Vector3(1, 1, 1);
 const handBox = new THREE.Box3(), handSize = new THREE.Vector3(), handZero = new THREE.Vector3();
 let samples = 0, maximumPartyFootprint = 0, maximumPartyStep = 0;
 for (const id of ids) {
-  const width = getPassengerProportions(id).torsoWidth, signature = [], horn = [], chat = [], face = [];
+  const rig = getPassengerSkeleton(id), width = getPassengerProportions(id).torsoWidth, signature = [], horn = [], chat = [], face = [];
   for (const time of [.17, .63, 1.4, 2.2, 3.7, 6.1, 10.2, 15.4, 30.6]) {
     motion.samplePassengerPose(pose, time, 0, 1, width, Infinity, true, false, id);
     signature.push(fields.map(field => pose[field]));
@@ -49,19 +49,19 @@ for (const id of ids) {
       }
       Object.assign(previous, pose);
       if (frame % 10 === 0) {
-        body.setFromEuler(euler.set(pose.torsoPitch, pose.torsoYaw, pose.torsoRoll)); root.setFromAxisAngle(axis, pose.rootYaw);
+        body.setFromEuler(euler.set(pose.torsoPitch, pose.torsoYaw + pose.rootYaw, pose.torsoRoll)); root.identity();
         for (const side of [-1, 1]) {
           const left = side < 0;
           shoulder.setFromEuler(euler.set(left ? pose.leftX : pose.rightX, 0, left ? pose.leftZ : pose.rightZ));
           elbow.setFromEuler(euler.set(left ? pose.leftElbowX : pose.rightElbowX, 0, left ? pose.leftElbowZ : pose.rightElbowZ));
-          shoulderPoint.set(side * (width / 2 - .018), .145, 0);
-          elbowPoint.set(0, -.20, 0).applyQuaternion(shoulder).add(shoulderPoint);
-          handPoint.set(0, -.22, 0).applyQuaternion(elbow); handPoint.y -= .20; handPoint.applyQuaternion(shoulder).add(shoulderPoint);
-          assert(Math.abs(shoulderPoint.distanceTo(elbowPoint) - .20) < 1e-9 && Math.abs(elbowPoint.distanceTo(handPoint) - .22) < 1e-9, "Dance angles must preserve both connected arm-bone lengths.");
+          shoulderPoint.set(side * (width / 2 - .018), rig.shoulderY, 0);
+          elbowPoint.set(0, -rig.upperArmLength, 0).applyQuaternion(shoulder).add(shoulderPoint);
+          handPoint.set(0, -rig.forearmLength, 0).applyQuaternion(elbow); handPoint.y -= rig.upperArmLength; handPoint.applyQuaternion(shoulder).add(shoulderPoint);
+          assert(Math.abs(shoulderPoint.distanceTo(elbowPoint) - rig.upperArmLength) < 1e-9 && Math.abs(elbowPoint.distanceTo(handPoint) - rig.forearmLength) < 1e-9, "Dance angles must preserve both connected arm-bone lengths.");
           vector.copy(handPoint).multiply(handScale).applyQuaternion(body).applyQuaternion(root);
           if (mode === "party") {
             const dimensions = id === "franky" ? [.13, .085, .14] : id === "jinbe" ? [.116, .081, .119] : [.1, .08, .105];
-            handSize.fromArray(dimensions);
+            handSize.fromArray(dimensions).multiply(new THREE.Vector3(rig.armWidthScale,rig.armScale,rig.armWidthScale));
             handRotation.copy(root).multiply(body).multiply(shoulder).multiply(elbow);
             handMatrix.compose(vector, handRotation, handScale);
             handBox.setFromCenterAndSize(handZero, handSize).applyMatrix4(handMatrix);

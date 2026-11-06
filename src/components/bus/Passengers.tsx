@@ -19,7 +19,7 @@ import PassengerSignatureProp from "./PassengerSignatureProp";
 import PassengerCardGame, { getPassengerCardActor, type PassengerCardActors } from "./PassengerCardGame";
 import { getPassengerCardPairs } from "@/lib/passenger-card-game";
 import { BODY_BEHIND_HIP } from "@/lib/passenger-gait";
-import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, samplePassengerPose } from "@/lib/passenger-motion";
+import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, getRegisteredPassengerPose, pruneRegisteredPassengerPoses, samplePassengerPose, type PassengerPoseRegistry } from "@/lib/passenger-motion";
 import { keepPassengerHandsApart } from "@/lib/passenger-space";
 
 /** Hauteur visuelle du sommet de chaque passager assis, accessoires compris. */
@@ -156,6 +156,11 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
       reservedRow, excludedPassengerIndex, avatarAboard, lowPower, detailFocus]);
   const profilesBySeatIndex = useMemo(() => new Map(passengerProfiles.map(profile => [profile.seatIndex, profile])), [passengerProfiles]);
   const detailedSeats = new Set(detailed.map(occupant => occupant.physicalSeatIndex));
+  const poses=useMemo<PassengerPoseRegistry>(()=>new Map(),[]);
+  useEffect(()=>{
+    const visible=new Set([...detailed,...simplified].map(actor=>actor.index));
+    pruneRegisteredPassengerPoses(poses,visible);
+  },[detailed,simplified,poses]);
   const cardActors = useMemo<PassengerCardActors>(() => new Map(), []);
   const cardPairs = useMemo(() => getPassengerCardPairs(detailed.map(occupant => ({ ...occupant,
     archetypeId: getNakamaArchetype(occupant.index, occupant.passengerKind === "visitor"
@@ -164,10 +169,11 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
   const cardPairBySeat = useMemo(() => new Map(cardPairs.flatMap(pair => [[pair.firstSeat, pair.pairIndex], [pair.secondSeat, pair.pairIndex]])), [cardPairs]);
   useEffect(() => () => { document.body.style.cursor = "auto"; }, []);
   return <group ref={root} name="bus-seated-passengers" userData={{ detailedCount: detailed.length, simplifiedCount: simplified.length }}>
-    <SimplifiedPassengers passengers={simplified} profilesBySeatIndex={profilesBySeatIndex} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
+    <SimplifiedPassengers passengers={simplified} profilesBySeatIndex={profilesBySeatIndex} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion} poses={poses}/>
     {detailed.map(({ seat, index, physicalSeatIndex, passengerKind }) => {
       const archetype = getNakamaArchetype(index, passengerKind === "visitor" ? profilesBySeatIndex.get(index)?.avatarId : null);
       return <Passenger key={`${passengerKind}-${index}`} seat={seat} index={index} archetype={archetype}
+        poses={poses}
         name={passengerKind === "nakama" ? `crew-nakama-${archetype.id}-${index}` : undefined}
         passengerKind={passengerKind} physicalSeatIndex={physicalSeatIndex}
         cardActors={cardActors} cardPairIndex={cardPairBySeat.get(physicalSeatIndex) ?? null}
@@ -190,6 +196,7 @@ export function Passenger({
   archetype,
   hornPulse,
   partyOn = false,
+  poses,
   peerSide = 0,
   interactionPairIndex,
   cardActors,
@@ -211,6 +218,7 @@ export function Passenger({
   archetype: NakamaArchetype;
   hornPulse: number;
   partyOn?: boolean;
+  poses?: PassengerPoseRegistry;
   peerSide?: number;
   interactionPairIndex?: number;
   cardActors?: PassengerCardActors;
@@ -236,7 +244,7 @@ export function Passenger({
   const heldProps = useRef<THREE.Group>(null);
   const signatureProps = useRef<Array<THREE.Group|null>>([]);
   const targetPose = useRef(createPassengerPose());
-  const currentPose = useRef(createPassengerPose());
+  const currentPose = useRef(getRegisteredPassengerPose(poses,index));
 
   // Matériaux partagés et mis en cache par archetype
   const mats = useMemo(() => getArchetypeMaterials(archetype), [archetype]);
@@ -371,7 +379,7 @@ export function Passenger({
       </group>
 
       {/* ---------- PROPS & OBJETS TENUS ---------- */}
-      <group ref={heldProps}><NakamaProp id={archetype.id} prop={archetype.prop} mats={mats} />{children}</group>
+      <group ref={heldProps} name="nakama-resting-props"><NakamaProp id={archetype.id} prop={archetype.prop} mats={mats} />{children}</group>
 
     </group>
   );

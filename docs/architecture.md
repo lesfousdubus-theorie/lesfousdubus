@@ -81,7 +81,8 @@ l’API typée pour les scénarios de tests existants.
 La TV préchauffe un début de vidéo en muet avant l’entrée. Elle n’est audible
 qu’une fois l’avatar installé. Le fond est coupé pendant la vidéo, puis reprend
 progressivement sans écraser le volume choisi. La danse suit l’horloge réelle
-de la fête à partir de huit secondes, y compris après une boucle.
+de la fête à partir de huit secondes, y compris après une boucle. Une grille
+commune à 126 BPM cale les gestes propres à chaque personnage sur le morceau.
 
 Les deux pistes musicales ont chacune un lecteur persistant, préparé en muet dès
 l’arrivée. Leur démarrage reste soumis à YouTube et aux règles du navigateur.
@@ -119,7 +120,8 @@ ne constituent pas un système de comptes ni une récupération multi-appareils.
   inscrits. Aucun avatar supplémentaire par défaut ; deux occupants maximum par
   banquette. L’exploration ne réattribue pas les identifiants enregistrés.
 - Visiteurs détaillés limités à huit sur ordinateur ou deux sur appareils
-  modestes, puis jusqu’à 160 modèles simplifiés instanciés. Rangées et profils
+  modestes, puis jusqu’à 160 modèles instanciés qui conservent les visages,
+  coiffures et costumes. La pose est partagée entre les deux rendus. Rangées et profils
   éloignés restent bornés ; la longueur logique peut continuer à augmenter.
 - Un seul lecteur vidéo réel pour les télévisions du bus ; les écrans secondaires
   sont des cadres légers et le lecteur rejoint la télévision active.

@@ -1,6 +1,7 @@
+import { getPartyDanceTime, PARTY_BEAT_SECONDS, PARTY_PHRASE_SECONDS } from "./party-rhythm";
 import type { PassengerPose } from "./passenger-motion";
 
-export const COPILOT_DANCE_PHASE_SECONDS = 3;
+export const COPILOT_DANCE_PHASE_SECONDS = PARTY_PHRASE_SECONDS;
 export const COPILOT_DANCE_GESTURES = ["kyta-party-wave", "kyta-party-sway", "kyta-party-clap", "kyta-party-log-pose", "kyta-party-pump"] as const;
 const fields = ["headYaw", "headPitch", "torsoYaw", "torsoPitch", "torsoRoll", "rootYaw", "bob", "leftX", "leftZ", "rightX", "rightZ", "leftElbowX", "leftElbowZ", "rightElbowX", "rightElbowZ"] as const;
 type Coefficients = Record<typeof fields[number], readonly [number, number, number]>;
@@ -28,12 +29,12 @@ const stages: Coefficients[] = [
 
 /** Une danse assise en cinq phrases, échantillonnée sans allocation par image. */
 export function sampleCopilotDance(pose: PassengerPose, elapsed: number, reducedMotion: boolean) {
-  const time = Math.max(0, elapsed), cycle = COPILOT_DANCE_PHASE_SECONDS * stages.length;
+  const time = getPartyDanceTime(Math.max(0, elapsed)), cycle = COPILOT_DANCE_PHASE_SECONDS * stages.length;
   const stage = reducedMotion ? 0 : Math.floor((time % cycle) / COPILOT_DANCE_PHASE_SECONDS);
   const current = stages[stage], previous = stages[(stage + stages.length - 1) % stages.length];
-  const transition = reducedMotion ? 1 : Math.min(1, (time % COPILOT_DANCE_PHASE_SECONDS) / .65);
+  const transition = reducedMotion ? 1 : Math.min(1, (time % COPILOT_DANCE_PHASE_SECONDS) / PARTY_BEAT_SECONDS);
   const blend = transition * transition * (3 - 2 * transition);
-  const wave = reducedMotion ? 0 : Math.sin(time * Math.PI * 3.6), counter = reducedMotion ? 0 : Math.cos(time * Math.PI * 3.6);
+  const wave = reducedMotion ? 0 : Math.cos(time / PARTY_BEAT_SECONDS * Math.PI * 2), counter = reducedMotion ? 0 : Math.sin(time / PARTY_BEAT_SECONDS * Math.PI * 2);
   for (const field of fields) {
     const from = previous[field], to = current[field];
     const oldValue = from[0] + from[1] * wave + from[2] * counter;

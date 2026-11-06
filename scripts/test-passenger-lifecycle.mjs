@@ -67,7 +67,7 @@ try {
       let staticOwn=0;
       for(const n of seated?.children??[]){
         if(visible(n)&&n.userData.passengerKind==='visitor'&&n.userData.seatIndex===mine)staticOwn++;
-        if(visible(n)&&n.name==='bus-distant-passenger-bodies')staticOwn+=(n.userData.occupants??[]).filter(o=>o.seatIndex===mine).length;
+        if(n.name==='bus-distant-passenger-bodies'&&visible(n.parent))staticOwn+=(n.userData.occupants??[]).filter(o=>o.seatIndex===mine).length;
       }
       const animatedOwn=avatar?.userData.seatIndex===mine&&visible(avatar)?1:0;
       return {phase:document.querySelector('.bus-app')?.dataset.phase,journeyPhase:j.phase,frame:s.gl.info.render.frame,staticOwn,animatedOwn,totalOwn:staticOwn+animatedOwn,waiting:j.waitingForSeat,entryFromSeat:j.entryFromSeat??false,walking:j.walking,sitting:j.sitting,elapsed:j.elapsed,position:j.position.toArray(),seat:[j.seatX,.64,j.seatZ]};

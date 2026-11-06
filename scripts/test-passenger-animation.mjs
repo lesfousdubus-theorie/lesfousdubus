@@ -11,6 +11,7 @@ const compiled=await build({
     export { getPassengerProportions, getPassengerSkeleton } from './src/lib/passenger-proportions';
     export { getWalkingLegPose } from './src/lib/passenger-gait';
     export { createPassengerPose, samplePassengerPose } from './src/lib/passenger-motion';
+    export { bakePassengerIdentity, bakedPassengerIdentities } from './src/lib/baked-passenger';
     export { createJourneyState } from './src/lib/bus-journey';`,resolveDir:process.cwd(),sourcefile:"animation-rig-test.ts"},
   bundle:true,format:"esm",platform:"node",write:false,jsx:"automatic",logLevel:"silent",
   plugins:[{name:"real-rig-hooks",setup(builder){
@@ -22,7 +23,7 @@ const compiled=await build({
       :`export const useThree=selector=>selector({camera:{position:{x:7.5,z:-10.5}}});export const useFrame=(callback,priority=0)=>globalThis.__animationRigFrames.push({callback,priority});`}));
   }}],
 });
-const {THREE,Passengers,Passenger,SimplifiedPassengers,BoardingAvatar,NAKAMA_ROSTER,getPassengerSkeleton,getPassengerProportions,getWalkingLegPose,createJourneyState,createPassengerPose,samplePassengerPose}=await import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);
+const {THREE,Passengers,Passenger,SimplifiedPassengers,BoardingAvatar,NAKAMA_ROSTER,getPassengerSkeleton,getPassengerProportions,getWalkingLegPose,createJourneyState,createPassengerPose,samplePassengerPose,bakePassengerIdentity,bakedPassengerIdentities}=await import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);
 const material=new THREE.MeshStandardMaterial();
 globalThis.document={createElement:()=>({width:256,height:256,getContext:()=>new Proxy({},{get:()=>()=>{}})})};
 const children=value=>Array.isArray(value)?value.flatMap(children):value==null||value===false?[]:[value];
@@ -54,6 +55,11 @@ const seat={x:0,z:0,row:0,seatInRow:0};let samples=0,neighborFrames=0,maxHandFoo
 // Real mounted shoes must stay planted: angular bounds alone miss root bobbing.
 for(const [index,archetype] of NAKAMA_ROSTER.entries()){
   const mounted=actor(Passenger,{seat,index,archetype,partyOn:true,hornPulse:0,reducedMotion:false});
+  const identity=bakePassengerIdentity(mounted.root);bakedPassengerIdentities.set(archetype.id,identity);
+  for(const role of ["head","body"]){const parts=identity.filter(part=>part.role===role);assert(parts.length>0);assert(parts.some(part=>part.geometry.userData.sourceNames.includes(role==="head"?"nakama-face":`nakama-${archetype.id}-top`)),`${archetype.id}: baked identity preserves its real face and costume.`);}
+  const head=mounted.root.getObjectByName("nakama-head"),originalHead=new THREE.Box3().setFromObject(head,true),bakedHead=new THREE.Box3();
+  for(const part of identity.filter(part=>part.role==="head")){part.geometry.computeBoundingBox();bakedHead.union(part.geometry.boundingBox.clone().applyMatrix4(head.matrixWorld));}
+  assert(originalHead.min.distanceTo(bakedHead.min)<1e-5&&originalHead.max.distanceTo(bakedHead.max)<1e-5,`${archetype.id}: hair, face and hat retain the exact real silhouette when detail changes.`);
   const shoe=mounted.root.getObjectByName(archetype.id==="sanji"?"nakama-left-shoe":"nakama-shoes"),baseline=box(shoe);
   const pelvis=mounted.root.getObjectByName("nakama-pelvis"),pelvisBaseline=box(pelvis);
   for(let frame=0;frame<720;frame++){
@@ -109,6 +115,7 @@ for(const [leftId,rightId] of [["luffy","zoro"],["chopper","luffy"],["franky","c
 // Distant arms keep two rigid bones attached under a common moving torso.
 const occupants=NAKAMA_ROSTER.map((a,index)=>({index,physicalSeatIndex:index,passengerKind:"visitor",seat:{x:index*.44,z:0,row:0,seatInRow:0}}));
 const distant=actor(SimplifiedPassengers,{passengers:occupants,partyOn:true,hornPulse:0,reducedMotion:false});
+assert(bakedPassengerIdentities.size===20,"The identity library stays bounded to the twenty actual avatar designs.");
 const matrix=new THREE.Matrix4(),scale=new THREE.Vector3(),pos=new THREE.Vector3(),q=new THREE.Quaternion();
 function endpoint(name,index,y){const mesh=distant.root.getObjectByName(name);mesh.getMatrixAt(index,matrix);return new THREE.Vector3(0,y,0).applyMatrix4(matrix);}
 for(let frame=0;frame<240;frame++){
@@ -118,7 +125,8 @@ for(let frame=0;frame<240;frame++){
     if(archetype.id==="shanks"&&side===0){for(const name of ["bus-distant-party-arms","bus-distant-passenger-forearms","bus-distant-party-hands"]){distant.root.getObjectByName(name).getMatrixAt(at,matrix);matrix.decompose(pos,q,scale);assert(matrix.elements.slice(0,12).every(value=>Math.abs(value)<1e-8),"Distant Shanks does not grow a second arm.");}continue;}
     assert(endpoint("bus-distant-party-arms",at,-.10).distanceTo(endpoint("bus-distant-passenger-forearms",at,.11))<2e-6,"Distant elbow remains attached.");
     assert(endpoint("bus-distant-passenger-forearms",at,-.11).distanceTo(endpoint("bus-distant-party-hands",at,0))<2e-6,"Distant wrist remains attached.");
-    assert(distant.root.getObjectByName("bus-distant-party-arms").visible,"Distant arms stay present between gestures.");
+    assert(!distant.root.getObjectByName("bus-distant-party-arms").visible,"Generic matrix drivers must never replace the real costume.");
+    const model=distant.root.getObjectByName(`bus-distant-identity-${archetype.id}`);assert(model&&model.children.some(mesh=>mesh.userData.role==="head"&&mesh.visible),"Distant faces remain present at every viewing angle.");
     samples++;
   }
 }
@@ -154,4 +162,12 @@ for(const archetype of NAKAMA_ROSTER)for(const side of [0,1])for(const partyOn o
     }
   }
 }
+const sharedPoses=new Map(),nami=NAKAMA_ROSTER.find(a=>a.id==="nami");
+const close=actor(Passenger,{seat,index:2,archetype:nami,poses:sharedPoses,partyOn:true,hornPulse:0,reducedMotion:false});
+for(let frame=0;frame<120;frame++)close.tick(frame/60);
+const shared=sharedPoses.get(2),saved={...shared};
+const far=actor(SimplifiedPassengers,{passengers:[{index:2,physicalSeatIndex:0,passengerKind:"visitor",seat}],poses:sharedPoses,partyOn:true,hornPulse:0,reducedMotion:false});
+far.tick(2,0);assert.equal(sharedPoses.get(2),shared);assert.deepEqual(shared,saved,"Changing representation never resets a character's dance pose.");
+const back=actor(Passenger,{seat,index:2,archetype:nami,poses:sharedPoses,partyOn:true,hornPulse:0,reducedMotion:false});
+back.tick(2,0);assert.deepEqual(shared,saved,"Returning to the detailed model keeps the same pose too.");
 console.log("Mounted animation regression passed:",JSON.stringify({characters:NAKAMA_ROSTER.length,samples,neighborFrames,maxHandFootprint,maxNeighborHandStep}));

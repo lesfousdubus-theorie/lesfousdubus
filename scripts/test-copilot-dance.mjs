@@ -8,7 +8,7 @@ async function load(path) {
   return import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);
 }
 const arms = await load("src/lib/driver-arms.ts"), motion = await load("src/lib/passenger-motion.ts");
-const { sampleCopilotDance, COPILOT_DANCE_GESTURES } = await load("src/lib/copilot-dance.ts");
+const { sampleCopilotDance, COPILOT_DANCE_GESTURES, COPILOT_DANCE_PHASE_SECONDS } = await load("src/lib/copilot-dance.ts");
 const { DRIVER_ARM_FIELDS, DRIVER_UPPER_ARM, DRIVER_FOREARM, DRIVER_SHOULDER_X, DRIVER_SHOULDER_Z, DRIVER_HAND_SIZE, DRIVER_SEAT_POSITIONS, DRIVER_DASHBOARD, NAVIGATOR_BAR, getDriverArmRest, getDriverReactionGain, normalizeDriverHornArms, prepareDriverArmTarget, solveDriverArmTarget } = arms;
 const material = new THREE.MeshBasicMaterial(), measured = [];
 const panels = Object.values(DRIVER_DASHBOARD).map(({ position, size }) => new OBB().fromBox3(new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(...position), new THREE.Vector3(...size))));
@@ -79,7 +79,7 @@ for (const reduced of [false, true]) for (const scenario of ["continuous", "loop
     const signature = joints.map(joint => joint.wrist.getWorldPosition(new THREE.Vector3()).toArray());
     if (party && !reduced && scenario === "continuous") {
       gestures.add(pose.gesture);
-      if (!signatures.has(pose.gesture) && (time - dance.start) % 3 > 1) signatures.set(pose.gesture, { hands: signature, head: [pose.headYaw, pose.headPitch], body: [dance.pitch, dance.yaw, dance.roll] });
+      if (!signatures.has(pose.gesture) && (time - dance.start) % COPILOT_DANCE_PHASE_SECONDS > COPILOT_DANCE_PHASE_SECONDS/3) signatures.set(pose.gesture, { hands: signature, head: [pose.headYaw, pose.headPitch], body: [dance.pitch, dance.yaw, dance.roll] });
     }
     if (party && reduced) {
       if (!staticSignature) staticSignature = signature;

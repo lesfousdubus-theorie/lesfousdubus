@@ -1,4 +1,5 @@
 import { applyPassengerCardPose } from "./passenger-card-game";
+import { getPartyDanceTime, PARTY_BEAT_SECONDS, PARTY_PHRASE_SECONDS } from "./party-rhythm";
 
 export type PassengerActivity = "idle" | "chat" | "check" | "game" | "horn" | "party";
 export function createPassengerPose() {
@@ -8,6 +9,14 @@ export function createPassengerPose() {
     gesture: "rest", games: false, celebrating: false };
 }
 export type PassengerPose = ReturnType<typeof createPassengerPose>;
+export type PassengerPoseRegistry = Map<number,PassengerPose>;
+export function getRegisteredPassengerPose(registry:PassengerPoseRegistry|undefined,index:number) {
+  const existing=registry?.get(index);if(existing)return existing;
+  const pose=createPassengerPose();registry?.set(index,pose);return pose;
+}
+export function pruneRegisteredPassengerPoses(registry:PassengerPoseRegistry,visible:ReadonlySet<number>) {
+  for(const index of registry.keys())if(!visible.has(index))registry.delete(index);
+}
 const poseFields = ["headYaw","headPitch","torsoYaw","torsoPitch","torsoRoll","rootYaw","bob","leftX","leftZ","rightX","rightZ","leftElbowX","leftElbowZ","rightElbowX","rightElbowZ","rightKick"] as const;
 export function blendPassengerPose(current: PassengerPose, target: PassengerPose, dt: number, reducedMotion: boolean) {
   // Même les poses statiques passent par une courte transition, sans saut de bras.
@@ -24,8 +33,8 @@ const danceCadence: Record<string, number> = {
   shanks: .62, buggy: 1.18, doflamingo: .82, boa_hancock: .67, vivi: .97, mihawk: .5,
   foudubustv: 1, kamal: .9, kyta: .95,
 };
-export const DANCE_PHASE_DURATION = 3.5;
-export const DANCE_TRANSITION_DURATION = 0.8;
+export const DANCE_PHASE_DURATION = PARTY_PHRASE_SECONDS;
+export const DANCE_TRANSITION_DURATION = PARTY_BEAT_SECONDS * 2;
 
 // Les gestes libres (salut, toast, lecture, cœur…) ne gardent pas une arme
 // devant le visage. L'accessoire se range pendant le fondu entre deux gestes.
@@ -39,7 +48,7 @@ export function getPassengerSignatureGain(time: number, id: string, party: boole
   const stages = signatureStages[id];
   if (!stages) return 1;
   if (!party || reducedMotion) return stages.includes(0) ? 1 : 0;
-  const danceTime = Number.isFinite(time) ? Math.max(0, time) : 0;
+  const danceTime = getPartyDanceTime(Number.isFinite(time) ? Math.max(0, time) : 0);
   const cycle = danceTime % (6 * DANCE_PHASE_DURATION), stage = Math.floor(cycle / DANCE_PHASE_DURATION);
   const progress = cycle - stage * DANCE_PHASE_DURATION;
   const blend = danceTime < DANCE_TRANSITION_DURATION ? 1 : smooth(progress / DANCE_TRANSITION_DURATION);
@@ -974,8 +983,10 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
   if (party || horn > 0) {
     pose.activity = party ? "party" : "horn"; pose.celebrating = true;
     const gain = party ? 1 : horn;
-    const beat = reducedMotion ? 0 : (party ? time : hornElapsed) * Math.PI * 3.6 * (danceCadence[characterId] ?? 1) + seed;
-    const wave = reducedMotion ? 0 : Math.sin(beat), counter = reducedMotion ? 0 : Math.cos(beat);
+    const danceTime = getPartyDanceTime(time);
+    const beat = reducedMotion ? 0 : party ? danceTime / PARTY_BEAT_SECONDS * Math.PI * 2
+      : hornElapsed * Math.PI * 3.6 * (danceCadence[characterId] ?? 1) + seed;
+    const wave = reducedMotion ? 0 : party ? Math.cos(beat) : Math.sin(beat), counter = reducedMotion ? 0 : party ? Math.sin(beat) : Math.cos(beat);
     pose.gesture = characterId;
 
     if (!party || reducedMotion) {
@@ -983,7 +994,6 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
       sampleCharacterDance(dancePoseB, characterId, 0, wave, counter, reducedMotion);
       blendDanceTarget(pose, dancePoseB, dancePoseB, 1);
     } else {
-      const danceTime = Number.isFinite(time) ? Math.max(0, time) : 0;
       const cycleTime = danceTime % (6 * DANCE_PHASE_DURATION);
       const stage = Math.floor(cycleTime / DANCE_PHASE_DURATION);
       const prevStage = (stage + 5) % 6;
@@ -1008,7 +1018,7 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
       pose.torsoRoll += wave * .045;
       pose.torsoPitch += -.035 + counter * .025;
       pose.headPitch += -.08 + wave * .035;
-      pose.headYaw += Math.sin(beat * .45) * .10;
+      pose.headYaw += Math.sin(beat * .5) * .10;
 
       pose.torsoPitch = Math.max(-.115, Math.min(.115, pose.torsoPitch));
       pose.torsoRoll = Math.max(-.115, Math.min(.115, pose.torsoRoll));
