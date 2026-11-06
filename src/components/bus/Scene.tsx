@@ -319,12 +319,13 @@ export default function Scene({
     <SceneErrorBoundary onAvailabilityChange={onAvailabilityChange} onReadTheory={onReadTheory}>
       <div className="absolute inset-0">
       <Canvas
+      className="bus-scene-canvas"
       shadows={lowPower ? false : "basic"}
       frameloop="never"
       dpr={sceneDpr}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: cameraFar }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-      style={{ width: "100%", height: "100%", touchAction: "none" }}
+      style={{ width: "100%", height: "100%", touchAction: "none", isolation: "isolate" }}
       onCreated={() => setCanvasReady(true)}
       fallback={<div aria-hidden={canvasReady}><SceneFallback onReadTheory={onReadTheory} /></div>}
     >

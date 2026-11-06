@@ -318,7 +318,6 @@ export default function Bus({
         hasEntered={hasEntered}
         journey={journey}
         isMutedForFullscreen={isMutedForFullscreen}
-        reducedMotion={reducedMotion}
         playbackSuspended={playbackSuspended}
       />
     </group>

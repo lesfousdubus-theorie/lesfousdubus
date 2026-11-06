@@ -1,14 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
 import type { Phase } from "./constants";
 import type { JourneyState } from "@/lib/bus-journey";
 import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
-import { createInitialCaptionReset, isYouTubePlaybackActive, loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
+import { createInitialCaptionReset, isYouTubePlaybackActive, mountYouTubePlayer, type YouTubePlayer } from "@/lib/youtube-player";
 import { emitBusAudioEvent, onBusAudioEvent } from "@/lib/bus-audio";
+import BusTvScreen, { TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT } from "./BusTvScreen";
 
 interface BusTvFrameProps {
   pos: [number, number, number];
@@ -51,7 +51,7 @@ export function BusTvFrame({
         <meshBasicMaterial color="#05070c" side={THREE.DoubleSide} />
       </mesh>
       <mesh name="bus-tv-display" position={[0, 0, 0.053]}>
-        <planeGeometry args={[1.26, 0.70875]} />
+        <planeGeometry args={[TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT]} />
         <meshStandardMaterial
           map={tvOn ? posterTex : tvOffTex}
           color={tvOn ? "#ffffff" : "#05070b"}
@@ -78,7 +78,6 @@ interface BusTvPlayerProps {
   hasEntered: boolean;
   journey: React.RefObject<JourneyState>;
   isMutedForFullscreen: boolean;
-  reducedMotion: boolean;
   playbackSuspended: boolean;
   onPlaybackChange?: (active: boolean) => void;
 }
@@ -90,14 +89,13 @@ export function BusTvPlayer({
   hasEntered,
   journey,
   isMutedForFullscreen,
-  reducedMotion,
   playbackSuspended,
   onPlaybackChange,
 }: BusTvPlayerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [mountElement, setMountElement] = useState<HTMLDivElement | null>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
-  const createdPlayerRef = useRef<YouTubePlayer | null>(null);
+  const disconnectRef = useRef<(() => void) | null>(null);
+  const startTimerRef = useRef<number | null>(null);
   const warmTimerRef = useRef<number | null>(null);
   const volumeTimerRef = useRef<number | null>(null);
   const exitVolumeRef = useRef<number | null>(null);
@@ -118,8 +116,7 @@ export function BusTvPlayer({
     isMutedForFullscreen,
     playbackSuspended,
   });
-  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
-  const [apiFailed, setApiFailed] = useState(false);
+  const [playerStatus, setPlayerStatus] = useState<"loading" | "ready" | "blocked" | "error">("loading");
 
   const stopVolumeRamp = useCallback(() => {
     if (volumeTimerRef.current !== null) window.clearTimeout(volumeTimerRef.current);
@@ -163,259 +160,195 @@ export function BusTvPlayer({
     volumeTimerRef.current = window.setTimeout(tick, 50);
   }, []);
 
-  const applyDesiredPlayback = useCallback(() => {
+  const clearStartTimer = useCallback(() => {
+    if (startTimerRef.current !== null) window.clearTimeout(startTimerRef.current);
+    startTimerRef.current = null;
+  }, []);
+
+  const stopWarmup = useCallback(() => {
+    if (warmTimerRef.current !== null) window.clearTimeout(warmTimerRef.current);
+    warmTimerRef.current = null;
+    warmingRef.current = false;
+  }, []);
+
+  const stopPlayer = useCallback(() => {
+    clearStartTimer();
+    stopWarmup();
+    stopVolumeRamp();
+    disconnectRef.current?.();
+    disconnectRef.current = null;
+    playerRef.current = null;
+    reportPlayback(false);
+  }, [clearStartTimer, reportPlayback, stopVolumeRamp, stopWarmup]);
+
+  const failPlayer = useCallback(() => {
+    stopPlayer();
+    setPlayerStatus("error");
+  }, [stopPlayer]);
+
+  const shouldPlay = useCallback(() => {
+    const desired = desiredRef.current;
+    return !partyAudioRef.current && desired.hasEntered && desired.tvOn && desired.phase !== "entering"
+      && !desired.isMutedForFullscreen && !desired.playbackSuspended;
+  }, []);
+
+  const applyDesiredPlayback = useCallback((fromClick = false) => {
     const player = playerRef.current;
     if (!player || warmingRef.current) return;
     const desired = desiredRef.current;
-    stopVolumeRamp();
-    exitVolumeRef.current = null;
     try {
-      if (!desired.hasEntered) {
-        player.pauseVideo();
-        reportPlayback(false);
-        player.seekTo(0, true);
+      if (!shouldPlay()) {
+        clearStartTimer();
+        stopVolumeRamp();
         player.mute();
-        return;
-      }
-      if (partyAudioRef.current) {
-        player.pauseVideo();reportPlayback(false);return;
-      }
-      if (desired.phase === "entering" || !desired.tvOn || desired.isMutedForFullscreen || desired.playbackSuspended) {
         player.pauseVideo();
         reportPlayback(false);
         return;
       }
-
-      // La caméra reste aux yeux au début de la sortie. Son mouvement, suivi
-      // dans useFrame, commande ensuite le fondu vers le volume extérieur.
+      const playing = player.getPlayerState() === 1;
+      if (startTimerRef.current !== null && !fromClick && !playing) return;
+      clearStartTimer();
+      stopVolumeRamp();
+      exitVolumeRef.current = null;
+      // Reserve sound before unmuting, only once the iframe can take commands.
+      // A refusal or a missing playback event releases it below.
       reportPlayback(true);
       if (desired.phase === "outside") { player.setVolume(25); player.unMute(); }
       else if (desired.phase === "exiting") player.unMute();
       else rampVolume(100, 300);
+      if (playing) return;
+      startTimerRef.current = window.setTimeout(() => {
+        startTimerRef.current = null;
+        try {
+          if (!shouldPlay() || playerRef.current !== player || player.getPlayerState() === 1) return;
+          reportPlayback(false);
+          setPlayerStatus("blocked");
+        } catch { failPlayer(); }
+      }, 10_000);
       player.playVideo();
-    } catch {
-      reportPlayback(false);
-      playerRef.current = null;
-      // L'échec peut arriver pendant un effet React ; notifier à la microtâche
-      // suivante évite une mise à jour d'état synchrone pendant ce rendu.
-      queueMicrotask(() => setApiFailed(true));
-    }
-  }, [rampVolume, reportPlayback, stopVolumeRamp]);
+    } catch { failPlayer(); }
+  }, [clearStartTimer, failPlayer, rampVolume, reportPlayback, shouldPlay, stopVolumeRamp]);
 
   useEffect(() => {
-    const previous=desiredRef.current;
-    if(partyAudioRef.current&&hasEntered&&tvOn&&phase!=="entering"&&(previous.tvOn!==tvOn||previous.hasEntered!==hasEntered||previous.phase!==phase))resumeAfterPartyRef.current=true;
-    desiredRef.current = {
-      tvOn,
-      phase,
-      hasEntered,
-      isMutedForFullscreen,
-      playbackSuspended,
-    };
+    const previous = desiredRef.current;
+    if (partyAudioRef.current && hasEntered && tvOn && phase !== "entering"
+      && (previous.tvOn !== tvOn || previous.hasEntered !== hasEntered || previous.phase !== phase)) {
+      resumeAfterPartyRef.current = true;
+    }
+    desiredRef.current = { tvOn, phase, hasEntered, isMutedForFullscreen, playbackSuspended };
     if (hasEntered && warmingRef.current) {
-      warmingRef.current = false;
-      if (warmTimerRef.current !== null) {
-        window.clearTimeout(warmTimerRef.current);
-        warmTimerRef.current = null;
-      }
-      // Un premier embarquement rapide peut arriver avant la fin du tampon.
-      // Revenir au début avant de rendre le préchargement muet audible.
-      try { playerRef.current?.seekTo(0, true); } catch { /* API encore en chargement. */ }
+      stopWarmup();
+      try { playerRef.current?.seekTo(0, true); } catch { queueMicrotask(failPlayer); return; }
     }
     applyDesiredPlayback();
-  }, [tvOn, phase, hasEntered, isMutedForFullscreen, playbackSuspended, applyDesiredPlayback]);
+  }, [tvOn, phase, hasEntered, isMutedForFullscreen, playbackSuspended, applyDesiredPlayback, stopWarmup, failPlayer]);
 
-  // Certains contrôles intégrés mettent à jour l'état sans émettre d'événement.
-  // Une pause ou une fin de vidéo doit néanmoins libérer la musique de fond.
+  // A pending start can reserve audio only for the bounded start attempt.
   useEffect(() => {
     const timer = window.setInterval(() => {
-      const player = playerRef.current;
-      const desired = desiredRef.current;
-      if (!player || warmingRef.current) return;
+      if (!playerRef.current || warmingRef.current) return;
       try {
-        const state = player.getPlayerState();
-        if (state === -1 || state === 5) return; // Lecture demandée, encore en préparation.
-        const audible = !partyAudioRef.current && desired.hasEntered && desired.tvOn && desired.phase !== "entering"
-          && !desired.isMutedForFullscreen && !desired.playbackSuspended;
-        reportPlayback(audible && isYouTubePlaybackActive(state, playbackActiveRef.current));
-      } catch { /* Le lecteur peut être détruit pendant sa réponse. */ }
+        const state = playerRef.current.getPlayerState();
+        if (state === 1 && shouldPlay()) clearStartTimer();
+        if (startTimerRef.current !== null && shouldPlay()) return;
+        reportPlayback(shouldPlay() && isYouTubePlaybackActive(state, playbackActiveRef.current));
+      } catch { /* The iframe may be changing state. */ }
     }, 250);
     return () => window.clearInterval(timer);
-  }, [reportPlayback]);
+  }, [clearStartTimer, reportPlayback, shouldPlay]);
+
+  const connectPlayer = useCallback(() => {
+    if (!mountElement || disconnectRef.current) return;
+    warmingRef.current = !desiredRef.current.hasEntered;
+    const resetInitialCaptions = createInitialCaptionReset();
+    disconnectRef.current = mountYouTubePlayer(mountElement, {
+      id: "tv-primary-iframe",
+      title: "La théorie des Fous du Bus",
+      allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen",
+      width: 560,
+      height: 315,
+      videoId: YOUTUBE_ID,
+      playerVars: { autoplay: 0, controls: 1, rel: 0, playsinline: 1, cc_load_policy: 0, iv_load_policy: 3 },
+      onUnavailable: failPlayer,
+      events: {
+        onReady: ({ target }) => {
+          resetInitialCaptions(target);
+          playerRef.current = target;
+          setPlayerStatus("ready");
+          if (desiredRef.current.hasEntered) {
+            stopWarmup();
+            if (partyAudioRef.current && desiredRef.current.tvOn) resumeAfterPartyRef.current = true;
+            applyDesiredPlayback();
+            return;
+          }
+
+          // Prepare the opening in silence when the browser allows it.
+          target.mute();
+          target.setVolume(0);
+          const deadline = performance.now() + 15_000;
+          const waitForBuffer = () => {
+            if (!warmingRef.current) return;
+            try {
+              const duration = target.getDuration();
+              const buffered = (target.getVideoLoadedFraction?.() ?? 0) * duration;
+              if (target.getPlayerState() === 1 && buffered >= Math.min(8, duration || 8)
+                || performance.now() >= deadline) {
+                stopWarmup();
+                target.mute();
+                target.pauseVideo();
+                target.seekTo(0, true);
+                return;
+              }
+              warmTimerRef.current = window.setTimeout(waitForBuffer, 200);
+            } catch { failPlayer(); }
+          };
+          warmTimerRef.current = window.setTimeout(waitForBuffer, 200);
+          target.playVideo();
+        },
+        onStateChange: ({ target, data }) => {
+          if (data === 1) {
+            resetInitialCaptions(target);
+            if (shouldPlay()) {
+              clearStartTimer();
+              setPlayerStatus("ready");
+            }
+          }
+          if (startTimerRef.current !== null && shouldPlay()) return;
+          reportPlayback(!warmingRef.current && shouldPlay() && isYouTubePlaybackActive(data, playbackActiveRef.current));
+        },
+        onAutoplayBlocked: () => {
+          if (warmingRef.current) stopWarmup();
+          clearStartTimer();
+          reportPlayback(false);
+          if (shouldPlay()) setPlayerStatus("blocked");
+        },
+        onApiChange: ({ target }) => resetInitialCaptions(target),
+        onError: failPlayer,
+      },
+    });
+  }, [applyDesiredPlayback, clearStartTimer, failPlayer, mountElement, reportPlayback, shouldPlay, stopWarmup]);
 
   useEffect(() => {
-    let cancelled = false;
-    if (!mountElement) return;
-    const resetInitialCaptions = createInitialCaptionReset();
-
-    void loadYouTubeIframeApi()
-      .then((YT) => {
-        if (cancelled || !mountElement.isConnected) return;
-        createdPlayerRef.current = new YT.Player(mountElement, {
-          width: 560,
-          height: 315,
-          videoId: YOUTUBE_ID,
-          host: "https://www.youtube-nocookie.com",
-          playerVars: {
-            autoplay: 0,
-            controls: 1,
-            rel: 0,
-            playsinline: 1,
-            cc_load_policy: 0,
-            iv_load_policy: 3,
-            origin: window.location.origin,
-          },
-          events: {
-            onReady: (event) => {
-              if (cancelled) return;
-              const readyPlayer = event.target;
-              resetInitialCaptions(readyPlayer);
-              if (
-                typeof readyPlayer.playVideo !== "function"
-                || typeof readyPlayer.pauseVideo !== "function"
-                || typeof readyPlayer.seekTo !== "function"
-                || typeof readyPlayer.mute !== "function"
-                || typeof readyPlayer.unMute !== "function"
-                || typeof readyPlayer.getVolume !== "function"
-                || typeof readyPlayer.setVolume !== "function"
-                || typeof readyPlayer.getIframe !== "function"
-              ) {
-                setApiFailed(true);
-                return;
-              }
-              playerRef.current = readyPlayer;
-              let iframe: HTMLIFrameElement;
-              try {
-                iframe = readyPlayer.getIframe();
-              } catch {
-                playerRef.current = null;
-                setApiFailed(true);
-                return;
-              }
-              iframe.id = "tv-primary-iframe";
-              iframe.title = "La théorie des Fous du Bus";
-              iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen");
-              iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
-              iframe.style.width = "100%";
-              iframe.style.height = "100%";
-              iframe.style.border = "0";
-              iframe.style.display = "block";
-
-              // Une API prête pendant ou après l'embarquement doit respecter
-              // cette phase, sans ajouter un nouveau préchauffage en lecture.
-              if (desiredRef.current.hasEntered) {
-                warmingRef.current = false;
-                if(partyAudioRef.current&&desiredRef.current.tvOn)resumeAfterPartyRef.current=true;
-                applyDesiredPlayback();
-                return;
-              }
-
-              // Précharger le début du flux en muet dès l'arrivée sur le site.
-              try {
-                readyPlayer.mute();
-                readyPlayer.setVolume(0);
-                readyPlayer.playVideo();
-              } catch {
-                playerRef.current = null;
-                setApiFailed(true);
-                return;
-              }
-              const deadline = performance.now() + 15000;
-              const waitForBuffer = () => {
-                warmTimerRef.current = null;
-                if (cancelled || !warmingRef.current) return;
-                let buffered = false;
-                try {
-                  const duration = readyPlayer.getDuration();
-                  const fraction = readyPlayer.getVideoLoadedFraction?.() ?? 0;
-                  buffered = readyPlayer.getPlayerState() === 1 && (duration > 0
-                    ? fraction * duration >= Math.min(8, duration)
-                    : readyPlayer.getCurrentTime() > 0.5);
-                } catch { /* Attendre la prochaine réponse du lecteur. */ }
-                if (!buffered && performance.now() < deadline) {
-                  warmTimerRef.current = window.setTimeout(waitForBuffer, 200);
-                  return;
-                }
-                if (!desiredRef.current.hasEntered) {
-                  try {
-                    readyPlayer.pauseVideo();
-                    readyPlayer.seekTo(0, true);
-                    readyPlayer.mute();
-                  } catch {
-                    playerRef.current = null;
-                    setApiFailed(true);
-                    return;
-                  }
-                }
-                warmingRef.current = false;
-                applyDesiredPlayback();
-              };
-              warmTimerRef.current = window.setTimeout(waitForBuffer, 200);
-            },
-            onStateChange: (event) => {
-              if (cancelled) return;
-              if (event.data === 1) resetInitialCaptions(event.target);
-              const desired = desiredRef.current;
-              const audible = !partyAudioRef.current && !warmingRef.current && desired.hasEntered && desired.tvOn
-                && desired.phase !== "entering"
-                && !desired.isMutedForFullscreen && !desired.playbackSuspended;
-              reportPlayback(audible && isYouTubePlaybackActive(event.data, playbackActiveRef.current));
-              if (event.data === 1) {
-                setAutoplayBlocked(false);
-              }
-            },
-            onAutoplayBlocked: () => {
-              if (cancelled) return;
-              reportPlayback(false);
-              const desired = desiredRef.current;
-              if (!partyAudioRef.current && desired.hasEntered && desired.phase !== "entering" && desired.tvOn && !desired.isMutedForFullscreen && !desired.playbackSuspended) {
-                setAutoplayBlocked(true);
-              }
-            },
-            onApiChange: (event) => {
-              if (!cancelled) resetInitialCaptions(event.target);
-            },
-            onError: () => {
-              if (!cancelled) { reportPlayback(false); setApiFailed(true); }
-            },
-          },
-        });
-      })
-      .catch(() => {
-        if (!cancelled) { reportPlayback(false); setApiFailed(true); }
-      });
-
-    return () => {
-      cancelled = true;
-      reportPlayback(false);
-      if (warmTimerRef.current !== null) window.clearTimeout(warmTimerRef.current);
-      if (volumeTimerRef.current !== null) window.clearTimeout(volumeTimerRef.current);
-      createdPlayerRef.current?.destroy?.();
-      createdPlayerRef.current = null;
-      playerRef.current = null;
-    };
-  }, [applyDesiredPlayback, mountElement, reportPlayback]);
-
-
+    connectPlayer();
+    return stopPlayer;
+  }, [connectPlayer, stopPlayer]);
 
   useEffect(() => onBusAudioEvent("partyFocus", active => {
     if (active) {
-      resumeAfterPartyRef.current = playbackActiveRef.current;
+      resumeAfterPartyRef.current = playbackActiveRef.current || startTimerRef.current !== null;
       partyAudioRef.current = true;
-      stopVolumeRamp();
-      try { playerRef.current?.pauseVideo(); } catch { /* API encore en préparation. */ }
-      reportPlayback(false);
+      applyDesiredPlayback();
     } else {
       partyAudioRef.current = false;
       if (resumeAfterPartyRef.current) applyDesiredPlayback();
       resumeAfterPartyRef.current = false;
     }
-  }), [applyDesiredPlayback, reportPlayback, stopVolumeRamp]);
+  }), [applyDesiredPlayback]);
 
   useEffect(() => {
     const onUserPrepare = () => {
       const player = playerRef.current;
-      if (!player) return;
+      if (!player) { connectPlayer(); return; }
       stopVolumeRamp();
       try {
         player.mute();
@@ -426,124 +359,57 @@ export function BusTvPlayer({
           if (!desiredRef.current.hasEntered) player.seekTo(0, true);
         }
         reportPlayback(false);
-      } catch {
-        reportPlayback(false);
-        playerRef.current = null;
-        setApiFailed(true);
-      }
+      } catch { failPlayer(); }
     };
     const onUserPlay = () => {
-      if (!desiredRef.current.hasEntered || desiredRef.current.phase === "entering") return;
-      applyDesiredPlayback();
-      setAutoplayBlocked(false);
+      if (!shouldPlay()) return;
+      if (!disconnectRef.current) {
+        setPlayerStatus("loading");
+        connectPlayer();
+      }
+      if (playerRef.current) applyDesiredPlayback(true);
     };
     const stopPrepare = onBusAudioEvent("tvPrepare", onUserPrepare);
     const stopPlay = onBusAudioEvent("tvPlay", onUserPlay);
-    return () => {
-      stopPrepare();
-      stopPlay();
-    };
-  }, [applyDesiredPlayback, reportPlayback, stopVolumeRamp]);
+    const stopToggle = onBusAudioEvent("tvToggle", enabled => {
+      desiredRef.current.tvOn = enabled;
+      if (enabled) onUserPlay();
+      else applyDesiredPlayback();
+    });
+    return () => { stopPrepare(); stopPlay(); stopToggle(); };
+  }, [applyDesiredPlayback, connectPlayer, failPlayer, reportPlayback, shouldPlay, stopVolumeRamp]);
 
-  useFrame(({ camera }) => {
+  useFrame(() => {
     const desired = desiredRef.current;
     const trip = journey.current;
-    if (!partyAudioRef.current && desired.phase === "exiting" && trip.phase === "exiting" && desired.hasEntered
-      && desired.tvOn && !desired.isMutedForFullscreen && !desired.playbackSuspended && !warmingRef.current) {
-      const volume = Math.round(25 + 75 * trip.cameraBlend);
-      if (volume !== exitVolumeRef.current && playerRef.current) {
-        try {
-          playerRef.current.setVolume(volume);
-          exitVolumeRef.current = volume;
-        } catch { /* Le lecteur peut être détruit entre deux images. */ }
-      }
-    }
-    const visible = tvOn && !partyAudioRef.current && !isMutedForFullscreen && !warmingRef.current;
-    if (!containerRef.current) return;
-
-    const isBehindTv = phase !== "inside" && camera.position.z < pos[2] + 0.04;
-    const nextVisibility = visible && !isBehindTv ? "visible" : "hidden";
-    if (containerRef.current.style.visibility !== nextVisibility) {
-      containerRef.current.style.visibility = nextVisibility;
-    }
+    if (!shouldPlay() || desired.phase !== "exiting" || trip.phase !== "exiting" || warmingRef.current) return;
+    const volume = Math.round(25 + 75 * trip.cameraBlend);
+    if (volume === exitVolumeRef.current || !playerRef.current) return;
+    try {
+      playerRef.current.setVolume(volume);
+      exitVolumeRef.current = volume;
+    } catch { /* The iframe may be changing state. */ }
   });
 
-  return (
-    <group position={pos}>
-      <Html
-        transform
-        pointerEvents={tvOn && phase === "inside" && !isMutedForFullscreen ? "auto" : "none"}
-        distanceFactor={400}
-        position={[0, 0, 0.054]}
-        scale={0.00225}
-        style={{
-          userSelect: "none",
-        }}
-      >
-        <div
-          ref={containerRef}
-          id="tv-frame"
-          style={{
-            position: "relative",
-            width: 560,
-            height: 315,
-            background: "#000",
-            overflow: "hidden",
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            opacity: tvOn && !isMutedForFullscreen ? 1 : 0,
-            visibility: tvOn && !isMutedForFullscreen ? "visible" : "hidden",
-            transition: reducedMotion ? "none" : "opacity 0.2s ease",
-          }}
-        >
-          <div ref={setMountElement} data-bus-youtube-player style={{ width: "100%", height: "100%" }} />
-          {autoplayBlocked && !apiFailed && tvOn && hasEntered && (
-            <button
-              type="button"
-              onClick={() => emitBusAudioEvent("tvPlay")}
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 3,
-                display: "grid",
-                placeItems: "center",
-                border: 0,
-                background: "rgba(2, 6, 23, 0.82)",
-                color: "#ffd23f",
-                fontSize: 34,
-                fontWeight: 900,
-                cursor: "pointer",
-              }}
-              aria-label="Lancer la vidéo"
-            >
-              ▶ Lancer la vidéo
-            </button>
-          )}
-          {apiFailed && tvOn && hasEntered && (
-            <a
-              href={THEORY_VIDEO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Voir la vidéo sur YouTube"
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 3,
-                display: "grid",
-                placeItems: "center",
-                background: "rgba(2, 6, 23, 0.88)",
-                color: "#ffd23f",
-                fontSize: 30,
-                fontWeight: 900,
-                textAlign: "center",
-                textDecoration: "none",
-              }}
-            >
-              ▶ Voir sur YouTube
-            </a>
-          )}
+  const isScreenOn = useCallback(() => shouldPlay() && !warmingRef.current, [shouldPlay]);
+  const showRetry = playerStatus === "blocked" || playerStatus === "error";
+
+  return <group position={pos}>
+    <BusTvScreen isOn={isScreenOn} interactive={tvOn && phase === "inside" && !isMutedForFullscreen}>
+      <div ref={setMountElement} data-bus-youtube-player style={{ width: "100%", height: "100%" }} />
+      {showRetry && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-[#07142b] text-center text-white">
+          <button type="button" onClick={() => emitBusAudioEvent("tvPlay")}
+            aria-label={playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
+            className="rounded-full bg-[#ffd23f] px-7 py-3 text-[30px] font-black text-[#07142b] focus-visible:outline-4 focus-visible:outline-white">
+            {playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
+          </button>
+          {playerStatus === "error" && <a href={THEORY_VIDEO_URL} target="_blank" rel="noopener noreferrer"
+            className="text-[23px] font-bold underline focus-visible:outline-4 focus-visible:outline-white">
+            Voir la vidéo sur YouTube
+          </a>}
         </div>
-      </Html>
-    </group>
-  );
+      )}
+    </BusTvScreen>
+  </group>;
 }

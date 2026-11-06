@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import { loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
+import { mountYouTubePlayer, type YouTubePlayer } from "@/lib/youtube-player";
 import { PARTY_YOUTUBE_ID, PARTY_TITLE, createPartyDanceGate, samplePartyDanceGate } from "@/lib/bus-party";
 import { emitBusAudioEvent, onBusAudioEvent, type BusMusicTrack } from "@/lib/bus-audio";
 
@@ -21,13 +21,14 @@ interface MusicSlot {
   warmTimer: number | null;
   restart: boolean;
   error: boolean;
+  disconnect: (() => void) | null;
 }
 
 function createSlot(track: BusMusicTrack): MusicSlot {
   return {
     track, videoId: track === "party" ? PARTY_YOUTUBE_ID : BGM_YOUTUBE_ID,
     title: track === "party" ? PARTY_TITLE : "Life in Pieces",
-    player: null, ready: false, warming: false, warmTimer: null, restart: false, error: false,
+    player: null, ready: false, warming: false, warmTimer: null, restart: false, error: false, disconnect: null,
   };
 }
 
@@ -59,7 +60,6 @@ export default function BackgroundMusicPlayer({
   const fadeStartedRef = useRef<number | null>(null);
   const fadeTimerRef = useRef<number | null>(null);
   const startTimerRef = useRef<number | null>(null);
-  const apiFailedRef = useRef(false);
   const danceGateRef = useRef(createPartyDanceGate());
   const dancingRef = useRef(false);
 
@@ -82,7 +82,7 @@ export default function BackgroundMusicPlayer({
     elapsed = Number.isFinite(elapsed) ? Math.max(0, Math.min(elapsed, duration || elapsed)) : 0;
     emitBusAudioEvent("musicPlayback", {
       track: slot.track, title: slot.title, requested, ready: slot.ready,
-      state: apiFailedRef.current || slot.error ? "error" : !slot.ready ? "loading"
+      state: slot.error ? "error" : !slot.ready ? "loading"
         : requested && (desiredSuspendedRef.current || busAudioFocusRef.current) ? "suspended"
         : requested ? state === 1 ? "playing" : "loading" : "paused",
       elapsed: slot.warming ? 0 : elapsed, duration,
@@ -115,11 +115,17 @@ export default function BackgroundMusicPlayer({
   }, []);
   const startFade = useCallback(() => {
     if (!fadePendingRef.current || fadeStartedRef.current !== null) return;
-    fadePendingRef.current = false; fadeStartedRef.current = performance.now();
+    fadePendingRef.current = false;
+    let previous = performance.now(), elapsed = 0;
+    fadeStartedRef.current = previous;
     const tick = () => {
       const slot = slotsRef.current[activeTrackRef.current];
       if (!slot.player || !shouldPlay(slot)) { clearFade(); return; }
-      const progress = Math.min(1, (performance.now() - fadeStartedRef.current!) / MUSIC_RESUME_MS);
+      // A slow frame or a throttled tab must not turn the fade into a volume jump.
+      const now = performance.now();
+      elapsed += Math.min(120, now - previous);
+      previous = now;
+      const progress = Math.min(1, elapsed / MUSIC_RESUME_MS);
       try { slot.player.setVolume(Math.round(desiredVolumeRef.current * progress * progress * (3 - 2 * progress))); }
       catch { clearFade(); return; }
       if (progress < 1) fadeTimerRef.current = window.setTimeout(tick, 60);
@@ -127,22 +133,32 @@ export default function BackgroundMusicPlayer({
     };
     fadeTimerRef.current = window.setTimeout(tick, 60);
   }, [clearFade, shouldPlay]);
-  const reportFailure = useCallback((message: string) => {
-    clearStartTimer(); clearFade(); reportDance(false);
-    const wasParty = desiredPartyRef.current;
-    const slot = slotsRef.current[wasParty ? "party" : "background"];
-    slot.error = true; stopWarmup(slot);
+  const reportFailure = useCallback((slot: MusicSlot, message: string, reconnect = false) => {
+    const requested = shouldPlay(slot);
+    slot.error = true;
+    stopWarmup(slot);
     try { slot.player?.mute(); slot.player?.pauseVideo(); } catch { /* Unavailable iframe. */ }
-    const requested = desiredPlayingRef.current || wasParty;
-    if (wasParty) desiredPartyRef.current = false;
-    else desiredPlayingRef.current = false;
+    if (reconnect) {
+      slot.disconnect?.();
+      slot.disconnect = null;
+      slot.player = null;
+      slot.ready = false;
+    }
+    if (requested) {
+      clearStartTimer();
+      clearFade();
+      reportDance(false);
+      if (slot.track === "party") desiredPartyRef.current = false;
+      else desiredPlayingRef.current = false;
+      queueMicrotask(() => {
+        if (slot.track === "party") onPartyPlaybackError?.();
+        else onPlayingChange(false);
+        onPlaybackError?.(`${message} Réessayez avec le bouton ${slot.track === "party" ? "Fête" : "Musique"}.`);
+      });
+    }
     publishPlayback();
-    queueMicrotask(() => {
-      if (wasParty) onPartyPlaybackError?.();
-      else onPlayingChange(false);
-      if (requested) onPlaybackError?.(wasParty ? message.replaceAll("Musique", "Fête") : message);
-    });
-  }, [clearStartTimer, clearFade, onPlayingChange, onPlaybackError, onPartyPlaybackError, reportDance, stopWarmup, publishPlayback]);
+  }, [clearStartTimer, clearFade, onPlayingChange, onPlaybackError, onPartyPlaybackError,
+    reportDance, shouldPlay, stopWarmup, publishPlayback]);
 
   const applyDesiredPlayback = useCallback(() => {
     clearStartTimer();
@@ -157,18 +173,22 @@ export default function BackgroundMusicPlayer({
       }
       resumeAfterVideoRef.current = nextTrack === "background";
     }
+    const slot = slotsRef.current[nextTrack];
     try {
       // Both songs retain their own buffered iframe. Silence the old source
       // synchronously, before unmuting the selected one inside the click.
-      for (const slot of Object.values(slotsRef.current)) {
-        if (slot.track === nextTrack || !slot.ready || !slot.player) continue;
-        if (slot.warming && !desiredPlayingRef.current && !desiredPartyRef.current) continue;
-        stopWarmup(slot); slot.player.mute(); slot.player.pauseVideo();
+      for (const other of Object.values(slotsRef.current)) {
+        if (other === slot || !other.ready || !other.player) continue;
+        if (other.warming && !desiredPlayingRef.current && !desiredPartyRef.current) continue;
+        stopWarmup(other);
+        try { other.player.mute(); other.player.pauseVideo(); }
+        catch { reportFailure(other, "Le lecteur YouTube ne répond plus.", true); }
       }
-      const slot = slotsRef.current[nextTrack], player = slot.player;
+      const player = slot.player;
       if (!slot.ready || !player) { publishPlayback(); return; }
       const requested = desiredPlayingRef.current || desiredPartyRef.current;
       if (shouldPlay(slot)) {
+        if (slot.warming) slot.restart = true;
         stopWarmup(slot);
         if (slot.restart) { slot.restart = false; player.seekTo(0, true); }
         if (resumeAfterVideoRef.current) {
@@ -177,10 +197,11 @@ export default function BackgroundMusicPlayer({
         } else if (!fadePendingRef.current && fadeStartedRef.current === null) player.setVolume(desiredVolumeRef.current);
         startTimerRef.current = window.setTimeout(() => {
           startTimerRef.current = null;
-          if (shouldPlay(slot) && player.getPlayerState() !== 1) {
-            reportFailure("YouTube n’a pas démarré la lecture. Réessayez avec le bouton Musique.");
-          }
-        }, 12000);
+          if (!shouldPlay(slot) || slot.player !== player) return;
+          try {
+            if (player.getPlayerState() !== 1) reportFailure(slot, "YouTube n’a pas démarré la lecture.");
+          } catch { reportFailure(slot, "Le lecteur YouTube ne répond plus.", true); }
+        }, 12_000);
         player.unMute(); player.playVideo();
         if (player.getPlayerState() === 1) { clearStartTimer(); startFade(); }
       } else {
@@ -192,95 +213,100 @@ export default function BackgroundMusicPlayer({
         if (!slot.warming) { player.mute(); player.pauseVideo(); }
       }
       publishPlayback();
-    } catch { reportFailure("Le lecteur YouTube n’est pas prêt. Réessayez dans un instant."); }
+    } catch { reportFailure(slot, "Le lecteur YouTube ne répond plus.", true); }
   }, [clearStartTimer, clearFade, startFade, reportFailure, reportDance, shouldPlay, stopWarmup, publishPlayback]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const slots = slotsRef.current;
-    void loadYouTubeIframeApi().then((YT) => {
-      if (cancelled) return;
-      for (const slot of Object.values(slots)) {
-        const mount = slot.track === "party" ? partyMountRef.current : backgroundMountRef.current;
-        if (!mount) continue;
-        const player = new YT.Player(mount, {
-          width: 200, height: 200, videoId: slot.videoId, host: "https://www.youtube-nocookie.com",
-          playerVars: { autoplay: 1, mute: 1, controls: 0, rel: 0, playsinline: 1, origin: window.location.origin },
-          events: {
-            onReady: event => {
-              if (cancelled) return;
-              slot.ready = true; slot.player = event.target;
-              event.target.mute(); event.target.setVolume(desiredVolumeRef.current);
-              const iframe = event.target.getIframe();
-              iframe.title = `Musique ${slot.track === "party" ? "de fête" : "de fond"} — ${slot.title}`;
-              iframe.setAttribute("allow", "autoplay; encrypted-media");
-              iframe.tabIndex = -1;
-              iframe.setAttribute("loading", "eager");
-              iframe.id = slot.track === "party" ? "party-music-iframe" : "bgm-iframe";
-              Object.assign(iframe.style, { display: "block", width: "200px", height: "200px" });
-              if (shouldPlay(slot)) { applyDesiredPlayback(); return; }
-              // Prepare actual media before the first click, not just the API.
-              // A nonzero fraction can be a tiny partial segment: keep warming
-              // until there is enough buffered audio for an immediate start.
-              slot.warming = true;
-              const started = performance.now();
-              slot.warmTimer = window.setInterval(() => {
-                if (cancelled || shouldPlay(slot)) { stopWarmup(slot); return; }
-                try {
-                  const duration = event.target.getDuration();
-                  const bufferedSeconds = (event.target.getVideoLoadedFraction?.() ?? 0) * duration;
-                  const buffered = duration > 0 && bufferedSeconds >= Math.min(MUSIC_PRELOAD_SECONDS, duration);
-                  if (!buffered && performance.now() - started < MUSIC_PRELOAD_TIMEOUT_MS) return;
-                  stopWarmup(slot); event.target.mute(); event.target.pauseVideo(); event.target.seekTo(0, true);
-                  publishPlayback();
-                } catch { stopWarmup(slot); }
-              }, 120);
-              event.target.playVideo(); publishPlayback();
-            },
-            onStateChange: event => {
-              if (cancelled || !slot.ready) return;
-              const audible = shouldPlay(slot);
-              if (slot.track === "party" && event.data === 0) {
-                danceGateRef.current.waitingForIntro = true; slot.restart = true;
-              }
-              if (event.data === 1 && !audible && !slot.warming) {
-                event.target.mute(); event.target.pauseVideo();
-              } else if (event.data === 1 && audible) {
-                clearStartTimer(); startFade();
-              } else if (event.data === 0 && audible) {
-                slot.restart = false; event.target.seekTo(0, true); event.target.playVideo();
-              }
-              if (slot.track === "party") updateDance();
-              publishPlayback();
-            },
-            onAutoplayBlocked: () => {
-              if (cancelled) return;
+  const connectSlot = useCallback((slot: MusicSlot) => {
+    const host = slot.track === "party" ? partyMountRef.current : backgroundMountRef.current;
+    if (!host || slot.disconnect) return;
+    slot.error = false;
+    slot.disconnect = mountYouTubePlayer(host, {
+      id: slot.track === "party" ? "party-music-iframe" : "bgm-iframe",
+      title: `Musique ${slot.track === "party" ? "de fête" : "de fond"} — ${slot.title}`,
+      allow: "autoplay; encrypted-media",
+      audioOnly: true,
+      width: 200, height: 200, videoId: slot.videoId,
+      playerVars: { autoplay: 0, controls: 0, rel: 0, playsinline: 1 },
+      onUnavailable: () => reportFailure(slot, "Le lecteur YouTube n’a pas pu être chargé.", true),
+      events: {
+        onReady: ({ target }) => {
+          slot.ready = true;
+          slot.player = target;
+          // The iframe can finish loading just after a gesture. Try that
+          // request now, then let the same HUD button retry if autoplay is denied.
+          if (shouldPlay(slot)) { applyDesiredPlayback(); return; }
+          target.mute();
+          target.setVolume(desiredVolumeRef.current);
+          slot.warming = true;
+          const started = performance.now();
+          slot.warmTimer = window.setInterval(() => {
+            if (shouldPlay(slot)) { stopWarmup(slot); return; }
+            try {
+              const duration = target.getDuration();
+              const buffered = (target.getVideoLoadedFraction?.() ?? 0) * duration;
+              if (buffered < Math.min(MUSIC_PRELOAD_SECONDS, duration || MUSIC_PRELOAD_SECONDS)
+                && performance.now() - started < MUSIC_PRELOAD_TIMEOUT_MS) return;
               stopWarmup(slot);
-              if (shouldPlay(slot)) reportFailure("La lecture a été bloquée par le navigateur. Cliquez à nouveau sur Musique.");
-              else publishPlayback();
-            },
-            onError: () => {
-              if (cancelled) return;
-              slot.error = true; stopWarmup(slot);
-              if (shouldPlay(slot)) reportFailure("YouTube ne peut pas lire la musique pour le moment. Réessayez avec Musique.");
-              else publishPlayback();
-            },
-          },
-        });
-        slot.player = player;
-      }
-    }).catch(() => {
-      if (!cancelled) { apiFailedRef.current = true; reportFailure("Le lecteur YouTube n’a pas pu être chargé. Actualisez la page pour réessayer."); }
+              target.mute(); target.pauseVideo(); target.seekTo(0, true);
+              publishPlayback();
+            } catch { reportFailure(slot, "Le lecteur YouTube ne répond plus.", true); }
+          }, 120);
+          target.playVideo();
+          publishPlayback();
+        },
+        onStateChange: event => {
+          if (!slot.ready) return;
+          const audible = shouldPlay(slot);
+          if (slot.track === "party" && event.data === 0) {
+            danceGateRef.current.waitingForIntro = true;
+            slot.restart = true;
+          }
+          if (event.data === 1 && !audible && !slot.warming) {
+            event.target.mute();
+            event.target.pauseVideo();
+          } else if (event.data === 1 && audible) {
+            clearStartTimer();
+            startFade();
+          } else if (event.data === 0 && audible) {
+            slot.restart = false;
+            event.target.seekTo(0, true);
+            applyDesiredPlayback();
+          }
+          if (slot.track === "party") updateDance();
+          publishPlayback();
+        },
+        onAutoplayBlocked: () => {
+          // Offscreen muted preloads may be refused on Safari. A real click
+          // must still get a chance to use this very same player.
+          stopWarmup(slot);
+          if (shouldPlay(slot)) reportFailure(slot, "Le navigateur a bloqué la lecture.");
+          else publishPlayback();
+        },
+        onError: () => reportFailure(slot, "YouTube ne peut pas lire cette piste pour le moment.", true),
+      },
     });
+  }, [applyDesiredPlayback, clearStartTimer, startFade, reportFailure, shouldPlay, stopWarmup, updateDance, publishPlayback]);
+
+  const syncPlayback = useCallback(() => {
+    const slot = slotsRef.current[desiredPartyRef.current ? "party" : "background"];
+    if (shouldPlay(slot)) connectSlot(slot);
+    applyDesiredPlayback();
+  }, [applyDesiredPlayback, connectSlot, shouldPlay]);
+
+  useEffect(() => {
+    const slots = Object.values(slotsRef.current);
+    slots.forEach(connectSlot);
     return () => {
-      cancelled = true; clearStartTimer(); clearFade(); reportDance(false);
-      for (const slot of Object.values(slots)) {
-        stopWarmup(slot); slot.ready = false;
-        try { slot.player?.destroy(); } catch { /* Cleanup remains safe after an iframe error. */ }
+      clearStartTimer(); clearFade(); reportDance(false);
+      for (const slot of slots) {
+        stopWarmup(slot);
+        slot.disconnect?.();
+        slot.disconnect = null;
+        slot.ready = false;
         slot.player = null;
       }
     };
-  }, [applyDesiredPlayback, clearStartTimer, clearFade, startFade, reportFailure, reportDance, updateDance, shouldPlay, stopWarmup, publishPlayback]);
+  }, [connectSlot, clearStartTimer, clearFade, reportDance, stopWarmup]);
 
   useEffect(() => {
     const danceTimer = window.setInterval(updateDance, 100);
@@ -299,28 +325,26 @@ export default function BackgroundMusicPlayer({
       slot.restart = false; slot.player.seekTo(seconds, true);
       if (!shouldPlay(slot)) { slot.player.mute(); slot.player.pauseVideo(); }
       updateDance(); publishPlayback();
-    } catch { reportFailure("Impossible de déplacer la lecture. Réessayez avec Musique."); }
+    } catch { reportFailure(slot, "Impossible de déplacer la lecture.", true); }
   }), [shouldPlay, updateDance, publishPlayback, reportFailure]);
   useEffect(() => onBusAudioEvent("musicToggle", detail => {
     if (desiredPartyRef.current) return;
     desiredPlayingRef.current = detail.playing; desiredSuspendedRef.current = detail.suspendedForVideo;
     slotsRef.current.background.error = false;
-    if (apiFailedRef.current) reportFailure("Le lecteur YouTube n’a pas pu être chargé. Actualisez la page pour réessayer.");
-    else applyDesiredPlayback();
-  }), [applyDesiredPlayback, reportFailure]);
+    syncPlayback();
+  }), [syncPlayback]);
   useEffect(() => onBusAudioEvent("partyToggle", detail => {
     desiredPartyRef.current = detail.enabled; desiredSuspendedRef.current = detail.suspendedForVideo;
     slotsRef.current.party.error = false;
-    if (apiFailedRef.current) reportFailure("Le lecteur YouTube n’a pas pu être chargé. Actualisez la page pour réessayer.");
-    else applyDesiredPlayback();
-  }), [applyDesiredPlayback, reportFailure]);
+    syncPlayback();
+  }), [syncPlayback]);
   useEffect(() => onBusAudioEvent("tvFocus", active => {
-    busAudioFocusRef.current = active; applyDesiredPlayback();
-  }), [applyDesiredPlayback]);
+    busAudioFocusRef.current = active; syncPlayback();
+  }), [syncPlayback]);
   useLayoutEffect(() => {
     desiredPlayingRef.current = playing; desiredPartyRef.current = partyOn;
-    desiredSuspendedRef.current = suspendedForVideo; applyDesiredPlayback();
-  }, [playing, partyOn, suspendedForVideo, applyDesiredPlayback]);
+    desiredSuspendedRef.current = suspendedForVideo; syncPlayback();
+  }, [playing, partyOn, suspendedForVideo, syncPlayback]);
   useEffect(() => {
     desiredVolumeRef.current = volume;
     for (const slot of Object.values(slotsRef.current)) {
@@ -333,6 +357,6 @@ export default function BackgroundMusicPlayer({
   }, [volume]);
 
   return <div className="pointer-events-none fixed -left-[9999px] top-0 h-[200px] w-[200px]" aria-hidden="true">
-    <div ref={backgroundMountRef} /><div ref={partyMountRef} />
+    <div ref={backgroundMountRef} className="h-full w-full" /><div ref={partyMountRef} className="h-full w-full" />
   </div>;
 }

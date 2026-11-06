@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { runCharacterVisualChecks } from "./character-visual-checks.mjs";
 import { runScenePerformanceChecks } from "./scene-performance-checks.mjs";
 import { runBusPlaybackZoomChecks } from "./bus-playback-zoom-checks.mjs";
+import { runMediaRecoveryChecks } from "./media-recovery-checks.mjs";
+import { runMediaPlaybackChecks } from "./media-playback-checks.mjs";
 import { runDoorMusicChecks } from "./door-music-checks.mjs";
 import { runLiveMusicCheck } from "./live-music-checks.mjs";
 import { runDoorConfettiChecks } from "./bus-door-confetti-checks.mjs";
@@ -132,6 +134,11 @@ export async function runBusCameraChecks({ send, evaluate, waitForPageCondition,
     }
     if (process.env.BUS_CAMERA_CHECKS === "music-live") {
       await runLiveMusicCheck({send,evaluate,waitForPageCondition,baseUrl});
+      return;
+    }
+    if (process.env.BUS_CAMERA_CHECKS === "media-recovery") {
+      await runMediaPlaybackChecks({send,evaluate,waitForPageCondition,baseUrl});
+      await runMediaRecoveryChecks({send,evaluate,waitForPageCondition,baseUrl});
       return;
     }
     if (process.env.BUS_CAMERA_CHECKS === "door-music") {

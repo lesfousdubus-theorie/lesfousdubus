@@ -24,14 +24,14 @@ for (let mask = 0; mask < 16; mask++) {
 }
 
 assert.deepEqual(BUS_AUDIO_EVENTS, {
-  tvPrepare: "bus-tv-user-prepare", tvPlay: "bus-tv-user-play", tvFocus: "bus-tv-audio-focus",
+  tvPrepare: "bus-tv-user-prepare", tvPlay: "bus-tv-user-play", tvToggle: "bus-tv-user-toggle", tvFocus: "bus-tv-audio-focus",
   partyFocus: "bus-party-audio-focus", musicToggle: "bus-music-user-toggle",
   partyToggle: "bus-music-party-toggle", partyDance: "bus-party-dance",
   musicPlayback: "bus-music-playback", musicSnapshot: "bus-music-snapshot", musicSeek: "bus-music-seek",
 });
 
 const target = new EventTarget();
-const payloads = { tvPrepare: undefined, tvPlay: undefined, tvFocus: false, partyFocus: true,
+const payloads = { tvPrepare: undefined, tvPlay: undefined, tvToggle: false, tvFocus: false, partyFocus: true,
   musicToggle: { playing: true, suspendedForVideo: false },
   partyToggle: { enabled: false, suspendedForVideo: true }, partyDance: false,
   musicPlayback: {track:"party",title:"Party At Baratie",requested:true,ready:true,state:"playing",elapsed:12,duration:180},

@@ -415,3 +415,11 @@ body {
 @media (orientation: landscape) and (max-height: 520px) {
   .bus-scene-fallback { top: 4.5rem; }
 }
+
+/* The screen iframe sits under WebGL. Its aperture reveals only TV pixels
+   that aren't covered by geometry. Camera gestures still hit the wrapper. */
+.bus-scene-canvas > div > canvas {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}

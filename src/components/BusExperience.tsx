@@ -402,10 +402,17 @@ export default function BusExperience() {
     return () => clearInterval(timer);
   }, [phase, sceneAvailable, onArrived]);
 
+  const toggleTv = useCallback(() => {
+    const enabled = !tvOn;
+    emitBusAudioEvent("tvToggle", enabled);
+    setTvOn(enabled);
+  }, [tvOn]);
+
   const toggleBgm = useCallback(() => {
     if (partyOn) { stopParty(); return; }
     const playing = !bgmPlaying;
     if (playing && tvOn) {
+      emitBusAudioEvent("tvToggle", false);
       setTvOn(false);
       setBusVideoPlaying(false);
     }
@@ -509,7 +516,7 @@ export default function BusExperience() {
         setStatsLoadError={setStatsLoadError}
         setStatsRetryToken={setStatsRetryToken}
         setSeatRow={setSeatRow}
-        setTvOn={setTvOn}
+        toggleTv={toggleTv}
         openPassengerManifest={openPassengerManifest}
         toggleDayNight={toggleDayNight}
         decelerateBus={decelerateBus}
@@ -533,7 +540,7 @@ export default function BusExperience() {
         onPartyPlaybackError={stopParty}
         onPlayingChange={setBgmPlaying}
         onPlaybackError={handleMusicError}
-        suspendedForVideo={theoryVideoPlaying || busVideoPlaying}
+        suspendedForVideo={theoryVideoPlaying}
         volume={bgmVolume}
       />
 

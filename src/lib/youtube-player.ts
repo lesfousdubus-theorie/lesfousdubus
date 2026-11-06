@@ -132,8 +132,8 @@ export function loadYouTubeIframeApi(): Promise<YouTubeNamespace> {
     }
 
     function readyHandler() {
-      previousReady?.();
-      finish();
+      try { previousReady?.(); }
+      finally { finish(); }
     }
 
     window.onYouTubeIframeAPIReady = readyHandler;
@@ -143,9 +143,11 @@ export function loadYouTubeIframeApi(): Promise<YouTubeNamespace> {
       script.id = "youtube-iframe-api";
       script.src = "https://www.youtube.com/iframe_api";
       script.async = true;
+      script.addEventListener("error", onScriptError, { once: true });
       document.head.appendChild(script);
+    } else {
+      script.addEventListener("error", onScriptError, { once: true });
     }
-    script.addEventListener("error", onScriptError, { once: true });
 
     pollTimer = window.setInterval(finish, 50);
     timeoutTimer = window.setTimeout(
@@ -155,4 +157,68 @@ export function loadYouTubeIframeApi(): Promise<YouTubeNamespace> {
   });
 
   return apiPromise;
+}
+
+interface EmbedOptions extends YouTubePlayerOptions {
+  id: string;
+  title: string;
+  allow: string;
+  audioOnly?: boolean;
+  onUnavailable: () => void;
+}
+
+/** Keep the host in React and give YouTube a disposable iframe. Permissions
+ * and referrer policy must be set before the first cross-origin navigation. */
+export function mountYouTubePlayer(host: HTMLElement, options: EmbedOptions): () => void {
+  const { id, title, allow, audioOnly, onUnavailable, events, ...settings } = options;
+  let cancelled = false;
+  let timer = 0;
+  let frame: HTMLIFrameElement | undefined;
+  let player: YouTubePlayer | undefined;
+
+  function clearDeadline() { window.clearTimeout(timer); }
+  function unavailable() {
+    clearDeadline();
+    if (!cancelled) onUnavailable();
+  }
+
+  void loadYouTubeIframeApi().then(YT => {
+    if (cancelled || !host.isConnected) return;
+    frame = document.createElement("iframe");
+    frame.id = id;
+    frame.title = title;
+    frame.allow = allow;
+    frame.allowFullscreen = !audioOnly;
+    frame.referrerPolicy = "strict-origin-when-cross-origin";
+    frame.loading = "eager";
+    if (audioOnly) frame.tabIndex = -1;
+    Object.assign(frame.style, { display: "block", width: "100%", height: "100%", border: "0" });
+    const url = new URL(`/embed/${settings.videoId}`, settings.host ?? "https://www.youtube-nocookie.com");
+    for (const [name, value] of Object.entries(settings.playerVars ?? {})) url.searchParams.set(name, String(value));
+    url.searchParams.set("enablejsapi", "1");
+    url.searchParams.set("origin", window.location.origin);
+    frame.src = url.href;
+    host.appendChild(frame);
+    timer = window.setTimeout(unavailable, 12_000);
+    player = new YT.Player(frame, { ...settings, events: {
+      ...events,
+      onReady: event => {
+        clearDeadline();
+        if (cancelled) return;
+        try { events?.onReady?.(event); }
+        catch { unavailable(); }
+      },
+      onError: event => {
+        clearDeadline();
+        if (!cancelled) events?.onError?.(event);
+      },
+    } });
+  }).catch(unavailable);
+
+  return () => {
+    cancelled = true;
+    clearDeadline();
+    try { player?.destroy(); } catch { /* The iframe may already have failed. */ }
+    frame?.remove();
+  };
 }

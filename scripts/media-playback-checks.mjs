@@ -27,9 +27,12 @@ export function installTestYouTube() {
         : options.videoId === "63RzVcR1qHg" ? "background"
         : options.videoId === "RbZMoeHdR3I" ? "party" : "bus";
       this.bufferReadyAt = performance.now() + (this.source === "bus" ? window.mediaTestBufferDelay ?? 0 : window.mediaTestMusicBufferDelay ?? 0);
-      this.iframe = document.createElement("iframe");
+      this.iframe = element instanceof HTMLIFrameElement ? element : document.createElement("iframe");
+      this.originalSrc = this.iframe.getAttribute("src");
+      this.originalAllow = this.iframe.getAttribute("allow");
+      this.originalReferrerPolicy = this.iframe.getAttribute("referrerpolicy");
       this.iframe.src = "about:blank";
-      element.replaceWith(this.iframe);
+      if (element !== this.iframe) element.replaceWith(this.iframe);
       window.mediaTestPlayers[this.source] = this;
       queueMicrotask(() => {
         if (this.destroyed) return;
@@ -164,7 +167,12 @@ export async function runMediaPlaybackChecks({ send, evaluate, waitForPageCondit
   assert.equal(await run("window.mediaTestPlayers.bus.commands.filter(c=>c.command==='play' && c.phase==='inside').at(-1).musicMuted"), true, "Music must be muted before the bus TV's play command, across the two React roots.");
   await run("window.mediaTestPlayers.music.commands = []; window.mediaTestPlayers.bus.emitState(2)");
   await wait(musicPlaying, "Bus TV pause starts the music crescendo");
-  await wait("window.mediaTestPlayers.music.commands.some(c=>c.command==='volume'&&c.value>10&&c.value<75)", "Music passes through intermediate crescendo levels");
+  try {
+    await wait("window.mediaTestPlayers.music.commands.some(c=>c.command==='volume'&&c.value>10&&c.value<75)", "Music passes through intermediate crescendo levels");
+  } catch (error) {
+    const levels = await run("window.mediaTestPlayers.music.commands.filter(c=>c.command==='volume').map(c=>({value:c.value,time:c.time}))");
+    throw new Error(`Volume commands during the failed crescendo: ${JSON.stringify(levels)}`, { cause: error });
+  }
   await wait("window.mediaTestPlayers.music.volume === 85", "Music reaches its saved target after the crescendo");
   const crescendo = await run("window.mediaTestPlayers.music.commands.filter(c=>c.command==='volume').map(c=>({value:c.value,time:c.time}))");
   assert.equal(crescendo[0].value, 0, "Resumption must begin silently.");

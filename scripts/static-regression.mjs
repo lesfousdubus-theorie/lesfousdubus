@@ -27,13 +27,13 @@ const textures = read("src/lib/textures.ts");
 const llmsFull = read("public/llms-full.txt");
 const schemaLd = read("src/lib/schema-ld.ts");
 
-assert.equal((busTv.match(/new YT\.Player/g) ?? []).length, 1, "The bus must have exactly one YouTube player.");
+assert.equal((busTv.match(/mountYouTubePlayer\(/g) ?? []).length, 1, "The bus must have exactly one YouTube player.");
 assert.match(bus, /<BusTvPlayer[\s\S]*pos=\{activeTvPosition\}/, "The single player must follow the active TV.");
 assert.match(bus, /<BusTvFrame/g, "Secondary TV frames must remain lightweight.");
 assert.doesNotMatch(bus, /!reducedMotion && rainStrength/, "Rain must keep the windshield wipers animated even with reduced-motion enabled.");
 assert.doesNotMatch(bus, /tvIframeRefs|primaryIframeRef|sendYoutubeCommand/, "Legacy multi-iframe synchronization must stay removed.");
 assert.match(busTv, /cc_load_policy:\s*0/, "The bus TV must request captions off by default.");
-assert.match(busTv, /playVideo\(\);[\s\S]*setTimeout/, "The player must warm up on initial load.");
+assert.match(busTv, /target\.mute\(\);[\s\S]*waitForBuffer[\s\S]*target\.playVideo\(\)/, "The player must warm up silently on initial load.");
 assert.match(busTv, /desiredRef\.current\.hasEntered[\s\S]*applyDesiredPlayback\(\);[\s\S]*return;/, "A late YouTube ready event must honor the current boarding phase.");
 assert.doesNotMatch(busTv, /inset:\s*"0 0 46px 0"/, "The TV must not have a full-surface interception layer over YouTube controls.");
 assert.doesNotMatch(busTv, /bus-tv-toggle-playback/, "Playback must be handled by YouTube's native controls instead of an overlay.");
