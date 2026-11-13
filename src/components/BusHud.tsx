@@ -102,7 +102,7 @@ export function BusHud({
   const mobileMenuOpen = mobileMenuState.open && mobileMenuState.phase === phase && compactHud && sceneAvailable && !hidden && !immersive;
   const hudRef = useHudLayout(phase, hidden, showVolumePopup, sceneAvailable, compactHud, mobileMenuOpen);
   const activeMenuButtonRef = exteriorControlsVisible ? exteriorMenuButtonRef : interiorMenuButtonRef;
-  const hasActiveGroupedControl = bgmPlaying || partyOn || headlights || speedMultiplier !== 1 || manualDayNight !== null || (hasEntered && phase === "outside" && tvOn);
+  const hasActiveGroupedControl = partyOn || headlights || speedMultiplier !== 1 || manualDayNight !== null || (hasEntered && phase === "outside" && tvOn);
 
   const toggleMobileMenu = () => {
     setMusicDetailsOpen(false);
@@ -199,77 +199,82 @@ export function BusHud({
           </div>
         )}
 
-        {/* Titre + zone (Responsive mobile) */}
-        <div className={`bus-title-panel pointer-events-none absolute left-3 max-w-[calc(100vw-1.5rem)] sm:left-4 sm:top-4 sm:max-w-[calc(100vw-2rem)] lg:max-w-[calc(100vw-26rem)] ${phase === "inside" ? "top-[8.25rem]" : "top-[4.75rem]"}`}>
+        {/* Titre (côte à côte avec les compteurs en haut sur téléphone et ordinateur) */}
+        <div className="bus-title-panel pointer-events-none absolute left-2 top-2 sm:left-4 sm:top-4 lg:max-w-[calc(100vw-26rem)]">
           <div
-            className={`bus-title-copy pointer-events-auto select-text cursor-text rounded-xl bg-[#07142b]/95 px-3 py-1.5 shadow-lg sm:py-2 ${phase === "inside" ? "hidden sm:inline-block" : "inline-block"}`}
+            className={`bus-title-copy pointer-events-auto select-text cursor-text rounded-xl bg-[#07142b]/95 px-2 py-1 shadow-lg sm:px-3 sm:py-2 ${phase === "inside" ? "hidden sm:inline-block" : "inline-block"}`}
             onPointerDown={(event) => event.stopPropagation()}
             onWheel={(event) => event.stopPropagation()}
           >
-          <h1 className="break-words text-base font-black uppercase leading-[1.15] tracking-tight sm:text-xl lg:text-3xl">
-            <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
-            <span className="text-white">des Fous du Bus</span>
-          </h1>
-          <p className="mt-0.5 text-xs font-bold uppercase tracking-[0.035em] text-[#ffd23f] sm:mt-1 lg:text-sm">
-            LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
-          </p>
-          </div>
-          <div className={`bus-title-actions ${phase === "inside" ? "sm:mt-3" : "mt-1.5 sm:mt-3"} flex flex-wrap items-center gap-1 min-[360px]:gap-1.5 sm:gap-2`}>
-            <button
-              type="button"
-              onClick={() => setShowTheoryModal(true)}
-              className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/75 px-2 text-[11px] font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 min-[360px]:px-2.5 sm:px-4 sm:text-xs cursor-pointer"
-              title="Découvrir la théorie des Fous du Bus"
-            >
-              <span className="bus-landscape-hide hidden min-[360px]:inline">📜</span>
-              <span><span className="bus-landscape-hide hidden min-[360px]:inline">La </span>Théorie</span>
-            </button>
-            <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label={phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}
-              className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60 min-[360px]:px-2.5 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer">
-              <svg aria-hidden="true" className="bus-landscape-hide hidden h-4 w-4 sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg>
-              <span className="hud-label-short lg:hidden">Personnage</span><span className="hud-label-long hidden lg:inline">{phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}</span>
-            </button>
-            {hasSavedPlace && <button type="button" onClick={openPlaceModal} disabled={busy} aria-haspopup="dialog"
-              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60 min-[360px]:px-2.5 sm:px-4 sm:text-xs">
-              Ma place
-            </button>}
-            <button ref={immersiveButtonRef} type="button" onClick={() => { setShowVolumePopup(false); closeMobileMenu(); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif" title="Mode immersif"
-              className="bus-immersive-toggle pointer-events-auto inline-flex min-h-11 w-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-0 text-xs font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60 sm:w-auto sm:px-4">
-              <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" /></svg>
-              <span className="bus-landscape-hide hidden sm:inline">Mode immersif</span>
-            </button>
+            <h1 className="break-words text-[11px] font-black uppercase leading-[1.12] tracking-tight min-[375px]:text-xs sm:text-xl lg:text-3xl">
+              <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
+              <span className="text-white">des Fous du Bus</span>
+            </h1>
+            <p className="mt-0.5 text-[10px] font-bold uppercase leading-tight tracking-[0.015em] text-[#ffd23f] min-[375px]:tracking-[0.02em] sm:mt-1 sm:tracking-[0.035em] lg:text-sm">
+              LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
+            </p>
           </div>
         </div>
 
+        {/* Actions supérieures (sous la rangée titre/compteurs en portrait, en haut à gauche en paysage compact) */}
+        <div className="bus-title-actions pointer-events-none absolute left-2 top-[4.25rem] flex flex-wrap items-center gap-1 min-[360px]:gap-1.5 sm:left-4 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => setShowTheoryModal(true)}
+            className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/75 px-2 text-[11px] font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 min-[360px]:px-2.5 sm:px-4 sm:text-xs cursor-pointer"
+            title="Découvrir la théorie des Fous du Bus"
+          >
+            <span className="bus-landscape-hide hidden min-[360px]:inline">📜</span>
+            <span><span className="bus-landscape-hide hidden min-[360px]:inline">La </span>Théorie</span>
+          </button>
+          <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label={phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}
+            className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60 min-[360px]:px-2.5 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer">
+            <svg aria-hidden="true" className="bus-landscape-hide hidden h-4 w-4 sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg>
+            <span className="hud-label-short lg:hidden">Personnage</span><span className="hud-label-long hidden lg:inline">{phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}</span>
+          </button>
+          {hasSavedPlace && <button type="button" onClick={openPlaceModal} disabled={busy} aria-haspopup="dialog"
+            className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60 min-[360px]:px-2.5 sm:px-4 sm:text-xs">
+            Ma place
+          </button>}
+          <button ref={immersiveButtonRef} type="button" onClick={() => { setShowVolumePopup(false); closeMobileMenu(); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif" title="Mode immersif"
+            className="bus-immersive-toggle pointer-events-auto inline-flex min-h-11 w-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-0 text-xs font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60 sm:w-auto sm:px-4">
+            <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" /></svg>
+            <span className="bus-landscape-hide hidden sm:inline">Mode immersif</span>
+          </button>
+        </div>
+
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
-        <div className="bus-top-stats bus-glass pointer-events-auto absolute left-3 right-3 top-3 flex min-h-14 items-stretch gap-1 rounded-2xl border border-[#ffd23f]/40 bg-[#07142b]/95 p-1 shadow-lg sm:left-auto sm:right-4 sm:top-4">
+        <div className="bus-top-stats bus-glass pointer-events-auto absolute right-2 top-2 flex min-h-11 items-stretch gap-0.5 rounded-2xl border border-[#ffd23f]/40 bg-[#07142b]/95 p-0.5 shadow-lg sm:left-auto sm:right-4 sm:top-4 sm:min-h-14 sm:gap-1 sm:p-1">
           <button ref={passengerManifestButtonRef} type="button" onClick={statsLoadError && count === null ? () => {
             setStatsLoadError(false);
             setStatsRetryToken((value) => value + 1);
-          } : openPassengerManifest} className="group flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2 py-1.5 text-left leading-tight transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] sm:flex-none sm:gap-2.5 sm:px-3 sm:py-2">
-            <span aria-hidden="true" className="text-lg sm:text-2xl">🚌</span>
+          } : openPassengerManifest} className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-xl px-1.5 py-1 text-left leading-tight transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] sm:gap-2.5 sm:px-3 sm:py-2">
+            <span aria-hidden="true" className="hidden text-base min-[400px]:inline sm:text-2xl">🚌</span>
             <span>
               <span className="flex items-center gap-1 sm:gap-2">
-                <span className="text-xs font-bold uppercase tracking-[0.04em] text-[#ffd23f]">
+                <span className="text-[10px] font-bold uppercase tracking-[0.04em] text-[#ffd23f] sm:text-xs">
                   Passagers
                 </span>
                 <span title={`${numRows} rangées`} className="bus-landscape-hide hidden rounded-full bg-white/10 px-1.5 text-xs font-bold text-white/85 md:inline">
                   {numRows} r.
                 </span>
               </span>
-              <span className="bus-stats-value block text-base font-black tabular-nums text-white sm:text-xl">
+              <span className="bus-stats-value block text-sm font-black tabular-nums text-white sm:text-xl">
                 {count === null ? (statsLoadError ? "Réessayer" : "…") : countPeopleOnBoard(count).toLocaleString("fr-FR")}
               </span>
             </span>
           </button>
           <div className="my-1 w-px bg-white/20" aria-hidden="true" />
-          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-w-0 flex-1 rounded-xl px-2 py-1.5 text-left leading-tight transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] sm:flex-none sm:px-3 sm:py-2" title="Voir le compteur précis depuis le 26 mai 2024">
-            <span className="block text-xs font-bold uppercase tracking-[0.04em] text-[#ffd23f]">
-              <span className="hud-label-short sm:hidden">La théorie</span><span className="hud-label-long hidden sm:inline">La théorie existe depuis</span>
+          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-h-11 min-w-0 flex-none rounded-xl px-1.5 py-1 text-left leading-tight transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] sm:px-3 sm:py-2" title="Voir le compteur précis depuis le 26 mai 2024">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.04em] text-[#ffd23f] sm:text-xs">
+              <span className="hud-label-short sm:hidden"><span className="hidden min-[375px]:inline">La </span>théorie</span><span className="hud-label-long hidden sm:inline">La théorie existe depuis</span>
             </span>
-            <span className="bus-stats-value block text-base font-black tabular-nums text-white sm:text-xl">
+            <span className="bus-stats-value block text-sm font-black tabular-nums text-white sm:text-xl">
               {theoryAgeInDays.toLocaleString("fr-FR")}
-              <span className="ml-1 text-xs font-bold text-white/85">jours</span>
+              <span className="ml-0.5 text-[10px] font-bold text-white/85 sm:ml-1 sm:text-xs">
+                <span className="min-[375px]:hidden">j</span>
+                <span className="hidden min-[375px]:inline">jours</span>
+              </span>
             </span>
           </button>
         </div>
@@ -523,7 +528,7 @@ export function BusHud({
           </div>
         )}
 
-        {/* Menu mobile repliable regroupant les commandes secondaires du bus */}
+        {/* Commandes secondaires dépliées librement au-dessus de la barre inférieure (sans bloc fermé) */}
         {mobileMenuOpen && (
           <div
             id={mobileMenuId}
@@ -531,168 +536,92 @@ export function BusHud({
             aria-label="Commandes du bus"
             onPointerDown={(event) => event.stopPropagation()}
             onPointerUp={(event) => event.stopPropagation()}
-            className="bus-mobile-menu bus-glass pointer-events-auto fixed z-40 rounded-2xl border border-[#ffd23f]/45 bg-[#07142b]/95 p-2 text-white shadow-[0_12px_36px_rgba(0,0,0,0.65)] backdrop-blur-md animate-[hud-control-in-flow_160ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none"
+            className="bus-mobile-menu pointer-events-none fixed bottom-16 left-1/2 z-40 flex w-max max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 text-white animate-[hud-control-in-flow_160ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none"
           >
-            <div className="bus-mobile-menu-grid flex flex-col gap-1.5">
-              <div className="bus-mobile-group-bus flex items-center gap-1">
-                <HudButton compact className="min-w-0 flex-1" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={busy}>
-                  {headlights ? "Éteindre" : "Phares"}
-                </HudButton>
-                <HudButton compact className="min-w-0 flex-1" onClick={honk} ariaLabel="Klaxonner" icon="📯" disabled={busy}>
-                  Klaxon
-                </HudButton>
-                <HudButton compact className="min-w-0 flex-1" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? "Arrêter la fête" : "Lancer la fête"} icon="🎉" disabled={!partyOn && busy}>
-                  {partyOn ? "Stop" : "Fête"}
-                </HudButton>
-                {hasEntered && phase === "outside" && (
-                  <HudButton compact className="min-w-0 flex-1" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} icon="📺" disabled={partyOn}>
-                    TV
-                  </HudButton>
+            <HudButton compact showMobileIcon className="px-2.5 min-[360px]:px-3" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={busy}>
+              {headlights ? "Éteindre" : "Phares"}
+            </HudButton>
+            <HudButton compact showMobileIcon className="px-2.5 min-[360px]:px-3" onClick={honk} ariaLabel="Klaxonner" icon="📯" disabled={busy}>
+              Klaxon
+            </HudButton>
+            <HudButton compact showMobileIcon className="px-2.5 min-[360px]:px-3" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? "Arrêter la fête" : "Lancer la fête"} icon="🎉" disabled={!partyOn && busy}>
+              {partyOn ? "Stop" : "Fête"}
+            </HudButton>
+            {hasEntered && phase === "outside" && (
+              <HudButton compact showMobileIcon className="min-w-11 px-2.5 min-[360px]:px-3" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} icon="📺" disabled={partyOn}>
+                TV
+              </HudButton>
+            )}
+            <button
+              type="button"
+              onClick={toggleDayNight}
+              title={manualDayNight === null ? `Forcer le mode ${isNight ? "Jour" : "Nuit"}` : "Revenir au cycle automatique"}
+              aria-label={manualDayNight === null
+                ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
+                : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
+              className="bus-mobile-day-night bus-glass pointer-events-auto flex h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-full border border-white/35 bg-black/75 px-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 cursor-pointer"
+            >
+              {isNight ? (
+                <svg className="h-4 w-4 shrink-0 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+                </svg>
+              ) : (
+                <svg className="h-4 w-4 shrink-0 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="12" r="5" />
+                  <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              )}
+              <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={resetView}
+              disabled={busy}
+              aria-label="Recentrer la vue"
+              title="Recentrer la vue sur le bus"
+              className="bus-icon-button bus-glass pointer-events-auto grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/35 bg-black/75 text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60 cursor-pointer active:scale-95"
+            >
+              <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="6" /><path d="M12 2v4m0 12v4M2 12h4m12 0h4" /></svg>
+            </button>
+            <div className="bus-mobile-speed bus-glass pointer-events-auto flex h-11 shrink-0 items-center gap-0.5 rounded-full border border-white/35 bg-black/75 px-1 text-xs shadow-lg">
+              <button
+                type="button"
+                onClick={decelerateBus}
+                disabled={speedMultiplier <= 0.3}
+                aria-label="Ralentir le bus"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm text-white transition-transform hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                title="Ralentir le bus"
+              >
+                <span aria-hidden="true">🐢</span>
+              </button>
+              <div className="bus-speed-value flex min-w-[2.75rem] items-center justify-center gap-1 px-1 font-black tabular-nums">
+                <span className={speedMultiplier >= 2.0 ? "text-[#ffd23f]" : speedMultiplier <= 0.5 ? "text-[#38bdf8]" : "text-white"}>
+                  {speedMultiplier.toFixed(1)}x
+                </span>
+                {speedMultiplier >= 2.0 && (
+                  <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[10px] font-black uppercase text-[#0d2190]">
+                    Boost
+                  </span>
                 )}
               </div>
-
-              <div className="bus-mobile-speed bus-glass flex h-11 items-center gap-1 rounded-full bg-black/75 px-1.5 text-xs ring-1 ring-white/25">
-                <button
-                  type="button"
-                  onClick={decelerateBus}
-                  disabled={speedMultiplier <= 0.3}
-                  aria-label="Ralentir le bus"
-                  className="group relative flex h-11 min-w-11 flex-1 items-center justify-center gap-1 rounded-full px-1.5 min-[360px]:px-2 text-xs font-bold text-white transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-not-allowed disabled:text-white/80 cursor-pointer"
-                  title="Ralentir le bus"
-                >
-                  <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-full bg-white/10 transition-colors group-hover:bg-white/25 group-disabled:bg-white/5" />
-                  <span className="relative">🐢</span>
-                  <span className="bus-speed-label relative">Ralentir</span>
-                </button>
-                <div className="bus-speed-value flex min-w-[3.5rem] w-auto shrink-0 items-center justify-center gap-1 px-1.5 font-black tabular-nums">
-                  <span className={speedMultiplier >= 2.0 ? "text-[#ffd23f]" : speedMultiplier <= 0.5 ? "text-[#38bdf8]" : "text-white"}>
-                    {speedMultiplier.toFixed(1)}x
-                  </span>
-                  {speedMultiplier >= 2.0 && (
-                    <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[10px] font-black uppercase text-[#0d2190]">
-                      Boost
-                    </span>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={accelerateBus}
-                  disabled={speedMultiplier >= 3.0}
-                  aria-label="Accélérer le bus"
-                  className="group relative flex h-11 min-w-11 flex-1 items-center justify-center gap-1 rounded-full px-1.5 min-[360px]:px-2 text-xs font-black text-[#ffd23f] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-not-allowed disabled:text-[#ffe58a] cursor-pointer"
-                  title="Accélérer le bus"
-                >
-                  <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-full bg-[#ffd23f]/15 transition-colors group-hover:bg-[#ffd23f]/25 group-disabled:bg-[#ffd23f]/10" />
-                  <span className="relative">⚡</span>
-                  <span className="bus-speed-label relative">Accélérer</span>
-                </button>
-              </div>
-
-              <div className="bus-mobile-utilities flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={toggleDayNight}
-                  title={manualDayNight === null ? `Forcer le mode ${isNight ? "Jour" : "Nuit"}` : "Revenir au cycle automatique"}
-                  aria-label={manualDayNight === null
-                    ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
-                    : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
-                  className="bus-mobile-day-night bus-glass flex h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-full border border-white/35 bg-black/75 px-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 cursor-pointer"
-                >
-                  {isNight ? (
-                    <svg className="h-4 w-4 shrink-0 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
-                    </svg>
-                  ) : (
-                    <svg className="h-4 w-4 shrink-0 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
-                      <circle cx="12" cy="12" r="5" />
-                      <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
-                  )}
-                  <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={resetView}
-                  disabled={busy}
-                  aria-label="Recentrer la vue"
-                  title="Recentrer la vue sur le bus"
-                  className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/35 bg-black/75 text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60 cursor-pointer active:scale-95"
-                >
-                  <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="6" /><path d="M12 2v4m0 12v4M2 12h4m12 0h4" /></svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleBgm}
-                  disabled={partyOn}
-                  aria-pressed={bgmPlaying || partyOn}
-                  aria-label={partyOn ? "Musique de fête active — arrêter avec le bouton Fête" : bgmPlaying ? "Couper la musique de fond" : "Activer la musique de fond (Life in Pieces — Le Mont Corvo)"}
-                  title={partyOn ? "Party At Baratie — utilisez Fête pour arrêter la musique" : bgmPlaying ? "Couper la musique de fond (Life in Pieces)" : "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)"}
-                  className={`bus-glass flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full border px-2 text-xs font-bold shadow-lg transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 cursor-pointer ${
-                    bgmPlaying || partyOn
-                      ? "border-[#ffd23f] bg-[#1636c9]/70 text-[#ffd23f]"
-                      : "border-white/35 bg-black/75 text-white hover:border-[#ffd23f]/70 hover:text-[#ffd23f]"
-                  }`}
-                >
-                  {bgmPlaying || partyOn ? (
-                    <span className="flex items-end gap-0.5 h-3.5 shrink-0" aria-hidden="true">
-                      <span className="inline-block h-3.5 w-1 rounded-full bg-[#ffd23f] animate-pulse" />
-                      <span className="inline-block h-2 w-1 rounded-full bg-[#ffd23f] animate-pulse [animation-delay:150ms]" />
-                      <span className="inline-block h-3 w-1 rounded-full bg-[#ffd23f] animate-pulse [animation-delay:300ms]" />
-                    </span>
-                  ) : (
-                    <span aria-hidden="true" className="text-sm shrink-0">🎵</span>
-                  )}
-                  <span>Musique</span>
-                </button>
-                <MusicPlaybackControls
-                  open={musicDetailsOpen}
-                  onOpenChange={handleMusicDetailsOpenChange}
-                  showTrigger
-                  compact
-                  fallbackFocusRef={activeMenuButtonRef}
-                />
-              </div>
-
-              <div className="bus-glass flex h-11 items-center gap-2 rounded-full border border-white/25 bg-black/75 px-1.5 pr-3">
-                <button
-                  type="button"
-                  onClick={() => setBgmVolume(bgmVolume > 0 ? 0 : 85)}
-                  aria-label={bgmVolume === 0 ? "Réactiver le son" : "Couper le son de la musique"}
-                  className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm transition-transform hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] cursor-pointer"
-                >
-                  {bgmVolume === 0 ? "🔇" : bgmVolume < 35 ? "🔉" : "🔊"}
-                </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="5"
-                  value={bgmVolume}
-                  onChange={(e) => setBgmVolume(Number(e.target.value))}
-                  aria-label="Volume de la musique"
-                  className="h-11 min-w-0 flex-1 cursor-pointer accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]"
-                />
-                <span className="w-9 shrink-0 text-right text-xs font-bold tabular-nums text-white">
-                  {bgmVolume}%
-                </span>
-              </div>
+              <button
+                type="button"
+                onClick={accelerateBus}
+                disabled={speedMultiplier >= 3.0}
+                aria-label="Accélérer le bus"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm text-[#ffd23f] transition-transform hover:bg-[#ffd23f]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                title="Accélérer le bus"
+              >
+                <span aria-hidden="true">⚡</span>
+              </button>
             </div>
           </div>
-        )}
-
-        {compactHud && !mobileMenuOpen && (
-          <MusicPlaybackControls
-            open={musicDetailsOpen}
-            onOpenChange={handleMusicDetailsOpenChange}
-            showTrigger={false}
-            fallbackFocusRef={activeMenuButtonRef}
-          />
         )}
 
         {/* Barres persistantes : aucune commande ne se téléporte sous le pointeur. */}
         <div
           aria-hidden={!exteriorControlsVisible}
-          className={`bus-exterior-controls pointer-events-none absolute bottom-[7.75rem] left-1/2 z-30 flex w-[calc(100vw-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:max-w-[42rem] sm:gap-2 xl:bottom-4 xl:left-[calc(50%-4.75rem)] ${
+          className={`bus-exterior-controls pointer-events-none absolute bottom-2 left-1/2 z-30 flex w-[calc(100vw-1rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-1 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:max-w-[42rem] sm:gap-2 sm:px-2 xl:bottom-4 xl:left-[calc(50%-4.75rem)] ${
             exteriorControlsVisible
               ? "translate-y-0 opacity-100"
               : "translate-y-2 opacity-0 [&_*]:!pointer-events-none"
@@ -700,6 +629,21 @@ export function BusHud({
         >
           {compactHud ? (
             <>
+              <CompactMusicToggleButton
+                playing={bgmPlaying}
+                partyOn={partyOn}
+                disabled={!exteriorControlsVisible}
+                onToggle={toggleBgm}
+              />
+              <MusicPlaybackControls
+                open={musicDetailsOpen && exteriorControlsVisible}
+                onOpenChange={handleMusicDetailsOpenChange}
+                showTrigger
+                compact
+                volume={bgmVolume}
+                onVolumeChange={setBgmVolume}
+                fallbackFocusRef={activeMenuButtonRef}
+              />
               <MobileMenuToggleButton
                 variant="exterior"
                 open={mobileMenuOpen}
@@ -709,8 +653,8 @@ export function BusHud({
                 buttonRef={exteriorMenuButtonRef}
                 onToggle={toggleMobileMenu}
               />
-              <HudButton className="min-w-0 flex-1 px-3.5 max-[359px]:px-2.5" onClick={() => { closeMobileMenu(); void enterBus(); }} primary icon="🚪" disabled={joining || phase !== "outside"}>
-                {joining || phase === "entering" ? "Installation…" : "Entrer dans le bus"}
+              <HudButton className="min-w-0 flex-1 px-2.5 min-[440px]:px-3.5" onClick={() => { closeMobileMenu(); void enterBus(); }} primary icon="🚪" disabled={joining || phase !== "outside"}>
+                {joining || phase === "entering" ? "Installation…" : <>Entrer<span className="hidden min-[440px]:inline"> dans le bus</span></>}
               </HudButton>
             </>
           ) : (
@@ -747,7 +691,7 @@ export function BusHud({
 
         <div
           aria-hidden={!interiorControlsVisible}
-          className={`bus-interior-controls pointer-events-none absolute bottom-[7.75rem] left-1/2 flex w-[536px] max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-2 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:gap-2 xl:bottom-4 ${
+          className={`bus-interior-controls pointer-events-none absolute bottom-2 left-1/2 flex w-[536px] max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-col items-center justify-center gap-1 px-1 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:gap-2 sm:px-2 xl:bottom-4 ${
             interiorControlsVisible
               ? "translate-y-0 opacity-100"
               : "translate-y-2 opacity-0 [&_*]:!pointer-events-none"
@@ -755,18 +699,36 @@ export function BusHud({
         >
           {compactHud ? (
             <>
-              <div className="flex w-full items-center justify-center gap-1.5">
+              <div className="flex w-full items-center justify-center gap-1 min-[360px]:gap-1.5">
                 <HudButton compact className="min-w-0 flex-1" onClick={() => { closeMobileMenu(); openProfileModal("name"); }} ariaLabel="Modifier mon pseudo" icon="🏷️" disabled={busy || !interiorControlsVisible}>
                   Pseudo
                 </HudButton>
-                <HudButton compact className="min-w-0 flex-1" onClick={() => { closeMobileMenu(); openProfileModal("comment"); }} ariaLabel="Mettre un commentaire" icon="💬" disabled={busy || !interiorControlsVisible}>
+                <HudButton compact className="min-w-0 flex-[1.35]" onClick={() => { closeMobileMenu(); openProfileModal("comment"); }} ariaLabel="Mettre un commentaire" icon="💬" disabled={busy || !interiorControlsVisible}>
                   Commenter
                 </HudButton>
-                <HudButton compact className="min-w-0 flex-1" onClick={toggleFreeView} ariaLabel={freeView ? "Revenir à ma place" : "Explorer en vue libre"} active={freeView} icon={freeView ? "👁️" : "🧭"} disabled={busy || !interiorControlsVisible}>
+                <HudButton compact className="min-w-0 flex-[1.2]" onClick={toggleFreeView} ariaLabel={freeView ? "Revenir à ma place" : "Explorer en vue libre"} active={freeView} icon={freeView ? "👁️" : "🧭"} disabled={busy || !interiorControlsVisible}>
                   {freeView ? "Ma place" : "Vue libre"}
+                </HudButton>
+                <HudButton compact className="min-w-11 flex-[0.75]" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} icon="📺" disabled={partyOn || busy || !interiorControlsVisible}>
+                  TV
                 </HudButton>
               </div>
               <div className="flex w-full items-center justify-center gap-1.5">
+                <CompactMusicToggleButton
+                  playing={bgmPlaying}
+                  partyOn={partyOn}
+                  disabled={!interiorControlsVisible}
+                  onToggle={toggleBgm}
+                />
+                <MusicPlaybackControls
+                  open={musicDetailsOpen && interiorControlsVisible}
+                  onOpenChange={handleMusicDetailsOpenChange}
+                  showTrigger
+                  compact
+                  volume={bgmVolume}
+                  onVolumeChange={setBgmVolume}
+                  fallbackFocusRef={activeMenuButtonRef}
+                />
                 <MobileMenuToggleButton
                   variant="interior"
                   open={mobileMenuOpen}
@@ -776,9 +738,6 @@ export function BusHud({
                   buttonRef={interiorMenuButtonRef}
                   onToggle={toggleMobileMenu}
                 />
-                <HudButton compact className="min-w-11 flex-[0.7]" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} icon="📺" disabled={partyOn || busy || !interiorControlsVisible}>
-                  TV
-                </HudButton>
                 <HudButton compact className="min-w-0 flex-1" onClick={() => { closeMobileMenu(); exitBus(); }} ariaLabel="Sortir du bus" description="Sortir en gardant ta place et ton profil. Pour les supprimer, ouvre Ma place." primary icon="🏝️" disabled={busy || !interiorControlsVisible}>
                   {phase === "exiting" ? "Sortie" : "Sortir"}
                 </HudButton>
@@ -828,6 +787,45 @@ export function BusHud({
   );
 }
 
+function CompactMusicToggleButton({
+  playing,
+  partyOn,
+  disabled,
+  onToggle,
+}: {
+  playing: boolean;
+  partyOn: boolean;
+  disabled?: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={partyOn || disabled}
+      aria-pressed={playing || partyOn}
+      aria-label={partyOn ? "Musique de fête active — arrêter avec le bouton Fête" : playing ? "Couper la musique de fond" : "Activer la musique de fond (Life in Pieces — Le Mont Corvo)"}
+      title={partyOn ? "Party At Baratie — utilisez Fête pour arrêter la musique" : playing ? "Couper la musique de fond (Life in Pieces)" : "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)"}
+      style={disabled || partyOn ? { pointerEvents: "none" } : undefined}
+      className={`bus-icon-button bus-glass pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full border shadow-lg touch-manipulation transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
+        playing || partyOn
+          ? "border-[#ffd23f] bg-[#1636c9]/75 text-[#ffd23f] shadow-[0_0_15px_rgba(255,210,63,0.35)]"
+          : "border-white/35 bg-black/75 text-white hover:border-[#ffd23f]/70 hover:text-[#ffd23f]"
+      }`}
+    >
+      {playing || partyOn ? (
+        <span className="flex h-3.5 items-end gap-0.5 shrink-0" aria-hidden="true">
+          <span className="inline-block h-3.5 w-1 rounded-full bg-[#ffd23f] animate-pulse" />
+          <span className="inline-block h-2 w-1 rounded-full bg-[#ffd23f] animate-pulse [animation-delay:150ms]" />
+          <span className="inline-block h-3 w-1 rounded-full bg-[#ffd23f] animate-pulse [animation-delay:300ms]" />
+        </span>
+      ) : (
+        <span aria-hidden="true" className="text-sm leading-none">🎵</span>
+      )}
+    </button>
+  );
+}
+
 function MobileMenuToggleButton({
   variant,
   open,
@@ -862,15 +860,15 @@ function MobileMenuToggleButton({
         onToggle();
       }}
       style={disabled ? { pointerEvents: "none" } : undefined}
-      className={`pointer-events-auto relative z-10 flex min-h-11 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full py-2 text-xs font-bold shadow-lg touch-manipulation transition-[background-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
-        variant === "exterior" ? "px-3 max-[359px]:px-2.5" : "flex-[1.4] px-2 sm:px-3"
+      className={`pointer-events-auto relative z-10 flex min-h-11 min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-full py-2 text-xs font-bold shadow-lg touch-manipulation transition-[background-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
+        variant === "exterior" ? "shrink-0 px-2.5 min-[360px]:px-3" : "flex-[1.1] px-2 min-[360px]:px-3"
       } ${
         open
           ? "bg-[#1636c9] text-white ring-2 ring-[#ffd23f] hover:bg-[#1d44e6]"
           : "border border-white/35 bg-black/75 text-white hover:border-[#ffd23f]/70 hover:bg-black/85"
       }`}
     >
-      <svg aria-hidden="true" className="bus-landscape-hide h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <svg aria-hidden="true" className="bus-landscape-hide hidden h-4 w-4 shrink-0 min-[360px]:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
         <path d="M4 7h10m4 0h2M4 12h4m4 0h8M4 17h12m4 0h0" />
         <circle cx="16" cy="7" r="2" />
         <circle cx="10" cy="12" r="2" />
@@ -894,6 +892,7 @@ function HudButton({
   description,
   disabled,
   compact = false,
+  showMobileIcon = false,
   className = "",
 }: {
   children: React.ReactNode;
@@ -905,6 +904,7 @@ function HudButton({
   description?: string;
   disabled?: boolean;
   compact?: boolean;
+  showMobileIcon?: boolean;
   className?: string;
 }) {
   const base =
@@ -934,7 +934,7 @@ function HudButton({
       style={disabled ? { pointerEvents: "none" } : undefined}
       className={`${base} ${compact ? "px-1.5 sm:px-2" : "px-3.5"} relative z-10 touch-manipulation ${look} ${className}`}
     >
-      {icon && <span aria-hidden="true" className={`pointer-events-none text-sm leading-none ${compact ? "bus-landscape-hide hidden sm:inline" : ""}`}>{icon}</span>}
+      {icon && <span aria-hidden="true" className={`pointer-events-none text-sm leading-none ${compact ? (showMobileIcon ? "bus-landscape-hide hidden min-[360px]:inline" : "bus-landscape-hide hidden sm:inline") : ""}`}>{icon}</span>}
       <span className="pointer-events-none contents">{children}</span>
     </button>
   );

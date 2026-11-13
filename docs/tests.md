@@ -112,9 +112,11 @@ Les réglages de confort restent accessibles avec F1 après le retrait du bouton
 Aide. Dans `test:ui`, l’embarquement initial passe par `OnboardingModal`
 (pseudo obligatoire non fermable par Échap ou clic extérieur, message et choix
 du personnage facultatifs), et la modification à bord conserve un pseudo non
-supprimable ; sur téléphone (portrait et paysage compact), les commandes
-secondaires sont regroupées sous le bouton dépliable `Commandes` (ouverture,
-navigation clavier/Échap avec retour du focus et non-chevauchement vérifiés).
+supprimable ; sur téléphone (portrait et paysage compact), la musique et le
+réglage audio/progression unifié restent collés à la barre inférieure tandis que
+les commandes secondaires du bus se déplient librement sans bloc fermé au-dessus
+du bouton `Commandes` (ouverture, navigation clavier/Échap avec retour du focus
+et non-chevauchement vérifiés).
 
 `test:avatars` couvre l’orientation de face de chaque personnage réel dans
 l’aperçu, la rotation, les flèches, l’enregistrement, la restauration et la
