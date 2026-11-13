@@ -33,7 +33,9 @@ export async function runExpandingBusChecks({ send, evaluate, waitForPageConditi
       const snapshot={count,seatCapacity:count,profileRevision:1,vacantSeatRanges:[],passengers:[]};
       window.busExtensionRequests.push({method,path:url.pathname+url.search,fixture:true,time:performance.now()});
       const response=data=>new Response(JSON.stringify(data),{headers:{'Content-Type':'application/json'}});
-      if(method==='GET'||method==='HEAD')return Promise.resolve(response(snapshot));
+      if(method==='GET'||method==='HEAD')return Promise.resolve(response(url.searchParams.has('manifest')
+        ? snapshot
+        : { ...snapshot, registered: false, hasDisplayName: false, seatIndex: null, passenger: null }));
       if(method==='POST'){
         window.busExtensionPending=true;
         return new Promise(resolve=>{
@@ -42,7 +44,7 @@ export async function runExpandingBusChecks({ send, evaluate, waitForPageConditi
             if(!delayPassed||!released)return;
             window.busExtensionPending=false;
             delete window.busExtensionReleaseRegistration;
-            resolve(response({...snapshot,seatIndex:count-1,added:false,passenger:null}));
+            resolve(response({...snapshot,seatIndex:count-1,added:false,passenger:{seatIndex:count-1,displayName:'Test extension',comment:null,avatarId:null}}));
           };
           window.busExtensionReleaseRegistration=()=>{released=true;finish();};
           setTimeout(()=>{delayPassed=true;finish();},2000);
@@ -205,7 +207,13 @@ export async function runExpandingBusChecks({ send, evaluate, waitForPageConditi
       if(o.name==='bus-passenger-door')closed=closed&&Math.abs(o.getObjectByName('bus-door-front-leaf').rotation.y)<.03&&
         [0,1,2].every(i=>!o.getObjectByName('bus-entry-step-'+i).visible);});return closed;})()`, "Every door finishes closing before the next entry");
 
-    await run(`(()=>{window.busExtensionHoldRegistration=true;window.mediaTestPlayers.bus.commands=[];[...document.querySelectorAll('button')].find(button=>!button.disabled&&button.textContent.includes('Entrer dans le bus')).click();})()`);
+    await run("[...document.querySelectorAll('button')].find(button=>!button.disabled&&button.textContent.includes('Entrer dans le bus')).click()");
+    await wait("Boolean(document.getElementById('onboarding-name'))", "The mandatory identification modal opens before rear-door re-entry");
+    await run("document.getElementById('onboarding-name').focus()");
+    await wait("document.activeElement === document.getElementById('onboarding-name')", "The onboarding input takes focus");
+    await send("Input.insertText", { text: "Test extension" });
+    await wait("document.getElementById('onboarding-name')?.value === 'Test extension'", "The onboarding display name is entered");
+    await run("window.busExtensionHoldRegistration=true;window.mediaTestPlayers.bus.commands=[];document.querySelector('[role=\"dialog\"] button[type=\"submit\"]').click();");
     await wait("window.busExtensionPending===true&&window.busJourneyTestState().waitingForSeat===true", "The fixture delays seat assignment and the real scene waits");
     const pending = await tripSnapshot();
     assert.equal(pending.elapsed, 0);

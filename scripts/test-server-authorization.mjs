@@ -77,6 +77,33 @@ export async function runServerAuthorizationChecks() {
       assert.equal(target.status, 200);
       const targetSeat = target.data.seatIndex;
       if (configuration.name === "enabled") {
+        const invalidVisitorLookup = await worker.fetch("http://isolated.test/api/bus-entries?visitorId=bad");
+        assert.equal(invalidVisitorLookup.status, 400, "Invalid visitorId query must return 400.");
+        assert.equal(invalidVisitorLookup.headers.get("cache-control"), "no-store, max-age=0");
+
+        const missingVisitorLookup = await worker.fetch("http://isolated.test/api/bus-entries?visitorId=unregistered-visitor-12345");
+        assert.equal(missingVisitorLookup.status, 200);
+        assert.equal(missingVisitorLookup.headers.get("cache-control"), "no-store, max-age=0");
+        const missingData = await missingVisitorLookup.json();
+        assert.equal(missingData.registered, false);
+        assert.equal(missingData.hasDisplayName, false);
+        assert.equal(missingData.seatIndex, null);
+        assert.equal(missingData.passenger, null);
+
+        const anonymousLookup = await worker.fetch(`http://isolated.test/api/bus-entries?visitorId=${encodeURIComponent(ownId)}`);
+        assert.equal(anonymousLookup.status, 200);
+        assert.equal(anonymousLookup.headers.get("cache-control"), "no-store, max-age=0");
+        const anonymousLookupData = await anonymousLookup.json();
+        assert.equal(anonymousLookupData.registered, true);
+        assert.equal(anonymousLookupData.hasDisplayName, false);
+        assert.equal(anonymousLookupData.seatIndex, own.data.seatIndex);
+        assert.deepEqual(anonymousLookupData.passenger, {
+          seatIndex: own.data.seatIndex,
+          displayName: "",
+          comment: null,
+          avatarId: null,
+        });
+
         const named = await request("POST", { visitorId: ownId, displayName: "Nakama Test", comment: "Vive le bus !" });
         assert.equal(named.status, 200);
         const chosen = await request("POST", { visitorId: ownId, avatarId: "chopper" });
@@ -88,6 +115,13 @@ export async function runServerAuthorizationChecks() {
         assert.equal(chosen.data.passenger.displayName, "Nakama Test");
         assert.equal(chosen.data.passenger.comment, "Vive le bus !");
         assert(chosen.data.profileRevision > named.data.profileRevision, "Avatar changes invalidate nearby public profiles.");
+        const namedLookup = await worker.fetch(`http://isolated.test/api/bus-entries?visitorId=${encodeURIComponent(ownId)}`);
+        assert.equal(namedLookup.status, 200);
+        const namedLookupData = await namedLookup.json();
+        assert.equal(namedLookupData.registered, true);
+        assert.equal(namedLookupData.hasDisplayName, true);
+        assert.equal(namedLookupData.seatIndex, own.data.seatIndex);
+        assert.deepEqual(namedLookupData.passenger, chosen.data.passenger);
         const revisited = await request("POST", { visitorId: ownId });
         assert.equal(revisited.data.added, false);
         assert.deepEqual(revisited.data.passenger, chosen.data.passenger, "The same browser identity restores its DB avatar on boarding.");
@@ -99,8 +133,39 @@ export async function runServerAuthorizationChecks() {
         const unchanged = await request("POST", { visitorId: ownId });
         assert.deepEqual(unchanged.data.passenger, chosen.data.passenger);
         assert.equal(unchanged.data.profileRevision, chosen.data.profileRevision, "Invalid choices never mutate the DB.");
+        for (const updateOnly of ["true", 1, null, {}]) {
+          assert.equal((await request("POST", { visitorId: ownId, avatarId: "sanji", updateOnly })).status, 400);
+        }
+        const preboardUpdated = await request("POST", { visitorId: ownId, avatarId: "sanji", updateOnly: true });
+        assert.equal(preboardUpdated.status, 200);
+        assert.equal(preboardUpdated.data.added, false);
+        assert.equal(preboardUpdated.data.count, own.data.count + 1);
+        assert.equal(preboardUpdated.data.seatIndex, own.data.seatIndex);
+        assert.equal(preboardUpdated.data.passenger.avatarId, "sanji");
+        assert.equal(preboardUpdated.data.passenger.displayName, "Nakama Test");
+        assert.equal(preboardUpdated.data.passenger.comment, "Vive le bus !");
+        assert(preboardUpdated.data.profileRevision > chosen.data.profileRevision, "updateOnly avatar change advances public profile revision.");
+        const ghostId = `auth-${configuration.name}-ghost`;
+        const ghostUpdateOnly = await request("POST", { visitorId: ghostId, avatarId: "zoro", updateOnly: true });
+        assert.equal(ghostUpdateOnly.status, 200);
+        assert.equal(ghostUpdateOnly.data.added, false);
+        assert.equal(ghostUpdateOnly.data.seatIndex, null);
+        assert.equal(ghostUpdateOnly.data.passenger, null);
+        assert.equal(ghostUpdateOnly.data.count, preboardUpdated.data.count);
+        assert.equal(ghostUpdateOnly.data.profileRevision, preboardUpdated.data.profileRevision);
+        assert.equal((await database.prepare("SELECT COUNT(*) AS count FROM bus_entries WHERE visitor_id = ?").bind(ghostId).first()).count, 0,
+          "updateOnly must never insert an unregistered visitor.");
+        const restoredChopper = await request("POST", { visitorId: ownId, avatarId: "chopper", updateOnly: true });
+        assert.equal(restoredChopper.status, 200);
+        assert.equal(restoredChopper.data.passenger.avatarId, "chopper");
         const anonymous = await request("POST", { visitorId: ownId, displayName: "", comment: "" });
         assert.equal(anonymous.data.passenger.avatarId, "chopper", "Removing text must preserve the chosen avatar.");
+        const clearedLookup = await worker.fetch(`http://isolated.test/api/bus-entries?visitorId=${encodeURIComponent(ownId)}`);
+        const clearedLookupData = await clearedLookup.json();
+        assert.equal(clearedLookupData.registered, true);
+        assert.equal(clearedLookupData.hasDisplayName, false);
+        assert.equal(clearedLookupData.passenger.displayName, "");
+        assert.equal(clearedLookupData.passenger.avatarId, "chopper");
         const profiles = await worker.fetch("http://isolated.test/api/bus-entries?profiles=1&from=0&limit=48");
         const ownProfile = (await profiles.json()).passengers.find(profile => profile.seatIndex === own.data.seatIndex);
         assert.equal(ownProfile.avatarId, "chopper", "An avatar-only profile must reach other visitors' renderers.");
@@ -146,6 +211,19 @@ export async function runServerAuthorizationChecks() {
       assert.equal((await database.prepare("SELECT COUNT(*) AS count FROM bus_entries").first()).count,
         configuration.name === "enabled" ? 0 : 1);
       if (configuration.name === "enabled") {
+        const postDeleteLookup = await worker.fetch(`http://isolated.test/api/bus-entries?visitorId=${encodeURIComponent(ownId)}`);
+        const postDeleteData = await postDeleteLookup.json();
+        assert.equal(postDeleteData.registered, false);
+        assert.equal(postDeleteData.hasDisplayName, false);
+        assert.equal(postDeleteData.seatIndex, null);
+        assert.equal(postDeleteData.passenger, null);
+        const deletedPreboard = await request("POST", { visitorId: ownId, avatarId: "zoro", updateOnly: true });
+        assert.equal(deletedPreboard.status, 200);
+        assert.equal(deletedPreboard.data.added, false);
+        assert.equal(deletedPreboard.data.seatIndex, null);
+        assert.equal(deletedPreboard.data.passenger, null);
+        assert.equal((await database.prepare("SELECT COUNT(*) AS count FROM bus_entries WHERE visitor_id = ?").bind(ownId).first()).count, 0,
+          "Deleted visitor using updateOnly must not recreate a seat.");
         for (let attempt = 0; attempt < 11; attempt++) assert.equal((await request("DELETE", { visitorId: ownId })).status, 200);
         const throttled = await request("DELETE", { visitorId: ownId });
         assert.equal(throttled.status, 429, "Personal deletion quota must remain twelve per hour.");
@@ -180,6 +258,16 @@ export async function runServerAuthorizationChecks() {
         const concurrentSeatFetch = await worker.fetch(`http://isolated.test/api/bus-entries?seat=${assignedSeats[0]}`);
         assert.equal(concurrentSeatFetch.status, 200);
         assert.match((await concurrentSeatFetch.json()).passenger.comment, /\n\nLigne B 0$/, "Concurrent passenger multiline comment must persist cleanly.");
+        const quotaGhost = `auth-${configuration.name}-quota-ghost`;
+        for (let attempt = 0; attempt < 7; attempt++) {
+          const res = await request("POST", { visitorId: quotaGhost, avatarId: attempt % 2 ? "zoro" : "nami", updateOnly: true }, undefined, "198.51.100.77");
+          assert.equal(res.status, 200, "Repeated updateOnly checks use the profile quota instead of burning the 6/h join quota.");
+          assert.equal(res.data.seatIndex, null);
+        }
+        const quotaGhostJoin = await request("POST", { visitorId: quotaGhost, avatarId: "zoro" }, undefined, "198.51.100.77");
+        assert.equal(quotaGhostJoin.status, 200);
+        assert.equal(quotaGhostJoin.data.added, true);
+        assert.equal(quotaGhostJoin.data.passenger.avatarId, "zoro");
       }
       if (configuration.name === "missing") {
         const results = await Promise.all(Array.from({ length: 130 }, (_, index) => request("POST",

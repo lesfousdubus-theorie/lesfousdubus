@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { emitBusAudioEvent, INITIAL_MUSIC_PLAYBACK, onBusAudioEvent, type BusMusicPlayback } from "@/lib/bus-audio";
 
 function formatTime(seconds: number) {
@@ -16,10 +16,24 @@ function playbackLabel(playback: BusMusicPlayback) {
   return playback.elapsed > 0 ? "En pause" : "Prête à jouer";
 }
 
+interface MusicPlaybackControlsProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
+  compact?: boolean;
+  fallbackFocusRef?: RefObject<HTMLButtonElement | null>;
+}
+
 /** A small HUD control; its details remain reachable on narrow screens. */
-export default function MusicPlaybackControls() {
+export default function MusicPlaybackControls({
+  open: controlledOpen,
+  onOpenChange,
+  showTrigger = true,
+  compact = false,
+  fallbackFocusRef,
+}: MusicPlaybackControlsProps = {}) {
   const [playback, setPlayback] = useState(INITIAL_MUSIC_PLAYBACK);
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [draft, setDraft] = useState<number | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -27,6 +41,14 @@ export default function MusicPlaybackControls() {
   const draftTimerRef = useRef<number | null>(null);
   const trackRef = useRef(playback.track);
   const id = useId();
+
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
+  const setOpen = (next: boolean | ((value: boolean) => boolean)) => {
+    const resolved = typeof next === "function" ? next(open) : next;
+    if (!isControlled) setUncontrolledOpen(resolved);
+    onOpenChange?.(resolved);
+  };
 
   useEffect(() => {
     const stop = onBusAudioEvent("musicPlayback", next => {
@@ -48,17 +70,28 @@ export default function MusicPlaybackControls() {
     if (!open) return;
     const hud = rootRef.current?.closest('[data-bottom-layout]');
     const position = () => {
-      const trigger = triggerRef.current, panel = panelRef.current;
-      if (!trigger || !panel) return;
-      const button = trigger.getBoundingClientRect();
-      const width = panel.getBoundingClientRect().width;
-      const left = Math.max(12, Math.min(button.left, window.innerWidth - width - 12));
+      const panel = panelRef.current;
+      if (!panel) return;
+      const trigger = triggerRef.current;
+      const button = trigger ? trigger.getBoundingClientRect() : null;
+      const hasTrigger = Boolean(button && button.width > 0 && button.height > 0);
+      const panelRect = panel.getBoundingClientRect();
+      const width = panelRect.width;
+      const left = hasTrigger && button
+        ? Math.max(12, Math.min(button.left, window.innerWidth - width - 12))
+        : Math.max(12, Math.round((window.innerWidth - width) / 2));
       const actions = [...(hud?.querySelectorAll<HTMLElement>(
-        '.bus-exterior-controls:not([aria-hidden="true"]), .bus-interior-controls:not([aria-hidden="true"])') ?? [])];
-      const actionsTop = Math.min(button.top, ...actions.map(element => element.getBoundingClientRect())
-        .filter(rect => rect.right > left && rect.left < left + width).map(rect => rect.top));
-      const top = Math.max(12, Math.min(actionsTop - panel.getBoundingClientRect().height - 12,
-        window.innerHeight - panel.getBoundingClientRect().height - 12));
+        '.bus-exterior-controls:not([aria-hidden="true"]), .bus-interior-controls:not([aria-hidden="true"]), .bus-mobile-menu') ?? [])];
+      const blockingTops = actions
+        .map(element => element.getBoundingClientRect())
+        .filter(rect => rect.height > 0 && rect.right > left && rect.left < left + width)
+        .map(rect => rect.top);
+      const actionsTop = Math.min(
+        hasTrigger && button ? button.top : window.innerHeight,
+        ...(blockingTops.length ? blockingTops : [window.innerHeight]),
+      );
+      const top = Math.max(12, Math.min(actionsTop - panelRect.height - 12,
+        window.innerHeight - panelRect.height - 12));
       Object.assign(panel.style, { left: `${left}px`, top: `${top}px` });
     };
     position();
@@ -76,16 +109,22 @@ export default function MusicPlaybackControls() {
       observer.disconnect(); layoutObserver.disconnect(); cancelAnimationFrame(frame);
       window.removeEventListener("resize", schedule);
     };
-  }, [open]);
+  }, [open, showTrigger]);
 
   useEffect(() => {
     if (!open) return;
     const closeOutside = (event: PointerEvent) => {
-      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) setOpen(false);
+      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) {
+        if (!isControlled) setUncontrolledOpen(false);
+        onOpenChange?.(false);
+      }
     };
     const closeEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
-      event.stopPropagation(); setOpen(false); triggerRef.current?.focus();
+      event.stopPropagation();
+      if (!isControlled) setUncontrolledOpen(false);
+      onOpenChange?.(false);
+      requestAnimationFrame(() => (triggerRef.current ?? fallbackFocusRef?.current)?.focus({ preventScroll: true }));
     };
     document.addEventListener("pointerdown", closeOutside);
     document.addEventListener("keydown", closeEscape);
@@ -93,7 +132,7 @@ export default function MusicPlaybackControls() {
       document.removeEventListener("pointerdown", closeOutside);
       document.removeEventListener("keydown", closeEscape);
     };
-  }, [open]);
+  }, [open, isControlled, onOpenChange, fallbackFocusRef]);
 
   const settleDraft = () => {
     if (draftTimerRef.current !== null) window.clearTimeout(draftTimerRef.current);
@@ -105,21 +144,25 @@ export default function MusicPlaybackControls() {
   const seekEnabled = playback.ready && playback.duration > 0 && playback.state !== "error";
   const status = playbackLabel(playback);
 
-  return <div ref={rootRef} className="bus-music-playback relative flex shrink-0 items-center">
-    <button ref={triggerRef} type="button" aria-label={`Détails de la musique : ${playback.title}. ${status}`}
+  if (!showTrigger && !open) return null;
+
+  return <div ref={rootRef} className={showTrigger ? "bus-music-playback relative flex shrink-0 items-center" : "contents"}>
+    {showTrigger && <button ref={triggerRef} type="button" aria-label={`Détails de la musique : ${playback.title}. ${status}`}
       aria-expanded={open} aria-controls={id} onClick={() => setOpen(value => !value)}
       title={`${playback.title} · ${status} · afficher la progression`}
-      className={`flex h-11 w-11 items-center justify-center gap-2 rounded-full border bg-[#07142b]/95 text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] lg:w-[170px] lg:justify-start lg:px-3 ${open ? "border-[#ffd23f] text-[#ffd23f]" : "border-white/35"}`}>
+      className={`flex h-11 w-11 items-center justify-center gap-2 rounded-full border bg-[#07142b]/95 text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] ${compact ? "" : "lg:w-[170px] lg:justify-start lg:px-3"} ${open ? "border-[#ffd23f] text-[#ffd23f]" : "border-white/35"}`}>
       <svg aria-hidden="true" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
         <path d="M4 6h16M4 12h16M4 18h16" /><path d="M9 3v6m6 0v6m-7 0v6" strokeWidth="4" />
       </svg>
-      <span className="hidden min-w-0 text-left lg:block">
+      {!compact && <span className="hidden min-w-0 text-left lg:block">
         <span className="block truncate text-xs font-bold">{playback.title}</span>
         <span className="block text-[10px] tabular-nums text-white/80">{formatTime(playback.elapsed)} / {playback.duration ? formatTime(playback.duration) : "—:—"}</span>
-      </span>
-    </button>
+      </span>}
+    </button>}
     {open && <div ref={panelRef} id={id} role="region" aria-label="Progression de la musique"
-      className="fixed z-50 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-[#07142b] px-4 py-3 text-white shadow-[0_8px_28px_rgba(0,0,0,0.45)]">
+      onPointerDown={event => event.stopPropagation()}
+      onPointerUp={event => event.stopPropagation()}
+      className="pointer-events-auto fixed z-50 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-[#07142b] px-4 py-3 text-white shadow-[0_8px_28px_rgba(0,0,0,0.45)]">
       <p className="truncate text-sm font-bold text-[#ffd23f]" title={playback.title}>{playback.title}</p>
       <p role="status" className="mt-0.5 text-xs leading-5 text-white/85">{status}</p>
       <input type="range" min={0} max={playback.duration || 1} step={0.1}

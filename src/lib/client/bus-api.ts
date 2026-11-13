@@ -22,18 +22,29 @@ function createVisitorId(): string {
   return `fdb-${Date.now().toString(36)}-${randomPart}`;
 }
 
-export function getOrCreateVisitorId(): string {
+export function getExistingVisitorId(): string | null {
   if (memoryVisitorId && isValidVisitorId(memoryVisitorId)) return memoryVisitorId;
   try {
     const storedVisitorId = localStorage.getItem("fdb-visitor");
-    const visitorId = isValidVisitorId(storedVisitorId) ? storedVisitorId : createVisitorId();
-    localStorage.setItem("fdb-visitor", visitorId);
-    memoryVisitorId = visitorId;
-    return visitorId;
+    if (!isValidVisitorId(storedVisitorId)) return null;
+    memoryVisitorId = storedVisitorId;
+    return storedVisitorId;
   } catch {
-    memoryVisitorId = createVisitorId();
-    return memoryVisitorId;
+    return null;
   }
+}
+
+export function getOrCreateVisitorId(): string {
+  const existing = getExistingVisitorId();
+  if (existing) return existing;
+  const visitorId = createVisitorId();
+  memoryVisitorId = visitorId;
+  try {
+    localStorage.setItem("fdb-visitor", visitorId);
+  } catch {
+    // Le repli en mémoire reste valide pour la visite en cours.
+  }
+  return visitorId;
 }
 
 export class ApiError extends Error {

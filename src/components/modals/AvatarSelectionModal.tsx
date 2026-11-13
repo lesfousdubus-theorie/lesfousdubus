@@ -14,10 +14,11 @@ const AvatarPreview = dynamic(() => import("../bus/AvatarPreview"), {
 });
 
 /** Montée uniquement à l'ouverture pour toujours commencer sur le choix actuel. */
-export function AvatarSelectionModal({ avatarId, seatIndex, hasRegisteredPlace, saving, error, onClose, onChoose }: {
+export function AvatarSelectionModal({ avatarId, seatIndex, hasRegisteredPlace, hasExistingVisitor = false, saving, error, onClose, onChoose }: {
   avatarId: PassengerAvatarId | null;
   seatIndex: number | null;
   hasRegisteredPlace: boolean;
+  hasExistingVisitor?: boolean;
   saving: boolean;
   error: string;
   onClose: () => void;
@@ -52,7 +53,7 @@ export function AvatarSelectionModal({ avatarId, seatIndex, hasRegisteredPlace, 
       <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6 sm:py-5">
         <div>
           <h2 id="avatar-selection-title" className="text-xl font-black leading-tight sm:text-2xl">{hasRegisteredPlace ? "Changer de personnage" : "Choisir mon personnage"}</h2>
-          <p id="avatar-selection-description" className="mt-2 text-sm leading-relaxed text-[#d8e3ff]">{hasRegisteredPlace ? "Choisis qui prendra ta place dans le bus." : "Prépare ton personnage avant de monter. Ce choix ne réserve pas encore de place."}</p>
+          <p id="avatar-selection-description" className="mt-2 text-sm leading-relaxed text-[#d8e3ff]">{hasRegisteredPlace ? "Choisis qui prendra ta place dans le bus." : hasExistingVisitor ? "Choisis ton personnage. Si tu as déjà une place dans le bus, il sera mis à jour tout de suite ; sinon ce choix ne réserve pas encore de place." : "Prépare ton personnage avant de monter. Ce choix ne réserve pas encore de place."}</p>
         </div>
         <ModalCloseButton onClick={close} disabled={saving} />
       </div>
@@ -99,7 +100,7 @@ export function AvatarSelectionModal({ avatarId, seatIndex, hasRegisteredPlace, 
           className="mt-5 flex min-h-12 w-full items-center justify-center rounded-xl bg-[#ffd23f] px-4 py-3 text-base font-black text-[#09216d] transition-colors hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-wait disabled:opacity-80">
           {saving ? "Enregistrement…" : "Choisir ce personnage"}
         </button>
-        <p className="mt-2 text-center text-xs leading-relaxed text-[#c2cee8]">{hasRegisteredPlace ? "Ton choix sera conservé pour tes prochaines visites sur ce navigateur." : "Ton choix est gardé sur ce navigateur. Tu monteras à bord avec ce personnage."}</p>
+        <p className="mt-2 text-center text-xs leading-relaxed text-[#c2cee8]">{hasRegisteredPlace ? "Ton choix sera conservé pour tes prochaines visites sur ce navigateur." : hasExistingVisitor ? "Ton choix sera enregistré tout de suite si tu as déjà une place, ou gardé pour ton entrée." : "Ton choix est gardé sur ce navigateur. Tu monteras à bord avec ce personnage."}</p>
       </div>
     </section>
   </div>, document.body);
