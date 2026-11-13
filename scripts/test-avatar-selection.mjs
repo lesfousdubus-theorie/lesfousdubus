@@ -135,8 +135,15 @@ try {
   await run("[...document.querySelectorAll('[aria-modal=true] button')].find(b=>b.textContent.includes('Choisir ce personnage')).click()");
   await wait("!document.querySelector('[aria-modal=true]')", "Pending Luffy is selected");
   await run("[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Entrer dans le bus')).click()");
-  await wait("document.getElementById('onboarding-title')?.textContent === 'Monte dans le bus !' && Boolean(document.getElementById('onboarding-name'))", "Unregistered entry opens mandatory onboarding modal");
+  await wait("document.getElementById('onboarding-title')?.textContent === 'Monte dans le bus !' && Boolean(document.getElementById('onboarding-name'))", "Unregistered entry opens onboarding modal");
   assert(await run("document.querySelector('[role=\"dialog\"]').textContent.includes('Luffy')"), "Onboarding modal reflects pending character draft.");
+  assert.equal(await run("Boolean(document.querySelector('[role=\"dialog\"] button[aria-label=\"Fermer la fenêtre\"]'))"), true, "Unregistered boarding modal provides a close button.");
+  await run("document.querySelector('[role=\"dialog\"] button[aria-label=\"Fermer la fenêtre\"]').click()");
+  await wait("!document.querySelector('[aria-modal=true]')", "Closing boarding modal dismisses it");
+  assert.equal(await run("document.querySelector('.bus-app')?.dataset.phase"), "outside", "Closing boarding modal keeps visitor outside the bus.");
+  assert.equal(await run("avatarApiCalls.filter(c=>c.method==='POST').length"), 0, "Closing boarding modal must not register or board.");
+  await run("[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Entrer dans le bus')).click()");
+  await wait("document.getElementById('onboarding-title')?.textContent === 'Monte dans le bus !' && Boolean(document.getElementById('onboarding-name'))", "Boarding modal reopens cleanly on next click");
   await run("document.getElementById('onboarding-name').focus()");
   await wait("document.activeElement === document.getElementById('onboarding-name')", "Focus onboarding name");
   await send("Input.insertText", { text: "Nakama Test" });
@@ -312,7 +319,7 @@ try {
   assert.equal(await run("localStorage.getItem('fdb-avatar-id')"), "sanji");
   assert.equal(await run("JSON.parse(localStorage.getItem('avatar-test-fixture')).avatarId"), "sanji");
   assert.equal(await run("Boolean(avatarScene().scene.getObjectByName('bus-boarding-avatar')?.visible)"), false, "Boarding avatar remains hidden outside to avoid duplicating the seated model.");
-  assert.equal(await run("[...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'Ma place')"), true, "Place management becomes available once server confirms place.");
+  assert.equal(await run("Boolean(document.querySelector('[data-place-button]'))"), true, "Place management becomes available once server confirms place.");
   await run("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Entrer dans le bus')).click()");
   await wait("document.querySelector('.bus-app')?.dataset.phase === 'inside'", "Returning visitor boards after outside update");
   assert.equal(await run("avatarScene().scene.getObjectByName('bus-boarding-avatar').userData.archetypeId"), "sanji");
@@ -334,7 +341,7 @@ try {
   assert.equal(deletedPosts[0].payload.avatarId, "zoro");
   assert.equal(await run("localStorage.getItem('avatar-test-fixture')"), null, "Server updateOnly call must not create a new seat when visitor is unregistered.");
   assert.equal(await run("localStorage.getItem('fdb-avatar-draft')"), "zoro", "Unregistered visitor with stale fdb-visitor falls back to local draft.");
-  assert.equal(await run("[...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'Ma place')"), false);
+  assert.equal(await run("Boolean(document.querySelector('[data-place-button]'))"), false);
   await run("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Entrer dans le bus')).click()");
   await wait("document.getElementById('onboarding-title')?.textContent === 'Monte dans le bus !' && Boolean(document.getElementById('onboarding-name'))", "Deleted-seat visitor opens mandatory onboarding modal");
   assert(await run("document.querySelector('[role=\"dialog\"]').textContent.includes('Zoro')"), "Onboarding modal shows fallback Zoro draft.");

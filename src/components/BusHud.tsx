@@ -15,6 +15,7 @@ export interface ToastMessage {
 
 interface BusHudProps {
   hasSavedPlace: boolean;
+  entryNumber?: number | null;
   openPlaceModal: () => void;
   phase: Phase;
   freeView: boolean;
@@ -78,7 +79,7 @@ const getCompactHudSnapshot = () =>
   typeof window !== "undefined" && window.matchMedia(COMPACT_HUD_MEDIA_QUERY).matches;
 
 export function BusHud({
-  hasSavedPlace, openPlaceModal,
+  hasSavedPlace, entryNumber, openPlaceModal,
   phase, freeView, toggleFreeView, openAvatarModal, hidden, sceneAvailable, toast, passengerManifestButtonRef, statsLoadError, count,
   numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow,
   exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
@@ -232,10 +233,25 @@ export function BusHud({
             <svg aria-hidden="true" className="bus-landscape-hide hidden h-4 w-4 sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg>
             <span className="hud-label-short lg:hidden">Personnage</span><span className="hud-label-long hidden lg:inline">{phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}</span>
           </button>
-          {hasSavedPlace && <button type="button" onClick={openPlaceModal} disabled={busy} aria-haspopup="dialog"
-            className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60 min-[360px]:px-2.5 sm:px-4 sm:text-xs">
-            Ma place
-          </button>}
+          {hasSavedPlace && (
+            <button
+              type="button"
+              data-place-button
+              onClick={openPlaceModal}
+              disabled={busy}
+              aria-haspopup="dialog"
+              aria-label={entryNumber ? `Ma place, numéro ${entryNumber}` : "Ma place"}
+              title={entryNumber ? `Place n° ${entryNumber} (${entryNumber === 1 ? "1re" : `${entryNumber}e`} personne à être rentrée dans le bus)` : "Gérer ma place"}
+              className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60 min-[360px]:px-2.5 sm:gap-2 sm:px-4 sm:text-xs"
+            >
+              <span>Ma place</span>
+              {entryNumber !== null && entryNumber !== undefined && (
+                <span className="rounded-full bg-[#ffd23f] px-1.5 py-0.5 text-[10px] font-black leading-none tabular-nums text-[#0d2190] sm:text-[11px]">
+                  N°&nbsp;{entryNumber.toLocaleString("fr-FR")}
+                </span>
+              )}
+            </button>
+          )}
           <button ref={immersiveButtonRef} type="button" onClick={() => { setShowVolumePopup(false); closeMobileMenu(); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif" title="Mode immersif"
             className="bus-immersive-toggle pointer-events-auto inline-flex min-h-11 w-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-0 text-xs font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60 sm:w-auto sm:px-4">
             <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" /></svg>
@@ -640,8 +656,6 @@ export function BusHud({
                 onOpenChange={handleMusicDetailsOpenChange}
                 showTrigger
                 compact
-                volume={bgmVolume}
-                onVolumeChange={setBgmVolume}
                 fallbackFocusRef={activeMenuButtonRef}
               />
               <MobileMenuToggleButton
@@ -725,8 +739,6 @@ export function BusHud({
                   onOpenChange={handleMusicDetailsOpenChange}
                   showTrigger
                   compact
-                  volume={bgmVolume}
-                  onVolumeChange={setBgmVolume}
                   fallbackFocusRef={activeMenuButtonRef}
                 />
                 <MobileMenuToggleButton

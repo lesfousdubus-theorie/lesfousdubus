@@ -63,7 +63,8 @@ async function request(path, { method = "GET", body, address = "198.51.100.1" } 
     const response = await fetch(new URL(path, baseUrl), {
       method,
       redirect: "error",
-      headers: { "CF-Connecting-IP": address, ...(body ? { "Content-Type": "application/json" } : {}) },
+      // Disable HTTP keep-alive reuse so high-concurrency bursts do not queue onto sockets closed by workerd's idle timer.
+      headers: { "CF-Connecting-IP": address, "Connection": "close", ...(body ? { "Content-Type": "application/json" } : {}) },
       body: body ? JSON.stringify(body) : undefined,
       signal: AbortSignal.any([abortController.signal, AbortSignal.timeout(30_000)]),
     });
@@ -71,7 +72,7 @@ async function request(path, { method = "GET", body, address = "198.51.100.1" } 
     return { path, status: response.status, durationMs: performance.now() - started, data, cacheControl: response.headers.get("cache-control"), retryAfter: response.headers.get("retry-after") };
   } catch (error) {
     if (abortController.signal.aborted) throw error;
-    return { path, status: 0, durationMs: performance.now() - started, error: String(error) };
+    return { path, status: 0, durationMs: performance.now() - started, error: error instanceof Error && error.cause ? `${String(error)} (${String(error.cause)})` : String(error) };
   }
 }
 
@@ -110,29 +111,27 @@ function syntheticAddress(index, network = 203) {
 
 async function integrity(database, label, expectedCount) {
   const row = await database.prepare(`SELECT COUNT(*) AS actual_count, COUNT(DISTINCT seat_index) AS unique_seats,
+    COUNT(DISTINCT entry_number) AS unique_entry_numbers,
     MIN(seat_index) AS first_seat, MAX(seat_index) AS last_seat,
+    MIN(entry_number) AS first_entry_number, MAX(entry_number) AS last_entry_number,
     (SELECT passenger_count FROM bus_stats WHERE id = 1) AS stats_count,
-    (SELECT seat_capacity FROM bus_stats WHERE id = 1) AS capacity
+    (SELECT seat_capacity FROM bus_stats WHERE id = 1) AS capacity,
+    (SELECT last_entry_number FROM bus_stats WHERE id = 1) AS stats_last_entry_number
     FROM bus_entries`).first();
-  const vacant = await database.prepare("SELECT start_index, end_index FROM bus_vacant_seat_ranges ORDER BY start_index").all();
   assert.equal(row.actual_count, expectedCount);
   assert.equal(row.stats_count, expectedCount);
   assert.equal(row.unique_seats, expectedCount);
-  assert(row.first_seat >= 0);
-  assert.equal(row.capacity, row.last_seat + 1);
-  let previousEnd = -1;
-  let vacantCount = 0;
-  for (const range of vacant.results) {
-    assert(range.start_index > previousEnd && range.end_index >= range.start_index);
-    assert(range.end_index < row.capacity);
-    previousEnd = range.end_index;
-    vacantCount += range.end_index - range.start_index + 1;
+  assert.equal(row.unique_entry_numbers, expectedCount);
+  if (expectedCount === 0) {
+    assert.equal(row.capacity, 0);
+  } else {
+    assert.equal(row.first_seat, 0);
+    assert.equal(row.last_seat, expectedCount - 1);
+    assert.equal(row.capacity, expectedCount);
+    assert(row.first_entry_number >= 1);
+    assert(row.stats_last_entry_number >= row.last_entry_number);
   }
-  assert.equal(vacantCount, row.capacity - expectedCount, "Every unoccupied seat must be tracked exactly once.");
-  const overlap = await database.prepare(`SELECT COUNT(*) AS occupied_vacancies FROM bus_entries AS entries
-    JOIN bus_vacant_seat_ranges AS vacant ON entries.seat_index BETWEEN vacant.start_index AND vacant.end_index`).first();
-  assert.equal(overlap.occupied_vacancies, 0);
-  report.assertions.push({ label, ...row, vacantRanges: vacant.results });
+  report.assertions.push({ label, ...row });
 }
 
 try {
@@ -263,12 +262,16 @@ try {
   assert(departed.every(sample => sample.data.removed));
   expectedCount -= 100;
   await integrity(database, "after-concurrent-leaves", expectedCount);
-  const reused = await scenario("reuse-100-vacancies-concurrent", 100, 100, index => request("/api/bus-entries", {
+  const appended = await scenario("join-100-after-compaction", 100, 100, index => request("/api/bus-entries", {
     method: "POST", address: syntheticAddress(index, 196), body: { visitorId: `load-reuse-${index}` },
   }));
-  assert.deepEqual(reused.map(sample => sample.data.seatIndex).sort((a, b) => a - b), Array.from({ length: 100 }, (_, index) => index * 2));
+  assert.deepEqual(
+    appended.map(sample => sample.data.seatIndex).sort((a, b) => a - b),
+    Array.from({ length: 100 }, (_, index) => expectedCount + index),
+  );
+  assert.equal(new Set(appended.map(sample => sample.data.entryNumber)).size, 100, "New joins after departures must keep unique monotonic entry numbers.");
   expectedCount += 100;
-  await integrity(database, "vacancies-reused-without-collisions", expectedCount);
+  await integrity(database, "compacted-seats-and-monotonic-entry-numbers", expectedCount);
   const finalHealth = await request("/api/health");
   assert.equal(finalHealth.status, 200);
   report.ok = true;

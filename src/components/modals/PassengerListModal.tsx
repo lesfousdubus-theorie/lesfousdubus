@@ -73,23 +73,26 @@ export function PassengerListModal({
             </div>
           ) : <>
           <div className="grid gap-2 sm:grid-cols-2">
-            {passengers.map((passenger) => passenger.displayName || passenger.hasComment ? (
-              <button key={passenger.seatIndex} type="button" onClick={() => onPassengerClick(passenger)} className="flex min-h-12 items-center gap-3 rounded-xl border border-white/12 bg-white/[0.055] px-3 text-left transition hover:border-[#ffd23f]/55 hover:bg-[#ffd23f]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ffd23f]/15 text-sm">👤</span>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-black text-white">{passenger.displayName ?? "Anonyme"}</span>
-                  <span className="text-xs font-semibold text-white/80">Place {passenger.seatIndex + 1}{passenger.hasComment ? " · Message" : ""}</span>
-                </span>
-              </button>
-            ) : (
-              <div key={passenger.seatIndex} className="flex min-h-12 items-center gap-3 rounded-xl border border-white/15 bg-white/5 px-3 text-white/85">
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/[0.06] text-sm">👤</span>
-                <span>
-                  <span className="block text-sm font-bold">Anonyme</span>
-                  <span className="text-xs font-semibold text-white/80">Place {passenger.seatIndex + 1}</span>
-                </span>
-              </div>
-            ))}
+            {passengers.map((passenger) => {
+              const placeNumber = passenger.entryNumber ?? passenger.seatIndex + 1;
+              return passenger.displayName || passenger.hasComment ? (
+                <button key={passenger.seatIndex} type="button" onClick={() => onPassengerClick(passenger)} className="flex min-h-12 items-center gap-3 rounded-xl border border-white/12 bg-white/[0.055] px-3 text-left transition hover:border-[#ffd23f]/55 hover:bg-[#ffd23f]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ffd23f]/15 text-sm">👤</span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-black text-white">{passenger.displayName ?? "Anonyme"}</span>
+                    <span className="text-xs font-semibold text-white/80">Place {placeNumber.toLocaleString("fr-FR")}{passenger.hasComment ? " · Message" : ""}</span>
+                  </span>
+                </button>
+              ) : (
+                <div key={passenger.seatIndex} className="flex min-h-12 items-center gap-3 rounded-xl border border-white/15 bg-white/5 px-3 text-white/85">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/[0.06] text-sm">👤</span>
+                  <span>
+                    <span className="block text-sm font-bold">Anonyme</span>
+                    <span className="text-xs font-semibold text-white/80">Place {placeNumber.toLocaleString("fr-FR")}</span>
+                  </span>
+                </div>
+              );
+            })}
           </div>
           {loading && passengers.length > 0 && (
             <div role="status" aria-live="polite" aria-atomic="true" className="flex min-h-20 items-center justify-center gap-3 text-sm font-bold text-white/70">

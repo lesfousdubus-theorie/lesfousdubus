@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
 import { getNakamaArchetype, NAKAMA_ROSTER } from "../bus/passenger-archetypes";
+import { ModalCloseButton } from "./ModalCloseButton";
 import { useModalAccessibility } from "./useModalAccessibility";
 
 const AvatarPreview = dynamic(() => import("../bus/AvatarPreview"), {
@@ -27,9 +28,9 @@ export interface OnboardingSubmission {
 const NOOP_CLOSE = () => {};
 
 /**
- * Fenêtre d'identification obligatoire (non fermable) :
- * - À la montée pour un nouveau visiteur non inscrit ;
- * - Dès l'arrivée sur le site pour un visiteur déjà inscrit sans pseudo.
+ * Fenêtre d'identification :
+ * - À la montée pour un visiteur non inscrit (`boarding`), fermable pour rester à l'extérieur ;
+ * - Dès l'arrivée sur le site pour un visiteur déjà inscrit sans pseudo (`missing-name`), obligatoire et non fermable.
  * Montée uniquement à l'ouverture pour initialiser les champs sur l'état actuel.
  */
 export function OnboardingModal({
@@ -42,6 +43,7 @@ export function OnboardingModal({
   saving,
   error,
   onClearError,
+  onClose,
   onSubmit,
 }: {
   reason: OnboardingReason;
@@ -53,6 +55,7 @@ export function OnboardingModal({
   saving: boolean;
   error: string;
   onClearError: () => void;
+  onClose?: () => void;
   onSubmit: (submission: OnboardingSubmission) => void;
 }) {
   const [name, setName] = useState(initialName);
@@ -64,7 +67,12 @@ export function OnboardingModal({
   const initialFocusRef = useRef<HTMLInputElement>(null);
   const dragRef = useRef<{ x: number; rotation: number } | null>(null);
 
-  const handleKeyDown = useModalAccessibility(true, NOOP_CLOSE, dialogRef, initialFocusRef);
+  const canClose = reason === "boarding" && Boolean(onClose);
+  const close = useCallback(() => {
+    if (canClose && !saving) onClose?.();
+  }, [canClose, onClose, saving]);
+
+  const handleKeyDown = useModalAccessibility(true, canClose ? close : NOOP_CLOSE, dialogRef, initialFocusRef);
 
   const activeIndex = selectedAvatarId
     ? NAKAMA_ROSTER.findIndex((item) => item.id === selectedAvatarId)
@@ -97,6 +105,9 @@ export function OnboardingModal({
     <div
       role="presentation"
       className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#020617]/85 backdrop-blur-sm"
+      onMouseDown={(event) => {
+        if (canClose && event.target === event.currentTarget) close();
+      }}
       onKeyDown={(event) => {
         handleKeyDown(event);
         if (!showPicker) return;
@@ -117,18 +128,21 @@ export function OnboardingModal({
         aria-busy={saving}
         className="bus-modal-card my-auto flex w-full max-w-[34rem] flex-col overflow-hidden rounded-[1.5rem] border border-[#ffd23f]/65 bg-[#081127] text-white shadow-[0_30px_90px_rgba(0,0,0,0.7)]"
       >
-        <header className="shrink-0 border-b border-white/10 bg-gradient-to-r from-[#102a75] to-[#081127] px-4 py-3.5 sm:px-6 sm:py-5">
-          <div className="mb-1.5 inline-flex rounded-full bg-[#ffd23f] px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-[#0a216f]">
-            {reason === "missing-name" ? "Place enregistrée" : "Embarquement"}
+        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-white/10 bg-gradient-to-r from-[#102a75] to-[#081127] px-4 py-3.5 sm:px-6 sm:py-5">
+          <div className="min-w-0 flex-1">
+            <div className="mb-1.5 inline-flex rounded-full bg-[#ffd23f] px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-[#0a216f]">
+              {reason === "missing-name" ? "Place enregistrée" : "Embarquement"}
+            </div>
+            <h2 id="onboarding-title" className="text-xl font-black leading-tight sm:text-2xl">
+              {reason === "missing-name" ? "Choisis ton identifiant" : "Monte dans le bus !"}
+            </h2>
+            <p id="onboarding-description" className="mt-1 text-xs leading-relaxed text-[#d8e3ff] sm:text-sm">
+              {reason === "missing-name"
+                ? "Tu as déjà une place dans le bus, mais pas encore de nom. Renseigne un pseudo (et si tu veux, un message ou un personnage) pour continuer."
+                : "Renseigne ton identifiant pour monter à bord. Tu peux aussi ajouter un message et choisir ton personnage."}
+            </p>
           </div>
-          <h2 id="onboarding-title" className="text-xl font-black leading-tight sm:text-2xl">
-            {reason === "missing-name" ? "Choisis ton identifiant" : "Monte dans le bus !"}
-          </h2>
-          <p id="onboarding-description" className="mt-1 text-xs leading-relaxed text-[#d8e3ff] sm:text-sm">
-            {reason === "missing-name"
-              ? "Tu as déjà une place dans le bus, mais pas encore de nom. Renseigne un pseudo (et si tu veux, un message ou un personnage) pour continuer."
-              : "Renseigne ton identifiant pour monter à bord. Tu peux aussi ajouter un message et choisir ton personnage."}
-          </p>
+          {canClose && <ModalCloseButton onClick={close} disabled={saving} />}
         </header>
 
         <form

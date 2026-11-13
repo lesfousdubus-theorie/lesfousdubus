@@ -110,13 +110,14 @@ la théorie arrêtent les images WebGL tout en laissant avancer la télé, sur
 ordinateur et mobile. La vidéo de la théorie conserve sa priorité sonore.
 Les réglages de confort restent accessibles avec F1 après le retrait du bouton
 Aide. Dans `test:ui`, l’embarquement initial passe par `OnboardingModal`
-(pseudo obligatoire non fermable par Échap ou clic extérieur, message et choix
-du personnage facultatifs), et la modification à bord conserve un pseudo non
-supprimable ; sur téléphone (portrait et paysage compact), la musique et le
-réglage audio/progression unifié restent collés à la barre inférieure tandis que
-les commandes secondaires du bus se déplient librement sans bloc fermé au-dessus
-du bouton `Commandes` (ouverture, navigation clavier/Échap avec retour du focus
-et non-chevauchement vérifiés).
+(fermable pour annuler la montée et rester à l’extérieur, avec pseudo requis,
+message et choix du personnage facultatifs), et la modification à bord conserve
+un pseudo non supprimable ; sur téléphone (portrait et paysage compact), la
+musique et son panneau de progression (sans réglage de volume, géré par les
+boutons du téléphone) restent collés à la barre inférieure tandis que les
+commandes secondaires du bus se déplient librement sans bloc fermé au-dessus du
+bouton `Commandes` (ouverture, navigation clavier/Échap avec retour du focus et
+non-chevauchement vérifiés).
 
 `test:avatars` couvre l’orientation de face de chaque personnage réel dans
 l’aperçu, la rotation, les flèches, l’enregistrement, la restauration et la
@@ -136,10 +137,11 @@ utilisent également des données isolées.
 
 `test:immersive-place` vérifie le mode immersif à l’extérieur et à l’intérieur,
 le retour au clavier ou au clic et le focus, sur ordinateur, téléphone étroit et
-paysage. La sortie ordinaire conserve l’inscription ; la suppression demande
-une confirmation, peut être annulée et reste réessayable après une erreur.
-Toutes ses requêtes de profil et de suppression sont interceptées par une
-fixture : aucune donnée réelle n’est modifiée.
+paysage. Il contrôle aussi l’affichage du numéro d’arrivée persistant dans le HUD
+et `ManagePlaceModal`. La sortie ordinaire conserve l’inscription ; la
+suppression demande une confirmation, peut être annulée et reste réessayable
+après une erreur. Toutes ses requêtes de profil et de suppression sont
+interceptées par une fixture : aucune donnée réelle n’est modifiée.
 
 `test:passenger-lifecycle` vérifie qu’un visiteur déjà inscrit reste assis pendant
 que la caméra rejoint sa place, qu’une première entrée ou une remontée après

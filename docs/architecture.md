@@ -103,6 +103,14 @@ d’identifiants stables. Le choix survit aux visites avec la même identité lo
 Changer de personnage conserve le prénom, le commentaire et la place ; les
 anciens visiteurs sans choix explicite gardent leur apparence calculée.
 
+La migration `0008_compact_seats_and_entry_number.sql` sépare l’emplacement
+physique dans le bus (`seat_index`, toujours compacté sur `0..count-1` sans
+siège vide lorsqu’un passager se retire définitivement) du numéro d’arrivée
+permanent (`entry_number`, incrémenté via `bus_stats.last_entry_number`). Ce
+numéro reste fixe pour les passagers déjà à bord lors du départ d’un autre
+passager et est affiché sur le site (`Ma place N° …`, `ManagePlaceModal`,
+`PassengerListModal` et `PassengerCard`).
+
 À l’arrivée, lorsqu’une identité locale (`fdb-visitor`) existe déjà,
 `GET /api/bus-entries?visitorId=...` vérifie la fiche en base sans mise en
 cache (`Cache-Control: no-store`). Si le visiteur possède déjà une place mais
@@ -114,12 +122,13 @@ d’inscription local obsolète est nettoyé sans ouvrir la fenêtre.
 
 Pour un nouveau visiteur non inscrit, l’exploration extérieure et la sélection
 préalable de personnage (`fdb-avatar-draft`) restent libres ; la fenêtre
-d’identification obligatoire (`OnboardingModal`, avec pseudo requis, message
-facultatif et sélecteur de personnage intégré) s’ouvre au clic sur « Entrer
-dans le bus », avant la préparation média et le trajet d’entrée. Une fois à
-bord, le pseudo peut être modifié via `JoinBusModal` mais ne peut plus être
-supprimé individuellement (seuls le commentaire et la suppression complète de la
-place restent possibles).
+d’identification (`OnboardingModal`, avec pseudo requis, message facultatif et
+sélecteur de personnage intégré) s’ouvre au clic sur « Entrer dans le bus »,
+avant la préparation média et le trajet d’entrée, et peut être fermée via la
+croix (ou Échap / clic extérieur) pour rester à l’extérieur sans monter. Une
+fois à bord, le pseudo peut être modifié via `JoinBusModal` mais ne peut plus
+être supprimé individuellement (seuls le commentaire et la suppression complète
+de la place restent possibles).
 
 Le sélecteur est accessible avant et après la montée. Pour un nouveau visiteur
 sans identifiant local (`fdb-visitor`), le choix reste un brouillon local

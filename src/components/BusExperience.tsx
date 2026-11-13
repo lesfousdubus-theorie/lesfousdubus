@@ -93,6 +93,7 @@ export default function BusExperience() {
   const [boardingFromSeat, setBoardingFromSeat] = useState(false);
   const [passengerProfiles, setPassengerProfiles] = useState<PassengerProfile[]>([]);
   const [currentPassengerSeatIndex, setCurrentPassengerSeatIndex] = useState<number | null>(null);
+  const [currentPassengerEntryNumber, setCurrentPassengerEntryNumber] = useState<number | null>(null);
   const [seatCapacity, setSeatCapacity] = useState(() => {
     if (typeof window === "undefined") return 0;
     const value = Number(new URLSearchParams(window.location.search).get("count"));
@@ -218,7 +219,7 @@ export default function BusExperience() {
     return true;
   }, [updateSeatCapacity]);
 
-  const profile = usePassengerProfile({ hasRegisteredPlace: currentPassengerSeatIndex !== null, applyBusSnapshot, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow, showToast });
+  const profile = usePassengerProfile({ hasRegisteredPlace: currentPassengerSeatIndex !== null, applyBusSnapshot, setCurrentPassengerSeatIndex, setCurrentPassengerEntryNumber, setPassengerProfiles, setSeatRow, showToast });
   const {
     showJoinModal, openProfileModal, restoreSavedProfile, clearLocalRegistrationOnly, clearProfile,
     pendingAvatarId, onboardingReason, openOnboardingModal, closeOnboardingModal,
@@ -281,6 +282,7 @@ export default function BusExperience() {
     registrationPending,
     registrationRetryDelayRef,
     setCurrentPassengerSeatIndex,
+    setCurrentPassengerEntryNumber,
     setRegistrationPending,
     restoreSavedProfile,
     clearLocalRegistrationOnly,
@@ -374,6 +376,7 @@ export default function BusExperience() {
         added: boolean;
         passenger: PassengerProfile | null;
         seatIndex: number | null;
+        entryNumber?: number | null;
       }>("/api/bus-entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -397,10 +400,16 @@ export default function BusExperience() {
       setBoardingFromSeat(!hasEntered && d.added === false && d.seatIndex !== null);
       setRegistrationPending(false);
       setCurrentPassengerSeatIndex(d.seatIndex);
+      setCurrentPassengerEntryNumber((previous) =>
+        d.seatIndex === null
+          ? null
+          : (d.entryNumber ?? d.passenger?.entryNumber ?? previous ?? d.seatIndex + 1),
+      );
       const resolvedPassenger = d.passenger ?? (
         d.seatIndex !== null && submission
           ? {
               seatIndex: d.seatIndex,
+              entryNumber: d.entryNumber ?? d.seatIndex + 1,
               displayName: submission.displayName,
               comment: submission.comment || null,
               avatarId: submission.avatarId,
@@ -489,6 +498,7 @@ export default function BusExperience() {
       setTvOn(false);
       setHasEntered(false);
       setCurrentPassengerSeatIndex(null);
+      setCurrentPassengerEntryNumber(null);
       setShowTheoryModal(false);
       setShowPlaceModal(false);
       setPhase((current) => current === "inside" ? "exiting" : "outside");
@@ -557,6 +567,9 @@ export default function BusExperience() {
   }, [showToast]);
 
   const effectiveCount = count ?? 0;
+  const effectiveEntryNumber = currentPassengerSeatIndex !== null
+    ? (currentPassengerEntryNumber ?? currentPassengerSeatIndex + 1)
+    : null;
   const numRows = getBusPhysicalRows(seatCapacity);
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
@@ -612,6 +625,7 @@ export default function BusExperience() {
 
       <BusHud
         hasSavedPlace={currentPassengerSeatIndex !== null}
+        entryNumber={effectiveEntryNumber}
         openPlaceModal={() => setShowPlaceModal(true)}
         openAvatarModal={profile.openAvatarModal}
         phase={phase}
@@ -679,7 +693,7 @@ export default function BusExperience() {
         onClose={() => setShowTheoryModal(false)}
         onManagePlace={currentPassengerSeatIndex !== null ? () => { setShowTheoryModal(false); setShowPlaceModal(true); } : undefined}
       />
-      {showPlaceModal && <ManagePlaceModal inside={phase === "inside"} onClose={() => setShowPlaceModal(false)}
+      {showPlaceModal && <ManagePlaceModal inside={phase === "inside"} entryNumber={effectiveEntryNumber} onClose={() => setShowPlaceModal(false)}
         onExit={() => { setShowPlaceModal(false); exitBus(); }} onDelete={leaveBusPermanently} />}
       <PassengerDialogs profile={profile} directory={directory} count={count} currentSeatIndex={currentPassengerSeatIndex} onSubmitOnboarding={handleSubmitOnboarding} />
       {profile.showAvatarModal && <AvatarSelectionModal avatarId={profile.savedAvatarId} seatIndex={currentPassengerSeatIndex} hasRegisteredPlace={currentPassengerSeatIndex !== null} hasExistingVisitor={profile.hasExistingVisitor}

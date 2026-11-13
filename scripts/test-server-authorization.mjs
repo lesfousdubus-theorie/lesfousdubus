@@ -97,8 +97,10 @@ export async function runServerAuthorizationChecks() {
         assert.equal(anonymousLookupData.registered, true);
         assert.equal(anonymousLookupData.hasDisplayName, false);
         assert.equal(anonymousLookupData.seatIndex, own.data.seatIndex);
+        assert.equal(anonymousLookupData.entryNumber, 1);
         assert.deepEqual(anonymousLookupData.passenger, {
           seatIndex: own.data.seatIndex,
+          entryNumber: 1,
           displayName: "",
           comment: null,
           avatarId: null,
@@ -248,16 +250,35 @@ export async function runServerAuthorizationChecks() {
           assert.equal(res.status, 200);
           assert.equal(res.data.added, true);
           assert(typeof res.data.seatIndex === "number");
+          assert(typeof res.data.entryNumber === "number");
         }
         const assignedSeats = concurrentJoins.map((res) => res.data.seatIndex).sort((a, b) => a - b);
         const uniqueSeats = new Set(assignedSeats);
         assert.equal(uniqueSeats.size, concurrentCount, "Concurrent joins must all receive distinct seats.");
+        const assignedEntryNumbers = concurrentJoins.map((res) => res.data.entryNumber).sort((a, b) => a - b);
+        assert.equal(new Set(assignedEntryNumbers).size, concurrentCount, "Concurrent joins must all receive distinct entry numbers.");
         for (let i = 0; i < concurrentCount; i++) {
-          assert.equal(assignedSeats[i], i, `Seat at index ${i} must be ${i} (reusing vacant then sequential)`);
+          assert.equal(assignedSeats[i], i, `Seat at index ${i} must be ${i}`);
         }
-        const concurrentSeatFetch = await worker.fetch(`http://isolated.test/api/bus-entries?seat=${assignedSeats[0]}`);
+        const secondPassengerBeforeDelete = concurrentJoins.find((res) => res.data.seatIndex === 1);
+        const preservedEntryNumber = secondPassengerBeforeDelete.data.entryNumber;
+        const secondVisitorId = secondPassengerBeforeDelete.data.passenger.displayName === "Nakama 0"
+          ? "auth-concurrent-0"
+          : `auth-concurrent-${Number(secondPassengerBeforeDelete.data.passenger.displayName.replace("Nakama ", ""))}`;
+        const removeFirstSeat = await request("DELETE", { seatIndex: 0 }, moderationToken);
+        assert.equal(removeFirstSeat.status, 200);
+        assert.equal(removeFirstSeat.data.removed, true);
+        assert.equal(removeFirstSeat.data.seatCapacity, concurrentCount - 1);
+        assert.deepEqual(removeFirstSeat.data.vacantSeatRanges, []);
+        const shiftedLookup = await worker.fetch(`http://isolated.test/api/bus-entries?visitorId=${encodeURIComponent(secondVisitorId)}`);
+        assert.equal(shiftedLookup.status, 200);
+        const shiftedData = await shiftedLookup.json();
+        assert.equal(shiftedData.seatIndex, 0, "Deleting seat 0 shifts seat 1 to seat 0.");
+        assert.equal(shiftedData.entryNumber, preservedEntryNumber, "Permanent deletion of an earlier passenger preserves remaining entry numbers.");
+        assert.equal(shiftedData.passenger.entryNumber, preservedEntryNumber);
+        const concurrentSeatFetch = await worker.fetch(`http://isolated.test/api/bus-entries?seat=0`);
         assert.equal(concurrentSeatFetch.status, 200);
-        assert.match((await concurrentSeatFetch.json()).passenger.comment, /\n\nLigne B 0$/, "Concurrent passenger multiline comment must persist cleanly.");
+        assert.equal((await concurrentSeatFetch.json()).passenger.entryNumber, preservedEntryNumber);
         const quotaGhost = `auth-${configuration.name}-quota-ghost`;
         for (let attempt = 0; attempt < 7; attempt++) {
           const res = await request("POST", { visitorId: quotaGhost, avatarId: attempt % 2 ? "zoro" : "nami", updateOnly: true }, undefined, "198.51.100.77");
