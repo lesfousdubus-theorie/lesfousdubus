@@ -2,15 +2,32 @@
 
 import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { playStretch } from "@/lib/horn";
-import { ApiError, fetchJson, getOrCreateVisitorId, isRetryableRegistrationError, type BusApiState } from "@/lib/client/bus-api";
+import { ApiError, fetchJson, getExistingVisitorId, getOrCreateVisitorId, isRetryableRegistrationError, type BusApiState } from "@/lib/client/bus-api";
 import type { PassengerProfile } from "@/types/passenger";
 import type { Phase } from "./bus/constants";
 import { computeNumRows } from "@/lib/bus-layout";
 import { getBusPhysicalRows } from "@/lib/bus-occupancy";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
+import type { OnboardingReason } from "./modals/OnboardingModal";
+import type { OnboardingSeed } from "./usePassengerProfile";
+
+export interface PendingRegistrationProfile {
+  displayName?: string;
+  comment?: string;
+  avatarId?: PassengerAvatarId | null;
+}
+
+export interface VisitorLookupResult {
+  seatIndex: number | null;
+  hasDisplayName: boolean;
+  displayName: string;
+}
 
 interface BusSyncOptions {
   pendingAvatarId: PassengerAvatarId | null;
+  pendingRegistrationProfileRef: RefObject<PendingRegistrationProfile | null>;
+  visitorLookupPromiseRef: RefObject<Promise<VisitorLookupResult | null> | null>;
+  latestRegistrationRef: RefObject<{ seatIndex: number | null; displayName: string }>;
   applyBusSnapshot: (data: BusApiState, updateCount?: boolean) => boolean;
   statsRetryToken: number;
   setStatsLoadError: Dispatch<SetStateAction<boolean>>;
@@ -28,19 +45,27 @@ interface BusSyncOptions {
   setCurrentPassengerSeatIndex: Dispatch<SetStateAction<number | null>>;
   setRegistrationPending: Dispatch<SetStateAction<boolean>>;
   restoreSavedProfile: (passenger: PassengerProfile | null) => void;
+  clearLocalRegistrationOnly: () => void;
+  openOnboardingModal: (reason: OnboardingReason, initialError?: string, seed?: OnboardingSeed) => void;
 }
 
 export function useBusSync({
   applyBusSnapshot, statsRetryToken, setStatsLoadError, phase, seatRow, setSeatRow,
   profileRevision, setPassengerProfiles, seatCapacityRef, count, setCount, showToast,
   registrationPending, registrationRetryDelayRef, setCurrentPassengerSeatIndex,
-  setRegistrationPending, restoreSavedProfile,
-  pendingAvatarId,
+  setRegistrationPending, restoreSavedProfile, clearLocalRegistrationOnly,
+  openOnboardingModal, pendingAvatarId, pendingRegistrationProfileRef,
+  visitorLookupPromiseRef, latestRegistrationRef,
 }: BusSyncOptions) {
   const countRef = useRef(count);
   useEffect(() => {
     countRef.current = count;
   }, [count]);
+
+  const registrationPendingRef = useRef(registrationPending);
+  useEffect(() => {
+    registrationPendingRef.current = registrationPending;
+  }, [registrationPending]);
 
   // Récupération initiale : une erreur conserve l'état "inconnu" et propose
   // explicitement une nouvelle tentative au lieu de laisser un simple tiret.
@@ -58,6 +83,104 @@ export function useBusSync({
       });
     return () => controller.abort();
   }, [applyBusSnapshot, setStatsLoadError, statsRetryToken]);
+
+  // Vérification initiale de la fiche du visiteur en base :
+  // - inscrit sans pseudo -> ouvre immédiatement la fenêtre d'identification ;
+  // - inscrit avec pseudo -> restaure le profil sans ouvrir la fenêtre ;
+  // - non inscrit -> efface le cache d'inscription obsolète sans ouvrir la fenêtre.
+  useEffect(() => {
+    const visitorId = getExistingVisitorId();
+    if (!visitorId) {
+      visitorLookupPromiseRef.current = null;
+      return;
+    }
+
+    const controller = new AbortController();
+    const lookupPromise: Promise<VisitorLookupResult | null> = fetchJson<BusApiState & {
+      registered?: boolean;
+      hasDisplayName?: boolean;
+      seatIndex?: number | null;
+      passenger?: PassengerProfile | null;
+    }>(`/api/bus-entries?visitorId=${encodeURIComponent(visitorId)}`, {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then((data): VisitorLookupResult | null => {
+        if (controller.signal.aborted || registrationPendingRef.current) return null;
+        applyBusSnapshot(data);
+
+        const registered = typeof data.registered === "boolean"
+          ? data.registered
+          : (data.seatIndex !== null && data.seatIndex !== undefined && data.passenger !== null);
+        if (!registered) {
+          latestRegistrationRef.current = { seatIndex: null, displayName: "" };
+          setCurrentPassengerSeatIndex(null);
+          clearLocalRegistrationOnly();
+          return { seatIndex: null, hasDisplayName: false, displayName: "" };
+        }
+
+        const seatIndex = data.seatIndex ?? data.passenger?.seatIndex ?? null;
+        const rawName = (data.passenger?.displayName ?? "").trim();
+        const hasDisplayName = typeof data.hasDisplayName === "boolean"
+          ? data.hasDisplayName
+          : Boolean(rawName && rawName !== "Anonyme");
+        const normalizedName = hasDisplayName ? rawName : "";
+        const normalizedPassenger: PassengerProfile | null = data.passenger
+          ? { ...data.passenger, displayName: normalizedName }
+          : seatIndex !== null
+            ? { seatIndex, displayName: "", comment: null, avatarId: null }
+            : null;
+
+        latestRegistrationRef.current = { seatIndex, displayName: normalizedName };
+        setCurrentPassengerSeatIndex(seatIndex);
+        restoreSavedProfile(normalizedPassenger);
+        if (normalizedPassenger) {
+          const hasPublicData = Boolean(
+            normalizedPassenger.displayName
+            || normalizedPassenger.comment
+            || normalizedPassenger.avatarId,
+          );
+          setPassengerProfiles((profiles) =>
+            hasPublicData
+              ? [...profiles.filter((profile) => profile.seatIndex !== normalizedPassenger.seatIndex), normalizedPassenger]
+              : profiles.filter((profile) => profile.seatIndex !== normalizedPassenger.seatIndex),
+          );
+        }
+        if (!hasDisplayName) {
+          openOnboardingModal("missing-name", "", {
+            displayName: "",
+            comment: normalizedPassenger?.comment ?? "",
+            avatarId: normalizedPassenger?.avatarId ?? null,
+            hasLockedDbAvatar: Boolean(normalizedPassenger?.avatarId),
+          });
+        }
+        return { seatIndex, hasDisplayName, displayName: normalizedName };
+      })
+      .catch(() => null)
+      .finally(() => {
+        if (visitorLookupPromiseRef.current === lookupPromise) {
+          visitorLookupPromiseRef.current = null;
+        }
+      });
+
+    visitorLookupPromiseRef.current = lookupPromise;
+    return () => {
+      controller.abort();
+      if (visitorLookupPromiseRef.current === lookupPromise) {
+        visitorLookupPromiseRef.current = null;
+      }
+    };
+  }, [
+    applyBusSnapshot,
+    clearLocalRegistrationOnly,
+    latestRegistrationRef,
+    openOnboardingModal,
+    restoreSavedProfile,
+    setCurrentPassengerSeatIndex,
+    setPassengerProfiles,
+    statsRetryToken,
+    visitorLookupPromiseRef,
+  ]);
 
   // Seuls les profils proches de la caméra sont chargés : le compteur peut ainsi
   // grandir sans télécharger des milliers de commentaires à chaque actualisation.
@@ -161,25 +284,60 @@ export function useBusSync({
       if (running || controller.signal.aborted || document.hidden) return;
       running = true;
       try {
+        const retryProfile = pendingRegistrationProfileRef.current;
+        const retryAvatarId = retryProfile?.avatarId ?? pendingAvatarId ?? null;
+        const retryPayload: {
+          visitorId: string;
+          displayName?: string;
+          comment?: string;
+          avatarId?: PassengerAvatarId;
+        } = { visitorId: getOrCreateVisitorId() };
+        if (retryProfile?.displayName) retryPayload.displayName = retryProfile.displayName;
+        if (
+          retryProfile
+          && retryProfile.comment !== undefined
+          && (retryProfile.comment || latestRegistrationRef.current.seatIndex !== null)
+        ) {
+          retryPayload.comment = retryProfile.comment;
+        }
+        if (retryAvatarId) retryPayload.avatarId = retryAvatarId;
+
         const data = await fetchJson<BusApiState & { seatIndex: number | null; passenger: PassengerProfile | null }>("/api/bus-entries", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
-          body: JSON.stringify({ visitorId: getOrCreateVisitorId(), ...(pendingAvatarId ? { avatarId: pendingAvatarId } : {}) }),
+          body: JSON.stringify(retryPayload),
           signal: controller.signal,
         });
         if (controller.signal.aborted) return;
-        if (pendingAvatarId && data.passenger?.avatarId !== pendingAvatarId) throw new ApiError("Le personnage choisi n’a pas pu être enregistré.", 502);
+        if (retryAvatarId && data.passenger?.avatarId !== retryAvatarId) {
+          throw new ApiError("Le personnage choisi n’a pas pu être enregistré.", 502);
+        }
+        pendingRegistrationProfileRef.current = null;
         applyBusSnapshot(data);
         setCurrentPassengerSeatIndex(data.seatIndex);
-        restoreSavedProfile(data.passenger);
+        const resolvedPassenger = data.passenger ?? (
+          data.seatIndex !== null && retryProfile?.displayName
+            ? {
+                seatIndex: data.seatIndex,
+                displayName: retryProfile.displayName,
+                comment: retryProfile.comment || null,
+                avatarId: retryAvatarId,
+              }
+            : null
+        );
+        latestRegistrationRef.current = {
+          seatIndex: data.seatIndex,
+          displayName: resolvedPassenger?.displayName?.trim() || retryProfile?.displayName || "",
+        };
+        restoreSavedProfile(resolvedPassenger);
         if (data.seatIndex !== null) {
           setSeatRow(Math.min(computeNumRows(data.seatCapacity) - 1, Math.floor(data.seatIndex / 4)));
         }
-        if (data.passenger) {
+        if (resolvedPassenger) {
           setPassengerProfiles((profiles) => [
-            ...profiles.filter((profile) => profile.seatIndex !== data.passenger!.seatIndex),
-            data.passenger!,
+            ...profiles.filter((profile) => profile.seatIndex !== resolvedPassenger.seatIndex),
+            resolvedPassenger,
           ]);
         }
         registrationRetryDelayRef.current = 10_000;
@@ -187,6 +345,7 @@ export function useBusSync({
       } catch (error) {
         if (controller.signal.aborted) return;
         if (!isRetryableRegistrationError(error)) {
+          pendingRegistrationProfileRef.current = null;
           setRegistrationPending(false);
           showToast("Inscription refusée", "Recharge la page avant de réessayer.", "⚠ ERREUR");
           return;
@@ -211,6 +370,6 @@ export function useBusSync({
       document.removeEventListener("visibilitychange", resume);
       controller.abort();
     };
-  }, [applyBusSnapshot, registrationPending, registrationRetryDelayRef, restoreSavedProfile, setCurrentPassengerSeatIndex, setRegistrationPending, showToast, pendingAvatarId, setSeatRow, setPassengerProfiles]);
+  }, [applyBusSnapshot, latestRegistrationRef, pendingAvatarId, pendingRegistrationProfileRef, registrationPending, registrationRetryDelayRef, restoreSavedProfile, setCurrentPassengerSeatIndex, setPassengerProfiles, setRegistrationPending, setSeatRow, showToast]);
 
 }

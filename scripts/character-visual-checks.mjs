@@ -20,12 +20,12 @@ export async function runCharacterVisualChecks({ send, evaluate, waitForPageCond
         snapshot.passengers=Array.from({length:20},(_,seatIndex)=>({seatIndex,displayName:['Epic Games','Kirito'][seatIndex]??null,hasComment:false}));
         snapshot.nextFrom=20;snapshot.hasMore=false;
       }
-      if(method==='POST')return Promise.resolve(new Response(JSON.stringify({...snapshot,seatIndex:0,added:false,passenger:null}),{headers:{'Content-Type':'application/json'}}));
+      if(method==='POST')return Promise.resolve(new Response(JSON.stringify({...snapshot,seatIndex:0,added:false,passenger:{seatIndex:0,displayName:'Visiteur inspection',comment:null,avatarId:null}}),{headers:{'Content-Type':'application/json'}}));
       if(method!=='GET'&&method!=='HEAD'){
         window.characterMutationRequests.push({method,path:url.pathname});
         return Promise.resolve(new Response(JSON.stringify({error:'The character fixture cannot change visitor records.'}),{status:405,headers:{'Content-Type':'application/json'}}));
       }
-      return Promise.resolve(new Response(JSON.stringify(snapshot),{headers:{'Content-Type':'application/json'}}));
+      return Promise.resolve(new Response(JSON.stringify({...snapshot,registered:false,hasDisplayName:false,seatIndex:null,passenger:null}),{headers:{'Content-Type':'application/json'}}));
     };
   `});
   try {
@@ -36,6 +36,11 @@ export async function runCharacterVisualChecks({ send, evaluate, waitForPageCond
     await send("Page.navigate", {url:`${baseUrl}/?count=20&seat=0&row=0`});
     await waitForPageCondition(send, `window.busCameraTestState()?.scene.getObjectByName('bus-seated-passengers')?.userData.detailedCount>0 && document.querySelector('.bus-app').dataset.sceneAvailable==='true'&&Boolean(window.mediaTestPlayers?.bus)`, "The isolated registered visitors load", 30_000);
     await run(`[...document.querySelectorAll('button')].find(button=>!button.disabled&&button.textContent.includes('Entrer dans le bus')).click()`);
+    await waitForPageCondition(send, `Boolean(document.getElementById('onboarding-name'))`, "Onboarding modal opens before entering", 15_000);
+    await run(`document.getElementById('onboarding-name').focus()`);
+    await send("Input.insertText", { text: "Visiteur inspection" });
+    await waitForPageCondition(send, `document.getElementById('onboarding-name')?.value === 'Visiteur inspection'`, "Onboarding identifiant typed");
+    await run(`document.querySelector('[role="dialog"] button[type="submit"]').click()`);
     await waitForPageCondition(send, `document.querySelector('.bus-app').dataset.phase==='inside'`, "Fixture visitor zero boards without a database write", 60_000);
     await run(`document.querySelector('button[aria-label="Explorer en vue libre"]').click()`);
     await waitForPageCondition(send, `window.busCameraTestState().controls.enabled`, "Character inspection starts in free view", 15_000);
@@ -88,12 +93,16 @@ export async function runCharacterVisualChecks({ send, evaluate, waitForPageCond
     assert(crew.every(driver=>driver.joined&&driver.neckJoined&&Math.abs(driver.feetY-.63)<.005),"Both guides must have their pelvis and neck connected to the torso and shoes on the floor.");
     await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
     await waitForPageCondition(send, `window.busDestinationTestReducedMotion()===true`, "Reduced-motion preference reaches the character scene");
+    await waitForPageCondition(send, `(()=>{const scene=window.busCameraTestState()?.scene;if(!scene)return false;const poses=[];scene.traverse(object=>{
+      if(!/^nakama-.*-[0-9]+$/.test(object.name)||object.userData.passengerKind!=='visitor'||!Number.isInteger(object.userData.physicalSeatIndex))return;
+      poses.push({breath:object.getObjectByName('nakama-torso').parent.scale.x,bob:object.getObjectByName('nakama-neck').parent.rotation.x});
+    });return poses.length===${characters.length}&&poses.every(pose=>pose.breath===1&&pose.bob===0);})()`, "Reduced-motion transition settles all mounted visitors to still poses", 15_000);
     await run(`new Promise(resolve=>{const s=window.busCameraTestState(),frame=s.gl.info.render.frame;const check=()=>s.gl.info.render.frame>frame+1?resolve(true):requestAnimationFrame(check);requestAnimationFrame(check);})`);
     const still=await run(`(() => {const scene=window.busCameraTestState().scene, poses=[];scene.traverse(object=>{
       if(!/^nakama-.*-[0-9]+$/.test(object.name)||object.userData.passengerKind!=='visitor'||!Number.isInteger(object.userData.physicalSeatIndex))return;
       poses.push({breath:object.getObjectByName('nakama-torso').parent.scale.x,bob:object.getObjectByName('nakama-neck').parent.rotation.x});
     });return poses;})()`);
-    assert(still.length===characters.length&&still.every(pose=>pose.breath===1&&pose.bob===0),"Reduced-motion mode must suspend decorative body and head motion on every mounted visitor.");
+    assert(still.length===characters.length&&still.every(pose=>pose.breath===1&&pose.bob===0),`Reduced-motion mode must suspend decorative body and head motion on every mounted visitor. expected=${characters.length} got=${still.length} nonStill=${JSON.stringify(still.filter(p=>p.breath!==1||p.bob!==0))}`);
     await send("Emulation.setEmulatedMedia",{features:[]});
     const details=await run(`(() => {
       const scene=window.busCameraTestState().scene, bus=scene.getObjectByName('bus-vehicle'), slogans=[];

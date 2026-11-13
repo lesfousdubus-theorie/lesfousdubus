@@ -55,6 +55,34 @@ export async function GET(request: Request) {
       } }, { headers: READ_HEADERS });
     }
 
+    const visitorIdParam = url.searchParams.get("visitorId");
+    if (visitorIdParam !== null) {
+      const visitorId = visitorIdParam.trim();
+      if (!isValidVisitorId(visitorId)) {
+        return Response.json({ error: "Identifiant visiteur invalide." }, { status: 400, headers: WRITE_HEADERS });
+      }
+      const row = await database.prepare(
+        `SELECT seat_index, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
+      ).bind(visitorId).first<PassengerRow>();
+      const stats = await readBusStats(database);
+      const avatarId = row && isPassengerAvatarId(row.avatar_id) ? row.avatar_id : null;
+      const hasDisplayName = Boolean(row?.display_name && row.display_name.trim().length > 0);
+      return Response.json({
+        ...stats,
+        registered: Boolean(row),
+        hasDisplayName,
+        seatIndex: row ? Number(row.seat_index) : null,
+        passenger: row
+          ? {
+              seatIndex: Number(row.seat_index),
+              displayName: row.display_name || "",
+              comment: row.comment || null,
+              avatarId,
+            }
+          : null,
+      }, { headers: WRITE_HEADERS });
+    }
+
     const wantsProfiles = url.searchParams.get("profiles") === "1";
     const wantsManifest = url.searchParams.get("manifest") === "1";
 
@@ -117,13 +145,16 @@ export async function POST(request: Request) {
     const hasDisplayName = Object.prototype.hasOwnProperty.call(body, "displayName");
     const hasComment = Object.prototype.hasOwnProperty.call(body, "comment");
     const hasAvatar = Object.prototype.hasOwnProperty.call(body, "avatarId");
+    const hasUpdateOnly = Object.prototype.hasOwnProperty.call(body, "updateOnly");
     if (
       (hasDisplayName && typeof body.displayName !== "string")
       || (hasComment && typeof body.comment !== "string")
       || (hasAvatar && !isPassengerAvatarId(body.avatarId))
+      || (hasUpdateOnly && typeof body.updateOnly !== "boolean")
     ) {
       return Response.json({ error: "Profil invalide." }, { status: 400, headers: WRITE_HEADERS });
     }
+    const updateOnly = body.updateOnly === true;
     const displayName = cleanText(body.displayName, 24);
     const comment = cleanText(body.comment, 180, true);
     if (displayName) {
@@ -146,7 +177,7 @@ export async function POST(request: Request) {
     let existing = await database.prepare(
       "SELECT seat_index FROM bus_entries WHERE visitor_id = ?",
     ).bind(visitorId).first<{ seat_index: number }>();
-    const action = existing ? "profile" : "join";
+    const action = existing || updateOnly ? "profile" : "join";
     // Deux étages : un quota généreux pour l'IP partagée (école, salon,
     // entreprise), puis un quota plus strict par navigateur/visiteur.
     const sharedRateLimit = await consumeRateLimit(
@@ -159,7 +190,7 @@ export async function POST(request: Request) {
     if (!rateLimit.allowed) return rateLimitedResponse(rateLimit.retryAfter);
 
     let added = false;
-    if (!existing) {
+    if (!existing && !updateOnly) {
       const MAX_SEAT_ATTEMPTS = 5;
       for (let attempt = 0; attempt < MAX_SEAT_ATTEMPTS; attempt++) {
         try {
@@ -207,9 +238,11 @@ export async function POST(request: Request) {
         hasAvatar ? 1 : 0, hasAvatar ? body.avatarId : null, visitorId).run();
     }
 
-    const passengerRow = await database.prepare(
-      `SELECT seat_index, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
-    ).bind(visitorId).first<PassengerRow>();
+    const passengerRow = existing || !updateOnly
+      ? await database.prepare(
+          `SELECT seat_index, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
+        ).bind(visitorId).first<PassengerRow>()
+      : null;
     const stats = await readBusStats(database);
     return Response.json({
       ...stats,

@@ -49,14 +49,17 @@ export async function runCrewSeatDesignChecks({ send, evaluate, waitForPageCondi
         snapshot.passengers=Array.from({length:Math.min(snapshot.count,100)},(_,seatIndex)=>({seatIndex,displayName:['Epic Games','Kirito'][seatIndex]??null,hasComment:false}));
         snapshot.nextFrom=snapshot.passengers.length;snapshot.hasMore=snapshot.count>100;
       }
-      if (method === 'GET' || method === 'HEAD') return Promise.resolve(response(snapshot));
+      if (method === 'GET' || method === 'HEAD') return Promise.resolve(response(url.searchParams.has('manifest')
+        ? snapshot
+        : { ...snapshot, registered: false, hasDisplayName: false, seatIndex: null, passenger: null }));
       if (method === 'POST') {
         window.crewSeatJoined = true;
         window.crewSeatPending = true;
         return new Promise(resolve => {
           const finish = () => { window.crewSeatPending = false; resolve(response({ ...snapshot,
             count: Math.max(count, seatIndex + 1), seatCapacity: Math.max(count, seatIndex + 1),
-            seatIndex, added: seatIndex >= count, passenger: null })); };
+            seatIndex, added: seatIndex >= count,
+            passenger: { seatIndex, displayName: 'Test équipage', comment: null, avatarId: null } })); };
           if(window.crewSeatHoldRegistration)window.crewSeatReleaseRegistration = finish;
           else finish();
         });
@@ -142,9 +145,17 @@ export async function runCrewSeatDesignChecks({ send, evaluate, waitForPageCondi
   const enter = async (checkPending = false) => {
     if (checkPending) {
       results.beforeRegistration = await occupancy(4, false);
-      await run("window.crewSeatHoldRegistration=true");
     }
     await run("[...document.querySelectorAll('button')].find(button=>!button.disabled&&button.textContent.includes('Entrer dans le bus')).click()");
+    await wait("Boolean(document.getElementById('onboarding-name'))", "The mandatory identification modal opens on boarding");
+    await run("document.getElementById('onboarding-name').focus()");
+    await wait("document.activeElement === document.getElementById('onboarding-name')", "The onboarding input takes focus");
+    await send("Input.insertText", { text: "Test équipage" });
+    await wait("document.getElementById('onboarding-name')?.value === 'Test équipage'", "The onboarding display name is entered");
+    if (checkPending) {
+      await run("window.crewSeatHoldRegistration=true");
+    }
+    await run("document.querySelector('[role=\"dialog\"] button[type=\"submit\"]').click()");
     if (checkPending) {
       await wait("window.crewSeatPending&&window.busJourneyTestState().waitingForSeat", "The real scene waits for seat assignment");
       results.pendingRegistration = await occupancy(4, false);

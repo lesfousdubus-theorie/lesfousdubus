@@ -3,16 +3,34 @@
 import type { usePassengerDirectory } from "../usePassengerDirectory";
 import type { usePassengerProfile } from "../usePassengerProfile";
 import { JoinBusModal } from "./JoinBusModal";
+import { OnboardingModal, type OnboardingSubmission } from "./OnboardingModal";
 import { PassengerCard } from "./PassengerCard";
 import { PassengerListModal } from "./PassengerListModal";
 
 /** Présentation des fenêtres ; les hooks possèdent les requêtes et leurs annulations. */
-export function PassengerDialogs({ profile, directory, count }: {
+export function PassengerDialogs({ profile, directory, count, currentSeatIndex, onSubmitOnboarding }: {
   profile: ReturnType<typeof usePassengerProfile>;
   directory: ReturnType<typeof usePassengerDirectory>;
   count: number | null;
+  currentSeatIndex: number | null;
+  onSubmitOnboarding: (submission: OnboardingSubmission) => void;
 }) {
   return <>
+    {profile.onboardingReason && (
+      <OnboardingModal
+        key={profile.onboardingInstanceKey}
+        reason={profile.onboardingReason}
+        seatIndex={currentSeatIndex}
+        initialName={profile.onboardingSeed.displayName}
+        initialComment={profile.onboardingSeed.comment}
+        initialAvatarId={profile.onboardingSeed.avatarId}
+        hasLockedDbAvatar={profile.onboardingSeed.hasLockedDbAvatar}
+        saving={profile.profileSaving}
+        error={profile.onboardingError}
+        onClearError={profile.clearOnboardingError}
+        onSubmit={onSubmitOnboarding}
+      />
+    )}
     <JoinBusModal
       isOpen={profile.showJoinModal} mode={profile.profileModalMode}
       name={profile.joinName} comment={profile.joinComment} error={profile.joinError} joining={profile.profileSaving}

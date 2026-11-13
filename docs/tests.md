@@ -109,12 +109,23 @@ lecteurs simulés. `test:overlays` vérifie que les fenêtres Passagers et âge 
 la théorie arrêtent les images WebGL tout en laissant avancer la télé, sur
 ordinateur et mobile. La vidéo de la théorie conserve sa priorité sonore.
 Les réglages de confort restent accessibles avec F1 après le retrait du bouton
-Aide.
+Aide. Dans `test:ui`, l’embarquement initial passe par `OnboardingModal`
+(pseudo obligatoire non fermable par Échap ou clic extérieur, message et choix
+du personnage facultatifs), et la modification à bord conserve un pseudo non
+supprimable ; sur téléphone (portrait et paysage compact), les commandes
+secondaires sont regroupées sous le bouton dépliable `Commandes` (ouverture,
+navigation clavier/Échap avec retour du focus et non-chevauchement vérifiés).
 
 `test:avatars` couvre l’orientation de face de chaque personnage réel dans
 l’aperçu, la rotation, les flèches, l’enregistrement, la restauration et la
-hauteur de vue de Chopper. Le choix avant la montée ne produit aucun POST,
-survit au rechargement et accompagne ensuite la requête d’inscription.
+hauteur de vue de Chopper. Pour un nouveau visiteur sans identifiant, le choix
+avant la montée ne produit aucun POST, survit au rechargement et accompagne
+ensuite l’inscription via `OnboardingModal` ; pour un visiteur déjà entré qui
+recharge la page avec un pseudo enregistré, le changement avant la remontée
+envoie immédiatement une mise à jour (`updateOnly: true`), ou revient au
+brouillon si la place n’existe plus ; un visiteur déjà inscrit sans pseudo en
+base (`hasDisplayName: false`) déclenche immédiatement l’identification dès
+l’arrivée sur le site.
 `test:music-controls` couvre la préparation muette
 des deux pistes, y compris un tampon lent et les notifications de la TV pendant
 le préchargement, la commande de lecture synchrone au clic, la recherche via le

@@ -21,7 +21,10 @@ const poseFields = ["headYaw","headPitch","torsoYaw","torsoPitch","torsoRoll","r
 export function blendPassengerPose(current: PassengerPose, target: PassengerPose, dt: number, reducedMotion: boolean) {
   // Même les poses statiques passent par une courte transition, sans saut de bras.
   const mix = 1 - Math.exp((reducedMotion ? -18 : -12) * Math.max(0, Math.min(dt, .25)));
-  for (const key of poseFields) current[key] += (target[key] - current[key]) * mix;
+  for (const key of poseFields) {
+    const next = current[key] + (target[key] - current[key]) * mix;
+    current[key] = reducedMotion && mix > 0 && Math.abs(target[key] - next) < 1e-5 ? target[key] : next;
+  }
   current.activity = target.activity; current.games = target.games; current.celebrating = target.celebrating; current.gesture = target.gesture;
 }
 const clamp = (value: number) => Math.max(0, Math.min(1, value));

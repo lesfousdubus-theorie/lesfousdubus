@@ -283,6 +283,11 @@ export async function runBusCameraChecks({ send, evaluate, waitForPageCondition,
       throw error;
     }
     const exteriorView=await run(`(()=>{const s=window.busCameraTestState();return {position:s.camera.position.toArray(),target:s.controls.target.toArray()};})()`);
+    await run(`[...document.querySelectorAll('button')].find(button=>button.textContent?.includes('Entrer dans le bus')).click()`);
+    await waitForPageCondition(send, `Boolean(document.getElementById('onboarding-name'))`, "Onboarding opens before boarding");
+    await run(`document.getElementById('onboarding-name').focus()`);
+    await send("Input.insertText", { text: "Test caméra" });
+    await waitForPageCondition(send, `document.getElementById('onboarding-name')?.value === 'Test caméra'`, "Onboarding identifiant entered");
     await run(`(() => {
       window.busBoardingSamples=[];
       const sample=()=>{
@@ -291,7 +296,7 @@ export async function runBusCameraChecks({ send, evaluate, waitForPageCondition,
         if(phase==='entering'&&trip?.phase===phase)window.busBoardingSamples.push({position:trip.position.toArray(),camera:s.camera.position.toArray(),elapsed:trip.elapsed,drive:trip.drive,sitting:trip.sitting,blend:trip.cameraBlend,knee:s.scene.getObjectByName('avatar-shin-0').rotation.x,step:s.scene.getObjectByName('bus-entry-step-0').position.toArray(),headVisible:s.scene.getObjectByName('bus-boarding-avatar-head').visible,angle:s.scene.getObjectByName('bus-door-front-leaf').rotation.y});
         if(phase!=='inside')requestAnimationFrame(sample);
       };requestAnimationFrame(sample);
-      [...document.querySelectorAll('button')].find(button=>button.textContent?.includes('Entrer dans le bus')).click();
+      document.querySelector('[role="dialog"] button[type="submit"]').click();
     })()`);
     boardingVisitor = await run(`localStorage.getItem('fdb-visitor')`);
     await waitForPageCondition(send, `document.querySelector('.bus-app')?.dataset.phase === 'inside'`, "Boarding through the open door finishes", 90_000);

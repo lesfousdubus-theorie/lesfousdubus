@@ -3,7 +3,16 @@
 import { useLayoutEffect, useRef } from "react";
 import type { Phase } from "./bus/constants";
 
-export function useHudLayout(phase: Phase, hidden: boolean, showVolumePopup: boolean, sceneAvailable: boolean) {
+export const COMPACT_HUD_MEDIA_QUERY = "(max-width: 639px), (orientation: landscape) and (max-height: 520px)";
+
+export function useHudLayout(
+  phase: Phase,
+  hidden: boolean,
+  showVolumePopup: boolean,
+  sceneAvailable: boolean,
+  compactHud = false,
+  mobileMenuOpen = false,
+) {
   const hudRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<(() => void) | null>(null);
 
@@ -13,7 +22,7 @@ export function useHudLayout(phase: Phase, hidden: boolean, showVolumePopup: boo
     const hud = hudRef.current;
     if (!hud) return;
     const headers = [...hud.querySelectorAll<HTMLElement>(".bus-title-panel, .bus-top-stats, .bus-row-nav")];
-    const controls = [...hud.querySelectorAll<HTMLElement>(".bus-exterior-controls, .bus-interior-controls, .bus-day-night, .bus-speed")];
+    const controls = [...hud.querySelectorAll<HTMLElement>(".bus-exterior-controls, .bus-interior-controls, .bus-day-night, .bus-speed, .bus-mobile-menu")];
     const popup = hud.querySelector<HTMLElement>(".bus-volume-popup");
     const visible = (element: HTMLElement) => {
       if (element.closest('[aria-hidden="true"]')) return false;
@@ -45,30 +54,46 @@ export function useHudLayout(phase: Phase, hidden: boolean, showVolumePopup: boo
         && element.getAttribute("aria-hidden") !== "true");
       const utilities = hud.querySelector<HTMLElement>(".bus-day-night");
       const speed = hud.querySelector<HTMLElement>(".bus-speed");
-      if (sceneAvailable && utilities && speed && actions.length) {
-        // Read the speed control's intrinsic width before stretching it on narrow screens.
-        hud.dataset.bottomLayout = "inline";
-        const u = utilities.getBoundingClientRect();
-        const s = speed.getBoundingClientRect();
-        const a = actions[0].getBoundingClientRect();
-        const available = s.right - u.left;
-        const gap = 12;
-        const bottomInset = viewport.bottom - s.bottom;
-        const fitAll = u.width + a.width + s.width + gap * 2 <= available;
-        const fitUtilities = u.width + s.width + gap <= available;
-        const utilitiesBottom = bottomInset + (fitUtilities ? 0 : s.height + gap);
-        const actionsBottom = fitAll ? bottomInset : utilitiesBottom + Math.max(u.height, s.height) + gap;
-        hud.dataset.bottomLayout = fitAll ? "inline" : fitUtilities ? "split" : "stacked";
-        hud.style.setProperty("--bus-utilities-bottom", `${utilitiesBottom}px`);
-        hud.style.setProperty("--bus-actions-bottom", `${actionsBottom}px`);
-        hud.style.setProperty("--bus-utilities-width", `${u.width}px`);
-        hud.style.setProperty("--bus-speed-width", `${s.width}px`);
-      }
-      const volumeButton = hud.querySelector<HTMLElement>(".bus-volume-toggle");
-      if (actions.length && volumeButton && visible(volumeButton)) {
-        const actionsTop = Math.min(...actions.map(element => element.getBoundingClientRect().top));
-        const offset = volumeButton.getBoundingClientRect().bottom - actionsTop + 12;
-        hud.style.setProperty("--bus-volume-bottom", `${Math.max(56, offset)}px`);
+      if (compactHud) {
+        hud.dataset.bottomLayout = "compact";
+        hud.style.removeProperty("--bus-utilities-bottom");
+        hud.style.removeProperty("--bus-actions-bottom");
+        hud.style.removeProperty("--bus-utilities-width");
+        hud.style.removeProperty("--bus-speed-width");
+        hud.style.removeProperty("--bus-volume-bottom");
+        if (sceneAvailable && mobileMenuOpen && actions.length) {
+          const actionsTop = Math.min(...actions.map(element => element.getBoundingClientRect().top));
+          hud.style.setProperty("--bus-mobile-menu-bottom", `${Math.max(56, viewport.bottom - actionsTop + 10)}px`);
+        } else {
+          hud.style.removeProperty("--bus-mobile-menu-bottom");
+        }
+      } else {
+        hud.style.removeProperty("--bus-mobile-menu-bottom");
+        if (sceneAvailable && utilities && speed && actions.length) {
+          // Read the speed control's intrinsic width before stretching it on narrow screens.
+          hud.dataset.bottomLayout = "inline";
+          const u = utilities.getBoundingClientRect();
+          const s = speed.getBoundingClientRect();
+          const a = actions[0].getBoundingClientRect();
+          const available = s.right - u.left;
+          const gap = 12;
+          const bottomInset = viewport.bottom - s.bottom;
+          const fitAll = u.width + a.width + s.width + gap * 2 <= available;
+          const fitUtilities = u.width + s.width + gap <= available;
+          const utilitiesBottom = bottomInset + (fitUtilities ? 0 : s.height + gap);
+          const actionsBottom = fitAll ? bottomInset : utilitiesBottom + Math.max(u.height, s.height) + gap;
+          hud.dataset.bottomLayout = fitAll ? "inline" : fitUtilities ? "split" : "stacked";
+          hud.style.setProperty("--bus-utilities-bottom", `${utilitiesBottom}px`);
+          hud.style.setProperty("--bus-actions-bottom", `${actionsBottom}px`);
+          hud.style.setProperty("--bus-utilities-width", `${u.width}px`);
+          hud.style.setProperty("--bus-speed-width", `${s.width}px`);
+        }
+        const volumeButton = hud.querySelector<HTMLElement>(".bus-volume-toggle");
+        if (actions.length && volumeButton && visible(volumeButton)) {
+          const actionsTop = Math.min(...actions.map(element => element.getBoundingClientRect().top));
+          const offset = volumeButton.getBoundingClientRect().bottom - actionsTop + 12;
+          hud.style.setProperty("--bus-volume-bottom", `${Math.max(56, offset)}px`);
+        }
       }
       const leftInset = Math.max(12, title?.getBoundingClientRect().left ?? 0);
       const rightInset = Math.max(12, viewport.right - (stats?.getBoundingClientRect().right ?? viewport.right));
@@ -117,7 +142,7 @@ export function useHudLayout(phase: Phase, hidden: boolean, showVolumePopup: boo
       cancelAnimationFrame(frame);
       measureRef.current = null;
     };
-  }, [phase, hidden, showVolumePopup, sceneAvailable]);
+  }, [phase, hidden, showVolumePopup, sceneAvailable, compactHud, mobileMenuOpen]);
 
   // Labels such as Auto/Manuel and the music badge can change the available space.
   // Arrange them in the same React commit, before the updated controls are painted.

@@ -27,7 +27,7 @@ try {
   ws = new WebSocket(tabs.find(tab => tab.type === "page").webSocketDebuggerUrl);
   await new Promise((resolve, reject) => { ws.addEventListener("open", resolve, { once: true }); ws.addEventListener("error", reject, { once: true }); });
   const send = createCdp(ws), run = expression => evaluate(send, expression);
-  const wait = (expression, message) => waitForPageCondition(send, expression, message, 60_000);
+  const wait = (expression, message) => waitForPageCondition(send, expression, message, 120_000);
   const capture = async name => { const shot = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false }); await writeFile(`${output}/${name}.png`, Buffer.from(shot.data, "base64")); };
   await send("Page.enable"); await send("Runtime.enable");
   await send("Emulation.setHardwareConcurrencyOverride", { hardwareConcurrency: 4 });
@@ -56,8 +56,8 @@ try {
       if(url.origin!==location.origin||!url.pathname.startsWith('/api/bus-entries'))return nativeFetch(input,init);
       const fixture=window.lifecycleFixture,method=(init?.method??'GET').toUpperCase();fixture.calls.push(method);
       if(!['GET','HEAD','POST'].includes(method))throw new Error('Lifecycle fixture blocks this write');
-      const response=added=>{const count=existing?2:fixture.joined?3:2;const passengers=[{seatIndex:1,displayName:'Voisin',comment:null,avatarId:'nami'},...(fixture.joined?[mineProfile]:[])];return new Response(JSON.stringify({count,seatCapacity:count,profileRevision:fixture.joined?2:1,vacantSeatRanges:[],passengers,passenger:fixture.joined?mineProfile:null,seatIndex:fixture.joined?mine:null,added}),{headers:{'Content-Type':'application/json'}});};
-      if(method==='POST'){const added=!fixture.joined;return new Promise(resolve=>setTimeout(()=>{fixture.joined=true;resolve(response(added));},650));}
+      const response=added=>{const count=existing?2:fixture.joined?3:2;const passengers=[{seatIndex:1,displayName:'Voisin',comment:null,avatarId:'nami'},...(fixture.joined?[mineProfile]:[])];return new Response(JSON.stringify({count,seatCapacity:count,profileRevision:fixture.joined?2:1,vacantSeatRanges:[],passengers,registered:fixture.joined,hasDisplayName:fixture.joined,passenger:fixture.joined?mineProfile:null,seatIndex:fixture.joined?mine:null,added}),{headers:{'Content-Type':'application/json'}});};
+      if(method==='POST'){const added=!fixture.joined;return new Promise(resolve=>setTimeout(()=>{fixture.joined=true;resolve(response(added));},1500));}
       return Promise.resolve(response(false));
     };
     window.lifecycleRead=()=>{
@@ -92,6 +92,13 @@ try {
     await capture(`${scenario.id}-before`);
     const enter = async fromSeat => {
       await run("window.lifecycleSamples=[];document.querySelector('button[title=\"Découvrir la théorie des Fous du Bus\"]').blur();[...document.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.includes('Entrer dans le bus')).click()");
+      if (scenario.id === "new") {
+        await wait("Boolean(document.getElementById('onboarding-name'))", "New visitor sees mandatory identification modal before boarding");
+        await run("document.getElementById('onboarding-name').focus()");
+        await send("Input.insertText", { text: "Visiteur test" });
+        await wait("document.getElementById('onboarding-name').value==='Visiteur test'", "New visitor identifiant entered");
+        await run("window.lifecycleSamples=[];document.querySelector('[role=dialog] button[type=submit]').click()");
+      }
       await wait("lifecycleRead().waiting", "Registration waits without moving existing visitors");
       if(fromSeat) check((await run("lifecycleRead().staticOwn"))===1, "An existing visitor must stay seated while registration is pending.");
       await wait("document.querySelector('.bus-app').dataset.phase==='inside'", "Boarding finishes");

@@ -14,9 +14,16 @@ export async function runBusPlaybackZoomChecks({send, evaluate, waitForPageCondi
   let visitor;
   const distance = () => run(`(() => {const s=window.busCameraTestState();return s.camera.position.distanceTo(s.controls.target);})()`);
   const reset = async () => {
+    const mobileToggleSelector = `[...document.querySelectorAll('[data-mobile-menu-toggle]')].find(b=>!b.disabled&&!b.closest('[aria-hidden="true"]'))`;
+    const openedMenu = await run(`(()=>{if(document.querySelector('button[aria-label="Recentrer la vue"]'))return false;const b=${mobileToggleSelector};if(!b)return false;b.click();return true;})()`);
+    if (openedMenu) await wait(`Boolean(document.querySelector('button[aria-label="Recentrer la vue"]'))`, "Mobile menu opens for Recentre");
     await run(`document.querySelector('button[aria-label="Recentrer la vue"]').click()`);
     await wait(`window.busCameraTestState()?.controls?.enabled === false`, "Recentre starts");
     await wait(`window.busCameraTestState()?.controls?.enabled === true`, "Recentre finishes");
+    if (openedMenu) {
+      await run(`${mobileToggleSelector}?.click()`);
+      await wait(`!document.querySelector('.bus-mobile-menu')`, "Mobile menu closes after Recentre");
+    }
   };
   const screenshot = async name => {
     if (!directory) return;
@@ -40,6 +47,7 @@ export async function runBusPlaybackZoomChecks({send, evaluate, waitForPageCondi
     console.log("Desktop: maximum 140-unit retreat returns to within 1.1 units, with a fixed bus anchor.");
 
     await send("Emulation.setDeviceMetricsOverride",{width:393,height:852,deviceScaleFactor:1,mobile:true});
+    await wait(`document.querySelector('[data-bottom-layout]')?.dataset.bottomLayout==='compact'`, "Mobile compact layout settles");
     await reset();
     const portrait = await distance();
     const portraitTarget=await run(`window.busCameraTestState().controls.target.toArray()`);
@@ -56,6 +64,7 @@ export async function runBusPlaybackZoomChecks({send, evaluate, waitForPageCondi
     assert(mobileTarget.every((value,i)=>Math.abs(value-portraitTarget[i])<0.001),"Changing the pinch centre must not drift away from the bus.");
     await send("Emulation.setTouchEmulationEnabled",{enabled:false});
     await send("Emulation.setDeviceMetricsOverride",{width:1240,height:900,deviceScaleFactor:1,mobile:false});
+    await wait(`document.querySelector('[data-bottom-layout]')?.dataset.bottomLayout && document.querySelector('[data-bottom-layout]')?.dataset.bottomLayout!=='compact'`, "Desktop layout settles");
     await reset();
     console.log("Mobile: pinch out and back preserves the framing and bus anchor.");
     }
@@ -81,6 +90,11 @@ export async function runBusPlaybackZoomChecks({send, evaluate, waitForPageCondi
     await screenshot("luffy-trait-roue.png");
     await reset();
 
+    await run(`[...document.querySelectorAll('button')].find(b=>b.textContent?.includes('Entrer dans le bus')).click()`);
+    await wait(`Boolean(document.getElementById('onboarding-name'))`, "Onboarding opens before first entry");
+    await run(`document.getElementById('onboarding-name').focus()`);
+    await send("Input.insertText", { text: "Test lecture" });
+    await wait(`document.getElementById('onboarding-name')?.value === 'Test lecture'`, "Onboarding identifiant typed");
     await run(`(() => {
       window.busMediaSamples=[];
       const tick=()=>{
@@ -88,7 +102,7 @@ export async function runBusPlaybackZoomChecks({send, evaluate, waitForPageCondi
         window.busMediaSamples.push({phase,elapsed:trip.elapsed,blend:trip.cameraBlend,state:player.state,volume:player.volume,muted:player.muted,time:player.getCurrentTime()});
         if(!window.stopBusMediaSamples)requestAnimationFrame(tick);
       };requestAnimationFrame(tick);
-      [...document.querySelectorAll('button')].find(b=>b.textContent?.includes('Entrer dans le bus')).click();
+      document.querySelector('[role="dialog"] button[type="submit"]').click();
     })()`);
     visitor=await run(`localStorage.getItem('fdb-visitor')`);
     await wait(`document.querySelector('.bus-app')?.dataset.phase==='inside' && window.mediaTestPlayers.bus.state===1 && window.mediaTestPlayers.bus.volume===100`,"First-person arrival starts audible playback",90_000);

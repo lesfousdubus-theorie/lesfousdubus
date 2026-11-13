@@ -51,9 +51,21 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
     const actionsRaised = Boolean(actionsHaveRoom && Math.abs(a.bottom - s.bottom) > 1);
     const dockGap = a && u && s && a.bottom <= Math.min(u.top, s.top)
       ? Math.min(u.top, s.top) - a.bottom : 0;
-    const obstacles = [...document.querySelectorAll('.bus-title-panel,.bus-top-stats,.bus-row-nav,.bus-exterior-controls,.bus-interior-controls,.bus-day-night,.bus-speed')].filter(visible);
+    const obstacles = [...document.querySelectorAll('.bus-title-panel,.bus-top-stats,.bus-row-nav,.bus-exterior-controls,.bus-interior-controls,.bus-day-night,.bus-speed,.bus-mobile-menu')].filter(visible);
     const toastCollisions = toast ? obstacles.filter(el => overlap(rect(toast), rect(el))).map(el => el.className) : [];
+    const mobileMenu = document.querySelector('.bus-mobile-menu');
+    const mobileMenuRect = mobileMenu && visible(mobileMenu) ? rect(mobileMenu) : null;
+    const mobileMenuOutside = Boolean(mobileMenuRect && (
+      mobileMenuRect.left < -1 || mobileMenuRect.right > innerWidth + 1 || mobileMenuRect.top < -1 || mobileMenuRect.bottom > innerHeight + 1
+    ));
+    const mobileMenuCollisions = mobileMenuRect
+      ? [...document.querySelectorAll('.bus-title-panel,.bus-top-stats,.bus-row-nav,.bus-exterior-controls,.bus-interior-controls')]
+          .filter(visible)
+          .filter(el => overlap(mobileMenuRect, rect(el)))
+          .map(el => el.className)
+      : [];
     return { collisions, headerCollisions, outside, small, clippedLabels, popupOverflow, toastCollisions,
+      mobileMenuOutside, mobileMenuCollisions,
       titleLowered, actionsRaised, dockGap,
       toastVisible: Boolean(toast && rect(toast).width > 0 && rect(toast).height > 0),
       toastClipped: Boolean(toast && toast.scrollHeight > toast.clientHeight + 1),
@@ -61,21 +73,29 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
   })()`);
   const check = async label => {
     const result = await inspect();
-    for (const key of ['collisions', 'headerCollisions', 'outside', 'small', 'clippedLabels', 'popupOverflow', 'toastCollisions']) {
+    for (const key of ['collisions', 'headerCollisions', 'outside', 'small', 'clippedLabels', 'popupOverflow', 'toastCollisions', 'mobileMenuCollisions']) {
       assert.equal(result[key].length, 0, `${label}: ${key}: ${JSON.stringify(result[key])}`);
     }
+    assert(!result.mobileMenuOutside, `${label}: mobile menu leaves viewport`);
     assert(result.overflow <= 2, `${label}: horizontal overflow ${result.overflow}px`);
     assert(!result.titleLowered, `${label}: the title was lowered despite available horizontal space`);
     assert(!result.actionsRaised, `${label}: the actions were raised despite available horizontal space`);
     assert(result.dockGap <= 13, `${label}: unused vertical space between controls: ${result.dockGap}px`);
     return result;
   };
+  const visibleMobileToggle = `[...document.querySelectorAll('[data-mobile-menu-toggle]')].find(b => !b.disabled && !b.closest('[aria-hidden="true"]'))`;
 
   // The media regression has installed a deterministic YouTube API on this page.
   // This keeps the widest music-ON state stable even without network/autoplay.
   assert(await run(`Boolean(window.mediaTestPlayers?.music)`), "Media mock missing for active HUD checks.");
   if (await run(`Boolean(document.querySelector('button[aria-label^="Activer la musique de fond"]'))`)) {
     await run(`document.querySelector('button[aria-label^="Activer la musique de fond"]').click()`);
+  } else if (await run(`Boolean(${visibleMobileToggle})`)) {
+    await run(`${visibleMobileToggle}.click()`);
+    await waitForPageCondition(send, `Boolean(document.querySelector('.bus-mobile-menu'))`, "Open mobile menu to enable music");
+    await run(`document.querySelector('button[aria-label^="Activer la musique de fond"]')?.click()`);
+    await run(`${visibleMobileToggle}.click()`);
+    await waitForPageCondition(send, `!document.querySelector('.bus-mobile-menu')`, "Close mobile menu after enabling music");
   }
   for (const phase of ['inside', 'outside']) {
     if (phase === 'outside') {
@@ -88,21 +108,55 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
         screenOrientation: viewport.width > viewport.height
           ? { type: "landscapePrimary", angle: 90 } : { type: "portraitPrimary", angle: 0 },
       });
+      const expectCompact = viewport.width < 640 || (viewport.width > viewport.height && viewport.height <= 520);
+      await waitForPageCondition(
+        send,
+        `(() => {
+          const layout = document.querySelector('[data-bottom-layout]')?.dataset.bottomLayout;
+          return innerWidth === ${viewport.width} && innerHeight === ${viewport.height} && (${expectCompact} ? layout === 'compact' : layout && layout !== 'compact');
+        })()`,
+        `HUD layout settles at ${viewport.width}x${viewport.height}`,
+      );
       // Wait for ResizeObserver and the HUD's batched layout measurement.
       await run(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
       const label = `${phase} ${viewport.width}x${viewport.height}`;
-      await check(`${label}, music ON`);
-      await run(`document.querySelector('.bus-day-night > button').click()`);
-      await run(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
-      await check(`${label}, manual day/night`);
-      await run(`document.querySelector('.bus-day-night > button').click()`);
+      const isCompact = await run(`document.querySelector('[data-bottom-layout]')?.dataset.bottomLayout === 'compact'`);
+      if (isCompact) {
+        assert.equal(await run(`Boolean(document.querySelector('.bus-mobile-menu'))`), false, `${label}: mobile menu must start collapsed`);
+        await check(`${label}, music ON (collapsed)`);
 
-      const hasPopup = await run(`getComputedStyle(document.querySelector('.bus-volume-toggle')).display !== 'none'`);
-      if (hasPopup) {
-        await run(`document.querySelector('.bus-volume-toggle').click()`);
-        await waitForPageCondition(send, `Boolean(document.querySelector('.bus-volume-popup'))`, `${label}, volume panel`);
-        await check(`${label}, volume open`);
-        await run(`document.querySelector('.bus-volume-toggle').click()`);
+        await run(`${visibleMobileToggle}.click()`);
+        await waitForPageCondition(send, `Boolean(document.querySelector('.bus-mobile-menu'))`, `${label}, open mobile menu`);
+        await run(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
+        await check(`${label}, mobile menu open`);
+
+        await run(`document.querySelector('.bus-mobile-day-night').click()`);
+        await run(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
+        await check(`${label}, manual day/night in mobile menu`);
+        await run(`document.querySelector('.bus-mobile-day-night').click()`);
+
+        await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+        await send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+        await waitForPageCondition(send, `!document.querySelector('.bus-mobile-menu')`, `${label}, Escape closes mobile menu`);
+        await waitForPageCondition(
+          send,
+          `document.activeElement === ${visibleMobileToggle}`,
+          `${label}, Escape returns focus to Commandes toggle`,
+        );
+      } else {
+        await check(`${label}, music ON`);
+        await run(`document.querySelector('.bus-day-night > button').click()`);
+        await run(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
+        await check(`${label}, manual day/night`);
+        await run(`document.querySelector('.bus-day-night > button').click()`);
+
+        const hasPopup = await run(`getComputedStyle(document.querySelector('.bus-volume-toggle')).display !== 'none'`);
+        if (hasPopup) {
+          await run(`document.querySelector('.bus-volume-toggle').click()`);
+          await waitForPageCondition(send, `Boolean(document.querySelector('.bus-volume-popup'))`, `${label}, volume panel`);
+          await check(`${label}, volume open`);
+          await run(`document.querySelector('.bus-volume-toggle').click()`);
+        }
       }
       await run(`window.dispatchEvent(new CustomEvent('bus-show-toast', {detail: {
         badge: '🧭 KYTA', sub: 'Le Mont Corvo',
@@ -116,7 +170,7 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
         for (const selector of [
           '.bus-top-stats button[aria-label]',
           '.bus-top-stats button:first-child',
-          'button[aria-label="Ajouter un prénom"]',
+          'button[aria-label="Modifier mon pseudo"]',
           'button[aria-label="Mettre un commentaire"]',
         ]) {
           await run(`document.querySelector(${JSON.stringify(selector)}).click()`);

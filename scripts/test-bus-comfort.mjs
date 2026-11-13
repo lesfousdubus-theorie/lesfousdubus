@@ -117,6 +117,11 @@ try{
  await key('F1');await wait("document.activeElement?.id==='bus-help-title'",'Help focus after reload');assert.equal(await run("document.querySelectorAll('[role=dialog] input')[1].checked"),false);await close();
  await click('button[aria-label="Sortir du bus"]');await wait("document.querySelector('.bus-app').dataset.phase==='outside'",'Exit unaffected by frozen scenery');
  await run("[...document.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.includes('Entrer dans le bus')).click()");
+ await wait("Boolean(document.getElementById('onboarding-name'))",'Onboarding modal opens when scenery is paused');
+ await run("document.getElementById('onboarding-name').focus()");
+ await send('Input.insertText',{text:'Confort test'});
+ await wait("document.getElementById('onboarding-name').value==='Confort test'",'Onboarding name entered');
+ await run("document.querySelector('[role=dialog] button[type=submit]').click()");
  await wait("document.querySelector('.bus-app').dataset.phase==='inside'",'Boarding unaffected by frozen scenery');
  report.checks.push('Preferences persist; entry/exit finish while scenery is paused; help fits desktop, narrow mobile and landscape.');
  report.apiCalls=await run('window.comfortApiCalls');

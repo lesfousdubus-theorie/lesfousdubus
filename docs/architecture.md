@@ -22,10 +22,10 @@ et les choix des lecteurs. Les modules spécialisés possèdent leurs opération
 
 | Module | Responsabilité |
 | --- | --- |
-| `useBusSync` | Statistiques, profils proches, polling suspendu hors onglet et réessai d’inscription. |
-| `usePassengerProfile` | Profil et personnage choisi, validation, sauvegarde/verrou de mutation, cache local et annulation au démontage. |
+| `useBusSync` | Statistiques, vérification initiale `?visitorId=`, profils proches, polling suspendu hors onglet et réessai d’inscription. |
+| `usePassengerProfile` | Profil, onboarding obligatoire et personnage choisi, validation, sauvegarde/verrou de mutation, cache local et annulation au démontage. |
 | `usePassengerDirectory` | Manifeste paginé, fiches chargées à la demande, annulations et navigation entre fenêtres. |
-| `PassengerDialogs` | Branchement des composants de présentation sur ces deux hooks, sans accès D1. |
+| `PassengerDialogs` | Branchement des composants de présentation (`OnboardingModal`, `JoinBusModal`, fiches et liste) sur ces deux hooks, sans accès D1. |
 | `useBusControls`, `useBusPreferences` | Commandes de conduite et préférences conservées dans le navigateur. |
 | `useBusParty` | Début/fin de fête, restitution du lecteur précédent et état de danse. |
 | `useModalAccessibility`, `useVisualViewport`, `useHudLayout` | Focus, fond inerte, viewport et placement des commandes. |
@@ -103,11 +103,34 @@ d’identifiants stables. Le choix survit aux visites avec la même identité lo
 Changer de personnage conserve le prénom, le commentaire et la place ; les
 anciens visiteurs sans choix explicite gardent leur apparence calculée.
 
-Le sélecteur est accessible avant et après la montée. Avant l’attribution
-d’une place, le choix reste un brouillon local (`fdb-avatar-draft`) : aucune
-inscription n’est créée. L’embarquement et ses réessais transmettent ce choix
-avec l’identité du visiteur. Une réponse confirmant le personnage efface le
-brouillon et restaure le profil enregistré.
+À l’arrivée, lorsqu’une identité locale (`fdb-visitor`) existe déjà,
+`GET /api/bus-entries?visitorId=...` vérifie la fiche en base sans mise en
+cache (`Cache-Control: no-store`). Si le visiteur possède déjà une place mais
+aucun pseudo (`hasDisplayName: false`), `OnboardingModal` s’ouvre immédiatement
+(sans fermeture ni annulation possibles) afin qu’il choisisse son identifiant —
+avec message et personnage facultatifs — avant de poursuivre. S’il possède déjà
+un pseudo, son profil est restauré ; s’il n’est plus inscrit, le cache
+d’inscription local obsolète est nettoyé sans ouvrir la fenêtre.
+
+Pour un nouveau visiteur non inscrit, l’exploration extérieure et la sélection
+préalable de personnage (`fdb-avatar-draft`) restent libres ; la fenêtre
+d’identification obligatoire (`OnboardingModal`, avec pseudo requis, message
+facultatif et sélecteur de personnage intégré) s’ouvre au clic sur « Entrer
+dans le bus », avant la préparation média et le trajet d’entrée. Une fois à
+bord, le pseudo peut être modifié via `JoinBusModal` mais ne peut plus être
+supprimé individuellement (seuls le commentaire et la suppression complète de la
+place restent possibles).
+
+Le sélecteur est accessible avant et après la montée. Pour un nouveau visiteur
+sans identifiant local (`fdb-visitor`), le choix reste un brouillon local
+(`fdb-avatar-draft`) : aucune inscription n’est créée. Lorsqu’un visiteur
+possède déjà un identifiant local et change de personnage avant de remonter
+après un rechargement, la requête utilise `updateOnly: true` : le serveur met
+immédiatement à jour sa fiche si la place existe toujours, ou répond sans créer
+de place afin de conserver un brouillon local dans le cas contraire.
+L’embarquement et ses réessais transmettent le profil validé avec l’identité du
+visiteur. Une réponse confirmant le personnage efface le brouillon et restaure
+le profil enregistré.
 
 Le secret HMAC des quotas et le jeton de suppression administrative sont
 distincts. Leur configuration et les parcours de suppression sont documentés

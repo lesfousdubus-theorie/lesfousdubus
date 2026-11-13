@@ -109,8 +109,17 @@ export async function runBusPartyChecks({send,evaluate,waitForPageCondition,base
     await start();
     for(const [width,height] of [[320,568],[393,852],[568,320],[640,900],[1240,900]]){
       await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<640});
+      const expectCompact = width < 640 || (width > height && height <= 520);
+      await wait(`(()=>{const l=document.querySelector('[data-bottom-layout]')?.dataset.bottomLayout;return innerWidth===${width}&&innerHeight===${height}&&(${expectCompact}?l==='compact':l&&l!=='compact');})()`,`Party control layout settles at ${width}x${height}`);
+      const mobileToggleSelector = `[...document.querySelectorAll('[data-mobile-menu-toggle]')].find(b=>!b.disabled&&!b.closest('[aria-hidden="true"]'))`;
+      const openedMenu = await run(`(()=>{const b=${mobileToggleSelector};if(!b||document.querySelector('.bus-mobile-menu'))return false;b.click();return true;})()`);
+      if(openedMenu) await wait(`Boolean(document.querySelector('button[aria-label="Arrêter la fête"]'))`,`Mobile party stop control opens at ${width}x${height}`);
       const button=await run(`(()=>{const buttons=[...document.querySelectorAll('button[aria-label="Arrêter la fête"]')];const b=buttons.find(b=>b.getBoundingClientRect().width>0&&!b.closest('[aria-hidden="true"]'));const r=b.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,disabled:b.disabled};})()`);
       assert(!button.disabled&&button.left>=0&&button.right<=width&&button.top>=0&&button.bottom<=height,`The party stop control must remain reachable at ${width}×${height}.`);
+      if(openedMenu){
+        await run(`${mobileToggleSelector}?.click()`);
+        await wait(`!document.querySelector('.bus-mobile-menu')`,`Close mobile party menu at ${width}x${height}`);
+      }
     }
     await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
     await wait(`window.busDestinationTestReducedMotion()===true`,'Reduced motion reaches the party');
