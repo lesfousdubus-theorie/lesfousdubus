@@ -218,7 +218,7 @@ export default function BusExperience() {
 
   const profile = usePassengerProfile({ hasRegisteredPlace: currentPassengerSeatIndex !== null, applyBusSnapshot, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow, showToast });
   const { showJoinModal, openProfileModal, restoreSavedProfile, clearProfile, pendingAvatarId } = profile;
-  const directory = usePassengerDirectory(applyBusSnapshot);
+  const directory = usePassengerDirectory(applyBusSnapshot, profileRevision);
   const { selectedPassenger, showPassengerList, passengerManifestButtonRef, openPassengerManifest, selectPassenger, clearDirectory } = directory;
 
   // Actualise le compteur d'âge exactement au prochain minuit local.
@@ -247,6 +247,7 @@ export default function BusExperience() {
     setStatsLoadError,
     phase,
     seatRow,
+    setSeatRow,
     profileRevision,
     setPassengerProfiles,
     seatCapacityRef,

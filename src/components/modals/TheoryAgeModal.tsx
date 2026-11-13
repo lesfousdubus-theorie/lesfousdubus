@@ -7,21 +7,19 @@ import { THEORY_FIRST_VIDEO_URL } from "@/lib/theory-video";
 import { useModalAccessibility } from "./useModalAccessibility";
 import { ModalCloseButton } from "./ModalCloseButton";
 
-export function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function TheoryAgeModalDialog({ onClose }: { onClose: () => void }) {
   const [now, setNow] = useState(() => Date.now());
   const dialogRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const handleKeyDown = useModalAccessibility(isOpen, onClose, dialogRef, titleRef);
+  const handleKeyDown = useModalAccessibility(true, onClose, dialogRef, titleRef);
 
   useEffect(() => {
-    if (!isOpen) return;
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => {
       window.clearInterval(timer);
     };
-  }, [isOpen]);
+  }, []);
 
-  if (!isOpen) return null;
   const elapsed = getElapsedCalendarTime(THEORY_START_DATE, now);
   const values = [
     ["Années", elapsed.years],
@@ -71,4 +69,9 @@ export function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: 
     </div>,
     document.body,
   );
+}
+
+export function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  if (!isOpen) return null;
+  return <TheoryAgeModalDialog onClose={onClose} />;
 }

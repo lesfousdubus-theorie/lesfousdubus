@@ -12,7 +12,7 @@ export { SimplifiedPassengers } from "./SimplifiedPassengers";
 import { PassengerNeck, PassengerTorso } from "./PassengerAnatomy";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import type { SeatInfo } from "@/lib/bus-layout";
-import { getBusOccupancy, type BusOccupant } from "@/lib/bus-occupancy";
+import { getBusOccupancy } from "@/lib/bus-occupancy";
 import PassengerLowerBody from "./PassengerLowerBody";
 import { PassengerUpperArm, PassengerForearm } from "./PassengerIdentity";
 import PassengerSignatureProp from "./PassengerSignatureProp";

@@ -106,6 +106,16 @@ export async function runServerAuthorizationChecks() {
         assert.equal(ownProfile.avatarId, "chopper", "An avatar-only profile must reach other visitors' renderers.");
         assert.equal(ownProfile.displayName, "", "An avatar choice must not add an anonymous name label.");
         await assert.rejects(database.prepare("UPDATE bus_entries SET avatar_id = 'not-in-roster' WHERE seat_index = ?").bind(own.data.seatIndex).run());
+        const multilineComment = "Ligne 1 : pirate\n\nLigne 2 : nakama 🏴‍☠️";
+        const multilinePost = await request("POST", {
+          visitorId: ownId,
+          comment: "  Ligne 1 : pirate  \r\n\r\n\r\n  Ligne 2 : nakama 🏴‍☠️  ",
+        });
+        assert.equal(multilinePost.status, 200);
+        assert.equal(multilinePost.data.passenger.comment, multilineComment);
+        const seatFetch = await worker.fetch(`http://isolated.test/api/bus-entries?seat=${own.data.seatIndex}`);
+        assert.equal(seatFetch.status, 200);
+        assert.equal((await seatFetch.json()).passenger.comment, multilineComment, "Multiline comment must persist and roundtrip through the database intact.");
       }
       for (const token of [undefined, quotaSecret, randomUUID() + randomUUID()]) {
         const result = await request("DELETE", { seatIndex: targetSeat, visitorId: ownId }, token);
@@ -140,6 +150,36 @@ export async function runServerAuthorizationChecks() {
         const throttled = await request("DELETE", { visitorId: ownId });
         assert.equal(throttled.status, 429, "Personal deletion quota must remain twelve per hour.");
         assert(Number(throttled.retryAfter) > 0);
+        const concurrentCount = 10;
+        const concurrentJoins = await Promise.all(
+          Array.from({ length: concurrentCount }, (_, index) =>
+            request(
+              "POST",
+              {
+                visitorId: `auth-concurrent-${index}`,
+                displayName: `Nakama ${index}`,
+                comment: `Ligne A ${index}\n\nLigne B ${index}`,
+              },
+              undefined,
+              "198.51.100.99",
+            ),
+          ),
+        );
+        assert.equal(concurrentJoins.length, concurrentCount);
+        for (const res of concurrentJoins) {
+          assert.equal(res.status, 200);
+          assert.equal(res.data.added, true);
+          assert(typeof res.data.seatIndex === "number");
+        }
+        const assignedSeats = concurrentJoins.map((res) => res.data.seatIndex).sort((a, b) => a - b);
+        const uniqueSeats = new Set(assignedSeats);
+        assert.equal(uniqueSeats.size, concurrentCount, "Concurrent joins must all receive distinct seats.");
+        for (let i = 0; i < concurrentCount; i++) {
+          assert.equal(assignedSeats[i], i, `Seat at index ${i} must be ${i} (reusing vacant then sequential)`);
+        }
+        const concurrentSeatFetch = await worker.fetch(`http://isolated.test/api/bus-entries?seat=${assignedSeats[0]}`);
+        assert.equal(concurrentSeatFetch.status, 200);
+        assert.match((await concurrentSeatFetch.json()).passenger.comment, /\n\nLigne B 0$/, "Concurrent passenger multiline comment must persist cleanly.");
       }
       if (configuration.name === "missing") {
         const results = await Promise.all(Array.from({ length: 130 }, (_, index) => request("POST",

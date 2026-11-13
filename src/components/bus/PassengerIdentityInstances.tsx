@@ -18,6 +18,7 @@ export interface IdentityDrivers {
   hands: RefObject<THREE.InstancedMesh | null>;
   revision: RefObject<number>;
   celebration: RefObject<boolean>;
+  listeners: Set<() => void>;
 }
 
 function Prototype({ id, onReady }: { id: string; onReady: (parts: IdentityPart[]) => void }) {
@@ -88,7 +89,21 @@ function IdentityGroup({ id, indices, passengers, drivers, partyOn, reducedMotio
     });
   }, [parts, indices, passengers, drivers, partyOn, reducedMotion, id, rig, shape, scratch]);
 
-  useLayoutEffect(() => update(0), [update]);
+  useLayoutEffect(() => {
+    const onSync = () => {
+      if (lastRevision.current === drivers.revision.current) return;
+      lastRevision.current = drivers.revision.current;
+      update(0);
+    };
+    drivers.listeners.add(onSync);
+    if (drivers.revision.current > 0) {
+      lastRevision.current = drivers.revision.current;
+      update(0);
+    }
+    return () => {
+      drivers.listeners.delete(onSync);
+    };
+  }, [drivers, update]);
   useFrame(({ clock }) => {
     if (lastRevision.current === drivers.revision.current) return;
     lastRevision.current = drivers.revision.current;

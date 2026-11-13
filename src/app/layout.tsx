@@ -40,6 +40,7 @@ export const metadata: Metadata = {
   ],
   creator: "Les Fous du Bus",
   publisher: "Les Fous du Bus",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png", sizes: "192x192" },
@@ -89,11 +90,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="fr" className="h-full overflow-hidden">
       <head>
         <link rel="preload" href="/images/luffy-jolly-roger.png" as="image" fetchPriority="high" />
-        <link rel="preload" href="https://www.youtube.com/iframe_api" as="script" />
         <link rel="preconnect" href="https://www.youtube.com" />
         <link rel="preconnect" href="https://www.youtube-nocookie.com" />
         <link rel="preconnect" href="https://i.ytimg.com" />
-        <link rel="preconnect" href="https://www.googlevideo.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="//www.youtube.com" />
         <link rel="dns-prefetch" href="//www.youtube-nocookie.com" />
         <link rel="dns-prefetch" href="//img.youtube.com" />

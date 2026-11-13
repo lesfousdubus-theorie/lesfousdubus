@@ -56,6 +56,15 @@ function flatFrameTransform(m: number[], width: number, height: number) {
   return `matrix(${ux * x},${uy * x},${vx * y},${vy * y},${left},${top})`;
 }
 
+const HALF_W = TV_SCREEN_WIDTH / 2;
+const HALF_H = TV_SCREEN_HEIGHT / 2;
+const SCREEN_CORNERS = [
+  [-HALF_W, -HALF_H],
+  [HALF_W, -HALF_H],
+  [HALF_W, HALF_H],
+  [-HALF_W, HALF_H],
+] as const;
+
 /** The iframe sits behind the canvas. Only pixels that pass the same depth
  * test as the physical screen can reveal it. */
 export default function BusTvScreen({ isOn, interactive, children }: {
@@ -71,18 +80,22 @@ export default function BusTvScreen({ isOn, interactive, children }: {
   const scratch = useMemo(() => ({
     cameraLocal: new THREE.Vector3(),
     projection: new THREE.Matrix4(),
+    screenToView: new THREE.Matrix4(),
+    corner: new THREE.Vector3(),
     raycaster: new THREE.Raycaster(),
     pointer: new THREE.Vector2(),
     hits: [] as THREE.Intersection[],
   }), []);
 
   function projectFrame() {
-    if (!aperture.current || !frame.current) return;
+    const screen = aperture.current;
+    const html = frame.current;
+    if (!screen || !html || !screen.visible) return;
     // Use the very same world/view transform as the WebGL plane. A single
     // projective CSS matrix avoids nested perspective containers, which can
     // make cross-origin video frames paint black in Firefox.
     const matrix = scratch.projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
-      .multiply(aperture.current.matrixWorld).multiply(screenFromPixels);
+      .multiply(screen.matrixWorld).multiply(screenFromPixels);
     const m = matrix.elements;
     const normalization = 1 / Math.max(.001, Math.abs(m[15]));
     for (let column = 0; column < 16; column += 4) {
@@ -95,14 +108,24 @@ export default function BusTvScreen({ isOn, interactive, children }: {
     const transform = flatFrame ? flatFrameTransform(m, size.width, size.height) : `matrix3d(${m.join(",")})`;
     if (lastTransform.current !== transform) {
       lastTransform.current = transform;
-      frame.current.style.transform = transform;
+      html.style.transform = transform;
     }
   }
 
   useFrame(() => {
     const screen = aperture.current;
     if (!screen || !frame.current) return;
-    const visible = isOn() && screen.worldToLocal(camera.getWorldPosition(scratch.cameraLocal)).z > 0;
+    let visible = false;
+    if (isOn() && screen.worldToLocal(camera.getWorldPosition(scratch.cameraLocal)).z > 0) {
+      const screenToView = scratch.screenToView.multiplyMatrices(camera.matrixWorldInverse, screen.matrixWorld);
+      for (let i = 0; i < 4; i++) {
+        const [cx, cy] = SCREEN_CORNERS[i];
+        if (scratch.corner.set(cx, cy, 0).applyMatrix4(screenToView).z < -0.05) {
+          visible = true;
+          break;
+        }
+      }
+    }
     screen.visible = visible;
     const visibility = visible ? "visible" : "hidden";
     if (frame.current.style.visibility !== visibility) frame.current.style.visibility = visibility;
@@ -117,46 +140,64 @@ export default function BusTvScreen({ isOn, interactive, children }: {
 
     // Keep the canvas surface available for camera gestures. The native
     // controls receive the pointer only where the actual screen can be hit.
-    function updatePointer(event: PointerEvent) {
+    function updatePointer(event: UIEvent) {
       const screen = aperture.current;
       const html = frame.current;
       if (!screen || !html) return;
       let canPick = false;
       if (screen.visible && isOn()) {
         const bounds = canvas.getBoundingClientRect();
-        const { pointer, raycaster, hits } = scratch;
-        pointer.set((event.clientX - bounds.left) / bounds.width * 2 - 1,
-          -(event.clientY - bounds.top) / bounds.height * 2 + 1);
-        raycaster.setFromCamera(pointer, camera);
-        raycaster.far = Infinity;
-        hits.length = 0;
-        raycaster.intersectObject(screen, false, hits);
-        const distance = hits[0]?.distance;
-        if (distance !== undefined) {
-          raycaster.far = distance - .001;
-          hits.length = 0;
-          raycaster.intersectObject(scene, true, hits);
-          canPick = !hits.some(hit => {
-            if (!(hit.object instanceof THREE.Mesh)) return false;
-            for (let object: THREE.Object3D | null = hit.object; object; object = object.parent) {
-              if (!object.visible) return false;
+        if (bounds.width > 0 && bounds.height > 0) {
+          const touch = "touches" in event && (event as TouchEvent).touches.length > 0
+            ? (event as TouchEvent).touches[0]
+            : null;
+          const clientX = touch ? touch.clientX : (event as MouseEvent).clientX;
+          const clientY = touch ? touch.clientY : (event as MouseEvent).clientY;
+          if (clientX !== undefined && clientY !== undefined) {
+            const { pointer, raycaster, hits } = scratch;
+            pointer.set((clientX - bounds.left) / bounds.width * 2 - 1,
+              -(clientY - bounds.top) / bounds.height * 2 + 1);
+            raycaster.setFromCamera(pointer, camera);
+            raycaster.far = Infinity;
+            hits.length = 0;
+            raycaster.intersectObject(screen, false, hits);
+            const distance = hits[0]?.distance;
+            if (distance !== undefined) {
+              raycaster.far = distance - .001;
+              hits.length = 0;
+              raycaster.intersectObject(scene, true, hits);
+              canPick = !hits.some(hit => {
+                if (!(hit.object instanceof THREE.Mesh)) return false;
+                for (let object: THREE.Object3D | null = hit.object; object; object = object.parent) {
+                  if (!object.visible) return false;
+                }
+                const materials = hit.object.material;
+                const material = Array.isArray(materials) ? materials[hit.face?.materialIndex ?? 0] : materials;
+                return material?.visible && (!material.transparent || material.opacity >= .95);
+              });
             }
-            const materials = hit.object.material;
-            const material = Array.isArray(materials) ? materials[hit.face?.materialIndex ?? 0] : materials;
-            return material?.visible && (!material.transparent || material.opacity >= .95);
-          });
+            hits.length = 0;
+          }
         }
-        hits.length = 0;
       }
       html.style.pointerEvents = canPick ? "auto" : "none";
     }
-    surface.addEventListener("pointermove", updatePointer, { capture: true, passive: true });
-    surface.addEventListener("pointerover", updatePointer, { capture: true, passive: true });
-    surface.addEventListener("pointerdown", updatePointer, { capture: true, passive: true });
+
+    function onPointerLeave() {
+      if (frame.current) frame.current.style.pointerEvents = "none";
+    }
+
+    surface.addEventListener("pointermove", updatePointer as EventListener, { capture: true, passive: true });
+    surface.addEventListener("pointerover", updatePointer as EventListener, { capture: true, passive: true });
+    surface.addEventListener("pointerdown", updatePointer as EventListener, { capture: true, passive: true });
+    surface.addEventListener("touchstart", updatePointer as EventListener, { capture: true, passive: true });
+    surface.addEventListener("pointerleave", onPointerLeave);
     return () => {
-      surface.removeEventListener("pointermove", updatePointer, true);
-      surface.removeEventListener("pointerover", updatePointer, true);
-      surface.removeEventListener("pointerdown", updatePointer, true);
+      surface.removeEventListener("pointermove", updatePointer as EventListener, true);
+      surface.removeEventListener("pointerover", updatePointer as EventListener, true);
+      surface.removeEventListener("pointerdown", updatePointer as EventListener, true);
+      surface.removeEventListener("touchstart", updatePointer as EventListener, true);
+      surface.removeEventListener("pointerleave", onPointerLeave);
     };
   }, [camera, gl, scene, isOn, interactive, scratch]);
 

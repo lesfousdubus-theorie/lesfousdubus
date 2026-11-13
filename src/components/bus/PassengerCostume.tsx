@@ -37,7 +37,7 @@ function costumeMaterial(id: string, face: boolean) {
         // Post-timeskip Sanji: right eye under the fringe, left eye/eyebrow visible.
         line(208,77,172,72,"#59462f",4.5);
         c.strokeStyle="#59462f";c.lineWidth=4.5;c.beginPath();
-        for(let a=0;a<Math.PI*3.2;a+=.15){const r=11-a*.91;const x=171-Math.cos(a)*r,y=73+Math.sin(a)*r;a===0?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();
+        for(let a=0;a<Math.PI*3.2;a+=.15){const r=11-a*.91;const x=171-Math.cos(a)*r,y=73+Math.sin(a)*r;if (a === 0) c.moveTo(x, y); else c.lineTo(x, y);}c.stroke();
         // Small goatee below the maximum party-mouth opening, fitted to the chin.
         poly([[115,230],[141,230],[137,241],[128,247],[119,241]],"#67513d");break;
       // Chopper's nose and animated mouth are already fitted to his 3D muzzle.
