@@ -45,8 +45,8 @@ try {
       const f=window.placeFixture,method=(init?.method??'GET').toUpperCase();f.calls.push(method);
       if(method==='DELETE'&&++f.deleteAttempts===1)return new Promise(resolve=>setTimeout(()=>resolve(new Response('{}',{status:503})),350));
       if(method==='DELETE'){f.count=1;f.revision++;}
-      const mine=f.count===2?{seatIndex:0,displayName:'Test immersion',comment:'Profil de test',avatarId:'zoro'}:null;
-      return Promise.resolve(new Response(JSON.stringify({count:f.count,seatCapacity:2,profileRevision:f.revision,vacantSeatRanges:f.count===1?[[0,1,1]]:[],passengers:mine?[mine]:[],registered:Boolean(mine),hasDisplayName:Boolean(mine?.displayName),passenger:mine,seatIndex:mine?0:null,added:false,removed:method==='DELETE',nextFrom:2,hasMore:false}),{headers:{'Content-Type':'application/json'}}));
+      const mine=f.count===2?{seatIndex:0,entryNumber:4,displayName:'Test immersion',comment:'Profil de test',avatarId:'zoro'}:null;
+      return Promise.resolve(new Response(JSON.stringify({count:f.count,seatCapacity:f.count,profileRevision:f.revision,vacantSeatRanges:[],passengers:mine?[mine]:[],registered:Boolean(mine),hasDisplayName:Boolean(mine?.displayName),passenger:mine,seatIndex:mine?0:null,entryNumber:mine?4:null,added:false,removed:method==='DELETE',nextFrom:f.count,hasMore:false}),{headers:{'Content-Type':'application/json'}}));
     };
   ` });
   await send("Page.navigate", { url: baseUrl });
@@ -76,7 +76,7 @@ try {
   if(await run("Boolean(document.querySelector('[aria-label=\"Progression de la musique\"]'))")) await escape();
   await clickText("Entrer dans le bus");
   await wait("document.querySelector('.bus-app').dataset.phase==='inside'", "Returning visitor boards");
-  await wait("[...document.querySelectorAll('button')].some(b=>b.textContent.trim()==='Ma place')", "Saved place is directly discoverable");
+  await wait("Boolean(document.querySelector('[data-place-button]'))&&document.querySelector('[data-place-button]').textContent.includes('4')", "Saved place and persistent entry number are directly discoverable");
   for (const viewport of [{width:1240,height:900,mobile:false},{width:320,height:568,mobile:true},{width:568,height:320,mobile:true}]) {
     await send("Emulation.setDeviceMetricsOverride", {...viewport,deviceScaleFactor:1});
     await wait(`innerWidth===${viewport.width}&&innerHeight===${viewport.height}`, "Viewport changes");
@@ -86,9 +86,11 @@ try {
     assert.deepEqual(layout,{small:[],overlap:[]},"Visible controls keep usable targets without collisions");
     await capture(`commandes-${viewport.width}x${viewport.height}`);
     await checkImmersion(viewport.width,viewport.height);
-    await clickText("Ma place");
+    await click('[data-place-button]');
     await wait("document.activeElement?.id==='manage-place-title'", "Place dialog focuses title");
-    assert((await run("document.querySelector('[role=dialog]').innerText")).includes("Le compteur ne change pas"));
+    const modalText = await run("document.querySelector('[role=dialog]').innerText");
+    assert(modalText.includes("Le compteur ne change pas"));
+    assert(modalText.includes("4e personne à être rentrée dans le bus"), "Persistent entry number explanation is shown in place modal");
     const fit = await run("(()=>{const r=document.querySelector('[role=dialog]').getBoundingClientRect();return r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight})()");assert(fit,"Place dialog fits viewport");
     await clickText("Supprimer ma place");
     await wait("Boolean(document.querySelector('[role=alertdialog]'))", "Deletion requires a distinct confirmation");
@@ -97,16 +99,16 @@ try {
     await escape();await wait("!document.querySelector('[aria-modal=true]')", "Escape closes place management");
   }
   assert.equal(await run("placeFixture.deleteAttempts"),0,"Inspecting and canceling never deletes the profile");
-  await clickText("Ma place");await clickText("Sortir en gardant ma place");
+  await click('[data-place-button]');await clickText("Sortir en gardant ma place");
   await wait("document.querySelector('.bus-app').dataset.phase==='outside'", "Ordinary exit finishes");
   assert.equal(await run("placeFixture.count"),2);assert.equal(await run("placeFixture.deleteAttempts"),0);
-  await clickText("Ma place");await clickText("Supprimer ma place");
+  await click('[data-place-button]');await clickText("Supprimer ma place");
   await clickText("Confirmer la suppression");
   await wait("Boolean(document.querySelector('[role=alert]'))", "Delete failure is recoverable");
   assert.equal(await run("placeFixture.count"),2);
   await clickText("Confirmer la suppression");
   await wait("!document.querySelector('[aria-modal=true]')&&placeFixture.count===1", "Retry deletes fixture place and closes dialog");
-  assert.equal(await run("[...document.querySelectorAll('button')].some(b=>b.textContent.trim()==='Ma place')"),false);
+  assert.equal(await run("Boolean(document.querySelector('[data-place-button]'))"),false);
   assert.deepEqual(report.errors,[]);
   report.checks.push("Immersion outside/inside preserves media and camera phase; Escape and touch restore focus on desktop, narrow mobile and landscape.","Place management explains retention; canceled deletion and ordinary exit keep registration; deletion errors retry safely.");
   report.apiCalls=await run("placeFixture.calls");

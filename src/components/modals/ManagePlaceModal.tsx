@@ -5,8 +5,9 @@ import { createPortal } from "react-dom";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { useModalAccessibility } from "./useModalAccessibility";
 
-export function ManagePlaceModal({ inside, onClose, onExit, onDelete }: {
+export function ManagePlaceModal({ inside, entryNumber, onClose, onExit, onDelete }: {
   inside: boolean;
+  entryNumber?: number | null;
   onClose: () => void;
   onExit: () => void;
   onDelete: () => Promise<boolean>;
@@ -18,6 +19,7 @@ export function ManagePlaceModal({ inside, onClose, onExit, onDelete }: {
   const dialogRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
+  const ordinal = entryNumber ? (entryNumber === 1 ? "1re" : `${entryNumber.toLocaleString("fr-FR")}e`) : null;
   const close = () => {
     if (locked.current) return;
     if (confirming) {
@@ -50,8 +52,19 @@ export function ManagePlaceModal({ inside, onClose, onExit, onDelete }: {
           <ModalCloseButton onClick={close} disabled={deleting} />
         </header>
         <div className="min-h-0 overflow-y-auto overscroll-contain p-5 sm:p-6">
+          {!confirming && entryNumber !== null && entryNumber !== undefined && (
+            <div className="mb-4 rounded-xl border border-[#ffd23f]/40 bg-[#ffd23f]/10 px-4 py-3">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#ffd23f]">
+                Place n° {entryNumber.toLocaleString("fr-FR")}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-white">
+                Tu es la {ordinal} personne à être rentrée dans le bus. Ce numéro reste fixe même si d’autres passagers se retirent avant toi.
+              </p>
+            </div>
+          )}
           <p id="manage-place-description" className="text-sm leading-7 text-[#d8e3ff]">
-            {confirming ? "Ta place, ton pseudo, ton commentaire et ton choix de personnage seront supprimés du site. Le compteur diminuera. Cette suppression est définitive ; tu pourras ensuite t’inscrire à nouveau."
+            {confirming
+              ? "Ta place, ton pseudo, ton commentaire et ton choix de personnage seront supprimés du site. Le compteur diminuera et les passagers suivants se décaleront d’un siège pour garder toutes les places remplies. Cette suppression est définitive ; si tu reviens plus tard, tu recevras un nouveau numéro."
               : "Sortir te ramène à l’extérieur du bus. Ta place et ton profil restent enregistrés : tu pourras les retrouver lors de ta prochaine visite depuis ce navigateur. Le compteur ne change pas."}
           </p>
           {error && <p role="alert" className="mt-4 text-sm font-bold text-red-200">{error}</p>}

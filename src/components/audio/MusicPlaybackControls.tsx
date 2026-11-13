@@ -23,8 +23,6 @@ interface MusicPlaybackControlsProps {
   showTrigger?: boolean;
   compact?: boolean;
   fallbackFocusRef?: RefObject<HTMLButtonElement | null>;
-  volume?: number;
-  onVolumeChange?: (volume: number) => void;
 }
 
 /** A small HUD control; its details remain reachable on narrow screens. */
@@ -34,8 +32,6 @@ export default function MusicPlaybackControls({
   showTrigger = true,
   compact = false,
   fallbackFocusRef,
-  volume,
-  onVolumeChange,
 }: MusicPlaybackControlsProps = {}) {
   const [playback, setPlayback] = useState(INITIAL_MUSIC_PLAYBACK);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -121,7 +117,7 @@ export default function MusicPlaybackControls({
       observer.disconnect(); layoutObserver.disconnect(); cancelAnimationFrame(frame);
       window.removeEventListener("resize", schedule);
     };
-  }, [open, showTrigger, volume, portalTarget]);
+  }, [open, showTrigger, portalTarget]);
 
   useEffect(() => {
     if (!open) return;
@@ -155,7 +151,6 @@ export default function MusicPlaybackControls({
   const elapsed = draft ?? playback.elapsed;
   const seekEnabled = playback.ready && playback.duration > 0 && playback.state !== "error";
   const status = playbackLabel(playback);
-  const showIntegratedVolume = volume !== undefined && onVolumeChange !== undefined;
 
   if (!showTrigger && !open) return null;
 
@@ -180,53 +175,20 @@ export default function MusicPlaybackControls({
       <div className="-mt-1 flex justify-between text-xs font-semibold tabular-nums text-white/85" aria-hidden="true">
         <span>{formatTime(elapsed)}</span><span>{playback.duration ? formatTime(playback.duration) : "—:—"}</span>
       </div>
-      {showIntegratedVolume && (
-        <div className="mt-2 flex items-center gap-1.5 border-t border-white/15 pt-2">
-          <button
-            type="button"
-            onClick={() => onVolumeChange(volume > 0 ? 0 : 85)}
-            aria-label={volume === 0 ? "Réactiver le son" : "Couper le son de la musique"}
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm transition-transform hover:bg-white/10 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] cursor-pointer"
-          >
-            {volume === 0 ? "🔇" : volume < 35 ? "🔉" : "🔊"}
-          </button>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={5}
-            value={volume}
-            onChange={event => onVolumeChange(Number(event.target.value))}
-            aria-label="Volume de la musique"
-            className="h-11 min-w-0 flex-1 cursor-pointer accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]"
-          />
-          <span className="w-9 shrink-0 text-right text-xs font-bold tabular-nums text-white">
-            {volume}%
-          </span>
-        </div>
-      )}
     </div>
   ) : null;
 
   return <div ref={attachRoot} className={showTrigger ? "bus-music-playback relative flex shrink-0 items-center" : "contents"}>
     {showTrigger && <button ref={triggerRef} type="button"
-      aria-label={showIntegratedVolume
-        ? `Audio et progression de la musique : ${playback.title}. ${status}, volume ${volume}%`
-        : `Détails de la musique : ${playback.title}. ${status}`}
+      aria-label={`Détails de la musique : ${playback.title}. ${status}`}
       aria-expanded={open} aria-controls={id} onClick={() => setOpen(value => !value)}
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
-      title={showIntegratedVolume ? `${playback.title} · progression et volume (${volume}%)` : `${playback.title} · ${status} · afficher la progression`}
-      className={`flex h-11 w-11 items-center justify-center gap-2 rounded-full border shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] cursor-pointer ${showIntegratedVolume ? "bus-icon-button bg-black/75" : "bg-[#07142b]/95"} ${compact ? "" : "lg:w-[170px] lg:justify-start lg:px-3"} ${open ? "border-[#ffd23f] text-[#ffd23f]" : "border-white/35 text-white"}`}>
-      {showIntegratedVolume ? (
-        <span aria-hidden="true" className="text-sm leading-none">
-          {volume === 0 ? "🔇" : volume < 35 ? "🔉" : "🔊"}
-        </span>
-      ) : (
-        <svg aria-hidden="true" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M4 6h16M4 12h16M4 18h16" /><path d="M9 3v6m6 0v6m-7 0v6" strokeWidth="4" />
-        </svg>
-      )}
+      title={`${playback.title} · ${status} · afficher la progression`}
+      className={`flex h-11 w-11 items-center justify-center gap-2 rounded-full border shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] cursor-pointer ${compact ? "bus-icon-button bus-glass bg-black/75" : "bg-[#07142b]/95 lg:w-[170px] lg:justify-start lg:px-3"} ${open ? "border-[#ffd23f] text-[#ffd23f]" : "border-white/35 text-white"}`}>
+      <svg aria-hidden="true" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M4 6h16M4 12h16M4 18h16" /><path d="M9 3v6m6 0v6m-7 0v6" strokeWidth="4" />
+      </svg>
       {!compact && <span className="hidden min-w-0 text-left lg:block">
         <span className="block truncate text-xs font-bold">{playback.title}</span>
         <span className="block text-[10px] tabular-nums text-white/80">{formatTime(playback.elapsed)} / {playback.duration ? formatTime(playback.duration) : "—:—"}</span>

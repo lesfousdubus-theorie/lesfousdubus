@@ -7,12 +7,13 @@ import { useModalAccessibility } from "./useModalAccessibility";
 import { ModalCloseButton } from "./ModalCloseButton";
 
 export function getPassengerReportHref(passenger: PassengerProfile) {
+  const placeNumber = passenger.entryNumber ?? passenger.seatIndex + 1;
   const message = [
     "Bonjour,", "", "Je souhaite signaler le passager suivant :",
-    `Place : ${passenger.seatIndex}`, `Nom : ${passenger.displayName}`,
+    `Place n° : ${placeNumber} (siège ${passenger.seatIndex})`, `Nom : ${passenger.displayName}`,
     `Message : ${passenger.comment ?? "aucun"}`, "", "Motif du signalement :", "",
   ].join("\r\n");
-  return `mailto:contact@lesfousdubus.sbs?subject=${encodeURIComponent(`Signalement passager #${passenger.seatIndex}`)}&body=${encodeURIComponent(message)}`;
+  return `mailto:contact@lesfousdubus.sbs?subject=${encodeURIComponent(`Signalement passager n°${placeNumber}`)}&body=${encodeURIComponent(message)}`;
 }
 
 export function PassengerCard({
@@ -36,6 +37,8 @@ export function PassengerCard({
   const handleKeyDown = useModalAccessibility(Boolean(passenger), onClose, dialogRef, dialogRef, returnFocusRef);
 
   if (!passenger) return null;
+  const placeNumber = passenger.entryNumber ?? passenger.seatIndex + 1;
+  const arrivalRank = placeNumber === 1 ? "1re" : `${placeNumber.toLocaleString("fr-FR")}e`;
 
   return createPortal(
     <div
@@ -56,7 +59,9 @@ export function PassengerCard({
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#ffd23f]">Passager du bus</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#ffd23f]">
+              Place n° {placeNumber.toLocaleString("fr-FR")} · {arrivalRank} à bord
+            </p>
             <h2 id="passenger-name" className="mt-1 break-words text-2xl font-black leading-tight">
               {passenger.displayName}
             </h2>
