@@ -142,22 +142,29 @@ body {
 
 /* Les contrôles respectent les encoches, Dynamic Island et barres d'accueil. */
 .bus-top-stats {
-  top: calc(0.75rem + env(safe-area-inset-top)) !important;
+  top: calc(0.5rem + env(safe-area-inset-top)) !important;
   left: auto !important;
-  right: calc(0.75rem + env(safe-area-inset-right)) !important;
-  max-width: calc(100vw - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right));
+  right: calc(0.5rem + env(safe-area-inset-right)) !important;
+  max-width: calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right));
 }
 
 .bus-top-stats > button { flex: none; }
 
 .bus-title-panel {
-  top: var(--bus-title-top, 4.75rem) !important;
-  left: calc(0.75rem + env(safe-area-inset-left)) !important;
+  top: var(--bus-title-top, calc(0.5rem + env(safe-area-inset-top))) !important;
+  left: calc(0.5rem + env(safe-area-inset-left)) !important;
+  max-width: calc(100vw - var(--bus-stats-width, 9.75rem) - 1.75rem - env(safe-area-inset-left) - env(safe-area-inset-right));
+}
+
+.bus-title-actions {
+  top: var(--bus-title-actions-top, calc(4.25rem + env(safe-area-inset-top))) !important;
+  left: calc(0.5rem + env(safe-area-inset-left)) !important;
+  max-width: calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right));
 }
 
 .bus-row-nav {
-  top: var(--bus-row-top, 4.75rem) !important;
-  right: calc(0.75rem + env(safe-area-inset-right)) !important;
+  top: var(--bus-row-top, calc(7.75rem + env(safe-area-inset-top))) !important;
+  right: calc(0.5rem + env(safe-area-inset-right)) !important;
 }
 
 .bus-day-night {
@@ -189,9 +196,9 @@ body {
 
 .bus-exterior-controls,
 .bus-interior-controls {
-  bottom: var(--bus-actions-bottom, calc(7.75rem + env(safe-area-inset-bottom))) !important;
+  bottom: calc(0.5rem + env(safe-area-inset-bottom)) !important;
   left: calc(50% + (env(safe-area-inset-left) - env(safe-area-inset-right)) / 2) !important;
-  max-width: calc(100vw - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+  max-width: calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
   padding-inline: 0;
   translate: -50% 0;
   transform: none !important;
@@ -202,19 +209,19 @@ body {
 }
 
 .bus-mobile-menu {
-  bottom: var(--bus-mobile-menu-bottom, calc(4.5rem + env(safe-area-inset-bottom)));
-  left: calc(50% + (env(safe-area-inset-left) - env(safe-area-inset-right)) / 2);
-  width: min(calc(100vw - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right)), 24rem);
+  bottom: var(--bus-mobile-menu-bottom, calc(4rem + env(safe-area-inset-bottom))) !important;
+  left: calc(50% + (env(safe-area-inset-left) - env(safe-area-inset-right)) / 2) !important;
+  max-width: calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right));
   translate: -50% 0;
 }
 
 [data-bottom-layout="compact"] .bus-exterior-controls,
 [data-bottom-layout="compact"] .bus-interior-controls {
-  bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important;
+  bottom: calc(0.5rem + env(safe-area-inset-bottom)) !important;
 }
 
 [data-bottom-layout="compact"] .bus-exterior-controls {
-  width: min(24rem, calc(100vw - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right)));
+  width: min(28rem, calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right)));
 }
 
 [data-bottom-layout="inline"] .bus-exterior-controls,
@@ -227,10 +234,17 @@ body {
     left: auto !important;
     right: calc(1rem + env(safe-area-inset-right)) !important;
     top: calc(1rem + env(safe-area-inset-top)) !important;
+    max-width: calc(100vw - 2rem - env(safe-area-inset-left) - env(safe-area-inset-right));
   }
 
   .bus-title-panel {
     left: calc(1rem + env(safe-area-inset-left)) !important;
+    max-width: calc(100vw - 2rem - env(safe-area-inset-left) - env(safe-area-inset-right));
+  }
+
+  .bus-title-actions {
+    left: calc(1rem + env(safe-area-inset-left)) !important;
+    max-width: calc(100vw - 2rem - env(safe-area-inset-left) - env(safe-area-inset-right));
   }
 
   .bus-row-nav {
@@ -253,7 +267,19 @@ body {
 
   .bus-exterior-controls,
   .bus-interior-controls {
+    bottom: var(--bus-actions-bottom, calc(7.75rem + env(safe-area-inset-bottom))) !important;
     max-width: calc(100vw - 2rem - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+  }
+
+  [data-bottom-layout="compact"] .bus-exterior-controls,
+  [data-bottom-layout="compact"] .bus-interior-controls {
+    bottom: calc(0.5rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .bus-title-panel {
+    max-width: calc(100vw - 26rem);
   }
 }
 
@@ -261,7 +287,7 @@ body {
   .bus-day-night-detail { display: none; }
 }
 
-/* Garder les cinq commandes et leurs cibles tactiles sur les petits écrans. */
+/* Garder les commandes et leurs cibles tactiles sur les petits écrans. */
 @media (max-width: 380px) {
   .bus-title-actions > button:not(.bus-immersive-toggle) {
     padding-inline: 0.4375rem;
@@ -278,8 +304,7 @@ body {
 
 @media (max-width: 639px) and (orientation: portrait) {
   .bus-exterior-controls { gap: 0.375rem !important; }
-  .bus-exterior-controls button { padding-inline: 0.625rem !important; }
-  .bus-exterior-controls > button:first-child { flex: none; min-width: 0; }
+  .bus-exterior-controls button:not(.bus-icon-button) { padding-inline: 0.625rem !important; }
   .bus-exterior-tv { width: 4.25rem; }
   .bus-exterior-tv > button { width: 100%; }
 }
@@ -296,26 +321,20 @@ body {
    Cette passe compacte évite que les contrôles se chevauchent comme sur tablette. */
 @media (orientation: landscape) and (max-height: 520px) {
   .bus-title-panel {
-    /* Les accès à la théorie, au personnage, à sa place et au mode immersif
-       tiennent sur une seule ligne pour préserver la hauteur libre des toasts. */
     left: calc(0.35rem + env(safe-area-inset-left)) !important;
     max-width: calc(100vw - 15.25rem - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
   }
 
   .bus-title-panel h1,
-  .bus-title-panel > p {
-    display: none !important;
-  }
-
+  .bus-title-panel > p,
   .bus-title-copy {
     display: none !important;
   }
 
-  .bus-title-panel > div {
-    margin-top: 0 !important;
-  }
-
   .bus-title-actions {
+    top: var(--bus-title-actions-top, calc(0.35rem + env(safe-area-inset-top))) !important;
+    left: calc(0.35rem + env(safe-area-inset-left)) !important;
+    max-width: calc(100vw - 0.7rem - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
     gap: 0.25rem !important;
   }
 
@@ -402,6 +421,8 @@ body {
     min-width: 3.6rem;
   }
 
+  .bus-exterior-controls,
+  .bus-interior-controls,
   [data-bottom-layout="compact"] .bus-exterior-controls,
   [data-bottom-layout="compact"] .bus-interior-controls {
     bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
@@ -414,12 +435,12 @@ body {
   }
 
   .bus-exterior-controls {
-    width: min(26rem, calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 0.7rem));
+    width: min(28rem, calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 0.7rem));
     flex-wrap: nowrap;
   }
 
   .bus-interior-controls {
-    max-width: min(38rem, calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 0.7rem)) !important;
+    max-width: min(40rem, calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 0.7rem)) !important;
     width: max-content !important;
     flex-direction: row;
   }
@@ -428,28 +449,31 @@ body {
     display: contents;
   }
 
-  .bus-interior-controls button,
-  .bus-exterior-controls button {
+  .bus-interior-controls button:not(.bus-icon-button),
+  .bus-exterior-controls button:not(.bus-icon-button) {
     min-width: 2.75rem !important;
     width: auto !important;
     flex: 1 0 auto;
     padding-inline: 0.5rem !important;
   }
 
-  .bus-interior-controls > div:first-child > button { flex: 1.15 0 auto; }
-  .bus-interior-controls button > span[aria-hidden="true"]:not(.bus-mobile-menu-dot) { display: none; }
+  .bus-interior-controls .bus-icon-button,
+  .bus-exterior-controls .bus-icon-button {
+    flex: 0 0 auto !important;
+    width: 2.75rem !important;
+    min-width: 2.75rem !important;
+    padding-inline: 0 !important;
+  }
+
+  .bus-interior-controls > div:first-child > button:not(.bus-icon-button) { flex: 1.15 0 auto; }
+  .bus-interior-controls button:not(.bus-icon-button) > span[aria-hidden="true"]:not(.bus-mobile-menu-dot) { display: none; }
   .bus-exterior-controls > div { display: contents; }
   .bus-exterior-controls > button:last-child { flex: 1.5 0 auto; }
 
   .bus-mobile-menu {
-    width: min(calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right)), 36rem);
-    padding: 0.4375rem !important;
-  }
-
-  .bus-mobile-menu-grid {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-    gap: 0.375rem !important;
+    width: max-content;
+    max-width: min(calc(100vw - 0.75rem - env(safe-area-inset-left) - env(safe-area-inset-right)), 46rem);
+    gap: 0.25rem !important;
   }
 
   .hud-label-long {
