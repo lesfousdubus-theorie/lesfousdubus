@@ -28,6 +28,21 @@ const sliced = cleanText(emojiString, 4);
 assert.equal(Array.from(sliced).length, 4);
 assert.doesNotMatch(sliced, /[\uD800-\uDBFF]$/); // No trailing lone high surrogate
 
+// Multiline text cleaning & surrogate preservation
+assert.equal(cleanText("  hello \r\n  world  ", 30, true), "hello\nworld");
+assert.equal(cleanText("line1\n\n\n\nline2", 30, true), "line1\n\nline2");
+assert.equal(cleanText("line1 \r\n \r\n \r\n line2", 30, true), "line1\n\nline2");
+assert.equal(cleanText("test\u0000control\u001Fchars\nsecond line", 40, true), "test control chars\nsecond line");
+const multilineEmoji = "👒\n🍖\n🏴‍☠️";
+const slicedMultiline = cleanText(multilineEmoji, 3, true);
+assert.equal(Array.from(slicedMultiline).length, 3);
+assert.doesNotMatch(slicedMultiline, /[\uD800-\uDBFF]$/);
+assert.equal(slicedMultiline, "👒\n🍖");
+const slicedMultiline1 = cleanText(multilineEmoji, 1, true);
+assert.equal(Array.from(slicedMultiline1).length, 1);
+assert.doesNotMatch(slicedMultiline1, /[\uD800-\uDBFF]$/);
+assert.equal(slicedMultiline1, "👒");
+
 // 2. IPv6 /64 normalization
 assert.equal(normalizeRateAddress("192.168.1.1"), "192.168.1.1");
 assert.equal(normalizeRateAddress("::ffff:192.0.2.1"), "192.0.2.1");

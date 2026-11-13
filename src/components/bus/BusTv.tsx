@@ -206,6 +206,7 @@ export function BusTvPlayer({
         return;
       }
       const playing = player.getPlayerState() === 1;
+      if (fromClick) setPlayerStatus(playing ? "ready" : "loading");
       if (startTimerRef.current !== null && !fromClick && !playing) return;
       clearStartTimer();
       stopVolumeRamp();
@@ -366,6 +367,8 @@ export function BusTvPlayer({
       if (!disconnectRef.current) {
         setPlayerStatus("loading");
         connectPlayer();
+      } else if (!playerRef.current) {
+        setPlayerStatus("loading");
       }
       if (playerRef.current) applyDesiredPlayback(true);
     };

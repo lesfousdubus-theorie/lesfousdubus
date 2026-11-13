@@ -13,6 +13,23 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function isSeatConflictError(error: unknown): boolean {
+  if (!error) return false;
+  const pattern = /UNIQUE constraint failed.*seat_index/i;
+  if (typeof error === "string") return pattern.test(error);
+  if (error instanceof Error) {
+    if (pattern.test(error.message)) return true;
+    if (error.cause && isSeatConflictError(error.cause)) return true;
+  }
+  if (typeof error === "object") {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && pattern.test(message)) return true;
+    const cause = (error as { cause?: unknown }).cause;
+    if (cause && isSeatConflictError(cause)) return true;
+  }
+  return pattern.test(String(error));
+}
+
 export async function GET(request: Request) {
   try {
     const database = await getPassengerDatabase();
@@ -108,7 +125,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "Profil invalide." }, { status: 400, headers: WRITE_HEADERS });
     }
     const displayName = cleanText(body.displayName, 24);
-    const comment = cleanText(body.comment, 180);
+    const comment = cleanText(body.comment, 180, true);
     if (displayName) {
       const issue = findModerationIssue(displayName);
       if (issue) {
@@ -126,7 +143,7 @@ export async function POST(request: Request) {
     }
 
     const database = await getPassengerDatabase();
-    const existing = await database.prepare(
+    let existing = await database.prepare(
       "SELECT seat_index FROM bus_entries WHERE visitor_id = ?",
     ).bind(visitorId).first<{ seat_index: number }>();
     const action = existing ? "profile" : "join";
@@ -143,21 +160,40 @@ export async function POST(request: Request) {
 
     let added = false;
     if (!existing) {
-      const insertion = await database.prepare(
-        `INSERT INTO bus_entries (visitor_id, display_name, comment, avatar_id, seat_index)
-         VALUES (?, ?, ?, ?, COALESCE(
-           (SELECT start_index FROM bus_vacant_seat_ranges ORDER BY start_index ASC LIMIT 1),
-           (SELECT COALESCE(MAX(seat_index) + 1, 0) FROM bus_entries)
-         ))
-         ON CONFLICT(visitor_id) DO NOTHING`,
-      ).bind(
-        visitorId,
-        hasDisplayName ? displayName || null : null,
-        hasComment ? comment || null : null,
-        hasAvatar ? body.avatarId : null,
-      ).run();
-      added = (insertion.meta.changes ?? 0) > 0;
-    } else if (hasDisplayName || hasComment || hasAvatar) {
+      const MAX_SEAT_ATTEMPTS = 5;
+      for (let attempt = 0; attempt < MAX_SEAT_ATTEMPTS; attempt++) {
+        try {
+          const insertion = await database.prepare(
+            `INSERT INTO bus_entries (visitor_id, display_name, comment, avatar_id, seat_index)
+             VALUES (?, ?, ?, ?, COALESCE(
+               (SELECT start_index FROM bus_vacant_seat_ranges ORDER BY start_index ASC LIMIT 1),
+               (SELECT COALESCE(MAX(seat_index) + 1, 0) FROM bus_entries)
+             ))
+             ON CONFLICT(visitor_id) DO NOTHING`,
+          ).bind(
+            visitorId,
+            hasDisplayName ? displayName || null : null,
+            hasComment ? comment || null : null,
+            hasAvatar ? body.avatarId : null,
+          ).run();
+          added = (insertion.meta.changes ?? 0) > 0;
+          break;
+        } catch (insertError) {
+          if (!isSeatConflictError(insertError) || attempt === MAX_SEAT_ATTEMPTS - 1) {
+            throw insertError;
+          }
+          const current = await database.prepare(
+            "SELECT seat_index FROM bus_entries WHERE visitor_id = ?",
+          ).bind(visitorId).first<{ seat_index: number }>();
+          if (current) {
+            existing = current;
+            break;
+          }
+        }
+      }
+    }
+
+    if (existing && (hasDisplayName || hasComment || hasAvatar)) {
       // Seuls les champs fournis changent : choisir un personnage conserve le
       // prénom, le commentaire et la place du visiteur.
       await database.prepare(
