@@ -7,6 +7,8 @@ import { CommentBubbleIcon, UserBadgeIcon } from "../ui/BusIcons";
 import { useModalAccessibility } from "./useModalAccessibility";
 import { ModalCloseButton } from "./ModalCloseButton";
 
+const REPORT_EMAIL = "contact@lesfousdubus.sbs";
+
 export function getPassengerReportHref(passenger: PassengerProfile) {
   const placeNumber = passenger.entryNumber ?? passenger.seatIndex + 1;
   const message = [
@@ -14,7 +16,7 @@ export function getPassengerReportHref(passenger: PassengerProfile) {
     `Place n° : ${placeNumber} (siège ${passenger.seatIndex})`, `Nom : ${passenger.displayName}`,
     `Message : ${passenger.comment ?? "aucun"}`, "", "Motif du signalement :", "",
   ].join("\r\n");
-  return `mailto:contact@lesfousdubus.sbs?subject=${encodeURIComponent(`Signalement passager n°${placeNumber}`)}&body=${encodeURIComponent(message)}`;
+  return `mailto:${REPORT_EMAIL}?subject=${encodeURIComponent(`Signalement passager n°${placeNumber}`)}&body=${encodeURIComponent(message)}`;
 }
 
 export function PassengerCard({
@@ -118,7 +120,7 @@ export function PassengerCard({
             )}
           </div>
           {!loading && !error && (passenger.comment || passenger.displayName) && (
-            <div className="mt-3 flex justify-end">
+            <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
               <a
                 href={getPassengerReportHref(passenger)}
                 className="inline-flex min-h-11 cursor-pointer items-center rounded-md px-1 text-xs font-semibold text-[#b6c7eb] underline underline-offset-4 transition-colors hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"

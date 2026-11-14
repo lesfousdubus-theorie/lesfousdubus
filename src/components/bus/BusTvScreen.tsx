@@ -65,6 +65,14 @@ const SCREEN_CORNERS = [
   [-HALF_W, HALF_H],
 ] as const;
 
+function writeTvPointerHit(surface: HTMLElement | null | undefined, hit: boolean) {
+  if (!surface) return;
+  const value = hit ? "true" : "false";
+  if (surface.getAttribute("data-tv-pointer-hit") !== value) {
+    surface.setAttribute("data-tv-pointer-hit", value);
+  }
+}
+
 /** The iframe sits behind the canvas. Only pixels that pass the same depth
  * test as the physical screen can reveal it. */
 export default function BusTvScreen({ isOn, interactive, children }: {
@@ -74,6 +82,7 @@ export default function BusTvScreen({ isOn, interactive, children }: {
 }) {
   const aperture = useRef<THREE.Mesh>(null);
   const frame = useRef<HTMLDivElement>(null);
+  const surfaceRef = useRef<HTMLElement | null>(null);
   const lastTransform = useRef("");
   const { camera, gl, scene, size } = useThree();
   const flatFrame = useMemo(() => typeof CSS !== "undefined" && CSS.supports("-moz-appearance", "none"), []);
@@ -129,21 +138,32 @@ export default function BusTvScreen({ isOn, interactive, children }: {
     screen.visible = visible;
     const visibility = visible ? "visible" : "hidden";
     if (frame.current.style.visibility !== visibility) frame.current.style.visibility = visibility;
-    if (!visible || !interactive) frame.current.style.pointerEvents = "none";
+    if (!visible || !interactive) {
+      frame.current.style.pointerEvents = "none";
+      writeTvPointerHit(surfaceRef.current, false);
+    }
   });
 
   useEffect(() => {
-    if (!interactive) return;
     const canvas = gl.domElement;
-    const surface = canvas.parentElement?.parentElement;
+    const surface = canvas.parentElement?.parentElement ?? null;
+    surfaceRef.current = surface;
+    const htmlFrame = frame.current;
     if (!surface) return;
+    if (!interactive) {
+      writeTvPointerHit(surface, false);
+      return;
+    }
 
     // Keep the canvas surface available for camera gestures. The native
     // controls receive the pointer only where the actual screen can be hit.
     function updatePointer(event: UIEvent) {
       const screen = aperture.current;
       const html = frame.current;
-      if (!screen || !html) return;
+      if (!screen || !html) {
+        writeTvPointerHit(surface, false);
+        return;
+      }
       let canPick = false;
       if (screen.visible && isOn()) {
         const bounds = canvas.getBoundingClientRect();
@@ -181,10 +201,12 @@ export default function BusTvScreen({ isOn, interactive, children }: {
         }
       }
       html.style.pointerEvents = canPick ? "auto" : "none";
+      writeTvPointerHit(surface, canPick);
     }
 
     function onPointerLeave() {
       if (frame.current) frame.current.style.pointerEvents = "none";
+      writeTvPointerHit(surface, false);
     }
 
     surface.addEventListener("pointermove", updatePointer as EventListener, { capture: true, passive: true });
@@ -193,6 +215,9 @@ export default function BusTvScreen({ isOn, interactive, children }: {
     surface.addEventListener("touchstart", updatePointer as EventListener, { capture: true, passive: true });
     surface.addEventListener("pointerleave", onPointerLeave);
     return () => {
+      writeTvPointerHit(surface, false);
+      if (surfaceRef.current === surface) surfaceRef.current = null;
+      if (htmlFrame) htmlFrame.style.pointerEvents = "none";
       surface.removeEventListener("pointermove", updatePointer as EventListener, true);
       surface.removeEventListener("pointerover", updatePointer as EventListener, true);
       surface.removeEventListener("pointerdown", updatePointer as EventListener, true);

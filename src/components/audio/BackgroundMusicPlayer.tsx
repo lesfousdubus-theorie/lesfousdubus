@@ -322,11 +322,12 @@ export default function BackgroundMusicPlayer({
       if (!Number.isFinite(duration) || duration <= 0) return;
       const seconds = Math.max(0, Math.min(detail.seconds, duration));
       if (slot.track === "party") danceGateRef.current.waitingForIntro = false;
+      stopWarmup(slot);
       slot.restart = false; slot.player.seekTo(seconds, true);
       if (!shouldPlay(slot)) { slot.player.mute(); slot.player.pauseVideo(); }
       updateDance(); publishPlayback();
     } catch { reportFailure(slot, "Impossible de déplacer la lecture.", true); }
-  }), [shouldPlay, updateDance, publishPlayback, reportFailure]);
+  }), [shouldPlay, stopWarmup, updateDance, publishPlayback, reportFailure]);
   useEffect(() => onBusAudioEvent("musicToggle", detail => {
     if (desiredPartyRef.current) return;
     desiredPlayingRef.current = detail.playing; desiredSuspendedRef.current = detail.suspendedForVideo;

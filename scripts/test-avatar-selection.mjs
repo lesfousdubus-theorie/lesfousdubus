@@ -40,7 +40,7 @@ try {
     await send("Input.dispatchKeyEvent", { type: "keyUp", key });
   };
   const open = async () => {
-    await run("[...document.querySelectorAll('button')].find(button => button.textContent.includes('Changer de personnage')).click()");
+    await click('button[aria-label="Changer de personnage"]');
     await wait("Boolean(document.getElementById('avatar-selection-title')) && Boolean(avatarPreview())", "Avatar dialog and real 3D preview");
   };
   await send("Page.enable"); await send("Runtime.enable");
