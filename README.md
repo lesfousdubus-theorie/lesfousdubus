@@ -49,6 +49,16 @@ Un cycle jour/nuit automatique fait voyager le bus du grand soleil jusqu'à la n
 ### 📜 7. Découvrir le dossier complet de la théorie
 Cliquez sur le bouton **« 📜 La Théorie »** en haut à gauche pour ouvrir le dossier complet expliquant la thèse centrale, la vidéo du Mont Corvo et la FAQ sur l'origine du site et du convoi des Fous du Bus.
 
+### 🎵 8. Écouter la musique de fond
+Le bouton **Musique** active *Life in Pieces* et le réglage de volume est mémorisé.
+La lecture continue pendant la consultation de la théorie, y compris avant de
+lancer sa vidéo. Elle est suspendue lorsqu'une vidéo joue, puis reprend à la
+pause, à la fin ou à la fermeture de celle-ci, si la musique reste activée.
+
+Kamal et Kyta accompagnent le voyage dans le poste de conduite, avec des
+personnages carrés inspirés de leurs photos. Les références et choix de
+modélisation sont documentés dans [docs/driver-design.md](docs/driver-design.md).
+
 ---
 
 ## 🎮 Comment naviguer sur le site ?
@@ -56,7 +66,7 @@ Cliquez sur le bouton **« 📜 La Théorie »** en haut à gauche pour ouvrir l
 ### Avec la souris ou au doigt (sur smartphone / tablette) :
 - **Faire pivoter la vue** : cliquez et glissez pour tourner à 360° autour du minibus. Glissez vers le haut de l'écran au-delà de l'horizon pour regarder jusqu'au ciel au-dessus de vous ; glissez vers le bas pour retrouver la vue sur le bus.
 - **Recentrer la vue** : le bouton en forme de cible, à côté du jour/nuit, retrouve le bus à l’extérieur ou la télévision à l’intérieur. Le cadrage s’adapte aux écrans portrait.
-- **Zoomer / Dézoomer** : utilisez la molette de votre souris (ou écartez deux doigts sur mobile).
+- **Zoomer / Dézoomer** : utilisez la molette de votre souris (ou écartez deux doigts sur mobile). À l’extérieur, le zoom suit le pointeur et permet de s’approcher des détails du bus.
 - **Dans le bus** : glissez votre souris pour regarder autour de vous dans la cabine, et utilisez les flèches **◀ Rangée ▶** pour vous déplacer d'avant en arrière le long de l'allée.
 
 ### Raccourcis clavier (sur ordinateur) :
@@ -100,8 +110,12 @@ npm run build:next -- --webpack
 `npm test` utilise une base D1 temporaire pour ses scénarios de places et ne
 modifie pas les passagers de la base locale. Le test d'interface `npm run test:ui`
 nécessite que `npm run dev` ou `npm run start` tourne dans un autre terminal ;
-il vérifie les commandes sur neuf tailles d’écran, les onglets et la position de
-lecture, les formulaires, le clavier, le parcours liste/fiche et le repli sans WebGL.
+il vérifie les commandes sur vingt-trois tailles d’écran, à l’intérieur et à
+l’extérieur, avec la musique active, le volume ouvert et les notifications.
+Il contrôle aussi que le titre et les commandes restent côte à côte lorsque
+leur largeur réelle le permet, y compris après la fermeture des fenêtres.
+Il couvre aussi les onglets et la position de lecture, les formulaires, le clavier,
+le parcours liste/fiche et le repli sans WebGL.
 Tous les contrôles sont lancés localement avant le déploiement ;
 aucun test automatique n'est exécuté lors d'un envoi sur GitHub.
 

@@ -26,6 +26,7 @@ interface BusProps {
   headlights: boolean;
   hornPulse: number;
   tvOn: boolean;
+  onVideoPlaybackChange?: (active: boolean) => void;
   phase: "outside" | "entering" | "inside" | "exiting";
   worldRef: React.RefObject<WorldState>;
   passengerCount?: number;
@@ -51,6 +52,7 @@ export default function Bus({
   headlights,
   hornPulse,
   tvOn,
+  onVideoPlaybackChange,
   phase,
   worldRef,
   passengerCount = 0,
@@ -617,7 +619,6 @@ export default function Bus({
       {/* CONDUCTEURS DU MONT CORVO : KAMAL AU VOLANT ET KYTA EN CO-PILOTE */}
       <BusDrivers
         hornPulse={hornPulse}
-        montCorvoTex={montCorvoTex}
         reducedMotion={reducedMotion}
       />
 
@@ -826,6 +827,7 @@ export default function Bus({
       <BusTvPlayer
         pos={activeTvPosition}
         tvOn={tvOn}
+        onPlaybackChange={onVideoPlaybackChange}
         phase={phase}
         hasEntered={hasEntered}
         isMutedForFullscreen={isMutedForFullscreen}
