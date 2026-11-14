@@ -23,6 +23,7 @@ import {
 import type { PassengerProfile } from "@/types/passenger";
 import { THEORY_VIDEO_URL } from "@/lib/theory-video";
 import { createDprSample, sampleSceneDpr } from "@/lib/scene-performance";
+import { BusFrontIcon, ExternalArrowIcon } from "../ui/BusIcons";
 
 interface SceneProps {
   phase: Phase;
@@ -59,16 +60,34 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
   return (
     <div className="absolute inset-0 bg-gradient-to-b from-[#79c2ff] to-[#174f91] text-center text-white">
       <div className="bus-scene-fallback absolute inset-x-3 bottom-3 top-48 grid place-items-center overflow-y-auto sm:top-52 lg:top-40">
-      <div role="status" className="max-w-md rounded-2xl border border-white/20 bg-[#07142b] p-5 shadow-2xl">
-        <div className="mb-3 text-5xl" aria-hidden="true">🚌</div>
+      <div role="status" className="max-w-md rounded-2xl border border-[#ffd23f]/45 bg-[#07142b] p-5 shadow-2xl">
+        <div className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-2xl border border-[#ffd23f]/35 bg-[#ffd23f]/10" aria-hidden="true">
+          <BusFrontIcon className="h-9 w-9 text-[#ffd23f]" />
+        </div>
         <p className="text-lg font-black">Le bus reste au dépôt</p>
-        <p className="mt-2 text-sm text-white/80">{reason}</p>
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
-        {onReadTheory && <button type="button" onClick={onReadTheory} className="min-h-11 rounded-xl bg-[#ffd23f] px-4 py-2 font-black text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Lire la théorie</button>}
-        <a href={THEORY_VIDEO_URL} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-xl border border-white/30 px-4 py-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Voir la vidéo ↗</a>
+        <p className="mt-2 text-sm text-[#dce7ff]">{reason}</p>
+        <div className="mt-4 flex flex-wrap justify-center gap-x-2 gap-y-2.5">
+        {onReadTheory && (
+          <button
+            type="button"
+            onClick={onReadTheory}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#ffd23f] px-4 py-2 font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+          >
+            Lire la théorie
+          </button>
+        )}
+        <a
+          href={THEORY_VIDEO_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-white/30 bg-[#0c1b3a] px-4 py-2 font-bold text-white transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+        >
+          Voir la vidéo
+          <ExternalArrowIcon />
+        </a>
         <button
           type="button"
-          className="min-h-11 rounded-xl border border-white/30 px-4 py-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 bg-[#0c1b3a] px-4 py-2 font-bold text-white transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
           onClick={() => window.location.reload()}
         >
           Réessayer
@@ -94,7 +113,7 @@ class SceneErrorBoundary extends Component<{ children: ReactNode; onAvailability
 
   render() {
     return this.state.failed
-      ? <SceneFallback onReadTheory={this.props.onReadTheory} reason="Le chargement de la scène a échoué. Vous pouvez relancer l’expérience." />
+      ? <SceneFallback onReadTheory={this.props.onReadTheory} reason="Le chargement de la scène a échoué. Tu peux relancer l’expérience." />
       : this.props.children;
   }
 }
@@ -385,7 +404,7 @@ export default function Scene({
       />
       </Canvas>
       {contextLost && (
-        <SceneFallback onReadTheory={onReadTheory} reason="Le moteur graphique a été suspendu par l’appareil. Le contexte WebGL est en cours de restauration ; vous pouvez aussi relancer l’expérience." />
+        <SceneFallback onReadTheory={onReadTheory} reason="Le moteur graphique a été suspendu par l’appareil. Le contexte WebGL est en cours de restauration ; tu peux aussi relancer l’expérience." />
       )}
       </div>
     </SceneErrorBoundary>
