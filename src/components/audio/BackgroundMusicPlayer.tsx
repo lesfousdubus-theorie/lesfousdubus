@@ -9,18 +9,21 @@ interface BackgroundMusicPlayerProps {
   playing: boolean;
   onPlayingChange: (playing: boolean) => void;
   mutedForOverlay?: boolean;
+  volume?: number;
 }
 
 export default function BackgroundMusicPlayer({
   playing,
   onPlayingChange,
   mutedForOverlay = false,
+  volume = 50,
 }: BackgroundMusicPlayerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const readyRef = useRef(false);
   const desiredPlayingRef = useRef(playing);
   const desiredMutedRef = useRef(mutedForOverlay);
+  const desiredVolumeRef = useRef(volume);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,7 +51,7 @@ export default function BackgroundMusicPlayer({
               if (cancelled) return;
               readyRef.current = true;
               playerRef.current = event.target;
-              event.target.setVolume(50); // Volume d'ambiance agréable à 50%
+              event.target.setVolume(desiredVolumeRef.current);
 
               const iframe = event.target.getIframe();
               iframe.title = "Musique de fond — Life in Pieces (Le Mont Corvo)";
@@ -110,6 +113,17 @@ export default function BackgroundMusicPlayer({
       // Ignorer si le lecteur est en cours d'initialisation
     }
   }, [playing, mutedForOverlay]);
+
+  // Synchronisation dynamique du volume sonore (0 - 100)
+  useEffect(() => {
+    desiredVolumeRef.current = volume;
+    if (!readyRef.current || !playerRef.current) return;
+    try {
+      playerRef.current.setVolume(volume);
+    } catch {
+      // Ignorer si le lecteur n'est pas encore prêt
+    }
+  }, [volume]);
 
   return (
     <div
