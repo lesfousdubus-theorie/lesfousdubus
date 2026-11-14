@@ -22,7 +22,7 @@ const compiled = await build({
         export const useState=current=>[current,()=>{}];`
         : path === "react/jsx-runtime" ? `export const Fragment=Symbol.for('tv-clearance-fragment');
           export const jsx=(type,props)=>({type,props}); export const jsxs=jsx;`
-          : path === "@react-three/fiber" ? "export const useFrame=()=>{};"
+          : path === "@react-three/fiber" ? "export const useFrame=()=>{}; export const useThree=()=>({});"
             : "export const Html=()=>null;" }));
   } }],
 });

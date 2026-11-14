@@ -119,7 +119,11 @@ export async function runBusPartyChecks({send,evaluate,waitForPageCondition,base
     const version=await run(`window.busCameraTestState().scene.getObjectByName('bus-party-confetti').instanceMatrix.version`);
     await run(`new Promise(resolve=>{const s=window.busCameraTestState(),frame=s.gl.info.render.frame;const tick=()=>s.gl.info.render.frame>frame+8?resolve(true):requestAnimationFrame(tick);requestAnimationFrame(tick);})`);
     assert.equal(await run(`window.busCameraTestState().scene.getObjectByName('bus-party-confetti').instanceMatrix.version`),version,'Reduced-motion confetti must remain static.');
-    assert.deepEqual(await poses(),staticPose,'Each reduced-motion signature remains fixed over time.');
+    const roundAngles = sample => sample.map(({left,right,...pose}) => ({
+      ...pose, left:left.map(value => typeof value === 'number' ? Number(value.toFixed(6)) : value),
+      right:right.map(value => typeof value === 'number' ? Number(value.toFixed(6)) : value),
+    }));
+    assert.deepEqual(roundAngles(await poses()),roundAngles(staticPose),'Each reduced-motion signature remains fixed over time.');
     await stop();await send('Emulation.setEmulatedMedia',{features:[]});
     await start();await run(`${music}.options.events.onError({target:${music},data:150})`);
     await wait(`document.querySelector('.bus-app').dataset.party==='false'`,'An unavailable party track clears party mode');

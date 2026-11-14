@@ -46,7 +46,7 @@ interface BusHudProps {
   setStatsLoadError: Dispatch<SetStateAction<boolean>>;
   setStatsRetryToken: Dispatch<SetStateAction<number>>;
   setSeatRow: Dispatch<SetStateAction<number>>;
-  setTvOn: Dispatch<SetStateAction<boolean>>;
+  toggleTv: () => void;
   openPassengerManifest: () => void;
   toggleDayNight: () => void;
   decelerateBus: () => void;
@@ -69,7 +69,7 @@ export function BusHud({
   numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow,
   exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
   tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, setStatsLoadError,
-  setStatsRetryToken, setSeatRow, setTvOn, openPassengerManifest,
+  setStatsRetryToken, setSeatRow, toggleTv, openPassengerManifest,
   toggleDayNight, decelerateBus, accelerateBus, toggleHeadlights, honk,
   enterBus, openProfileModal, exitBus, resetView, bgmPlaying, toggleBgm,
   bgmVolume, setBgmVolume,
@@ -462,7 +462,7 @@ export function BusHud({
             <div className="bus-exterior-tv animate-[hud-control-in-flow_220ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none">
               <HudButton
                 className="w-[124px] sm:w-[132px]"
-                onClick={() => setTvOn((value) => !value)}
+                onClick={toggleTv}
                 active={tvOn}
                 ariaLabel="Télévision"
                 icon="📺"
@@ -497,7 +497,7 @@ export function BusHud({
             </HudButton>
           </div>
           <div className="grid w-full grid-cols-5 items-center gap-1.5 sm:gap-2">
-            <HudButton compact className="min-w-0 w-full" onClick={() => setTvOn((v) => !v)} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} icon="📺" disabled={partyOn || busy || !interiorControlsVisible}>
+            <HudButton compact className="min-w-0 w-full" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} icon="📺" disabled={partyOn || busy || !interiorControlsVisible}>
               TV
             </HudButton>
             <HudButton compact className="min-w-0 w-full" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={busy || !interiorControlsVisible}>
