@@ -50,34 +50,21 @@ export function BusTvFrame({
       </mesh>
       <mesh position={[0, 0, 0.053]}>
         <planeGeometry args={[1.26, 0.70875]} />
-        {tvOn ? (
-          <meshStandardMaterial
-            map={posterTex}
-            color="#ffffff"
-            emissive="#ffffff"
-            emissiveMap={posterTex}
-            emissiveIntensity={isActive ? 0.52 : 0.32}
-            roughness={0.42}
-            metalness={0.06}
-            toneMapped={false}
-          />
-        ) : (
-          <meshStandardMaterial
-            map={tvOffTex}
-            color="#05070b"
-            roughness={0.25}
-            metalness={0.8}
-            emissive="#000000"
-            emissiveIntensity={0}
-          />
-        )}
+        <meshStandardMaterial
+          map={tvOn ? posterTex : tvOffTex}
+          color={tvOn ? "#ffffff" : "#05070b"}
+          emissive="#ffffff"
+          emissiveMap={tvOn ? posterTex : tvOffTex}
+          emissiveIntensity={tvOn ? (isActive ? 0.52 : 0.32) : 0}
+          roughness={tvOn ? 0.42 : 0.25}
+          metalness={tvOn ? 0.06 : 0.8}
+          toneMapped={false}
+        />
       </mesh>
-      {tvOn && !isActive && (
-        <mesh position={[0.48, 0.275, 0.058]}>
-          <planeGeometry args={[0.18, 0.07]} />
-          <meshBasicMaterial color="#cc1f2f" toneMapped={false} />
-        </mesh>
-      )}
+      <mesh position={[0.48, 0.275, 0.058]} visible={tvOn && !isActive}>
+        <planeGeometry args={[0.18, 0.07]} />
+        <meshBasicMaterial color="#cc1f2f" toneMapped={false} />
+      </mesh>
     </group>
   );
 }

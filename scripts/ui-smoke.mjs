@@ -4,7 +4,7 @@ import { rmSync } from "node:fs";
 
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const chromePath = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
-const debugPort = 9222;
+const debugPort = Number(process.env.CDP_PORT ?? 9222);
 
 for (const method of ["POST", "DELETE"]) {
   const body = JSON.stringify({ visitorId: "invalid" });
