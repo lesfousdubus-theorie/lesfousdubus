@@ -159,7 +159,7 @@ body {
 
   .bus-speed {
     left: auto !important;
-    right: calc(0.35rem + env(safe-area-inset-right)) !important;
+    right: calc(0.75rem + env(safe-area-inset-right)) !important;
     bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
     width: min(17rem, 34vw);
     transform: scale(0.84);
@@ -172,7 +172,8 @@ body {
     left: 40% !important;
     width: min(31rem, calc(100vw - 19rem)) !important;
     max-width: none !important;
-    transform: translateX(-50%) scale(0.86) !important;
+    translate: -50% 0 !important;
+    transform: scale(0.86) !important;
     transform-origin: bottom center;
   }
 }
