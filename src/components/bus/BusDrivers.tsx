@@ -20,7 +20,6 @@ const BURGUNDY_SWEATER = "#5a1626"; // Pull bordeaux col V
 const LANYARD_WHITE = "#f8fafc"; // Tour de cou / badge blanc
 const EYE_BLUE = "#3d6494"; // Yeux bleu-gris expressifs
 const PUPIL_DARK = "#0d131f"; // Pupille sombre
-const MIC_FLESH = "#e8bfa0"; // Micro serre-tête scène couleur chair
 const PANTS_COLOR = "#22252e"; // Pantalon streetwear sombre
 const SHOES_COLOR = "#141519"; // Baskets
 const WHITE_SOLE_COLOR = "#f1f5f9"; // Semelle blanche
@@ -258,8 +257,6 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
       gold: new THREE.MeshStandardMaterial({ color: GOLD_COLOR, metalness: 0.8, roughness: 0.25 }),
       leather: new THREE.MeshStandardMaterial({ color: "#3e2417", roughness: 0.7 }),
       parchment: new THREE.MeshStandardMaterial({ color: "#fef3c7", roughness: 0.75 }),
-      micWire: new THREE.MeshStandardMaterial({ color: MIC_FLESH, roughness: 0.6 }),
-      micFoam: new THREE.MeshStandardMaterial({ color: "#d1a384", roughness: 0.9 }),
       eyesIris: new THREE.MeshBasicMaterial({
         color: EYE_BLUE,
         depthWrite: false,
@@ -357,10 +354,10 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
       <pointLight position={[0, 2.75, -4.0]} color="#fff7e6" intensity={2.6} distance={4.2} decay={1.5} />
 
       {/* ============================================================== */}
-      {/* 1. KAMAL (CONDUCTEUR AU VOLANT) - POSITION [-0.72, 0, -3.85]   */}
+      {/* 1. KAMAL (CONDUCTEUR AU VOLANT) - POSITION [-0.72, -0.10, -3.85] */}
       {/* ============================================================== */}
       <group
-        position={[-0.72, 0, -3.85]}
+        position={[-0.72, -0.10, -3.85]}
         onClick={handleKamalClick}
         onPointerOver={(e) => {
           e.stopPropagation();
@@ -548,17 +545,6 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
             <boxGeometry args={[0.075, 0.015, 0.008]} />
           </mesh>
 
-          {/* Micro serre-tête scène (discret sur la joue droite comme sur la photo) */}
-          <group position={[0.108, -0.02, -0.04]} rotation={[0.1, -0.3, 0]}>
-            <mesh material={mats.micWire}>
-              <cylinderGeometry args={[0.004, 0.004, 0.12, 6]} />
-            </mesh>
-            {/* Capsule micro au coin des lèvres */}
-            <mesh material={mats.micFoam} position={[0, -0.06, -0.02]}>
-              <sphereGeometry args={[0.014, 8, 8]} />
-            </mesh>
-          </group>
-
           {/* --- CHEVEUX CHÂTAINS COIFFÉS AVEC VOLUME ET MÈCHE LATÉRALE (PHOTO) --- */}
           <group position={[0, 0.08, 0.01]}>
             {/* Masse principale supérieure avec volume */}
@@ -603,10 +589,10 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
       </group>
 
       {/* ============================================================== */}
-      {/* 2. KYTA (CO-PILOTE & NAVIGATEUR) - POSITION [0.72, 0, -3.85]   */}
+      {/* 2. KYTA (CO-PILOTE & NAVIGATEUR) - POSITION [0.72, -0.10, -3.85] */}
       {/* ============================================================== */}
       <group
-        position={[0.72, 0, -3.85]}
+        position={[0.72, -0.10, -3.85]}
         onClick={handleKytaClick}
         onPointerOver={(e) => {
           e.stopPropagation();
@@ -813,16 +799,6 @@ export function BusDrivers({ hornPulse, reducedMotion = false }: BusDriversProps
           <mesh material={mats.smile} position={[0, -0.052, -0.106]}>
             <boxGeometry args={[0.08, 0.018, 0.008]} />
           </mesh>
-
-          {/* Micro serre-tête scène (discret sur la joue comme sur la photo) */}
-          <group position={[-0.108, -0.02, -0.04]} rotation={[0.1, 0.3, 0]}>
-            <mesh material={mats.micWire}>
-              <cylinderGeometry args={[0.004, 0.004, 0.12, 6]} />
-            </mesh>
-            <mesh material={mats.micFoam} position={[0, -0.06, -0.02]}>
-              <sphereGeometry args={[0.014, 8, 8]} />
-            </mesh>
-          </group>
 
           {/* --- CHEVEUX CHÂTAIN FONCÉ AVEC MÈCHE NATURELLE (PHOTO DE GAUCHE) --- */}
           <group position={[0, 0.08, 0.01]}>

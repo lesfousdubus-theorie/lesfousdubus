@@ -1,6 +1,6 @@
 "use client";
 
-import type { Dispatch, RefObject, SetStateAction } from "react";
+import { useState, type Dispatch, type RefObject, type SetStateAction } from "react";
 import type { Phase } from "./bus/constants";
 
 export interface ToastMessage {
@@ -48,6 +48,8 @@ interface BusHudProps {
   resetView: () => void;
   bgmPlaying: boolean;
   toggleBgm: () => void;
+  bgmVolume: number;
+  setBgmVolume: (volume: number) => void;
 }
 
 export function BusHud({
@@ -58,7 +60,9 @@ export function BusHud({
   setStatsRetryToken, setSeatRow, setTvOn, openPassengerManifest,
   toggleDayNight, decelerateBus, accelerateBus, toggleHeadlights, honk,
   enterBus, openProfileModal, exitBus, resetView, bgmPlaying, toggleBgm,
+  bgmVolume, setBgmVolume,
 }: BusHudProps) {
+  const [showVolumePopup, setShowVolumePopup] = useState(false);
   return (
     <>
       {/* ---------- HUD & INTERFACE UTILISATEUR (GARANTI TOUJOURS AU PREMIER PLAN Z-INDEX) ---------- */}
@@ -194,6 +198,95 @@ export function BusHud({
             </span>
           )}
         </button>
+
+        {/* Réglage du volume de la musique de fond (Desktop direct + Mobile popover) */}
+        <div className="relative flex items-center">
+          {/* Curseur direct sur grand écran (desktop / tablette) */}
+          <div
+            className="hidden sm:flex h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2.5 shadow-lg backdrop-blur-md transition-colors hover:border-[#ffd23f]/70"
+            title={`Volume de la musique : ${bgmVolume}%`}
+          >
+            <button
+              type="button"
+              onClick={() => setBgmVolume(bgmVolume > 0 ? 0 : 50)}
+              aria-label={bgmVolume === 0 ? "Réactiver le son" : "Couper le son de la musique"}
+              className="text-sm transition-transform hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#ffd23f] rounded-full p-0.5 cursor-pointer"
+            >
+              {bgmVolume === 0 ? "🔇" : bgmVolume < 35 ? "🔉" : "🔊"}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              value={bgmVolume}
+              onChange={(e) => setBgmVolume(Number(e.target.value))}
+              aria-label="Volume de la musique de fond"
+              className="h-1.5 w-16 cursor-pointer appearance-none rounded-lg bg-white/25 accent-[#ffd23f] md:w-20"
+            />
+            <span className="w-7 text-right font-bold tabular-nums text-white text-[11px]">
+              {bgmVolume}%
+            </span>
+          </div>
+
+          {/* Bouton pour ouvrir le réglage de volume sur mobile */}
+          <button
+            type="button"
+            onClick={() => setShowVolumePopup((v) => !v)}
+            aria-label="Régler le volume de la musique"
+            title={`Volume musique : ${bgmVolume}%`}
+            className={`bus-glass sm:hidden grid h-11 w-11 shrink-0 place-items-center rounded-full border text-xs font-bold shadow-lg transition-colors active:scale-95 cursor-pointer ${
+              showVolumePopup
+                ? "border-[#ffd23f] bg-[#07142b]/95 text-[#ffd23f]"
+                : "border-white/35 bg-[#07142b]/95 text-white hover:border-[#ffd23f]/70"
+            }`}
+          >
+            {bgmVolume === 0 ? "🔇" : bgmVolume < 35 ? "🔉" : "🔊"}
+          </button>
+
+          {/* Popover réglage de volume mobile au-dessus */}
+          {showVolumePopup && (
+            <div
+              className="bus-glass absolute bottom-14 left-0 flex w-52 flex-col gap-2 rounded-2xl border border-[#ffd23f]/50 bg-[#07142b]/95 p-3 shadow-2xl backdrop-blur-md z-50 animate-[hud-control-in-flow_180ms_cubic-bezier(0.25,1,0.5,1)_both]"
+            >
+              <div className="flex items-center justify-between text-xs font-bold text-white">
+                <span className="flex items-center gap-1 text-[#ffd23f]">
+                  <span>🎵</span>
+                  <span>Volume musique</span>
+                </span>
+                <span className="tabular-nums font-black text-white">{bgmVolume}%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setBgmVolume(Math.max(0, bgmVolume - 10))}
+                  className="text-xs text-white/70 hover:text-white cursor-pointer"
+                  aria-label="Diminuer volume"
+                >
+                  🔉
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={bgmVolume}
+                  onChange={(e) => setBgmVolume(Number(e.target.value))}
+                  aria-label="Volume de la musique"
+                  className="h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-white/25 accent-[#ffd23f]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setBgmVolume(Math.min(100, bgmVolume + 10))}
+                  className="text-xs text-white/70 hover:text-white cursor-pointer"
+                  aria-label="Augmenter volume"
+                >
+                  🔊
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         </div>
 
         {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
