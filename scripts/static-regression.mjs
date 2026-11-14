@@ -96,7 +96,6 @@ assert.match(youtubeLoader, /script\.remove\(\)/, "A failed YouTube API script m
 assert.match(textures, /makeTvOffTexture/, "The TV texture helper must only model the actual off state.");
 assert.doesNotMatch(textures, /makeProceduralStrawTexture|makeTvScreenTexture/, "Obsolete procedural straw and fake-on TV texture branches must stay removed.");
 assert.doesNotMatch(llmsFull, /lesfousdubus\.sbs\/(?:theorie|chapitres)\//, "LLM corpus must not advertise internal routes that do not exist.");
-assert.match(schemaLd, /datePublished:\s*"2024-05-26T00:00:00\+02:00"/, "Structured data publication date must match the theory start date.");
-assert.match(schemaLd, /uploadDate:\s*"2026-04-10"/, "Video structured data must use the real YouTube publication date.");
+assert.doesNotMatch(schemaLd, /datePublished:\s*"2024-05-26/, "The first theory video's date must not be passed off as the site's article publication date.");
 assert.match(schemaLd, /La théorie One Piece qui explique tout\. \(Théorie des fous du bus\)/, "Video structured data must use the current YouTube title.");
 console.log("Static regression checks passed.");

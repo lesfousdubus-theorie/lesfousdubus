@@ -8,6 +8,7 @@
 - [Tests](tests.md) : dépendances navigateur, commandes, isolation et limites des preuves.
 - [Charge locale](test-charge-local.md) : banc workerd/D1 isolé et interprétation des latences.
 - [Validation mobile](validation-mobile.md) : protocole sur téléphone et limites de l’émulation.
+- [Référencement](seo.md) : pages indexables, données structurées et validation Google.
 - [Girouette et trajets](bus-itinerary.md) : destinations, portes et calcul du trajet des passagers.
 - [Références des guides du bus](driver-design.md) : choix de modélisation de Kamal et Kyta.
 

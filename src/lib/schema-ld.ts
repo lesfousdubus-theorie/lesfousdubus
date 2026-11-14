@@ -1,20 +1,31 @@
-import { THEORY_VIDEO_URL, THEORY_VIDEO_EMBED_URL, THEORY_VIDEO_THUMBNAIL_URL } from "@/lib/theory-video";
-import { THEORY_FAQ } from "@/lib/theory-data";
+import { THEORY_VIDEO_URL, THEORY_VIDEO_EMBED_URL, THEORY_VIDEO_THUMBNAIL_URL, THEORY_VIDEO_UPLOAD_DATE } from "@/lib/theory-video";
 
 /**
- * Données structurées Schema.org (JSON-LD) pour le site officiel de la Théorie des Fous du Bus.
- * Conforme aux spécifications Google Rich Results.
+ * Données structurées des pages publiques. La vidéo et l’article ont chacun
+ * leur page ; la présence de balisage ne garantit pas un résultat enrichi.
  */
 
 export const SITE_URL = "https://lesfousdubus.sbs";
+export const THEORY_READING_URL = `${SITE_URL}/theorie`;
+/** Dernière modification significative des pages et de leurs métadonnées. */
+export const SITE_UPDATED_AT = "2026-10-24T21:44:55Z";
 export const SITE_NAME = "Les Fous du Bus — La Théorie One Piece";
 export const THEORY_TITLE = "La Théorie des Fous du Bus — Le Siècle Oublié est le Présent";
 export const THEORY_DESCRIPTION =
-  "La théorie One Piece des Fous du Bus : le Siècle Oublié serait le présent, Laugh Tale se situerait dans le futur, Joy Boy serait Monkey D. Luffy, les Ponéglyphes porteraient la mémoire de l'avenir et Barbe Noire deviendrait Davy D. Jones.";
+  "Découvre la théorie One Piece du Mont Corvo : le Siècle Oublié serait le présent, Joy Boy serait Luffy et Laugh Tale se situerait dans le futur.";
+
+export const SOCIAL_IMAGE = {
+  url: `${SITE_URL}/og-image.jpg`,
+  width: 1200,
+  height: 630,
+  alt: THEORY_TITLE,
+  type: "image/jpeg",
+};
 
 export const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
   name: SITE_NAME,
   alternateName: [
     "Théorie des Fous du Bus",
@@ -39,16 +50,19 @@ export const websiteJsonLd = {
 export const articleJsonLd = {
   "@context": "https://schema.org",
   "@type": "Article",
+  "@id": `${THEORY_READING_URL}#article`,
+  url: THEORY_READING_URL,
   headline: THEORY_TITLE,
   description: THEORY_DESCRIPTION,
   image: [`${SITE_URL}/og-image.jpg`, `${SITE_URL}/logo.png`],
-  datePublished: "2024-05-26T00:00:00+02:00",
-  dateModified: "2026-10-19T16:40:00+02:00",
+  // Le 26 mai 2024 est la date de la première vidéo, pas celle de cet article.
+  dateModified: SITE_UPDATED_AT,
   inLanguage: "fr-FR",
   mainEntityOfPage: {
     "@type": "WebPage",
-    "@id": SITE_URL,
+    "@id": THEORY_READING_URL,
   },
+  isPartOf: { "@id": `${SITE_URL}/#website` },
   author: {
     "@type": "Organization",
     name: "Les Fous du Bus",
@@ -76,6 +90,8 @@ export const articleJsonLd = {
 export const videoJsonLd = {
   "@context": "https://schema.org",
   "@type": "VideoObject",
+  "@id": `${SITE_URL}/#theory-video`,
+  url: THEORY_VIDEO_URL,
   name: "La théorie One Piece qui explique tout. (Théorie des fous du bus)",
   description:
     "La théorie des Fous du Bus expliquée par le Mont Corvo : le Siècle Oublié serait le présent de One Piece, Laugh Tale serait Roadstar à une autre époque et Joy Boy serait Luffy.",
@@ -83,26 +99,17 @@ export const videoJsonLd = {
     THEORY_VIDEO_THUMBNAIL_URL,
     `${SITE_URL}/og-image.jpg`,
   ],
-  uploadDate: "2026-04-10",
-  contentUrl: THEORY_VIDEO_URL,
+  uploadDate: THEORY_VIDEO_UPLOAD_DATE,
   embedUrl: THEORY_VIDEO_EMBED_URL,
+  creator: {
+    "@type": "Organization",
+    name: "Mont Corvo",
+    url: "https://www.youtube.com/@MontCorvo",
+  },
   publisher: {
     "@type": "Organization",
-    name: "Les Fous du Bus",
-    url: SITE_URL,
+    name: "Mont Corvo",
+    url: "https://www.youtube.com/@MontCorvo",
   },
   inLanguage: "fr-FR",
-};
-
-export const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: THEORY_FAQ.map(({ question, answer }) => ({
-    "@type": "Question",
-    name: question,
-    acceptedAnswer: {
-      "@type": "Answer",
-      text: answer,
-    },
-  })),
 };
