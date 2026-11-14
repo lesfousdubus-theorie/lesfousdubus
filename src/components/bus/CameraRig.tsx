@@ -101,7 +101,8 @@ export default function CameraRig({
     arrivedRef.current = onArrived;
   }, [onArrived]);
 
-  // Position Z du siège actuel (lisse le déplacement dans l'allée)
+  // Position X/Z du siège actuel (lisse les déplacements latéraux et dans l'allée)
+  const seatXRef = useRef(currentSeatX);
   const seatZRef = useRef(currentSeatZ ?? SEAT_EYE.z);
 
   // Position cible des yeux
@@ -266,6 +267,7 @@ export default function CameraRig({
         a.t = 0;
         a.active = true;
       }
+      seatXRef.current = activeEyePos.x;
       seatZRef.current = activeEyePos.z;
       a.to.copy(activeEyePos);
       const m = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
@@ -666,6 +668,7 @@ export default function CameraRig({
           const rotation = new THREE.Euler().setFromQuaternion(rt.toQ, "YXZ");
           look.current.yaw = look.current.targetYaw = rotation.y;
           look.current.pitch = look.current.targetPitch = rotation.x;
+          seatXRef.current = activeEyePos.x;
           seatZRef.current = activeEyePos.z;
         } else if (controls.current) {
           controls.current.enabled = true;
@@ -685,12 +688,14 @@ export default function CameraRig({
       l.pitch += (l.targetPitch - l.pitch) * lookBlend;
       cam.rotation.set(l.pitch, l.yaw, 0, "YXZ");
 
-      // Glissement fluide de siège le long de l'allée
+      // Glissement fluide de siège latéral et le long de l'allée
+      const seatBlend = reducedMotion ? 1 : Math.min(1, dt * 5.5);
       const targetZ = currentSeatZ ?? SEAT_EYE.z;
-      seatZRef.current += (targetZ - seatZRef.current) * Math.min(1, dt * 5.5);
+      seatXRef.current += (currentSeatX - seatXRef.current) * seatBlend;
+      seatZRef.current += (targetZ - seatZRef.current) * seatBlend;
 
       cam.position.set(
-        currentSeatX,
+        seatXRef.current,
         eyeY,
         seatZRef.current,
       );

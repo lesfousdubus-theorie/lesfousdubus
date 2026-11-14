@@ -33,9 +33,6 @@ import {
   SunIcon,
   TvIcon,
   UserBadgeIcon,
-  VolumeHighIcon,
-  VolumeLowIcon,
-  VolumeOffIcon,
 } from "./ui/BusIcons";
 
 export interface ToastMessage {
@@ -70,6 +67,7 @@ interface BusHudProps {
   manualDayNight: "day" | "night" | null;
   speedMultiplier: number;
   seatRow: number;
+  seatColumn: number;
   exteriorControlsVisible: boolean;
   interiorControlsVisible: boolean;
   headlights: boolean;
@@ -84,6 +82,7 @@ interface BusHudProps {
   setStatsLoadError: Dispatch<SetStateAction<boolean>>;
   setStatsRetryToken: Dispatch<SetStateAction<number>>;
   setSeatRow: Dispatch<SetStateAction<number>>;
+  setSeatColumn: Dispatch<SetStateAction<number | null>>;
   toggleTv: () => void;
   openPassengerManifest: () => void;
   toggleDayNight: () => void;
@@ -120,22 +119,18 @@ export function BusHud({
   phase, phaseEpoch = 0, freeView, toggleFreeView, openAvatarModal, hidden, sceneAvailable, toast,
   onDismissToast, onPauseToast, onResumeToast,
   passengerManifestButtonRef, statsLoadError, count,
-  numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow,
+  numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow, seatColumn,
   exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
   tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, setStatsLoadError,
-  setStatsRetryToken, setSeatRow, toggleTv, openPassengerManifest,
+  setStatsRetryToken, setSeatRow, setSeatColumn, toggleTv, openPassengerManifest,
   toggleDayNight, decelerateBus, accelerateBus, toggleHeadlights, honk,
   enterBus, openProfileModal, exitBus, resetView, bgmPlaying, toggleBgm,
   bgmVolume, setBgmVolume,
   partyOn, toggleParty,
 }: BusHudProps) {
   const compactHud = useSyncExternalStore(subscribeCompactHud, getCompactHudSnapshot, () => false);
-  const [volumePopupState, setVolumePopupState] = useState<{ open: boolean; phase: Phase; epoch: number }>({
-    open: false,
-    phase,
-    epoch: phaseEpoch,
-  });
   const [immersive, setImmersive] = useState(false);
+  const [immersiveRestoreVisible, setImmersiveRestoreVisible] = useState(true);
   const [mobileMenuState, setMobileMenuState] = useState<{ open: boolean; phase: Phase }>({ open: false, phase });
   const [musicDetailsState, setMusicDetailsState] = useState<{ open: boolean; phase: Phase; epoch: number }>({
     open: false,
@@ -147,13 +142,10 @@ export function BusHud({
   const restoreButtonRef = useRef<HTMLButtonElement>(null);
   const exteriorMenuButtonRef = useRef<HTMLButtonElement>(null);
   const interiorMenuButtonRef = useRef<HTMLButtonElement>(null);
-  const volumeWrapperRef = useRef<HTMLDivElement>(null);
-  const volumeToggleRef = useRef<HTMLButtonElement>(null);
   const mobileMenuId = useId();
-  const showVolumePopup = volumePopupState.open && volumePopupState.phase === phase && volumePopupState.epoch === phaseEpoch && !hidden && !immersive;
   const musicDetailsOpen = musicDetailsState.open && musicDetailsState.phase === phase && musicDetailsState.epoch === phaseEpoch && !hidden && !immersive;
   const mobileMenuOpen = mobileMenuState.open && mobileMenuState.phase === phase && compactHud && sceneAvailable && !hidden && !immersive;
-  const hudRef = useHudLayout(phase, hidden, showVolumePopup, sceneAvailable, compactHud, mobileMenuOpen, immersive);
+  const hudRef = useHudLayout(phase, hidden, sceneAvailable, compactHud, mobileMenuOpen, immersive);
   const activeMenuButtonRef = exteriorControlsVisible ? exteriorMenuButtonRef : interiorMenuButtonRef;
   const hasActiveGroupedControl = partyOn || headlights || speedMultiplier !== 1 || manualDayNight !== null || (hasEntered && phase === "outside" && tvOn);
   const musicSuspendedByTv = bgmPlaying && !partyOn && musicPlayback.track === "background" && musicPlayback.state === "suspended";
@@ -167,20 +159,8 @@ export function BusHud({
       : "Allumer la télévision";
   const safeToastHref = toast?.href && /^https?:\/\//i.test(toast.href) ? toast.href : undefined;
 
-  const closeVolumePopup = () => {
-    setVolumePopupState({ open: false, phase, epoch: phaseEpoch });
-  };
-  const toggleVolumePopup = () => {
-    setMusicDetailsState({ open: false, phase, epoch: phaseEpoch });
-    setVolumePopupState((prev) => ({
-      open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
-      phase,
-      epoch: phaseEpoch,
-    }));
-  };
   const toggleMobileMenu = () => {
     setMusicDetailsState({ open: false, phase, epoch: phaseEpoch });
-    closeVolumePopup();
     setMobileMenuState((prev) => ({ open: !(prev.open && prev.phase === phase), phase }));
   };
   const closeMobileMenu = () => {
@@ -190,7 +170,6 @@ export function BusHud({
     setMusicDetailsState({ open: nextOpen, phase, epoch: phaseEpoch });
     if (nextOpen) {
       closeMobileMenu();
-      closeVolumePopup();
     }
   };
 
@@ -200,30 +179,9 @@ export function BusHud({
     return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    if (!showVolumePopup) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!(event.target instanceof Node)) return;
-      if (volumeWrapperRef.current?.contains(event.target)) return;
-      setVolumePopupState((prev) => (prev.open ? { ...prev, open: false } : prev));
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || event.defaultPrevented) return;
-      event.preventDefault();
-      event.stopPropagation();
-      setVolumePopupState((prev) => (prev.open ? { ...prev, open: false } : prev));
-      requestAnimationFrame(() => volumeToggleRef.current?.focus({ preventScroll: true }));
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("keydown", onKeyDown, true);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("keydown", onKeyDown, true);
-    };
-  }, [showVolumePopup]);
-
   const restoreControls = () => {
     setImmersive(false);
+    setImmersiveRestoreVisible(true);
     requestAnimationFrame(() => immersiveButtonRef.current?.focus({ preventScroll: true }));
   };
   useEffect(() => {
@@ -234,10 +192,38 @@ export function BusHud({
       event.preventDefault();
       event.stopPropagation();
       setImmersive(false);
+      setImmersiveRestoreVisible(true);
       requestAnimationFrame(() => immersiveButtonRef.current?.focus({ preventScroll: true }));
     };
     window.addEventListener("keydown", escape, true);
     return () => window.removeEventListener("keydown", escape, true);
+  }, [immersive, hidden]);
+
+  useEffect(() => {
+    if (!immersive || hidden) return;
+    let timerId = window.setTimeout(() => {
+      setImmersiveRestoreVisible(false);
+    }, 2000);
+    const revealOnActivity = () => {
+      window.clearTimeout(timerId);
+      setImmersiveRestoreVisible(true);
+      timerId = window.setTimeout(() => {
+        setImmersiveRestoreVisible(false);
+      }, 2000);
+    };
+    window.addEventListener("mousemove", revealOnActivity, { passive: true });
+    window.addEventListener("pointermove", revealOnActivity, { passive: true });
+    window.addEventListener("pointerdown", revealOnActivity, { passive: true });
+    window.addEventListener("touchstart", revealOnActivity, { passive: true });
+    window.addEventListener("keydown", revealOnActivity);
+    return () => {
+      window.clearTimeout(timerId);
+      window.removeEventListener("mousemove", revealOnActivity);
+      window.removeEventListener("pointermove", revealOnActivity);
+      window.removeEventListener("pointerdown", revealOnActivity);
+      window.removeEventListener("touchstart", revealOnActivity);
+      window.removeEventListener("keydown", revealOnActivity);
+    };
   }, [immersive, hidden]);
 
   useEffect(() => {
@@ -291,15 +277,15 @@ export function BusHud({
         {/* Titre (côte à côte avec les compteurs en haut sur téléphone et ordinateur) */}
         <div className="bus-title-panel pointer-events-none absolute left-2 top-2 sm:left-4 sm:top-4 lg:max-w-[calc(100vw-26rem)]">
           <div
-            className="bus-title-copy pointer-events-auto inline-block select-text cursor-text rounded-2xl border border-[#ffd23f]/35 bg-[#07142b]/95 px-2 py-1 shadow-lg sm:px-3 sm:py-2"
+            className="bus-title-copy pointer-events-auto inline-block select-text cursor-text rounded-2xl border border-[#ffd23f]/35 bg-[#07142b]/95 px-2.5 py-1.5 shadow-lg min-[375px]:px-3.5 min-[375px]:py-2 sm:px-4 sm:py-2.5"
             onPointerDown={(event) => event.stopPropagation()}
             onWheel={(event) => event.stopPropagation()}
           >
-            <h1 className="break-words text-[11px] font-black uppercase leading-[1.12] tracking-tight min-[375px]:text-xs sm:text-xl lg:text-3xl">
+            <h1 className="break-words text-xs font-black uppercase leading-[1.18] tracking-tight min-[390px]:text-[13px] min-[430px]:text-sm sm:text-xl lg:text-3xl">
               <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
               <span className="text-white">des Fous du Bus</span>
             </h1>
-            <p className={`mt-0.5 text-[10px] font-bold uppercase leading-tight tracking-[0.015em] text-[#ffd23f] min-[375px]:tracking-[0.02em] sm:mt-1 sm:tracking-[0.035em] lg:text-sm ${phase === "inside" ? "hidden sm:block" : ""}`}>
+            <p className="mt-1 hidden text-xs font-bold uppercase leading-tight tracking-[0.035em] text-[#ffd23f] sm:block lg:text-sm">
               Le Siècle Oublié est le Présent
             </p>
           </div>
@@ -310,14 +296,14 @@ export function BusHud({
           <button
             type="button"
             onClick={() => setShowTheoryModal(true)}
-            className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-[#07142b]/95 px-2 text-[11px] font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-[#ffd23f] hover:bg-[#0c1b3a]/95 hover:text-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 min-[360px]:px-2.5 sm:px-4 sm:text-xs cursor-pointer"
+            className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-[#07142b]/95 px-2 text-[11px] font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-[#ffd23f] hover:bg-[#0c1b3a]/95 hover:text-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 min-[360px]:px-2.5 min-[390px]:px-3 sm:px-4 sm:text-xs cursor-pointer"
             title="Découvrir la théorie des Fous du Bus"
           >
             <ScrollIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 min-[360px]:block" />
             <span><span className="bus-landscape-hide hidden min-[360px]:inline">La </span>Théorie</span>
           </button>
           <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label={phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}
-            className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 min-[360px]:px-2.5 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer">
+            className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 min-[360px]:px-2.5 min-[390px]:px-3 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer">
             <PersonIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 sm:block" />
             <span>Personnage</span>
           </button>
@@ -330,7 +316,7 @@ export function BusHud({
               aria-haspopup="dialog"
               aria-label={entryNumber ? `Ma place, numéro ${entryNumber}` : "Ma place"}
               title={entryNumber ? `Place n° ${entryNumber} (${entryNumber === 1 ? "1re" : `${entryNumber}e`} personne à être rentrée dans le bus)` : "Gérer ma place"}
-              className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 min-[360px]:px-2.5 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer"
+              className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 min-[360px]:px-2.5 min-[390px]:px-3 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer"
             >
               <SeatTicketIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 sm:block" />
               <span>Ma place</span>
@@ -341,7 +327,7 @@ export function BusHud({
               )}
             </button>
           )}
-          <button ref={immersiveButtonRef} type="button" onClick={() => { closeVolumePopup(); setMusicDetailsState({ open: false, phase, epoch: phaseEpoch }); closeMobileMenu(); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif" title="Mode immersif"
+          <button ref={immersiveButtonRef} type="button" onClick={() => { setMusicDetailsState({ open: false, phase, epoch: phaseEpoch }); closeMobileMenu(); setImmersiveRestoreVisible(true); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif" title="Mode immersif"
             className="bus-immersive-toggle pointer-events-auto inline-flex min-h-11 w-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-0 text-xs font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 sm:w-auto sm:px-4 cursor-pointer">
             <FullscreenExpandIcon className="h-4 w-4 shrink-0" />
             <span className="bus-landscape-hide hidden sm:inline">Mode immersif</span>
@@ -349,8 +335,8 @@ export function BusHud({
         </div>
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
-        <div className="bus-top-stats bus-glass pointer-events-auto absolute right-2 top-2 flex min-h-11 items-stretch gap-0.5 rounded-2xl border border-[#ffd23f]/40 bg-[#07142b]/95 p-0.5 shadow-lg sm:left-auto sm:right-4 sm:top-4 sm:min-h-14 sm:gap-1 sm:p-1">
-          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} title="Voir la liste des passagers" className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-xl px-1.5 py-1 text-left leading-tight transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] sm:gap-2.5 sm:px-3 sm:py-2 cursor-pointer">
+        <div className="bus-top-stats bus-glass pointer-events-auto absolute right-2 top-2 flex min-h-11 items-stretch gap-0.5 rounded-2xl border border-[#ffd23f]/40 bg-[#07142b]/95 p-0.5 shadow-lg min-[375px]:p-1 sm:left-auto sm:right-4 sm:top-4 sm:min-h-14 sm:gap-1 sm:p-1">
+          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} title="Voir la liste des passagers" className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-xl px-2 py-1 text-left leading-tight transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] min-[375px]:gap-1.5 min-[375px]:px-2.5 sm:gap-2.5 sm:px-3 sm:py-2 cursor-pointer">
             <span aria-hidden="true" className="hidden text-[#ffd23f] min-[400px]:inline-flex min-[400px]:items-center">
               <BusFrontIcon className="h-4 w-4 shrink-0 sm:h-6 sm:w-6" />
             </span>
@@ -382,7 +368,7 @@ export function BusHud({
             </button>
           )}
           <div className="my-1 w-px bg-white/20" aria-hidden="true" />
-          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-h-11 min-w-0 flex-none rounded-xl px-1.5 py-1 text-left leading-tight transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] sm:px-3 sm:py-2 cursor-pointer" title="Voir le compteur précis depuis le 26 mai 2024">
+          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-h-11 min-w-0 flex-none rounded-xl px-2 py-1 text-left leading-tight transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] min-[375px]:px-2.5 sm:px-3 sm:py-2 cursor-pointer" title="Voir le compteur précis depuis le 26 mai 2024">
             <span className="block text-[10px] font-bold uppercase tracking-[0.04em] text-[#ffd23f] sm:text-xs">
               <span className="hud-label-short sm:hidden"><span className="hidden min-[375px]:inline">La </span>théorie</span><span className="hud-label-long hidden sm:inline">La théorie existe depuis</span>
             </span>
@@ -462,102 +448,6 @@ export function BusHud({
                 onVolumeChange={setBgmVolume}
                 fallbackFocusRef={activeMenuButtonRef}
               />
-
-              {/* Réglage du volume de la musique de fond (Desktop direct + Mobile popover) */}
-              <div
-                ref={volumeWrapperRef}
-                onPointerDown={(event) => event.stopPropagation()}
-                onPointerUp={(event) => event.stopPropagation()}
-                className="relative flex items-center"
-              >
-                {/* Curseur direct sur grand écran (desktop / tablette) */}
-                <div
-                  className="bus-volume-inline hidden xl:flex h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 pr-2.5 shadow-lg backdrop-blur-md transition-colors hover:border-[#ffd23f]/70"
-                  title={`Volume de la musique : ${bgmVolume}%`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setBgmVolume(bgmVolume > 0 ? 0 : 85)}
-                    aria-label={bgmVolume === 0 ? "Réactiver le son" : "Couper le son de la musique"}
-                    className="grid h-11 w-11 place-items-center rounded-full text-white transition-[transform,color] hover:scale-110 hover:text-[#ffd23f] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] cursor-pointer"
-                  >
-                    {bgmVolume === 0 ? <VolumeOffIcon /> : bgmVolume < 35 ? <VolumeLowIcon /> : <VolumeHighIcon />}
-                  </button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={bgmVolume}
-                    onChange={(e) => setBgmVolume(Number(e.target.value))}
-                    aria-label="Volume de la musique de fond"
-                    className="h-2 w-16 cursor-pointer appearance-none rounded-lg bg-white/25 accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] md:w-20"
-                  />
-                  <span className="w-7 text-right font-bold tabular-nums text-white text-[11px]">
-                    {bgmVolume}%
-                  </span>
-                </div>
-
-                {/* Bouton pour ouvrir le réglage de volume sur tablette */}
-                <button
-                  ref={volumeToggleRef}
-                  type="button"
-                  onClick={toggleVolumePopup}
-                  aria-label="Régler le volume de la musique"
-                  aria-expanded={showVolumePopup}
-                  title={`Volume musique : ${bgmVolume}%`}
-                  className={`bus-volume-toggle bus-glass xl:hidden grid h-11 w-11 shrink-0 place-items-center rounded-full border text-xs font-bold shadow-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer ${
-                    showVolumePopup
-                      ? "border-[#ffd23f] bg-[#1636c9] text-white shadow-[0_0_15px_rgba(255,210,63,0.35)] hover:bg-[#1d44e6]"
-                      : "border-white/35 bg-[#07142b]/95 text-white hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f]"
-                  }`}
-                >
-                  {bgmVolume === 0 ? <VolumeOffIcon /> : bgmVolume < 35 ? <VolumeLowIcon /> : <VolumeHighIcon />}
-                </button>
-
-                {/* Popover réglage de volume tablette au-dessus */}
-                {showVolumePopup && (
-                  <div
-                    className="bus-volume-popup bus-glass absolute right-0 flex w-52 flex-col gap-2 rounded-2xl border border-[#ffd23f]/50 bg-[#07142b]/95 p-3 shadow-2xl backdrop-blur-md z-50 animate-[hud-control-in-flow_180ms_cubic-bezier(0.25,1,0.5,1)_both] xl:hidden"
-                  >
-                    <div className="flex items-center justify-between text-xs font-bold text-white">
-                      <span className="flex items-center gap-1.5 text-[#ffd23f]">
-                        <MusicNoteIcon className="h-3.5 w-3.5 shrink-0" />
-                        <span>Volume musique</span>
-                      </span>
-                      <span className="tabular-nums font-black text-white">{bgmVolume}%</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setBgmVolume(Math.max(0, bgmVolume - 10))}
-                        className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-white transition-colors hover:bg-white/10 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] cursor-pointer"
-                        aria-label="Diminuer volume"
-                      >
-                        <VolumeLowIcon />
-                      </button>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="5"
-                        value={bgmVolume}
-                        onChange={(e) => setBgmVolume(Number(e.target.value))}
-                        aria-label="Volume de la musique"
-                        className="h-2 w-0 min-w-0 flex-1 cursor-pointer appearance-none rounded-lg bg-white/25 accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setBgmVolume(Math.min(100, bgmVolume + 10))}
-                        className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-white transition-colors hover:bg-white/10 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] cursor-pointer"
-                        aria-label="Augmenter volume"
-                      >
-                        <VolumeHighIcon />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
@@ -610,7 +500,7 @@ export function BusHud({
           </>
         )}
 
-        {/* Navigation entre les rangées quand on est à l'intérieur */}
+        {/* Navigation entre les rangées et places latérales quand on est à l'intérieur */}
         {phase === "inside" && (
           <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] flex flex-col items-end gap-1.5 sm:right-4 sm:top-[6.25rem] sm:gap-2">
             {/* Déplacement dans l'allée */}
@@ -639,6 +529,38 @@ export function BusHud({
                 aria-label="Rangée suivante"
                 className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
                 title={freeView ? "Désactive la vue libre pour changer de rangée" : seatRow >= numRows - 1 ? "Dernière rangée atteinte" : "Rangée suivante"}
+              >
+                <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
+                <ChevronRightIcon className="relative h-4 w-4 shrink-0" />
+              </button>
+            </div>
+
+            {/* Déplacement latéral sur les 4 sièges de la rangée */}
+            <div className="bus-glass flex h-11 items-center gap-1 rounded-2xl bg-[#07142b]/95 px-1.5 shadow-lg ring-1 ring-white/35 backdrop-blur-md sm:px-3">
+              <button
+                type="button"
+                onClick={() => setSeatColumn(Math.max(0, seatColumn - 1))}
+                disabled={freeView || seatColumn <= 0}
+                aria-label="Place à gauche"
+                className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
+                title={freeView ? "Désactive la vue libre pour changer de place" : seatColumn <= 0 ? "Place fenêtre gauche atteinte" : "Aller sur la place à gauche"}
+              >
+                <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
+                <ChevronLeftIcon className="relative h-4 w-4 shrink-0" />
+              </button>
+              <span className="flex h-11 items-center justify-center px-1.5 text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white sm:px-2">
+                <span>Place</span>
+                <span className="ml-1 text-[#ffd23f]">{seatColumn + 1}</span>
+                <span className="mx-0.5 text-[#dce7ff]">/</span>
+                <span>4</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setSeatColumn(Math.min(3, seatColumn + 1))}
+                disabled={freeView || seatColumn >= 3}
+                aria-label="Place à droite"
+                className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
+                title={freeView ? "Désactive la vue libre pour changer de place" : seatColumn >= 3 ? "Place fenêtre droite atteinte" : "Aller sur la place à droite"}
               >
                 <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
                 <ChevronRightIcon className="relative h-4 w-4 shrink-0" />
@@ -740,7 +662,7 @@ export function BusHud({
         <div
           inert={!exteriorControlsVisible || undefined}
           aria-hidden={!exteriorControlsVisible}
-          className={`bus-exterior-controls pointer-events-none absolute bottom-2 left-1/2 z-30 flex w-[calc(100vw-1rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-1 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:max-w-[42rem] sm:gap-2 sm:px-2 xl:bottom-4 xl:left-[calc(50%-4.75rem)] ${
+          className={`bus-exterior-controls pointer-events-none absolute bottom-2 left-1/2 z-30 flex w-max max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-1 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:max-w-[42rem] sm:gap-2 sm:px-2 xl:bottom-4 ${
             exteriorControlsVisible
               ? "translate-y-0 opacity-100"
               : "translate-y-2 opacity-0 [&_*]:!pointer-events-none"
@@ -773,8 +695,8 @@ export function BusHud({
                 buttonRef={exteriorMenuButtonRef}
                 onToggle={toggleMobileMenu}
               />
-              <HudButton className="min-w-0 flex-1 px-2.5 min-[440px]:px-3.5" onClick={() => { closeMobileMenu(); void enterBus(); }} primary icon={<EnterBusIcon />} disabled={joining || phase !== "outside"}>
-                {joining || phase === "entering" ? "Installation…" : <>Entrer<span className="hidden min-[440px]:inline"> dans le bus</span></>}
+              <HudButton className="shrink-0 px-3.5 min-[360px]:px-4" onClick={() => { closeMobileMenu(); void enterBus(); }} primary icon={<EnterBusIcon />} disabled={joining || phase !== "outside"}>
+                {joining || phase === "entering" ? "Installation…" : <>Entrer<span className="hidden min-[460px]:inline"> dans le bus</span></>}
               </HudButton>
             </>
           ) : (
@@ -813,7 +735,7 @@ export function BusHud({
         <div
           inert={!interiorControlsVisible || undefined}
           aria-hidden={!interiorControlsVisible}
-          className={`bus-interior-controls pointer-events-none absolute bottom-2 left-1/2 flex w-[536px] max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-col items-center justify-center gap-1 px-1 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:gap-2 sm:px-2 xl:bottom-4 ${
+          className={`bus-interior-controls pointer-events-none absolute bottom-2 left-1/2 flex w-max max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-col items-center justify-center gap-1.5 px-1 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] motion-reduce:transition-none sm:bottom-20 sm:w-[536px] sm:gap-2 sm:px-2 xl:bottom-4 ${
             interiorControlsVisible
               ? "translate-y-0 opacity-100"
               : "translate-y-2 opacity-0 [&_*]:!pointer-events-none"
@@ -822,16 +744,16 @@ export function BusHud({
           {compactHud ? (
             <>
               <div className="flex w-full items-center justify-center gap-1 min-[360px]:gap-1.5">
-                <HudButton compact className="min-w-0 flex-1" onClick={() => { closeMobileMenu(); openProfileModal("name"); }} ariaLabel="Modifier mon pseudo" icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
+                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={() => { closeMobileMenu(); openProfileModal("name"); }} ariaLabel="Modifier mon pseudo" icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
                   Pseudo
                 </HudButton>
-                <HudButton compact className="min-w-0 flex-[1.35]" onClick={() => { closeMobileMenu(); openProfileModal("comment"); }} ariaLabel="Mettre un commentaire" icon={<CommentBubbleIcon />} disabled={busy || !interiorControlsVisible}>
+                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={() => { closeMobileMenu(); openProfileModal("comment"); }} ariaLabel="Mettre un commentaire" icon={<CommentBubbleIcon />} disabled={busy || !interiorControlsVisible}>
                   Commenter
                 </HudButton>
-                <HudButton compact className="min-w-0 flex-[1.2]" onClick={toggleFreeView} ariaLabel={freeView ? "Revenir à ma place" : "Explorer en vue libre"} active={freeView} icon={freeView ? <EyeViewIcon /> : <CompassExploreIcon />} disabled={busy || !interiorControlsVisible}>
+                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={toggleFreeView} ariaLabel={freeView ? "Revenir à ma place" : "Explorer en vue libre"} active={freeView} icon={freeView ? <EyeViewIcon /> : <CompassExploreIcon />} disabled={busy || !interiorControlsVisible}>
                   {freeView ? "Ma place" : "Vue libre"}
                 </HudButton>
-                <HudButton compact className="min-w-11 flex-[0.75]" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} description={tvButtonDescription} icon={<TvIcon />} disabled={partyOn || busy || !interiorControlsVisible}>
+                <HudButton compact className="min-w-11 shrink-0 px-2.5 min-[360px]:px-3.5" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} description={tvButtonDescription} icon={<TvIcon />} disabled={partyOn || busy || !interiorControlsVisible}>
                   TV
                 </HudButton>
               </div>
@@ -861,7 +783,7 @@ export function BusHud({
                   buttonRef={interiorMenuButtonRef}
                   onToggle={toggleMobileMenu}
                 />
-                <HudButton compact className="min-w-0 flex-1" onClick={() => { closeMobileMenu(); exitBus(); }} ariaLabel="Sortir du bus" description="Sortir en gardant ta place et ton profil. Pour les supprimer, ouvre Ma place." exit icon={<ExitBusIcon />} disabled={busy || !interiorControlsVisible}>
+                <HudButton compact showMobileIcon className="shrink-0 px-3.5 min-[360px]:px-4" onClick={() => { closeMobileMenu(); exitBus(); }} ariaLabel="Sortir du bus" description="Sortir en gardant ta place et ton profil. Pour les supprimer, ouvre Ma place." exit icon={<ExitBusIcon />} disabled={busy || !interiorControlsVisible}>
                   {phase === "exiting" ? "Sortie…" : "Sortir"}
                 </HudButton>
               </div>
@@ -960,8 +882,11 @@ export function BusHud({
           </div>
         )}
         {immersive && !hidden && <button ref={restoreButtonRef} type="button" onClick={restoreControls} aria-label="Quitter le mode immersif et afficher les commandes"
-          className="bus-immersive-restore fixed z-[2147483647] inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-4 text-sm font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] cursor-pointer"
-          style={{ right: "calc(1rem + env(safe-area-inset-right))", bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+          data-visible={immersiveRestoreVisible}
+          className={`bus-immersive-restore fixed z-[2147483647] inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-4 text-sm font-bold text-white shadow-lg transition-[opacity,background-color,border-color,color] duration-200 hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] cursor-pointer ${
+            immersiveRestoreVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
+          style={{ right: "calc(1rem + env(safe-area-inset-right))", top: "calc(1rem + env(safe-area-inset-top))" }}>
           Afficher les commandes
         </button>}
 
@@ -1043,8 +968,8 @@ function MobileMenuToggleButton({
         if (disabled) return;
         onToggle();
       }}
-      className={`pointer-events-auto relative z-10 flex min-h-11 min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-full py-2 text-xs font-bold shadow-lg touch-manipulation transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
-        variant === "exterior" ? "shrink-0 px-2.5 min-[360px]:px-3" : "flex-[1.1] px-2 min-[360px]:px-3"
+      className={`pointer-events-auto relative z-10 flex min-h-11 min-w-0 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full py-2 text-xs font-bold shadow-lg touch-manipulation transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
+        variant === "exterior" ? "px-3 min-[360px]:px-3.5" : "px-2.5 min-[360px]:px-3.5"
       } ${
         open
           ? "bg-[#1636c9] text-white ring-2 ring-[#ffd23f] hover:bg-[#1d44e6]"

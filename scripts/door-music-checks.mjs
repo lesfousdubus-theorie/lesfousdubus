@@ -36,7 +36,9 @@ export async function runDoorMusicChecks(options) {
     assert(firstPlay?.muted,"Video preloading must be silent.");
     assert(firstPause.time-firstPlay.time>=1750,"Preloading must wait for data beyond the former 900 ms timer.");
     assert.equal(await run(`window.mediaTestPlayers.bus.getCurrentTime()`),0,"The buffered video must wait at its beginning.");
-    assert.equal(await run(`Number(document.querySelector('.bus-volume-inline input').value)`),85,"Fresh visitors must get 85% music volume.");
+    await click('.bus-music-playback button');
+    await wait(`Boolean(document.querySelector('input[aria-label="Volume de la musique"]'))`,"Music drawer opens with volume slider");
+    assert.equal(await run(`Number(document.querySelector('input[aria-label="Volume de la musique"]').value)`),85,"Fresh visitors must get 85% music volume.");
     assert.equal(await run(`window.mediaTestPlayers.music.volume`),85,"The actual music player must receive the initial volume.");
     const musicFrame=await run(`(()=>{const frame=document.getElementById('bgm-iframe'),r=frame.getBoundingClientRect();return {display:getComputedStyle(frame).display,width:r.width,height:r.height,right:r.right};})()`);
     assert(musicFrame.display!=='none'&&musicFrame.width>=200&&musicFrame.height>=200&&musicFrame.right<0,"Background playback must retain a live player viewport outside the visible layout.");
@@ -44,14 +46,18 @@ export async function runDoorMusicChecks(options) {
     await wait(`window.mediaTestPlayers.music.state===1&&!window.mediaTestPlayers.music.muted`,"Music starts from its button");
     assert.equal(await run(`window.mediaTestPlayers.music.volume`),85,"Music starts audibly at 85%.");
     await screenshot("musique-volume-85.png");
-    const sliderPoint=await run(`(()=>{const r=document.querySelector('.bus-volume-inline input').getBoundingClientRect();return {x:r.left+r.width*.37,y:r.top+r.height/2};})()`);
+    await click('.bus-music-playback button');
+    await wait(`Boolean(document.querySelector('input[aria-label="Volume de la musique"]'))`,"Music drawer opens for native slider drag");
+    const sliderPoint=await run(`(()=>{const r=document.querySelector('input[aria-label="Volume de la musique"]').getBoundingClientRect();return {x:r.left+r.width*.37,y:r.top+r.height/2};})()`);
     await send("Input.dispatchMouseEvent",{type:"mousePressed",button:"left",clickCount:1,...sliderPoint});
     await send("Input.dispatchMouseEvent",{type:"mouseReleased",button:"left",clickCount:1,...sliderPoint});
     await wait(`Number(localStorage.getItem('fdb-bgm-volume'))>5&&Number(localStorage.getItem('fdb-bgm-volume'))<80`,"Volume slider stores the user's choice");
     const chosen=await run(`Number(localStorage.getItem('fdb-bgm-volume'))`);
     await wait(`window.mediaTestPlayers.music.volume===${chosen}`,"The selected volume reaches the player");
     await send("Page.reload");
-    await wait(`document.querySelector('.bus-app')?.dataset.sceneAvailable==='true'&&window.mediaTestPlayers?.music?.volume===${chosen}&&Number(document.querySelector('.bus-volume-inline input')?.value)===${chosen}`,"Reload preserves the chosen volume");
+    await wait(`document.querySelector('.bus-app')?.dataset.sceneAvailable==='true'&&window.mediaTestPlayers?.music?.volume===${chosen}`,"Reload preserves the chosen volume");
+    await click('.bus-music-playback button');
+    await wait(`Number(document.querySelector('input[aria-label="Volume de la musique"]')?.value)===${chosen}`,"Reload preserves the chosen slider value");
     await click('button[aria-label^="Activer la musique de fond"]');
     await wait(`window.mediaTestPlayers.music.state===1&&!window.mediaTestPlayers.music.muted`,"Music restarts after reload");
     await run(`window.mediaTestPlayers.music.options.events.onAutoplayBlocked()`);
@@ -62,12 +68,17 @@ export async function runDoorMusicChecks(options) {
     await wait(`Boolean(document.querySelector('button[aria-label^="Activer la musique de fond"]'))`,"YouTube failures switch off the music button");
 
     // An explicit zero is a stored preference, never replaced with the default.
-    await run(`document.querySelector('.bus-volume-inline input').focus()`);
+    await click('.bus-music-playback button');
+    await wait(`Boolean(document.querySelector('input[aria-label="Volume de la musique"]'))`,"Music drawer opens for keyboard mute");
+    await run(`document.querySelector('input[aria-label="Volume de la musique"]').focus()`);
     await send("Input.dispatchKeyEvent",{type:"keyDown",key:"Home",code:"Home",windowsVirtualKeyCode:36});
     await send("Input.dispatchKeyEvent",{type:"keyUp",key:"Home",code:"Home",windowsVirtualKeyCode:36});
     await wait(`localStorage.getItem('fdb-bgm-volume')==='0'`,"Muted volume is stored");
     await send("Page.reload");
-    await wait(`Boolean(window.busCameraTestState()?.controls)&&window.mediaTestPlayers?.music?.volume===0&&document.querySelector('.bus-volume-inline input')?.value==='0'`,"Reload preserves an explicit zero");
+    await wait(`Boolean(window.busCameraTestState()?.controls)&&window.mediaTestPlayers?.music?.volume===0`,"Reload preserves an explicit zero");
+    await click('.bus-music-playback button');
+    await wait(`document.querySelector('input[aria-label="Volume de la musique"]')?.value==='0'`,"Reload preserves an explicit zero on the slider");
+    await click('.bus-music-playback button');
     await wait(`Boolean(window.busCameraTestState()?.scene.getObjectByName('bus-coach-details'))`,"Vehicle finishes loading after reload");
     const flaps=await run(`(()=>{const list=[];window.busCameraTestState().scene.traverse(o=>{if(o.name.startsWith('bus-mudflap-'))list.push(o.name);});return list;})()`);
     assert.equal(flaps.length,3,"Other wheel mudflaps must remain in place.");

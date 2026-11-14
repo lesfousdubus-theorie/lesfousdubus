@@ -42,6 +42,7 @@ try{
  await send('Page.navigate',{url:baseUrl});
  await wait("Boolean(document.querySelector('#bus-loading-wheel .bus-loading-wheel-spin'))",'Pirate wheel available before 3D');
  await wait("getComputedStyle(document.querySelector('.bus-loading-wheel-spin')).animationName==='bus-loading-wheel-turn'",'Wheel animation ready');
+ await wait("typeof document.querySelector('.bus-loading-wheel-spin')?.getAnimations?.()?.[0]?.startTime==='number'",'Wheel compositor animation started');
  assert.equal(await run("document.querySelector('section[aria-labelledby=bus-loading-title]').querySelectorAll('a,button').length"),0,'Loading must only show the wheel, without reading or retry actions.');
  const loadingTransform=await run("getComputedStyle(document.querySelector('.bus-loading-wheel-spin')).transform");
  await run('new Promise(resolve=>setTimeout(resolve,250))');
@@ -76,11 +77,9 @@ try{
  assert.equal(await run("document.getElementById('site-content').inert"),true);
  await capture('aide-desktop.png');
  await click('[role="dialog"] input:nth-of-type(1)');
- // The checkbox labels contain their own input; select by order for preferences.
- await run("document.querySelectorAll('[role=dialog] input')[1].click()");
  await close();
  assert.equal(await run("Boolean(document.querySelector('button[aria-label=\"Aide et confort\"]'))"),false,'The removed help button stays absent.');
- assert.equal(await run("localStorage.getItem('fdb-scenery-paused')"),'true');
+ assert.equal(await run("localStorage.getItem('fdb-scenery-paused')"),null);
  assert.equal(await run("localStorage.getItem('fdb-letter-shortcuts')"),'false');
  const settle=async()=>{const frame=await run('comfortScene().gl.info.render.frame');await wait('comfortScene().gl.info.render.frame>'+Number(frame+2),'Rendered frames after interaction');};await settle();
  const fov=await run('window.comfortScene().camera.fov');
@@ -94,13 +93,13 @@ try{
  const prevented=await run("(()=>{const e=new WheelEvent('wheel',{deltaY:200,ctrlKey:true,bubbles:true,cancelable:true});document.querySelector('canvas').dispatchEvent(e);return e.defaultPrevented;})()");
  await settle();assert.equal(prevented,false);assert(Math.abs(await run('window.comfortScene().camera.fov')-wheelFov)<.01);
  await click('button[aria-label="Allumer la télévision"]');
- await wait('window.mediaTestPlayers.bus?.state===1','TV plays with scenery paused');
- const before=await run('({scroll:comfortWorld().scroll,frame:comfortScene().gl.info.render.frame,time:mediaTestPlayers.bus.getCurrentTime()})');
+ await wait('window.mediaTestPlayers.bus?.state===1','TV plays smoothly');
+ const before=await run('({frame:comfortScene().gl.info.render.frame,time:mediaTestPlayers.bus.getCurrentTime()})');
  await run('new Promise(resolve=>setTimeout(resolve,1200))');
- const after=await run('({scroll:comfortWorld().scroll,frame:comfortScene().gl.info.render.frame,time:mediaTestPlayers.bus.getCurrentTime()})');
- assert.equal(after.scroll,before.scroll);assert(after.frame>before.frame);assert(after.time>before.time+0.8);
- report.pausedScenery={before,after};
- report.checks.push('Ctrl/Meta zoom preserved; unmodified zoom and arrows work; disabled letters stay inactive; TV and rendering continue with scenery frozen.');
+ const after=await run('({frame:comfortScene().gl.info.render.frame,time:mediaTestPlayers.bus.getCurrentTime()})');
+ assert(after.frame>before.frame);assert(after.time>before.time+0.8);
+ report.tvPlayback={before,after};
+ report.checks.push('Ctrl/Meta zoom preserved; unmodified zoom and arrows work; disabled letters stay inactive; TV and rendering continue smoothly.');
  for(const viewport of [{width:1240,height:900,mobile:false},{width:320,height:568,mobile:true},{width:393,height:852,mobile:true},{width:667,height:375,mobile:true},{width:568,height:320,mobile:true}]){
    await send('Emulation.setDeviceMetricsOverride',{...viewport,deviceScaleFactor:1});
    await run('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
@@ -113,17 +112,16 @@ try{
    report.viewports.push(scan);await capture('aide-'+viewport.width+'x'+viewport.height+'.png');await close();
  }
  await send('Page.reload',{ignoreCache:true});await sceneReady();
- assert.equal(await run('comfortWorld().sceneryPaused'),true,'Scenery preference survives reload.');
- await key('F1');await wait("document.activeElement?.id==='bus-help-title'",'Help focus after reload');assert.equal(await run("document.querySelectorAll('[role=dialog] input')[1].checked"),false);await close();
- await click('button[aria-label="Sortir du bus"]');await wait("document.querySelector('.bus-app').dataset.phase==='outside'",'Exit unaffected by frozen scenery');
+ await key('F1');await wait("document.activeElement?.id==='bus-help-title'",'Help focus after reload');assert.equal(await run("document.querySelectorAll('[role=dialog] input')[0].checked"),false);await close();
+ await click('button[aria-label="Sortir du bus"]');await wait("document.querySelector('.bus-app').dataset.phase==='outside'",'Exit finishes');
  await run("[...document.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.includes('Entrer dans le bus')).click()");
- await wait("Boolean(document.getElementById('onboarding-name'))",'Onboarding modal opens when scenery is paused');
+ await wait("Boolean(document.getElementById('onboarding-name'))",'Onboarding modal opens');
  await run("document.getElementById('onboarding-name').focus()");
  await send('Input.insertText',{text:'Confort test'});
  await wait("document.getElementById('onboarding-name').value==='Confort test'",'Onboarding name entered');
  await run("document.querySelector('[role=dialog] button[type=submit]').click()");
- await wait("document.querySelector('.bus-app').dataset.phase==='inside'",'Boarding unaffected by frozen scenery');
- report.checks.push('Preferences persist; entry/exit finish while scenery is paused; help fits desktop, narrow mobile and landscape.');
+ await wait("document.querySelector('.bus-app').dataset.phase==='inside'",'Boarding finishes');
+ report.checks.push('Preferences persist; entry/exit finish; help fits desktop, narrow mobile and landscape.');
  report.apiCalls=await run('window.comfortApiCalls');
  await writeFile(output+'/confort.json',JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify({...report,viewports:report.viewports.map(({text,...viewport})=>viewport)},null,2));

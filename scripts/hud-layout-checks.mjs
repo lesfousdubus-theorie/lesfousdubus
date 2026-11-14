@@ -32,7 +32,7 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
         const a = rect(span), b = rect(button);
         return a.left < b.left - 1 || a.right > b.right + 1;
       }).map(span => [name(button), span.textContent.trim()]));
-    const popup = document.querySelector('.bus-volume-popup');
+    const popup = document.querySelector('[aria-label="Progression de la musique"]');
     const popupOverflow = popup && visible(popup) ? [...popup.querySelectorAll('button,input')]
       .filter(el => { const a = rect(el), b = rect(popup); return a.left < b.left || a.right > b.right; }).map(name) : [];
     const toast = document.querySelector('.bus-toast-content');
@@ -49,8 +49,9 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
     const speed = document.querySelector('.bus-speed');
     const actions = [...document.querySelectorAll('.bus-exterior-controls,.bus-interior-controls')].find(visible);
     const a = actions && rect(actions), u = utilities && rect(utilities), s = speed && rect(speed);
-    const actionsHaveRoom = a && u && s && u.right + a.width + 24 <= s.left;
+    const actionsHaveRoom = a && u && s && (innerWidth - a.width) / 2 >= u.right + 12 && (innerWidth + a.width) / 2 <= s.left - 12;
     const actionsRaised = Boolean(actionsHaveRoom && Math.abs(a.bottom - s.bottom) > 1);
+    const actionsCenterOffset = a ? Math.abs((a.left + a.right) / 2 - innerWidth / 2) : 0;
     const actionsBottomGap = a ? Math.round(innerHeight - a.bottom) : null;
     const dockGap = a && u && s && a.bottom <= Math.min(u.top, s.top)
       ? Math.min(u.top, s.top) - a.bottom : 0;
@@ -71,7 +72,7 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
     const mobileMenuAboveActions = mobileMenuRect && a ? mobileMenuRect.bottom <= a.top + 1 : null;
     return { collisions, headerCollisions, outside, small, clippedLabels, popupOverflow, toastCollisions,
       mobileMenuOutside, mobileMenuCollisions, mobileMenuBg, mobileMenuAboveActions,
-      titleLowered, titleTopDelta, actionsRaised, actionsBottomGap, dockGap,
+      titleLowered, titleTopDelta, actionsRaised, actionsCenterOffset, actionsBottomGap, dockGap,
       toastVisible: Boolean(toast && rect(toast).width > 0 && rect(toast).height > 0),
       toastClipped: Boolean(toast && toast.scrollHeight > toast.clientHeight + 1),
       overflow: document.documentElement.scrollWidth - innerWidth };
@@ -85,6 +86,7 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
     assert(result.overflow <= 2, `${label}: horizontal overflow ${result.overflow}px`);
     assert(!result.titleLowered, `${label}: the title was lowered despite available horizontal space`);
     assert(!result.actionsRaised, `${label}: the actions were raised despite available horizontal space`);
+    assert(result.actionsCenterOffset <= 2, `${label}: middle actions must stay horizontally centered (offset=${result.actionsCenterOffset}px)`);
     assert(result.dockGap <= 13, `${label}: unused vertical space between controls: ${result.dockGap}px`);
     return result;
   };
@@ -165,12 +167,13 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
         await check(`${label}, manual day/night`);
         await run(`document.querySelector('.bus-day-night > button').click()`);
 
-        const hasPopup = await run(`getComputedStyle(document.querySelector('.bus-volume-toggle')).display !== 'none'`);
-        if (hasPopup) {
-          await run(`document.querySelector('.bus-volume-toggle').click()`);
-          await waitForPageCondition(send, `Boolean(document.querySelector('.bus-volume-popup'))`, `${label}, volume panel`);
-          await check(`${label}, volume open`);
-          await run(`document.querySelector('.bus-volume-toggle').click()`);
+        const hasMusicDetails = await run(`Boolean(document.querySelector('.bus-music-playback button'))`);
+        if (hasMusicDetails) {
+          await run(`document.querySelector('.bus-music-playback button').click()`);
+          await waitForPageCondition(send, `Boolean(document.querySelector('[aria-label="Progression de la musique"]'))`, `${label}, music details panel`);
+          await check(`${label}, music details open`);
+          await run(`document.querySelector('.bus-music-playback button').click()`);
+          await waitForPageCondition(send, `!document.querySelector('[aria-label="Progression de la musique"]')`, `${label}, close music details panel`);
         }
       }
       await run(`window.dispatchEvent(new CustomEvent('bus-show-toast', {detail: {

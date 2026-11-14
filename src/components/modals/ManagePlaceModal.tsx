@@ -15,8 +15,6 @@ export function ManagePlaceModal({
   onEditName,
   onEditComment,
   hasComment = false,
-  sceneryPaused = false,
-  onSceneryPausedChange,
 }: {
   inside: boolean;
   entryNumber?: number | null;
@@ -26,8 +24,6 @@ export function ManagePlaceModal({
   onEditName?: () => void;
   onEditComment?: () => void;
   hasComment?: boolean;
-  sceneryPaused?: boolean;
-  onSceneryPausedChange?: (paused: boolean) => void;
 }) {
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -141,17 +137,6 @@ export function ManagePlaceModal({
                     </button>
                   )}
                 </div>
-              )}
-              {onSceneryPausedChange && (
-                <label className="mt-5 flex min-h-11 cursor-pointer items-center gap-3 rounded-2xl border border-white/15 bg-[#0c1b3a] p-3.5 text-sm transition hover:border-[#ffd23f]/45">
-                  <input
-                    type="checkbox"
-                    checked={sceneryPaused}
-                    onChange={(event) => onSceneryPausedChange(event.target.checked)}
-                    className="h-5 w-5 shrink-0 cursor-pointer accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a]"
-                  />
-                  <span className="min-w-0 font-bold text-white">Figer le défilement du décor</span>
-                </label>
               )}
               <div className="mt-6 border-t border-white/15 pt-5">
                 <button ref={deleteButtonRef} type="button" onClick={() => { setConfirming(true); requestAnimationFrame(() => titleRef.current?.focus()); }} className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-red-400/45 bg-red-950/50 px-4 py-2 text-sm font-bold text-red-200 transition hover:border-red-300 hover:bg-red-900/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a]">Supprimer ma place</button>

@@ -210,7 +210,7 @@ export function OnboardingModal({
         >
           <div>
             <label htmlFor="onboarding-name" className="mb-1.5 flex items-center justify-between gap-2 text-sm font-black text-white">
-              <span>Nom ou pseudo</span>
+              <span>Pseudo</span>
               <span className="text-xs font-semibold text-[#ffd23f]">Obligatoire · 24 caractères max.</span>
             </label>
             <input
