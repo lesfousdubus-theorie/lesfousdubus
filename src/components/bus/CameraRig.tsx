@@ -14,6 +14,7 @@ interface Props {
   cabinCenterZ?: number;
   cameraFar?: number;
   currentSeatZ?: number;
+  tvTargetZ?: number;
   reducedMotion?: boolean;
 }
 
@@ -27,6 +28,7 @@ export default function CameraRig({
   cabinCenterZ = 0,
   cameraFar = 2000,
   currentSeatZ,
+  tvTargetZ = TV_POSITION.z,
   reducedMotion = false,
 }: Props) {
   const { camera, gl } = useThree();
@@ -59,6 +61,7 @@ export default function CameraRig({
   const activeEyePos = useMemo(() => {
     return new THREE.Vector3(SEAT_EYE.x, SEAT_EYE.y, currentSeatZ ?? SEAT_EYE.z);
   }, [currentSeatZ]);
+  const activeTvTarget = useMemo(() => new THREE.Vector3(0, TV_POSITION.y, tvTargetZ), [tvTargetZ]);
 
   // Cible de rotation OrbitControls ajustée selon la longueur du bus
   const orbitTargetZ = useMemo(() => {
@@ -119,7 +122,7 @@ export default function CameraRig({
       a.from.copy(camera.position);
       a.fromQ.copy(camera.quaternion);
       a.to.copy(activeEyePos);
-      const m = new THREE.Matrix4().lookAt(activeEyePos, TV_POSITION, new THREE.Vector3(0, 1, 0));
+      const m = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
       a.toQ.setFromRotationMatrix(m);
       a.t = 0;
       a.active = true;
@@ -132,7 +135,17 @@ export default function CameraRig({
       a.t = 0;
       a.active = true;
     }
-  }, [phase, camera, activeEyePos, reducedMotion, finishTransition]);
+  }, [phase, camera, activeEyePos, activeTvTarget, reducedMotion, finishTransition]);
+
+  // Chaque déplacement dans l'allée oriente le regard vers le lecteur actif.
+  // Le visiteur peut ensuite tourner librement la tête avec la souris ou le doigt.
+  useEffect(() => {
+    if (phase !== "inside") return;
+    const matrix = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
+    const rotation = new THREE.Euler().setFromRotationMatrix(matrix, "YXZ");
+    look.current.targetYaw = rotation.y;
+    look.current.targetPitch = rotation.x;
+  }, [phase, activeEyePos, activeTvTarget]);
 
   // Fallback de sécurité : garantit la fin de la transition même si requestAnimationFrame est suspendu/throttlé
   useEffect(() => {

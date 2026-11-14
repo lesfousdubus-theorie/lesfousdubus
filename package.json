@@ -11,7 +11,7 @@
     "deploy": "npm run deploy:preflight && npm run build && npm run db:migrate:remote && opennextjs-cloudflare deploy",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "start": "next start",
-    "test": "node scripts/test-seat-reuse.mjs && node scripts/static-regression.mjs",
+    "test": "node scripts/test-seat-reuse.mjs && node scripts/test-tv-layout.mjs && node scripts/static-regression.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:ui": "node scripts/ui-smoke.mjs"
