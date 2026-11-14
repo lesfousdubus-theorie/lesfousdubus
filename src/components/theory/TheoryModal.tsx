@@ -334,8 +334,8 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
               </p>
               {leaveError && <p role="alert" className="mt-3 text-sm font-bold text-red-200">{leaveError}</p>}
               <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <button type="button" disabled={leaving} onClick={closeLeaveConfirmation} className="min-h-11 rounded-lg border border-white/15 px-4 text-sm font-bold text-white/80 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50">Annuler</button>
-                <button type="button" disabled={leaving} onClick={() => void leavePermanently()} className="min-h-11 rounded-lg bg-red-600 px-4 text-sm font-black text-white hover:bg-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-wait disabled:opacity-60">
+                <button type="button" disabled={leaving} onClick={closeLeaveConfirmation} className="min-h-11 rounded-lg border border-white/15 px-4 text-sm font-bold text-white/80 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-80">Annuler</button>
+                <button type="button" disabled={leaving} onClick={() => void leavePermanently()} className="min-h-11 rounded-lg bg-red-600 px-4 text-sm font-black text-white hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-wait disabled:opacity-80">
                   {leaving ? "Suppression…" : "Supprimer ma place"}
                 </button>
               </div>
