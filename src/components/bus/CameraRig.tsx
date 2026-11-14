@@ -123,9 +123,6 @@ export default function CameraRig({
       a.toQ.setFromRotationMatrix(m);
       a.t = 0;
       a.active = true;
-      if (reducedMotion) {
-        finishTransition("inside");
-      }
     } else if (phase === "exiting") {
       a.from.copy(camera.position);
       a.fromQ.copy(camera.quaternion);
@@ -134,9 +131,6 @@ export default function CameraRig({
       a.toQ.setFromRotationMatrix(m);
       a.t = 0;
       a.active = true;
-      if (reducedMotion) {
-        finishTransition("outside");
-      }
     }
   }, [phase, camera, activeEyePos, reducedMotion, finishTransition]);
 
@@ -340,7 +334,7 @@ export default function CameraRig({
 
       // Glissement fluide de siège le long de l'allée
       const targetZ = currentSeatZ ?? SEAT_EYE.z;
-      seatZRef.current += (targetZ - seatZRef.current) * (reducedMotion ? 1 : Math.min(1, dt * 5.5));
+      seatZRef.current += (targetZ - seatZRef.current) * Math.min(1, dt * 5.5);
 
       cam.position.set(
         SEAT_EYE.x,
