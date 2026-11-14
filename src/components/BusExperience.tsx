@@ -1106,10 +1106,15 @@ export default function BusExperience() {
           <HudButton className="min-w-[104px] flex-1 sm:w-[112px] sm:flex-none" onClick={honk} icon="📯" disabled={!exteriorControlsVisible}>
             Klaxonner
           </HudButton>
-          {tvOn && phase === "outside" && (
+          {hasEntered && phase === "outside" && (
             <div className="animate-[hud-control-in-flow_220ms_cubic-bezier(0.25,1,0.5,1)_both] motion-reduce:animate-none">
-              <HudButton className="w-[124px] sm:w-[132px]" onClick={() => setTvOn(false)} icon="📺">
-                Éteindre la TV
+              <HudButton
+                className="w-[124px] sm:w-[132px]"
+                onClick={() => setTvOn((value) => !value)}
+                active={tvOn}
+                icon="📺"
+              >
+                {tvOn ? "Éteindre la TV" : "Allumer la TV"}
               </HudButton>
             </div>
           )}
