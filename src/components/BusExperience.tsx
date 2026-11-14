@@ -6,6 +6,7 @@ import Scene from "./bus/Scene";
 import { computeNumRows } from "./bus/Passengers";
 import { type PassengerProfile, type Phase, type WorldState } from "./bus/constants";
 import { playDing, playHorn, playStretch, playBoost, unlockAudio } from "@/lib/horn";
+import { isValidVisitorId } from "@/lib/visitor-id";
 import {
   JoinBusModal,
   PassengerCard,
@@ -44,9 +45,10 @@ function createVisitorId(): string {
 }
 
 function getOrCreateVisitorId(): string {
-  if (memoryVisitorId) return memoryVisitorId;
+  if (memoryVisitorId && isValidVisitorId(memoryVisitorId)) return memoryVisitorId;
   try {
-    const visitorId = localStorage.getItem("fdb-visitor") ?? createVisitorId();
+    const storedVisitorId = localStorage.getItem("fdb-visitor");
+    const visitorId = isValidVisitorId(storedVisitorId) ? storedVisitorId : createVisitorId();
     localStorage.setItem("fdb-visitor", visitorId);
     memoryVisitorId = visitorId;
     return visitorId;
@@ -502,12 +504,13 @@ export default function BusExperience() {
 
   // Empêche tout scroll de la page
   useEffect(() => {
-    const prev = document.body.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = prev;
-      document.documentElement.style.overflow = prev;
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
     };
   }, []);
 

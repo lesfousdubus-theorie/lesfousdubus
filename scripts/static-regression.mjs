@@ -56,5 +56,7 @@ assert.doesNotMatch(experience, /text-\[(?:8|9)px\]/, "Primary HUD text must not
 assert.doesNotMatch(theory, /animate-in\s+fade-in/, "Unsupported theory modal animation utilities must stay removed.");
 assert.match(api, /scopedIdentity/, "Rate limiting must isolate visitors sharing one IP.");
 assert.match(api, /visitorId,\s*\n\s*\);/, "Visitor identity must participate in write rate limiting.");
+assert.match(experience, /isValidVisitorId\(storedVisitorId\)/, "Corrupted stored visitor IDs must self-heal.");
+assert.match(experience, /previousBodyOverflow[\s\S]*previousHtmlOverflow/, "Body and document overflow must restore independently.");
 
 console.log("Static regression checks passed.");
