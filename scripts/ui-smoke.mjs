@@ -228,6 +228,15 @@ try {
         button?.click();
       })()
     `);
+    await waitForPageCondition(
+      send,
+      `(() => {
+        if (document.querySelector('[role="dialog"]')) return false;
+        const button = [...document.querySelectorAll("button")].find((el) => el.textContent?.includes("Entrer dans le bus"));
+        return Boolean(button) && getComputedStyle(button).visibility !== "hidden";
+      })()`,
+      `Theory modal close at ${viewport.width}x${viewport.height}`,
+    );
   }
 
   // Release the viewport-matrix WebGL context before the interaction flow.
