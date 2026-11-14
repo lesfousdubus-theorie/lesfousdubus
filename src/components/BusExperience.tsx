@@ -652,7 +652,7 @@ export default function BusExperience() {
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
-  const overlayOpen = showHelp || showPlaceModal || showTheoryModal || showJoinModal || profile.showAvatarModal || onboardingReason !== null || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
+  const overlayOpen = showHelp || showPlaceModal || showTheoryModal || showJoinModal || profile.showAvatarModal || onboardingReason !== null || showPassengerList || directory.showMessages || showTheoryAge || Boolean(selectedPassenger);
 
   // Les préférences de confort restent disponibles au clavier sans encombrer le HUD.
   useEffect(() => {
@@ -688,7 +688,7 @@ export default function BusExperience() {
         currentSeatRow={seatRow}
         currentSeatColumn={effectiveSeatColumn}
         isMutedForFullscreen={theoryVideoPlaying}
-        uiPaused={overlayOpen}
+        uiPaused={overlayOpen && !directory.showMessages}
         hasEntered={hasEntered}
         boardingPending={joining}
         boardingFromSeat={boardingFromSeat}

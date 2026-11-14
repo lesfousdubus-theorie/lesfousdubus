@@ -87,6 +87,23 @@ export async function GET(request: Request) {
       }, { headers: WRITE_HEADERS });
     }
 
+    if (url.searchParams.get("messages") === "1") {
+      const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
+      const limit = Math.min(100, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 60, 100)));
+      const rows = await database.prepare(
+        `SELECT seat_index, entry_number, display_name, comment FROM bus_entries
+         WHERE seat_index >= ? AND comment IS NOT NULL AND comment != ''
+         ORDER BY seat_index ASC LIMIT ?`,
+      ).bind(from, limit + 1).all<PassengerRow>();
+      const messages = rows.results.slice(0, limit).map((row) => ({
+        seatIndex: Number(row.seat_index),
+        displayName: row.display_name || "Anonyme",
+        comment: row.comment,
+      }));
+      return Response.json({ messages, nextFrom: messages.length ? messages[messages.length - 1].seatIndex + 1 : from,
+        hasMore: rows.results.length > limit }, { headers: READ_HEADERS });
+    }
+
     const wantsProfiles = url.searchParams.get("profiles") === "1";
     const wantsManifest = url.searchParams.get("manifest") === "1";
 

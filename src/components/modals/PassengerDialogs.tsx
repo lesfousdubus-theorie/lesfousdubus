@@ -5,6 +5,7 @@ import type { usePassengerProfile } from "../usePassengerProfile";
 import { JoinBusModal } from "./JoinBusModal";
 import { OnboardingModal, type OnboardingSubmission } from "./OnboardingModal";
 import { PassengerCard } from "./PassengerCard";
+import { PassengerMessages } from "./PassengerMessages";
 import { PassengerListModal } from "./PassengerListModal";
 
 /** Présentation des fenêtres ; les hooks possèdent les requêtes et leurs annulations. */
@@ -63,6 +64,8 @@ export function PassengerDialogs({ profile, directory, count, currentSeatIndex, 
       onLoadMore={() => void directory.loadPassengerManifest(directory.manifestNextFrom)}
       onRetry={() => void directory.loadPassengerManifest(directory.passengerManifest.length === 0 ? 0 : directory.manifestNextFrom)}
       onPassengerClick={directory.selectFromManifest} onClose={directory.closePassengerManifest}
+      onOpenMessages={() => { directory.closePassengerManifest(); directory.setShowMessages(true); }}
     />
+    {directory.showMessages && <PassengerMessages onClose={() => directory.setShowMessages(false)} returnFocusRef={directory.passengerManifestButtonRef} />}
   </>;
 }
