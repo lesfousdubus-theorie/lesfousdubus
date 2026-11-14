@@ -26,7 +26,7 @@ ni le fonctionnement des commandes de rangée et d’exploration. Les portes
 - Le bus accueille les vrais visiteurs du site en direct : chaque nouvel arrivant ajoute un passager assis !
 - Lorsque de nouveaux passagers arrivent, **le bus s'allonge automatiquement** sous vos yeux pour faire de la place à tout le monde.
 - Chaque passager peut ajouter un nom/pseudo et un commentaire, puis consulter les autres passagers depuis la liste à bord.
-- Kamal, Kyta et FoudubusTV figurent toujours en tête de cette liste. Les vingt modèles One Piece ont leurs propres rangées derrière les visiteurs, même quand la base est vide. Le compteur inclut ces vingt-trois personnages permanents ; leurs places ne consomment pas les inscriptions des visiteurs.
+- Kamal, Kyta et FoudubusTV figurent toujours en tête de cette liste. Les autres passagers correspondent uniquement aux visiteurs enregistrés ; aucun personnage One Piece supplémentaire n'est ajouté par défaut. Le compteur inclut les trois accompagnateurs et les vrais visiteurs. Les modèles One Piece restent disponibles comme avatars.
 - Chaque banquette accueille deux personnes au maximum. L’avatar rejoint la vraie colonne de son siège ; quand on change de rangée, l’occupant de la place choisie rejoint temporairement la place d’origine de l’avatar. Les identifiants et profils enregistrés restent inchangés.
 
 ### 📺 2. Regarder la vidéo sur la télé du bus
@@ -82,8 +82,9 @@ pauses et le chargement du lecteur suspendent aussi la danse. Les poses sont
 inspirées de leurs attaques : poings de Luffy,
 sabres de Zoro, lance-pierre d'Usopp, coup de pied de Sanji, « Super » de
 Franky, violon de Brook, gestes de Robin, Law et des autres. Les tenues et
-visages ont des détails propres aux vingt personnages, dont Doflamingo, Hancock,
-Vivi, Mihawk et Law. Les confettis couvrent
+visages des vingt modèles d'avatars disponibles ont des détails propres à chacun,
+dont Doflamingo, Hancock, Vivi, Mihawk et Law ; ces modèles ne sont pas ajoutés
+comme passagers par défaut. Les confettis couvrent
 l'arc-en-ciel, le rose et le blanc. **Stop** restitue la lecture précédente sans
 changer le volume mémorisé ni réactiver une musique laissée sur OFF. Les
 confettis sont dessinés en un seul appel GPU, avec une quantité réduite sur
@@ -195,11 +196,11 @@ porte et la couverture des confettis dans les cabines courtes et longues.
 `BUS_CAMERA_CHECKS=extensions npm run test:ui` vérifie les portes d’un grand bus,
 les trajets vers la porte la plus proche et les expressions pendant la fête,
 les discussions et les animations réduites, sans modifier les visiteurs.
-`BUS_CAMERA_CHECKS=crew-seats npm run test:ui` contrôle les deux places par
-banquette, les changements de rangée, les vingt modèles permanents, le contact
-des costumes avec la peau, les portraits, les articulations des guides, les
-gestes tactiles et l’interface à cinq tailles. `npm run test:crew` vérifie aussi
-les trajets sur les volumes réels, les proportions et les chorégraphies.
+`BUS_CAMERA_CHECKS=crew-seats npm run test:ui` contrôle des populations de
+0, 2, 4 et 60 visiteurs sur ordinateur et mobile : aucun passager artificiel,
+deux places par banquette, changements de rangée, compteurs, manifeste,
+anneaux centraux et espaces libres devant les télés. `npm run test:crew`
+vérifie aussi les trajets sur les volumes réels, les proportions et les chorégraphies.
 Sans sélection `BUS_CAMERA_CHECKS`, `npm run test:ui` couvre les onglets et
 la position de lecture, les formulaires, le clavier,
 le parcours liste/fiche et le repli sans WebGL.
