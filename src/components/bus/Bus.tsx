@@ -16,6 +16,7 @@ import type { PassengerProfile } from "@/types/passenger";
 import Passengers from "./Passengers";
 import { BusTvFrame, BusTvPlayer } from "./BusTv";
 import { computeNumRows, getRenderedRowIndices, getActiveTvIndex, getTvPositions } from "@/lib/bus-layout";
+import { advanceWiperAngle } from "@/lib/bus-wipers";
 import BusExterior from "./BusExterior";
 import { createStrawHatGeometry } from "./StrawHatGeometry";
 
@@ -158,7 +159,7 @@ export default function Bus({
   const prevRows = useRef(numRows);
   const bouncePhase = useRef(0);
   const rollPhase = useRef(0);
-  const wiperPhase = useRef(0);
+  const wiperMotion = useRef({ phase: 0, running: false, cyclesPerSecond: 0.4 });
   useEffect(() => {
     if (numRows > prevRows.current) {
       stretchRef.current = performance.now();
@@ -388,16 +389,17 @@ export default function Bus({
       group.current.rotation.z += (targetRoll - group.current.rotation.z) * settle;
     }
 
-    const rainStrength = worldRef.current?.weather === "rain"
-      ? worldRef.current.weatherIntensity
-      : 0;
-    // Environ 1,6 à 2 secondes par aller-retour, même sous une forte averse.
-    const wiperRate = 3 + Math.min(1, rainStrength) * 0.9;
-    wiperPhase.current = (wiperPhase.current + frameDt * wiperRate) % (Math.PI * 2);
-    const wiperStrength = Math.min(1, Math.max(0, (rainStrength - 0.04) / 0.2));
-    const sweep = Math.sin(wiperPhase.current) * 0.68 * wiperStrength;
-    if (leftWiper.current) leftWiper.current.rotation.z = 0.58 + sweep;
-    if (rightWiper.current) rightWiper.current.rotation.z = -0.58 + sweep;
+    // Une même phase garde les deux balais parallèles ; seule la cadence varie
+    // doucement avec la vitesse du bus et l'intensité de la pluie.
+    const wiperAngle = advanceWiperAngle(
+      wiperMotion.current,
+      worldRef.current?.weather === "rain",
+      worldRef.current?.weatherIntensity ?? 0,
+      mult,
+      frameDt,
+    );
+    if (leftWiper.current) leftWiper.current.rotation.z = wiperAngle;
+    if (rightWiper.current) rightWiper.current.rotation.z = wiperAngle;
 
     // Animation du chapeau : droit sur le bus avec oscillation dynamique au klaxon
     if (hat.current) {
