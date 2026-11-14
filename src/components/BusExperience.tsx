@@ -444,7 +444,7 @@ export default function BusExperience() {
           setBoardingFromSeat(false);
           openOnboardingModal(
             "boarding",
-            error instanceof ApiError ? error.message : "Identifiant refusé par le serveur.",
+            error instanceof ApiError ? error.message : "Pseudo refusé par le serveur.",
             submission,
           );
           return;
@@ -452,7 +452,7 @@ export default function BusExperience() {
         showToast(
           "Mode visiteur",
           error instanceof ApiError ? error.message : "Le bus reste accessible sans inscription.",
-          "⚠ SYNCHRO",
+          "SYNCHRO",
         );
         return;
       }
@@ -563,7 +563,7 @@ export default function BusExperience() {
   }, [partyOn, sceneAvailable, stopParty]);
 
   const handleMusicError = useCallback((message: string) => {
-    showToast("Musique indisponible", message, "🎵");
+    showToast("Musique indisponible", message, "MUSIQUE");
   }, [showToast]);
 
   const effectiveCount = count ?? 0;

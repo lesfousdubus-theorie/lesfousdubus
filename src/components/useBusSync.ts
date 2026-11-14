@@ -6,6 +6,7 @@ import { ApiError, fetchJson, getExistingVisitorId, getOrCreateVisitorId, isRetr
 import type { PassengerProfile } from "@/types/passenger";
 import type { Phase } from "./bus/constants";
 import { computeNumRows } from "@/lib/bus-layout";
+import { countPeopleOnBoard } from "@/lib/bus-crew";
 import { getBusPhysicalRows } from "@/lib/bus-occupancy";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
 import type { OnboardingReason } from "./modals/OnboardingModal";
@@ -270,18 +271,20 @@ export function useBusSync({
           const prevRows = getBusPhysicalRows(previousSeatCapacity);
           const nextRows = getBusPhysicalRows(d.seatCapacity);
           if (nextRows > prevRows) {
+            const addedRows = nextRows - prevRows;
             playStretch();
             showToast(
-              "Le bus s'allonge !",
-              `Nouveaux nakamas à bord ! +${nextRows - prevRows} rangée(s) créée(s)`,
-              "🚌 EXTENSION",
+              "Le bus s’allonge !",
+              `Nouveaux nakamas à bord ! +${addedRows} ${addedRows > 1 ? "rangées créées" : "rangée créée"}`,
+              "NOUVELLE RANGÉE",
             );
           } else {
             const arrivals = d.count - previousCount;
+            const totalPeople = countPeopleOnBoard(d.count);
             showToast(
               arrivals > 1 ? `+${arrivals} Nakamas à bord !` : "+1 Nakama à bord !",
-              `${d.count} passagers voyagent vers Laugh Tale`,
-              "⚡ REJOINT",
+              `${totalPeople.toLocaleString("fr-FR")} ${totalPeople > 1 ? "passagers voyagent" : "passager voyage"} vers Laugh Tale`,
+              "À BORD",
             );
           }
         }
@@ -406,7 +409,7 @@ export function useBusSync({
         if (!isRetryableRegistrationError(error)) {
           pendingRegistrationProfileRef.current = null;
           setRegistrationPending(false);
-          showToast("Inscription refusée", "Recharge la page avant de réessayer.", "⚠ ERREUR");
+          showToast("Inscription refusée", "Recharge la page avant de réessayer.", "ERREUR");
           return;
         }
         attempt += 1;

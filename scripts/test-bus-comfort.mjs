@@ -53,7 +53,7 @@ try{
  await send('Emulation.setDeviceMetricsOverride',{width:320,height:568,deviceScaleFactor:1,mobile:true});
  await send('Emulation.setScriptExecutionDisabled',{value:true});
  await send('Page.navigate',{url:baseUrl});
- await wait("document.body.innerText.includes('Activez JavaScript')",'No-JavaScript fallback remains available');
+ await wait("document.body.innerText.includes('Active JavaScript')",'No-JavaScript fallback remains available');
  assert.equal(await run("document.querySelectorAll('a[href=\"/theorie\"]').length"),0,'Removed reading page must not be linked.');
  assert.equal(await run("document.documentElement.scrollWidth>innerWidth"),false);
  await capture('accueil-mobile-sans-javascript.png');

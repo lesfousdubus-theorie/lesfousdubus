@@ -52,7 +52,7 @@ export async function runMugiwaraCabinChecks({ send, evaluate, waitForPageCondit
   };
   const manifest = async count => {
     await run("document.querySelector('.bus-top-stats button').click()");
-    await wait(`document.getElementById('passenger-list-title')?.textContent===${JSON.stringify(`${count + 3} passagers`)}&&[...document.querySelectorAll('.bus-passenger-list span')].filter(span=>/^Place \\d/.test(span.textContent)).length===${count}`,
+    await wait(`document.getElementById('passenger-list-title')?.textContent===${JSON.stringify(`${count + 3} passagers`)}&&[...document.querySelectorAll('.bus-passenger-list span')].filter(span=>/^Place (?:n° )?\\d/.test(span.textContent)).length===${count}`,
       "The isolated visitor manifest finishes loading");
     const snapshot = await run(`(()=>{const dialog=document.querySelector('.bus-passenger-list');return {
       title:document.getElementById('passenger-list-title').textContent,

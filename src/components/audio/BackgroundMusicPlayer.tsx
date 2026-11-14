@@ -153,7 +153,7 @@ export default function BackgroundMusicPlayer({
       queueMicrotask(() => {
         if (slot.track === "party") onPartyPlaybackError?.();
         else onPlayingChange(false);
-        onPlaybackError?.(`${message} Réessayez avec le bouton ${slot.track === "party" ? "Fête" : "Musique"}.`);
+        onPlaybackError?.(`${message} Réessaie avec le bouton ${slot.track === "party" ? "Fête" : "Musique"}.`);
       });
     }
     publishPlayback();
