@@ -359,6 +359,34 @@ export default function Bus({
     [],
   );
 
+  useEffect(() => () => {
+    hatGeo.dispose();
+    ribbonGeo.dispose();
+    sideLabel.dispose();
+    destLabel.dispose();
+    tvOffTex.dispose();
+    dashTex.dispose();
+    licensePlateTex.dispose();
+    tagSiecleTex.dispose();
+    tagBarbeNoireTex.dispose();
+    tagLuffyNikaTex.dispose();
+    tagPoneglyphesTex.dispose();
+    tagTimingTex.dispose();
+  }, [
+    hatGeo,
+    ribbonGeo,
+    sideLabel,
+    destLabel,
+    tvOffTex,
+    dashTex,
+    licensePlateTex,
+    tagSiecleTex,
+    tagBarbeNoireTex,
+    tagLuffyNikaTex,
+    tagPoneglyphesTex,
+    tagTimingTex,
+  ]);
+
 
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
@@ -490,7 +518,7 @@ export default function Bus({
       {interiorLightZs.map((lz, idx) => (
         <pointLight
           key={`interior-light-${idx}`}
-          ref={(el: any) => {
+          ref={(el: THREE.PointLight | null) => {
             if (el) interiorLights.current[idx] = el;
           }}
           position={[0, 2.85, lz]}

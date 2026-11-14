@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import type { WorldState } from "./constants";
@@ -54,6 +54,14 @@ export default function Weather({ worldRef, lowPower = false, reducedMotion = fa
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     return geometry;
   }, [lowPower]);
+
+  useEffect(() => () => {
+    rainGeometry.dispose();
+  }, [rainGeometry]);
+
+  useEffect(() => () => {
+    snowGeometry.dispose();
+  }, [snowGeometry]);
 
   useFrame((state, dt) => {
     const frameDt = Math.min(dt, 0.1);
