@@ -5,7 +5,7 @@ import { playStretch } from "@/lib/horn";
 import { ApiError, fetchJson, getOrCreateVisitorId, isRetryableRegistrationError, type BusApiState } from "@/lib/client/bus-api";
 import type { PassengerProfile } from "@/types/passenger";
 import type { Phase } from "./bus/constants";
-import { computeNumRows } from "@/lib/bus-layout";
+import { getBusPhysicalRows } from "@/lib/bus-occupancy";
 
 interface BusSyncOptions {
   applyBusSnapshot: (data: BusApiState, updateCount?: boolean) => boolean;
@@ -89,8 +89,8 @@ export function useBusSync({
         countRef.current = d.count;
         setCount(d.count);
         if (previousCount !== null && d.count > previousCount) {
-          const prevRows = computeNumRows(previousSeatCapacity);
-          const nextRows = computeNumRows(d.seatCapacity);
+          const prevRows = getBusPhysicalRows(previousSeatCapacity);
+          const nextRows = getBusPhysicalRows(d.seatCapacity);
           if (nextRows > prevRows) {
             playStretch();
             showToast(

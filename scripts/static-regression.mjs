@@ -33,16 +33,17 @@ assert.doesNotMatch(bus, /!reducedMotion && rainStrength/, "Rain must keep the w
 assert.doesNotMatch(bus, /tvIframeRefs|primaryIframeRef|sendYoutubeCommand/, "Legacy multi-iframe synchronization must stay removed.");
 assert.match(busTv, /cc_load_policy:\s*0/, "The bus TV must request captions off by default.");
 assert.match(busTv, /playVideo\(\);[\s\S]*setTimeout/, "The player must warm up on initial load.");
-assert.match(busTv, /desiredRef\.current\.hasEntered[\s\S]*applyDesiredPlayback\(\);[\s\S]*return;/, "A late YouTube ready event must skip warm-up after the user has already entered.");
+assert.match(busTv, /desiredRef\.current\.hasEntered[\s\S]*applyDesiredPlayback\(\);[\s\S]*return;/, "A late YouTube ready event must honor the current boarding phase.");
 assert.doesNotMatch(busTv, /inset:\s*"0 0 46px 0"/, "The TV must not have a full-surface interception layer over YouTube controls.");
 assert.doesNotMatch(busTv, /bus-tv-toggle-playback/, "Playback must be handled by YouTube's native controls instead of an overlay.");
 assert.doesNotMatch(busTv, /bus-video-state|bus-video-seek/, "Obsolete synchronized-video state must stay removed.");
-assert.match(experience, /bus-tv-user-play/, "Entering the bus must trigger playback from the user gesture.");
+assert.match(experience, /bus-tv-user-prepare/, "The boarding gesture must prepare the player silently.");
+assert.doesNotMatch(experience, /bus-tv-user-play/, "Boarding must not start playback before first-person arrival.");
 assert.match(hud, /hasEntered && phase === "outside"/, "The exterior TV toggle must remain available after the first ride.");
 assert.match(hud, /Allumer la TV/, "The exterior TV control must be able to turn the TV back on.");
 assert.ok(
-  experience.indexOf('window.dispatchEvent(new Event("bus-tv-user-play"))') < experience.indexOf('fetchJson<BusApiState & {', experience.indexOf("const enterBus")),
-  "Playback must be requested before the registration request.",
+  experience.indexOf('window.dispatchEvent(new Event("bus-tv-user-prepare"))') < experience.indexOf('fetchJson<BusApiState & {', experience.indexOf("const enterBus")),
+  "Silent preparation must not wait for registration.",
 );
 assert.match(theoryContent, /<SyncedTheoryVideo\b/, "The theory modal must keep its dedicated video player.");
 assert.doesNotMatch(theoryContent, /Étape \{idx \+ 1\}/, "Theory cards must not display numbered step labels.");
@@ -59,7 +60,8 @@ assert.match(scene, /<CappedFrameLoop paused=\{renderPaused\}/, "The capped loop
 assert.match(scene, /AdaptiveDpr/, "The scene must also adapt pixel density on slower devices.");
 assert.match(scene, /renderPaused = hidden \|\| contextLost \|\| uiPaused/, "Covered modals must pause the hidden 3D render loop.");
 assert.match(scene, /playbackSuspended = hidden \|\| contextLost/, "Pausing hidden 3D for UI must not implicitly destroy the TV playback state.");
-assert.match(cameraRig, /const transitionDt = Math\.min\(dt, 0\.05\)/, "Camera transitions must cap large frame deltas so animations cannot be skipped.");
+const transitionCap = Number(cameraRig.match(/const transitionDt = Math\.min\(dt, ([\d.]+)\)/)?.[1]);
+assert(transitionCap > 0 && transitionCap <= 0.25, "Camera transitions must cap large frame deltas consistently with boarding so animations cannot be skipped or stall on slow frames.");
 assert.match(scene, /webglcontextlost/, "WebGL context loss must be handled.");
 assert.match(css, /safe-area-inset-bottom/, "HUD must respect device safe areas.");
 assert.match(css, /orientation: landscape/, "Compact mobile landscape layout must remain covered.");
@@ -78,7 +80,7 @@ assert.match(experience, /previousBodyOverflow[\s\S]*previousHtmlOverflow/, "Bod
 assert.doesNotMatch(clientApi, /AbortSignal\.any/, "Fetch cancellation must not depend on AbortSignal.any browser support.");
 assert.match(clientApi, /externalSignal\?\.addEventListener\("abort"/, "External aborts must still cancel timed requests.");
 assert.match(experience, /MAX_DEBUG_PASSENGERS/, "Public debug passenger parameters must be bounded.");
-assert.match(experience, /return Math\.min\(parsed, computeNumRows\(debugCapacity\) - 1\)/, "Debug row selection must be clamped during initialization.");
+assert.match(experience, /return Math\.min\(parsed, getBusPhysicalRows\(debugCapacity\) - 1\)/, "Debug row selection must clamp against physical visitor and permanent-character rows during initialization.");
 assert.match(experience, /updateSeatCapacity[\s\S]*setSeatRow[\s\S]*\[setSeatRow\]/, "Seat capacity updates must preserve React Compiler memoization.");
 assert.match(experience, /setTheoryAgeInDays\(getTheoryAgeInDays\(\)\)/, "Theory age must refresh after midnight.");
 assert.match(experience, /nextMidnight/, "Theory age refresh must be scheduled for the next local midnight.");
@@ -87,7 +89,7 @@ assert.match(experience, /nextMidnight/, "Theory age refresh must be scheduled f
 assert.match(busLayout, /passengerCount <= BASE_ROWS \* 4/, "Row capacity must match the four logical passenger slots rendered per row.");
 assert.doesNotMatch(passengers, /getSeatPositions/, "The obsolete camera-reserved seat helper must stay removed.");
 assert.match(bus, /const frameDt = Math\.min\(dt, 0\.1\)/, "Bus animation must clamp long resume frames.");
-assert.match(world, /const frameDt = Math\.min\(dt, 0\.1\)/, "World simulation must clamp long resume frames.");
+assert.match(world, /const frameDt = Math\.min\(dt, [^\n]*0\.25\s*:\s*0\.1\)/, "World simulation must bound cinematic frame deltas and retain its normal travel cap.");
 assert.match(weather, /const frameDt = Math\.min\(dt, 0\.1\)/, "Weather simulation must clamp long resume frames.");
 assert.match(youtubeLoader, /clearTimeout\(timeoutTimer\)/, "YouTube API timeout must be cleared after settling.");
 assert.match(youtubeLoader, /script\.remove\(\)/, "A failed YouTube API script must be removable so a later attempt can retry.");

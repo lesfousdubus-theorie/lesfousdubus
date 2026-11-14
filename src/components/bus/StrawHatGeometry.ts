@@ -28,7 +28,7 @@ export function createStrawHatGeometry() {
     // 1. Surface intérieure : calotte descendant de l'apex intérieur vers la base intérieure
     for (let i = 0; i <= N_crown; i++) {
       const th = (i / N_crown) * (Math.PI / 2);
-      const r = Math.max(0.001, R_dome_in * Math.pow(Math.sin(th), p_super));
+      const r = R_dome_in * Math.pow(Math.sin(th), p_super);
       const y = y_base_in + (H_dome_in - y_base_in) * Math.pow(Math.cos(th), p_super);
       pts.push(new THREE.Vector2(r, y));
     }
@@ -58,7 +58,7 @@ export function createStrawHatGeometry() {
     // 5. Calotte extérieure : de la base extérieure montant vers l'apex extérieur
     for (let i = 1; i <= N_crown; i++) {
       const th = (Math.PI / 2) * (1 - i / N_crown);
-      const r = Math.max(0.001, R_dome * Math.pow(Math.sin(th), p_super));
+      const r = R_dome * Math.pow(Math.sin(th), p_super);
       const y = y_base + (H_dome - y_base) * Math.pow(Math.cos(th), p_super);
       pts.push(new THREE.Vector2(r, y));
     }
@@ -95,8 +95,10 @@ export function createStrawHatGeometry() {
     for (let i = 0; i < pos.count; i++) {
       const r = Math.hypot(pos.getX(i), pos.getZ(i));
       if (r < 0.02) {
-        const y = pos.getY(i);
-        norm.setXYZ(i, 0, y > 0.5 ? 1 : -1, 0);
+        // Both apexes are above y=0.5; distinguish the inner profile by
+        // vertex row instead of assigning an outward normal to both.
+        const profileIndex = i % pts.length;
+        norm.setXYZ(i, 0, profileIndex <= N_crown ? -1 : 1, 0);
       }
     }
     norm.needsUpdate = true;
