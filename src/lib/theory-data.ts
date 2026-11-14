@@ -17,7 +17,6 @@ export interface TheoryPoint {
   title: string;
   summary: string;
   sources?: readonly TheorySource[];
-  note?: string;
 }
 
 export interface TheoryGroup {
@@ -87,7 +86,6 @@ export const THEORY_GROUPS: readonly TheoryGroup[] = [
         id: "zoro-ryuma", icon: "⚔️",
         title: "Zoro serait Ryuma",
         summary: "Zoro serait Ryuma, le sabreur dont la légende inspirait Kuina. Son dragon serait Kaido, blessé au-dessus de la capitale des Fleurs. Après son rêve accompli, Zoro pourrait confier ses sabres à Tashigi, reprendre Shusui et être envoyé dans le passé, expliquant la dépouille de Ryuma.",
-        note: "Une piste plus spéculative, qui suppose aussi un déplacement physique dans le temps.",
       },
       {
         id: "teach-davy-jones", icon: "🏴‍☠️",
@@ -124,7 +122,6 @@ export const THEORY_GROUPS: readonly TheoryGroup[] = [
         id: "fresque-harley", icon: "🎨",
         title: "La fresque serait un récit illustré",
         summary: "Les géants, peut-être des enfants, auraient illustré les textes reçus du futur avec leurs propres codes. Cela expliquerait les ressemblances avec les héros actuels et certaines différences. L’épée et le bouclier pourraient même évoquer Zoro et Sanji.",
-        note: "Ce dernier rapprochement est une piste récente, issue de spoilers et encore à confirmer.",
         sources: [THEORY_REFERENCES.mural, THEORY_REFERENCES.swordAndShield],
       },
       {
