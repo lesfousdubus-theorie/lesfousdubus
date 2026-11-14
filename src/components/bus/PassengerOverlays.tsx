@@ -29,6 +29,7 @@ function useModalAccessibility(
   onClose: () => void,
   dialogRef: RefObject<HTMLElement | null>,
   initialFocusRef: RefObject<HTMLElement | null> = dialogRef,
+  returnFocusRef?: RefObject<HTMLElement | null>,
 ) {
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
@@ -40,6 +41,7 @@ function useModalAccessibility(
   useEffect(() => {
     if (!isOpen) return;
     previouslyFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const fallbackReturnTarget = returnFocusRef?.current ?? null;
     const page = document.getElementById("site-content");
     const wasInert = page?.inert ?? false;
     if (page) {
@@ -51,10 +53,12 @@ function useModalAccessibility(
       if (page) {
         page.inert = wasInert;
       }
-      previouslyFocusedRef.current?.focus({ preventScroll: true });
+      const previous = previouslyFocusedRef.current;
+      const returnTarget = previous?.isConnected ? previous : fallbackReturnTarget;
+      returnTarget?.focus({ preventScroll: true });
       previouslyFocusedRef.current = null;
     };
-  }, [initialFocusRef, isOpen]);
+  }, [initialFocusRef, isOpen, returnFocusRef]);
 
   return useCallback((event: ReactKeyboardEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -251,15 +255,17 @@ export function PassengerCard({
   passenger,
   loading,
   error,
+  returnFocusRef,
   onClose,
 }: {
   passenger: PassengerProfile | null;
   loading: boolean;
   error: string;
+  returnFocusRef?: RefObject<HTMLElement | null>;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
-  const handleKeyDown = useModalAccessibility(Boolean(passenger), onClose, dialogRef);
+  const handleKeyDown = useModalAccessibility(Boolean(passenger), onClose, dialogRef, dialogRef, returnFocusRef);
 
   if (!passenger) return null;
 
@@ -320,6 +326,7 @@ export function PassengerListModal({
   loading,
   error,
   hasMore,
+  returnFocusRef,
   onLoadMore,
   onPassengerClick,
   onClose,
@@ -330,13 +337,14 @@ export function PassengerListModal({
   loading: boolean;
   error: string;
   hasMore: boolean;
+  returnFocusRef?: RefObject<HTMLElement | null>;
   onLoadMore: () => void;
   onPassengerClick: (passenger: PassengerManifestEntry) => void;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const handleKeyDown = useModalAccessibility(isOpen, onClose, dialogRef, titleRef);
+  const handleKeyDown = useModalAccessibility(isOpen, onClose, dialogRef, titleRef, returnFocusRef);
 
   if (!isOpen) return null;
 
@@ -357,7 +365,7 @@ export function PassengerListModal({
             <div role="status" aria-live="polite" aria-atomic="true" className="absolute inset-0 grid place-items-center p-6">
               <div className="flex flex-col items-center gap-3 text-center text-sm font-bold text-white/70">
                 <span aria-hidden="true" className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-[#ffd23f] motion-reduce:animate-none" />
-                Chargement de tous les passagers…
+                Chargement des passagers…
               </div>
             </div>
           ) : <>
@@ -484,4 +492,3 @@ function getElapsedCalendarTime(startTimestamp: number, endTimestamp: number) {
 
   return { years, months, days, hours, minutes, seconds };
 }
-
