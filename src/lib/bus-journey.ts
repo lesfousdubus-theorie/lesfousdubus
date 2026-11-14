@@ -54,13 +54,14 @@ export interface JourneyState {
   seatX: number;
   timing: JourneyTiming;
   waitingForSeat: boolean;
+  entryFromSeat: boolean;
 }
 
 export function createJourneyState(): JourneyState {
   return { phase:"outside", elapsed:0, doorOpen:false, drive:1, sitting:0,
     walking:false, avatarVisible:false, position:new THREE.Vector3(), heading:0,
     cameraBlend:0, completed:false, doorIndex:0, doorZ:BUS_DOOR.z, seatZ:BUS_DOOR.z,seatX:0.72,
-    timing:getJourneyTiming(BUS_DOOR.z), waitingForSeat:false };
+    timing:getJourneyTiming(BUS_DOOR.z), waitingForSeat:false, entryFromSeat:false };
 }
 
 /** Pieds du personnage : trottoir, trois marches, allée, puis siège. */
@@ -101,31 +102,33 @@ function getWalkDistances(path: THREE.Vector3[]): number[] {
 }
 
 /** Le rythme des marches reste identique, quelle que soit la longueur du bus. */
-export function getJourneyTiming(seatZ: number, door: JourneyDoor = FRONT_DOOR, seatX = 0.72): JourneyTiming {
+export function getJourneyTiming(seatZ: number, door: JourneyDoor = FRONT_DOOR, seatX = 0.72, entryFromSeat = false): JourneyTiming {
   const lengths = getWalkDistances(getPassengerWalkPath(seatZ, door, seatX));
   const walkDistance = lengths[lengths.length - 1];
   // La rampe douce consomme 8 % du temps : tenir compte de cette fraction
   // pour que la vitesse de croisière reste plafonnée, pas seulement la moyenne.
   const walkDuration = walkDistance / (PASSENGER_WALK_SPEED * (1 - WALK_EASE_EDGE));
-  const entrySitStart = ENTRY_WALK_START + Math.max(ENTRY_SIT_START - ENTRY_WALK_START, walkDuration);
-  const entrySeatedTime = entrySitStart + (ENTRY_SEATED_TIME - ENTRY_SIT_START);
+  const entrySitStart = entryFromSeat ? 0 : ENTRY_WALK_START + Math.max(ENTRY_SIT_START - ENTRY_WALK_START, walkDuration);
+  const entrySeatedTime = entryFromSeat ? 0 : entrySitStart + (ENTRY_SEATED_TIME - ENTRY_SIT_START);
+  const entryCameraTime = entryFromSeat ? ARRIVAL_STOP_TIME : entrySeatedTime;
   const exitWalkEnd = EXIT_WALK_START + Math.max(EXIT_WALK_END - EXIT_WALK_START, walkDuration);
   return {
-    walkDistance, entrySitStart, entrySeatedTime, entryCameraTime: entrySeatedTime,
-    entryDuration: entrySeatedTime + (ENTRY_DURATION - ENTRY_CAMERA_TIME),
+    walkDistance, entrySitStart, entrySeatedTime, entryCameraTime,
+    entryDuration: entryCameraTime + (ENTRY_DURATION - ENTRY_CAMERA_TIME),
     exitWalkEnd, exitDuration: exitWalkEnd + (EXIT_DURATION - EXIT_WALK_END),
   };
 }
 
 /** Verrouille la porte et le siège jusqu'à la fin de cette animation. */
-export function beginJourney(state: JourneyState, phase: Phase, seatZ: number, door: JourneyDoor = FRONT_DOOR, seatX = 0.72) {
+export function beginJourney(state: JourneyState, phase: Phase, seatZ: number, door: JourneyDoor = FRONT_DOOR, seatX = 0.72, entryFromSeat = false) {
   state.phase = phase;
   state.elapsed = 0;
   state.doorIndex = door.index;
   state.doorZ = door.z;
   state.seatZ = seatZ;
   state.seatX = seatX;
-  state.timing = getJourneyTiming(seatZ, door, seatX);
+  state.entryFromSeat = phase === "entering" && entryFromSeat;
+  state.timing = getJourneyTiming(seatZ, door, seatX, state.entryFromSeat);
   state.waitingForSeat = false;
   paths.set(state, getPassengerWalkPath(seatZ, door, seatX));
 }
@@ -163,9 +166,12 @@ export function updateJourney(state: JourneyState, phase: Phase, time: number, s
   const timing = state.timing;
   if(phase==="entering") {
     state.drive=(1-ramp(time,0,ARRIVAL_STOP_TIME))*speedRatio;
-    state.doorOpen=time>=ARRIVAL_STOP_TIME;
-    state.sitting=ramp(time,timing.entrySitStart,timing.entrySeatedTime);
-    if(time<ENTRY_WALK_START) {
+    state.doorOpen=!state.entryFromSeat && time>=ARRIVAL_STOP_TIME;
+    state.sitting=state.entryFromSeat ? 1 : ramp(time,timing.entrySitStart,timing.entrySeatedTime);
+    if(state.entryFromSeat) {
+      state.position.set(state.seatX,0.64,state.seatZ);
+      state.sitting=1;
+    } else if(time<ENTRY_WALK_START) {
       // Primitive de 1-smoothstep : même décélération que la route.
       const t=THREE.MathUtils.clamp(time/ARRIVAL_STOP_TIME,0,1);
       const remaining=0.5-(t-t*t*t+0.5*t*t*t*t);
