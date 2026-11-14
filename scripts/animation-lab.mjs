@@ -1,0 +1,6 @@
+import { build } from "esbuild";
+import { createServer } from "node:http";
+
+const result=await build({entryPoints:["scripts/fixtures/passenger-animation-lab.tsx"],bundle:true,platform:"browser",format:"esm",write:false,jsx:"automatic",define:{"process.env.NODE_ENV":'"development"'},logLevel:"silent"});
+const html=`<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vérification des animations du bus</title><style>*{box-sizing:border-box}body{margin:0;background:#0a161e;color:#eef6fc;font:14px system-ui}main{height:100dvh;display:flex;flex-direction:column}header{display:flex;justify-content:space-between;padding:14px 20px}header span{color:#aac0d0}nav{padding:10px 20px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}label{display:flex;align-items:center;gap:6px}button,select{font:inherit;color:inherit;background:#263c4c;border:1px solid #567286;border-radius:4px;padding:6px}section{min-height:0;flex:1}</style><div id="root"></div><script type="module" src="/lab.js"></script></html>`;
+createServer((req,res)=>{res.setHeader("Content-Type",req.url==="/lab.js"?"text/javascript":"text/html; charset=utf-8");res.end(req.url==="/lab.js"?result.outputFiles[0].text:html);}).listen(4173,"127.0.0.1",()=>console.log("Animation fixture: http://127.0.0.1:4173"));
