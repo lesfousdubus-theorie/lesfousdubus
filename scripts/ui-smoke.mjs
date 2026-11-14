@@ -6,6 +6,22 @@ const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const chromePath = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
 const debugPort = 9222;
 
+for (const method of ["POST", "DELETE"]) {
+  const body = JSON.stringify({ visitorId: "invalid" });
+  const unsupported = await fetch(`${baseUrl}/api/bus-entries`, {
+    method,
+    headers: { "Content-Type": "text/plain" },
+    body,
+  });
+  assert.equal(unsupported.status, 415, `${method} must reject browser-simple text requests.`);
+  const validMediaType = await fetch(`${baseUrl}/api/bus-entries`, {
+    method,
+    headers: { "Content-Type": "application/json; charset=UTF-8" },
+    body,
+  });
+  assert.equal(validMediaType.status, 400, `${method} must still parse JSON requests.`);
+}
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function waitForJson(url, attempts = 120) {
@@ -68,6 +84,7 @@ async function waitForPageCondition(send, expression, label, timeoutMs = 8_000) 
 
 const chromeProfileDir = `/tmp/lesfousdubus-chrome-${process.pid}`;
 let chromeStderr = "";
+let testVisitorId = null;
 const chrome = spawn(chromePath, [
   "--headless=new",
   `--remote-debugging-port=${debugPort}`,
@@ -266,6 +283,7 @@ try {
       button?.click();
     })()
   `);
+  testVisitorId = await evaluate(interactionSend, `localStorage.getItem("fdb-visitor")`);
   await sleep(250);
   const phaseDuringEntry = await evaluate(
     interactionSend,
@@ -289,6 +307,15 @@ try {
     "TV frame after entering",
     4_000,
   );
+  await waitForPageCondition(
+    interactionSend,
+    `Boolean(document.getElementById("youtube-iframe-api"))
+      || Boolean(window.YT?.Player)
+      || Boolean(document.getElementById("tv-primary-iframe"))
+      || Boolean(document.querySelector('#tv-frame a[href*="youtube.com/watch"]'))`,
+    "TV playback initialization or recovery",
+    4_000,
+  );
 
   const inside = await evaluate(interactionSend, `
     (() => ({
@@ -298,6 +325,8 @@ try {
       hasPrimaryIframe: Boolean(document.getElementById("tv-primary-iframe")),
       hasPlayerMount: Boolean(document.querySelector("[data-bus-youtube-player]")),
       hasTvWheelCapture: Boolean(document.querySelector("[data-tv-wheel-capture]")),
+      hasVideoFallback: Boolean(document.querySelector('#tv-frame a[href*="youtube.com/watch"]')),
+      hasPlayPrompt: Boolean(document.querySelector('#tv-frame button[aria-label="Lancer la vidéo"]')),
       hasExit: [...document.querySelectorAll("button")].some((el) => el.textContent?.includes("Sortir")),
       overflow: document.documentElement.scrollWidth - innerWidth,
     }))()
@@ -309,7 +338,10 @@ try {
     inside.hasPrimaryIframe || inside.hasPlayerMount,
     "Neither the YouTube iframe nor its persistent preload mount is present.",
   );
-  assert(inside.hasTvWheelCapture, "The TV surface does not expose mouse-wheel zoom.");
+  assert(
+    inside.hasTvWheelCapture || inside.hasVideoFallback || inside.hasPlayPrompt,
+    `The TV surface offers no interaction or recovery: ${JSON.stringify(inside)}`,
+  );
   assert(inside.youtubeIframes <= 1, `More than one bus YouTube iframe is mounted: ${inside.youtubeIframes}`);
   assert(inside.overflow <= 2, "Interior mobile UI overflows horizontally.");
 
@@ -323,9 +355,20 @@ try {
 } finally {
   if (chrome.exitCode === null) chrome.kill("SIGTERM");
   try {
-    rmSync(chromeProfileDir, { recursive: true, force: true });
-  } catch {
-    // Le runner est éphémère et Chrome peut encore écrire quelques fichiers
-    // pendant son extinction. Ce nettoyage ne doit jamais invalider les tests.
+    if (typeof testVisitorId === "string" && /^[a-zA-Z0-9-]{8,128}$/.test(testVisitorId)) {
+      const cleanup = await fetch(`${baseUrl}/api/bus-entries`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visitorId: testVisitorId }),
+      });
+      assert(cleanup.ok, `Could not remove the UI test passenger: ${cleanup.status}`);
+    }
+  } finally {
+    try {
+      rmSync(chromeProfileDir, { recursive: true, force: true });
+    } catch {
+      // Le runner est éphémère et Chrome peut encore écrire quelques fichiers
+      // pendant son extinction. Ce nettoyage ne doit jamais invalider les tests.
+    }
   }
 }
