@@ -229,7 +229,7 @@ try {
       assert.equal(layout.mobileMenuToggleExpanded, "false", `Mobile menu should start collapsed at ${viewport.width}x${viewport.height}`);
       assert(!layout.hasMobileMenuOpen, `Mobile menu should not be open initially at ${viewport.width}x${viewport.height}`);
       assert(!layout.hasDayNightBar && !layout.hasSpeedBar, `Grouped desktop bars should be inside mobile menu at ${viewport.width}x${viewport.height}`);
-      assert.equal(layout.exteriorVisibleCount, 2, `Exterior mobile dock should only show Commandes and Entrer at ${viewport.width}x${viewport.height}`);
+      assert.equal(layout.exteriorVisibleCount, 4, `Exterior mobile dock should show music, audio, Commandes and Entrer at ${viewport.width}x${viewport.height}`);
       assert(layout.controlHeights.exterior >= 44, `Exterior mobile dock too short at ${viewport.width}x${viewport.height}`);
     } else {
       assert(!layout.hasMobileMenuToggle, `Mobile menu toggle should not appear at ${viewport.width}x${viewport.height}`);

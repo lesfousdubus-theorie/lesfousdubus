@@ -36,22 +36,25 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
     const popupOverflow = popup && visible(popup) ? [...popup.querySelectorAll('button,input')]
       .filter(el => { const a = rect(el), b = rect(popup); return a.left < b.left || a.right > b.right; }).map(name) : [];
     const toast = document.querySelector('.bus-toast-content');
-    const headers = [...document.querySelectorAll('.bus-title-panel,.bus-top-stats,.bus-row-nav')].filter(visible);
+    const headers = [...document.querySelectorAll('.bus-title-panel,.bus-top-stats,.bus-title-actions,.bus-row-nav')].filter(visible);
     const headerCollisions = headers.flatMap((a, i) => headers.slice(i + 1)
       .filter(b => overlap(rect(a), rect(b))).map(b => [a.className, b.className]));
     const title = document.querySelector('.bus-title-panel');
     const stats = document.querySelector('.bus-top-stats');
-    const titleHasRoom = title && stats && rect(title).right + 12 <= rect(stats).left;
+    const titleVisible = Boolean(title && visible(title) && stats && visible(stats));
+    const titleHasRoom = titleVisible && rect(title).right + 12 <= rect(stats).left;
     const titleLowered = Boolean(titleHasRoom && Math.abs(rect(title).top - rect(stats).top) > 1);
+    const titleTopDelta = titleVisible ? Math.abs(rect(title).top - rect(stats).top) : null;
     const utilities = document.querySelector('.bus-day-night');
     const speed = document.querySelector('.bus-speed');
     const actions = [...document.querySelectorAll('.bus-exterior-controls,.bus-interior-controls')].find(visible);
     const a = actions && rect(actions), u = utilities && rect(utilities), s = speed && rect(speed);
     const actionsHaveRoom = a && u && s && u.right + a.width + 24 <= s.left;
     const actionsRaised = Boolean(actionsHaveRoom && Math.abs(a.bottom - s.bottom) > 1);
+    const actionsBottomGap = a ? Math.round(innerHeight - a.bottom) : null;
     const dockGap = a && u && s && a.bottom <= Math.min(u.top, s.top)
       ? Math.min(u.top, s.top) - a.bottom : 0;
-    const obstacles = [...document.querySelectorAll('.bus-title-panel,.bus-top-stats,.bus-row-nav,.bus-exterior-controls,.bus-interior-controls,.bus-day-night,.bus-speed,.bus-mobile-menu')].filter(visible);
+    const obstacles = [...document.querySelectorAll('.bus-title-panel,.bus-top-stats,.bus-title-actions,.bus-row-nav,.bus-exterior-controls,.bus-interior-controls,.bus-day-night,.bus-speed,.bus-mobile-menu')].filter(visible);
     const toastCollisions = toast ? obstacles.filter(el => overlap(rect(toast), rect(el))).map(el => el.className) : [];
     const mobileMenu = document.querySelector('.bus-mobile-menu');
     const mobileMenuRect = mobileMenu && visible(mobileMenu) ? rect(mobileMenu) : null;
@@ -59,14 +62,16 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
       mobileMenuRect.left < -1 || mobileMenuRect.right > innerWidth + 1 || mobileMenuRect.top < -1 || mobileMenuRect.bottom > innerHeight + 1
     ));
     const mobileMenuCollisions = mobileMenuRect
-      ? [...document.querySelectorAll('.bus-title-panel,.bus-top-stats,.bus-row-nav,.bus-exterior-controls,.bus-interior-controls')]
+      ? [...document.querySelectorAll('.bus-title-panel,.bus-top-stats,.bus-title-actions,.bus-row-nav,.bus-exterior-controls,.bus-interior-controls')]
           .filter(visible)
           .filter(el => overlap(mobileMenuRect, rect(el)))
           .map(el => el.className)
       : [];
+    const mobileMenuBg = mobileMenu && visible(mobileMenu) ? getComputedStyle(mobileMenu).backgroundColor : null;
+    const mobileMenuAboveActions = mobileMenuRect && a ? mobileMenuRect.bottom <= a.top + 1 : null;
     return { collisions, headerCollisions, outside, small, clippedLabels, popupOverflow, toastCollisions,
-      mobileMenuOutside, mobileMenuCollisions,
-      titleLowered, actionsRaised, dockGap,
+      mobileMenuOutside, mobileMenuCollisions, mobileMenuBg, mobileMenuAboveActions,
+      titleLowered, titleTopDelta, actionsRaised, actionsBottomGap, dockGap,
       toastVisible: Boolean(toast && rect(toast).width > 0 && rect(toast).height > 0),
       toastClipped: Boolean(toast && toast.scrollHeight > toast.clientHeight + 1),
       overflow: document.documentElement.scrollWidth - innerWidth };
@@ -84,16 +89,17 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
     return result;
   };
   const visibleMobileToggle = `[...document.querySelectorAll('[data-mobile-menu-toggle]')].find(b => !b.disabled && !b.closest('[aria-hidden="true"]'))`;
+  const visibleMusicToggle = `[...document.querySelectorAll('button[aria-label^="Activer la musique de fond"]')].find(b => !b.disabled && !b.closest('[aria-hidden="true"]'))`;
 
   // The media regression has installed a deterministic YouTube API on this page.
   // This keeps the widest music-ON state stable even without network/autoplay.
   assert(await run(`Boolean(window.mediaTestPlayers?.music)`), "Media mock missing for active HUD checks.");
-  if (await run(`Boolean(document.querySelector('button[aria-label^="Activer la musique de fond"]'))`)) {
-    await run(`document.querySelector('button[aria-label^="Activer la musique de fond"]').click()`);
+  if (await run(`Boolean(${visibleMusicToggle})`)) {
+    await run(`${visibleMusicToggle}.click()`);
   } else if (await run(`Boolean(${visibleMobileToggle})`)) {
     await run(`${visibleMobileToggle}.click()`);
     await waitForPageCondition(send, `Boolean(document.querySelector('.bus-mobile-menu'))`, "Open mobile menu to enable music");
-    await run(`document.querySelector('button[aria-label^="Activer la musique de fond"]')?.click()`);
+    await run(`${visibleMusicToggle}?.click()`);
     await run(`${visibleMobileToggle}.click()`);
     await waitForPageCondition(send, `!document.querySelector('.bus-mobile-menu')`, "Close mobile menu after enabling music");
   }
@@ -123,12 +129,21 @@ export async function runHudLayoutChecks({ send, evaluate, waitForPageCondition,
       const isCompact = await run(`document.querySelector('[data-bottom-layout]')?.dataset.bottomLayout === 'compact'`);
       if (isCompact) {
         assert.equal(await run(`Boolean(document.querySelector('.bus-mobile-menu'))`), false, `${label}: mobile menu must start collapsed`);
-        await check(`${label}, music ON (collapsed)`);
+        const compactState = await check(`${label}, music ON (collapsed)`);
+        assert(compactState.actionsBottomGap !== null && compactState.actionsBottomGap <= 16,
+          `${label}: compact bottom actions must sit at bottom edge (gap=${compactState.actionsBottomGap}px)`);
+        const isLandscape = viewport.width > viewport.height && viewport.height <= 520;
+        if (phase === 'outside' && !isLandscape) {
+          assert(compactState.titleTopDelta !== null && compactState.titleTopDelta <= 2,
+            `${label}: top title and stats must sit side-by-side (topDelta=${compactState.titleTopDelta}px)`);
+        }
 
         await run(`${visibleMobileToggle}.click()`);
         await waitForPageCondition(send, `Boolean(document.querySelector('.bus-mobile-menu'))`, `${label}, open mobile menu`);
         await run(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
-        await check(`${label}, mobile menu open`);
+        const openState = await check(`${label}, mobile menu open`);
+        assert.equal(openState.mobileMenuBg, 'rgba(0, 0, 0, 0)', `${label}: mobile menu must not render an enclosing box (${openState.mobileMenuBg})`);
+        assert.equal(openState.mobileMenuAboveActions, true, `${label}: mobile menu must sit directly above bottom dock`);
 
         await run(`document.querySelector('.bus-mobile-day-night').click()`);
         await run(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);

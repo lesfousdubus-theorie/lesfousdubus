@@ -21,7 +21,7 @@ export function useHudLayout(
   useLayoutEffect(() => {
     const hud = hudRef.current;
     if (!hud) return;
-    const headers = [...hud.querySelectorAll<HTMLElement>(".bus-title-panel, .bus-top-stats, .bus-row-nav")];
+    const headers = [...hud.querySelectorAll<HTMLElement>(".bus-title-panel, .bus-top-stats, .bus-title-actions, .bus-row-nav")];
     const controls = [...hud.querySelectorAll<HTMLElement>(".bus-exterior-controls, .bus-interior-controls, .bus-day-night, .bus-speed, .bus-mobile-menu")];
     const popup = hud.querySelector<HTMLElement>(".bus-volume-popup");
     const visible = (element: HTMLElement) => {
@@ -33,23 +33,60 @@ export function useHudLayout(
       const stats = hud.querySelector<HTMLElement>(".bus-top-stats");
       const row = hud.querySelector<HTMLElement>(".bus-row-nav");
       const title = hud.querySelector<HTMLElement>(".bus-title-panel");
+      const titleActions = hud.querySelector<HTMLElement>(".bus-title-actions");
       const viewport = hud.getBoundingClientRect();
       const compactLandscape = window.matchMedia("(orientation: landscape) and (max-height: 520px)").matches;
-      if (stats && row) {
-        hud.style.setProperty("--bus-row-top", `${stats.getBoundingClientRect().bottom + 12}px`);
+      const phonePortrait = !compactLandscape && viewport.width < 640;
+
+      if (stats && phonePortrait) {
+        hud.style.setProperty("--bus-stats-width", `${Math.ceil(stats.getBoundingClientRect().width)}px`);
+      } else {
+        hud.style.removeProperty("--bus-stats-width");
       }
-      if (stats && title) {
-        const statsRect = stats.getBoundingClientRect();
-        const titleRect = title.getBoundingClientRect();
-        let titleTop = titleRect.right + 12 <= statsRect.left ? statsRect.top : statsRect.bottom + 12;
-        if (row) {
+
+      const statsRect = stats?.getBoundingClientRect();
+      const titleRect = title?.getBoundingClientRect();
+      const titleVisible = Boolean(title && titleRect && visible(title) && titleRect.width > 1 && titleRect.height > 1);
+      let titleTop = statsRect?.top ?? 12;
+      let titleBottom = titleTop;
+      if (statsRect && titleRect) {
+        titleTop = !titleVisible || titleRect.right + 12 <= statsRect.left ? statsRect.top : statsRect.bottom + 12;
+        if (titleVisible && !phonePortrait && row) {
           const rowRect = row.getBoundingClientRect();
           if (titleRect.right + 12 > rowRect.left && titleTop + titleRect.height + 12 > rowRect.top) {
             titleTop = rowRect.bottom + 12;
           }
         }
+        titleBottom = titleTop + (titleVisible ? titleRect.height : 0);
         hud.style.setProperty("--bus-title-top", `${titleTop}px`);
       }
+
+      let titleActionsTop = compactLandscape && statsRect ? statsRect.top : titleVisible ? titleBottom + (phonePortrait ? 6 : 10) : (statsRect?.bottom ?? 0) + 6;
+      let titleActionsBottom = titleActionsTop;
+      if (titleActions) {
+        const actionsRect = titleActions.getBoundingClientRect();
+        if (statsRect && actionsRect.right + 12 > statsRect.left) {
+          titleActionsTop = Math.max(titleActionsTop, statsRect.bottom + 6);
+        }
+        titleActionsBottom = titleActionsTop + actionsRect.height;
+        hud.style.setProperty("--bus-title-actions-top", `${titleActionsTop}px`);
+      }
+
+      if (statsRect && row) {
+        let rowTop = statsRect.bottom + (compactLandscape ? 6 : 12);
+        if (titleActions) {
+          const actionsRect = titleActions.getBoundingClientRect();
+          const rowRect = row.getBoundingClientRect();
+          const rowRight = compactLandscape ? viewport.right - 6 : phonePortrait ? viewport.right - 8 : viewport.right - 16;
+          if (actionsRect.right + 12 > rowRight - rowRect.width
+            && rowTop < titleActionsBottom + 8
+            && rowTop + rowRect.height + 8 > titleActionsTop) {
+            rowTop = titleActionsBottom + 8;
+          }
+        }
+        hud.style.setProperty("--bus-row-top", `${rowTop}px`);
+      }
+
       const actions = controls.filter(element => element.matches(".bus-exterior-controls, .bus-interior-controls")
         && element.getAttribute("aria-hidden") !== "true");
       const utilities = hud.querySelector<HTMLElement>(".bus-day-night");
@@ -62,8 +99,10 @@ export function useHudLayout(
         hud.style.removeProperty("--bus-speed-width");
         hud.style.removeProperty("--bus-volume-bottom");
         if (sceneAvailable && mobileMenuOpen && actions.length) {
-          const actionsTop = Math.min(...actions.map(element => element.getBoundingClientRect().top));
-          hud.style.setProperty("--bus-mobile-menu-bottom", `${Math.max(56, viewport.bottom - actionsTop + 10)}px`);
+          const visibleActions = actions.filter(visible);
+          const targetActions = visibleActions.length ? visibleActions : actions;
+          const actionsTop = Math.min(...targetActions.map(element => element.getBoundingClientRect().top));
+          hud.style.setProperty("--bus-mobile-menu-bottom", `${Math.max(52, Math.round(viewport.bottom - actionsTop + 8))}px`);
         } else {
           hud.style.removeProperty("--bus-mobile-menu-bottom");
         }
