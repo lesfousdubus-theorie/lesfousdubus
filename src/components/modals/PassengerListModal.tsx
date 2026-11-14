@@ -32,6 +32,7 @@ export function PassengerListModal({
   onLoadMore,
   onRetry,
   onPassengerClick,
+  onOpenMessages,
   onClose,
 }: {
   isOpen: boolean;
@@ -53,6 +54,7 @@ export function PassengerListModal({
   onLoadMore: () => void;
   onRetry: () => void;
   onPassengerClick: (passenger: PassengerManifestEntry) => void;
+  onOpenMessages: () => void;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
@@ -147,6 +149,9 @@ export function PassengerListModal({
           }}
           className="relative min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5"
         >
+          <button type="button" onClick={onOpenMessages} className="mb-4 flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#ffd23f]/60 bg-[#ffd23f] px-4 py-2 text-sm font-black text-[#07142b] transition hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+            Voir les messages <span aria-hidden="true">→</span>
+          </button>
           <div aria-label="Équipage permanent" className="mb-3 grid gap-2 sm:grid-cols-2">
             {BUS_CREW.map((member) => (
               <div key={member.name} className="flex min-h-16 items-center gap-3 rounded-2xl border border-[#ffd23f]/40 bg-[#0c1b3a] px-3.5 py-2.5">

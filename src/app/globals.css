@@ -571,3 +571,12 @@ body {
   z-index: 2;
   pointer-events: none;
 }
+
+/* Les mots du convoi flottent au-dessus du trajet, sans masquer leur lisibilité. */
+.messages-page { isolation: isolate; }
+.messages-page-shade { background: linear-gradient(135deg, rgba(3, 12, 31, .84), rgba(7, 20, 43, .68)); }
+.messages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 2.5rem 2rem; align-items: center; }
+.message-bubble { position: relative; padding: 1.5rem; border: 1px solid rgba(255, 210, 63, .45); border-radius: 1.25rem; background: rgba(7, 20, 43, .92); box-shadow: 0 12px 32px rgba(0, 0, 0, .3); animation: message-drift var(--drift-duration) ease-in-out var(--drift-delay) infinite alternate; }
+.message-quote { position: absolute; right: 1rem; top: -.6rem; font-family: Georgia, serif; font-size: 4rem; line-height: 1; color: rgba(255, 210, 63, .18); }
+@keyframes message-drift { from { transform: translate3d(calc(-1 * var(--drift-distance)), -7px, 0) rotate(var(--tilt)); } to { transform: translate3d(var(--drift-distance), 7px, 0) rotate(calc(-1 * var(--tilt))); } }
+@media (prefers-reduced-motion: reduce) { .message-bubble { animation: none; } }
