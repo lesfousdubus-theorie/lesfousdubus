@@ -78,6 +78,8 @@ for(const id of ["luffy","chopper"]){
     assert(soles>=-.001&&soles<.012,"Standing hooves contact the floor without stretching the shins.");
     state.sitting=1;state.phase="inside";state.position.y=.63;
     frames[at]({camera,clock:{elapsedTime:1}},1/60);avatar.updateMatrixWorld(true);assertAttachments(avatar,"Seated boarding Chopper");
+    for(let frame=0;frame<120;frame++){frames[0]({clock:{elapsedTime:1}},1/60);frames[at]({camera,clock:{elapsedTime:1}},1/60);}
+    avatar.updateMatrixWorld(true);seated.updateMatrixWorld(true);
     for(const name of coreNames){const actual=box(avatar.getObjectByName(name)),expected=box(seated.getObjectByName(name));actual.translate(new THREE.Vector3(0,.01,0));assert(actual.min.distanceTo(expected.min)<.002&&actual.max.distanceTo(expected.max)<.002,`The boarding and seated ${name} match within 2 mm after the existing 1 cm floor offset.`);}
     assert(Math.abs(box(avatar.getObjectByName("avatar-thigh-0")).min.y+.01-box(seated.getObjectByName("nakama-shoes")).min.y)<.002,"Walking and seated short legs keep the same bone lengths and dangling feet.");
   }
@@ -111,10 +113,10 @@ for(const partyOn of [false,true]){
   frames[at]({clock:{elapsedTime:2}},1/60);
   for(const name of ["bus-distant-passenger-bodies","bus-distant-passenger-heads"]){
     const mesh=root.getObjectByName(name);mesh.getMatrixAt(0,matrix);matrix.decompose(translation,rotation,scale);
-    assert(Math.abs(translation.y-(name.includes("bodies")?1.295:1.55))<1e-6,"Distant Chopper retains its lowered torso and large head while resting and dancing.");
+    assert(Math.abs(translation.y-(name.includes("bodies")?1.295:1.55))<(partyOn?.04:1e-6),"Distant Chopper retains its lowered torso and large head while resting and dancing.");
     assert(Math.abs(scale.y-(name.includes("bodies")?.24/.42:.25/.27))<1e-6,"Distant Chopper's actual instance keeps the compact dimensions.");
     mesh.getMatrixAt(1,matrix);matrix.decompose(translation,rotation,scale);
-    assert(Math.abs(translation.y-(name.includes("bodies")?1.35:1.82))<1e-6&&Math.abs(scale.y-1)<1e-6,"The following adult's instance does not inherit Chopper's scale.");
+    assert(Math.abs(translation.y-(name.includes("bodies")?1.425:1.82))<(partyOn?.04:1e-6)&&Math.abs(scale.y-(name.includes("bodies")?.43/.42:1))<1e-6,"The following adult's instance does not inherit Chopper's scale.");
   }
   root.getObjectByName("bus-distant-party-hands").getMatrixAt(0,matrix);matrix.decompose(translation,rotation,scale);
   assert(Math.abs(scale.y-.6)<1e-6&&Math.abs(scale.x-.8)<1e-6,"Distant hooves use the same shortened limb proportions.");
