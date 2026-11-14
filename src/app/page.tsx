@@ -85,7 +85,7 @@ export default function HomePage() {
               href={`https://www.youtube.com/watch?v=${YOUTUBE_ID}`}
               className="text-[#ffd23f] underline"
             >
-              LA THÉORIE ULTIME DE ONE PIECE : LE SIÈCLE OUBLIÉ EST LE PRÉSENT
+              La théorie One Piece qui explique tout. (Théorie des fous du bus)
             </a>
           </p>
         </section>

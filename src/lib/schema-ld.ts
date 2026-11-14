@@ -73,14 +73,14 @@ export const articleJsonLd = {
 export const videoJsonLd = {
   "@context": "https://schema.org",
   "@type": "VideoObject",
-  name: "LA THÉORIE ULTIME DE ONE PIECE : LE SIÈCLE OUBLIÉ EST LE PRÉSENT",
+  name: "La théorie One Piece qui explique tout. (Théorie des fous du bus)",
   description:
     "Explication et démonstration vidéo complète de la théorie des Fous du Bus : comment le Siècle Oublié est en réalité le présent de One Piece, pourquoi Roger est arrivé trop tôt de 25 ans et pourquoi Joy Boy est Luffy.",
   thumbnailUrl: [
     "https://img.youtube.com/vi/SgJ25zjMJyo/maxresdefault.jpg",
     `${SITE_URL}/og-image.jpg`,
   ],
-  uploadDate: "2024-01-01T12:00:00+01:00",
+  uploadDate: "2026-04-10",
   contentUrl: "https://www.youtube.com/watch?v=SgJ25zjMJyo",
   embedUrl: "https://www.youtube-nocookie.com/embed/SgJ25zjMJyo",
   publisher: {
