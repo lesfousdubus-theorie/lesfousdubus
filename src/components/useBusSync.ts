@@ -23,13 +23,14 @@ interface BusSyncOptions {
   registrationRetryDelayRef: RefObject<number>;
   setCurrentPassengerSeatIndex: Dispatch<SetStateAction<number | null>>;
   setRegistrationPending: Dispatch<SetStateAction<boolean>>;
+  restoreSavedProfile: (passenger: PassengerProfile | null) => void;
 }
 
 export function useBusSync({
   applyBusSnapshot, statsRetryToken, setStatsLoadError, phase, seatRow,
   profileRevision, setPassengerProfiles, seatCapacityRef, count, setCount, showToast,
   registrationPending, registrationRetryDelayRef, setCurrentPassengerSeatIndex,
-  setRegistrationPending,
+  setRegistrationPending, restoreSavedProfile,
 }: BusSyncOptions) {
   const countRef = useRef(count);
   useEffect(() => {
@@ -155,7 +156,7 @@ export function useBusSync({
       if (running || controller.signal.aborted || document.hidden) return;
       running = true;
       try {
-        const data = await fetchJson<BusApiState & { seatIndex: number | null }>("/api/bus-entries", {
+        const data = await fetchJson<BusApiState & { seatIndex: number | null; passenger: PassengerProfile | null }>("/api/bus-entries", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
@@ -164,6 +165,7 @@ export function useBusSync({
         });
         applyBusSnapshot(data);
         setCurrentPassengerSeatIndex(data.seatIndex);
+        restoreSavedProfile(data.passenger);
         registrationRetryDelayRef.current = 10_000;
         setRegistrationPending(false);
       } catch (error) {
@@ -193,6 +195,6 @@ export function useBusSync({
       document.removeEventListener("visibilitychange", resume);
       controller.abort();
     };
-  }, [applyBusSnapshot, registrationPending, registrationRetryDelayRef, setCurrentPassengerSeatIndex, setRegistrationPending, showToast]);
+  }, [applyBusSnapshot, registrationPending, registrationRetryDelayRef, restoreSavedProfile, setCurrentPassengerSeatIndex, setRegistrationPending, showToast]);
 
 }

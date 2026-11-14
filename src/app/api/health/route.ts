@@ -49,7 +49,7 @@ export async function GET() {
     ).first();
     if (!stats) throw new Error("bus_stats row missing");
     await database.prepare(
-      `SELECT visitor_id, display_name, comment, seat_index
+      `SELECT visitor_id, display_name, comment, seat_index, avatar_id
        FROM bus_entries LIMIT 1`,
     ).first();
     await database.prepare(
