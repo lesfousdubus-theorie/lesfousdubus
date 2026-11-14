@@ -17,6 +17,20 @@ body {
   display: none;
 }
 
+@keyframes bus-loading-wheel-turn {
+  to { transform: rotate(360deg); }
+}
+
+.bus-loading-wheel-spin {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: bus-loading-wheel-turn 3s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bus-loading-wheel-spin { animation: none; }
+}
+
 @keyframes hud-control-in-flow {
   from {
     opacity: 0;
