@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { THEORY_START_DATE, getElapsedCalendarTime } from "@/lib/theory-age";
+import { THEORY_FIRST_VIDEO_URL } from "@/lib/theory-video";
 import { useModalAccessibility } from "./useModalAccessibility";
 import { ModalCloseButton } from "./ModalCloseButton";
 
@@ -37,7 +38,18 @@ export function TheoryAgeModal({ isOpen, onClose }: { isOpen: boolean; onClose: 
         <header className="flex shrink-0 items-start justify-between gap-4 border-b border-white/10 px-4 py-3 sm:px-6 sm:py-5">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ffd23f]">Première mention de la théorie</p>
-            <h2 ref={titleRef} tabIndex={-1} id="theory-age-title" className="mt-1 text-xl font-black focus:outline-none sm:text-2xl">26 mai 2024 <span className="text-[#b9c7e8]">· Le Mont Corvo</span></h2>
+            <h2 ref={titleRef} tabIndex={-1} id="theory-age-title" className="mt-1 text-xl font-black focus:outline-none sm:text-2xl">
+              26 mai 2024 <span className="text-[#b9c7e8]">· </span>
+              <a
+                href={THEORY_FIRST_VIDEO_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Le Mont Corvo : voir la première vidéo de la théorie sur YouTube (nouvel onglet)"
+                className="rounded-sm text-[#b9c7e8] underline decoration-[#b9c7e8]/70 underline-offset-4 transition-colors hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f]"
+              >
+                Le Mont Corvo
+              </a>
+            </h2>
           </div>
           <ModalCloseButton onClick={onClose} />
         </header>
