@@ -17,6 +17,7 @@ const passengers = read("src/components/bus/Passengers.tsx");
 const world = read("src/components/bus/World.tsx");
 const weather = read("src/components/bus/Weather.tsx");
 const youtubeLoader = read("src/lib/youtube-player.ts");
+const textures = read("src/lib/textures.ts");
 
 assert.equal((busTv.match(/new YT\.Player/g) ?? []).length, 1, "The bus must have exactly one YouTube player.");
 assert.match(bus, /<BusTvPlayer[\s\S]*pos=\{activeTvPosition\}/, "The single player must follow the active TV.");
@@ -66,6 +67,9 @@ assert.match(experience, /isValidVisitorId\(storedVisitorId\)/, "Corrupted store
 assert.match(experience, /previousBodyOverflow[\s\S]*previousHtmlOverflow/, "Body and document overflow must restore independently.");
 assert.doesNotMatch(experience, /AbortSignal\.any/, "Fetch cancellation must not depend on AbortSignal.any browser support.");
 assert.match(experience, /externalSignal\?\.addEventListener\("abort"/, "External aborts must still cancel timed requests.");
+assert.match(experience, /MAX_DEBUG_PASSENGERS/, "Public debug passenger parameters must be bounded.");
+assert.match(experience, /setSeatRow\(\(row\) => Math\.max/, "Debug row selection must clamp when capacity changes.");
+assert.doesNotMatch(experience, /useState\(getTheoryAgeInDays\)/, "Theory age must not stay frozen across midnight.");
 
 
 assert.match(passengers, /passengerCount <= BASE_ROWS \* 4/, "Row capacity must match the four logical passenger slots rendered per row.");
@@ -75,4 +79,6 @@ assert.match(world, /const frameDt = Math\.min\(dt, 0\.1\)/, "World simulation m
 assert.match(weather, /const frameDt = Math\.min\(dt, 0\.1\)/, "Weather simulation must clamp long resume frames.");
 assert.match(youtubeLoader, /clearTimeout\(timeoutTimer\)/, "YouTube API timeout must be cleared after settling.");
 assert.match(youtubeLoader, /script\.remove\(\)/, "A failed YouTube API script must be removable so a later attempt can retry.");
+assert.match(textures, /makeTvOffTexture/, "The TV texture helper must only model the actual off state.");
+assert.doesNotMatch(textures, /makeProceduralStrawTexture|makeTvScreenTexture/, "Obsolete procedural straw and fake-on TV texture branches must stay removed.");
 console.log("Static regression checks passed.");

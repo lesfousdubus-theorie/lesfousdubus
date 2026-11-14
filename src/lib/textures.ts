@@ -203,47 +203,8 @@ export function makeDashboardTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-/** Crée une texture de paille tressée procédurale de secours haute fidélité. */
-export function makeProceduralStrawTexture(): THREE.CanvasTexture {
-  const w = 512;
-  const h = 512;
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const c = canvas.getContext("2d")!;
-
-  // Fond paille dorée
-  c.fillStyle = "#e5ad38";
-  c.fillRect(0, 0, w, h);
-
-  // Tressage
-  for (let y = 0; y < h; y += 16) {
-    const row = Math.floor(y / 16);
-    const xOff = row % 2 === 0 ? 0 : 12;
-    for (let x = -16; x < w + 16; x += 24) {
-      const grad = c.createLinearGradient(x + xOff, y, x + xOff + 22, y + 14);
-      grad.addColorStop(0, "#fad57a");
-      grad.addColorStop(0.5, "#d79b26");
-      grad.addColorStop(1, "#9e6912");
-      c.fillStyle = grad;
-      c.fillRect(x + xOff, y, 22, 14);
-
-      // Fine rainure
-      c.strokeStyle = "rgba(100, 60, 10, 0.4)";
-      c.lineWidth = 1;
-      c.strokeRect(x + xOff, y, 22, 14);
-    }
-  }
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(6, 4);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-
-/** Texture pour l'écran TV (éteint ou allumé en mode émission One Piece) */
-export function makeTvScreenTexture(isOn = false): THREE.CanvasTexture {
+/** Texture sombre de la TV lorsqu'elle est éteinte. */
+export function makeTvOffTexture(): THREE.CanvasTexture {
   const w = 720;
   const h = 405;
   const canvas = document.createElement("canvas");
@@ -251,94 +212,19 @@ export function makeTvScreenTexture(isOn = false): THREE.CanvasTexture {
   canvas.height = h;
   const c = canvas.getContext("2d")!;
 
-  if (!isOn) {
-    // Écran éteint : dalle noire et élégante de verre sombre éteint, sans miniature ni texte
-    const grad = c.createLinearGradient(0, 0, w, h);
-    grad.addColorStop(0, "#05070c");
-    grad.addColorStop(0.5, "#090c15");
-    grad.addColorStop(1, "#030408");
-    c.fillStyle = grad;
-    c.fillRect(0, 0, w, h);
+  const grad = c.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, "#05070c");
+  grad.addColorStop(0.5, "#090c15");
+  grad.addColorStop(1, "#030408");
+  c.fillStyle = grad;
+  c.fillRect(0, 0, w, h);
 
-    // Reflet diagonal très subtil typique d'une dalle d'écran éteinte
-    const refGrad = c.createLinearGradient(0, 0, w, h);
-    refGrad.addColorStop(0, "rgba(255,255,255,0.035)");
-    refGrad.addColorStop(0.35, "rgba(255,255,255,0.01)");
-    refGrad.addColorStop(1, "rgba(0,0,0,0.5)");
-    c.fillStyle = refGrad;
-    c.fillRect(0, 0, w, h);
-  } else {
-    // Écran allumé : diffusion animée de la théorie
-    const grad = c.createLinearGradient(0, 0, w, h);
-    grad.addColorStop(0, "#0c1d63");
-    grad.addColorStop(0.5, "#15359e");
-    grad.addColorStop(1, "#091238");
-    c.fillStyle = grad;
-    c.fillRect(0, 0, w, h);
-
-    // Cadre vidéo avec lueur
-    c.strokeStyle = "#ffd23f";
-    c.lineWidth = 4;
-    c.strokeRect(12, 12, w - 24, h - 24);
-
-    // Barre supérieure : "EN DIRECT"
-    c.fillStyle = "rgba(0,0,0,0.6)";
-    c.fillRect(20, 20, w - 40, 38);
-    c.fillStyle = "#ef4444";
-    c.beginPath();
-    c.arc(42, 39, 7, 0, Math.PI * 2);
-    c.fill();
-    c.fillStyle = "#ffffff";
-    c.font = "bold 16px Arial, sans-serif";
-    c.textAlign = "left";
-    c.fillText("EN DIRECT · THÉORIE ONE PIECE", 58, 44);
-
-    c.textAlign = "right";
-    c.fillStyle = "#ffd23f";
-    c.font = "bold 16px 'Courier New', monospace";
-    c.fillText("CANAL MUGIWARA", w - 35, 44);
-
-    // Grand titre central
-    c.textAlign = "center";
-    c.fillStyle = "#ffd23f";
-    c.font = "bold 44px Impact, 'Arial Black', sans-serif";
-    c.shadowColor = "rgba(0,0,0,0.9)";
-    c.shadowBlur = 12;
-    c.fillText("LA THÉORIE DES FOUS DU BUS", w / 2, h / 2 - 25);
-
-    c.fillStyle = "#ffffff";
-    c.font = "bold 22px Arial, sans-serif";
-    c.fillText("Voyage jusqu'à Laugh Tale", w / 2, h / 2 + 15);
-
-    // Égaliseur audio animé factice
-    const barWidth = 8;
-    const barSpacing = 4;
-    const count = 36;
-    const startX = (w - (count * (barWidth + barSpacing))) / 2;
-    for (let i = 0; i < count; i++) {
-      const bh = 10 + Math.sin(i * 0.4 + 1.2) * 22 + Math.cos(i * 0.7) * 14;
-      c.fillStyle = i % 3 === 0 ? "#ffd23f" : "#38bdf8";
-      c.fillRect(startX + i * (barWidth + barSpacing), h / 2 + 80 - bh, barWidth, bh);
-    }
-
-    // Bouton de lecture / plein écran
-    c.fillStyle = "rgba(0,0,0,0.7)";
-    c.beginPath();
-    c.roundRect(w / 2 - 120, h - 68, 240, 36, 18);
-    c.fill();
-    c.strokeStyle = "#ffd23f";
-    c.lineWidth = 2;
-    c.stroke();
-    c.fillStyle = "#ffffff";
-    c.font = "bold 15px Arial, sans-serif";
-    c.fillText("▶ Clique pour Plein Écran", w / 2, h - 45);
-
-    // Scanlines rétro TV subtiles
-    c.fillStyle = "rgba(0, 0, 0, 0.12)";
-    for (let y = 0; y < h; y += 4) {
-      c.fillRect(0, y, w, 2);
-    }
-  }
+  const reflection = c.createLinearGradient(0, 0, w, h);
+  reflection.addColorStop(0, "rgba(255,255,255,0.035)");
+  reflection.addColorStop(0.35, "rgba(255,255,255,0.01)");
+  reflection.addColorStop(1, "rgba(0,0,0,0.5)");
+  c.fillStyle = reflection;
+  c.fillRect(0, 0, w, h);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
