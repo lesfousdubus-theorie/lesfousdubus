@@ -292,6 +292,23 @@ try {
     `document.querySelector("[data-phase]")?.getAttribute("data-phase") === "outside"`,
     "Phone bus UI",
   );
+  const startingSpeed = await evaluate(interactionSend,
+    `document.querySelector('.bus-speed-value')?.textContent?.trim()`,
+  );
+  await evaluate(interactionSend,
+    `document.querySelector('button[aria-label="Accélérer le bus"]')?.click()`,
+  );
+  await waitForPageCondition(interactionSend,
+    `document.querySelector('.bus-speed-value')?.textContent?.trim() !== ${JSON.stringify(startingSpeed)}`,
+    "Bus acceleration control",
+  );
+  await evaluate(interactionSend,
+    `document.querySelector('button[aria-label="Ralentir le bus"]')?.click()`,
+  );
+  await waitForPageCondition(interactionSend,
+    `document.querySelector('.bus-speed-value')?.textContent?.trim() === ${JSON.stringify(startingSpeed)}`,
+    "Bus deceleration control",
+  );
   await evaluate(interactionSend, `
     (() => {
       const button = [...document.querySelectorAll("button")].find((el) => el.textContent?.includes("Entrer dans le bus"));

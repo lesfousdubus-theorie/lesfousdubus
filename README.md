@@ -22,7 +22,7 @@ Cliquez sur le gros bouton jaune **« Entrer dans le bus »** pour vous asseoir 
 
 ### 📺 2. Regarder la vidéo sur la télé du bus
 - Avant la première montée, le lecteur est préchargé mais reste en pause.
-- **Dès que vous montez dans le bus**, la télévision suspendue au plafond s'allume et lance automatiquement la vidéo de la théorie avec le son à bord.
+- **Dès que vous montez dans le bus**, la télévision suspendue au plafond s'allume et tente de lancer la vidéo avec le son. Si le navigateur bloque la lecture automatique, le bouton **« Lancer la vidéo »** permet de la démarrer.
 - Vous pouvez cliquer sur l'écran pour mettre en pause ou passer en **Plein écran** à tout moment. Après être redescendu, la TV peut continuer à jouer à volume réduit et reste activable/désactivable depuis l'extérieur.
 
 ### ⚡ 3. Accélérer et ralentir le bus (Mode Boost !)
@@ -72,7 +72,7 @@ Cliquez sur le bouton **« 📜 La Théorie »** en haut à gauche pour ouvrir l
 
 ## 🛠️ Pour les curieux (lancer le site sur sa machine)
 
-Si vous souhaitez faire tourner le site en local sur votre ordinateur :
+Si vous souhaitez faire tourner le site en local sur votre ordinateur, utilisez Node.js 22 :
 
 ```bash
 # 1. Installer exactement les versions du dépôt
@@ -93,12 +93,29 @@ Avant de proposer une modification, vérifiez-la localement :
 npm run typecheck
 npm run lint
 npm test
-npm run build:next
+npm run build:next -- --webpack
 ```
 
 `npm test` utilise une base D1 temporaire pour ses scénarios de places et ne
-modifie pas les passagers de la base locale. Le test visuel `npm run test:ui`
-nécessite que `npm run dev` tourne dans un autre terminal.
+modifie pas les passagers de la base locale. Le test d'interface `npm run test:ui`
+nécessite que `npm run dev` ou `npm run start` tourne dans un autre terminal ;
+il vérifie notamment les tailles et le centrage des commandes sur téléphone et
+ordinateur. La CI GitHub exécute automatiquement les quatre commandes ci-dessus
+sur les propositions de changement et les ajouts à `main`.
+
+## Organisation du code
+
+| Dossier | Responsabilité |
+| --- | --- |
+| `src/app/` | Pages, API, métadonnées et styles globaux Next.js. |
+| `src/components/` | Orchestration de l'expérience et commandes de l'interface. |
+| `src/components/bus/` | Scène 3D : véhicule, passagers, caméra, paysages, météo et télévision. `BusFront.tsx` contient la face avant fixe. |
+| `src/components/modals/`, `src/components/theory/` | Fenêtres passagers et présentation de la théorie. |
+| `src/lib/` | Calculs et ressources partagés ; `client/` et `server/` séparent les accès spécifiques. |
+| `src/types/`, `migrations/`, `scripts/` | Types partagés, schéma D1 et contrôles locaux. |
+
+La revue détaillée des fichiers, des noms et des optimisations à mesurer se
+trouve dans [l'audit technique](docs/audit-technique-2026-09-28.md).
 
 ## Déploiement Cloudflare
 
