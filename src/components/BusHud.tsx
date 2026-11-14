@@ -141,29 +141,29 @@ export function BusHud({
             LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
           </p>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-3">
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:mt-3 sm:gap-2">
             <button
               type="button"
               onClick={() => setShowTheoryModal(true)}
-              className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/75 px-4 text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer"
+              className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-black/75 px-3 text-xs font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-white hover:bg-[#ffd23f] hover:text-[#0d2190] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 sm:px-4 cursor-pointer"
               title="Découvrir la théorie des Fous du Bus"
             >
               <span>📜</span>
               <span>La Théorie</span>
             </button>
-            {phase === "inside" && <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label="Changer de personnage"
-              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-4 text-xs font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60 cursor-pointer">
+            <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label={phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}
+              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-3 text-xs font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60 sm:px-4 cursor-pointer">
               <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg>
-              <span className="lg:hidden">Personnage</span><span className="hidden lg:inline">Changer de personnage</span>
-            </button>}
+              <span className="lg:hidden">Personnage</span><span className="hidden lg:inline">{phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}</span>
+            </button>
             {hasSavedPlace && <button type="button" onClick={openPlaceModal} disabled={busy} aria-haspopup="dialog"
               className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-4 text-xs font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60">
               Ma place
             </button>}
-            <button ref={immersiveButtonRef} type="button" onClick={() => { setShowVolumePopup(false); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif"
-              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-4 text-xs font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60">
+            <button ref={immersiveButtonRef} type="button" onClick={() => { setShowVolumePopup(false); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif" title="Mode immersif"
+              className="pointer-events-auto inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-3 text-xs font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60 sm:px-4">
               <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" /></svg>
-              Mode immersif
+              <span className="hidden sm:inline">Mode immersif</span>
             </button>
           </div>
         </div>

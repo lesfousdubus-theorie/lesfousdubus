@@ -216,8 +216,8 @@ export default function BusExperience() {
     return true;
   }, [updateSeatCapacity]);
 
-  const profile = usePassengerProfile({ applyBusSnapshot, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow, showToast });
-  const { showJoinModal, openProfileModal, restoreSavedProfile, clearProfile } = profile;
+  const profile = usePassengerProfile({ hasRegisteredPlace: currentPassengerSeatIndex !== null, applyBusSnapshot, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow, showToast });
+  const { showJoinModal, openProfileModal, restoreSavedProfile, clearProfile, pendingAvatarId } = profile;
   const directory = usePassengerDirectory(applyBusSnapshot);
   const { selectedPassenger, showPassengerList, passengerManifestButtonRef, openPassengerManifest, selectPassenger, clearDirectory } = directory;
 
@@ -258,6 +258,7 @@ export default function BusExperience() {
     setCurrentPassengerSeatIndex,
     setRegistrationPending,
     restoreSavedProfile,
+    pendingAvatarId,
   });
 
   // Empêche tout scroll de la page
@@ -296,8 +297,9 @@ export default function BusExperience() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        body: JSON.stringify({ visitorId }),
+        body: JSON.stringify({ visitorId, ...(pendingAvatarId ? { avatarId: pendingAvatarId } : {}) }),
       });
+      if (pendingAvatarId && d.passenger?.avatarId !== pendingAvatarId) throw new ApiError("Le personnage choisi n’a pas pu être enregistré.", 502);
       const prevRows = getBusPhysicalRows(seatCapacityRef.current);
       const nextRows = getBusPhysicalRows(d.seatCapacity);
 
@@ -341,7 +343,7 @@ export default function BusExperience() {
     } finally {
       setJoining(false);
     }
-  }, [applyBusSnapshot, dismissToast, phase, joining, sceneAvailable, hasEntered, showToast, restoreSavedProfile]);
+  }, [applyBusSnapshot, dismissToast, phase, joining, sceneAvailable, hasEntered, showToast, restoreSavedProfile, pendingAvatarId]);
 
   const leaveBusPermanently = useCallback(async () => {
     try {
@@ -546,7 +548,7 @@ export default function BusExperience() {
       {showPlaceModal && <ManagePlaceModal inside={phase === "inside"} onClose={() => setShowPlaceModal(false)}
         onExit={() => { setShowPlaceModal(false); exitBus(); }} onDelete={leaveBusPermanently} />}
       <PassengerDialogs profile={profile} directory={directory} count={count} />
-      {profile.showAvatarModal && <AvatarSelectionModal avatarId={profile.savedAvatarId} seatIndex={currentPassengerSeatIndex}
+      {profile.showAvatarModal && <AvatarSelectionModal avatarId={profile.savedAvatarId} seatIndex={currentPassengerSeatIndex} hasRegisteredPlace={currentPassengerSeatIndex !== null}
         saving={profile.profileSaving} error={profile.avatarError} onClose={profile.closeAvatarModal}
         onChoose={avatarId => void profile.submitAvatar(avatarId)} />}
       <TheoryAgeModal isOpen={showTheoryAge} onClose={() => setShowTheoryAge(false)} />
