@@ -29,8 +29,10 @@ assert.doesNotMatch(bus, /tvIframeRefs|primaryIframeRef|sendYoutubeCommand/, "Le
 assert.match(busTv, /cc_load_policy:\s*0/, "The bus TV must request captions off by default.");
 assert.match(busTv, /playVideo\(\);[\s\S]*setTimeout/, "The player must warm up on initial load.");
 assert.match(busTv, /desiredRef\.current\.hasEntered[\s\S]*applyDesiredPlayback\(\);[\s\S]*return;/, "A late YouTube ready event must skip warm-up after the user has already entered.");
-assert.match(busTv, /data-tv-wheel-capture[\s\S]*bus-zoom/, "Mouse-wheel zoom must keep working over the TV surface.");
-assert.match(busTv, /requestFullscreen/, "The TV overlay must preserve fullscreen interaction.");
+assert.match(busTv, /data-tv-wheel-capture[\s\S]*bus-zoom/, "A dedicated TV zoom control must keep mouse-wheel zoom available.");
+assert.match(busTv, /bus-zoom-reset/, "The TV zoom control must allow recentering.");
+assert.doesNotMatch(busTv, /inset:\s*"0 0 46px 0"/, "The TV must not have a full-surface interception layer over YouTube controls.");
+assert.doesNotMatch(busTv, /bus-tv-toggle-playback/, "Playback must be handled by YouTube's native controls instead of an overlay.");
 assert.doesNotMatch(busTv, /bus-video-state|bus-video-seek/, "Obsolete synchronized-video state must stay removed.");
 assert.match(experience, /bus-tv-user-play/, "Entering the bus must trigger playback from the user gesture.");
 assert.match(experience, /hasEntered && phase === "outside"/, "The exterior TV toggle must remain available after the first ride.");
