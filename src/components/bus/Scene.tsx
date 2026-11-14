@@ -42,6 +42,7 @@ interface SceneProps {
   seatCapacity?: number;
   vacantSeatRanges?: Array<[number, number, number]>;
   currentSeatRow?: number;
+  currentSeatColumn?: number | null;
   isMutedForFullscreen?: boolean;
   uiPaused?: boolean;
   hasEntered?: boolean;
@@ -292,6 +293,7 @@ export default function Scene({
   seatCapacity = passengerCount,
   vacantSeatRanges = [],
   currentSeatRow = 3,
+  currentSeatColumn = null,
   isMutedForFullscreen = false,
   uiPaused = false,
   hasEntered = false,
@@ -326,7 +328,7 @@ export default function Scene({
 
   // Position Z du regard du passager (rangée choisie)
   const clampedRow = Math.max(0, Math.min(numRows - 1, currentSeatRow));
-  const avatarSeat = getAvatarSeat(seatCapacity, clampedRow, currentPassengerSeatIndex);
+  const avatarSeat = getAvatarSeat(seatCapacity, clampedRow, currentPassengerSeatIndex, currentSeatColumn);
   const currentSeatZ = avatarSeat.seat.z + 0.03;
   const currentSeatX = avatarSeat.seat.x;
   const tvPositions = useMemo(() => getTvPositions(numRows, TV_POSITION), [numRows]);
@@ -382,6 +384,7 @@ export default function Scene({
           seatCapacity={seatCapacity}
           vacantSeatRanges={vacantSeatRanges}
           reservedRow={clampedRow}
+          reservedColumn={currentSeatColumn}
           isMutedForFullscreen={isMutedForFullscreen}
           hasEntered={hasEntered}
           boardingPending={boardingPending}

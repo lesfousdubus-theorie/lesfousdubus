@@ -8,7 +8,6 @@ export const COMPACT_HUD_MEDIA_QUERY = "(max-width: 639px), (orientation: landsc
 export function useHudLayout(
   phase: Phase,
   hidden: boolean,
-  showVolumePopup: boolean,
   sceneAvailable: boolean,
   compactHud = false,
   mobileMenuOpen = false,
@@ -24,7 +23,6 @@ export function useHudLayout(
     if (!hud) return;
     const headers = [...hud.querySelectorAll<HTMLElement>(".bus-title-panel, .bus-top-stats, .bus-title-actions, .bus-row-nav")];
     const controls = [...hud.querySelectorAll<HTMLElement>(".bus-exterior-controls, .bus-interior-controls, .bus-day-night, .bus-speed, .bus-mobile-menu")];
-    const popup = hud.querySelector<HTMLElement>(".bus-volume-popup");
     const visible = (element: HTMLElement) => {
       if (element.closest('[aria-hidden="true"]')) return false;
       const style = getComputedStyle(element);
@@ -96,9 +94,6 @@ export function useHudLayout(
         hud.dataset.bottomLayout = "compact";
         hud.style.removeProperty("--bus-utilities-bottom");
         hud.style.removeProperty("--bus-actions-bottom");
-        hud.style.removeProperty("--bus-utilities-width");
-        hud.style.removeProperty("--bus-speed-width");
-        hud.style.removeProperty("--bus-volume-bottom");
         if (sceneAvailable && mobileMenuOpen && actions.length) {
           const visibleActions = actions.filter(visible);
           const targetActions = visibleActions.length ? visibleActions : actions;
@@ -118,21 +113,16 @@ export function useHudLayout(
           const available = s.right - u.left;
           const gap = 12;
           const bottomInset = viewport.bottom - s.bottom;
-          const fitAll = u.width + a.width + s.width + gap * 2 <= available;
+          const centerX = viewport.left + viewport.width / 2;
+          const centeredLeft = centerX - a.width / 2;
+          const centeredRight = centerX + a.width / 2;
+          const fitAll = a.width <= available && centeredLeft >= u.right + gap && centeredRight <= s.left - gap;
           const fitUtilities = u.width + s.width + gap <= available;
           const utilitiesBottom = bottomInset + (fitUtilities ? 0 : s.height + gap);
           const actionsBottom = fitAll ? bottomInset : utilitiesBottom + Math.max(u.height, s.height) + gap;
           hud.dataset.bottomLayout = fitAll ? "inline" : fitUtilities ? "split" : "stacked";
           hud.style.setProperty("--bus-utilities-bottom", `${utilitiesBottom}px`);
           hud.style.setProperty("--bus-actions-bottom", `${actionsBottom}px`);
-          hud.style.setProperty("--bus-utilities-width", `${u.width}px`);
-          hud.style.setProperty("--bus-speed-width", `${s.width}px`);
-        }
-        const volumeButton = hud.querySelector<HTMLElement>(".bus-volume-toggle");
-        if (actions.length && volumeButton && visible(volumeButton)) {
-          const actionsTop = Math.min(...actions.map(element => element.getBoundingClientRect().top));
-          const offset = volumeButton.getBoundingClientRect().bottom - actionsTop + 12;
-          hud.style.setProperty("--bus-volume-bottom", `${Math.max(56, offset)}px`);
         }
       }
       const leftInset = Math.max(12, title?.getBoundingClientRect().left ?? 0);
@@ -144,25 +134,15 @@ export function useHudLayout(
         width = Math.min(width, row.getBoundingClientRect().left - leftInset - 12);
         left = leftInset;
       }
-      // On short screens the volume and notification can share the free space side by side.
-      if (compactLandscape && popup && visible(popup)) {
-        const p = popup.getBoundingClientRect();
-        const freeRight = viewport.width - p.right - rightInset - 12;
-        const freeLeft = p.left - leftInset - 12;
-        if (Math.max(freeRight, freeLeft) >= 200) {
-          width = Math.min(448, Math.max(freeRight, freeLeft));
-          left = freeRight >= freeLeft ? p.right + 12 : leftInset;
-        }
-      }
-      const headerBottoms = headers.filter(visible).map(element => element.getBoundingClientRect())
-        .filter(rect => rect.right > left && rect.left < left + width).map(rect => rect.bottom);
-      const top = Math.max(0, ...headerBottoms) + 12;
       const restoreButton = immersive ? hud.parentElement?.querySelector<HTMLElement>(".bus-immersive-restore") : null;
-      const bottomObstacles = [
-        ...controls.filter(visible),
+      const topObstacles = [
+        ...headers.filter(visible),
         ...(restoreButton && visible(restoreButton) ? [restoreButton] : []),
       ];
-      const bottom = Math.min(viewport.bottom, ...bottomObstacles.map(element => element.getBoundingClientRect().top)) - 12;
+      const headerBottoms = topObstacles.map(element => element.getBoundingClientRect())
+        .filter(rect => rect.right > left && rect.left < left + width).map(rect => rect.bottom);
+      const top = Math.max(0, ...headerBottoms) + 12;
+      const bottom = Math.min(viewport.bottom, ...controls.filter(visible).map(element => element.getBoundingClientRect().top)) - 12;
       const toastVars = {
         "--bus-toast-left": `${left}px`,
         "--bus-toast-width": `${width}px`,
@@ -185,7 +165,7 @@ export function useHudLayout(
     };
     const restoreButton = immersive ? hud.parentElement?.querySelector<HTMLElement>(".bus-immersive-restore") : null;
     const observer = new ResizeObserver(schedule);
-    [hud, ...headers, ...controls, ...(popup ? [popup] : []), ...(restoreButton ? [restoreButton] : [])].forEach(element => observer.observe(element));
+    [hud, ...headers, ...controls, ...(restoreButton ? [restoreButton] : [])].forEach(element => observer.observe(element));
     window.addEventListener("resize", measure);
     measureRef.current = measure;
     schedule();
@@ -195,7 +175,7 @@ export function useHudLayout(
       cancelAnimationFrame(frame);
       measureRef.current = null;
     };
-  }, [phase, hidden, showVolumePopup, sceneAvailable, compactHud, mobileMenuOpen, immersive]);
+  }, [phase, hidden, sceneAvailable, compactHud, mobileMenuOpen, immersive]);
 
   // Labels such as Auto/Manuel and the music badge can change the available space.
   // Arrange them in the same React commit, before the updated controls are painted.

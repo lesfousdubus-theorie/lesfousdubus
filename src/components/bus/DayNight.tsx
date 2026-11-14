@@ -49,11 +49,15 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
   const starGeo = useMemo(() => {
     const n = lowPower ? 700 : 1800;
     const pos = new Float32Array(n * 3);
+    const fractHash = (seed: number) => {
+      const x = Math.sin(seed) * 43758.5453123;
+      return x - Math.floor(x);
+    };
     for (let i = 0; i < n; i++) {
-      const u = Math.abs(Math.sin(i * 12.9898 + 78.233)) % 1;
-      const v = Math.abs(Math.sin(i * 39.346 + 11.135)) % 1;
+      const u = fractHash(i * 12.9898 + 78.233);
+      const v = fractHash(i * 39.346 + 11.135);
       const theta = u * Math.PI * 2;
-      const phi = Math.acos(1 - v); // hémisphère supérieur
+      const phi = Math.acos(1 - v * 0.96); // hémisphère supérieur uniforme
       const r = 900;
       pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
       pos[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 20;

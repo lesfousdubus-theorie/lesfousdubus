@@ -168,9 +168,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
 
   useFrame((state, dt) => {
     const frameDt = Math.min(dt, phase==="entering"||phase==="exiting"?0.25:0.1);
-    const mult = worldRef.current.sceneryPaused ? 0 : (worldRef.current?.speedMultiplier ?? 1.0)*(worldRef.current.motionFactor??1);
-    // Cette préférence arrête seulement le défilement ; le contrôleur
-    // d'embarquement et les lecteurs gardent leur propre horloge.
+    const mult = (worldRef.current?.speedMultiplier ?? 1.0) * (worldRef.current.motionFactor ?? 1);
     const scroll = (worldRef.current?.scroll ?? 0) + frameDt * WORLD_SPEED * mult;
     if (worldRef.current) worldRef.current.scroll = scroll;
 

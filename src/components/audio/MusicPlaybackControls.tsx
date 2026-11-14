@@ -211,7 +211,7 @@ export default function MusicPlaybackControls({
         onPointerCancel={finishSeekDrag}
         onKeyUp={settleDraft}
         onBlur={finishSeekDrag}
-        className="mt-1 h-11 w-full cursor-pointer rounded-lg accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-wait disabled:opacity-50" />
+        className="pointer-events-auto mt-1 h-11 w-full cursor-pointer touch-pan-x rounded-lg accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-wait disabled:opacity-50" />
       <div className="-mt-1 flex justify-between text-xs font-semibold tabular-nums text-[#b6c7eb]" aria-hidden="true">
         <span>{formatTime(elapsed)}</span><span>{playback.duration ? formatTime(playback.duration) : "—:—"}</span>
       </div>
@@ -229,7 +229,7 @@ export default function MusicPlaybackControls({
             onChange={event => onVolumeChange(Number(event.target.value))}
             aria-label="Volume de la musique"
             aria-valuetext={`${resolvedVolume}%`}
-            className="h-10 min-w-0 flex-1 cursor-pointer rounded-lg accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+            className="pointer-events-auto h-10 min-w-0 flex-1 cursor-pointer touch-pan-x rounded-lg accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
           />
           <span className="w-9 shrink-0 text-right text-xs font-semibold tabular-nums text-[#b6c7eb]" aria-hidden="true">
             {resolvedVolume}%
@@ -239,14 +239,14 @@ export default function MusicPlaybackControls({
     </div>
   ) : null;
 
-  return <div ref={attachRoot} className={showTrigger ? "bus-music-playback relative flex shrink-0 items-center" : "contents"}>
+  return <div ref={attachRoot} className={showTrigger ? "bus-music-playback pointer-events-auto relative flex shrink-0 items-center" : "contents"}>
     {showTrigger && <button ref={triggerRef} type="button"
       aria-label={`Détails de la musique : ${playback.title}. ${status}`}
       aria-expanded={open} aria-controls={id} onClick={() => setOpen(value => !value)}
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
       title={`${playback.title} · ${status} · afficher la progression`}
-      className={`bus-glass flex h-11 w-11 items-center justify-center gap-2 rounded-full border shadow-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] cursor-pointer ${compact ? "bus-icon-button" : "lg:w-[170px] lg:justify-start lg:px-3"} ${
+      className={`bus-glass pointer-events-auto relative z-10 flex h-11 w-11 items-center justify-center gap-2 rounded-full border shadow-lg touch-manipulation transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer ${compact ? "bus-icon-button" : "lg:w-[170px] lg:justify-start lg:px-3"} ${
         open
           ? "border-[#ffd23f] bg-[#1636c9] text-white shadow-[0_0_15px_rgba(255,210,63,0.35)] hover:bg-[#1d44e6]"
           : "border-white/35 bg-[#07142b]/95 text-white hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f]"
