@@ -88,6 +88,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" className="h-full overflow-hidden">
       <head>
+        <link rel="preload" href="/images/luffy-jolly-roger.png" as="image" fetchPriority="high" />
         <link rel="preload" href="https://www.youtube.com/iframe_api" as="script" />
         <link rel="preconnect" href="https://www.youtube.com" />
         <link rel="preconnect" href="https://www.youtube-nocookie.com" />
