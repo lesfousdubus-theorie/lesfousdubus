@@ -44,17 +44,13 @@ export async function GET() {
     // Exercise every table and column required by the public API. A generic
     // SELECT 1 would stay green when a migration is missing.
     const stats = await database.prepare(
-      `SELECT passenger_count, seat_capacity, profile_revision
+      `SELECT passenger_count, seat_capacity, profile_revision, last_entry_number
        FROM bus_stats WHERE id = 1`,
     ).first();
     if (!stats) throw new Error("bus_stats row missing");
     await database.prepare(
-      `SELECT visitor_id, display_name, comment, seat_index, avatar_id
+      `SELECT visitor_id, display_name, comment, seat_index, entry_number, avatar_id
        FROM bus_entries LIMIT 1`,
-    ).first();
-    await database.prepare(
-      `SELECT start_index, end_index
-       FROM bus_vacant_seat_ranges LIMIT 1`,
     ).first();
     await database.prepare(
       `SELECT rate_key, bucket, attempts, expires_at

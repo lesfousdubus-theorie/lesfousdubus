@@ -31,48 +31,44 @@ export interface BusStatsRow {
   count: number;
   seat_capacity: number;
   profile_revision: number;
-  vacant_start_index: number | null;
-  vacant_end_index: number | null;
-  vacant_before: number | null;
 }
 
 export async function readBusStats(database: CloudflareD1Database) {
-  const rows = await database.prepare(
-    `SELECT stats.passenger_count AS count,
-            stats.seat_capacity,
-            stats.profile_revision,
-            vacant.start_index AS vacant_start_index,
-            vacant.end_index AS vacant_end_index,
-            COALESCE(SUM(vacant.end_index - vacant.start_index + 1) OVER (
-              ORDER BY vacant.start_index
-              ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
-            ), 0) AS vacant_before
-     FROM bus_stats AS stats
-     LEFT JOIN bus_vacant_seat_ranges AS vacant
-       ON vacant.start_index < stats.seat_capacity
-     WHERE stats.id = 1
-     ORDER BY vacant.start_index ASC`,
-  ).all<BusStatsRow>();
-  const row = rows.results[0];
+  const row = await database.prepare(
+    `SELECT passenger_count AS count,
+            seat_capacity,
+            profile_revision
+     FROM bus_stats
+     WHERE id = 1`,
+  ).first<BusStatsRow>();
   return {
     count: Number(row?.count ?? 0),
     seatCapacity: Number(row?.seat_capacity ?? 0),
     profileRevision: Number(row?.profile_revision ?? 0),
-    vacantSeatRanges: rows.results.flatMap(({ vacant_start_index, vacant_end_index, vacant_before }) =>
-      vacant_start_index === null || vacant_end_index === null
-        ? []
-        : [[Number(vacant_start_index), Number(vacant_end_index), Number(vacant_before ?? 0)] as [number, number, number]]),
+    vacantSeatRanges: [] as Array<[number, number, number]>,
   };
 }
 
-export interface PassengerRow { seat_index: number; display_name: string | null; comment: string | null; avatar_id?: string | null }
-export interface PassengerManifestRow { seat_index: number; display_name: string | null; has_comment: number }
+export interface PassengerRow {
+  seat_index: number;
+  entry_number?: number | null;
+  display_name: string | null;
+  comment: string | null;
+  avatar_id?: string | null;
+}
+export interface PassengerManifestRow {
+  seat_index: number;
+  entry_number?: number | null;
+  display_name: string | null;
+  has_comment: number;
+}
 
 export function toNamedPassengerProfile(row: PassengerRow, includeComment = false): PassengerProfile | null {
   const avatarId = isPassengerAvatarId(row.avatar_id) ? row.avatar_id : null;
   if (!row.display_name && row.comment === null && !avatarId) return null;
   return {
     seatIndex: Number(row.seat_index),
+    entryNumber: Number(row.entry_number ?? Number(row.seat_index) + 1),
     displayName: row.display_name || (row.comment !== null ? "Anonyme" : ""),
     comment: includeComment ? row.comment || null : null,
     avatarId,

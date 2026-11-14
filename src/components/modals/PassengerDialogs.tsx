@@ -28,6 +28,7 @@ export function PassengerDialogs({ profile, directory, count, currentSeatIndex, 
         saving={profile.profileSaving}
         error={profile.onboardingError}
         onClearError={profile.clearOnboardingError}
+        onClose={profile.onboardingReason === "boarding" ? profile.closeOnboardingModal : undefined}
         onSubmit={onSubmitOnboarding}
       />
     )}
