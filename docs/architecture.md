@@ -8,7 +8,6 @@ Ce guide décrit les responsabilités actuelles. Les revues datées du dossier
 ```mermaid
 flowchart TD
   Page[Pages Next.js] --> Loader[BusClient : chargement et récupération]
-  Page --> Reading[theorie : lecture serveur autonome]
   Loader --> Experience[BusExperience : orchestration]
   Experience --> Hooks[Commandes, synchronisation, profils et manifeste]
   Experience --> HUD[HUD et fenêtres accessibles]
@@ -59,7 +58,7 @@ Les nouvelles extractions n’ajoutent pas de groupe 3D autour des sous-ensemble
 les coordonnées, noms utiles aux contrôles et matériaux partagés restent les
 mêmes. Les calculs de géométrie et de mouvements sont principalement dans
 `src/lib/`. Les utilitaires Canvas, YouTube et audio ont besoin du navigateur ;
-ils ne doivent pas être exécutés pendant le rendu serveur de `/theorie`.
+ils ne doivent pas être exécutés pendant le rendu serveur de l’accueil.
 
 `AvatarSelectionModal` réutilise le rig de `BoardingAvatar` dans un Canvas à la
 demande : seuls le changement de personnage et la rotation rendent l’aperçu.
