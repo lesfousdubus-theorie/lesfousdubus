@@ -1,8 +1,8 @@
 "use client";
 
-import { memo, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import type { PassengerProfile } from "@/types/passenger";
 import { NAKAMA_ROSTER, getNakamaArchetype, type NakamaArchetype } from "./passenger-archetypes";
 import { NakamaProp } from "./PassengerAppearance";
@@ -20,6 +20,7 @@ import PassengerCardGame, { getPassengerCardActor, type PassengerCardActors } fr
 import { getPassengerCardPairs } from "@/lib/passenger-card-game";
 import { BODY_BEHIND_HIP } from "@/lib/passenger-gait";
 import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, samplePassengerPose } from "@/lib/passenger-motion";
+import { keepPassengerHandsApart } from "@/lib/passenger-space";
 
 /** Hauteur visuelle du sommet de chaque passager assis, accessoires compris. */
 function getPassengerLabelY(archetype: NakamaArchetype): number {
@@ -136,14 +137,25 @@ interface PassengersProps {
 function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSeatRanges = [], hornPulse,
   partyOn = false, reservedRow = 3, passengerProfiles = [], onPassengerSelect,
   lowPower = false, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
+  const camera = useThree(state => state.camera);
+  const root = useRef<THREE.Group>(null), cameraPoint = useMemo(() => new THREE.Vector3(), []);
+  const [detailFocus, setDetailFocus] = useState(() => ({ x: camera.position.x, z: camera.position.z }));
+  const lastFocus = useRef({ ...detailFocus, time: -Infinity });
+  useFrame(({ camera }) => {
+    const now = performance.now();
+    if (!root.current || now - lastFocus.current.time < 120) return;
+    lastFocus.current.time = now;
+    camera.getWorldPosition(cameraPoint); root.current.worldToLocal(cameraPoint);
+    if (Math.hypot(cameraPoint.x-lastFocus.current.x, cameraPoint.z-lastFocus.current.z) < .2) return;
+    lastFocus.current = { x: cameraPoint.x, z: cameraPoint.z, time: now };
+    setDetailFocus({ x: cameraPoint.x, z: cameraPoint.z });
+  }, -3);
   const { detailed, simplified } = useMemo(() => getBusOccupancy({ passengerCount, seatCapacity,
     vacantSeatRanges, renderedRowIndices, reservedRow, currentPassengerIndex: excludedPassengerIndex,
-    avatarAboard, lowPower }), [passengerCount, seatCapacity, vacantSeatRanges, renderedRowIndices,
-      reservedRow, excludedPassengerIndex, avatarAboard, lowPower]);
+    avatarAboard, lowPower, detailFocus }), [passengerCount, seatCapacity, vacantSeatRanges, renderedRowIndices,
+      reservedRow, excludedPassengerIndex, avatarAboard, lowPower, detailFocus]);
   const profilesBySeatIndex = useMemo(() => new Map(passengerProfiles.map(profile => [profile.seatIndex, profile])), [passengerProfiles]);
   const detailedSeats = new Set(detailed.map(occupant => occupant.physicalSeatIndex));
-  const charactersBySeat = new Map(detailed.map(occupant => [occupant.physicalSeatIndex,
-    getNakamaArchetype(occupant.index, occupant.passengerKind === "visitor" ? profilesBySeatIndex.get(occupant.index)?.avatarId : null).id]));
   const cardActors = useMemo<PassengerCardActors>(() => new Map(), []);
   const cardPairs = useMemo(() => getPassengerCardPairs(detailed.map(occupant => ({ ...occupant,
     archetypeId: getNakamaArchetype(occupant.index, occupant.passengerKind === "visitor"
@@ -151,7 +163,7 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
   })), NAKAMA_ROSTER.map(archetype => archetype.id)), [detailed, profilesBySeatIndex]);
   const cardPairBySeat = useMemo(() => new Map(cardPairs.flatMap(pair => [[pair.firstSeat, pair.pairIndex], [pair.secondSeat, pair.pairIndex]])), [cardPairs]);
   useEffect(() => () => { document.body.style.cursor = "auto"; }, []);
-  return <group name="bus-seated-passengers" userData={{ detailedCount: detailed.length, simplifiedCount: simplified.length }}>
+  return <group ref={root} name="bus-seated-passengers" userData={{ detailedCount: detailed.length, simplifiedCount: simplified.length }}>
     <SimplifiedPassengers passengers={simplified} profilesBySeatIndex={profilesBySeatIndex} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
     {detailed.map(({ seat, index, physicalSeatIndex, passengerKind }) => {
       const archetype = getNakamaArchetype(index, passengerKind === "visitor" ? profilesBySeatIndex.get(index)?.avatarId : null);
@@ -163,7 +175,7 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
           ? archetype.name.split(" ")[0] : archetype.name.split(" ").at(-1)) : undefined}
         hornPulse={hornPulse} partyOn={partyOn}
         peerSide={detailedSeats.has(physicalSeatIndex ^ 1) ? (seat.seatInRow % 2 === 0 ? 1 : -1) : 0}
-        peerCharacterId={charactersBySeat.get(physicalSeatIndex ^ 1)} interactionPairIndex={Math.floor(physicalSeatIndex / 2)}
+        interactionPairIndex={Math.floor(physicalSeatIndex / 2)}
         reducedMotion={reducedMotion} profile={passengerKind === "visitor" ? profilesBySeatIndex.get(index) : undefined}
         onSelect={onPassengerSelect}/>;
     })}
@@ -179,7 +191,6 @@ export function Passenger({
   hornPulse,
   partyOn = false,
   peerSide = 0,
-  peerCharacterId,
   interactionPairIndex,
   cardActors,
   cardPairIndex = null,
@@ -201,7 +212,6 @@ export function Passenger({
   hornPulse: number;
   partyOn?: boolean;
   peerSide?: number;
-  peerCharacterId?: string;
   interactionPairIndex?: number;
   cardActors?: PassengerCardActors;
   cardPairIndex?: number | null;
@@ -257,9 +267,11 @@ export function Passenger({
     const t = state.clock.elapsedTime;
     const seed = index * 0.73;
 
-    samplePassengerPose(targetPose.current,t,index,peerSide,proportions.torsoWidth,hornPulse>0?(performance.now()-hornPulse)/1000:Infinity,partyOn,reducedMotion,archetype.id,cardPairIndex,peerCharacterId,interactionPairIndex);
+    samplePassengerPose(targetPose.current,t,index,peerSide,proportions.torsoWidth,hornPulse>0?(performance.now()-hornPulse)/1000:Infinity,partyOn,reducedMotion,archetype.id,cardPairIndex,interactionPairIndex);
+    keepPassengerHandsApart(targetPose.current,archetype.id,seat.seatInRow%2===0?1:-1);
     blendPassengerPose(currentPose.current,targetPose.current,dt,reducedMotion);
     const pose=currentPose.current;
+    keepPassengerHandsApart(pose,archetype.id,seat.seatInRow%2===0?1:-1);
     if (group.current) {
       // Le bassin et les pieds restent sur leur siège/sol pendant la fête.
       group.current.position.y = 0;
@@ -340,7 +352,7 @@ export function Passenger({
         <group ref={torsoGroup}>
           <PassengerTorso archetype={archetype} mats={mats} />
         </group>
-          {[-1, 1].map((side,index) => <group key={side} ref={node=>{arms.current[index]=node;}} name={`nakama-arm-${index===0?"left":"right"}`} position={[side * (proportions.torsoWidth / 2 - 0.018), skeleton.shoulderY, 0]} rotation={[0.12, 0, side * 0.08]}>
+          {[-1, 1].map((side,index) => <group key={side} ref={node=>{arms.current[index]=node;}} name={`nakama-arm-${index===0?"left":"right"}`} position={[side * (proportions.torsoWidth / 2 - 0.018), skeleton.shoulderY, 0]} rotation={[0.12, 0, -side * 0.12]}>
             <group scale={[skeleton.armWidthScale,skeleton.armScale,skeleton.armWidthScale]}><PassengerUpperArm archetype={archetype} mats={mats} side={side} width={proportions.armWidth}/></group>
             <group ref={node=>{elbows.current[index]=node;}} name={`nakama-elbow-${index===0?"left":"right"}`} position={[0, -skeleton.upperArmLength, 0]} rotation={[1.05, 0, 0]}>
               <group scale={[skeleton.armWidthScale,skeleton.armScale,skeleton.armWidthScale]}><PassengerForearm archetype={archetype} mats={mats} side={side} width={proportions.armWidth} handName={`nakama-hand-${index===0?"left":"right"}`}/></group>

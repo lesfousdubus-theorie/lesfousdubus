@@ -5,7 +5,7 @@ import { build } from "esbuild";
 const frames=[],layoutEffects=[];globalThis.__animationRigFrames=frames;globalThis.__animationRigLayoutEffects=layoutEffects;
 const compiled=await build({
   stdin:{contents:`export * as THREE from 'three';
-    export { Passenger, SimplifiedPassengers } from './src/components/bus/Passengers';
+    export { default as Passengers, Passenger, SimplifiedPassengers } from './src/components/bus/Passengers';
     export { default as BoardingAvatar } from './src/components/bus/BoardingAvatar';
     export { NAKAMA_ROSTER } from './src/components/bus/passenger-archetypes';
     export { getPassengerProportions, getPassengerSkeleton } from './src/lib/passenger-proportions';
@@ -16,13 +16,13 @@ const compiled=await build({
   plugins:[{name:"real-rig-hooks",setup(builder){
     builder.onResolve({filter:/^(react|react\/jsx-runtime|@react-three\/fiber)$/},args=>({path:args.path,namespace:"real-rig-hooks"}));
     builder.onLoad({filter:/.*/,namespace:"real-rig-hooks"},({path})=>({contents:path==="react"
-      ?`export const useRef=current=>({current});export const useMemo=fn=>fn();export const useCallback=fn=>fn;
+      ?`export const useRef=current=>({current});export const useState=initial=>[typeof initial==="function"?initial():initial,()=>{}];export const useMemo=fn=>fn();export const useCallback=fn=>fn;
         export const useEffect=()=>{};export const useLayoutEffect=fn=>globalThis.__animationRigLayoutEffects.push(fn);export const memo=c=>c;`
       :path==="react/jsx-runtime"?`export const Fragment=Symbol.for('animation-rig-fragment');export const jsx=(type,props)=>({type,props});export const jsxs=jsx;`
-      :`export const useFrame=(callback,priority=0)=>globalThis.__animationRigFrames.push({callback,priority});`}));
+      :`export const useThree=selector=>selector({camera:{position:{x:7.5,z:-10.5}}});export const useFrame=(callback,priority=0)=>globalThis.__animationRigFrames.push({callback,priority});`}));
   }}],
 });
-const {THREE,Passenger,SimplifiedPassengers,BoardingAvatar,NAKAMA_ROSTER,getPassengerSkeleton,getPassengerProportions,getWalkingLegPose,createJourneyState,createPassengerPose,samplePassengerPose}=await import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);
+const {THREE,Passengers,Passenger,SimplifiedPassengers,BoardingAvatar,NAKAMA_ROSTER,getPassengerSkeleton,getPassengerProportions,getWalkingLegPose,createJourneyState,createPassengerPose,samplePassengerPose}=await import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);
 const material=new THREE.MeshStandardMaterial();
 globalThis.document={createElement:()=>({width:256,height:256,getContext:()=>new Proxy({},{get:()=>()=>{}})})};
 const children=value=>Array.isArray(value)?value.flatMap(children):value==null||value===false?[]:[value];
@@ -50,7 +50,7 @@ function actor(Component,props){
   const callbacks=frames.slice(frameAt).sort((a,b)=>a.priority-b.priority);root.updateMatrixWorld(true);
   return {root,tick(time,dt=1/60){for(const {callback} of callbacks)callback({clock:{elapsedTime:time},camera},dt);root.updateMatrixWorld(true);}};
 }
-const seat={x:0,z:0,row:0,seatInRow:0};let samples=0,maxHandFootprint=0;
+const seat={x:0,z:0,row:0,seatInRow:0};let samples=0,neighborFrames=0,maxHandFootprint=0,maxNeighborHandStep=0;
 // Real mounted shoes must stay planted: angular bounds alone miss root bobbing.
 for(const [index,archetype] of NAKAMA_ROSTER.entries()){
   const mounted=actor(Passenger,{seat,index,archetype,partyOn:true,hornPulse:0,reducedMotion:false});
@@ -90,25 +90,21 @@ for(const [index,archetype] of NAKAMA_ROSTER.entries()){
   }
 }
 // Use actual palm positions and independently selected silhouettes on the same bench.
-let maxPalmGap=0;
+
 for(const [leftId,rightId] of [["luffy","zoro"],["chopper","luffy"],["franky","chopper"],["chopper","chopper"],["shanks","chopper"]]){
   const left=NAKAMA_ROSTER.find(a=>a.id===leftId),right=NAKAMA_ROSTER.find(a=>a.id===rightId);
-  const a=actor(Passenger,{seat,index:87,physicalSeatIndex:0,archetype:left,peerSide:1,peerCharacterId:rightId,interactionPairIndex:0,partyOn:false,hornPulse:0,reducedMotion:false});
-  const b=actor(Passenger,{seat:{...seat,x:.44},index:12,physicalSeatIndex:1,archetype:right,peerSide:-1,peerCharacterId:leftId,interactionPairIndex:0,partyOn:false,hornPulse:0,reducedMotion:false});
+  const a=actor(Passenger,{seat,index:87,physicalSeatIndex:0,archetype:left,peerSide:1,interactionPairIndex:0,partyOn:false,hornPulse:0,reducedMotion:false});
+  const b=actor(Passenger,{seat:{...seat,x:.44,seatInRow:1},index:12,physicalSeatIndex:1,archetype:right,peerSide:-1,interactionPairIndex:0,partyOn:false,hornPulse:0,reducedMotion:false});
   for(let frame=0;frame<240;frame++){a.tick(11.5);b.tick(11.5);}
-  const palmA=a.root.getObjectByName("nakama-hand-right").getWorldPosition(new THREE.Vector3()),palmB=b.root.getObjectByName("nakama-hand-left").getWorldPosition(new THREE.Vector3());
-  const gap=palmA.distanceTo(palmB);maxPalmGap=Math.max(maxPalmGap,gap);
-  assert(gap<.015,`${leftId}/${rightId}: actual high-five palms meet, gap ${gap.toFixed(4)} m.`);
-  assert.equal(a.root.userData.activity,"check");assert.equal(b.root.userData.activity,"check");
+  const handsA=["left","right"].map(side=>a.root.getObjectByName(`nakama-hand-${side}`)).filter(Boolean).map(box);
+  const handsB=["left","right"].map(side=>b.root.getObjectByName(`nakama-hand-${side}`)).filter(Boolean).map(box);
+  for(const first of handsA)for(const second of handsB)assert(!first.intersectsBox(second),`${leftId}/${rightId}: neighbors never hold hands during the former high-five interval.`);
+  assert.notEqual(a.root.userData.activity,"check");assert.notEqual(b.root.userData.activity,"check");
   for(let time=2;time<6;time+=.05){
     a.tick(time);b.tick(time);
     const moods=[a,b].map(actor=>actor.root.getObjectByName("character-expression").userData.facialMood);
     assert.deepEqual(moods.sort(),["listening","speaking"],"Actual bench neighbors alternate speaking and listening even when their visitor IDs belong to different original pairs.");
   }
-}
-for(const [own,peer,side] of [["shanks","luffy",-1],["luffy","shanks",1]]){
-  const pose=createPassengerPose();samplePassengerPose(pose,11.5,0,side,.33,Infinity,false,false,own,null,peer,0);
-  assert.notEqual(pose.activity,"check","A bench never asks Shanks to use his missing left arm.");
 }
 // Distant arms keep two rigid bones attached under a common moving torso.
 const occupants=NAKAMA_ROSTER.map((a,index)=>({index,physicalSeatIndex:index,passengerKind:"visitor",seat:{x:index*.44,z:0,row:0,seatInRow:0}}));
@@ -126,4 +122,36 @@ for(let frame=0;frame<240;frame++){
     samples++;
   }
 }
-console.log("Mounted animation regression passed:",JSON.stringify({characters:NAKAMA_ROSTER.length,samples,maxPalmGap,maxHandFootprint}));
+// The real population controller starts with the camera near the front, while
+// its reserved seat is still in row 4. Both neighbors must already have faces,
+// hair and costume meshes before entering or leaving the bus.
+for(const lowPower of [false,true]){
+  const population=actor(Passengers,{passengerCount:16,seatCapacity:16,numRows:6,reservedRow:3,lowPower,hornPulse:0,
+    passengerProfiles:Array.from({length:16},(_,i)=>({seatIndex:i,displayName:"",avatarId:i%2?"usopp":"nami"}))});
+  const visitors=population.root.children.filter(child=>child.userData.passengerKind==="visitor");
+  for(const physical of [2,3]){
+    const visitor=visitors.find(root=>root.userData.physicalSeatIndex===physical);
+    assert(visitor?.getObjectByName("nakama-face")&&visitor.getObjectByName("nakama-hair")&&visitor.getObjectByName("nakama-torso-body"),"Both closest arrival neighbors start with complete models instead of a bare instance.");
+  }
+}
+// Every archetype and every dance stays on its own side, including interpolation
+// and the old low/high hand-contact intervals. This covers arbitrary bench mates.
+for(const archetype of NAKAMA_ROSTER)for(const side of [0,1])for(const partyOn of [false,true]){
+  const seated=actor(Passenger,{seat:{...seat,seatInRow:side},index:NAKAMA_ROSTER.indexOf(archetype),archetype,peerSide:side?-1:1,
+    cardPairIndex:partyOn?null:0,interactionPairIndex:0,partyOn,hornPulse:0,reducedMotion:false});
+  const previousHands=new Map();
+  for(let frame=0;frame<26*30;frame++){
+    seated.tick(frame/30,1/30);neighborFrames++;
+    for(const handSide of ["left","right"]){
+      const hand=seated.root.getObjectByName(`nakama-hand-${handSide}`);if(!hand)continue;
+      const bounds=box(hand);
+      assert(side?bounds.min.x>-.20-1e-6:bounds.max.x<.20+1e-6,`${archetype.id}: ${partyOn?"dance":"social/card"} hand crosses into its neighbor's space at ${frame/30}s.`);
+      const center=bounds.getCenter(new THREE.Vector3()),previous=previousHands.get(handSide);
+      // Entry easing raises the arms over 300 ms; subsequent dance frames must
+      // remain continuous. The hand-space assertion above includes entry too.
+      if(previous&&frame>9){const step=center.distanceTo(previous);maxNeighborHandStep=Math.max(maxNeighborHandStep,step);assert(step<.08,`${archetype.id} side ${side} ${partyOn?"party":"social"} ${handSide} at ${frame/30}: hand-space correction jumps ${step} m between frames.`);}
+      previousHands.set(handSide,center);
+    }
+  }
+}
+console.log("Mounted animation regression passed:",JSON.stringify({characters:NAKAMA_ROSTER.length,samples,neighborFrames,maxHandFootprint,maxNeighborHandStep}));

@@ -1,11 +1,9 @@
-import { applyPassengerCardPose, setCardArm } from "./passenger-card-game";
-import { getPassengerSkeleton } from "./passenger-proportions";
-import { BODY_BEHIND_HIP } from "./passenger-gait";
+import { applyPassengerCardPose } from "./passenger-card-game";
 
 export type PassengerActivity = "idle" | "chat" | "check" | "game" | "horn" | "party";
 export function createPassengerPose() {
   return { activity: "idle" as PassengerActivity, headYaw: 0, headPitch: 0, torsoYaw: 0, torsoPitch: 0,
-    torsoRoll: 0, rootYaw: 0, bob: 0, leftX: .12, leftZ: -.08, rightX: .12, rightZ: .08,
+    torsoRoll: 0, rootYaw: 0, bob: 0, leftX: .12, leftZ: .12, rightX: .12, rightZ: -.12,
     leftElbowX: 1.05, leftElbowZ: 0, rightElbowX: 1.05, rightElbowZ: 0, rightKick: 0,
     gesture: "rest", games: false, celebrating: false };
 }
@@ -956,25 +954,16 @@ function blendDanceTarget(pose: PassengerPose, a: DanceTarget, b: DanceTarget, b
   }
 }
 
-/** Une cible commune atteignable par les deux silhouettes, y compris Chopper. */
-export function getHighFiveTarget(id: string, peerId: string) {
-  const own = getPassengerSkeleton(id), peer = getPassengerSkeleton(peerId);
-  return {
-    y: .64 + Math.min(own.seatedHipHeight + own.torsoAboveHip + own.shoulderY, peer.seatedHipHeight + peer.torsoAboveHip + peer.shoulderY) + .10,
-    z: Math.min(own.seatedHipZ, peer.seatedHipZ) + BODY_BEHIND_HIP - .18,
-  };
-}
-
 /** Modifie un objet réutilisé ; aucun état React n'est mis à jour par image. */
 export function samplePassengerPose(pose: PassengerPose, time: number, index: number, peerSide: number,
   torsoWidth: number, hornElapsed: number, party: boolean, reducedMotion: boolean, characterId = "nakama", cardPairIndex: number | null = null,
-  peerCharacterId = characterId, interactionPairIndex = cardPairIndex ?? Math.floor(index / 2)) {
+  interactionPairIndex = cardPairIndex ?? Math.floor(index / 2)) {
   pose.activity = "idle"; pose.games = false; pose.celebrating = false;
   pose.gesture = "rest"; pose.rightKick = 0;
   pose.headYaw = peerSide ? -peerSide * .04 : -.04;
   pose.headPitch = 0; pose.torsoYaw = 0; pose.torsoPitch = 0; pose.torsoRoll = 0;
   pose.rootYaw = 0; pose.bob = 0;
-  pose.leftX = .12; pose.rightX = .12; pose.leftZ = -.08; pose.rightZ = .08;
+  pose.leftX = .12; pose.rightX = .12; pose.leftZ = .12; pose.rightZ = -.12;
   pose.leftElbowX = 1.05; pose.rightElbowX = 1.05; pose.leftElbowZ = 0; pose.rightElbowZ = 0;
   const seed = index * .73;
   if (!reducedMotion) {
@@ -1033,7 +1022,7 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
     pose.rightZ = Math.min(outwardLimit, pose.rightZ);
     for (const key of poseFields) {
       if (key === "bob") continue;
-      const baseline = key === "leftX" || key === "rightX" ? .12 : key === "leftElbowX" || key === "rightElbowX" ? 1.05 : key === "leftZ" ? -.08 : key === "rightZ" ? .08 : 0;
+      const baseline = key === "leftX" || key === "rightX" ? .12 : key === "leftElbowX" || key === "rightElbowX" ? 1.05 : key === "leftZ" ? .12 : key === "rightZ" ? -.12 : 0;
       pose[key] = baseline + (pose[key] - baseline) * gain;
     }
     return;
@@ -1041,8 +1030,7 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
   if (reducedMotion) return;
   // Les voisins partagent la même horloge, les autres bancs sont décalés.
   const cycle = ((time + interactionPairIndex * 5.1) % 26 + 26) % 26;
-  const canCheck = peerSide && !(characterId === "shanks" && peerSide < 0) && !(peerCharacterId === "shanks" && peerSide > 0);
-  const chat = peerSide ? windowGain(cycle, 1, 7) : 0, check = canCheck ? windowGain(cycle, 10, 13) : 0;
+  const chat = peerSide ? windowGain(cycle, 1, 7) : 0;
   if (chat > 0) {
     pose.activity = "chat";
     pose.headYaw -= chat * peerSide * .62;
@@ -1073,11 +1061,6 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
       case "vivi": pose.leftX+=chat*.13;pose.rightElbowX+=chat*.16;pose.rightZ+=chat*.12;pose.headPitch+=chat*speaking*.03;break;
       case "mihawk": pose.rightX-=chat*.26;pose.leftX-=chat*.12;pose.rightElbowX+=chat*.09;pose.headPitch+=chat*.025;break;
     }
-  }
-  if (check > 0) {
-    pose.activity = "check"; pose.headYaw -= peerSide * .5 * check;
-    const target = getHighFiveTarget(characterId, peerCharacterId);
-    setCardArm(pose, peerSide, characterId, peerSide * .22, target.y, target.z, check);
   }
   if (cardPairIndex !== null) applyPassengerCardPose(pose, time, cardPairIndex, peerSide, characterId);
 }
