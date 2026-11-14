@@ -171,7 +171,7 @@ export async function runCrewSeatDesignChecks({ send, evaluate, waitForPageCondi
     await frames();
   };
   try {
-    if (!process.env.BUS_REVIEW_STAGE || ["corrections", "real-passengers"].includes(process.env.BUS_REVIEW_STAGE)) {
+    if (!process.env.BUS_REVIEW_STAGE || ["corrections", "real-passengers", "rail-connections"].includes(process.env.BUS_REVIEW_STAGE)) {
       return await runMugiwaraCabinChecks({ send, evaluate, waitForPageCondition, baseUrl, open, frames,
         pose, screenshot, click, enter, freeView, resourceSnapshot, layout, roster, directory });
     }

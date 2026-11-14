@@ -14,6 +14,9 @@ export const INTERIOR_RAIL_JOINT_GAP = 0.012;
 
 // Anneaux et barres d'origine, de part et d'autre de l'allée centrale.
 export const GRAB_HANDLE_X = 0.35;
+export const GRAB_RAIL_Y = 2.9;
+export const GRAB_RAIL_BRIDGE_Y = 3.06;
+export const CABIN_CEILING_Y = 3.14;
 export const TV_HANDLE_CLEARANCE_Z = 3.2;
 export function isGrabHandleClearOfTv(z: number, televisions: readonly TvPosition[]): boolean {
   const halfDepth = .015;
@@ -34,6 +37,18 @@ export function getGrabRailSpans(from: number, to: number, televisions: readonly
     });
   }
   return spans;
+}
+
+/** Relie les interruptions par le haut, au-dessus du cadre des télés. */
+export function getGrabRailBridgeSpans(from: number, to: number, televisions: readonly TvPosition[]): Array<[number, number]> {
+  const bridges: Array<[number, number]> = [];
+  let previousEnd = from;
+  for (const [start, end] of getGrabRailSpans(from, to, televisions)) {
+    if (start > previousEnd) bridges.push([previousEnd, start]);
+    previousEnd = end;
+  }
+  if (previousEnd < to) bridges.push([previousEnd, to]);
+  return bridges;
 }
 
 /** Arrête les rails avant les habillages des jambages, avec un vrai jeu. */
