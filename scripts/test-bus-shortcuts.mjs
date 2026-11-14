@@ -39,13 +39,15 @@ assert.equal(isBrowserZoomWheel({ ctrlKey: false, metaKey: false }), false);
 assert.equal(isBrowserZoomWheel({ ctrlKey: true, metaKey: false }), true);
 assert.equal(isBrowserZoomWheel({ ctrlKey: false, metaKey: true }), true);
 
-const report = new URL(getPassengerReportHref({ seatIndex: 7, displayName: "Kirito & ami #1", comment: "Salut ! Équipage" }));
-assert.equal(report.searchParams.get("subject"), "Signalement passager #7");
+const report = new URL(getPassengerReportHref({ seatIndex: 7, entryNumber: 42, displayName: "Kirito & ami #1", comment: "Salut ! Équipage" }));
+assert.equal(report.searchParams.get("subject"), "Signalement passager n°42");
 const body = report.searchParams.get("body");
 assert(body.includes("Bonjour,\r\n\r\nJe souhaite signaler"));
-assert(body.includes("Nom : Kirito & ami #1\r\nMessage : Salut ! Équipage"));
+assert(body.includes("Place n° : 42 (siège 7)\r\nNom : Kirito & ami #1\r\nMessage : Salut ! Équipage"));
 assert(body.endsWith("Motif du signalement :\r\n"));
 assert(!body.includes("\\n"), "The message must contain real line breaks, never escaped text.");
-assert.equal(new URL(getPassengerReportHref({ seatIndex: 0, displayName: "Anonyme", comment: null })).searchParams.get("body").includes("Message : aucun"), true);
+const fallbackReport = new URL(getPassengerReportHref({ seatIndex: 0, displayName: "Anonyme", comment: null }));
+assert.equal(fallbackReport.searchParams.get("subject"), "Signalement passager n°1");
+assert.equal(fallbackReport.searchParams.get("body").includes("Message : aucun"), true);
 
 console.log("Bus shortcut boundaries, letter preference and report email line breaks passed.");

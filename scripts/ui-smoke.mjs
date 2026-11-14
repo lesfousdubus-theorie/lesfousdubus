@@ -196,6 +196,7 @@ try {
           exteriorVisibleCount: exteriorButtons.length,
           hasDayNightBar: Boolean(document.querySelector('.bus-day-night')),
           hasSpeedBar: Boolean(document.querySelector('.bus-speed')),
+          hasVolumeControl: Boolean(document.querySelector('.bus-volume-toggle, .bus-volume-inline, button[aria-label*="volume" i], input[aria-label*="volume" i]')),
           titleActionsSingleRow: titleActionTops.length <= 1 || Math.max(...titleActionTops) - Math.min(...titleActionTops) <= 2,
           hasEnter: buttons.some((button) => button.textContent?.includes("Entrer dans le bus")),
           controlHeights: {
@@ -229,7 +230,8 @@ try {
       assert.equal(layout.mobileMenuToggleExpanded, "false", `Mobile menu should start collapsed at ${viewport.width}x${viewport.height}`);
       assert(!layout.hasMobileMenuOpen, `Mobile menu should not be open initially at ${viewport.width}x${viewport.height}`);
       assert(!layout.hasDayNightBar && !layout.hasSpeedBar, `Grouped desktop bars should be inside mobile menu at ${viewport.width}x${viewport.height}`);
-      assert.equal(layout.exteriorVisibleCount, 4, `Exterior mobile dock should show music, audio, Commandes and Entrer at ${viewport.width}x${viewport.height}`);
+      assert(!layout.hasVolumeControl, `Phone HUD must not render a volume button or slider at ${viewport.width}x${viewport.height}`);
+      assert.equal(layout.exteriorVisibleCount, 4, `Exterior mobile dock should show music, progression, Commandes and Entrer at ${viewport.width}x${viewport.height}`);
       assert(layout.controlHeights.exterior >= 44, `Exterior mobile dock too short at ${viewport.width}x${viewport.height}`);
     } else {
       assert(!layout.hasMobileMenuToggle, `Mobile menu toggle should not appear at ${viewport.width}x${viewport.height}`);
@@ -396,22 +398,27 @@ try {
   );
   assert.equal(
     await evaluate(interactionSend, `Boolean(document.querySelector('[role="dialog"] button[aria-label="Fermer la fenêtre"]'))`),
-    false,
-    "Mandatory onboarding modal must not expose a close button.",
+    true,
+    "Unregistered boarding modal must expose a close button.",
   );
   await interactionSend("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
   await interactionSend("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
-  await sleep(120);
-  assert(
-    await evaluate(interactionSend, `Boolean(document.getElementById("onboarding-name"))`),
-    "Escape must not dismiss the mandatory identification modal.",
+  await waitForPageCondition(interactionSend, `!document.querySelector('[role="dialog"]')`, "Escape dismisses the boarding modal");
+  assert.equal(
+    await evaluate(interactionSend, `document.querySelector("[data-phase]")?.getAttribute("data-phase")`),
+    "outside",
+    "Dismissing the boarding modal must keep the visitor outside.",
   );
-  await interactionSend("Input.dispatchMouseEvent", { type: "mousePressed", x: 5, y: 5, button: "left", clickCount: 1 });
-  await interactionSend("Input.dispatchMouseEvent", { type: "mouseReleased", x: 5, y: 5, button: "left", clickCount: 1 });
-  await sleep(120);
-  assert(
-    await evaluate(interactionSend, `Boolean(document.getElementById("onboarding-name"))`),
-    "Backdrop click must not dismiss the mandatory identification modal.",
+  await evaluate(interactionSend, `
+    (() => {
+      const button = [...document.querySelectorAll("button")].find((el) => el.textContent?.includes("Entrer dans le bus"));
+      button?.click();
+    })()
+  `);
+  await waitForPageCondition(
+    interactionSend,
+    `document.getElementById("onboarding-title")?.textContent === "Monte dans le bus !"`,
+    "Onboarding modal reopens after dismissal",
   );
   await evaluate(interactionSend, `document.querySelector('[role="dialog"] form').requestSubmit()`);
   await waitForPageCondition(interactionSend, `Boolean(document.getElementById("onboarding-error"))`, "Empty onboarding name validation");

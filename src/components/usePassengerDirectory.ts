@@ -98,7 +98,12 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
   const selectFromManifest = useCallback((passenger: PassengerManifestEntry) => {
     closePassengerManifest();
     setPassengerOpenedFromList(true);
-    void openPassengerCard({ seatIndex: passenger.seatIndex, displayName: passenger.displayName ?? "Anonyme", comment: null });
+    void openPassengerCard({
+      seatIndex: passenger.seatIndex,
+      entryNumber: passenger.entryNumber,
+      displayName: passenger.displayName ?? "Anonyme",
+      comment: null,
+    });
   }, [closePassengerManifest, openPassengerCard]);
 
   const closePassengerCard = useCallback(() => {

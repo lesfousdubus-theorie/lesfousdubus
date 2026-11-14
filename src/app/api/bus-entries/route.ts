@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 function isSeatConflictError(error: unknown): boolean {
   if (!error) return false;
-  const pattern = /UNIQUE constraint failed.*seat_index/i;
+  const pattern = /UNIQUE constraint failed.*(?:seat_index|entry_number)/i;
   if (typeof error === "string") return pattern.test(error);
   if (error instanceof Error) {
     if (pattern.test(error.message)) return true;
@@ -42,13 +42,14 @@ export async function GET(request: Request) {
         return Response.json({ error: "Passager invalide." }, { status: 400, headers: WRITE_HEADERS });
       }
       const row = await database.prepare(
-        `SELECT seat_index, display_name, comment, avatar_id FROM bus_entries WHERE seat_index = ?`,
+        `SELECT seat_index, entry_number, display_name, comment, avatar_id FROM bus_entries WHERE seat_index = ?`,
       ).bind(seatIndex).first<PassengerRow>();
       if (!row) {
         return Response.json({ error: "Passager introuvable." }, { status: 404, headers: WRITE_HEADERS });
       }
       return Response.json({ passenger: {
         seatIndex: Number(row.seat_index),
+        entryNumber: Number(row.entry_number ?? Number(row.seat_index) + 1),
         displayName: row.display_name || "Anonyme",
         comment: row.comment || null,
         avatarId: isPassengerAvatarId(row.avatar_id) ? row.avatar_id : null,
@@ -62,19 +63,22 @@ export async function GET(request: Request) {
         return Response.json({ error: "Identifiant visiteur invalide." }, { status: 400, headers: WRITE_HEADERS });
       }
       const row = await database.prepare(
-        `SELECT seat_index, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
+        `SELECT seat_index, entry_number, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
       ).bind(visitorId).first<PassengerRow>();
       const stats = await readBusStats(database);
       const avatarId = row && isPassengerAvatarId(row.avatar_id) ? row.avatar_id : null;
       const hasDisplayName = Boolean(row?.display_name && row.display_name.trim().length > 0);
+      const entryNumber = row ? Number(row.entry_number ?? Number(row.seat_index) + 1) : null;
       return Response.json({
         ...stats,
         registered: Boolean(row),
         hasDisplayName,
         seatIndex: row ? Number(row.seat_index) : null,
+        entryNumber,
         passenger: row
           ? {
               seatIndex: Number(row.seat_index),
+              entryNumber: entryNumber!,
               displayName: row.display_name || "",
               comment: row.comment || null,
               avatarId,
@@ -90,11 +94,12 @@ export async function GET(request: Request) {
       const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
       const limit = Math.min(100, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 60, 100)));
       const rows = await database.prepare(
-        `SELECT seat_index, display_name, comment IS NOT NULL AS has_comment
+        `SELECT seat_index, entry_number, display_name, comment IS NOT NULL AS has_comment
          FROM bus_entries WHERE seat_index >= ? ORDER BY seat_index ASC LIMIT ?`,
       ).bind(from, limit + 1).all<PassengerManifestRow>();
       const passengers = rows.results.slice(0, limit).map((row) => ({
         seatIndex: Number(row.seat_index),
+        entryNumber: Number(row.entry_number ?? Number(row.seat_index) + 1),
         displayName: row.display_name || null,
         hasComment: Boolean(row.has_comment),
       }));
@@ -111,7 +116,7 @@ export async function GET(request: Request) {
       const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
       const limit = Math.min(48, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 32, 48)));
       const rows = await database.prepare(
-        `SELECT seat_index, display_name, avatar_id,
+        `SELECT seat_index, entry_number, display_name, avatar_id,
                 CASE WHEN comment IS NOT NULL THEN '' ELSE NULL END AS comment
          FROM bus_entries
          WHERE seat_index >= ? AND seat_index < ?
@@ -191,15 +196,16 @@ export async function POST(request: Request) {
 
     let added = false;
     if (!existing && !updateOnly) {
-      const MAX_SEAT_ATTEMPTS = 5;
+      const MAX_SEAT_ATTEMPTS = 8;
       for (let attempt = 0; attempt < MAX_SEAT_ATTEMPTS; attempt++) {
         try {
           const insertion = await database.prepare(
-            `INSERT INTO bus_entries (visitor_id, display_name, comment, avatar_id, seat_index)
-             VALUES (?, ?, ?, ?, COALESCE(
-               (SELECT start_index FROM bus_vacant_seat_ranges ORDER BY start_index ASC LIMIT 1),
-               (SELECT COALESCE(MAX(seat_index) + 1, 0) FROM bus_entries)
-             ))
+            `INSERT INTO bus_entries (visitor_id, display_name, comment, avatar_id, seat_index, entry_number)
+             VALUES (
+               ?, ?, ?, ?,
+               (SELECT COALESCE(MAX(seat_index) + 1, 0) FROM bus_entries),
+               (SELECT MAX(last_entry_number, COALESCE((SELECT MAX(entry_number) FROM bus_entries), 0)) + 1 FROM bus_stats WHERE id = 1)
+             )
              ON CONFLICT(visitor_id) DO NOTHING`,
           ).bind(
             visitorId,
@@ -240,15 +246,17 @@ export async function POST(request: Request) {
 
     const passengerRow = existing || !updateOnly
       ? await database.prepare(
-          `SELECT seat_index, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
+          `SELECT seat_index, entry_number, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
         ).bind(visitorId).first<PassengerRow>()
       : null;
     const stats = await readBusStats(database);
+    const entryNumber = passengerRow ? Number(passengerRow.entry_number ?? Number(passengerRow.seat_index) + 1) : null;
     return Response.json({
       ...stats,
       added,
       passenger: passengerRow ? toNamedPassengerProfile(passengerRow, true) : null,
       seatIndex: passengerRow ? Number(passengerRow.seat_index) : null,
+      entryNumber,
     }, { headers: WRITE_HEADERS });
   } catch (error) {
     if (error instanceof Error && (error.message === "BODY_TOO_LARGE" || error.message === "INVALID_BODY")) {

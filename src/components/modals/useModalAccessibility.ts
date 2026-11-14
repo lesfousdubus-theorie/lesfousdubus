@@ -8,6 +8,7 @@ const MODAL_FOCUSABLE_SELECTOR = [
 ].join(",");
 
 const backgroundLocks = new WeakMap<HTMLElement, { count: number; wasInert: boolean }>();
+const handledEscapeEvents = new WeakSet<Event>();
 
 function isVisible(element: HTMLElement) {
   return element.isConnected && element.getClientRects().length > 0
@@ -40,9 +41,20 @@ export function useModalAccessibility(
       backgroundLocks.set(page, lock);
       page.inert = true;
     }
+    const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented || handledEscapeEvents.has(event)) return;
+      const modals = document.querySelectorAll('[aria-modal="true"]');
+      if (!dialogRef.current || modals[modals.length - 1] !== dialogRef.current) return;
+      handledEscapeEvents.add(event);
+      event.preventDefault();
+      event.stopPropagation();
+      onCloseRef.current();
+    };
+    document.addEventListener("keydown", handleDocumentKeyDown);
     const frame = window.requestAnimationFrame(() => initialFocusRef.current?.focus());
     return () => {
       window.cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", handleDocumentKeyDown);
       if (page) {
         const lock = backgroundLocks.get(page);
         if (lock && --lock.count === 0) {
@@ -61,11 +73,12 @@ export function useModalAccessibility(
       });
       previouslyFocusedRef.current = null;
     };
-  }, [initialFocusRef, isOpen, returnFocusRef]);
+  }, [dialogRef, initialFocusRef, isOpen, returnFocusRef]);
 
   return useCallback((event: ReactKeyboardEvent<HTMLElement>) => {
     event.stopPropagation();
     if (event.key === "Escape") {
+      handledEscapeEvents.add(event.nativeEvent);
       event.preventDefault();
       onCloseRef.current();
       return;

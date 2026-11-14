@@ -13,6 +13,7 @@ interface PassengerProfileOptions {
   hasRegisteredPlace: boolean;
   applyBusSnapshot: (data: BusApiState) => boolean;
   setCurrentPassengerSeatIndex: Dispatch<SetStateAction<number | null>>;
+  setCurrentPassengerEntryNumber: Dispatch<SetStateAction<number | null>>;
   setPassengerProfiles: Dispatch<SetStateAction<PassengerProfile[]>>;
   setSeatRow: Dispatch<SetStateAction<number>>;
   showToast: (text: string, sub?: string, badge?: string) => void;
@@ -23,7 +24,7 @@ export interface OnboardingSeed extends Partial<OnboardingSubmission> {
 }
 
 /** Édition du profil : validation, requêtes, brouillons locaux et verrou de sauvegarde. */
-export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow, showToast }: PassengerProfileOptions) {
+export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setCurrentPassengerSeatIndex, setCurrentPassengerEntryNumber, setPassengerProfiles, setSeatRow, showToast }: PassengerProfileOptions) {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [profileModalMode, setProfileModalMode] = useState<"name" | "comment">("name");
   const [joinName, setJoinName] = useState("");
@@ -108,6 +109,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       const data = await fetchJson<BusApiState & {
         passenger: PassengerProfile | null;
         seatIndex: number | null;
+        entryNumber?: number | null;
       }>("/api/bus-entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -118,6 +120,11 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       if (controller.signal.aborted) return;
       const acceptedSnapshot = applyBusSnapshot(data);
       setCurrentPassengerSeatIndex(data.seatIndex);
+      setCurrentPassengerEntryNumber((previous) =>
+        data.seatIndex === null
+          ? null
+          : (data.entryNumber ?? data.passenger?.entryNumber ?? previous ?? data.seatIndex + 1),
+      );
       setSavedProfile((previous) => profileModalMode === "name" ? { ...previous, name } : { ...previous, comment });
       try {
         if (profileModalMode === "name") localStorage.setItem("fdb-display-name", name);
@@ -152,7 +159,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       profileRequest.current = null;
       setProfileSaving(false);
     }
-  }, [applyBusSnapshot, joinComment, joinName, profileModalMode, showToast, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow]);
+  }, [applyBusSnapshot, joinComment, joinName, profileModalMode, showToast, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow]);
 
   const removeProfileField = useCallback(async () => {
     if (profileMutationLock.current || profileModalMode !== "comment") return;
@@ -249,22 +256,24 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     } catch {
       /* Le stockage local reste optionnel. */
     }
+    setCurrentPassengerEntryNumber(null);
     setJoinName("");
     setJoinComment("");
     setSavedProfile({ name: "", comment: "" });
     setSavedAvatarId(pendingAvatarIdRef.current);
-  }, []);
+  }, [setCurrentPassengerEntryNumber]);
 
   const clearProfile = useCallback(() => {
     profileRequest.current?.abort();
     try { localStorage.removeItem("fdb-display-name"); localStorage.removeItem("fdb-comment"); localStorage.removeItem("fdb-avatar-id"); localStorage.removeItem("fdb-avatar-draft"); } catch { /* Profil déjà supprimé du serveur. */ }
+    setCurrentPassengerEntryNumber(null);
     setJoinName(""); setJoinComment(""); setSavedProfile({ name: "", comment: "" });
     setShowJoinModal(false);
     setOnboardingReason(null);
     setOnboardingError("");
     setSavedAvatarId(null); setShowAvatarModal(false); setAvatarError("");
     setPendingAvatarId(null);
-  }, []);
+  }, [setCurrentPassengerEntryNumber]);
 
   const openOnboardingModal = useCallback((reason: OnboardingReason, initialError = "", seed?: OnboardingSeed) => {
     if (reason === "boarding" && profileMutationLock.current) return;
@@ -366,6 +375,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       const data = await fetchJson<BusApiState & {
         passenger: PassengerProfile | null;
         seatIndex: number | null;
+        entryNumber?: number | null;
       }>("/api/bus-entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -377,6 +387,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       const acceptedSnapshot = applyBusSnapshot(data);
       if (data.seatIndex === null || !data.passenger) {
         setCurrentPassengerSeatIndex(null);
+        setCurrentPassengerEntryNumber(null);
         clearLocalRegistrationOnly();
         setOnboardingReason(null);
         setOnboardingError("");
@@ -391,6 +402,9 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
         throw new ApiError("Le personnage choisi n’a pas été enregistré.", 502);
       }
       setCurrentPassengerSeatIndex(data.seatIndex);
+      setCurrentPassengerEntryNumber((previous) =>
+        data.entryNumber ?? data.passenger?.entryNumber ?? previous ?? data.seatIndex! + 1,
+      );
       restoreSavedProfile(data.passenger);
       if (acceptedSnapshot) {
         setPassengerProfiles((profiles) => [
@@ -416,7 +430,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       profileRequest.current = null;
       setProfileSaving(false);
     }
-  }, [applyBusSnapshot, clearLocalRegistrationOnly, restoreSavedProfile, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow, showToast]);
+  }, [applyBusSnapshot, clearLocalRegistrationOnly, restoreSavedProfile, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow, showToast]);
 
   const closeProfile = useCallback(() => {
     if (!profileMutationLock.current) setShowJoinModal(false);
@@ -459,7 +473,11 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     setProfileSaving(true);
     setAvatarError("");
     try {
-      const data = await fetchJson<BusApiState & { passenger: PassengerProfile | null; seatIndex: number | null }>("/api/bus-entries", {
+      const data = await fetchJson<BusApiState & {
+        passenger: PassengerProfile | null;
+        seatIndex: number | null;
+        entryNumber?: number | null;
+      }>("/api/bus-entries", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({ visitorId, avatarId, updateOnly: true }),
         signal: controller.signal,
@@ -468,6 +486,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       if (data.seatIndex === null) {
         applyBusSnapshot(data);
         setCurrentPassengerSeatIndex(null);
+        setCurrentPassengerEntryNumber(null);
         clearLocalRegistrationOnly();
         saveAvatarDraft(avatarId);
         return;
@@ -475,6 +494,9 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       if (data.passenger?.avatarId !== avatarId) throw new ApiError("Le personnage n’a pas été enregistré. Réessaie.", 502);
       const accepted = applyBusSnapshot(data);
       setCurrentPassengerSeatIndex(data.seatIndex);
+      setCurrentPassengerEntryNumber((previous) =>
+        data.entryNumber ?? data.passenger?.entryNumber ?? previous ?? data.seatIndex! + 1,
+      );
       restoreSavedProfile(data.passenger);
       if (accepted) {
         setPassengerProfiles(profiles => [...profiles.filter(profile => profile.seatIndex !== data.passenger!.seatIndex), data.passenger!]);
@@ -488,7 +510,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       profileRequest.current = null;
       setProfileSaving(false);
     }
-  }, [hasRegisteredPlace, applyBusSnapshot, clearLocalRegistrationOnly, restoreSavedProfile, saveAvatarDraft, setCurrentPassengerSeatIndex, setPassengerProfiles, showToast]);
+  }, [hasRegisteredPlace, applyBusSnapshot, clearLocalRegistrationOnly, restoreSavedProfile, saveAvatarDraft, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles, showToast]);
 
   return { showJoinModal, profileModalMode, joinName, joinComment, joinError, profileSaving, savedProfile,
     showAvatarModal, avatarError, savedAvatarId, pendingAvatarId, hasExistingVisitor, openAvatarModal, closeAvatarModal, submitAvatar,
