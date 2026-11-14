@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { JOURNEY_MAX_DT, beginJourney, ease, updateJourney, type JourneyState } from "@/lib/bus-journey";
 import { getNearestBusDoor } from "@/lib/bus-layout";
@@ -15,6 +15,42 @@ export default function BoardingController({phase,journey,worldRef,seatZ,seatX,n
   const resume=useRef(2);
   const stateRef=useRef(journey);
   const departing=useRef({active:false,time:0,z:0,scroll:0});
+  useLayoutEffect(() => {
+    const state = stateRef.current.current;
+    const cinematic = phase === "entering" || phase === "exiting";
+    if (phase === "entering" && boardingPending) {
+      previous.current = phase;
+      elapsed.current = 0;
+      state.phase = phase;
+      state.waitingForSeat = true;
+      state.avatarVisible = false;
+      state.doorOpen = false;
+      state.completed = false;
+      state.cameraBlend = 0;
+      state.drive = 1;
+      state.elapsed = 0;
+      return;
+    }
+    if (previous.current !== phase || state.phase !== phase) {
+      if (previous.current === "exiting" && phase === "outside") {
+        departing.current = { active: true, time: 0, z: state.position.z, scroll: worldRef.current.scroll };
+      }
+      if (phase === "entering") departing.current.active = false;
+      if (!cinematic) {
+        resume.current = state.drive * 2;
+        state.waitingForSeat = false;
+        state.phase = phase;
+        state.elapsed = 0;
+        state.cameraBlend = 0;
+        state.completed = false;
+      } else {
+        beginJourney(state, phase, seatZ, getNearestBusDoor(seatZ, numRows), seatX, boardingFromSeat);
+        updateJourney(state, phase, 0, seatZ, worldRef.current.speedMultiplier, undefined, seatX);
+      }
+      previous.current = phase;
+      elapsed.current = 0;
+    }
+  }, [phase, boardingPending, boardingFromSeat, seatZ, seatX, numRows, worldRef]);
   useFrame((_,dt)=>{
     const state=stateRef.current.current;
     const cinematic=phase==="entering"||phase==="exiting";

@@ -5,9 +5,8 @@
 - [README du projet](../README.md) : fonctionnalités, démarrage et commandes essentielles.
 - [Architecture](architecture.md) : état, modules 3D, contrat audio, serveur et invariants.
 - [Configuration et exploitation](exploitation.md) : secrets, D1, santé, modération et déploiement.
-- [Tests](tests.md) : dépendances navigateur, commandes, isolation et limites des preuves.
-- [Charge locale](test-charge-local.md) : banc workerd/D1 isolé et interprétation des latences.
-- [Validation mobile](validation-mobile.md) : protocole sur téléphone et limites de l’émulation.
+- [Tests](tests.md) : lint, typage, suite unitaire/API, SEO et compilation.
+- [Validation mobile](validation-mobile.md) : protocole sur téléphone réel.
 - [Référencement](seo.md) : pages indexables, données structurées et validation Google.
 - [Girouette et trajets](bus-itinerary.md) : destinations, portes et calcul du trajet des passagers.
 - [Références des guides du bus](driver-design.md) : choix de modélisation de Kamal et Kyta.

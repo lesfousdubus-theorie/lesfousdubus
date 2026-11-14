@@ -48,6 +48,11 @@ const moved = check({ ...occupiedBase, reservedRow: 1 });
 const swapped = moved.detailed.find(person => person.passengerKind === "visitor" && person.index === 4);
 assert(swapped && swapped.physicalSeatIndex === 0, "Moving to an occupied local slot swaps its visitor into the avatar's original place.");
 assert.equal(swapped.index, 4, "Local relocation must preserve the visitor's persistent database identity.");
+for (let column = 0; column < 4; column++) {
+  const lateral = check({ ...occupiedBase, reservedRow: 1, reservedColumn: column });
+  assert.equal(lateral.avatar.physicalSeatIndex, 4 + column, `Selecting lateral seat column ${column} places the avatar at slot ${4 + column}.`);
+  assert.equal(lateral.avatar.seat.x, PASSENGER_SEAT_X[column], `Lateral column ${column} uses seat X coordinate ${PASSENGER_SEAT_X[column]}.`);
+}
 const emptyRow = getVisitorRows(16);
 const movedToEmpty = check({ ...occupiedBase, reservedRow: emptyRow });
 assert.equal(movedToEmpty.avatar.physicalSeatIndex, emptyRow * 4);

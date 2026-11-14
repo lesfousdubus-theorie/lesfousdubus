@@ -125,6 +125,7 @@ interface PassengersProps {
   hornPulse: number;
   partyOn?: boolean;
   reservedRow?: number;
+  reservedColumn?: number | null;
   passengerProfiles?: PassengerProfile[];
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   activePassengerIndex?: number | null;
@@ -135,7 +136,7 @@ interface PassengersProps {
 }
 
 function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSeatRanges = [], hornPulse,
-  partyOn = false, reservedRow = 3, passengerProfiles = [], onPassengerSelect,
+  partyOn = false, reservedRow = 3, reservedColumn = null, passengerProfiles = [], onPassengerSelect,
   lowPower = false, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
   const camera = useThree(state => state.camera);
   const root = useRef<THREE.Group>(null), cameraPoint = useMemo(() => new THREE.Vector3(), []);
@@ -151,9 +152,9 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
     setDetailFocus({ x: cameraPoint.x, z: cameraPoint.z });
   }, -3);
   const { detailed, simplified } = useMemo(() => getBusOccupancy({ passengerCount, seatCapacity,
-    vacantSeatRanges, renderedRowIndices, reservedRow, currentPassengerIndex: excludedPassengerIndex,
+    vacantSeatRanges, renderedRowIndices, reservedRow, reservedColumn, currentPassengerIndex: excludedPassengerIndex,
     avatarAboard, lowPower, detailFocus }), [passengerCount, seatCapacity, vacantSeatRanges, renderedRowIndices,
-      reservedRow, excludedPassengerIndex, avatarAboard, lowPower, detailFocus]);
+      reservedRow, reservedColumn, excludedPassengerIndex, avatarAboard, lowPower, detailFocus]);
   const profilesBySeatIndex = useMemo(() => new Map(passengerProfiles.map(profile => [profile.seatIndex, profile])), [passengerProfiles]);
   const detailedSeats = new Set(detailed.map(occupant => occupant.physicalSeatIndex));
   const poses=useMemo<PassengerPoseRegistry>(()=>new Map(),[]);
