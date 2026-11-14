@@ -46,6 +46,98 @@ function weatherForLandscape(zone: number, visit: number): WorldState["weather"]
   return value < 0.12 ? "rain" : "clear";
 }
 
+function smoothstep(start: number, end: number, value: number) {
+  const t = THREE.MathUtils.clamp((value - start) / (end - start), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+function makeTerrain(zone: number) {
+  const geometry = new THREE.PlaneGeometry(96, ZONE_LEN - 16, 28, 36);
+  geometry.rotateX(-Math.PI / 2);
+  const positions = geometry.getAttribute("position") as THREE.BufferAttribute;
+  const colors = new Float32Array(positions.count * 3);
+  const base = new THREE.Color(ZONES[zone].ground);
+  const tint = new THREE.Color(zone === 0 ? "#f6d38a" : zone === 1 ? "#d7e1d6" : zone === 2 ? "#ffffff" : zone === 3 ? "#a4cf77" : "#ffffff");
+  const color = new THREE.Color();
+
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i);
+    const z = positions.getZ(i);
+    const shoulder = smoothstep(7, 17, Math.abs(x));
+    const shore = 1 - smoothstep(38, 48, Math.abs(x));
+    const wave = Math.sin(z * 0.11 + x * 0.21 + zone) * 0.5
+      + Math.sin(z * 0.23 - x * 0.13) * 0.27;
+    const relief = [1.1, 0.32, 0.55, 0.65, 1.05][zone];
+    // Les canaux de Water Seven doivent rester sous leur surface d'eau fixe.
+    const canal = zone === 1
+      ? 1 - smoothstep(1.4, 3.5, Math.abs(Math.abs(x) - 22))
+      : 0;
+    const height = 0.008 + shoulder * shore * Math.max(0, 0.35 + wave) * relief * (1 - canal) - canal * 0.06;
+    positions.setY(i, height);
+    color.copy(base).lerp(tint, THREE.MathUtils.clamp(0.22 + wave * 0.3, 0, 0.55));
+    colors[i * 3] = color.r;
+    colors[i * 3 + 1] = color.g;
+    colors[i * 3 + 2] = color.b;
+  }
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function ZoneDetails({ zone }: { zone: number }) {
+  if (zone === 0) {
+    return <>
+      {[-1, 1].map((side) => [-48, -10, 30, 58].map((z, index) =>
+        <mesh key={`${side}-${z}`} position={[side * (27 + (index % 2) * 7), 0.18, z]} rotation={[0, z * 0.035, 0]} scale={[8, 0.28, 4.2]}>
+          <sphereGeometry args={[1, 12, 8]} />
+          <meshStandardMaterial color={index % 2 ? "#f2cb7b" : "#dcae5b"} roughness={1} />
+        </mesh>))}
+    </>;
+  }
+  if (zone === 1) {
+    return <>
+      {[-22, 22].map((x) => <group key={x}>
+        <mesh position={[x, 0.16, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[3.4, 132]} />
+          <meshStandardMaterial color="#278fbb" roughness={0.28} metalness={0.15} />
+        </mesh>
+        {[-2.1, 2.1].map((offset) => <mesh key={offset} position={[x + offset, 0.18, 0]}>
+          <boxGeometry args={[0.35, 0.22, 132]} />
+          <meshStandardMaterial color="#e7d8b5" roughness={0.9} />
+        </mesh>)}
+      </group>)}
+    </>;
+  }
+  if (zone === 2) {
+    return <>
+      {[-1, 1].map((side) => [-50, -12, 34].map((z, index) =>
+        <mesh key={`${side}-${z}`} position={[side * (26 + index * 5), 0.35 + index * 0.12, z]} scale={[6.2, 0.6, 3.8]}>
+          <sphereGeometry args={[1, 12, 8]} />
+          <meshStandardMaterial color="#ffffff" roughness={1} />
+        </mesh>))}
+    </>;
+  }
+  if (zone === 3) {
+    return <>
+      {[-1, 1].map((side) => [-34, -18, -2, 14, 30, 46].map((z) =>
+        <mesh key={`${side}-${z}`} position={[side * 31, 0.22, z]}>
+          <boxGeometry args={[15, 0.1, 1.1]} />
+          <meshStandardMaterial color="#c5b483" roughness={1} />
+        </mesh>))}
+    </>;
+  }
+  if (zone === 4) {
+    return <>
+      {[-1, 1].map((side) => [-42, 2, 46].map((z, index) =>
+        <mesh key={`${side}-${z}`} position={[side * (25 + index * 6), 0.22, z]} scale={[5.5, 0.42, 4]}>
+          <sphereGeometry args={[1, 10, 8]} />
+          <meshStandardMaterial color="#ffffff" roughness={1} />
+        </mesh>))}
+    </>;
+  }
+  return null;
+}
+
 function buildProps(): PropDef[] {
   const rnd = mulberry32(2026);
   const out: PropDef[] = [];
@@ -83,6 +175,7 @@ interface WorldProps {
 
 export default function World({ worldRef, reducedMotion = false, lowPower = false }: WorldProps) {
   const allProps = useMemo(() => buildProps(), []);
+  const terrains = useMemo(() => ZONES.map((_, index) => makeTerrain(index)), []);
   const props = useMemo(
     () => lowPower ? allProps.filter((_, index) => index % 2 === 0) : allProps,
     [allProps, lowPower],
@@ -183,6 +276,10 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
             <boxGeometry args={[96, 0.6, ZONE_LEN - 16]} />
             <meshStandardMaterial color={zone.ground} roughness={0.9} />
           </mesh>
+          <mesh geometry={terrains[i]} receiveShadow>
+            <meshStandardMaterial vertexColors roughness={0.95} side={THREE.DoubleSide} />
+          </mesh>
+          {!lowPower && <ZoneDetails zone={i} />}
           {/* Plage / bordure d'île */}
           <mesh position={[0, -0.44, 0]}>
             <boxGeometry args={[104, 0.32, ZONE_LEN - 8]} />
@@ -216,7 +313,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       ))}
 
       {/* Ligne médiane discontinue animée */}
-      <instancedMesh ref={dashRef} args={[undefined, undefined, dashes.length]}>
+      <instancedMesh ref={dashRef} args={[undefined, undefined, dashes.length]} frustumCulled={false}>
         <boxGeometry args={[0.22, 0.02, 3.2]} />
         <meshStandardMaterial color="#ffffff" roughness={0.7} />
       </instancedMesh>
