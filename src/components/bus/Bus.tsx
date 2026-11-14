@@ -80,7 +80,7 @@ export default function Bus({
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
   const hat = useRef<THREE.Group>(null);
-  const wheels = useRef<THREE.Mesh[]>([]);
+  const wheels = useRef<(THREE.Mesh | null)[]>([]);
   const interiorLights = useRef<THREE.PointLight[]>([]);
   const leftWiper = useRef<THREE.Group>(null);
   const rightWiper = useRef<THREE.Group>(null);
@@ -606,7 +606,7 @@ export default function Bus({
 
     // Rotation des roues du bus adaptée à la vitesse de défilement
     wheels.current.forEach((w) => {
-      if (w && !reducedMotion) w.rotation.x -= dt * 12 * mult;
+      if (w) w.rotation.x -= dt * 12 * mult;
     });
 
     // Éclairage intérieur doux et constant de jour comme de nuit
@@ -972,11 +972,11 @@ export default function Bus({
       ))}
 
       {/* ---------- Roues stylisées (adaptées à la longueur) ---------- */}
-      {phase === "outside" && wheelPositions.map(([x, z], i) => (
+      {phase !== "inside" && wheelPositions.map(([x, z], i) => (
         <group key={`wheel-${i}`} position={[x, 0.55, z]}>
           <mesh
-            ref={(el: any) => {
-              if (el) wheels.current[i] = el;
+            ref={(el: THREE.Mesh | null) => {
+              wheels.current[i] = el;
             }}
             castShadow
             rotation={[0, 0, Math.PI / 2]}

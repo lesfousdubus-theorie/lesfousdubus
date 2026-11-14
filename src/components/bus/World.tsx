@@ -553,7 +553,10 @@ export default function World({ worldRef, reducedMotion = false }: WorldProps) {
 
   useFrame((state, dt) => {
     const mult = worldRef.current?.speedMultiplier ?? 1.0;
-    const scroll = (worldRef.current?.scroll ?? 0) + (reducedMotion ? 0 : dt * WORLD_SPEED * mult);
+    // Le déplacement du bus fait partie du fonctionnement principal de la scène :
+    // la préférence système "réduire les animations" coupe seulement les effets
+    // décoratifs, jamais l'avancement du véhicule.
+    const scroll = (worldRef.current?.scroll ?? 0) + dt * WORLD_SPEED * mult;
     if (worldRef.current) worldRef.current.scroll = scroll;
 
     // Défilement des décors
