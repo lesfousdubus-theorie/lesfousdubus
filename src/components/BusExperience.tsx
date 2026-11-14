@@ -12,7 +12,7 @@ import { useBusControls } from "./useBusControls";
 import { getOrCreateVisitorId, isRetryableRegistrationError, fetchJson, ApiError, type BusApiState } from "@/lib/client/bus-api";
 import { TheoryAgeModal } from "./modals/TheoryAgeModal";
 import { getTheoryAgeInDays } from "@/lib/theory-age";
-import { useBusSync } from "./useBusSync";
+import { useBusSync, type PendingRegistrationProfile, type VisitorLookupResult } from "./useBusSync";
 import { useVisualViewport } from "./useVisualViewport";
 import BackgroundMusicPlayer from "./audio/BackgroundMusicPlayer";
 import { useBusParty } from "./useBusParty";
@@ -25,6 +25,8 @@ import { emitBusAudioEvent } from "@/lib/bus-audio";
 import { shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts";
 import { AvatarSelectionModal } from "./modals/AvatarSelectionModal";
 import { ManagePlaceModal } from "./modals/ManagePlaceModal";
+import type { OnboardingSubmission } from "./modals/OnboardingModal";
+import type { PassengerAvatarId } from "@/lib/passenger-avatar";
 
 const Scene = dynamic(() => import("./bus/Scene"), { ssr: false });
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
@@ -217,9 +219,31 @@ export default function BusExperience() {
   }, [updateSeatCapacity]);
 
   const profile = usePassengerProfile({ hasRegisteredPlace: currentPassengerSeatIndex !== null, applyBusSnapshot, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow, showToast });
-  const { showJoinModal, openProfileModal, restoreSavedProfile, clearProfile, pendingAvatarId } = profile;
+  const {
+    showJoinModal, openProfileModal, restoreSavedProfile, clearLocalRegistrationOnly, clearProfile,
+    pendingAvatarId, onboardingReason, openOnboardingModal, closeOnboardingModal,
+    validateOnboarding, syncBoardingDraftAvatar, submitMissingNameOnboarding,
+  } = profile;
   const directory = usePassengerDirectory(applyBusSnapshot, profileRevision);
   const { selectedPassenger, showPassengerList, passengerManifestButtonRef, openPassengerManifest, selectPassenger, clearDirectory } = directory;
+
+  const visitorLookupPromiseRef = useRef<Promise<VisitorLookupResult | null> | null>(null);
+  const pendingRegistrationProfileRef = useRef<PendingRegistrationProfile | null>(null);
+  const enteringLockRef = useRef(false);
+  const latestRegistrationRef = useRef({
+    seatIndex: currentPassengerSeatIndex,
+    displayName: profile.savedProfile.name,
+  });
+  useEffect(() => {
+    latestRegistrationRef.current = {
+      seatIndex: currentPassengerSeatIndex,
+      displayName: profile.savedProfile.name,
+    };
+  }, [currentPassengerSeatIndex, profile.savedProfile.name]);
+  const pendingAvatarIdRef = useRef(pendingAvatarId);
+  useEffect(() => {
+    pendingAvatarIdRef.current = pendingAvatarId;
+  }, [pendingAvatarId]);
 
   // Actualise le compteur d'âge exactement au prochain minuit local.
   useEffect(() => {
@@ -259,7 +283,12 @@ export default function BusExperience() {
     setCurrentPassengerSeatIndex,
     setRegistrationPending,
     restoreSavedProfile,
+    clearLocalRegistrationOnly,
+    openOnboardingModal,
     pendingAvatarId,
+    pendingRegistrationProfileRef,
+    visitorLookupPromiseRef,
+    latestRegistrationRef,
   });
 
   // Empêche tout scroll de la page
@@ -276,8 +305,30 @@ export default function BusExperience() {
 
   // Préparer le lecteur en muet pendant le geste utilisateur. La lecture
   // attend l'arrivée aux yeux du passager ; l'inscription reste en arrière-plan.
-  const enterBus = useCallback(async () => {
-    if (phase !== "outside" || joining || !sceneAvailable) return;
+  const enterBus = useCallback(async (submission?: OnboardingSubmission) => {
+    if (phase !== "outside" || enteringLockRef.current || !sceneAvailable) return;
+    enteringLockRef.current = true;
+
+    let seatForEntry = latestRegistrationRef.current.seatIndex;
+    let displayNameForEntry = latestRegistrationRef.current.displayName;
+    if (!submission && visitorLookupPromiseRef.current) {
+      try {
+        const lookup = await visitorLookupPromiseRef.current;
+        if (lookup) {
+          seatForEntry = lookup.seatIndex;
+          displayNameForEntry = lookup.hasDisplayName ? lookup.displayName : "";
+        }
+      } catch {
+        // Conserve l'état local connu si la vérification initiale échoue.
+      }
+    }
+
+    if (!submission && (seatForEntry === null || !displayNameForEntry.trim())) {
+      enteringLockRef.current = false;
+      openOnboardingModal(seatForEntry === null ? "boarding" : "missing-name");
+      return;
+    }
+
     dismissToast();
     unlockAudio();
     emitBusAudioEvent("tvPrepare");
@@ -288,6 +339,35 @@ export default function BusExperience() {
     playDing();
 
     const visitorId = getOrCreateVisitorId();
+    const fallbackAvatarId = submission ? null : pendingAvatarIdRef.current;
+    const expectedAvatarId = submission ? submission.avatarId : fallbackAvatarId;
+    pendingRegistrationProfileRef.current = submission
+      ? {
+          displayName: submission.displayName,
+          comment: submission.comment,
+          avatarId: submission.avatarId,
+        }
+      : fallbackAvatarId
+        ? { avatarId: fallbackAvatarId }
+        : null;
+
+    const payload: {
+      visitorId: string;
+      displayName?: string;
+      comment?: string;
+      avatarId?: PassengerAvatarId;
+    } = { visitorId };
+    if (submission) {
+      payload.displayName = submission.displayName;
+      if (submission.comment || seatForEntry !== null) {
+        payload.comment = submission.comment;
+      }
+      if (submission.avatarId) {
+        payload.avatarId = submission.avatarId;
+      }
+    } else if (fallbackAvatarId) {
+      payload.avatarId = fallbackAvatarId;
+    }
 
     try {
       const d = await fetchJson<BusApiState & {
@@ -298,9 +378,12 @@ export default function BusExperience() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        body: JSON.stringify({ visitorId, ...(pendingAvatarId ? { avatarId: pendingAvatarId } : {}) }),
+        body: JSON.stringify(payload),
       });
-      if (pendingAvatarId && d.passenger?.avatarId !== pendingAvatarId) throw new ApiError("Le personnage choisi n’a pas pu être enregistré.", 502);
+      if (expectedAvatarId && d.passenger?.avatarId !== expectedAvatarId) {
+        throw new ApiError("Le personnage choisi n’a pas pu être enregistré.", 502);
+      }
+      pendingRegistrationProfileRef.current = null;
       const prevRows = getBusPhysicalRows(seatCapacityRef.current);
       const nextRows = getBusPhysicalRows(d.seatCapacity);
 
@@ -314,21 +397,49 @@ export default function BusExperience() {
       setBoardingFromSeat(!hasEntered && d.added === false && d.seatIndex !== null);
       setRegistrationPending(false);
       setCurrentPassengerSeatIndex(d.seatIndex);
+      const resolvedPassenger = d.passenger ?? (
+        d.seatIndex !== null && submission
+          ? {
+              seatIndex: d.seatIndex,
+              displayName: submission.displayName,
+              comment: submission.comment || null,
+              avatarId: submission.avatarId,
+            }
+          : null
+      );
+      latestRegistrationRef.current = {
+        seatIndex: d.seatIndex,
+        displayName: resolvedPassenger?.displayName?.trim() || submission?.displayName || "",
+      };
       // Synchronise le profil depuis la base : restaure le commentaire existant
       // même si le visiteur a vidé ses cookies ou changé d'onglet.
-      restoreSavedProfile(d.passenger);
+      if (resolvedPassenger !== null || !submission) {
+        restoreSavedProfile(resolvedPassenger);
+      }
       if (d.seatIndex !== null) {
         setSeatRow(Math.min(computeNumRows(d.seatCapacity) - 1, Math.floor(d.seatIndex / 4)));
       }
-      if (d.passenger) {
+      if (resolvedPassenger) {
         setPassengerProfiles((profiles) => [
-          ...profiles.filter((profile) => profile.seatIndex !== d.passenger!.seatIndex),
-          d.passenger!,
+          ...profiles.filter((profile) => profile.seatIndex !== resolvedPassenger.seatIndex),
+          resolvedPassenger,
         ]);
       }
     } catch (error) {
       if (!isRetryableRegistrationError(error)) {
+        pendingRegistrationProfileRef.current = null;
         setRegistrationPending(false);
+        if (submission) {
+          setTvOn(false);
+          setPhase("outside");
+          setBoardingFromSeat(false);
+          openOnboardingModal(
+            "boarding",
+            error instanceof ApiError ? error.message : "Identifiant refusé par le serveur.",
+            submission,
+          );
+          return;
+        }
         showToast(
           "Mode visiteur",
           error instanceof ApiError ? error.message : "Le bus reste accessible sans inscription.",
@@ -342,9 +453,22 @@ export default function BusExperience() {
       );
       setRegistrationPending(true);
     } finally {
+      enteringLockRef.current = false;
       setJoining(false);
     }
-  }, [applyBusSnapshot, dismissToast, phase, joining, sceneAvailable, hasEntered, showToast, restoreSavedProfile, pendingAvatarId]);
+  }, [applyBusSnapshot, dismissToast, phase, sceneAvailable, hasEntered, showToast, restoreSavedProfile, openOnboardingModal]);
+
+  const handleSubmitOnboarding = useCallback((submission: OnboardingSubmission) => {
+    const validated = validateOnboarding(submission);
+    if (!validated) return;
+    if (onboardingReason === "missing-name") {
+      void submitMissingNameOnboarding(validated);
+      return;
+    }
+    syncBoardingDraftAvatar(validated.avatarId);
+    closeOnboardingModal();
+    void enterBus(validated);
+  }, [closeOnboardingModal, enterBus, onboardingReason, submitMissingNameOnboarding, syncBoardingDraftAvatar, validateOnboarding]);
 
   const leaveBusPermanently = useCallback(async () => {
     try {
@@ -356,6 +480,8 @@ export default function BusExperience() {
         body: JSON.stringify({ visitorId }),
       });
       applyBusSnapshot(data);
+      pendingRegistrationProfileRef.current = null;
+      latestRegistrationRef.current = { seatIndex: null, displayName: "" };
       setRegistrationPending(false);
       setPassengerProfiles([]);
       clearDirectory();
@@ -435,7 +561,7 @@ export default function BusExperience() {
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
-  const overlayOpen = showHelp || showPlaceModal || showTheoryModal || showJoinModal || profile.showAvatarModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
+  const overlayOpen = showHelp || showPlaceModal || showTheoryModal || showJoinModal || profile.showAvatarModal || onboardingReason !== null || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
 
   // Les préférences de confort restent disponibles au clavier sans encombrer le HUD.
   useEffect(() => {
@@ -524,7 +650,7 @@ export default function BusExperience() {
         accelerateBus={accelerateBus}
         toggleHeadlights={toggleHeadlights}
         honk={honk}
-        enterBus={enterBus}
+        enterBus={() => enterBus()}
         openProfileModal={openProfileModal}
         exitBus={exitBus}
         resetView={() => setResetViewToken((token) => token + 1)}
@@ -555,8 +681,8 @@ export default function BusExperience() {
       />
       {showPlaceModal && <ManagePlaceModal inside={phase === "inside"} onClose={() => setShowPlaceModal(false)}
         onExit={() => { setShowPlaceModal(false); exitBus(); }} onDelete={leaveBusPermanently} />}
-      <PassengerDialogs profile={profile} directory={directory} count={count} />
-      {profile.showAvatarModal && <AvatarSelectionModal avatarId={profile.savedAvatarId} seatIndex={currentPassengerSeatIndex} hasRegisteredPlace={currentPassengerSeatIndex !== null}
+      <PassengerDialogs profile={profile} directory={directory} count={count} currentSeatIndex={currentPassengerSeatIndex} onSubmitOnboarding={handleSubmitOnboarding} />
+      {profile.showAvatarModal && <AvatarSelectionModal avatarId={profile.savedAvatarId} seatIndex={currentPassengerSeatIndex} hasRegisteredPlace={currentPassengerSeatIndex !== null} hasExistingVisitor={profile.hasExistingVisitor}
         saving={profile.profileSaving} error={profile.avatarError} onClose={profile.closeAvatarModal}
         onChoose={avatarId => void profile.submitAvatar(avatarId)} />}
       <TheoryAgeModal isOpen={showTheoryAge} onClose={() => setShowTheoryAge(false)} />

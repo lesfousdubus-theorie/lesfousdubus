@@ -28,7 +28,7 @@ try {
   });
   const send = createCdp(ws);
   const run = expression => evaluate(send, expression);
-  const wait = (expression, label) => waitForPageCondition(send, expression, label, 45_000);
+  const wait = (expression, label) => waitForPageCondition(send, expression, label, 60_000);
   const delay = milliseconds => run(`new Promise(resolve => setTimeout(resolve, ${milliseconds}))`);
   const click = selector => run(`(() => { const b = document.querySelector(${JSON.stringify(selector)}); if (!b || b.disabled) throw new Error('Unavailable control: ' + ${JSON.stringify(selector)}); b.click(); })()`);
   const capture = async filename => {
@@ -82,15 +82,38 @@ try {
       const method = (init?.method ?? 'GET').toUpperCase();
       if (!['GET','HEAD','POST'].includes(method)) throw new Error('Fixture disallows this write');
       let passenger = JSON.parse(localStorage.getItem('avatar-test-fixture') || 'null');
+      let revision = Number(localStorage.getItem('avatar-test-revision') || (passenger ? '2' : '1'));
       const payload = init?.body ? JSON.parse(init.body) : {};
       window.avatarApiCalls.push({ method, payload, fixture: true });
-      if (method === 'POST' && payload.avatarId) {
-        passenger = { seatIndex: 0, displayName: 'Nakama Test', comment: 'Vive le bus !', avatarId: payload.avatarId };
+      const registeredBefore = Boolean(passenger);
+      const hasName = typeof payload.displayName === 'string';
+      const hasComment = typeof payload.comment === 'string';
+      const hasAvatar = typeof payload.avatarId === 'string';
+      const canPersist = method === 'POST' && (!payload.updateOnly || registeredBefore);
+      if (canPersist && (!registeredBefore || hasName || hasComment || hasAvatar)) {
+        passenger = {
+          seatIndex: passenger?.seatIndex ?? 0,
+          displayName: hasName ? payload.displayName.trim() : (passenger?.displayName ?? ''),
+          comment: hasComment ? (payload.comment.trim() || null) : (passenger?.comment ?? null),
+          avatarId: hasAvatar ? payload.avatarId : (passenger?.avatarId ?? null),
+        };
+        revision += 1;
         localStorage.setItem('avatar-test-fixture', JSON.stringify(passenger));
+        localStorage.setItem('avatar-test-revision', String(revision));
       }
-      return Promise.resolve(new Response(JSON.stringify({ count: 2, seatCapacity: 2, profileRevision: passenger ? 2 : 1,
-        vacantSeatRanges: [], passengers: passenger ? [passenger] : [], seatIndex: 0, added: false, passenger }),
-        { headers: { 'Content-Type': 'application/json' } }));
+      const seatIndex = passenger ? passenger.seatIndex : null;
+      return Promise.resolve(new Response(JSON.stringify({
+        count: 2,
+        seatCapacity: 2,
+        profileRevision: revision,
+        vacantSeatRanges: [],
+        passengers: passenger ? [passenger] : [],
+        registered: Boolean(passenger),
+        hasDisplayName: Boolean(passenger?.displayName?.trim()),
+        seatIndex,
+        added: canPersist && !registeredBefore,
+        passenger,
+      }), { headers: { 'Content-Type': 'application/json' } }));
     };
   ` });
   await send("Page.navigate", { url: `${baseUrl}/?count=2` });
@@ -112,10 +135,23 @@ try {
   await run("[...document.querySelectorAll('[aria-modal=true] button')].find(b=>b.textContent.includes('Choisir ce personnage')).click()");
   await wait("!document.querySelector('[aria-modal=true]')", "Pending Luffy is selected");
   await run("[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Entrer dans le bus')).click()");
+  await wait("document.getElementById('onboarding-title')?.textContent === 'Monte dans le bus !' && Boolean(document.getElementById('onboarding-name'))", "Unregistered entry opens mandatory onboarding modal");
+  assert(await run("document.querySelector('[role=\"dialog\"]').textContent.includes('Luffy')"), "Onboarding modal reflects pending character draft.");
+  await run("document.getElementById('onboarding-name').focus()");
+  await wait("document.activeElement === document.getElementById('onboarding-name')", "Focus onboarding name");
+  await send("Input.insertText", { text: "Nakama Test" });
+  await wait("document.getElementById('onboarding-name')?.value === 'Nakama Test'", "Type onboarding display name");
+  await run("document.getElementById('onboarding-comment').focus()");
+  await wait("document.activeElement === document.getElementById('onboarding-comment')", "Focus onboarding comment");
+  await send("Input.insertText", { text: "Vive le bus !" });
+  await wait("document.getElementById('onboarding-comment')?.value === 'Vive le bus !'", "Type onboarding comment");
+  await run("document.querySelector('[role=\"dialog\"] button[type=\"submit\"]').click()");
   await wait("document.querySelector('.bus-app')?.dataset.phase === 'inside'", "Board with the preselected character");
   assert.equal(await run("avatarApiCalls.find(c=>c.method==='POST').payload.avatarId"),'luffy',"Boarding sends the pending avatar in the registration request.");
+  assert.equal(await run("avatarApiCalls.find(c=>c.method==='POST').payload.displayName"),'Nakama Test',"Boarding sends the required onboarding displayName.");
+  assert.equal(await run("avatarApiCalls.find(c=>c.method==='POST').payload.comment"),'Vive le bus !',"Boarding sends the optional onboarding comment.");
   assert.equal(await run("localStorage.getItem('fdb-avatar-draft')"),null,"Successful registration clears the pending choice.");
-  report.checks.push("Character selection is available before boarding; no premature registration; local choice survives reload and is sent on entry.");
+  report.checks.push("Character selection is available before boarding; no premature registration; local choice survives reload and is sent with required identity on entry.");
   await wait("document.querySelector('.bus-app')?.dataset.sceneAvailable === 'true' && Boolean(avatarScene())", "Real bus scene ready");
   await delay(350);
   const adultEyeY = await run("avatarScene().camera.position.y");
@@ -255,6 +291,103 @@ try {
   assert((await frontFacing())>.99,"Reopening returns the saved character to a front view.");
   await key("Escape"); await wait("!document.querySelector('[aria-modal=true]')", "Escape closes avatar selection");
   report.checks.push("Save updates main actor; fixture restores through boarding API after local avatar cache removal; current selection reopens correctly.");
+  // Returning visitor who reloads updates DB avatar immediately outside before re-entering.
+  await send("Page.navigate", { url: baseUrl });
+  await wait("document.querySelector('.bus-app')?.dataset.sceneAvailable === 'true' && avatarScene()?.scene.getObjectByName('bus-seated-passengers')?.children.some(c => c.userData.passengerKind === 'visitor' && c.userData.seatIndex === 0 && c.visible)", "Reloaded scene renders registered seated visitor before boarding");
+  assert.equal(await run("avatarApiCalls.filter(c => c.method === 'POST').length"), 0, "Reloading outside must not send automatic POST writes.");
+  assert.equal(await run("avatarScene().scene.getObjectByName('bus-seated-passengers').children.find(c => c.userData.passengerKind === 'visitor' && c.userData.seatIndex === 0)?.userData.archetypeId"), "chopper", "Seated visitor renders previous DB avatar before outside change.");
+  await click('button[aria-label="Choisir mon personnage"]');
+  await wait("Boolean(document.getElementById('avatar-selection-title')) && Boolean(avatarPreview())", "Avatar dialog opens outside for returning visitor");
+  assert.equal(await run("avatarPreview()?.userData.archetypeId"), "chopper", "Reloaded returning visitor selector opens on saved character.");
+  await click('button[aria-label="Personnage précédent"]');
+  await wait("avatarPreview()?.userData.archetypeId === 'sanji'", "Select Sanji before re-entering");
+  await run("[...document.querySelectorAll('[aria-modal=true] button')].find(b => b.textContent.includes('Choisir ce personnage')).click()");
+  await wait("!document.querySelector('[aria-modal=true]')", "Pre-boarding returning visitor save closes modal");
+  await wait("avatarScene()?.scene.getObjectByName('bus-seated-passengers')?.children.find(c => c.userData.passengerKind === 'visitor' && c.userData.seatIndex === 0 && c.visible)?.userData.archetypeId === 'sanji'", "Seated passenger outside immediately renders newly saved avatar");
+  const preboardPosts = await run("avatarApiCalls.filter(c => c.method === 'POST')");
+  assert.equal(preboardPosts.length, 1, "Returning outside avatar change sends one immediate POST update.");
+  assert.deepEqual(preboardPosts[0].payload, { visitorId: await run("localStorage.getItem('fdb-visitor')"), avatarId: "sanji", updateOnly: true }, "Returning outside update uses updateOnly: true and preserves identity.");
+  assert.equal(await run("document.querySelector('.bus-app')?.dataset.phase"), "outside", "Updating avatar outside leaves camera outside.");
+  assert.equal(await run("localStorage.getItem('fdb-avatar-draft')"), null, "Confirmed returning update does not leave a local draft.");
+  assert.equal(await run("localStorage.getItem('fdb-avatar-id')"), "sanji");
+  assert.equal(await run("JSON.parse(localStorage.getItem('avatar-test-fixture')).avatarId"), "sanji");
+  assert.equal(await run("Boolean(avatarScene().scene.getObjectByName('bus-boarding-avatar')?.visible)"), false, "Boarding avatar remains hidden outside to avoid duplicating the seated model.");
+  assert.equal(await run("[...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'Ma place')"), true, "Place management becomes available once server confirms place.");
+  await run("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Entrer dans le bus')).click()");
+  await wait("document.querySelector('.bus-app')?.dataset.phase === 'inside'", "Returning visitor boards after outside update");
+  assert.equal(await run("avatarScene().scene.getObjectByName('bus-boarding-avatar').userData.archetypeId"), "sanji");
+  assert.equal(await run("avatarApiCalls.filter(c => c.method === 'POST').at(-1).payload.avatarId"), undefined, "Boarding after immediate update does not re-send a stale avatar draft.");
+  assert(Math.abs((await run("avatarScene().camera.position.y")) - adultEyeY) < 0.08, "Sanji eye height matches adult eye level.");
+  // Leftover visitor ID whose seat was removed falls back to local draft without recreating a seat.
+  await run("localStorage.removeItem('avatar-test-fixture'); localStorage.removeItem('fdb-avatar-id'); localStorage.removeItem('fdb-avatar-draft');");
+  await send("Page.navigate", { url: baseUrl });
+  await wait("document.querySelector('.bus-app')?.dataset.sceneAvailable === 'true'", "Deleted-seat visitor reloads outside");
+  await click('button[aria-label="Choisir mon personnage"]');
+  await wait("Boolean(document.getElementById('avatar-selection-title')) && Boolean(avatarPreview())", "Avatar dialog opens with stale visitorId");
+  await click('button[aria-label="Personnage suivant"]');
+  await wait("avatarPreview()?.userData.archetypeId === 'zoro'", "Choose Zoro after prior seat deletion");
+  await run("[...document.querySelectorAll('[aria-modal=true] button')].find(b => b.textContent.includes('Choisir ce personnage')).click()");
+  await wait("!document.querySelector('[aria-modal=true]')", "Modal closes and falls back to draft when server reports no seat");
+  const deletedPosts = await run("avatarApiCalls.filter(c => c.method === 'POST')");
+  assert.equal(deletedPosts.length, 1);
+  assert.equal(deletedPosts[0].payload.updateOnly, true);
+  assert.equal(deletedPosts[0].payload.avatarId, "zoro");
+  assert.equal(await run("localStorage.getItem('avatar-test-fixture')"), null, "Server updateOnly call must not create a new seat when visitor is unregistered.");
+  assert.equal(await run("localStorage.getItem('fdb-avatar-draft')"), "zoro", "Unregistered visitor with stale fdb-visitor falls back to local draft.");
+  assert.equal(await run("[...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'Ma place')"), false);
+  await run("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Entrer dans le bus')).click()");
+  await wait("document.getElementById('onboarding-title')?.textContent === 'Monte dans le bus !' && Boolean(document.getElementById('onboarding-name'))", "Deleted-seat visitor opens mandatory onboarding modal");
+  assert(await run("document.querySelector('[role=\"dialog\"]').textContent.includes('Zoro')"), "Onboarding modal shows fallback Zoro draft.");
+  await run("document.getElementById('onboarding-name').focus()");
+  await wait("document.activeElement === document.getElementById('onboarding-name')", "Focus deleted-seat onboarding input");
+  await send("Input.insertText", { text: "Revenu Test" });
+  await wait("document.getElementById('onboarding-name')?.value === 'Revenu Test'", "Type display name after seat deletion");
+  await run("document.querySelector('[role=\"dialog\"] button[type=\"submit\"]').click()");
+  await wait("document.querySelector('.bus-app')?.dataset.phase === 'inside'", "Deleted-seat visitor boards cleanly using fallback draft");
+  assert.equal(await run("JSON.parse(localStorage.getItem('avatar-test-fixture')).avatarId"), "zoro");
+  assert.equal(await run("localStorage.getItem('fdb-avatar-draft')"), null);
+  report.checks.push("Returning visitor reloading outside updates DB avatar immediately via updateOnly without duplicating seats; stale fdb-visitor falls back cleanly to local draft without recreating a seat.");
+  // Returning visitor in D1 without a display_name must open non-closable OnboardingModal automatically on site load.
+  await run("localStorage.setItem('avatar-test-fixture', JSON.stringify({ seatIndex: 0, displayName: '', comment: 'Ancien message', avatarId: 'sanji' })); localStorage.removeItem('fdb-display-name'); localStorage.removeItem('fdb-avatar-id');");
+  await send("Page.navigate", { url: baseUrl });
+  await wait("document.getElementById('onboarding-title')?.textContent === 'Choisis ton identifiant' && Boolean(document.getElementById('onboarding-name'))", "Returning visitor without pseudo opens mandatory identification automatically on load");
+  assert.equal(await run("document.querySelector('.bus-app')?.dataset.phase"), "outside", "Missing-name prompt opens immediately on landing outside.");
+  assert.equal(await run("document.getElementById('onboarding-comment')?.value"), "Ancien message", "Existing saved comment is preserved in the modal.");
+  assert.equal(await run("Boolean(document.querySelector('[role=\"dialog\"] button[aria-label=\"Fermer la fenêtre\"]'))"), false, "Missing-name onboarding modal has no close button.");
+  await key("Escape");
+  await delay(120);
+  assert(await run("Boolean(document.getElementById('onboarding-name'))"), "Escape cannot dismiss missing-name onboarding.");
+  await send("Input.dispatchMouseEvent", { type: "mousePressed", x: 5, y: 5, button: "left", clickCount: 1 });
+  await send("Input.dispatchMouseEvent", { type: "mouseReleased", x: 5, y: 5, button: "left", clickCount: 1 });
+  await delay(120);
+  assert(await run("Boolean(document.getElementById('onboarding-name'))"), "Backdrop click cannot dismiss missing-name onboarding.");
+  await run("document.querySelector('[role=\"dialog\"] form').requestSubmit()");
+  await wait("Boolean(document.getElementById('onboarding-error'))", "Empty name validation in missing-name modal");
+  await run("[...document.querySelectorAll('[role=\"dialog\"] button')].find(b => b.textContent.includes('Changer')).click()");
+  await wait("Boolean(document.getElementById('onboarding-character-picker'))", "Open locked avatar preview inside missing-name modal");
+  assert.equal(await run("document.body.innerText.includes('Laisser le choix automatique')"), false, "Saved DB avatar cannot be reset to automatic in missing-name onboarding.");
+  await run("[...document.querySelectorAll('[role=\"dialog\"] button')].find(b => b.textContent.includes('Masquer')).click()");
+  await wait("!document.getElementById('onboarding-character-picker')", "Collapse inline picker");
+  await run("document.getElementById('onboarding-name').focus()");
+  await wait("document.activeElement === document.getElementById('onboarding-name')", "Focus missing-name input");
+  await send("Input.insertText", { text: "Identifiant Obligatoire" });
+  await wait("document.getElementById('onboarding-name')?.value === 'Identifiant Obligatoire'", "Type mandatory name");
+  await run("document.querySelector('[role=\"dialog\"] button[type=\"submit\"]').click()");
+  await wait("!document.querySelector('[aria-modal=true]')", "Submitting mandatory name closes modal");
+  assert.equal(await run("document.querySelector('.bus-app')?.dataset.phase"), "outside", "Submitting missing-name keeps visitor outside until choosing to board.");
+  const missingNamePost = await run("avatarApiCalls.filter(c => c.method === 'POST').at(-1)");
+  assert.equal(missingNamePost.payload.updateOnly, true, "Missing-name onboarding updates existing DB row.");
+  assert.equal(missingNamePost.payload.displayName, "Identifiant Obligatoire");
+  assert.equal(missingNamePost.payload.comment, "Ancien message");
+  assert.deepEqual(await run("JSON.parse(localStorage.getItem('avatar-test-fixture'))"), {
+    seatIndex: 0, displayName: "Identifiant Obligatoire", comment: "Ancien message", avatarId: "sanji",
+  });
+  await wait("document.querySelector('.bus-app')?.dataset.sceneAvailable === 'true'", "Outside scene remains ready after identification");
+  await run("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Entrer dans le bus')).click()");
+  await wait("document.querySelector('.bus-app')?.dataset.phase === 'inside' && Boolean(avatarScene()?.scene.getObjectByName('bus-boarding-avatar'))", "Visitor boards directly once mandatory name is saved");
+  assert.equal(await run("Boolean(document.getElementById('onboarding-name'))"), false, "Identified visitor boards without repeating onboarding.");
+  assert.equal(await run("avatarScene().scene.getObjectByName('bus-boarding-avatar').userData.archetypeId"), "sanji");
+  report.checks.push("Returning visitor without display name opens non-closable OnboardingModal immediately on arrival, preserves comment/avatar, and boards directly afterwards.");
   assert.deepEqual(report.errors, []);
   report.apiCalls = await run("avatarApiCalls");
   await writeFile(`${output}/avatars.json`, JSON.stringify(report, null, 2) + "\n");
