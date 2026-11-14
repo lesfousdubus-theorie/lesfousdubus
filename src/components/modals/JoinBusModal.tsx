@@ -143,7 +143,7 @@ export function JoinBusModal({
             {mode === "name" ? "Ton nom ou pseudo sera visible publiquement dans le bus." : "Ton commentaire sera visible publiquement par les autres passagers."}
           </p>
 
-          <div className={`grid gap-3 ${hasSavedValue ? "sm:grid-cols-2" : ""}`}>
+          <div className={`grid gap-3 ${mode === "comment" && hasSavedValue ? "sm:grid-cols-2" : ""}`}>
             <button
               type="submit"
               disabled={joining}
@@ -152,13 +152,13 @@ export function JoinBusModal({
               <span aria-hidden="true">{mode === "name" ? "🏷️" : "💬"}</span>
               {joining ? "Enregistrement…" : "Enregistrer"}
             </button>
-            {hasSavedValue && <button
+            {mode === "comment" && hasSavedValue && <button
               type="button"
               disabled={joining}
               onClick={onRemove}
               className="min-h-12 rounded-xl border border-red-300/45 bg-red-950/35 px-4 py-3 text-sm font-black text-red-100 transition hover:border-red-200 hover:bg-red-900/55 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-200 disabled:cursor-wait disabled:opacity-80"
             >
-              {mode === "name" ? "Retirer mon prénom" : "Retirer mon commentaire"}
+              Retirer mon commentaire
             </button>}
           </div>
         </form>

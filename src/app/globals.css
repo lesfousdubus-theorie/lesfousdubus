@@ -201,6 +201,22 @@ body {
   width: max-content;
 }
 
+.bus-mobile-menu {
+  bottom: var(--bus-mobile-menu-bottom, calc(4.5rem + env(safe-area-inset-bottom)));
+  left: calc(50% + (env(safe-area-inset-left) - env(safe-area-inset-right)) / 2);
+  width: min(calc(100vw - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right)), 24rem);
+  translate: -50% 0;
+}
+
+[data-bottom-layout="compact"] .bus-exterior-controls,
+[data-bottom-layout="compact"] .bus-interior-controls {
+  bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important;
+}
+
+[data-bottom-layout="compact"] .bus-exterior-controls {
+  width: min(24rem, calc(100vw - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right)));
+}
+
 [data-bottom-layout="inline"] .bus-exterior-controls,
 [data-bottom-layout="inline"] .bus-interior-controls {
   left: calc(50% + (var(--bus-utilities-width, 0px) - var(--bus-speed-width, 0px) + env(safe-area-inset-left) - env(safe-area-inset-right)) / 2) !important;
@@ -247,6 +263,9 @@ body {
 
 /* Garder les cinq commandes et leurs cibles tactiles sur les petits écrans. */
 @media (max-width: 380px) {
+  .bus-title-actions > button:not(.bus-immersive-toggle) {
+    padding-inline: 0.4375rem;
+  }
   .bus-day-night { gap: 4px; }
   .bus-day-night > button:first-child {
     width: 44px;
@@ -258,8 +277,10 @@ body {
 }
 
 @media (max-width: 639px) and (orientation: portrait) {
-  .bus-exterior-controls > button:not(:last-child) { min-width: 0; }
-  .bus-exterior-tv { width: 4.5rem; }
+  .bus-exterior-controls { gap: 0.375rem !important; }
+  .bus-exterior-controls button { padding-inline: 0.625rem !important; }
+  .bus-exterior-controls > button:first-child { flex: none; min-width: 0; }
+  .bus-exterior-tv { width: 4.25rem; }
   .bus-exterior-tv > button { width: 100%; }
 }
 
@@ -275,9 +296,10 @@ body {
    Cette passe compacte évite que les contrôles se chevauchent comme sur tablette. */
 @media (orientation: landscape) and (max-height: 520px) {
   .bus-title-panel {
-    /* Les accès à la théorie et au personnage gardent la hauteur libre
-       pour les notifications sur les téléphones en paysage étroit. */
-    max-width: 48vw !important;
+    /* Les accès à la théorie, au personnage, à sa place et au mode immersif
+       tiennent sur une seule ligne pour préserver la hauteur libre des toasts. */
+    left: calc(0.35rem + env(safe-area-inset-left)) !important;
+    max-width: calc(100vw - 15.25rem - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
   }
 
   .bus-title-panel h1,
@@ -293,11 +315,44 @@ body {
     margin-top: 0 !important;
   }
 
+  .bus-title-actions {
+    gap: 0.25rem !important;
+  }
+
+  .bus-title-actions > button {
+    padding-inline: 0.4375rem !important;
+    font-size: 0.6875rem !important;
+  }
+
+  .bus-title-actions > .bus-immersive-toggle {
+    width: 2.75rem !important;
+    padding-inline: 0 !important;
+  }
+
+  .bus-landscape-hide {
+    display: none !important;
+  }
+
   .bus-top-stats {
     top: calc(0.35rem + env(safe-area-inset-top)) !important;
     left: auto !important;
     right: calc(0.35rem + env(safe-area-inset-right)) !important;
+    min-height: 0 !important;
     height: auto !important;
+  }
+
+  .bus-top-stats > button {
+    gap: 0.35rem !important;
+    padding: 0.25rem 0.45rem !important;
+  }
+
+  .bus-top-stats .text-xs {
+    font-size: 0.6875rem !important;
+  }
+
+  .bus-stats-value {
+    font-size: 1rem !important;
+    line-height: 1.35rem !important;
   }
 
   .bus-row-nav {
@@ -316,7 +371,7 @@ body {
 
   .bus-music-badge { display: none !important; }
   .bus-volume-popup { display: flex !important; }
-  .bus-toast-content { font-size: 0.875rem; }
+  .bus-toast-content { padding: 0.45rem 0.65rem !important; font-size: 0.875rem; }
   .bus-toast-content > div > div:first-child { font-size: 0.875rem; }
 
   .bus-volume-inline { display: none !important; }
@@ -347,16 +402,25 @@ body {
     min-width: 3.6rem;
   }
 
+  [data-bottom-layout="compact"] .bus-exterior-controls,
+  [data-bottom-layout="compact"] .bus-interior-controls {
+    bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
+  }
+
   .bus-exterior-controls,
   .bus-interior-controls {
     max-width: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 0.7rem) !important;
     gap: 0.25rem !important;
   }
 
-  .bus-exterior-controls { width: 36rem; }
+  .bus-exterior-controls {
+    width: min(26rem, calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 0.7rem));
+    flex-wrap: nowrap;
+  }
 
   .bus-interior-controls {
-    max-width: 32rem !important;
+    max-width: min(38rem, calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 0.7rem)) !important;
+    width: max-content !important;
     flex-direction: row;
   }
 
@@ -366,17 +430,27 @@ body {
 
   .bus-interior-controls button,
   .bus-exterior-controls button {
-    min-width: 0 !important;
+    min-width: 2.75rem !important;
     width: auto !important;
-    flex: 1;
-    padding-inline: 0.375rem !important;
+    flex: 1 0 auto;
+    padding-inline: 0.5rem !important;
   }
 
-  .bus-interior-controls > div:first-child > button { flex: 1.35; }
-  .bus-interior-controls button > span[aria-hidden="true"] { display: none; }
-  .bus-exterior-controls { flex-wrap: nowrap; }
+  .bus-interior-controls > div:first-child > button { flex: 1.15 0 auto; }
+  .bus-interior-controls button > span[aria-hidden="true"]:not(.bus-mobile-menu-dot) { display: none; }
   .bus-exterior-controls > div { display: contents; }
-  .bus-exterior-controls > button:last-child { flex: 1.6; }
+  .bus-exterior-controls > button:last-child { flex: 1.5 0 auto; }
+
+  .bus-mobile-menu {
+    width: min(calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right)), 36rem);
+    padding: 0.4375rem !important;
+  }
+
+  .bus-mobile-menu-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 0.375rem !important;
+  }
 
   .hud-label-long {
     display: none !important;
@@ -408,7 +482,8 @@ body {
 .bus-app[data-scene-available="false"] .bus-interior-controls,
 .bus-app[data-scene-available="false"] .bus-row-nav,
 .bus-app[data-scene-available="false"] .bus-day-night,
-.bus-app[data-scene-available="false"] .bus-speed {
+.bus-app[data-scene-available="false"] .bus-speed,
+.bus-app[data-scene-available="false"] .bus-mobile-menu {
   display: none !important;
 }
 

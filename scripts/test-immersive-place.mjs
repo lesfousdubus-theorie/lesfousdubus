@@ -46,7 +46,7 @@ try {
       if(method==='DELETE'&&++f.deleteAttempts===1)return new Promise(resolve=>setTimeout(()=>resolve(new Response('{}',{status:503})),350));
       if(method==='DELETE'){f.count=1;f.revision++;}
       const mine=f.count===2?{seatIndex:0,displayName:'Test immersion',comment:'Profil de test',avatarId:'zoro'}:null;
-      return Promise.resolve(new Response(JSON.stringify({count:f.count,seatCapacity:2,profileRevision:f.revision,vacantSeatRanges:f.count===1?[[0,1,1]]:[],passengers:mine?[mine]:[],passenger:mine,seatIndex:mine?0:null,added:false,removed:method==='DELETE',nextFrom:2,hasMore:false}),{headers:{'Content-Type':'application/json'}}));
+      return Promise.resolve(new Response(JSON.stringify({count:f.count,seatCapacity:2,profileRevision:f.revision,vacantSeatRanges:f.count===1?[[0,1,1]]:[],passengers:mine?[mine]:[],registered:Boolean(mine),hasDisplayName:Boolean(mine?.displayName),passenger:mine,seatIndex:mine?0:null,added:false,removed:method==='DELETE',nextFrom:2,hasMore:false}),{headers:{'Content-Type':'application/json'}}));
     };
   ` });
   await send("Page.navigate", { url: baseUrl });

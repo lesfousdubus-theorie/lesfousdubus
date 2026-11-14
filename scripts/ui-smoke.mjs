@@ -181,8 +181,22 @@ try {
             }
           }
         }
+        const hudRoot = document.querySelector('[data-bottom-layout]');
+        const compactHud = hudRoot?.dataset.bottomLayout === 'compact';
+        const visibleToggle = [...document.querySelectorAll('[data-mobile-menu-toggle]')].find(visible);
+        const exteriorButtons = [...document.querySelectorAll('.bus-exterior-controls button')].filter(visible);
+        const titleActionButtons = [...document.querySelectorAll('.bus-title-actions button')].filter(visible);
+        const titleActionTops = titleActionButtons.map((button) => button.getBoundingClientRect().top);
         return {
           overflow: document.documentElement.scrollWidth - innerWidth,
+          compactHud,
+          hasMobileMenuToggle: Boolean(visibleToggle),
+          mobileMenuToggleExpanded: visibleToggle?.getAttribute('aria-expanded') ?? null,
+          hasMobileMenuOpen: Boolean(document.querySelector('.bus-mobile-menu')),
+          exteriorVisibleCount: exteriorButtons.length,
+          hasDayNightBar: Boolean(document.querySelector('.bus-day-night')),
+          hasSpeedBar: Boolean(document.querySelector('.bus-speed')),
+          titleActionsSingleRow: titleActionTops.length <= 1 || Math.max(...titleActionTops) - Math.min(...titleActionTops) <= 2,
           hasEnter: buttons.some((button) => button.textContent?.includes("Entrer dans le bus")),
           controlHeights: {
             speed: document.querySelector(".bus-speed")?.getBoundingClientRect().height ?? 0,
@@ -198,8 +212,8 @@ try {
           outside: outside.map(({ text, rect }) => ({ text, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom })),
           tooSmall,
           collisions,
-          hudLayout: document.querySelector('.bus-title-panel').parentElement.dataset.bottomLayout,
-          hudStyle: document.querySelector('.bus-title-panel').parentElement.getAttribute('style'),
+          hudLayout: hudRoot?.dataset.bottomLayout,
+          hudStyle: hudRoot?.getAttribute('style'),
         };
       })()
     `);
@@ -207,10 +221,23 @@ try {
     assert(layout.overflow <= 2, `Horizontal overflow at ${viewport.width}x${viewport.height}: ${layout.overflow}px`);
     assert.equal(layout.outside.length, 0, `Visible controls leave viewport at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout)}`);
     assert.equal(layout.tooSmall.length, 0, `Touch targets are too small at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.tooSmall)}`);
-    assert(Math.abs(layout.controlHeights.speed - layout.controlHeights.dayNight) <= 1, `Speed and day/night controls have different heights at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
-    assert(Math.abs(layout.controlHeights.speed - layout.controlHeights.exterior) <= 1, `Speed and exterior controls have different heights at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
-    assert(layout.controlHeights.speedButtons.every((height) => height >= 44), `Speed buttons are too short at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
-    assert(layout.controlHeights.speedFillGaps.every(([top, bottom]) => top >= 3 && bottom >= 3), `Speed button backgrounds touch the top or bottom edge at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
+    assert(layout.titleActionsSingleRow, `Top title actions wrapped across multiple rows at ${viewport.width}x${viewport.height}`);
+    const expectCompact = viewport.width < 640 || (viewport.width > viewport.height && viewport.height <= 520);
+    assert.equal(layout.compactHud, expectCompact, `Unexpected bottomLayout at ${viewport.width}x${viewport.height}: ${layout.hudLayout}`);
+    if (expectCompact) {
+      assert(layout.hasMobileMenuToggle, `Mobile menu toggle missing at ${viewport.width}x${viewport.height}`);
+      assert.equal(layout.mobileMenuToggleExpanded, "false", `Mobile menu should start collapsed at ${viewport.width}x${viewport.height}`);
+      assert(!layout.hasMobileMenuOpen, `Mobile menu should not be open initially at ${viewport.width}x${viewport.height}`);
+      assert(!layout.hasDayNightBar && !layout.hasSpeedBar, `Grouped desktop bars should be inside mobile menu at ${viewport.width}x${viewport.height}`);
+      assert.equal(layout.exteriorVisibleCount, 2, `Exterior mobile dock should only show Commandes and Entrer at ${viewport.width}x${viewport.height}`);
+      assert(layout.controlHeights.exterior >= 44, `Exterior mobile dock too short at ${viewport.width}x${viewport.height}`);
+    } else {
+      assert(!layout.hasMobileMenuToggle, `Mobile menu toggle should not appear at ${viewport.width}x${viewport.height}`);
+      assert(Math.abs(layout.controlHeights.speed - layout.controlHeights.dayNight) <= 1, `Speed and day/night controls have different heights at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
+      assert(Math.abs(layout.controlHeights.speed - layout.controlHeights.exterior) <= 1, `Speed and exterior controls have different heights at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
+      assert(layout.controlHeights.speedButtons.every((height) => height >= 44), `Speed buttons are too short at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
+      assert(layout.controlHeights.speedFillGaps.every(([top, bottom]) => top >= 3 && bottom >= 3), `Speed button backgrounds touch the top or bottom edge at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.controlHeights)}`);
+    }
     assert.equal(layout.collisions.length, 0, `Visible controls overlap at ${viewport.width}x${viewport.height}: ${JSON.stringify(layout.collisions)}`);
 
     await evaluate(send, `
@@ -307,25 +334,49 @@ try {
   });
   await waitForPageCondition(
     interactionSend,
-    `document.querySelector("[data-phase]")?.getAttribute("data-phase") === "outside"`,
+    `document.querySelector("[data-phase]")?.getAttribute("data-phase") === "outside" && document.querySelector("[data-bottom-layout]")?.dataset.bottomLayout === "compact" && Boolean(document.querySelector('[data-mobile-menu-toggle="exterior"]'))`,
     "Phone bus UI",
   );
+  assert.equal(
+    await evaluate(interactionSend, `document.querySelector('[data-mobile-menu-toggle="exterior"]')?.getAttribute('aria-expanded')`),
+    "false",
+    "Mobile Commandes menu must start collapsed on phone.",
+  );
+  assert.equal(
+    await evaluate(interactionSend, `Boolean(document.querySelector('.bus-mobile-menu'))`),
+    false,
+    "Mobile Commandes panel must not be rendered while collapsed.",
+  );
+  await evaluate(interactionSend, `document.querySelector('[data-mobile-menu-toggle="exterior"]')?.click()`);
+  await waitForPageCondition(interactionSend, `Boolean(document.querySelector('.bus-mobile-menu'))`, "Mobile Commandes menu opens");
+  assert.equal(
+    await evaluate(interactionSend, `document.querySelector('[data-mobile-menu-toggle="exterior"]')?.getAttribute('aria-expanded')`),
+    "true",
+  );
   const startingSpeed = await evaluate(interactionSend,
-    `document.querySelector('.bus-speed-value')?.textContent?.trim()`,
+    `document.querySelector('.bus-mobile-speed .bus-speed-value')?.textContent?.trim()`,
   );
   await evaluate(interactionSend,
-    `document.querySelector('button[aria-label="Accélérer le bus"]')?.click()`,
+    `document.querySelector('.bus-mobile-menu button[aria-label="Accélérer le bus"]')?.click()`,
   );
   await waitForPageCondition(interactionSend,
-    `document.querySelector('.bus-speed-value')?.textContent?.trim() !== ${JSON.stringify(startingSpeed)}`,
-    "Bus acceleration control",
+    `document.querySelector('.bus-mobile-speed .bus-speed-value')?.textContent?.trim() !== ${JSON.stringify(startingSpeed)}`,
+    "Bus acceleration control inside mobile menu",
   );
   await evaluate(interactionSend,
-    `document.querySelector('button[aria-label="Ralentir le bus"]')?.click()`,
+    `document.querySelector('.bus-mobile-menu button[aria-label="Ralentir le bus"]')?.click()`,
   );
   await waitForPageCondition(interactionSend,
-    `document.querySelector('.bus-speed-value')?.textContent?.trim() === ${JSON.stringify(startingSpeed)}`,
-    "Bus deceleration control",
+    `document.querySelector('.bus-mobile-speed .bus-speed-value')?.textContent?.trim() === ${JSON.stringify(startingSpeed)}`,
+    "Bus deceleration control inside mobile menu",
+  );
+  await interactionSend("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+  await interactionSend("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+  await waitForPageCondition(interactionSend, `!document.querySelector('.bus-mobile-menu')`, "Escape closes mobile Commandes menu");
+  await waitForPageCondition(
+    interactionSend,
+    `document.activeElement === document.querySelector('[data-mobile-menu-toggle="exterior"]')`,
+    "Escape returns keyboard focus to Commandes toggle button",
   );
   await evaluate(interactionSend, `
     (() => {
@@ -333,6 +384,55 @@ try {
       button?.click();
     })()
   `);
+  await waitForPageCondition(
+    interactionSend,
+    `document.getElementById("onboarding-title")?.textContent === "Monte dans le bus !"`,
+    "Mandatory identification modal opens before boarding",
+  );
+  assert.equal(
+    await evaluate(interactionSend, `document.querySelector("[data-phase]")?.getAttribute("data-phase")`),
+    "outside",
+    "Visitor remains outside while identifying.",
+  );
+  assert.equal(
+    await evaluate(interactionSend, `Boolean(document.querySelector('[role="dialog"] button[aria-label="Fermer la fenêtre"]'))`),
+    false,
+    "Mandatory onboarding modal must not expose a close button.",
+  );
+  await interactionSend("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+  await interactionSend("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+  await sleep(120);
+  assert(
+    await evaluate(interactionSend, `Boolean(document.getElementById("onboarding-name"))`),
+    "Escape must not dismiss the mandatory identification modal.",
+  );
+  await interactionSend("Input.dispatchMouseEvent", { type: "mousePressed", x: 5, y: 5, button: "left", clickCount: 1 });
+  await interactionSend("Input.dispatchMouseEvent", { type: "mouseReleased", x: 5, y: 5, button: "left", clickCount: 1 });
+  await sleep(120);
+  assert(
+    await evaluate(interactionSend, `Boolean(document.getElementById("onboarding-name"))`),
+    "Backdrop click must not dismiss the mandatory identification modal.",
+  );
+  await evaluate(interactionSend, `document.querySelector('[role="dialog"] form').requestSubmit()`);
+  await waitForPageCondition(interactionSend, `Boolean(document.getElementById("onboarding-error"))`, "Empty onboarding name validation");
+  assert.equal(await evaluate(interactionSend, `document.getElementById("onboarding-name")?.getAttribute("aria-invalid")`), "true");
+  await evaluate(interactionSend, `[...document.querySelectorAll('[role="dialog"] button')].find((b) => b.textContent?.includes("Choisir mon personnage"))?.click()`);
+  await waitForPageCondition(interactionSend, `Boolean(document.querySelector('button[aria-label="Personnage suivant"]'))`, "Inline character picker opens inside onboarding modal");
+  assert(
+    await evaluate(interactionSend, `document.documentElement.scrollWidth - innerWidth <= 2`),
+    "Inline character picker inside onboarding must not overflow horizontally on mobile.",
+  );
+  await evaluate(interactionSend, `[...document.querySelectorAll('[role="dialog"] button')].find((b) => b.textContent?.includes("Laisser le choix automatique"))?.click()`);
+  await waitForPageCondition(interactionSend, `!document.getElementById("onboarding-character-picker")`, "Automatic character reset closes inline picker");
+  await evaluate(interactionSend, `document.getElementById("onboarding-name").focus()`);
+  await waitForPageCondition(interactionSend, `document.activeElement === document.getElementById("onboarding-name")`, "Focus onboarding name input");
+  await interactionSend("Input.insertText", { text: "Premier Pseudo" });
+  await waitForPageCondition(interactionSend, `document.getElementById("onboarding-name")?.value === "Premier Pseudo"`, "Onboarding name typed");
+  await evaluate(interactionSend, `document.getElementById("onboarding-comment").focus()`);
+  await waitForPageCondition(interactionSend, `document.activeElement === document.getElementById("onboarding-comment")`, "Focus onboarding comment input");
+  await interactionSend("Input.insertText", { text: "Salut le bus !" });
+  await waitForPageCondition(interactionSend, `document.getElementById("onboarding-comment")?.value === "Salut le bus !"`, "Onboarding comment typed");
+  await evaluate(interactionSend, `document.querySelector('[role="dialog"] button[type="submit"]').click()`);
   testVisitorId = await evaluate(interactionSend, `localStorage.getItem("fdb-visitor")`);
   await sleep(250);
   const phaseDuringEntry = await evaluate(
@@ -350,6 +450,7 @@ try {
     "Bus entering transition",
     7_000,
   );
+  assert.equal(await evaluate(interactionSend, `Boolean(document.querySelector('[role="dialog"]'))`), false);
 
   await waitForPageCondition(
     interactionSend,
@@ -458,28 +559,42 @@ try {
     })
   `);
   assert.equal(clippedLabels.length, 0, `Interior labels exceed their controls: ${JSON.stringify(clippedLabels)}`);
-  await evaluate(interactionSend, `(() => { const button = document.querySelector('button[aria-label="Ajouter un prénom"]'); button.focus(); button.click(); })()`);
+  await evaluate(interactionSend, `(() => { const button = document.querySelector('button[aria-label="Modifier mon pseudo"]'); button.focus(); button.click(); })()`);
   await waitForPageCondition(interactionSend, `Boolean(document.querySelector('#join-bus-title'))`, "Profile dialog opens");
-  assert.equal(await evaluate(interactionSend, `document.body.innerText.includes('Retirer mon prénom')`), false, "Anonymous visitors should not be offered an empty name deletion.");
+  assert.equal(await evaluate(interactionSend, `document.querySelector('[role="dialog"] input').value`), "Premier Pseudo");
+  assert.equal(await evaluate(interactionSend, `document.body.innerText.includes('Retirer mon prénom')`), false, "Visitors must never be offered pseudo removal inside JoinBusModal.");
+  await evaluate(interactionSend, `(() => { const input = document.querySelector('[role="dialog"] input'); input.focus(); input.select(); })()`);
+  await waitForPageCondition(interactionSend, `document.activeElement === document.querySelector('[role="dialog"] input')`, "Profile input takes keyboard focus before clearing");
+  await interactionSend("Input.dispatchKeyEvent", { type: "keyDown", key: "Backspace", code: "Backspace", windowsVirtualKeyCode: 8 });
+  await interactionSend("Input.dispatchKeyEvent", { type: "keyUp", key: "Backspace", code: "Backspace", windowsVirtualKeyCode: 8 });
+  await waitForPageCondition(interactionSend, `document.querySelector('[role="dialog"] input')?.value === ''`, "Profile input cleared");
   await evaluate(interactionSend, `document.querySelector('[role="dialog"] form').requestSubmit()`);
   await waitForPageCondition(interactionSend, `Boolean(document.getElementById('join-bus-error'))`, "Empty name validation");
   assert.equal(await evaluate(interactionSend, `document.querySelector('[role="dialog"] input').getAttribute('aria-invalid')`), "true");
-  await evaluate(interactionSend, `document.querySelector('[role="dialog"] input').focus()`);
-  await waitForPageCondition(interactionSend, `document.activeElement === document.querySelector('[role="dialog"] input')`, "Profile input takes keyboard focus");
   await interactionSend("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
   await interactionSend("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
   await waitForPageCondition(interactionSend, `!document.querySelector('[role="dialog"]') && !document.getElementById('site-content').inert`, "Profile closes and unlocks the page");
-  await waitForPageCondition(interactionSend, `document.activeElement?.getAttribute('aria-label') === 'Ajouter un prénom'`, "Profile trigger regains keyboard focus");
-  await evaluate(interactionSend, `document.querySelector('button[aria-label="Ajouter un prénom"]').click()`);
-  await waitForPageCondition(interactionSend, `document.activeElement === document.querySelector('[role="dialog"] input')`, "Input focus before saving");
+  await waitForPageCondition(interactionSend, `document.activeElement?.getAttribute('aria-label') === 'Modifier mon pseudo'`, "Profile trigger regains keyboard focus");
+  await evaluate(interactionSend, `document.querySelector('button[aria-label="Modifier mon pseudo"]').click()`);
+  await waitForPageCondition(interactionSend, `document.activeElement === document.querySelector('[role="dialog"] input')`, "Input focus before editing pseudo");
+  await evaluate(interactionSend, `document.querySelector('[role="dialog"] input').select()`);
+  await interactionSend("Input.dispatchKeyEvent", { type: "keyDown", key: "Backspace", code: "Backspace", windowsVirtualKeyCode: 8 });
+  await interactionSend("Input.dispatchKeyEvent", { type: "keyUp", key: "Backspace", code: "Backspace", windowsVirtualKeyCode: 8 });
+  await waitForPageCondition(interactionSend, `document.querySelector('[role="dialog"] input')?.value === ''`, "Old pseudo cleared before typing new pseudo");
   await interactionSend("Input.insertText", { text: "Test interface" });
   await waitForPageCondition(interactionSend, `document.querySelector('[role="dialog"] input')?.value === 'Test interface'`, "Profile name typed");
   await evaluate(interactionSend, `document.querySelector('[role="dialog"] form').requestSubmit()`);
   await waitForPageCondition(interactionSend, `!document.querySelector('[role="dialog"]')`, "Profile saved locally");
-  await evaluate(interactionSend, `document.querySelector('button[aria-label="Ajouter un prénom"]').click()`);
-  await waitForPageCondition(interactionSend, `document.body.innerText.includes('Retirer mon prénom')`, "Saved name can be edited or removed");
-  assert.equal(await evaluate(interactionSend, `document.querySelector('[role="dialog"] input').value`), "Test interface");
+  await evaluate(interactionSend, `document.querySelector('button[aria-label="Modifier mon pseudo"]').click()`);
+  await waitForPageCondition(interactionSend, `document.querySelector('[role="dialog"] input')?.value === 'Test interface'`, "Saved name persists and can be edited");
+  assert.equal(await evaluate(interactionSend, `document.body.innerText.includes('Retirer mon prénom')`), false, "Saved pseudo cannot be removed without replacement.");
   await evaluate(interactionSend, `document.querySelector('button[aria-label="Fermer la fenêtre"]').click()`);
+  await waitForPageCondition(interactionSend, `!document.querySelector('[role="dialog"]')`, "Pseudo dialog closes");
+  await evaluate(interactionSend, `document.querySelector('button[aria-label="Mettre un commentaire"]').click()`);
+  await waitForPageCondition(interactionSend, `document.querySelector('[role="dialog"] textarea')?.value === 'Salut le bus !'`, "Saved comment from onboarding appears in comment modal");
+  assert.equal(await evaluate(interactionSend, `document.body.innerText.includes('Retirer mon commentaire')`), true, "Optional comment can still be removed.");
+  await evaluate(interactionSend, `[...document.querySelectorAll('[role="dialog"] button')].find(b => b.textContent?.includes('Retirer mon commentaire')).click()`);
+  await waitForPageCondition(interactionSend, `!document.querySelector('[role="dialog"]')`, "Comment removed and dialog closes");
   await evaluate(interactionSend, `document.querySelector('.bus-top-stats button').click()`);
   await waitForPageCondition(interactionSend, `Boolean([...document.querySelectorAll('[role="dialog"] button')].find(button => button.textContent.includes('Test interface')))`, "Saved passenger appears in list");
   assert.deepEqual(await evaluate(interactionSend, `[...document.querySelector('[aria-label="Équipage permanent"]').children].map(row => row.querySelector('span.block.font-black').textContent)`), ["Kamal", "Kyta", "FoudubusTV"], "The permanent crew must be first in the passenger manifest.");
@@ -504,7 +619,7 @@ try {
   await send("Page.navigate", { url: baseUrl });
   await waitForPageCondition(send, `document.querySelector('.bus-app')?.getAttribute('data-scene-available') === 'false' && document.body.innerText.includes('Le bus reste au dépôt')`, "WebGL fallback is available", 30_000);
   const fallbackControls = await evaluate(send, `
-    [...document.querySelectorAll('.bus-exterior-controls, .bus-interior-controls, .bus-day-night, .bus-speed, .bus-row-nav')]
+    [...document.querySelectorAll('.bus-exterior-controls, .bus-interior-controls, .bus-day-night, .bus-speed, .bus-row-nav, [data-mobile-menu-toggle], .bus-mobile-menu')]
       .filter(el => getComputedStyle(el).display !== 'none').length
   `);
   assert.equal(fallbackControls, 0, "Unavailable 3D controls should be hidden.");
