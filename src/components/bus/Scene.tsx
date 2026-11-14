@@ -126,27 +126,6 @@ function useSceneRuntimeState() {
   return state;
 }
 
-function FrameScheduler({ fps, active }: { fps: number; active: boolean }) {
-  const invalidate = useThree((state) => state.invalidate);
-  useEffect(() => {
-    invalidate();
-    if (!active) return;
-    let frame = 0;
-    let previous = 0;
-    const interval = 1000 / fps;
-    const tick = (now: number) => {
-      if (now - previous >= interval) {
-        previous = now - ((now - previous) % interval);
-        invalidate();
-      }
-      frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [active, fps, invalidate]);
-  return null;
-}
-
 function WebGLContextGuard({ setLost }: { setLost: (lost: boolean) => void }) {
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
@@ -212,15 +191,14 @@ export default function Scene({
       <div className="absolute inset-0">
       <Canvas
       shadows={lowPower ? false : "basic"}
-      frameloop="demand"
-      dpr={lowPower ? 1 : Math.min(window.devicePixelRatio, 1.35)}
+      frameloop={renderPaused ? "demand" : "always"}
+      dpr={Math.min(window.devicePixelRatio, lowPower ? 1.25 : 1.75)}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: cameraFar }}
-      gl={{ antialias: !lowPower, alpha: true, powerPreference: lowPower ? "low-power" : "high-performance" }}
+      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
       fallback={<SceneFallback />}
     >
       <WebGLContextGuard setLost={setContextLost} />
-      <FrameScheduler fps={lowPower || reducedMotion ? 30 : 60} active={!renderPaused} />
       <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} />
       <Suspense fallback={null}>

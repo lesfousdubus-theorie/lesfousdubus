@@ -350,33 +350,24 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
                 </div>
               </div>
 
-              <section className="grid items-start gap-3 sm:grid-cols-2">
-                {FULL_THEORY_SECTIONS.map((section, idx) => (
-                  <details
-                    key={section.title}
-                    className="group rounded-xl border border-white/20 bg-[#101827] p-4 transition hover:border-white/35 hover:bg-[#142033] open:border-[#ffd23f]/60 open:bg-[#1c1d19] sm:p-5"
-                  >
-                    <summary className="flex min-h-11 cursor-pointer list-none items-start gap-3 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1220]">
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050912] text-lg shadow-inner shadow-white/5">
-                        {section.icon}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[11px] font-black uppercase tracking-wider text-[#9ba9bc]">
-                          Étape {idx + 1}
-                        </span>
-                        <span className="mt-0.5 block text-sm font-bold leading-snug text-white group-open:text-[#ffd23f]">
-                          {section.title}
-                        </span>
-                      </span>
-                      <span className="mt-2 text-sm text-[#ffd23f] transition-transform group-open:rotate-180" aria-hidden="true">
-                        ▼
-                      </span>
-                    </summary>
-                    <p className="mt-4 border-t border-white/20 pt-4 text-sm leading-7 text-[#e4e9f0]">
-                      {section.summary}
-                    </p>
-                  </details>
+              {/* Mobile : ordre naturel. Desktop : deux piles indépendantes,
+                  pour qu'ouvrir une carte à gauche ne décale jamais la colonne de droite. */}
+              <section className="space-y-3 sm:hidden">
+                {FULL_THEORY_SECTIONS.map((section) => (
+                  <TheoryDetailCard key={section.title} section={section} />
                 ))}
+              </section>
+              <section className="hidden items-start gap-3 sm:grid sm:grid-cols-2">
+                <div className="space-y-3">
+                  {FULL_THEORY_SECTIONS.filter((_, index) => index % 2 === 0).map((section) => (
+                    <TheoryDetailCard key={section.title} section={section} />
+                  ))}
+                </div>
+                <div className="space-y-3">
+                  {FULL_THEORY_SECTIONS.filter((_, index) => index % 2 === 1).map((section) => (
+                    <TheoryDetailCard key={section.title} section={section} />
+                  ))}
+                </div>
               </section>
             </div>
           )}
@@ -534,6 +525,33 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
       </div>
     </div>,
     document.body,
+  );
+}
+
+function TheoryDetailCard({
+  section,
+}: {
+  section: (typeof FULL_THEORY_SECTIONS)[number];
+}) {
+  return (
+    <details className="group rounded-xl border border-white/20 bg-[#101827] p-4 transition hover:border-white/35 hover:bg-[#142033] open:border-[#ffd23f]/60 open:bg-[#1c1d19] sm:p-5">
+      <summary className="flex min-h-11 cursor-pointer list-none items-start gap-3 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1220]">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050912] text-lg shadow-inner shadow-white/5">
+          {section.icon}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold leading-snug text-white group-open:text-[#ffd23f]">
+            {section.title}
+          </span>
+        </span>
+        <span className="mt-2 text-sm text-[#ffd23f] transition-transform group-open:rotate-180" aria-hidden="true">
+          ▼
+        </span>
+      </summary>
+      <p className="mt-4 border-t border-white/20 pt-4 text-sm leading-7 text-[#e4e9f0]">
+        {section.summary}
+      </p>
+    </details>
   );
 }
 
