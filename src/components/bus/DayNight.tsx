@@ -32,6 +32,11 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
   const hemi = useRef<THREE.HemisphereLight>(null);
   const starsMat = useRef<THREE.PointsMaterial>(null);
   const starsRef = useRef<THREE.Points>(null);
+  const sunTarget = useMemo(() => {
+    const obj = new THREE.Object3D();
+    obj.position.set(0, 1.2, -2.5);
+    return obj;
+  }, []);
 
   // Position du soleil lissée pour permettre des transitions douces lors du clic Jour/Nuit
   const curSunY = useRef(0.85);
@@ -125,6 +130,7 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
       sun.current.position.copy(sunPosition);
       sun.current.intensity = 0.15 + daylight * 2.6;
       sun.current.color.set(daylight <= 0.05 ? "#9fb4ff" : dusk > 0.3 ? "#ffcf9a" : "#ffffff");
+      sun.current.target = sunTarget;
     }
     if (sunMesh.current) {
       sunMesh.current.position.set(sunX * 700, sunY * 700, -300);
@@ -145,21 +151,22 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
       <fog attach="fog" args={["#bfe3ff", 60, 520]} />
       <ambientLight ref={ambient} intensity={0.5} />
       <hemisphereLight ref={hemi} args={["#bde3ff", "#5a4a30", 0.6]} />
+      <primitive object={sunTarget} />
       <directionalLight
         ref={sun}
         position={[30, 50, -25]}
         intensity={2.5}
         castShadow
-        shadow-mapSize-width={lowPower ? 1024 : 1536}
-        shadow-mapSize-height={lowPower ? 1024 : 1536}
-        shadow-camera-left={-18}
-        shadow-camera-right={18}
-        shadow-camera-top={18}
-        shadow-camera-bottom={-18}
+        shadow-mapSize-width={lowPower ? 1024 : 2048}
+        shadow-mapSize-height={lowPower ? 1024 : 2048}
+        shadow-camera-left={-28}
+        shadow-camera-right={28}
+        shadow-camera-top={28}
+        shadow-camera-bottom={-28}
         shadow-camera-near={1}
-        shadow-camera-far={160}
-        shadow-bias={-0.00008}
-        shadow-normalBias={0.035}
+        shadow-camera-far={180}
+        shadow-bias={-0.00015}
+        shadow-normalBias={0.006}
       />
       <mesh ref={sunMesh}>
         <sphereGeometry args={[38, 24, 24]} />

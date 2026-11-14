@@ -103,7 +103,7 @@ export function makeLicensePlateTexture(text = "MUGI-56"): THREE.CanvasTexture {
   return tex;
 }
 
-/** Texture du tableau de bord avec compteurs lumineux */
+/** Texture du tableau de bord avec compteurs lumineux ultra-détaillés */
 export function makeDashboardTexture(): THREE.CanvasTexture {
   const w = 1024;
   const h = 320;
@@ -112,91 +112,251 @@ export function makeDashboardTexture(): THREE.CanvasTexture {
   canvas.height = h;
   const c = canvas.getContext("2d")!;
 
-  // Fond plastique texturé
-  c.fillStyle = "#181a20";
+  // Fond panneau composite carbone / métal brossé
+  c.fillStyle = "#12141a";
   c.fillRect(0, 0, w, h);
 
-  // Compteur de vitesse (gauche)
-  const drawDial = (cx: number, cy: number, r: number, title: string, maxVal: number, needleVal: number) => {
-    // Cerclage chromé
-    c.strokeStyle = "#555b6e";
+  // Micro-texture de trame
+  c.fillStyle = "rgba(255, 255, 255, 0.02)";
+  for (let x = 0; x < w; x += 4) {
+    c.fillRect(x, 0, 1, h);
+  }
+
+  // Cadre de finition du combiné
+  c.strokeStyle = "#2e3440";
+  c.lineWidth = 6;
+  c.strokeRect(6, 6, w - 12, h - 12);
+
+  // Fonction de tracé d'un cadran d'instrument
+  const drawDial = (
+    cx: number,
+    cy: number,
+    r: number,
+    title: string,
+    sub: string,
+    maxVal: number,
+    needleVal: number,
+    ticks = 10,
+    redlineStart?: number,
+  ) => {
+    // Cerclage extérieur biseauté
+    const ringGrad = c.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+    ringGrad.addColorStop(0, "#8892b0");
+    ringGrad.addColorStop(0.5, "#3b4252");
+    ringGrad.addColorStop(1, "#1e222a");
+    c.strokeStyle = ringGrad;
     c.lineWidth = 6;
     c.beginPath();
     c.arc(cx, cy, r, 0, Math.PI * 2);
     c.stroke();
 
-    // Fond cadran
-    c.fillStyle = "#0c0d12";
+    // Fond sombre du cadran
+    const dialGrad = c.createRadialGradient(cx, cy, r * 0.2, cx, cy, r - 3);
+    dialGrad.addColorStop(0, "#0e1117");
+    dialGrad.addColorStop(1, "#06070a");
+    c.fillStyle = dialGrad;
     c.beginPath();
     c.arc(cx, cy, r - 3, 0, Math.PI * 2);
     c.fill();
 
-    // Graduations
-    c.strokeStyle = "#4cd964";
-    c.lineWidth = 3;
-    for (let i = 0; i <= 10; i++) {
-      const a = Math.PI * 0.75 + (i / 10) * Math.PI * 1.5;
-      const x1 = cx + Math.cos(a) * (r - 18);
-      const y1 = cy + Math.sin(a) * (r - 18);
-      const x2 = cx + Math.cos(a) * (r - 6);
-      const y2 = cy + Math.sin(a) * (r - 6);
+    // Zone rouge si applicable (compte-tours)
+    if (redlineStart !== undefined) {
+      const startAngle = Math.PI * 0.75 + (redlineStart / maxVal) * Math.PI * 1.5;
+      const endAngle = Math.PI * 2.25;
+      c.strokeStyle = "rgba(239, 68, 68, 0.45)";
+      c.lineWidth = 8;
       c.beginPath();
-      c.moveTo(x1, y1);
-      c.lineTo(x2, y2);
+      c.arc(cx, cy, r - 12, startAngle, endAngle);
       c.stroke();
     }
 
-    // Aiguille orange lumineuse
-    const na = Math.PI * 0.75 + (needleVal / maxVal) * Math.PI * 1.5;
-    c.strokeStyle = "#ff3b30";
-    c.lineWidth = 4;
-    c.beginPath();
-    c.moveTo(cx, cy);
-    c.lineTo(cx + Math.cos(na) * (r - 10), cy + Math.sin(na) * (r - 10));
-    c.stroke();
+    // Graduations
+    for (let i = 0; i <= ticks; i++) {
+      const a = Math.PI * 0.75 + (i / ticks) * Math.PI * 1.5;
+      const val = (i / ticks) * maxVal;
+      const isRed = redlineStart !== undefined && val >= redlineStart;
+      const isMajor = i % 2 === 0;
 
-    // Centre de l'aiguille
+      const innerR = isMajor ? r - 20 : r - 12;
+      const outerR = r - 6;
+
+      c.strokeStyle = isRed ? "#ef4444" : isMajor ? "#38bdf8" : "#94a3b8";
+      c.lineWidth = isMajor ? 3 : 1.5;
+      c.beginPath();
+      c.moveTo(cx + Math.cos(a) * innerR, cy + Math.sin(a) * innerR);
+      c.lineTo(cx + Math.cos(a) * outerR, cy + Math.sin(a) * outerR);
+      c.stroke();
+
+      // Chiffres des graduations majeures
+      if (isMajor && r > 70) {
+        const textR = r - 32;
+        const tx = cx + Math.cos(a) * textR;
+        const ty = cy + Math.sin(a) * textR;
+        c.fillStyle = isRed ? "#f87171" : "#e2e8f0";
+        c.font = "bold 13px system-ui, sans-serif";
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.fillText(String(Math.round(val)), tx, ty);
+      }
+    }
+
+    // Aiguille lumineuse orange/rouge
+    const na = Math.PI * 0.75 + (needleVal / maxVal) * Math.PI * 1.5;
+    c.strokeStyle = "#ff4438";
+    c.lineWidth = 3.5;
+    c.shadowColor = "#ff4438";
+    c.shadowBlur = 8;
+    c.beginPath();
+    c.moveTo(cx - Math.cos(na) * 8, cy - Math.sin(na) * 8);
+    c.lineTo(cx + Math.cos(na) * (r - 12), cy + Math.sin(na) * (r - 12));
+    c.stroke();
+    c.shadowBlur = 0;
+
+    // Moyeu de l'aiguille
     c.fillStyle = "#ffcc00";
     c.beginPath();
     c.arc(cx, cy, 7, 0, Math.PI * 2);
     c.fill();
-
-    // Titre
-    c.fillStyle = "#8892b0";
-    c.font = "bold 18px Arial, sans-serif";
-    c.textAlign = "center";
-    c.fillText(title, cx, cy + r * 0.55);
-  };
-
-  drawDial(280, 160, 110, "KM/H", 120, 75);
-  drawDial(744, 160, 110, "RPM x1000", 6, 2.8);
-
-  // Petit écran central digital
-  c.fillStyle = "#071c0e";
-  c.fillRect(440, 90, 144, 75);
-  c.strokeStyle = "#1a4022";
-  c.lineWidth = 3;
-  c.strokeRect(440, 90, 144, 75);
-  c.fillStyle = "#34d399";
-  c.font = "bold 26px 'Courier New', monospace";
-  c.textAlign = "center";
-  c.fillText("GRAND LINE", 512, 125);
-  c.font = "18px 'Courier New', monospace";
-  c.fillText("56 000 KM", 512, 150);
-
-  // Voyants lumineux
-  const drawLamp = (x: number, y: number, color: string) => {
-    c.fillStyle = color;
-    c.beginPath();
-    c.arc(x, y, 9, 0, Math.PI * 2);
-    c.fill();
-    c.strokeStyle = "#222";
+    c.strokeStyle = "#1a1a24";
     c.lineWidth = 2;
     c.stroke();
+
+    // Titre et unité
+    c.fillStyle = "#38bdf8";
+    c.font = "bold 15px system-ui, sans-serif";
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.fillText(title, cx, cy + r * 0.42);
+    if (sub) {
+      c.fillStyle = "#94a3b8";
+      c.font = "bold 11px system-ui, sans-serif";
+      c.fillText(sub, cx, cy + r * 0.60);
+    }
   };
-  drawLamp(470, 210, "#38bdf8"); // Phares
-  drawLamp(512, 210, "#4ade80"); // OK
-  drawLamp(554, 210, "#fbbf24"); // Moteur
+
+  // 1. Tachymètre / Compteur de vitesse principal (Gauche)
+  drawDial(250, 160, 114, "85 KM/H", "VITESSE", 140, 85, 14);
+
+  // 2. Compte-tours principal (Droite)
+  drawDial(774, 160, 114, "3.2 RPM", "x1000", 8, 3.2, 8, 6.0);
+
+  // 3. Jauge de carburant Cola (Tout à gauche)
+  drawDial(90, 160, 68, "COLA", "FULL · 92%", 100, 92, 4);
+
+  // 4. Jauge de pression / Boost (Tout à droite)
+  drawDial(934, 160, 68, "BOOST", "1.4 BAR", 2, 1.4, 4);
+
+  // 5. Écran central digital multifonctions (OLED / LCD émeraude)
+  const scrX = 390;
+  const scrY = 60;
+  const scrW = 244;
+  const scrH = 140;
+
+  c.fillStyle = "#04150c";
+  c.fillRect(scrX, scrY, scrW, scrH);
+  c.strokeStyle = "#059669";
+  c.lineWidth = 3;
+  c.strokeRect(scrX, scrY, scrW, scrH);
+
+  // Trame d'écran LCD
+  c.fillStyle = "rgba(16, 185, 129, 0.05)";
+  for (let y = scrY; y < scrY + scrH; y += 3) {
+    c.fillRect(scrX, y, scrW, 1);
+  }
+
+  c.fillStyle = "#34d399";
+  c.font = "900 16px monospace";
+  c.textAlign = "center";
+  c.textBaseline = "top";
+  c.fillText("GRAND LINE EXPRESS", scrX + scrW / 2, scrY + 12);
+
+  c.fillStyle = "#10b981";
+  c.font = "bold 20px monospace";
+  c.fillText("DEST: LAUGH TALE", scrX + scrW / 2, scrY + 38);
+
+  c.fillStyle = "#6ee7b7";
+  c.font = "14px monospace";
+  c.fillText("ODO: 56 000 KM", scrX + scrW / 2, scrY + 70);
+
+  c.fillStyle = "#a7f3d0";
+  c.font = "12px monospace";
+  c.fillText("CAP: NOUVEAU MONDE · OK", scrX + scrW / 2, scrY + 95);
+
+  c.fillStyle = "#34d399";
+  c.font = "bold 11px monospace";
+  c.fillText("● AUTOPILOTE ACTIF", scrX + scrW / 2, scrY + 118);
+
+  // 6. Rangée de voyants lumineux LED
+  const drawLed = (x: number, y: number, color: string, active: boolean, label: string) => {
+    c.fillStyle = active ? color : "#1e222a";
+    c.shadowColor = active ? color : "transparent";
+    c.shadowBlur = active ? 8 : 0;
+    c.beginPath();
+    c.arc(x, y, 7, 0, Math.PI * 2);
+    c.fill();
+    c.shadowBlur = 0;
+
+    c.strokeStyle = "#374151";
+    c.lineWidth = 1.5;
+    c.stroke();
+
+    if (label) {
+      c.fillStyle = active ? "#f8fafc" : "#64748b";
+      c.font = "bold 9px system-ui, sans-serif";
+      c.textAlign = "center";
+      c.textBaseline = "top";
+      c.fillText(label, x, y + 10);
+    }
+  };
+
+  // Voyants au-dessus des compteurs
+  drawLed(430, 230, "#22c55e", true, "◄ CLIGN");
+  drawLed(485, 230, "#38bdf8", true, "PHARES");
+  drawLed(540, 230, "#eab308", true, "MOTEUR");
+  drawLed(595, 230, "#22c55e", true, "CLIGN ►");
+
+  // Clignotants bas
+  drawLed(460, 280, "#ef4444", true, "FREIN");
+  drawLed(512, 280, "#10b981", true, "STATUS");
+  drawLed(565, 280, "#f97316", true, "BOOST");
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+/** Texture de l'ombre d'occlusion au sol sous le bus. */
+export function makeBusContactShadowTexture(): THREE.CanvasTexture {
+  const w = 512;
+  const h = 512;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const c = canvas.getContext("2d")!;
+
+  c.clearRect(0, 0, w, h);
+
+  // Dégradé radial doux pour un contour progressif
+  const grad = c.createRadialGradient(w / 2, h / 2, w * 0.12, w / 2, h / 2, w * 0.48);
+  grad.addColorStop(0, "rgba(0, 0, 0, 0.88)");
+  grad.addColorStop(0.35, "rgba(2, 5, 12, 0.76)");
+  grad.addColorStop(0.70, "rgba(4, 8, 18, 0.35)");
+  grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+  c.fillStyle = grad;
+  c.fillRect(0, 0, w, h);
+
+  // Noyau dense sous le châssis
+  const innerGrad = c.createRadialGradient(w / 2, h / 2, 30, w / 2, h / 2, w * 0.36);
+  innerGrad.addColorStop(0, "rgba(0, 0, 0, 0.98)");
+  innerGrad.addColorStop(0.55, "rgba(0, 0, 0, 0.85)");
+  innerGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+  c.fillStyle = innerGrad;
+  c.beginPath();
+  c.ellipse(w / 2, h / 2, w * 0.40, h * 0.45, 0, 0, Math.PI * 2);
+  c.fill();
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
