@@ -1,120 +1,20 @@
 import BusClient from "@/components/BusClient";
-import {
-  CENTRAL_THESIS,
-  CORE_PILLARS,
-  FULL_THEORY_SECTIONS,
-  THEORY_FAQ,
-} from "@/lib/theory-data";
-import { THEORY_VIDEO_URL } from "@/lib/theory-video";
+import type { Metadata } from "next";
+import { CENTRAL_THESIS } from "@/lib/theory-data";
+import { SITE_URL, websiteJsonLd, videoJsonLd } from "@/lib/schema-ld";
+import StructuredData from "@/components/StructuredData";
+
+export const metadata: Metadata = {
+  alternates: { canonical: SITE_URL },
+};
 
 export default function HomePage() {
   return (
     <main id="site-content" className="relative h-dvh w-screen overflow-hidden">
+      <StructuredData data={websiteJsonLd} />
+      <StructuredData data={videoJsonLd} />
       {/* Expérience 3D interactive (WebGL / Three.js / Canvas) */}
       <BusClient />
-
-      {/* Copie sémantique SSR destinée aux moteurs/crawlers. L'interface interactive
-          fournit déjà le contenu accessible, donc cette copie est masquée aux lecteurs d'écran
-          pour éviter une lecture intégralement dupliquée. */}
-      <article
-        id="theorie-fous-du-bus-manifeste"
-        aria-hidden="true"
-        inert
-        className="sr-only"
-      >
-        <header>
-          <h1 className="text-2xl font-black text-[#ffd23f]">
-            La Théorie des Fous du Bus — Le Siècle Oublié est le Présent
-          </h1>
-          <p className="font-bold text-lg text-white/90">{CENTRAL_THESIS.subtitle}</p>
-          <p className="mt-2 text-white/80">{CENTRAL_THESIS.overview}</p>
-        </header>
-
-        {/* Repères du manga reformulés */}
-        <section className="mt-6">
-          <h2 className="text-xl font-bold text-[#ffd23f]">Repères du manga dans la théorie — reformulés</h2>
-          {CENTRAL_THESIS.mangaReadings.map((q, i) => (
-            <div key={i} className="mt-2 border-l-4 border-[#ffd23f] pl-3">
-              <p>{q.text}</p>
-              <p className="text-sm font-semibold text-white/70">
-                — {q.author}, {q.chapter}
-              </p>
-            </div>
-          ))}
-        </section>
-
-        {/* Les 6 piliers */}
-        <section className="mt-6">
-          <h2 className="text-xl font-bold text-[#ffd23f]">Les 6 Piliers Fondamentaux de la Théorie</h2>
-          <div className="space-y-4 mt-3">
-            {CORE_PILLARS.map((p, i) => (
-              <div key={i}>
-                <h3 className="font-bold text-lg text-white">
-                  {p.icon} {p.title}
-                </h3>
-                <h4 className="text-sm font-semibold text-[#ffd23f]">{p.subtitle}</h4>
-                <p className="text-sm text-white/80">{p.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Les points résumés de la vidéo */}
-        <section className="mt-8">
-          <h2 className="text-xl font-bold text-[#ffd23f]">
-            La Théorie Complète en {FULL_THEORY_SECTIONS.length} Étapes
-          </h2>
-          <div className="space-y-6 mt-4">
-            {FULL_THEORY_SECTIONS.map((section, index) => (
-              <section key={section.title} className="border-b border-white/10 pb-4">
-                <h3 className="font-bold text-base text-white">
-                  Étape {index + 1} : {section.icon} {section.title}
-                </h3>
-                <p className="mt-1 text-sm text-white/80">{section.summary}</p>
-              </section>
-            ))}
-          </div>
-        </section>
-
-        {/* Vidéo de démonstration */}
-        <section className="mt-8">
-          <h2 className="text-xl font-bold text-[#ffd23f]">Vidéo Officielle de la Théorie</h2>
-          <p className="text-sm text-white/80">
-            Regardez la démonstration complète sur YouTube :{" "}
-            <a
-              href={THEORY_VIDEO_URL}
-              className="text-[#ffd23f] underline"
-            >
-              La théorie One Piece qui explique tout. (Théorie des fous du bus)
-            </a>
-          </p>
-        </section>
-
-        {/* FAQ */}
-        <section className="mt-8">
-          <h2 className="text-xl font-bold text-[#ffd23f]">
-            Foire Aux Questions (FAQ) — Théorie One Piece
-          </h2>
-          <dl className="space-y-4 mt-3">
-            {THEORY_FAQ.map((faq, i) => (
-              <div key={i}>
-                <dt className="font-bold text-white text-base">Q : {faq.question}</dt>
-                <dd className="mt-1 text-sm text-white/80">R : {faq.answer}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-
-        <footer className="mt-8 pt-4 border-t border-white/20 text-xs text-white/60">
-          <p>
-            Site officiel :{" "}
-            <a href="https://lesfousdubus.sbs" className="text-[#ffd23f] underline">
-              https://lesfousdubus.sbs
-            </a>{" "}
-            · Tous droits réservés à Eiichiro Oda & Shueisha pour les éléments One Piece.
-          </p>
-        </footer>
-      </article>
 
       {/* Version de secours pour navigateurs sans JavaScript */}
       <noscript>
@@ -126,6 +26,9 @@ export default function HomePage() {
           <p className="mt-4 font-bold">
             Activez JavaScript pour vivre l&apos;expérience interactive du bus sur Grand Line !
           </p>
+          <a href="/theorie" className="mt-5 inline-flex min-h-11 items-center font-bold text-[#ffd23f] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+            Lire la théorie complète sans JavaScript
+          </a>
         </div>
       </noscript>
     </main>
