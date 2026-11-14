@@ -70,7 +70,8 @@ assert.match(experience, /previousBodyOverflow[\s\S]*previousHtmlOverflow/, "Bod
 assert.doesNotMatch(experience, /AbortSignal\.any/, "Fetch cancellation must not depend on AbortSignal.any browser support.");
 assert.match(experience, /externalSignal\?\.addEventListener\("abort"/, "External aborts must still cancel timed requests.");
 assert.match(experience, /MAX_DEBUG_PASSENGERS/, "Public debug passenger parameters must be bounded.");
-assert.match(experience, /setSeatRow\(\(row\) => Math\.max/, "Debug row selection must clamp when capacity changes.");
+assert.match(experience, /return Math\.min\(parsed, computeNumRows\(debugCapacity\) - 1\)/, "Debug row selection must be clamped during initialization.");
+assert.match(experience, /updateSeatCapacity[\s\S]*setSeatRow[\s\S]*\[setSeatRow\]/, "Seat capacity updates must preserve React Compiler memoization.");
 assert.match(experience, /setTheoryAgeInDays\(getTheoryAgeInDays\(\)\)/, "Theory age must refresh after midnight.");
 assert.match(experience, /nextMidnight/, "Theory age refresh must be scheduled for the next local midnight.");
 
