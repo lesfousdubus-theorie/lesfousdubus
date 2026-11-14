@@ -7,6 +7,7 @@ import type { PassengerManifestEntry, PassengerProfile } from "@/types/passenger
 /** Liste paginée et fiches passagers : chaque réponse reste attachée à sa requête active. */
 export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => boolean, profileRevision = 0) {
   const [showPassengerList, setShowPassengerList] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
   const [selectedPassenger, setSelectedPassenger] = useState<PassengerProfile | null>(null);
   const [passengerOpenedFromList, setPassengerOpenedFromList] = useState(false);
   const [passengerCardLoading, setPassengerCardLoading] = useState(false);
@@ -178,7 +179,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
     setPassengerManifest([]); setSelectedPassenger(null); setShowPassengerList(false); setManifestLoading(false);
   }, []);
 
-  return { selectedPassenger, passengerOpenedFromList, passengerCardLoading, passengerCardError,
+  return { showMessages, setShowMessages, selectedPassenger, passengerOpenedFromList, passengerCardLoading, passengerCardError,
     passengerManifest, manifestLoading, manifestError, manifestNextFrom, manifestHasMore, showPassengerList,
     lastManifestSeatIndex, manifestScrollTop, saveManifestScrollTop, manifestSearchQuery, setManifestSearchQuery,
     manifestOnlyWithComment, setManifestOnlyWithComment, refreshPassengerManifest,
