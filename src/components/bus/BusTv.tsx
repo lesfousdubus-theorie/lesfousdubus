@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
-import { YOUTUBE_ID, type Phase } from "./constants";
+import type { Phase } from "./constants";
+import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
 import { loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
 
 interface BusTvFrameProps {
@@ -390,7 +391,7 @@ export function BusTvPlayer({
           )}
           {apiFailed && tvOn && hasEntered && (
             <a
-              href={`https://www.youtube.com/watch?v=${YOUTUBE_ID}`}
+              href={THEORY_VIDEO_URL}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Voir la vidéo sur YouTube"
