@@ -21,6 +21,8 @@ assert.doesNotMatch(bus, /tvIframeRefs|primaryIframeRef|sendYoutubeCommand/, "Le
 assert.match(busTv, /cc_load_policy:\s*0/, "The bus TV must request captions off by default.");
 assert.match(busTv, /playVideo\(\);[\s\S]*setTimeout/, "The player must warm up on initial load.");
 assert.match(busTv, /data-tv-wheel-capture[\s\S]*bus-zoom/, "Mouse-wheel zoom must keep working over the TV surface.");
+assert.match(busTv, /requestFullscreen/, "The TV overlay must preserve fullscreen interaction.");
+assert.doesNotMatch(busTv, /bus-video-state|bus-video-seek/, "Obsolete synchronized-video state must stay removed.");
 assert.match(experience, /bus-tv-user-play/, "Entering the bus must trigger playback from the user gesture.");
 assert.match(experience, /hasEntered && phase === "outside"/, "The exterior TV toggle must remain available after the first ride.");
 assert.match(experience, /Allumer la TV/, "The exterior TV control must be able to turn the TV back on.");
@@ -30,7 +32,7 @@ assert.ok(
 );
 assert.match(theory, /<SyncedTheoryVideo\s*\/>/, "The theory modal must keep its dedicated video player.");
 assert.doesNotMatch(theory, /Étape \{idx \+ 1\}/, "Theory cards must not display numbered step labels.");
-assert.match(theory, /index % 2 === 0[\s\S]*index % 2 === 1/, "Desktop theory cards must use two independent columns.");
+assert.match(theory, /slice\(0, Math\.ceil[\s\S]*slice\(Math\.ceil/, "Desktop theory cards must use two independent sequential columns.");
 assert.doesNotMatch(theory, /modestbranding|cc_load_policy/, "Deprecated/forced YouTube parameters must stay removed.");
 assert.match(syncedVideo, /min-h-\[200px\]/, "The modal player must meet YouTube's mobile minimum height.");
 assert.doesNotMatch(syncedVideo, /getBusVideoSnapshot|requestBusVideoSeek/, "The modal video must stay independent from the bus TV timeline.");
@@ -38,13 +40,16 @@ assert.match(syncedVideo, /autoplay:\s*0/, "The modal video must stay paused unt
 assert.doesNotMatch(syncedVideo, /seekTo\(/, "The modal video must not seek or start itself during initialization.");
 assert.match(syncedVideo, /cc_load_policy:\s*0/, "The modal video must request captions off by default.");
 assert.match(scene, /frameloop=\{renderPaused \? "demand" : "always"\}/, "The active 3D scene must render at the display's native requestAnimationFrame cadence.");
+assert.match(scene, /AdaptiveDpr/, "The scene must adapt pixel density instead of capping FPS.");
 assert.doesNotMatch(scene, /FrameScheduler|fps=\{/, "Artificial 30/60 FPS caps must stay removed.");
 assert.match(scene, /webglcontextlost/, "WebGL context loss must be handled.");
 assert.match(css, /safe-area-inset-bottom/, "HUD must respect device safe areas.");
 assert.match(css, /orientation: landscape/, "Compact mobile landscape layout must remain covered.");
+assert.match(css, /theory-modal-in/, "The theory modal must use a supported CSS animation.");
 assert.match(css, /\.no-scrollbar/, "Horizontal tab bars need a real scrollbar utility.");
 assert.doesNotMatch(css, /#tv-frame:fullscreen/, "Obsolete fullscreen CSS must stay removed.");
-assert.doesNotMatch(experience, /animate-in\s+fade-in/, "Unsupported animation utility classes must stay removed.");
+assert.doesNotMatch(experience, /text-\[(?:8|9)px\]/, "Primary HUD text must not fall below 10px.");
+assert.doesNotMatch(theory, /animate-in\s+fade-in/, "Unsupported theory modal animation utilities must stay removed.");
 assert.match(api, /scopedIdentity/, "Rate limiting must isolate visitors sharing one IP.");
 assert.match(api, /visitorId,\s*\n\s*\);/, "Visitor identity must participate in write rate limiting.");
 

@@ -6,7 +6,6 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { YOUTUBE_ID, type Phase } from "./constants";
 import { loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
-import { updateBusVideoSnapshot } from "@/lib/bus-video-state";
 
 interface BusTvFrameProps {
   pos: [number, number, number];
@@ -105,6 +104,7 @@ export function BusTvPlayer({
   const playerRef = useRef<YouTubePlayer | null>(null);
   const warmTimerRef = useRef<number | null>(null);
   const volumeFrameRef = useRef<number | null>(null);
+  const interactionClickTimerRef = useRef<number | null>(null);
   const warmingRef = useRef(true);
   const desiredRef = useRef({
     tvOn,
@@ -176,9 +176,6 @@ export function BusTvPlayer({
       isMutedForFullscreen,
       playbackSuspended,
     };
-    updateBusVideoSnapshot({
-      shouldBePlaying: hasEntered && tvOn && !playbackSuspended,
-    });
     if (hasEntered && warmingRef.current) {
       warmingRef.current = false;
       if (warmTimerRef.current !== null) {
@@ -226,7 +223,6 @@ export function BusTvPlayer({
               iframe.style.display = "block";
 
               setReady(true);
-              updateBusVideoSnapshot({ ready: true, autoplayBlocked: false });
               // Préchargement réel : le lecteur est initialisé immédiatement, démarre
               // brièvement en muet pour amorcer le flux, puis revient exactement à 0.
               event.target.mute();
@@ -245,21 +241,14 @@ export function BusTvPlayer({
             },
             onStateChange: (event) => {
               const activePlayer = event.target;
-              updateBusVideoSnapshot({
-                state: typeof event.data === "number" ? event.data : activePlayer.getPlayerState(),
-                currentTime: activePlayer.getCurrentTime(),
-                duration: activePlayer.getDuration(),
-              });
               if (event.data === 1) {
                 setAutoplayBlocked(false);
-                updateBusVideoSnapshot({ autoplayBlocked: false });
               }
             },
             onAutoplayBlocked: () => {
               const desired = desiredRef.current;
               if (desired.hasEntered && desired.tvOn && !desired.isMutedForFullscreen) {
                 setAutoplayBlocked(true);
-                updateBusVideoSnapshot({ autoplayBlocked: true });
               }
             },
             onError: () => {
@@ -277,28 +266,13 @@ export function BusTvPlayer({
       cancelled = true;
       if (warmTimerRef.current !== null) window.clearTimeout(warmTimerRef.current);
       if (volumeFrameRef.current !== null) cancelAnimationFrame(volumeFrameRef.current);
+      if (interactionClickTimerRef.current !== null) window.clearTimeout(interactionClickTimerRef.current);
       playerRef.current?.destroy();
       playerRef.current = null;
-      updateBusVideoSnapshot({ ready: false, state: -1 });
     };
   }, [applyDesiredPlayback]);
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      const player = playerRef.current;
-      if (!player || !ready) return;
-      try {
-        updateBusVideoSnapshot({
-          currentTime: player.getCurrentTime(),
-          duration: player.getDuration(),
-          state: player.getPlayerState(),
-        });
-      } catch {
-        // Le lecteur peut être en cours de destruction lors d'un changement de page.
-      }
-    }, 500);
-    return () => window.clearInterval(timer);
-  }, [ready]);
+
 
   useEffect(() => {
     const onUserPlay = () => {
@@ -313,12 +287,6 @@ export function BusTvPlayer({
       player.setVolume(100);
       player.playVideo();
       setAutoplayBlocked(false);
-      updateBusVideoSnapshot({ autoplayBlocked: false });
-    };
-    const onSeek = (event: Event) => {
-      const currentTime = (event as CustomEvent<{ currentTime?: number }>).detail?.currentTime;
-      if (typeof currentTime !== "number" || !Number.isFinite(currentTime)) return;
-      playerRef.current?.seekTo(Math.max(0, currentTime), true);
     };
     const onTogglePlayback = () => {
       const player = playerRef.current;
@@ -331,18 +299,15 @@ export function BusTvPlayer({
           player.setVolume(100);
           player.playVideo();
           setAutoplayBlocked(false);
-          updateBusVideoSnapshot({ autoplayBlocked: false });
         }
       } catch {
         // Le lecteur peut être en cours d'initialisation.
       }
     };
     window.addEventListener("bus-tv-user-play", onUserPlay);
-    window.addEventListener("bus-video-seek", onSeek);
     window.addEventListener("bus-tv-toggle-playback", onTogglePlayback);
     return () => {
       window.removeEventListener("bus-tv-user-play", onUserPlay);
-      window.removeEventListener("bus-video-seek", onSeek);
       window.removeEventListener("bus-tv-toggle-playback", onTogglePlayback);
     };
   }, []);
@@ -417,6 +382,9 @@ export function BusTvPlayer({
           {tvOn && phase === "inside" && !isMutedForFullscreen && (
             <div
               data-tv-wheel-capture
+              role="button"
+              tabIndex={0}
+              aria-label="Écran de la TV. Molette pour zoomer, clic pour lecture ou pause, double-clic pour plein écran."
               onWheel={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -424,9 +392,31 @@ export function BusTvPlayer({
                   new CustomEvent<number>("bus-zoom", { detail: event.deltaY * 0.04 }),
                 );
               }}
-              onClick={() => window.dispatchEvent(new Event("bus-tv-toggle-playback"))}
+              onClick={() => {
+                if (interactionClickTimerRef.current !== null) {
+                  window.clearTimeout(interactionClickTimerRef.current);
+                }
+                interactionClickTimerRef.current = window.setTimeout(() => {
+                  interactionClickTimerRef.current = null;
+                  window.dispatchEvent(new Event("bus-tv-toggle-playback"));
+                }, 180);
+              }}
+              onDoubleClick={(event) => {
+                event.preventDefault();
+                if (interactionClickTimerRef.current !== null) {
+                  window.clearTimeout(interactionClickTimerRef.current);
+                  interactionClickTimerRef.current = null;
+                }
+                const iframe = playerRef.current?.getIframe();
+                if (iframe?.requestFullscreen) void iframe.requestFullscreen().catch(() => undefined);
+              }}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                window.dispatchEvent(new Event("bus-tv-toggle-playback"));
+              }}
               onPointerDown={(event) => event.stopPropagation()}
-              title="Molette : zoomer dans le bus · clic : lecture/pause"
+              title="Molette : zoom · clic : lecture/pause · double-clic : plein écran"
               style={{
                 position: "absolute",
                 inset: "0 0 46px 0",
