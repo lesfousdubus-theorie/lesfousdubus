@@ -39,6 +39,50 @@ body {
   }
 }
 
+@keyframes theory-modal-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.theory-modal-backdrop {
+  padding:
+    max(0.25rem, env(safe-area-inset-top))
+    max(0.25rem, env(safe-area-inset-right))
+    max(0.25rem, env(safe-area-inset-bottom))
+    max(0.25rem, env(safe-area-inset-left));
+  animation: theory-modal-in 180ms ease-out both;
+}
+
+@media (min-width: 360px) {
+  .theory-modal-backdrop {
+    padding:
+      max(0.5rem, env(safe-area-inset-top))
+      max(0.5rem, env(safe-area-inset-right))
+      max(0.5rem, env(safe-area-inset-bottom))
+      max(0.5rem, env(safe-area-inset-left));
+  }
+}
+
+@media (min-width: 640px) {
+  .theory-modal-backdrop {
+    padding:
+      max(1.25rem, env(safe-area-inset-top))
+      max(1.25rem, env(safe-area-inset-right))
+      max(1.25rem, env(safe-area-inset-bottom))
+      max(1.25rem, env(safe-area-inset-left));
+  }
+}
+
+@media (min-width: 1024px) {
+  .theory-modal-backdrop {
+    padding:
+      max(2rem, env(safe-area-inset-top))
+      max(2rem, env(safe-area-inset-right))
+      max(2rem, env(safe-area-inset-bottom))
+      max(2rem, env(safe-area-inset-left));
+  }
+}
+
 /* Les contrôles respectent les encoches, Dynamic Island et barres d'accueil. */
 .bus-top-stats {
   top: calc(0.75rem + env(safe-area-inset-top)) !important;
@@ -139,46 +183,83 @@ body {
     left: auto !important;
     right: calc(0.35rem + env(safe-area-inset-right)) !important;
     height: auto !important;
-    transform: scale(0.84);
-    transform-origin: top right;
   }
 
   .bus-row-nav {
     top: calc(4rem + env(safe-area-inset-top)) !important;
     right: calc(0.35rem + env(safe-area-inset-right)) !important;
-    transform: scale(0.86);
-    transform-origin: top right;
   }
 
   .bus-day-night {
     left: calc(0.35rem + env(safe-area-inset-left)) !important;
     bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
-    transform: scale(0.84);
-    transform-origin: bottom left;
+    min-width: 2.75rem;
+    justify-content: center;
+  }
+
+  .bus-day-night-detail {
+    display: none !important;
   }
 
   .bus-speed {
     left: auto !important;
-    right: calc(0.75rem + env(safe-area-inset-right)) !important;
+    right: calc(0.35rem + env(safe-area-inset-right)) !important;
     bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
-    width: min(17rem, 34vw);
-    transform: scale(0.84);
-    transform-origin: bottom right;
+    width: auto !important;
+    max-width: min(15rem, calc(100vw - 7rem));
+    padding-inline: 0.3rem !important;
+  }
+
+  .bus-speed button {
+    width: 2.75rem !important;
+    min-width: 2.75rem !important;
+    flex: none !important;
+    padding-inline: 0.45rem !important;
+  }
+
+  .bus-speed-label {
+    display: none !important;
+  }
+
+  .bus-speed-value {
+    width: auto !important;
+    min-width: 3.6rem;
   }
 
   .bus-exterior-controls,
   .bus-interior-controls {
-    bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
-    left: 40% !important;
-    width: min(31rem, calc(100vw - 19rem)) !important;
-    max-width: none !important;
+    bottom: calc(3.65rem + env(safe-area-inset-bottom)) !important;
+    left: calc(50% + (env(safe-area-inset-left) - env(safe-area-inset-right)) / 2) !important;
+    width: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 0.7rem) !important;
+    max-width: 36rem !important;
     translate: -50% 0 !important;
-    transform: scale(0.86) !important;
-    transform-origin: bottom center;
+    transform: none !important;
+    padding-inline: 0.25rem !important;
+    gap: 0.25rem !important;
+  }
+
+  .bus-interior-controls {
+    max-width: 32rem !important;
+  }
+
+  .bus-interior-controls > div {
+    gap: 0.25rem !important;
+  }
+
+  .hud-label-long {
+    display: none !important;
+  }
+
+  .hud-label-short {
+    display: inline !important;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .theory-modal-backdrop {
+    animation: none !important;
+  }
+
   .bus-app *,
   .bus-app *::before,
   .bus-app *::after {
