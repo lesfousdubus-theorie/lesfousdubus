@@ -54,7 +54,7 @@ Cliquez sur le bouton **« 📜 La Théorie »** en haut à gauche pour ouvrir l
 ## 🎮 Comment naviguer sur le site ?
 
 ### Avec la souris ou au doigt (sur smartphone / tablette) :
-- **Faire pivoter la vue** : cliquez et glissez pour tourner à 360° autour du minibus.
+- **Faire pivoter la vue** : cliquez et glissez pour tourner à 360° autour du minibus. Glissez vers le haut de l'écran au-delà de l'horizon pour regarder jusqu'au ciel au-dessus de vous ; glissez vers le bas pour retrouver la vue sur le bus.
 - **Zoomer / Dézoomer** : utilisez la molette de votre souris (ou écartez deux doigts sur mobile).
 - **Dans le bus** : glissez votre souris pour regarder autour de vous dans la cabine, et utilisez les flèches **◀ Rangée ▶** pour vous déplacer d'avant en arrière le long de l'allée.
 
