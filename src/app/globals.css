@@ -9,12 +9,12 @@ body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Quand l'iframe de la TV passe en plein écran, elle remplit l'écran */
-#tv-frame:fullscreen,
-#tv-frame:fullscreen iframe {
-  width: 100vw !important;
-  height: 100vh !important;
-  background: #000;
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 @keyframes hud-control-in-flow {
@@ -25,5 +25,162 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Les contrôles respectent les encoches, Dynamic Island et barres d'accueil. */
+.bus-top-stats {
+  top: calc(0.75rem + env(safe-area-inset-top)) !important;
+  left: calc(0.75rem + env(safe-area-inset-left)) !important;
+  right: calc(0.75rem + env(safe-area-inset-right)) !important;
+}
+
+.bus-title-panel {
+  left: calc(0.75rem + env(safe-area-inset-left)) !important;
+}
+
+.bus-row-nav {
+  right: calc(0.75rem + env(safe-area-inset-right)) !important;
+}
+
+.bus-day-night {
+  left: calc(0.75rem + env(safe-area-inset-left)) !important;
+  bottom: calc(4.5rem + env(safe-area-inset-bottom)) !important;
+}
+
+.bus-speed {
+  left: calc(0.75rem + env(safe-area-inset-left)) !important;
+  right: calc(0.75rem + env(safe-area-inset-right)) !important;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important;
+}
+
+.bus-exterior-controls,
+.bus-interior-controls {
+  bottom: calc(7.75rem + env(safe-area-inset-bottom)) !important;
+}
+
+@media (min-width: 640px) {
+  .bus-top-stats {
+    left: auto !important;
+    right: calc(1rem + env(safe-area-inset-right)) !important;
+    top: calc(1rem + env(safe-area-inset-top)) !important;
+  }
+
+  .bus-title-panel {
+    left: calc(1rem + env(safe-area-inset-left)) !important;
+  }
+
+  .bus-row-nav {
+    right: calc(1rem + env(safe-area-inset-right)) !important;
+  }
+
+  .bus-day-night {
+    left: calc(1rem + env(safe-area-inset-left)) !important;
+    bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .bus-speed {
+    left: auto !important;
+    right: calc(1rem + env(safe-area-inset-right)) !important;
+    bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .bus-exterior-controls,
+  .bus-interior-controls {
+    bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .bus-exterior-controls,
+  .bus-interior-controls {
+    bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Sur mobile, le blur au-dessus du WebGL coûte cher : on le garde léger. */
+@media (pointer: coarse) {
+  .bus-glass {
+    -webkit-backdrop-filter: blur(5px) !important;
+    backdrop-filter: blur(5px) !important;
+  }
+}
+
+/* Un téléphone en paysage a beaucoup de largeur mais très peu de hauteur.
+   Cette passe compacte évite que les contrôles se chevauchent comme sur tablette. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .bus-title-panel {
+    top: calc(0.35rem + env(safe-area-inset-top)) !important;
+    max-width: 36vw !important;
+  }
+
+  .bus-title-panel h1,
+  .bus-title-panel > p {
+    display: none !important;
+  }
+
+  .bus-title-panel > div {
+    margin-top: 0 !important;
+  }
+
+  .bus-top-stats {
+    top: calc(0.35rem + env(safe-area-inset-top)) !important;
+    left: auto !important;
+    right: calc(0.35rem + env(safe-area-inset-right)) !important;
+    height: auto !important;
+    transform: scale(0.84);
+    transform-origin: top right;
+  }
+
+  .bus-row-nav {
+    top: calc(4rem + env(safe-area-inset-top)) !important;
+    right: calc(0.35rem + env(safe-area-inset-right)) !important;
+    transform: scale(0.86);
+    transform-origin: top right;
+  }
+
+  .bus-day-night {
+    left: calc(0.35rem + env(safe-area-inset-left)) !important;
+    bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
+    transform: scale(0.84);
+    transform-origin: bottom left;
+  }
+
+  .bus-speed {
+    left: auto !important;
+    right: calc(0.35rem + env(safe-area-inset-right)) !important;
+    bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
+    width: min(17rem, 34vw);
+    transform: scale(0.84);
+    transform-origin: bottom right;
+  }
+
+  .bus-exterior-controls,
+  .bus-interior-controls {
+    bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
+    left: 40% !important;
+    width: min(31rem, calc(100vw - 19rem)) !important;
+    max-width: none !important;
+    transform: translateX(-50%) scale(0.86) !important;
+    transform-origin: bottom center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bus-app *,
+  .bus-app *::before,
+  .bus-app *::after {
+    scroll-behavior: auto !important;
   }
 }

@@ -15,6 +15,7 @@ import {
   THEORY_FAQ,
 } from "@/lib/theory-data";
 import { YOUTUBE_ID } from "./bus/constants";
+import SyncedTheoryVideo from "./SyncedTheoryVideo";
 
 interface TheoryModalProps {
   isOpen?: boolean;
@@ -392,15 +393,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onLeaveBu
                     Vidéo fondatrice de la théorie
                   </span>
                 </div>
-                {/* Iframe vidéo YouTube */}
-                <div className="mt-4 aspect-video w-full overflow-hidden rounded-xl border border-white/20 bg-black">
-                  <iframe
-                    src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?rel=0&modestbranding=1&cc_load_policy=0`}
-                    title="La Théorie des Fous du Bus — Vidéo Officielle Le Mont Corvo"
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                  />
-                </div>
+                <SyncedTheoryVideo />
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10">
                   <span className="text-xs text-white/80">
