@@ -169,7 +169,7 @@ export default function BusExperience() {
   const [registrationPending, setRegistrationPending] = useState(false);
   const [statsLoadError, setStatsLoadError] = useState(false);
   const [statsRetryToken, setStatsRetryToken] = useState(0);
-  const theoryAgeInDays = getTheoryAgeInDays();
+  const [theoryAgeInDays, setTheoryAgeInDays] = useState(getTheoryAgeInDays);
 
   // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
   const [speedMultiplier, setSpeedMultiplier] = useState(() => {
@@ -273,6 +273,22 @@ export default function BusExperience() {
   useEffect(() => {
     worldRef.current.speedMultiplier = speedMultiplier;
   }, [speedMultiplier]);
+
+  // Actualise le compteur d'âge exactement au prochain minuit local.
+  useEffect(() => {
+    let timer = 0;
+    const scheduleNextMidnight = () => {
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      timer = window.setTimeout(() => {
+        setTheoryAgeInDays(getTheoryAgeInDays());
+        scheduleNextMidnight();
+      }, Math.max(1_000, nextMidnight.getTime() - now.getTime() + 250));
+    };
+    scheduleNextMidnight();
+    return () => window.clearTimeout(timer);
+  }, []);
+
 
   // Les paramètres de debug restent bornés à la capacité réellement affichable.
   useEffect(() => {
