@@ -188,7 +188,12 @@ export default function BusExperience() {
     if (data.profileRevision < profileRevisionRef.current) return false;
     profileRevisionRef.current = data.profileRevision;
     setProfileRevision(data.profileRevision);
-    setVacantSeatRanges(data.vacantSeatRanges);
+    setVacantSeatRanges((previous) =>
+      previous.length === data.vacantSeatRanges.length
+      && previous.every((range, index) => range.every((value, part) => value === data.vacantSeatRanges[index][part]))
+        ? previous
+        : data.vacantSeatRanges,
+    );
     updateSeatCapacity(data.seatCapacity);
     if (updateCount) setCount(data.count);
     return true;

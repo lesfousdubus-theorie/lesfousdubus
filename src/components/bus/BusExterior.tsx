@@ -359,12 +359,12 @@ export default function BusExterior({
             position={[0, 0, -0.1]}
             castShadow={false}
           />
-          <mesh position={[0, -0.3, -10]} rotation={[-Math.PI / 2 - 0.03, 0, 0]}>
+          <mesh position={[0, -0.3, -10]} rotation={[-Math.PI / 2 - 0.03, 0, 0]} visible={headlights}>
             <coneGeometry args={[2.8, 20, 32, 1, true]} />
             <meshBasicMaterial
               color="#b8e2ff"
               transparent
-              opacity={headlights ? 0.08 : 0}
+              opacity={0.08}
               side={THREE.DoubleSide}
               depthWrite={false}
               blending={THREE.AdditiveBlending}
@@ -395,8 +395,8 @@ export default function BusExterior({
       ))}
 
       {/* ---------- Roues stylisées (adaptées à la longueur) ---------- */}
-      {phase !== "inside" && wheelPositions.map(([x, z], i) => (
-        <group key={`wheel-${i}`} position={[x, 0.55, z]}>
+      {wheelPositions.map(([x, z], i) => (
+        <group key={`wheel-${i}`} position={[x, 0.55, z]} visible={phase !== "inside"}>
           <mesh
             ref={(el: THREE.Mesh | null) => {
               wheels.current[i] = el;
@@ -473,7 +473,7 @@ function PillarInstances({ positions, material }: { positions: number[]; materia
     ref.current.computeBoundingSphere();
   }, [positions]);
   return (
-    <instancedMesh ref={ref} args={[undefined, undefined, positions.length * 2]} material={material}>
+    <instancedMesh ref={ref} args={[undefined, undefined, 183 * 2]} count={positions.length * 2} material={material}>
       <boxGeometry args={[0.08, 1.02, 0.1]} />
     </instancedMesh>
   );
