@@ -11,7 +11,10 @@ function healthResponse(
   secret: "configured" | "error",
 ) {
   const ok = database === "d1" && schema === "ready" && secret === "configured";
-  return Response.json({ ok, database, schema, secret }, {
+  if (!ok) {
+    console.warn(`Health check failed: database=${database}, schema=${schema}, secret=${secret}`);
+  }
+  return Response.json({ ok }, {
     status: ok ? 200 : 503,
     headers: HEALTH_HEADERS,
   });
