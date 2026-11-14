@@ -2,6 +2,7 @@
 export const BUS_AUDIO_EVENTS = {
   tvPrepare: "bus-tv-user-prepare",
   tvPlay: "bus-tv-user-play",
+  tvToggle: "bus-tv-user-toggle",
   tvFocus: "bus-tv-audio-focus",
   partyFocus: "bus-party-audio-focus",
   musicToggle: "bus-music-user-toggle",
@@ -31,6 +32,7 @@ export const INITIAL_MUSIC_PLAYBACK: BusMusicPlayback = {
 interface BusAudioDetails {
   tvPrepare: undefined;
   tvPlay: undefined;
+  tvToggle: boolean;
   tvFocus: boolean;
   partyFocus: boolean;
   musicToggle: { playing: boolean; suspendedForVideo: boolean };
