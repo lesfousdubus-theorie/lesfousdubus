@@ -29,7 +29,8 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
       pose: getRegisteredPassengerPose(poses,index), target: createPassengerPose() };
   }), [passengers, profilesBySeatIndex,poses]);
   const ids=useMemo(()=>profiles.map(profile=>profile.archetype.id),[profiles]);
-  const drivers=useMemo(()=>({bodies,heads,arms,forearms,hands,revision,celebration}),[]);
+  const listeners=useMemo(()=>new Set<()=>void>(),[]);
+  const drivers=useMemo(()=>({bodies,heads,arms,forearms,hands,revision,celebration,listeners}),[listeners]);
   const scratch = useMemo(() => ({ body: new THREE.Matrix4(), shoulder: new THREE.Matrix4(), elbow: new THREE.Matrix4(),
     local: new THREE.Object3D(), matrix: new THREE.Matrix4() }), []);
   const writeMatrices = useCallback(() => {
@@ -64,7 +65,10 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
     });
     revision.current++;
   }, [passengers, profiles, scratch]);
-  useLayoutEffect(writeMatrices, [writeMatrices]);
+  useLayoutEffect(() => {
+    writeMatrices();
+    listeners.forEach(fn => fn());
+  }, [writeMatrices, listeners]);
   useFrame(({ clock }, dt) => {
     const hornElapsed = hornPulse > 0 ? (performance.now() - hornPulse) / 1000 : Infinity;
     const active = partyOn || (!reducedMotion && hornElapsed < 1.8);
