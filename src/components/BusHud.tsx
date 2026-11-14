@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type Dispatch, type RefObject, type SetStateAction } from "react";
+import { useEffect, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from "react";
 import type { Phase } from "./bus/constants";
 import { useHudLayout } from "./useHudLayout";
 import { countPeopleOnBoard } from "@/lib/bus-crew";
@@ -14,6 +14,8 @@ export interface ToastMessage {
 }
 
 interface BusHudProps {
+  hasSavedPlace: boolean;
+  openPlaceModal: () => void;
   phase: Phase;
   freeView: boolean;
   toggleFreeView: () => void;
@@ -62,6 +64,7 @@ interface BusHudProps {
 }
 
 export function BusHud({
+  hasSavedPlace, openPlaceModal,
   phase, freeView, toggleFreeView, openAvatarModal, hidden, sceneAvailable, toast, passengerManifestButtonRef, statsLoadError, count,
   numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow,
   exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
@@ -73,14 +76,37 @@ export function BusHud({
   partyOn, toggleParty,
 }: BusHudProps) {
   const [showVolumePopup, setShowVolumePopup] = useState(false);
+  const [immersive, setImmersive] = useState(false);
+  const immersiveButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreButtonRef = useRef<HTMLButtonElement>(null);
   const hudRef = useHudLayout(phase, hidden, showVolumePopup, sceneAvailable);
+  const restoreControls = () => {
+    setImmersive(false);
+    requestAnimationFrame(() => immersiveButtonRef.current?.focus({ preventScroll: true }));
+  };
+  useEffect(() => {
+    if (!immersive || hidden) return;
+    restoreButtonRef.current?.focus({ preventScroll: true });
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setImmersive(false);
+      requestAnimationFrame(() => immersiveButtonRef.current?.focus({ preventScroll: true }));
+    };
+    window.addEventListener("keydown", escape, true);
+    return () => window.removeEventListener("keydown", escape, true);
+  }, [immersive, hidden]);
 
   return (
     <>
       {/* ---------- HUD & INTERFACE UTILISATEUR (GARANTI TOUJOURS AU PREMIER PLAN Z-INDEX) ---------- */}
         <div
           ref={hudRef}
-          className={`pointer-events-none fixed inset-0 isolate select-none ${hidden ? "invisible" : ""}`}
+          data-immersive={immersive}
+          inert={hidden || immersive}
+          aria-hidden={hidden || immersive}
+          className={`pointer-events-none fixed inset-0 isolate select-none ${hidden || immersive ? "invisible" : ""}`}
           style={{ zIndex: 2147483647 }}
         >
         {/* Toast notification dynamique (allongement du bus) */}
@@ -130,6 +156,15 @@ export function BusHud({
               <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg>
               <span className="lg:hidden">Personnage</span><span className="hidden lg:inline">Changer de personnage</span>
             </button>}
+            {hasSavedPlace && <button type="button" onClick={openPlaceModal} disabled={busy} aria-haspopup="dialog"
+              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-4 text-xs font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60">
+              Ma place
+            </button>}
+            <button ref={immersiveButtonRef} type="button" onClick={() => { setShowVolumePopup(false); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif"
+              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-4 text-xs font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f] disabled:opacity-60">
+              <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" /></svg>
+              Mode immersif
+            </button>
           </div>
         </div>
 
@@ -474,12 +509,17 @@ export function BusHud({
             <HudButton compact className="min-w-0 w-full" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? "Arrêter la fête" : "Lancer la fête"} icon="🎉" disabled={(!partyOn && busy) || !interiorControlsVisible}>
               {partyOn ? "Stop" : "Fête"}
             </HudButton>
-            <HudButton compact className="min-w-0 w-full" onClick={exitBus} ariaLabel="Sortir du bus" primary icon="🏝️" disabled={busy || !interiorControlsVisible}>
+            <HudButton compact className="min-w-0 w-full" onClick={exitBus} ariaLabel="Sortir du bus" description="Sortir en gardant ta place et ton profil. Pour les supprimer, ouvre Ma place." primary icon="🏝️" disabled={busy || !interiorControlsVisible}>
               {phase === "exiting" ? "Sortie" : "Sortir"}
             </HudButton>
           </div>
         </div>
         </div>
+        {immersive && !hidden && <button ref={restoreButtonRef} type="button" onClick={restoreControls} aria-label="Quitter le mode immersif et afficher les commandes"
+          className="fixed z-[2147483647] inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-4 text-sm font-bold text-white shadow-lg hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd23f]"
+          style={{ right: "calc(1rem + env(safe-area-inset-right))", bottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+          Afficher les commandes<span className="hidden text-xs text-[#d8e3ff] sm:inline">· Échap</span>
+        </button>}
 
     </>
   );
@@ -492,6 +532,7 @@ function HudButton({
   primary,
   active,
   ariaLabel,
+  description,
   disabled,
   compact = false,
   className = "",
@@ -502,6 +543,7 @@ function HudButton({
   primary?: boolean;
   active?: boolean;
   ariaLabel?: string;
+  description?: string;
   disabled?: boolean;
   compact?: boolean;
   className?: string;
@@ -517,6 +559,7 @@ function HudButton({
     <button
       type="button"
       aria-label={ariaLabel}
+      title={description}
       aria-pressed={active}
       onPointerDown={(event) => event.stopPropagation()}
       onPointerUp={(event) => event.stopPropagation()}

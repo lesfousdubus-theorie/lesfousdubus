@@ -26,7 +26,7 @@ export function installTestYouTube() {
       this.source = element.closest("[data-theory-video]") ? "theory"
         : options.videoId === "63RzVcR1qHg" ? "background"
         : options.videoId === "RbZMoeHdR3I" ? "party" : "bus";
-      this.bufferReadyAt = performance.now() + (this.source === "bus" ? window.mediaTestBufferDelay ?? 0 : 0);
+      this.bufferReadyAt = performance.now() + (this.source === "bus" ? window.mediaTestBufferDelay ?? 0 : window.mediaTestMusicBufferDelay ?? 0);
       this.iframe = document.createElement("iframe");
       this.iframe.src = "about:blank";
       element.replaceWith(this.iframe);
@@ -59,7 +59,7 @@ export function installTestYouTube() {
     getCurrentTime() { return this.currentTime + (this.state === 1 ? (performance.now() - this.startedAt) / 1000 : 0); }
     getVideoUrl() { return 'https://www.youtube.com/watch?v='+this.videoId; }
     getDuration() { return 600; }
-    getVideoLoadedFraction() { return performance.now() >= this.bufferReadyAt ? .05 : 0; }
+    getVideoLoadedFraction() { return performance.now() >= this.bufferReadyAt ? .05 : window.mediaTestInitialBufferFraction ?? 0; }
     getPlayerState() { return this.state; }
     getIframe() { return this.iframe; }
     getOptions(module) { return this.captionModuleReady ? module ? ["track"] : ["captions"] : []; }
