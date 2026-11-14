@@ -246,7 +246,7 @@ export default function MusicPlaybackControls({
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
       title={`${playback.title} · ${status} · afficher la progression`}
-      className={`bus-glass pointer-events-auto relative z-10 flex h-11 w-11 items-center justify-center gap-2 rounded-full border shadow-lg touch-manipulation transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer ${compact ? "bus-icon-button" : "lg:w-[170px] lg:justify-start lg:px-3"} ${
+      className={`bus-glass pointer-events-auto relative z-10 flex h-11 w-11 items-center justify-center gap-2 rounded-full border shadow-lg touch-manipulation transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer ${compact ? "bus-icon-button" : "lg:w-auto lg:max-w-[165px] lg:justify-start lg:px-3.5"} ${
         open
           ? "border-[#ffd23f] bg-[#1636c9] text-white shadow-[0_0_15px_rgba(255,210,63,0.35)] hover:bg-[#1d44e6]"
           : "border-white/35 bg-[#07142b]/95 text-white hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f]"
