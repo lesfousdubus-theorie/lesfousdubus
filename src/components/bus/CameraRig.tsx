@@ -20,6 +20,10 @@ interface Props {
 
 const TRANSITION_TIME = 1.8;
 const FOV_EPSILON = 0.01;
+const EXTERIOR_MAX_POLAR_ANGLE = Math.PI / 2 - 0.04;
+const EXTERIOR_SKY_PITCH_LIMIT = Math.PI - EXTERIOR_MAX_POLAR_ANGLE - 0.02;
+const EXTERIOR_SKY_DRAG_SPEED = 0.0045;
+const LOCAL_X_AXIS = new THREE.Vector3(1, 0, 0);
 
 export default function CameraRig({
   phase,
@@ -46,6 +50,9 @@ export default function CameraRig({
   const targetFovRef = useRef(55);
   const currentFovRef = useRef(55);
   const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const exteriorPointersRef = useRef<Map<number, number>>(new Map());
+  const skyPitchRef = useRef(0);
+  const skyTiltRef = useRef(new THREE.Quaternion());
   const pinchStartDistRef = useRef<number | null>(null);
   const pinchStartFovRef = useRef<number>(55);
   const phaseRef = useRef<Phase>(phase);
@@ -144,6 +151,13 @@ export default function CameraRig({
       a.active = true;
     } else if (phaseChanged) {
       a.active = false;
+    }
+    if (phaseChanged && phase !== "outside") {
+      // Garder la caméra extérieure à sa place pendant le regard vers le ciel.
+      // La transition part de son orientation actuelle, puis réinitialise ce regard.
+      skyPitchRef.current = 0;
+      exteriorPointersRef.current.clear();
+      if (controls.current) controls.current.minPolarAngle = 0;
     }
   }, [phase, camera, activeEyePos, activeTvTarget]);
 
@@ -271,6 +285,55 @@ export default function CameraRig({
     };
   }, [gl]);
 
+  // Au-delà de l'horizon, lever seulement le regard : faire descendre toute
+  // la caméra sous le sol exposerait l'intérieur du bus et le dessous du décor.
+  useEffect(() => {
+    const surface = gl.domElement.parentElement ?? gl.domElement;
+    const pointers = exteriorPointersRef.current;
+
+    const down = (event: PointerEvent) => {
+      if (phaseRef.current !== "outside") return;
+      pointers.set(event.pointerId, event.clientY);
+    };
+
+    const move = (event: PointerEvent) => {
+      if (phaseRef.current !== "outside" || !pointers.has(event.pointerId)) return;
+      const previousY = pointers.get(event.pointerId)!;
+      pointers.set(event.pointerId, event.clientY);
+      if (pointers.size !== 1) return;
+
+      const control = controls.current;
+      if (!control) return;
+      const deltaY = event.clientY - previousY;
+      if (deltaY < 0 && (skyPitchRef.current > 0 || control.getPolarAngle() >= EXTERIOR_MAX_POLAR_ANGLE - 0.01)) {
+        skyPitchRef.current = Math.min(
+          EXTERIOR_SKY_PITCH_LIMIT,
+          skyPitchRef.current - deltaY * EXTERIOR_SKY_DRAG_SPEED,
+        );
+      } else if (deltaY > 0 && skyPitchRef.current > 0) {
+        skyPitchRef.current = Math.max(0, skyPitchRef.current - deltaY * EXTERIOR_SKY_DRAG_SPEED);
+      }
+      // Quand le regard est levé, OrbitControls reste à l'horizon. Un glisser
+      // vers le bas ramène d'abord le ciel, puis reprend l'orbite habituelle.
+      control.minPolarAngle = skyPitchRef.current > 0 ? EXTERIOR_MAX_POLAR_ANGLE : 0;
+    };
+
+    const up = (event: PointerEvent) => {
+      pointers.delete(event.pointerId);
+    };
+
+    surface.addEventListener("pointerdown", down);
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+    return () => {
+      surface.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+    };
+  }, [gl]);
+
   useFrame((state, dt) => {
     const a = anim.current;
     const p = phaseRef.current;
@@ -342,6 +405,11 @@ export default function CameraRig({
         SEAT_EYE.y,
         seatZRef.current,
       );
+    } else if (p === "outside" && skyPitchRef.current > 0) {
+      // OrbitControls rétablit d'abord l'orientation vers sa cible à chaque
+      // frame ; cette rotation locale permet de viser jusqu'au zénith.
+      skyTiltRef.current.setFromAxisAngle(LOCAL_X_AXIS, skyPitchRef.current);
+      cam.quaternion.multiply(skyTiltRef.current);
     }
   });
 
@@ -354,7 +422,7 @@ export default function CameraRig({
       target={[0, 1.9, orbitTargetZ]}
       minDistance={5}
       maxDistance={maxOrbitDistance}
-      maxPolarAngle={Math.PI / 2 - 0.04}
+      maxPolarAngle={EXTERIOR_MAX_POLAR_ANGLE}
       enablePan={false}
       enableDamping={!reducedMotion}
       dampingFactor={0.08}
