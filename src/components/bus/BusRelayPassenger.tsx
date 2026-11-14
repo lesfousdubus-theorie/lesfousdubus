@@ -42,7 +42,7 @@ function BusRelayPassenger({ hornPulse, reducedMotion, partyOn }: { hornPulse: n
   const mats = useMemo(() => getArchetypeMaterials(archetype), []);
   const onActivate = useCallback(() => {
     window.dispatchEvent(new CustomEvent("bus-show-toast", { detail: {
-      badge: "📣 FOUDUBUSTV", text: "Le relais de la théorie sur X / Twitter", sub: BUS_RELAY.handle,
+      badge: "FOUDUBUSTV", text: "Le relais de la théorie sur X / Twitter", sub: BUS_RELAY.handle, href: BUS_RELAY.url,
     } }));
   }, []);
   return <Passenger name="bus-entry-passenger" label={BUS_RELAY.name} onActivate={onActivate}

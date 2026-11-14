@@ -90,6 +90,7 @@ export async function runBusCameraChecks({ send, evaluate, waitForPageCondition,
   });
   const distance = () => run(`(() => { const s = window.busCameraTestState(); return s.camera.position.distanceTo(s.controls.target); })()`);
   const reset = async () => {
+    await waitForPageCondition(send, `Boolean(document.querySelector('button[aria-label="Recentrer la vue"]'))`, "Recentre button is ready");
     const point = await run(`(() => { const r = document.querySelector('button[aria-label="Recentrer la vue"]').getBoundingClientRect(); return {x:r.x+r.width/2,y:r.y+r.height/2}; })()`);
     await send("Input.dispatchMouseEvent", { type: "mousePressed", button: "left", clickCount: 1, ...point });
     await send("Input.dispatchMouseEvent", { type: "mouseReleased", button: "left", clickCount: 1, ...point });

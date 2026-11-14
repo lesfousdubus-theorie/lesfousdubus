@@ -147,7 +147,7 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
     window.dispatchEvent(
       new CustomEvent("bus-show-toast", {
         detail: {
-          badge: "👑 KAMAL",
+          badge: "KAMAL",
           text: "« Accrochez-vous ! On fonce tout droit vers le Siècle Oublié ! »",
           sub: "Le Mont Corvo",
         },
@@ -161,8 +161,8 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
     window.dispatchEvent(
       new CustomEvent("bus-show-toast", {
         detail: {
-          badge: "🧭 KYTA",
-          text: "« Le Log Pose s'affole ! La théorie du Mont Corvo se vérifie sous nos yeux ! »",
+          badge: "KYTA",
+          text: "« Le Log Pose s’affole ! La théorie du Mont Corvo se vérifie sous nos yeux ! »",
           sub: "Le Mont Corvo",
         },
       }),

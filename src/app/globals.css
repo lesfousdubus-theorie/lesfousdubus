@@ -143,7 +143,7 @@ body {
 }
 
 .bus-passenger-list {
-  max-height: min(72dvh, calc(var(--bus-modal-height, 100dvh) - 1.5rem));
+  max-height: min(85dvh, calc(var(--bus-modal-height, 100dvh) - max(var(--bus-modal-padding, 0.75rem), env(safe-area-inset-top)) - max(var(--bus-modal-padding, 0.75rem), env(safe-area-inset-bottom))));
 }
 
 .bus-toast {
@@ -224,6 +224,13 @@ body {
   padding-inline: 0;
   translate: -50% 0;
   transform: none !important;
+}
+
+.bus-exterior-controls[inert],
+.bus-exterior-controls[inert] *,
+.bus-interior-controls[inert],
+.bus-interior-controls[inert] * {
+  pointer-events: none !important;
 }
 
 .bus-exterior-controls {
@@ -413,7 +420,23 @@ body {
   .bus-music-badge { display: none !important; }
   .bus-volume-popup { display: flex !important; }
   .bus-toast-content { padding: 0.45rem 0.65rem !important; font-size: 0.875rem; }
-  .bus-toast-content > div > div:first-child { font-size: 0.875rem; }
+  .bus-toast-content .bus-toast-title { font-size: 0.875rem; }
+  .bus-touch-hint { bottom: calc(3.625rem + env(safe-area-inset-bottom)) !important; }
+
+  .bus-modal-backdrop {
+    --bus-modal-padding: 0.35rem;
+    padding: max(0.35rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right)) max(0.35rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left));
+  }
+
+  .bus-passenger-list {
+    max-height: calc(var(--bus-modal-height, 100dvh) - max(var(--bus-modal-padding, 0.35rem), env(safe-area-inset-top)) - max(var(--bus-modal-padding, 0.35rem), env(safe-area-inset-bottom)));
+    padding: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .bus-passenger-list > header {
+    padding-bottom: 0.5rem !important;
+  }
 
   .bus-volume-inline { display: none !important; }
   .bus-volume-toggle { display: grid !important; }

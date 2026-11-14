@@ -25,14 +25,14 @@ interface TheoryModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   onVideoPlaybackChange?: (active: boolean) => void;
-  onManagePlace?: () => void;
 }
 
 const THEORY_TABS: TheoryTab[] = ["thesis", "video", "faq", "participate"];
 
-export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPlaybackChange, onManagePlace }: TheoryModalProps) {
+export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPlaybackChange }: TheoryModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TheoryTab>("thesis");
+  const [videoMounted, setVideoMounted] = useState(activeTab === "video");
   const contentRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const dialogTitleRef = useRef<HTMLHeadingElement>(null);
@@ -42,15 +42,19 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalOpen;
 
   const handleClose = useCallback(() => {
+    if (activeTab !== "video") {
+      setVideoMounted(false);
+    }
     if (onClose) {
       onClose();
     } else {
       setInternalOpen(false);
     }
-  }, [onClose]);
+  }, [activeTab, onClose]);
 
   const selectTab = useCallback((tab: TheoryTab) => {
     scrollPositions.current[activeTab] = contentRef.current?.scrollTop ?? 0;
+    if (tab === "video") setVideoMounted(true);
     setActiveTab(tab);
   }, [activeTab]);
 
@@ -89,14 +93,15 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
       aria-labelledby="theory-modal-title"
       tabIndex={-1}
       className="theory-modal-backdrop pointer-events-auto fixed inset-0 z-[999999] flex items-center justify-center bg-[#020617]/85 backdrop-blur-md"
-      onClick={handleClose}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
       onKeyDown={handleDialogKeyDown}
       onWheel={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
     >
       <div
         className="theory-modal-window relative flex h-[calc(100dvh-0.5rem)] w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-[#ffd23f]/45 bg-[#07142b] text-white shadow-[0_28px_80px_rgba(0,0,0,0.75)] select-text min-[360px]:h-[calc(100dvh-1rem)] min-[360px]:rounded-2xl sm:h-[min(92dvh,900px)]"
-        onClick={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
@@ -173,29 +178,16 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
           >
             {THEORY_TABS.map((tab) => (
               <div key={tab} role="tabpanel" id={`theory-panel-${tab}`} aria-labelledby={`theory-tab-${tab}`} hidden={tab !== activeTab}>
-                {(tab !== "video" || activeTab === "video") && <TheoryPanelContent activeTab={tab} onVideoPlaybackChange={onVideoPlaybackChange} />}
+                {(tab !== "video" || videoMounted || activeTab === "video") && (
+                  <TheoryPanelContent
+                    activeTab={tab}
+                    videoActive={tab === "video" ? isOpen && activeTab === "video" : undefined}
+                    videoMounted={tab === "video" ? videoMounted || activeTab === "video" : undefined}
+                    onVideoPlaybackChange={onVideoPlaybackChange}
+                  />
+                )}
               </div>
             ))}
-          </div>
-
-          {/* Pied de page du modal */}
-          <div className="flex min-h-14 shrink-0 flex-col items-stretch justify-between gap-2 border-t border-white/10 bg-[#040b18]/90 px-3 py-2 min-[360px]:flex-row min-[360px]:items-center min-[360px]:gap-4 min-[360px]:px-4 min-[360px]:py-2.5 sm:px-7 lg:px-9">
-            {onManagePlace ? (
-              <button
-                type="button"
-                onClick={onManagePlace}
-                className="min-h-11 cursor-pointer rounded-lg px-2 text-left text-xs font-semibold text-[#dce7ff] underline decoration-[#ffd23f]/50 underline-offset-4 transition-colors hover:text-[#ffd23f] hover:decoration-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] motion-reduce:transition-none"
-              >
-                Gérer ma place
-              </button>
-            ) : <span />}
-            <button
-              type="button"
-              onClick={handleClose}
-              className="min-h-11 cursor-pointer rounded-lg border border-white/20 bg-[#0c1b3a] px-4 py-2 text-sm font-bold text-[#dce7ff] transition hover:border-[#ffd23f]/50 hover:bg-[#10265c] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 motion-reduce:transform-none motion-reduce:transition-none"
-            >
-              Fermer
-            </button>
           </div>
         </div>
       </div>
@@ -237,7 +229,7 @@ function TabButton({
       aria-controls={panelId}
       aria-label={label}
       tabIndex={active ? 0 : -1}
-      className={`flex min-h-11 min-w-0 flex-1 cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-1 py-2 text-xs font-black transition-[background-color,border-color,color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
+      className={`flex min-h-11 min-w-0 flex-1 cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-1 py-2 text-[11px] font-black transition-[background-color,border-color,color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none min-[360px]:px-1.5 min-[360px]:text-xs sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
         active
           ? "border-[#ffd23f] bg-[#ffd23f] text-[#091c5c] shadow-md shadow-[#ffd23f]/20"
           : "border-white/15 bg-[#0c1b3a]/70 text-[#dce7ff] hover:border-[#ffd23f]/45 hover:bg-[#0c1b3a] hover:text-white"

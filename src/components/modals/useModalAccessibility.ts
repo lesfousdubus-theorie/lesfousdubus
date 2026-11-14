@@ -10,6 +10,49 @@ const MODAL_FOCUSABLE_SELECTOR = [
 const backgroundLocks = new WeakMap<HTMLElement, { count: number; wasInert: boolean }>();
 const handledEscapeEvents = new WeakSet<Event>();
 
+const INTERACTIVE_TRIGGER_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "summary",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
+
+let lastTriggerRef: WeakRef<HTMLElement> | null = null;
+let triggerListenersAttached = false;
+
+function getLastTriggerElement(): HTMLElement | null {
+  const element = lastTriggerRef?.deref() ?? null;
+  return element && element.isConnected ? element : null;
+}
+
+function attachTriggerListeners() {
+  if (triggerListenersAttached || typeof document === "undefined") return;
+  triggerListenersAttached = true;
+
+  const recordTrigger = (event: Event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest('[role="dialog"], [role="alertdialog"]')) return;
+    if (event.type === "pointerdown" && document.querySelector('[aria-modal="true"]')) return;
+
+    const interactive = target.closest(INTERACTIVE_TRIGGER_SELECTOR);
+    if (interactive instanceof HTMLElement) {
+      lastTriggerRef = new WeakRef(interactive);
+    } else if (event.type === "pointerdown") {
+      lastTriggerRef = null;
+    }
+  };
+
+  document.addEventListener("focusin", recordTrigger, true);
+  document.addEventListener("pointerdown", recordTrigger, true);
+  document.addEventListener("click", recordTrigger, true);
+}
+
+attachTriggerListeners();
+
 function isVisible(element: HTMLElement) {
   return element.isConnected && element.getClientRects().length > 0
     && !element.closest("[hidden], [inert], [aria-hidden='true']")
@@ -31,9 +74,19 @@ export function useModalAccessibility(
   }, [onClose]);
 
   useEffect(() => {
+    attachTriggerListeners();
     if (!isOpen) return;
-    previouslyFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const fallbackReturnTarget = returnFocusRef?.current ?? null;
+    const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const activeTrigger =
+      active && active !== document.body && active !== document.documentElement && active.isConnected
+        ? active
+        : null;
+    const trackedTrigger = getLastTriggerElement();
+    // Si le HUD est déjà passé en inert/invisible avant l'effet, document.activeElement
+    // retombe sur body : on s'appuie alors sur le dernier déclencheur mémorisé.
+    previouslyFocusedRef.current = activeTrigger ?? trackedTrigger;
+    const fallbackReturnTarget = returnFocusRef?.current ?? trackedTrigger;
+    const initialReturnElement = returnFocusRef?.current ?? null;
     const page = document.getElementById("site-content");
     if (page) {
       const lock = backgroundLocks.get(page) ?? { count: 0, wasInert: page.inert };
@@ -66,8 +119,16 @@ export function useModalAccessibility(
       // Attendre que le HUD réapparaisse après la fermeture ou qu'une autre
       // fenêtre ait pris le focus lors d'un passage liste → fiche.
       window.requestAnimationFrame(() => {
-        const returnTarget = previous && isVisible(previous) ? previous : fallbackReturnTarget;
-        if (returnTarget && isVisible(returnTarget) && !document.querySelector('[aria-modal="true"]')) {
+        const explicitReturn = initialReturnElement ?? fallbackReturnTarget;
+        const returnTarget =
+          previous && isVisible(previous)
+            ? previous
+            : explicitReturn && isVisible(explicitReturn)
+              ? explicitReturn
+              : trackedTrigger && isVisible(trackedTrigger)
+                ? trackedTrigger
+                : null;
+        if (returnTarget && !document.querySelector('[aria-modal="true"]')) {
           returnTarget.focus({ preventScroll: true });
         }
       });

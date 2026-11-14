@@ -89,7 +89,7 @@ try {
     await click('[data-place-button]');
     await wait("document.activeElement?.id==='manage-place-title'", "Place dialog focuses title");
     const modalText = await run("document.querySelector('[role=dialog]').innerText");
-    assert(modalText.includes("Le compteur ne change pas"));
+    assert(/place n°\s*4/i.test(modalText));
     assert(modalText.includes("4e personne à être rentrée dans le bus"), "Persistent entry number explanation is shown in place modal");
     const fit = await run("(()=>{const r=document.querySelector('[role=dialog]').getBoundingClientRect();return r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight})()");assert(fit,"Place dialog fits viewport");
     await clickText("Supprimer ma place");
