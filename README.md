@@ -100,8 +100,8 @@ npm run build:next -- --webpack
 modifie pas les passagers de la base locale. Le test d'interface `npm run test:ui`
 nécessite que `npm run dev` ou `npm run start` tourne dans un autre terminal ;
 il vérifie notamment les tailles et le centrage des commandes sur téléphone et
-ordinateur. La CI GitHub exécute automatiquement les quatre commandes ci-dessus
-sur les propositions de changement et les ajouts à `main`.
+ordinateur. Tous les contrôles sont lancés localement avant le déploiement ;
+aucun test automatique n'est exécuté lors d'un envoi sur GitHub.
 
 ## Organisation du code
 
