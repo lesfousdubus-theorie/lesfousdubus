@@ -284,9 +284,7 @@ try {
   assert(inside.youtubeIframes <= 1, `More than one bus YouTube iframe is mounted: ${inside.youtubeIframes}`);
   await evaluate(interactionSend, `
     (() => {
-      const player = document.getElementById("tv-primary-iframe")
-        ?? document.querySelector("[data-bus-youtube-player]");
-      if (player) player.dataset.smokePersistent = "yes";
+      window.__busTvSmokeFrame = document.getElementById("tv-frame");
     })()
   `);
   assert(inside.overflow <= 2, "Interior mobile UI overflows horizontally.");
@@ -302,15 +300,22 @@ try {
   `);
   await sleep(200);
   const tvOff = await evaluate(interactionSend, `
-    (() => ({
-      playerStillMounted: (
-        document.getElementById("tv-primary-iframe")
-        ?? document.querySelector("[data-bus-youtube-player]")
-      )?.dataset.smokePersistent === "yes",
-      phase: document.querySelector("[data-phase]")?.getAttribute("data-phase"),
-    }))()
+    (() => {
+      const frame = document.getElementById("tv-frame");
+      return {
+        frameStillMounted: Boolean(frame) && window.__busTvSmokeFrame === frame,
+        playerStillPresent: Boolean(
+          document.getElementById("tv-primary-iframe")
+          ?? document.querySelector("[data-bus-youtube-player]")
+        ),
+        tvHidden: frame?.style.visibility === "hidden" || frame?.style.opacity === "0",
+        phase: document.querySelector("[data-phase]")?.getAttribute("data-phase"),
+      };
+    })()
   `);
-  assert(tvOff.playerStillMounted, "Turning the TV off destroyed the preloaded player.");
+  assert(tvOff.frameStillMounted, "Turning the TV off remounted the persistent TV frame.");
+  assert(tvOff.playerStillPresent, "Turning the TV off removed the persistent YouTube player.");
+  assert(tvOff.tvHidden, "Turning the TV off did not hide the TV player.");
   assert.equal(tvOff.phase, "inside", "Turning the TV off changed the bus phase.");
 
   interactionWs.close();
