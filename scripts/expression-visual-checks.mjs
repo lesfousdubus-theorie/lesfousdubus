@@ -1,14 +1,10 @@
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { build } from "esbuild";
 
 /** Uses the isolated React/media fixtures installed by expanding-bus-checks. */
 export async function runExpressionVisualChecks({ send, evaluate, waitForPageCondition, baseUrl }) {
   const run = expression => evaluate(send, expression);
-  const rosterBuild = await build({ entryPoints: ["src/components/bus/passenger-archetypes.ts"], bundle: true, format: "esm", platform: "node", write: false, logLevel: "silent" });
-  const { NAKAMA_ROSTER } = await import(`data:text/javascript;base64,${Buffer.from(rosterBuild.outputFiles[0].text).toString("base64")}`);
-  const permanentNames = NAKAMA_ROSTER.map((character, index) => `crew-nakama-${character.id}-${index}`);
   const wait = (expression, label) => waitForPageCondition(send, expression, label, 30_000);
   const click = label => run(`document.querySelector('button[aria-label=${JSON.stringify(label)}]:not(:disabled)').click()`);
   const music = "window.mediaTestPlayers.music";
@@ -35,32 +31,35 @@ export async function runExpressionVisualChecks({ send, evaluate, waitForPageCon
   await send("Emulation.setHardwareConcurrencyOverride", { hardwareConcurrency: 8 });
   await send("Emulation.setDeviceMetricsOverride", { width: 1240, height: 900, deviceScaleFactor: 1, mobile: false });
   await send("Emulation.setEmulatedMedia", { features: [] });
-  await send("Page.navigate", { url: `${baseUrl}/?phase=inside&count=0&row=0` });
-  await wait(`${JSON.stringify(permanentNames)}.every(name=>Boolean(window.busCameraTestState()?.scene.getObjectByName(name)))&&Boolean(${music})`, "All character faces and the controlled music player are ready");
+  await send("Page.navigate", { url: `${baseUrl}/?phase=inside&count=20&row=0` });
+  await wait(`window.busCameraTestState()?.scene.getObjectByName('bus-seated-passengers')?.userData.detailedCount>0&&['bus-crew-kamal','bus-crew-kyta'].every(name=>Boolean(window.busCameraTestState()?.scene.getObjectByName(name)))&&Boolean(${music})`, "Detailed visitor faces, both guides and the controlled music player are ready");
   await click("Explorer en vue libre");
   await wait("window.busCameraTestState().controls.enabled===true", "Free view permits the bounded facial inspection");
   // A software renderer may take several seconds per frame. The media fixture
   // stays at the explicit seek point instead of crossing 8s during screenshot work.
   await run(`${music}.getCurrentTime=function(){return this.currentTime;};
     window.busExpressionSnapshot=()=>{
-      const s=window.busCameraTestState(),faces=[];
-      for(const name of [...${JSON.stringify(permanentNames)},'bus-crew-kamal','bus-crew-kyta']){
-        const actor=s.scene.getObjectByName(name),expression=actor?.getObjectByName('character-expression');
+      const s=window.busCameraTestState(),faces=[],passengers=s.scene.getObjectByName('bus-seated-passengers');
+      const visitors=passengers.children.filter(actor=>actor.userData.passengerKind==='visitor');
+      for(const actor of [...visitors,...['bus-crew-kamal','bus-crew-kyta'].map(name=>s.scene.getObjectByName(name))]){
+        const expression=actor?.getObjectByName('character-expression');
         if(!expression)continue;
         const cavity=expression.getObjectByName('character-mouth-cavity'),teeth=expression.getObjectByName('character-mouth-teeth'),lower=expression.getObjectByName('character-mouth-lower-teeth'),jaw=expression.getObjectByName('character-skull-jaw');
-        faces.push({name,activity:actor.userData.activity,mood:expression.userData.facialMood,opening:expression.userData.mouthOpening,width:expression.userData.mouthWidth,
+        faces.push({name:actor.name,archetypeId:actor.userData.archetypeId,activity:actor.userData.activity,mood:expression.userData.facialMood,opening:expression.userData.mouthOpening,width:expression.userData.mouthWidth,
           mouth:cavity.scale.toArray(),cavityGeometry:cavity.geometry.uuid,teethGeometry:teeth.geometry.uuid,teethVertices:teeth.geometry.attributes.position.count,
           lowerTeethGeometry:lower?.geometry.uuid,jawY:jaw?.position.y,teethY:teeth.position.y,lowerTeethY:lower?.position.y});
       }
       let count=0;s.scene.traverse(object=>{if(object.name==='character-expression')count++;});
-      return {frame:s.gl.info.render.frame,time:s.clock.elapsedTime,count,faces};
+      return {frame:s.gl.info.render.frame,time:s.clock.elapsedTime,count,faces,...passengers.userData,actualDetailed:visitors.length,actualSimplified:s.scene.getObjectByName('bus-distant-passenger-bodies')?.count??0};
     };`);
 
   try {
     await frames();
     results.social = await sampleFrames();
-    assert.equal(results.social[0].faces.length, NAKAMA_ROSTER.length + 2, "Every permanent character and both guides have expressive faces.");
-    assert(results.social.every(sample => sample.count <= NAKAMA_ROSTER.length + 8 + 3), "Only the bounded detailed characters, guides and current avatar mount facial animation.");
+    assert(results.social.every(sample=>sample.actualDetailed>0&&sample.actualDetailed===sample.detailedCount&&sample.actualSimplified===sample.simplifiedCount), "The expression fixture uses the actual mounted visitor population.");
+    assert(results.social.every(sample=>sample.detailedCount+sample.simplifiedCount===20), "The fixture contains twenty registered visitors without artificial passengers.");
+    assert.equal(results.social[0].faces.length, results.social[0].detailedCount + 2, "Every mounted detailed visitor and both guides have expressive faces.");
+    assert(results.social.every(sample => sample.detailedCount<=8&&sample.count<=8+3), "Only the bounded detailed visitors, guides and current avatar mount facial animation.");
     assert(results.social.some(sample => sample.faces.some(face => face.activity === "chat" && face.mood === "speaking") && sample.faces.some(face => face.activity === "chat" && face.mood === "listening")),
       "The mounted scene shows speaking and listening faces during neighbour conversations.");
 
@@ -83,7 +82,7 @@ export async function runExpressionVisualChecks({ send, evaluate, waitForPageCon
       const baseline = results.party[0].faces.find(first => first.name === face.name);
       assert(face.cavityGeometry === baseline.cavityGeometry && face.teethGeometry === baseline.teethGeometry,
         "Expression changes must reuse their original geometries.");
-      if (face.name === "crew-nakama-brook-8") {
+      if (face.archetypeId === "brook") {
         assert(face.teethGeometry === face.lowerTeethGeometry && face.teethVertices > results.party[0].faces[0].teethVertices * 6,
           "Brook shares one merged seven-tooth geometry between the upper and lower rows.");
         assert(Math.abs(face.jawY + .0225 + face.mouth[1] / 2) < .00001,
@@ -118,9 +117,11 @@ export async function runExpressionVisualChecks({ send, evaluate, waitForPageCon
         window.expressionVisibility=[];s.scene.traverse(object=>window.expressionVisibility.push([object,object.visible]));
         document.querySelector('.bus-title-panel').parentElement.style.visibility='hidden';})()`);
       const portraits = async suffix => {
-        for (const [id, index] of [["luffy", 0], ["zoro", 1], ["nami", 2], ["brook", 8]]) {
+        for (const id of ["luffy", "zoro", "nami", "sanji", "brook"]) {
+          const face=results.party[0].faces.find(face=>face.archetypeId===id);
+          if(!face)continue;
           await run(`(()=>{
-            const s=window.busCameraTestState(),actor=s.scene.getObjectByName('crew-nakama-${id}-${index}'),keep=new Set();
+            const s=window.busCameraTestState(),actor=s.scene.getObjectByName(${JSON.stringify(face.name)}),keep=new Set();
             let parent=actor;while(parent){keep.add(parent);parent=parent.parent;}
             s.scene.traverse(object=>{if(object.isLight){let parent=object;while(parent){keep.add(parent);parent=parent.parent;}}});
             for(const [object,visible] of window.expressionVisibility){let parent=object,belongs=false;while(parent){if(parent===actor){belongs=true;break;}parent=parent.parent;}object.visible=visible&&(belongs||keep.has(object));}
