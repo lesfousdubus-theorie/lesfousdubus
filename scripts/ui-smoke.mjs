@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { rmSync } from "node:fs";
 
-const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3000";
+const baseUrl = process.env.BASE_URL ?? "http://localhost:3000";
 const chromePath = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
 const debugPort = Number(process.env.CDP_PORT ?? 9222);
 
@@ -161,9 +161,10 @@ try {
       `(() => {
         const root = document.querySelector("[data-phase]");
         const button = [...document.querySelectorAll("button")].find((el) => el.textContent?.includes("Entrer dans le bus"));
-        return root?.getAttribute("data-phase") === "outside" && Boolean(button);
+        return root?.getAttribute("data-phase") === "outside" && root.getAttribute("data-scene-available") === "true" && Boolean(button);
       })()`,
       `Bus UI at ${viewport.width}x${viewport.height}`,
+      30_000,
     );
 
     const layout = await evaluate(send, `
@@ -230,7 +231,35 @@ try {
         button?.click();
       })()
     `);
-    await sleep(150);
+    await waitForPageCondition(send, `Boolean(document.querySelector('[role="tablist"]'))`, "Theory dialog opens");
+    const theoryLayout = await evaluate(send, `
+      (() => {
+        const dialog = document.querySelector('.theory-modal-window').getBoundingClientRect();
+        const tabs = [...document.querySelectorAll('[role="tab"]')].map(el => el.getBoundingClientRect());
+        return { top: dialog.top, bottom: dialog.bottom, tabs: tabs.map(rect => ({left: rect.left, right: rect.right, height: rect.height})) };
+      })()
+    `);
+    assert(theoryLayout.top >= -1 && theoryLayout.bottom <= viewport.height + 1, "Theory dialog leaves the visible screen.");
+    assert(theoryLayout.tabs.every(rect => rect.left >= 0 && rect.right <= viewport.width && rect.height >= 44),
+      `Theory tabs are clipped at ${viewport.width}x${viewport.height}: ${JSON.stringify(theoryLayout)}`);
+    await evaluate(send, `document.getElementById('theory-tab-thesis').click()`);
+    await waitForPageCondition(send, `document.getElementById('theory-tab-thesis').getAttribute('aria-selected') === 'true'`, "Thesis selected before reading");
+    // La lecture et les cartes ouvertes survivent au passage par un autre onglet.
+    const readingPosition = await evaluate(send, `
+      (() => {
+        const content = document.getElementById('theory-panel-thesis').parentElement;
+        content.scrollTop = 240;
+        document.querySelector('#theory-panel-thesis details').open = true;
+        const position = content.scrollTop;
+        document.getElementById('theory-tab-faq').click();
+        return position;
+      })()
+    `);
+    await waitForPageCondition(send, `document.getElementById('theory-tab-faq').getAttribute('aria-selected') === 'true'`, "FAQ selected");
+    await evaluate(send, `document.getElementById('theory-tab-thesis').click()`);
+    await waitForPageCondition(send, `document.getElementById('theory-tab-thesis').getAttribute('aria-selected') === 'true'`, "Thesis selected again");
+    const restoredReading = await evaluate(send, `({position: document.getElementById('theory-panel-thesis').parentElement.scrollTop, open: document.querySelector('#theory-panel-thesis details').open})`);
+    assert(Math.abs(restoredReading.position - readingPosition) <= 1 && restoredReading.open, `Reading position or open card was lost at ${viewport.width}x${viewport.height}: saved=${readingPosition}, restored=${JSON.stringify(restoredReading)}`);
     await evaluate(send, `
       (() => {
         const button = [...document.querySelectorAll('[role="tab"]')].find((el) => el.textContent?.includes("Vidéo"));
@@ -429,7 +458,69 @@ try {
     "Row selector changes the displayed row",
   );
 
-  // Le rendu est désormais cadencé par requestAnimationFrame natif. Le runner
+  // Les libellés des quatre commandes doivent rester dans leurs boutons.
+  const clippedLabels = await evaluate(interactionSend, `
+    [...document.querySelectorAll('.bus-interior-controls button')].flatMap(button => {
+      const outer = button.getBoundingClientRect();
+      return [...button.querySelectorAll('span')].filter(span => span.getClientRects().length).filter(span => {
+        const rect = span.getBoundingClientRect();
+        return rect.left < outer.left || rect.right > outer.right || rect.top < outer.top || rect.bottom > outer.bottom;
+      }).map(span => span.textContent.trim());
+    })
+  `);
+  assert.equal(clippedLabels.length, 0, `Interior labels exceed their controls: ${JSON.stringify(clippedLabels)}`);
+  await evaluate(interactionSend, `(() => { const button = document.querySelector('button[aria-label="Ajouter un prénom"]'); button.focus(); button.click(); })()`);
+  await waitForPageCondition(interactionSend, `Boolean(document.querySelector('#join-bus-title'))`, "Profile dialog opens");
+  assert.equal(await evaluate(interactionSend, `document.body.innerText.includes('Retirer mon prénom')`), false, "Anonymous visitors should not be offered an empty name deletion.");
+  await evaluate(interactionSend, `document.querySelector('[role="dialog"] form').requestSubmit()`);
+  await waitForPageCondition(interactionSend, `Boolean(document.getElementById('join-bus-error'))`, "Empty name validation");
+  assert.equal(await evaluate(interactionSend, `document.querySelector('[role="dialog"] input').getAttribute('aria-invalid')`), "true");
+  await evaluate(interactionSend, `document.querySelector('[role="dialog"] input').focus()`);
+  await waitForPageCondition(interactionSend, `document.activeElement === document.querySelector('[role="dialog"] input')`, "Profile input takes keyboard focus");
+  await interactionSend("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+  await interactionSend("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+  await waitForPageCondition(interactionSend, `!document.querySelector('[role="dialog"]') && !document.getElementById('site-content').inert`, "Profile closes and unlocks the page");
+  await waitForPageCondition(interactionSend, `document.activeElement?.getAttribute('aria-label') === 'Ajouter un prénom'`, "Profile trigger regains keyboard focus");
+  await evaluate(interactionSend, `document.querySelector('button[aria-label="Ajouter un prénom"]').click()`);
+  await waitForPageCondition(interactionSend, `document.activeElement === document.querySelector('[role="dialog"] input')`, "Input focus before saving");
+  await interactionSend("Input.insertText", { text: "Test interface" });
+  await waitForPageCondition(interactionSend, `document.querySelector('[role="dialog"] input')?.value === 'Test interface'`, "Profile name typed");
+  await evaluate(interactionSend, `document.querySelector('[role="dialog"] form').requestSubmit()`);
+  await waitForPageCondition(interactionSend, `!document.querySelector('[role="dialog"]')`, "Profile saved locally");
+  await evaluate(interactionSend, `document.querySelector('button[aria-label="Ajouter un prénom"]').click()`);
+  await waitForPageCondition(interactionSend, `document.body.innerText.includes('Retirer mon prénom')`, "Saved name can be edited or removed");
+  assert.equal(await evaluate(interactionSend, `document.querySelector('[role="dialog"] input').value`), "Test interface");
+  await evaluate(interactionSend, `document.querySelector('button[aria-label="Fermer la fenêtre"]').click()`);
+  await evaluate(interactionSend, `document.querySelector('.bus-top-stats button').click()`);
+  await waitForPageCondition(interactionSend, `Boolean([...document.querySelectorAll('[role="dialog"] button')].find(button => button.textContent.includes('Test interface')))`, "Saved passenger appears in list");
+  await evaluate(interactionSend, `[...document.querySelectorAll('[role="dialog"] button')].find(button => button.textContent.includes('Test interface')).click()`);
+  await waitForPageCondition(interactionSend, `Boolean(document.getElementById('passenger-name'))`, "Passenger card opens");
+  await evaluate(interactionSend, `[...document.querySelectorAll('[role="dialog"] button')].find(button => button.textContent.includes('Retour aux passagers')).click()`);
+  await waitForPageCondition(interactionSend, `Boolean(document.getElementById('passenger-list-title')) && document.getElementById('site-content').inert`, "Back to passenger list keeps background locked");
+  await evaluate(interactionSend, `document.querySelector('button[aria-label="Fermer la fenêtre"]').click()`);
+  await waitForPageCondition(interactionSend, `!document.querySelector('[role="dialog"]') && !document.getElementById('site-content').inert`, "Passenger list unlocks the page");
+
+  // Un appareil sans WebGL doit garder une vraie voie de lecture.
+  await send("Page.addScriptToEvaluateOnNewDocument", { source: `
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function(type, ...args) {
+      if (/^(webgl2?|experimental-webgl)$/.test(type)) return null;
+      return originalGetContext.call(this, type, ...args);
+    };
+  ` });
+  await send("Page.navigate", { url: baseUrl });
+  await waitForPageCondition(send, `document.querySelector('.bus-app')?.getAttribute('data-scene-available') === 'false' && document.body.innerText.includes('Le bus reste au dépôt')`, "WebGL fallback is available", 30_000);
+  const fallbackControls = await evaluate(send, `
+    [...document.querySelectorAll('.bus-exterior-controls, .bus-interior-controls, .bus-day-night, .bus-speed, .bus-row-nav')]
+      .filter(el => getComputedStyle(el).display !== 'none').length
+  `);
+  assert.equal(fallbackControls, 0, "Unavailable 3D controls should be hidden.");
+  await evaluate(send, `[...document.querySelectorAll('button')].find(button => button.textContent === 'Lire la théorie').click()`);
+  await waitForPageCondition(send, `Boolean(document.querySelector('[role="tablist"]'))`, "Theory works without WebGL");
+  await evaluate(send, `document.querySelector('button[aria-label="Fermer la fenêtre"]').click()`);
+  await waitForPageCondition(send, `!document.querySelector('[role="dialog"]') && !document.getElementById('site-content').inert`, "Fallback reading closes correctly");
+
+  // Le rendu est cadencé par requestAnimationFrame natif. Le runner
   // headless utilise SwiftShader : prolonger artificiellement ce scénario jusqu'à
   // un cycle extinction/rallumage de TV finit par épuiser son contexte WebGL.
   // Le contrat TV est couvert par les régressions statiques ; ici on valide le
