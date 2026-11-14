@@ -9,7 +9,7 @@ import {
   makeGraffitiTexture,
   makeLabelTexture,
   makeLicensePlateTexture,
-  makeTvScreenTexture,
+  makeTvOffTexture,
 } from "@/lib/textures";
 import {
   TV_POSITION,
@@ -446,7 +446,7 @@ export default function Bus({
     [],
   );
 
-  const tvOffTex = useMemo(() => makeTvScreenTexture(false), []);
+  const tvOffTex = useMemo(() => makeTvOffTexture(), []);
   const dashTex = useMemo(() => makeDashboardTexture(), []);
   const licensePlateTex = useMemo(() => makeLicensePlateTexture(), []);
 
