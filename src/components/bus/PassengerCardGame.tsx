@@ -84,12 +84,14 @@ export default function PassengerCardGame({ pair, actors, hornPulse, partyOn, re
     if (!root.current.visible || !first || !second) return;
     root.current.updateWorldMatrix(true, false);
     root.current.getWorldQuaternion(scratch.inverse).invert();
-    // The outside hand keeps a real fan; the two inside hands meet over the bench.
+    // Chacun garde ses mains de son côté ; seule la carte franchit le petit
+    // espace entre les sièges, lors d'un lancer bref puis d'une réception.
     placeFromHand(root.current, firstDeck.current, first.hands[0], scratch.center, scratch.rotations[0], scratch.inverse);
     placeFromHand(root.current, secondDeck.current, second.hands[1], scratch.center, scratch.rotations[1], scratch.inverse);
     placeFromHand(root.current, null, first.hands[1], scratch.points[0], scratch.rotations[0], scratch.inverse, true);
     placeFromHand(root.current, null, second.hands[0], scratch.points[1], scratch.rotations[1], scratch.inverse, true);
     transfer.current?.position.lerpVectors(scratch.points[0], scratch.points[1], state.handoff);
+    if (transfer.current && state.transfer) transfer.current.position.y += Math.sin(state.handoff * Math.PI) * .035;
     transfer.current?.quaternion.slerpQuaternions(scratch.rotations[0], scratch.rotations[1], state.handoff);
     first.hands[1].object.localToWorld(scratch.handCenter.copy(first.hands[1].center));
     second.hands[0].object.localToWorld(scratch.otherCenter.copy(second.hands[0].center));
