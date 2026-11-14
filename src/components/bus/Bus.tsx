@@ -615,6 +615,8 @@ function SeatInstances({
         }
       }
       meshRef.current.instanceMatrix.needsUpdate = true;
+      // Le bus peut s'allonger : les bornes de visibilité doivent suivre les instances.
+      meshRef.current.computeBoundingSphere();
     });
   }, [rows]);
   const count = rows.length * 2;

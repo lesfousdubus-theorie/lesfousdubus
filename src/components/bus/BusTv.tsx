@@ -105,8 +105,9 @@ export function BusTvPlayer({
   const [mountElement, setMountElement] = useState<HTMLDivElement | null>(null);
   const shaderMatRef = useRef<THREE.ShaderMaterial>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
+  const createdPlayerRef = useRef<YouTubePlayer | null>(null);
   const warmTimerRef = useRef<number | null>(null);
-  const volumeFrameRef = useRef<number | null>(null);
+  const volumeTimerRef = useRef<number | null>(null);
   const warmingRef = useRef(true);
   const desiredRef = useRef({
     tvOn,
@@ -122,7 +123,7 @@ export function BusTvPlayer({
   const rampVolume = useCallback((target: number, duration = 650) => {
     const player = playerRef.current;
     if (!player) return;
-    if (volumeFrameRef.current !== null) cancelAnimationFrame(volumeFrameRef.current);
+    if (volumeTimerRef.current !== null) window.clearTimeout(volumeTimerRef.current);
 
     let from = target;
     try {
@@ -133,40 +134,54 @@ export function BusTvPlayer({
     }
 
     const startedAt = performance.now();
-    const tick = (now: number) => {
+    const tick = () => {
       const activePlayer = playerRef.current;
-      if (!activePlayer) return;
-      const progress = Math.min(1, (now - startedAt) / Math.max(1, duration));
+      if (!activePlayer) {
+        volumeTimerRef.current = null;
+        return;
+      }
+      const progress = Math.min(1, (performance.now() - startedAt) / Math.max(1, duration));
       const eased = 1 - Math.pow(1 - progress, 3);
-      activePlayer.setVolume(Math.round(from + (target - from) * eased));
+      try {
+        activePlayer.setVolume(Math.round(from + (target - from) * eased));
+      } catch {
+        volumeTimerRef.current = null;
+        return;
+      }
       if (progress < 1) {
-        volumeFrameRef.current = requestAnimationFrame(tick);
+        volumeTimerRef.current = window.setTimeout(tick, 50);
       } else {
-        volumeFrameRef.current = null;
+        volumeTimerRef.current = null;
       }
     };
-    volumeFrameRef.current = requestAnimationFrame(tick);
+    volumeTimerRef.current = window.setTimeout(tick, 50);
   }, []);
 
   const applyDesiredPlayback = useCallback(() => {
     const player = playerRef.current;
     if (!player || warmingRef.current) return;
     const desired = desiredRef.current;
+    try {
+      if (!desired.hasEntered) {
+        player.pauseVideo();
+        player.seekTo(0, true);
+        player.mute();
+        return;
+      }
+      if (!desired.tvOn || desired.isMutedForFullscreen || desired.playbackSuspended) {
+        player.pauseVideo();
+        return;
+      }
 
-    if (!desired.hasEntered) {
-      player.pauseVideo();
-      player.seekTo(0, true);
-      player.mute();
-      return;
+      const targetVolume = desired.phase === "outside" || desired.phase === "exiting" ? 25 : 100;
+      rampVolume(targetVolume, desired.phase === "entering" || desired.phase === "exiting" ? 900 : 300);
+      player.playVideo();
+    } catch {
+      playerRef.current = null;
+      // L'échec peut arriver pendant un effet React ; notifier à la microtâche
+      // suivante évite une mise à jour d'état synchrone pendant ce rendu.
+      queueMicrotask(() => setApiFailed(true));
     }
-    if (!desired.tvOn || desired.isMutedForFullscreen || desired.playbackSuspended) {
-      player.pauseVideo();
-      return;
-    }
-
-    const targetVolume = desired.phase === "outside" || desired.phase === "exiting" ? 25 : 100;
-    rampVolume(targetVolume, desired.phase === "entering" || desired.phase === "exiting" ? 900 : 300);
-    player.playVideo();
   }, [rampVolume]);
 
   useEffect(() => {
@@ -194,7 +209,7 @@ export function BusTvPlayer({
     void loadYouTubeIframeApi()
       .then((YT) => {
         if (cancelled || !mountElement.isConnected) return;
-        const player = new YT.Player(mountElement, {
+        createdPlayerRef.current = new YT.Player(mountElement, {
           width: 560,
           height: 315,
           videoId: YOUTUBE_ID,
@@ -211,8 +226,29 @@ export function BusTvPlayer({
           events: {
             onReady: (event) => {
               if (cancelled) return;
-              playerRef.current = event.target;
-              const iframe = event.target.getIframe();
+              const readyPlayer = event.target;
+              if (
+                typeof readyPlayer.playVideo !== "function"
+                || typeof readyPlayer.pauseVideo !== "function"
+                || typeof readyPlayer.seekTo !== "function"
+                || typeof readyPlayer.mute !== "function"
+                || typeof readyPlayer.unMute !== "function"
+                || typeof readyPlayer.getVolume !== "function"
+                || typeof readyPlayer.setVolume !== "function"
+                || typeof readyPlayer.getIframe !== "function"
+              ) {
+                setApiFailed(true);
+                return;
+              }
+              playerRef.current = readyPlayer;
+              let iframe: HTMLIFrameElement;
+              try {
+                iframe = readyPlayer.getIframe();
+              } catch {
+                playerRef.current = null;
+                setApiFailed(true);
+                return;
+              }
               iframe.id = "tv-primary-iframe";
               iframe.title = "La théorie des Fous du Bus";
               iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen");
@@ -233,37 +269,49 @@ export function BusTvPlayer({
 
               // Préchargement réel avant l'entrée : le lecteur démarre brièvement
               // en muet pour amorcer le flux, puis revient exactement à 0.
-              event.target.mute();
-              event.target.setVolume(0);
-              event.target.playVideo();
+              try {
+                readyPlayer.mute();
+                readyPlayer.setVolume(0);
+                readyPlayer.playVideo();
+              } catch {
+                playerRef.current = null;
+                setApiFailed(true);
+                return;
+              }
               warmTimerRef.current = window.setTimeout(() => {
                 warmTimerRef.current = null;
                 if (!desiredRef.current.hasEntered) {
-                  event.target.pauseVideo();
-                  event.target.seekTo(0, true);
-                  event.target.mute();
+                  try {
+                    readyPlayer.pauseVideo();
+                    readyPlayer.seekTo(0, true);
+                    readyPlayer.mute();
+                  } catch {
+                    playerRef.current = null;
+                    setApiFailed(true);
+                    return;
+                  }
                 }
                 warmingRef.current = false;
                 applyDesiredPlayback();
               }, 900);
             },
             onStateChange: (event) => {
-              if (event.data === 1) {
+              if (!cancelled && event.data === 1) {
                 setAutoplayBlocked(false);
               }
             },
             onAutoplayBlocked: () => {
+              if (cancelled) return;
               const desired = desiredRef.current;
               if (desired.hasEntered && desired.tvOn && !desired.isMutedForFullscreen) {
                 setAutoplayBlocked(true);
               }
             },
             onError: () => {
-              setApiFailed(true);
+              if (!cancelled) setApiFailed(true);
             },
           },
         });
-        playerRef.current = player;
       })
       .catch(() => {
         if (!cancelled) setApiFailed(true);
@@ -272,8 +320,9 @@ export function BusTvPlayer({
     return () => {
       cancelled = true;
       if (warmTimerRef.current !== null) window.clearTimeout(warmTimerRef.current);
-      if (volumeFrameRef.current !== null) cancelAnimationFrame(volumeFrameRef.current);
-      playerRef.current?.destroy();
+      if (volumeTimerRef.current !== null) window.clearTimeout(volumeTimerRef.current);
+      createdPlayerRef.current?.destroy?.();
+      createdPlayerRef.current = null;
       playerRef.current = null;
     };
   }, [applyDesiredPlayback, mountElement]);
@@ -289,10 +338,15 @@ export function BusTvPlayer({
         warmTimerRef.current = null;
       }
       warmingRef.current = false;
-      player.unMute();
-      player.setVolume(100);
-      player.playVideo();
-      setAutoplayBlocked(false);
+      try {
+        player.unMute();
+        player.setVolume(100);
+        player.playVideo();
+        setAutoplayBlocked(false);
+      } catch {
+        playerRef.current = null;
+        setApiFailed(true);
+      }
     };
     window.addEventListener("bus-tv-user-play", onUserPlay);
     return () => {
