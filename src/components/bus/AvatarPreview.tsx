@@ -33,7 +33,8 @@ function PreviewCharacter({ avatarId, rotation }: { avatarId: PassengerAvatarId;
   const height = rig.standingHipHeight + rig.neckAboveHip + rig.headAboveNeck + proportions.headHeight / 2 + 0.32;
   return <>
     <OrthographicCamera makeDefault position={[0, height / 2, 5]} zoom={size.height / (height * 1.15)} />
-    <group rotation={[0, rotation, 0]}>
+    {/* Les personnages regardent vers -Z ; la caméra de l’aperçu est côté +Z. */}
+    <group rotation={[0, Math.PI + rotation, 0]}>
     <BoardingAvatar key={avatarId} journey={journey} avatarId={avatarId} passengerIndex={0} physicalSeatIndex={0}
       partyOn={false} hornPulse={0} reducedMotion />
     </group>
