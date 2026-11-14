@@ -45,6 +45,7 @@ interface BusHudProps {
   enterBus: () => Promise<void>;
   openProfileModal: (mode: "name" | "comment") => void;
   exitBus: () => void;
+  resetView: () => void;
 }
 
 export function BusHud({
@@ -54,7 +55,7 @@ export function BusHud({
   tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, setStatsLoadError,
   setStatsRetryToken, setSeatRow, setTvOn, openPassengerManifest,
   toggleDayNight, decelerateBus, accelerateBus, toggleHeadlights, honk,
-  enterBus, openProfileModal, exitBus,
+  enterBus, openProfileModal, exitBus, resetView,
 }: BusHudProps) {
   return (
     <>
@@ -81,14 +82,16 @@ export function BusHud({
         )}
 
         {/* Titre + zone (Responsive mobile) */}
-        <div className={`bus-title-panel pointer-events-none absolute left-3 max-w-[calc(100vw-1.5rem)] sm:left-4 sm:right-[25rem] sm:top-4 sm:max-w-none lg:right-auto lg:max-w-[60vw] ${phase === "inside" ? "top-[8.25rem]" : "top-[4.75rem]"}`}>
-          <h1 className={`break-words font-black uppercase leading-[1.08] tracking-tight drop-shadow-[0_3px_0_rgba(0,0,0,0.55)] text-sm sm:text-xl md:text-2xl lg:text-3xl ${phase === "inside" ? "hidden sm:block" : ""}`}>
+        <div className={`bus-title-panel pointer-events-none absolute left-3 max-w-[calc(100vw-1.5rem)] sm:left-4 sm:top-4 sm:max-w-[calc(100vw-2rem)] lg:max-w-[calc(100vw-26rem)] ${phase === "inside" ? "top-[8.25rem]" : "top-[4.75rem]"}`}>
+          <div className={`bus-title-copy rounded-xl bg-[#07142b]/95 px-3 py-2 shadow-lg ${phase === "inside" ? "hidden sm:inline-block" : "inline-block"}`}>
+          <h1 className="break-words text-base font-black uppercase leading-[1.15] tracking-tight sm:text-xl lg:text-3xl">
             <span className="text-[#ffd23f]">La Théorie</span> <br className="sm:hidden" />
             <span className="text-white">des Fous du Bus</span>
           </h1>
-          <p className={`mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#ffd23f] drop-shadow sm:mt-1 sm:text-xs md:text-sm ${phase === "inside" ? "hidden sm:block" : ""}`}>
+          <p className="mt-1 text-xs font-bold uppercase tracking-[0.035em] text-[#ffd23f] lg:text-sm">
             LE SIÈCLE OUBLIÉ EST LE PRÉSENT !!!
           </p>
+          </div>
           <div className="mt-2 sm:mt-3">
             <button
               type="button"
@@ -103,18 +106,18 @@ export function BusHud({
         </div>
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
-        <div className="bus-top-stats bus-glass pointer-events-auto absolute left-3 right-3 top-3 flex h-[3.5rem] items-stretch justify-end gap-1 rounded-2xl border border-[#ffd23f]/40 bg-black/75 p-1 shadow-lg backdrop-blur-md sm:left-auto sm:right-4 sm:top-4 sm:h-auto">
+        <div className="bus-top-stats bus-glass pointer-events-auto absolute left-3 right-3 top-3 flex min-h-14 items-stretch gap-1 rounded-2xl border border-[#ffd23f]/40 bg-[#07142b]/95 p-1 shadow-lg sm:left-auto sm:right-4 sm:top-4">
           <button ref={passengerManifestButtonRef} type="button" onClick={statsLoadError && count === null ? () => {
             setStatsLoadError(false);
             setStatsRetryToken((value) => value + 1);
-          } : openPassengerManifest} className="group flex items-center gap-2 rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:gap-2.5 sm:px-3 sm:py-2">
-            <span className="text-lg transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 motion-reduce:transform-none sm:text-2xl">🚌</span>
+          } : openPassengerManifest} className="group flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2 py-1.5 text-left leading-tight transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] sm:flex-none sm:gap-2.5 sm:px-3 sm:py-2">
+            <span aria-hidden="true" className="text-lg sm:text-2xl">🚌</span>
             <span>
               <span className="flex items-center gap-1 sm:gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffd23f]">
+                <span className="text-xs font-bold uppercase tracking-[0.04em] text-[#ffd23f]">
                   Passagers
                 </span>
-                <span className="rounded-full bg-white/15 px-1.5 text-[10px] font-bold text-white/90">
+                <span title={`${numRows} rangées`} className="hidden rounded-full bg-white/10 px-1.5 text-xs font-bold text-white/85 md:inline">
                   {numRows} r.
                 </span>
               </span>
@@ -124,18 +127,19 @@ export function BusHud({
             </span>
           </button>
           <div className="my-1 w-px bg-white/20" aria-hidden="true" />
-          <button type="button" onClick={() => setShowTheoryAge(true)} className="rounded-xl px-2 py-1.5 text-left leading-tight transition-[background-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:-translate-y-px hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,210,63,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] motion-reduce:transform-none motion-reduce:transition-none sm:px-3 sm:py-2" title="Voir le compteur précis depuis le 26 mai 2024">
-            <span className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#ffd23f] sm:text-[10px] sm:tracking-[0.12em]">
-              La théorie existe depuis
+          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-w-0 flex-1 rounded-xl px-2 py-1.5 text-left leading-tight transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] sm:flex-none sm:px-3 sm:py-2" title="Voir le compteur précis depuis le 26 mai 2024">
+            <span className="block text-xs font-bold uppercase tracking-[0.04em] text-[#ffd23f]">
+              <span className="sm:hidden">La théorie</span><span className="hidden sm:inline">La théorie existe depuis</span>
             </span>
             <span className="block text-base font-black tabular-nums text-white sm:text-xl">
               {theoryAgeInDays.toLocaleString("fr-FR")}
-              <span className="ml-1 text-[10px] font-bold uppercase text-white/70 sm:text-xs">jours</span>
+              <span className="ml-1 text-xs font-bold text-white/85">jours</span>
             </span>
           </button>
         </div>
 
         {/* Bouton interactif Jour / Nuit */}
+        <div className="bus-day-night pointer-events-auto absolute bottom-[4.5rem] left-3 flex h-11 items-center gap-2 sm:bottom-4 sm:left-4">
         <button
           type="button"
           onClick={toggleDayNight}
@@ -143,7 +147,7 @@ export function BusHud({
           aria-label={manualDayNight === null
             ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
             : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
-          className="bus-day-night bus-glass pointer-events-auto absolute bottom-[4.5rem] left-3 flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 bg-black/65 px-3 text-xs font-bold text-white shadow-lg backdrop-blur-md transition hover:border-[#ffd23f]/60 hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer sm:bottom-4 sm:left-4 sm:gap-2 sm:px-3.5 sm:text-sm"
+          className="bus-glass flex h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-3 text-xs font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] active:scale-95 sm:px-3.5 sm:text-sm cursor-pointer"
         >
           {isNight ? (
             <svg className="h-4 w-4 text-[#ffd23f]" viewBox="0 0 24 24" fill="currentColor">
@@ -156,8 +160,12 @@ export function BusHud({
             </svg>
           )}
           <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
-          <span className="bus-day-night-detail text-white/85 text-[10px] sm:text-xs">· {manualDayNight === null ? (isNight ? "Nuit" : "Jour") : "Auto"}</span>
+          <span className="bus-day-night-detail text-xs text-white/85">· {manualDayNight === null ? (isNight ? "Nuit" : "Jour") : "Manuel"}</span>
         </button>
+        <button type="button" onClick={resetView} disabled={busy} aria-label="Recentrer la vue" title="Recentrer la vue sur le bus" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/35 bg-[#07142b]/95 text-white shadow-lg hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60">
+          <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="6" /><path d="M12 2v4m0 12v4M2 12h4m12 0h4" /></svg>
+        </button>
+        </div>
 
         {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
         <div className="bus-speed bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex h-11 items-center gap-1 rounded-full bg-black/80 px-1.5 text-xs shadow-lg ring-1 ring-white/25 backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-3.5 sm:text-sm">
@@ -290,24 +298,24 @@ export function BusHud({
           }`}
         >
           <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2">
-            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("name")} icon="🏷️" disabled={busy || !interiorControlsVisible}>
+            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("name")} ariaLabel="Ajouter un prénom" icon="🏷️" disabled={busy || !interiorControlsVisible}>
               <span className="hud-label-short sm:hidden">Prénom</span><span className="hud-label-long hidden sm:inline">Ajouter un prénom</span>
             </HudButton>
-            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("comment")} icon="💬" disabled={busy || !interiorControlsVisible}>
+            <HudButton className="min-w-0 flex-1" onClick={() => openProfileModal("comment")} ariaLabel="Mettre un commentaire" icon="💬" disabled={busy || !interiorControlsVisible}>
               <span className="hud-label-short sm:hidden">Commenter</span><span className="hud-label-long hidden sm:inline">Mettre un commentaire</span>
             </HudButton>
           </div>
           <div className="grid w-full grid-cols-4 items-center gap-1.5 sm:grid-cols-[1.25fr_1fr_0.82fr_1.08fr] sm:gap-2">
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={() => setTvOn((v) => !v)} active={tvOn} ariaLabel="Télévision" icon="📺" disabled={busy || !interiorControlsVisible}>
+            <HudButton compact className="min-w-0 w-full" onClick={() => setTvOn((v) => !v)} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} icon="📺" disabled={busy || !interiorControlsVisible}>
               <span className="hud-label-short sm:hidden">TV</span><span className="hud-label-long hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={busy || !interiorControlsVisible}>
+            <HudButton compact className="min-w-0 w-full" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon="💡" disabled={busy || !interiorControlsVisible}>
               {headlights ? "Éteindre" : "Phares"}
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={honk} icon="📯" disabled={busy || !interiorControlsVisible}>
+            <HudButton compact className="min-w-0 w-full" onClick={honk} ariaLabel="Klaxonner" icon="📯" disabled={busy || !interiorControlsVisible}>
               Klaxon
             </HudButton>
-            <HudButton className="min-w-0 w-full px-1 sm:px-2" onClick={exitBus} primary icon="🏝️" disabled={busy || !interiorControlsVisible}>
+            <HudButton compact className="min-w-0 w-full" onClick={exitBus} ariaLabel="Sortir du bus" primary icon="🏝️" disabled={busy || !interiorControlsVisible}>
               <span className="hud-label-short sm:hidden">{phase === "exiting" ? "Descente…" : "Sortir"}</span><span className="hud-label-long hidden sm:inline">{phase === "exiting" ? "Descente…" : "Sortir du bus"}</span>
             </HudButton>
           </div>
@@ -326,6 +334,7 @@ function HudButton({
   active,
   ariaLabel,
   disabled,
+  compact = false,
   className = "",
 }: {
   children: React.ReactNode;
@@ -335,10 +344,11 @@ function HudButton({
   active?: boolean;
   ariaLabel?: string;
   disabled?: boolean;
+  compact?: boolean;
   className?: string;
 }) {
   const base =
-    "pointer-events-auto inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs md:text-sm font-bold shadow-lg backdrop-blur-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 disabled:cursor-not-allowed disabled:opacity-80 cursor-pointer";
+    "pointer-events-auto flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full py-2 text-xs md:text-sm font-bold shadow-lg transition-[background-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer";
   const look = primary
     ? "bg-[#ffd23f] text-[#0d2190] hover:bg-[#ffe066] shadow-[0_5px_0_#b8860b] active:shadow-none active:translate-y-1"
     : active
@@ -361,9 +371,9 @@ function HudButton({
          (interiorControls) d'intercepter les clics destinés aux barres visibles
          (exteriorControls) qui se chevauchent sur mobile. */
       style={disabled ? { pointerEvents: "none" } : undefined}
-      className={`${base} relative z-10 touch-manipulation ${look} ${className}`}
+      className={`${base} ${compact ? "px-1.5 sm:px-2" : "px-3.5"} relative z-10 touch-manipulation ${look} ${className}`}
     >
-      {icon && <span className="pointer-events-none text-sm leading-none">{icon}</span>}
+      {icon && <span aria-hidden="true" className={`pointer-events-none text-sm leading-none ${compact ? "hidden sm:inline" : ""}`}>{icon}</span>}
       <span className="pointer-events-none contents">{children}</span>
     </button>
   );
