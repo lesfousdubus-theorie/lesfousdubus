@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import type { PassengerProfile } from "@/types/passenger";
 import { JOURNEY_MAX_DT, type JourneyState } from "@/lib/bus-journey";
 import { getWalkingLegPose, BODY_BEHIND_HIP } from "@/lib/passenger-gait";
 import { getNakamaArchetype } from "./passenger-archetypes";
@@ -17,14 +18,24 @@ import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, sam
 import PassengerSignatureProp from "./PassengerSignatureProp";
 import { keepPassengerHandsApart } from "@/lib/passenger-space";
 
+function isObjectVisible(object: THREE.Object3D | null): boolean {
+  for (let current = object; current; current = current.parent) {
+    if (!current.visible) return false;
+  }
+  return true;
+}
+
 /** Le même nakama attend, marche, s'assoit, puis devient le corps en vue subjective. */
-export default function BoardingAvatar({ journey, passengerIndex, avatarId, physicalSeatIndex, partyOn, hornPulse, reducedMotion }: {
+export default function BoardingAvatar({ journey, passengerIndex, avatarId, physicalSeatIndex, profile, onSelect, partyOn, hornPulse, reducedMotion }: {
   journey: React.RefObject<JourneyState>; passengerIndex: number | null;
   avatarId?: string | null;
   physicalSeatIndex: number;
+  profile?: PassengerProfile;
+  onSelect?: (passenger: PassengerProfile) => void;
   partyOn: boolean; hornPulse: number; reducedMotion: boolean;
 }) {
   const root = useRef<THREE.Group>(null);
+  const hovered = useRef(false);
   const hips = useRef<THREE.Group>(null);
   const head = useRef<THREE.Group>(null);
   const upperBody = useRef<THREE.Group>(null);
@@ -41,6 +52,27 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
   const mats = useMemo(() => getArchetypeMaterials(archetype), [archetype]);
   const proportions = getPassengerProportions(archetype.id);
   const skeleton = getPassengerSkeleton(archetype.id);
+  const resolvedProfile = useMemo<PassengerProfile | undefined>(
+    () => profile ?? (passengerIndex !== null
+      ? { seatIndex: passengerIndex, displayName: "Passager", comment: null }
+      : undefined),
+    [profile, passengerIndex],
+  );
+  const interactive = Boolean(resolvedProfile && onSelect);
+
+  useEffect(() => () => {
+    if (hovered.current) {
+      hovered.current = false;
+      document.body.style.cursor = "auto";
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!interactive && hovered.current) {
+      hovered.current = false;
+      document.body.style.cursor = "auto";
+    }
+  }, [interactive]);
   useFrame(({ camera,clock }, dt) => {
     const s = journey.current;
     if (!root.current || !hips.current || !head.current) return;
@@ -103,7 +135,39 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
     });
   });
   return <group ref={root} name="bus-boarding-avatar" userData={{ passengerKind: "visitor", physicalSeatIndex,
-    seatIndex: passengerIndex, archetypeId: archetype.id, row: Math.floor(physicalSeatIndex / 4), seatInRow: physicalSeatIndex % 4 }} visible={false}>
+    seatIndex: passengerIndex, archetypeId: archetype.id, row: Math.floor(physicalSeatIndex / 4), seatInRow: physicalSeatIndex % 4 }} visible={false}
+    onClick={interactive ? (event) => {
+      if (!isObjectVisible(event.object) || !resolvedProfile) return;
+      event.stopPropagation();
+      onSelect?.(resolvedProfile);
+    } : undefined}
+    onPointerOver={interactive ? (event) => {
+      if (!isObjectVisible(event.object)) return;
+      event.stopPropagation();
+      hovered.current = true;
+      document.body.style.cursor = "pointer";
+    } : undefined}
+    onPointerMove={interactive ? (event) => {
+      if (!isObjectVisible(event.object)) {
+        if (hovered.current) {
+          hovered.current = false;
+          document.body.style.cursor = "auto";
+        }
+        return;
+      }
+      event.stopPropagation();
+      if (!hovered.current) {
+        hovered.current = true;
+        document.body.style.cursor = "pointer";
+      }
+    } : undefined}
+    onPointerOut={interactive ? () => {
+      if (hovered.current) {
+        hovered.current = false;
+        document.body.style.cursor = "auto";
+      }
+    } : undefined}
+  >
     <group ref={hips} name="nakama-hips">
       <PassengerPelvis material={mats.pants} archetype={archetype}/>
       {[-skeleton.hipSpacing, skeleton.hipSpacing].map((x, index) => <group key={x} ref={node => { legs.current[index] = node; }} name={`avatar-thigh-${index}`} position={[x, 0, 0]}>

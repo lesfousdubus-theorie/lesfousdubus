@@ -76,6 +76,11 @@ export default function BusExperience() {
     }
     return "outside";
   });
+  const [phaseEpoch, setPhaseEpoch] = useState(0);
+  const transitionPhase = useCallback((nextPhase: Phase | ((current: Phase) => Phase)) => {
+    setPhase(nextPhase);
+    setPhaseEpoch((epoch) => epoch + 1);
+  }, []);
   const [tvOn, setTvOn] = useState(false);
 
   // Le lecteur est préchargé dès l'arrivée, mais reste en pause et invisible avant l'entrée.
@@ -138,6 +143,11 @@ export default function BusExperience() {
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastSeqRef = useRef(0);
+  const toastActiveIdRef = useRef<number | null>(null);
+  const toastDeadlineRef = useRef(0);
+  const toastRemainingRef = useRef(0);
+  const toastPausedRef = useRef(false);
   const registrationRetryDelayRef = useRef(10_000);
   const seatCapacityRef = useRef(seatCapacity);
   const profileRevisionRef = useRef(profileRevision);
@@ -160,27 +170,65 @@ export default function BusExperience() {
     worldRef.current.sceneryPaused = preferences.sceneryPaused;
   }, [preferences.sceneryPaused]);
 
-  // Affiche une notification festive
-  const showToast = useCallback((text: string, sub?: string, badge?: string) => {
-    if (toastTimeout.current) clearTimeout(toastTimeout.current);
-    const id = Date.now();
-    setToast({ id, text, sub, badge });
-    toastTimeout.current = setTimeout(() => {
-      setToast((cur) => (cur?.id === id ? null : cur));
-    }, 2800);
+  const clearToastTimer = useCallback(() => {
+    if (toastTimeout.current) {
+      clearTimeout(toastTimeout.current);
+      toastTimeout.current = null;
+    }
   }, []);
 
+  const startToastTimer = useCallback((id: number, durationMs: number) => {
+    clearToastTimer();
+    const clamped = Math.max(0, durationMs);
+    toastRemainingRef.current = clamped;
+    toastDeadlineRef.current = Date.now() + clamped;
+    toastTimeout.current = setTimeout(() => {
+      toastTimeout.current = null;
+      if (toastActiveIdRef.current !== id) return;
+      toastActiveIdRef.current = null;
+      toastPausedRef.current = false;
+      toastRemainingRef.current = 0;
+      setToast((cur) => (cur?.id === id ? null : cur));
+    }, clamped);
+  }, [clearToastTimer]);
+
+  // Affiche une notification festive
+  const showToast = useCallback((text: string, sub?: string, badge?: string, href?: string) => {
+    const id = ++toastSeqRef.current;
+    toastActiveIdRef.current = id;
+    toastPausedRef.current = false;
+    setToast({ id, text, sub, badge, href });
+    startToastTimer(id, href ? 4500 : 2800);
+  }, [startToastTimer]);
+
   const dismissToast = useCallback(() => {
-    if (toastTimeout.current) clearTimeout(toastTimeout.current);
-    toastTimeout.current = null;
+    clearToastTimer();
+    toastActiveIdRef.current = null;
+    toastPausedRef.current = false;
+    toastRemainingRef.current = 0;
     setToast(null);
-  }, []);
+  }, [clearToastTimer]);
+
+  const pauseToast = useCallback(() => {
+    if (toastActiveIdRef.current === null || toastPausedRef.current) return;
+    toastPausedRef.current = true;
+    toastRemainingRef.current = Math.max(400, toastDeadlineRef.current - Date.now());
+    clearToastTimer();
+  }, [clearToastTimer]);
+
+  const resumeToast = useCallback(() => {
+    const activeId = toastActiveIdRef.current;
+    if (activeId === null || !toastPausedRef.current) return;
+    toastPausedRef.current = false;
+    const remaining = toastRemainingRef.current > 0 ? toastRemainingRef.current : 1200;
+    startToastTimer(activeId, remaining);
+  }, [startToastTimer]);
 
   useEffect(() => {
     const handleToastEvent = (e: Event) => {
-      const detail = (e as CustomEvent<{ text: string; sub?: string; badge?: string }>).detail;
+      const detail = (e as CustomEvent<{ text: string; sub?: string; badge?: string; href?: string }>).detail;
       if (detail?.text) {
-        showToast(detail.text, detail.sub, detail.badge);
+        showToast(detail.text, detail.sub, detail.badge, detail.href);
       }
     };
     window.addEventListener("bus-show-toast", handleToastEvent);
@@ -222,11 +270,27 @@ export default function BusExperience() {
   const profile = usePassengerProfile({ hasRegisteredPlace: currentPassengerSeatIndex !== null, applyBusSnapshot, setCurrentPassengerSeatIndex, setCurrentPassengerEntryNumber, setPassengerProfiles, setSeatRow, showToast });
   const {
     showJoinModal, openProfileModal, restoreSavedProfile, clearLocalRegistrationOnly, clearProfile,
-    pendingAvatarId, onboardingReason, openOnboardingModal, closeOnboardingModal,
+    pendingAvatarId, onboardingReason, openOnboardingModal, closeOnboardingModal, closeAvatarModal,
     validateOnboarding, syncBoardingDraftAvatar, submitMissingNameOnboarding,
   } = profile;
   const directory = usePassengerDirectory(applyBusSnapshot, profileRevision);
   const { selectedPassenger, showPassengerList, passengerManifestButtonRef, openPassengerManifest, selectPassenger, clearDirectory } = directory;
+
+  const dismissNonCriticalModals = useCallback(() => {
+    setShowTheoryModal(false);
+    setShowTheoryAge(false);
+    setShowPlaceModal(false);
+    setShowHelp(false);
+    closeAvatarModal();
+    clearDirectory();
+  }, [clearDirectory, closeAvatarModal]);
+
+  const handleOpenOnboardingModal = useCallback<typeof openOnboardingModal>((...args) => {
+    if (args[0] === "missing-name") {
+      dismissNonCriticalModals();
+    }
+    openOnboardingModal(...args);
+  }, [dismissNonCriticalModals, openOnboardingModal]);
 
   const visitorLookupPromiseRef = useRef<Promise<VisitorLookupResult | null> | null>(null);
   const pendingRegistrationProfileRef = useRef<PendingRegistrationProfile | null>(null);
@@ -286,7 +350,7 @@ export default function BusExperience() {
     setRegistrationPending,
     restoreSavedProfile,
     clearLocalRegistrationOnly,
-    openOnboardingModal,
+    openOnboardingModal: handleOpenOnboardingModal,
     pendingAvatarId,
     pendingRegistrationProfileRef,
     visitorLookupPromiseRef,
@@ -327,18 +391,21 @@ export default function BusExperience() {
 
     if (!submission && (seatForEntry === null || !displayNameForEntry.trim())) {
       enteringLockRef.current = false;
-      openOnboardingModal(seatForEntry === null ? "boarding" : "missing-name");
+      handleOpenOnboardingModal(seatForEntry === null ? "boarding" : "missing-name");
       return;
     }
 
+    const hasRegisteredSeat = !submission && seatForEntry !== null;
     dismissToast();
     unlockAudio();
     emitBusAudioEvent("tvPrepare");
     setJoining(true);
     setBoardingFromSeat(false);
     setTvOn(true);
-    setPhase("entering");
-    playDing();
+    transitionPhase("entering");
+    if (hasRegisteredSeat) {
+      playDing();
+    }
 
     const visitorId = getOrCreateVisitorId();
     const fallbackAvatarId = submission ? null : pendingAvatarIdRef.current;
@@ -385,6 +452,9 @@ export default function BusExperience() {
       });
       if (expectedAvatarId && d.passenger?.avatarId !== expectedAvatarId) {
         throw new ApiError("Le personnage choisi n’a pas pu être enregistré.", 502);
+      }
+      if (!hasRegisteredSeat) {
+        playDing();
       }
       pendingRegistrationProfileRef.current = null;
       const prevRows = getBusPhysicalRows(seatCapacityRef.current);
@@ -440,9 +510,9 @@ export default function BusExperience() {
         setRegistrationPending(false);
         if (submission) {
           setTvOn(false);
-          setPhase("outside");
+          transitionPhase("outside");
           setBoardingFromSeat(false);
-          openOnboardingModal(
+          handleOpenOnboardingModal(
             "boarding",
             error instanceof ApiError ? error.message : "Pseudo refusé par le serveur.",
             submission,
@@ -456,6 +526,14 @@ export default function BusExperience() {
         );
         return;
       }
+      if (submission) {
+        restoreSavedProfile({
+          seatIndex: latestRegistrationRef.current.seatIndex ?? 0,
+          displayName: submission.displayName,
+          comment: submission.comment || null,
+          avatarId: submission.avatarId,
+        });
+      }
       registrationRetryDelayRef.current = Math.max(
         1_000,
         error instanceof ApiError && error.retryAfterMs !== null ? error.retryAfterMs : 10_000,
@@ -465,7 +543,7 @@ export default function BusExperience() {
       enteringLockRef.current = false;
       setJoining(false);
     }
-  }, [applyBusSnapshot, dismissToast, phase, sceneAvailable, hasEntered, showToast, restoreSavedProfile, openOnboardingModal]);
+  }, [applyBusSnapshot, dismissToast, phase, sceneAvailable, hasEntered, showToast, restoreSavedProfile, handleOpenOnboardingModal, transitionPhase]);
 
   const handleSubmitOnboarding = useCallback((submission: OnboardingSubmission) => {
     const validated = validateOnboarding(submission);
@@ -501,28 +579,28 @@ export default function BusExperience() {
       setCurrentPassengerEntryNumber(null);
       setShowTheoryModal(false);
       setShowPlaceModal(false);
-      setPhase((current) => current === "inside" ? "exiting" : "outside");
+      transitionPhase((current) => current === "inside" ? "exiting" : "outside");
       dismissToast();
       return true;
     } catch {
       return false;
     }
-  }, [applyBusSnapshot, dismissToast, clearDirectory, clearProfile]);
+  }, [applyBusSnapshot, dismissToast, clearDirectory, clearProfile, transitionPhase]);
 
   // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
   const exitBus = useCallback(() => {
     if (phase !== "inside") return;
     dismissToast();
-    setPhase("exiting");
+    transitionPhase("exiting");
     playDing();
-    showToast("Tu sors du bus", "Ta place et ton profil restent enregistrés.");
-  }, [dismissToast, phase, showToast]);
+    showToast("Tu sors du bus");
+  }, [dismissToast, phase, showToast, transitionPhase]);
 
   const onArrived = useCallback((p: "inside" | "outside") => {
     setFreeView(false);
     if (p === "inside") setHasEntered(true);
-    setPhase(p);
-  }, []);
+    transitionPhase(p);
+  }, [transitionPhase]);
 
   // Filet de sécurité : si la phase reste bloquée à "entering" ou "exiting"
   // (par exemple si le planificateur d'images du Canvas est suspendu parce que
@@ -629,11 +707,15 @@ export default function BusExperience() {
         openPlaceModal={() => setShowPlaceModal(true)}
         openAvatarModal={profile.openAvatarModal}
         phase={phase}
+        phaseEpoch={phaseEpoch}
         freeView={freeView}
         toggleFreeView={() => setFreeView(value => !value)}
         hidden={overlayOpen}
         sceneAvailable={sceneAvailable}
         toast={toast}
+        onDismissToast={dismissToast}
+        onPauseToast={pauseToast}
+        onResumeToast={resumeToast}
         passengerManifestButtonRef={passengerManifestButtonRef}
         statsLoadError={statsLoadError}
         count={count}
@@ -691,12 +773,23 @@ export default function BusExperience() {
         isOpen={showTheoryModal}
         onVideoPlaybackChange={setTheoryVideoPlaying}
         onClose={() => setShowTheoryModal(false)}
-        onManagePlace={currentPassengerSeatIndex !== null ? () => { setShowTheoryModal(false); setShowPlaceModal(true); } : undefined}
       />
-      {showPlaceModal && <ManagePlaceModal inside={phase === "inside"} entryNumber={effectiveEntryNumber} onClose={() => setShowPlaceModal(false)}
-        onExit={() => { setShowPlaceModal(false); exitBus(); }} onDelete={leaveBusPermanently} />}
+      {showPlaceModal && (
+        <ManagePlaceModal
+          inside={phase === "inside"}
+          entryNumber={effectiveEntryNumber}
+          onClose={() => setShowPlaceModal(false)}
+          onEditName={() => { setShowPlaceModal(false); openProfileModal("name"); }}
+          onEditComment={() => { setShowPlaceModal(false); openProfileModal("comment"); }}
+          hasComment={Boolean(profile.savedProfile.comment)}
+          sceneryPaused={preferences.sceneryPaused}
+          onSceneryPausedChange={preferences.setSceneryPaused}
+          onExit={() => { setShowPlaceModal(false); exitBus(); }}
+          onDelete={leaveBusPermanently}
+        />
+      )}
       <PassengerDialogs profile={profile} directory={directory} count={count} currentSeatIndex={currentPassengerSeatIndex} onSubmitOnboarding={handleSubmitOnboarding} />
-      {profile.showAvatarModal && <AvatarSelectionModal avatarId={profile.savedAvatarId} seatIndex={currentPassengerSeatIndex} hasRegisteredPlace={currentPassengerSeatIndex !== null} hasExistingVisitor={profile.hasExistingVisitor}
+      {profile.showAvatarModal && <AvatarSelectionModal avatarId={profile.savedAvatarId} seatIndex={currentPassengerSeatIndex} hasRegisteredPlace={currentPassengerSeatIndex !== null}
         saving={profile.profileSaving} error={profile.avatarError} onClose={profile.closeAvatarModal}
         onChoose={avatarId => void profile.submitAvatar(avatarId)} />}
       <TheoryAgeModal isOpen={showTheoryAge} onClose={() => setShowTheoryAge(false)} />

@@ -2,7 +2,16 @@ export const THEORY_START_DATE = Date.UTC(2024, 4, 26);
 
 export function getElapsedCalendarTime(startTimestamp: number, endTimestamp: number) {
   const start = new Date(startTimestamp);
-  const end = new Date(Math.max(startTimestamp, endTimestamp));
+  const rawEnd = new Date(endTimestamp);
+  const localCalendarEnd = Date.UTC(
+    rawEnd.getFullYear(),
+    rawEnd.getMonth(),
+    rawEnd.getDate(),
+    rawEnd.getHours(),
+    rawEnd.getMinutes(),
+    rawEnd.getSeconds(),
+  );
+  const end = new Date(Math.max(startTimestamp, localCalendarEnd));
   let years = end.getUTCFullYear() - start.getUTCFullYear();
   let cursor = new Date(startTimestamp);
   cursor.setUTCFullYear(start.getUTCFullYear() + years);

@@ -44,16 +44,7 @@ function TheoryAgeModalDialog({ onClose }: { onClose: () => void }) {
               <h2 ref={titleRef} tabIndex={-1} id="theory-age-title" className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xl font-black focus:outline-none sm:text-2xl">
                 <span>26 mai 2024</span>
                 <span aria-hidden="true" className="text-[#b6c7eb]">·</span>
-                <a
-                  href={THEORY_FIRST_VIDEO_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Le Mont Corvo : voir la première vidéo de la théorie sur YouTube (nouvel onglet)"
-                  className="inline-flex cursor-pointer items-center gap-1 rounded-sm font-bold text-[#ffd23f] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
-                >
-                  <span>Le Mont Corvo</span>
-                  <ExternalArrowIcon className="h-4 w-4 shrink-0" />
-                </a>
+                <span className="font-bold text-[#ffd23f]">Le Mont Corvo</span>
               </h2>
             </div>
           </div>
@@ -64,7 +55,7 @@ function TheoryAgeModalDialog({ onClose }: { onClose: () => void }) {
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
             {values.map(([label, value]) => (
               <div key={label} className="rounded-2xl border border-white/15 bg-[#0c1b3a] p-3 sm:p-4">
-                <div className="break-all text-lg font-black tabular-nums text-white sm:text-2xl">{value.toLocaleString("fr-FR")}</div>
+                <div className="break-words text-lg font-black tabular-nums text-white sm:text-2xl">{value.toLocaleString("fr-FR")}</div>
                 <div className="mt-1 text-xs font-bold uppercase tracking-wide text-[#b6c7eb]">{label}</div>
               </div>
             ))}

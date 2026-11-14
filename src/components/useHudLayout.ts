@@ -12,6 +12,7 @@ export function useHudLayout(
   sceneAvailable: boolean,
   compactHud = false,
   mobileMenuOpen = false,
+  immersive = false,
 ) {
   const hudRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<(() => void) | null>(null);
@@ -139,7 +140,7 @@ export function useHudLayout(
       const availableWidth = viewport.width - leftInset - rightInset;
       let width = Math.min(448, availableWidth);
       let left = leftInset + (availableWidth - width) / 2;
-      if (compactLandscape && row) {
+      if (compactLandscape && row && visible(row)) {
         width = Math.min(width, row.getBoundingClientRect().left - leftInset - 12);
         left = leftInset;
       }
@@ -156,11 +157,23 @@ export function useHudLayout(
       const headerBottoms = headers.filter(visible).map(element => element.getBoundingClientRect())
         .filter(rect => rect.right > left && rect.left < left + width).map(rect => rect.bottom);
       const top = Math.max(0, ...headerBottoms) + 12;
-      const bottom = Math.min(viewport.bottom, ...controls.filter(visible).map(element => element.getBoundingClientRect().top)) - 12;
-      hud.style.setProperty("--bus-toast-left", `${left}px`);
-      hud.style.setProperty("--bus-toast-width", `${width}px`);
-      hud.style.setProperty("--bus-toast-top", `${top}px`);
-      hud.style.setProperty("--bus-toast-max-height", `${Math.max(0, bottom - top)}px`);
+      const restoreButton = immersive ? hud.parentElement?.querySelector<HTMLElement>(".bus-immersive-restore") : null;
+      const bottomObstacles = [
+        ...controls.filter(visible),
+        ...(restoreButton && visible(restoreButton) ? [restoreButton] : []),
+      ];
+      const bottom = Math.min(viewport.bottom, ...bottomObstacles.map(element => element.getBoundingClientRect().top)) - 12;
+      const toastVars = {
+        "--bus-toast-left": `${left}px`,
+        "--bus-toast-width": `${width}px`,
+        "--bus-toast-top": `${top}px`,
+        "--bus-toast-max-height": `${Math.max(0, bottom - top)}px`,
+      };
+      for (const [name, value] of Object.entries(toastVars)) {
+        hud.style.setProperty(name, value);
+        // Replicate toast placement variables onto `.bus-app` so toasts stay positioned outside `[data-immersive]`.
+        hud.parentElement?.style.setProperty(name, value);
+      }
     };
     let frame = 0;
     const schedule = () => {
@@ -170,8 +183,9 @@ export function useHudLayout(
         measure();
       });
     };
+    const restoreButton = immersive ? hud.parentElement?.querySelector<HTMLElement>(".bus-immersive-restore") : null;
     const observer = new ResizeObserver(schedule);
-    [hud, ...headers, ...controls, ...(popup ? [popup] : [])].forEach(element => observer.observe(element));
+    [hud, ...headers, ...controls, ...(popup ? [popup] : []), ...(restoreButton ? [restoreButton] : [])].forEach(element => observer.observe(element));
     window.addEventListener("resize", measure);
     measureRef.current = measure;
     schedule();
@@ -181,7 +195,7 @@ export function useHudLayout(
       cancelAnimationFrame(frame);
       measureRef.current = null;
     };
-  }, [phase, hidden, showVolumePopup, sceneAvailable, compactHud, mobileMenuOpen]);
+  }, [phase, hidden, showVolumePopup, sceneAvailable, compactHud, mobileMenuOpen, immersive]);
 
   // Labels such as Auto/Manuel and the music badge can change the available space.
   // Arrange them in the same React commit, before the updated controls are painted.

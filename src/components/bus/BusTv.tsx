@@ -103,6 +103,7 @@ export function BusTvPlayer({
   const playbackActiveRef = useRef(false);
   const partyAudioRef = useRef(false);
   const resumeAfterPartyRef = useRef(false);
+  const manualPauseRef = useRef(false);
   const reportPlayback = useCallback((active: boolean) => {
     if (playbackActiveRef.current === active) return;
     playbackActiveRef.current = active;
@@ -175,6 +176,7 @@ export function BusTvPlayer({
     clearStartTimer();
     stopWarmup();
     stopVolumeRamp();
+    manualPauseRef.current = false;
     disconnectRef.current?.();
     disconnectRef.current = null;
     playerRef.current = null;
@@ -197,11 +199,13 @@ export function BusTvPlayer({
     if (!player || warmingRef.current) return;
     const desired = desiredRef.current;
     try {
-      if (!shouldPlay()) {
+      if (!shouldPlay() || (!fromClick && manualPauseRef.current)) {
         clearStartTimer();
         stopVolumeRamp();
-        player.mute();
-        player.pauseVideo();
+        if (!shouldPlay()) {
+          player.mute();
+          player.pauseVideo();
+        }
         reportPlayback(false);
         return;
       }
@@ -232,6 +236,9 @@ export function BusTvPlayer({
 
   useEffect(() => {
     const previous = desiredRef.current;
+    if (!previous.tvOn && tvOn) {
+      manualPauseRef.current = false;
+    }
     if (partyAudioRef.current && hasEntered && tvOn && phase !== "entering"
       && (previous.tvOn !== tvOn || previous.hasEntered !== hasEntered || previous.phase !== phase)) {
       resumeAfterPartyRef.current = true;
@@ -248,6 +255,10 @@ export function BusTvPlayer({
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (!playerRef.current || warmingRef.current) return;
+      if (manualPauseRef.current) {
+        reportPlayback(false);
+        return;
+      }
       try {
         const state = playerRef.current.getPlayerState();
         if (state === 1 && shouldPlay()) clearStartTimer();
@@ -309,13 +320,22 @@ export function BusTvPlayer({
         onStateChange: ({ target, data }) => {
           if (data === 1) {
             resetInitialCaptions(target);
+            if (!warmingRef.current && shouldPlay()) {
+              manualPauseRef.current = false;
+            }
             if (shouldPlay()) {
               clearStartTimer();
               setPlayerStatus("ready");
             }
+          } else if (data === 2 && !warmingRef.current && shouldPlay() && startTimerRef.current === null) {
+            manualPauseRef.current = true;
+            clearStartTimer();
+            stopVolumeRamp();
+            reportPlayback(false);
+            return;
           }
           if (startTimerRef.current !== null && shouldPlay()) return;
-          reportPlayback(!warmingRef.current && shouldPlay() && isYouTubePlaybackActive(data, playbackActiveRef.current));
+          reportPlayback(!warmingRef.current && !manualPauseRef.current && shouldPlay() && isYouTubePlaybackActive(data, playbackActiveRef.current));
         },
         onAutoplayBlocked: () => {
           if (warmingRef.current) stopWarmup();
@@ -327,7 +347,7 @@ export function BusTvPlayer({
         onError: failPlayer,
       },
     });
-  }, [applyDesiredPlayback, clearStartTimer, failPlayer, mountElement, reportPlayback, shouldPlay, stopWarmup]);
+  }, [applyDesiredPlayback, clearStartTimer, failPlayer, mountElement, reportPlayback, shouldPlay, stopVolumeRamp, stopWarmup]);
 
   useEffect(() => {
     connectPlayer();
@@ -363,6 +383,7 @@ export function BusTvPlayer({
       } catch { failPlayer(); }
     };
     const onUserPlay = () => {
+      manualPauseRef.current = false;
       if (!shouldPlay()) return;
       if (!disconnectRef.current) {
         setPlayerStatus("loading");
@@ -376,7 +397,10 @@ export function BusTvPlayer({
     const stopPlay = onBusAudioEvent("tvPlay", onUserPlay);
     const stopToggle = onBusAudioEvent("tvToggle", enabled => {
       desiredRef.current.tvOn = enabled;
-      if (enabled) onUserPlay();
+      if (enabled) {
+        manualPauseRef.current = false;
+        onUserPlay();
+      }
       else applyDesiredPlayback();
     });
     return () => { stopPrepare(); stopPlay(); stopToggle(); };
@@ -401,16 +425,36 @@ export function BusTvPlayer({
     <BusTvScreen isOn={isScreenOn} interactive={tvOn && phase === "inside" && !isMutedForFullscreen}>
       <div ref={setMountElement} data-bus-youtube-player style={{ width: "100%", height: "100%" }} />
       {showRetry && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-[#07142b] text-center text-white">
-          <button type="button" onClick={() => emitBusAudioEvent("tvPlay")}
+        <div
+          data-bus-tv-overlay=""
+          onPointerDown={(e) => e.stopPropagation()}
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#07142b] px-6 py-4 text-center text-white sm:gap-4"
+        >
+          <p className="max-w-[440px] text-base font-bold leading-snug text-[#dce7ff] sm:text-xl">
+            {playerStatus === "blocked"
+              ? "La lecture automatique a été bloquée."
+              : "Le lecteur vidéo ne répond pas."}
+          </p>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => emitBusAudioEvent("tvPlay")}
             aria-label={playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
-            className="rounded-full bg-[#ffd23f] px-7 py-3 text-[30px] font-black text-[#07142b] focus-visible:outline-4 focus-visible:outline-white">
+            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-[#ffd23f] px-6 py-2.5 text-lg font-black text-[#07142b] shadow-lg transition hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] sm:px-7 sm:py-3 sm:text-2xl"
+          >
             {playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
           </button>
-          {playerStatus === "error" && <a href={THEORY_VIDEO_URL} target="_blank" rel="noopener noreferrer"
-            className="text-[23px] font-bold underline focus-visible:outline-4 focus-visible:outline-white">
-            Voir la vidéo sur YouTube
-          </a>}
+          {playerStatus === "error" && (
+            <a
+              href={THEORY_VIDEO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onPointerDown={(e) => e.stopPropagation()}
+              className="inline-flex min-h-11 items-center justify-center rounded-lg px-3 py-1.5 text-base font-bold underline underline-offset-4 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] sm:text-xl"
+            >
+              Voir la vidéo sur YouTube
+            </a>
+          )}
         </div>
       )}
     </BusTvScreen>

@@ -354,6 +354,16 @@ export default function CameraRig({
 
     const down = (e: PointerEvent) => {
       if (phaseRef.current !== "inside" || freeViewRef.current || resetTransition.current.active) return;
+      const targetEl = e.target as HTMLElement | null;
+      const currentEl = e.currentTarget as HTMLElement | null;
+      if (
+        currentEl?.dataset?.tvPointerHit === "true"
+        || currentEl?.parentElement?.dataset?.tvPointerHit === "true"
+        || Boolean(currentEl?.closest?.('[data-tv-pointer-hit="true"]'))
+        || Boolean(targetEl?.closest?.("#tv-frame, [data-bus-tv-overlay]"))
+      ) {
+        return;
+      }
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       if (pointers.size === 1) {
@@ -486,6 +496,16 @@ export default function CameraRig({
     const down = (event: PointerEvent) => {
       if (phaseRef.current !== "outside" && !freeViewRef.current) return;
       if (resetTransition.current.active && phaseRef.current === "inside") return;
+      const targetEl = event.target as HTMLElement | null;
+      const currentEl = event.currentTarget as HTMLElement | null;
+      if (
+        currentEl?.dataset?.tvPointerHit === "true"
+        || currentEl?.parentElement?.dataset?.tvPointerHit === "true"
+        || Boolean(currentEl?.closest?.('[data-tv-pointer-hit="true"]'))
+        || Boolean(targetEl?.closest?.("#tv-frame, [data-bus-tv-overlay]"))
+      ) {
+        return;
+      }
       if (resetTransition.current.active) {
         resetTransition.current.active = false;
         if (controls.current) {

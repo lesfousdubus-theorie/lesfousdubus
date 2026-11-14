@@ -16,7 +16,15 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
   const [manifestError, setManifestError] = useState("");
   const [manifestNextFrom, setManifestNextFrom] = useState(0);
   const [manifestHasMore, setManifestHasMore] = useState(false);
+  const [lastManifestSeatIndex, setLastManifestSeatIndex] = useState<number | null>(null);
+  const [manifestSearchQuery, setManifestSearchQuery] = useState("");
+  const [manifestOnlyWithComment, setManifestOnlyWithComment] = useState(false);
   const passengerManifestButtonRef = useRef<HTMLButtonElement>(null);
+  const openedFromManifestRef = useRef(false);
+  const selectedManifestSeatRef = useRef<number | null>(null);
+  const loadedManifestRevisionRef = useRef<number | null>(null);
+  const manifestScrollTopRef = useRef(0);
+  const [manifestScrollTop, setManifestScrollTop] = useState(0);
   const passengerCardRequest = useRef<AbortController | null>(null);
   const manifestRequest = useRef<AbortController | null>(null);
   useEffect(() => () => { passengerCardRequest.current?.abort(); manifestRequest.current?.abort(); }, []);
@@ -66,6 +74,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
 
       if (manifestRequest.current !== controller) return;
       if (!applyBusSnapshot(data)) return;
+      if (from === 0) loadedManifestRevisionRef.current = profileRevision;
       setPassengerManifest((current) => from === 0 ? data.passengers : [...current, ...data.passengers]);
       setManifestNextFrom(data.nextFrom);
       setManifestHasMore(data.hasMore);
@@ -77,11 +86,30 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
     }
   }, [applyBusSnapshot, profileRevision]);
 
-  const openPassengerManifest = useCallback(() => {
-    setPassengerManifest([]);
-    setShowPassengerList(true);
+  const saveManifestScrollTop = useCallback((scrollTop: number) => {
+    manifestScrollTopRef.current = scrollTop;
+  }, []);
+
+  const refreshPassengerManifest = useCallback(() => {
     void loadPassengerManifest(0);
   }, [loadPassengerManifest]);
+
+  const openPassengerManifest = useCallback(() => {
+    openedFromManifestRef.current = false;
+    selectedManifestSeatRef.current = null;
+    setLastManifestSeatIndex(null);
+    manifestScrollTopRef.current = 0;
+    setManifestScrollTop(0);
+    setManifestSearchQuery("");
+    setManifestOnlyWithComment(false);
+    setShowPassengerList(true);
+    if (passengerManifest.length === 0 || Boolean(manifestError) || loadedManifestRevisionRef.current !== profileRevision) {
+      setPassengerManifest([]);
+      void loadPassengerManifest(0);
+      return;
+    }
+    void loadPassengerManifest(0);
+  }, [loadPassengerManifest, manifestError, passengerManifest.length, profileRevision]);
 
   const closePassengerManifest = useCallback(() => {
     manifestRequest.current?.abort();
@@ -91,11 +119,18 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
   }, []);
 
   const selectPassenger = useCallback((passenger: PassengerProfile) => {
+    openedFromManifestRef.current = false;
+    selectedManifestSeatRef.current = null;
+    setLastManifestSeatIndex(null);
     setPassengerOpenedFromList(false);
     void openPassengerCard(passenger);
   }, [openPassengerCard]);
 
   const selectFromManifest = useCallback((passenger: PassengerManifestEntry) => {
+    openedFromManifestRef.current = true;
+    selectedManifestSeatRef.current = passenger.seatIndex;
+    setLastManifestSeatIndex(passenger.seatIndex);
+    setManifestScrollTop(manifestScrollTopRef.current);
     closePassengerManifest();
     setPassengerOpenedFromList(true);
     void openPassengerCard({
@@ -108,23 +143,45 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
 
   const closePassengerCard = useCallback(() => {
     passengerCardRequest.current?.abort(); passengerCardRequest.current = null;
+    const fromManifest = openedFromManifestRef.current;
+    openedFromManifestRef.current = false;
+    selectedManifestSeatRef.current = null;
+    setLastManifestSeatIndex(null);
+    setPassengerOpenedFromList(false);
     setSelectedPassenger(null);
-    window.requestAnimationFrame(() => passengerManifestButtonRef.current?.focus({ preventScroll: true }));
+    if (fromManifest) {
+      window.requestAnimationFrame(() => passengerManifestButtonRef.current?.focus({ preventScroll: true }));
+    }
   }, []);
 
   const backToManifest = useCallback(() => {
     passengerCardRequest.current?.abort(); passengerCardRequest.current = null;
-    setSelectedPassenger(null); setShowPassengerList(true);
-  }, []);
+    setSelectedPassenger(null);
+    setShowPassengerList(true);
+    if (passengerManifest.length === 0 || Boolean(manifestError)) {
+      void loadPassengerManifest(0);
+    }
+  }, [loadPassengerManifest, manifestError, passengerManifest.length]);
 
   const clearDirectory = useCallback(() => {
     passengerCardRequest.current?.abort(); manifestRequest.current?.abort();
     passengerCardRequest.current = null; manifestRequest.current = null;
+    openedFromManifestRef.current = false;
+    selectedManifestSeatRef.current = null;
+    loadedManifestRevisionRef.current = null;
+    manifestScrollTopRef.current = 0;
+    setManifestScrollTop(0);
+    setLastManifestSeatIndex(null);
+    setPassengerOpenedFromList(false);
+    setManifestSearchQuery("");
+    setManifestOnlyWithComment(false);
     setPassengerManifest([]); setSelectedPassenger(null); setShowPassengerList(false); setManifestLoading(false);
   }, []);
 
   return { selectedPassenger, passengerOpenedFromList, passengerCardLoading, passengerCardError,
     passengerManifest, manifestLoading, manifestError, manifestNextFrom, manifestHasMore, showPassengerList,
+    lastManifestSeatIndex, manifestScrollTop, saveManifestScrollTop, manifestSearchQuery, setManifestSearchQuery,
+    manifestOnlyWithComment, setManifestOnlyWithComment, refreshPassengerManifest,
     passengerManifestButtonRef, openPassengerCard, loadPassengerManifest, openPassengerManifest, closePassengerManifest,
     selectPassenger, selectFromManifest, closePassengerCard, backToManifest, clearDirectory };
 }

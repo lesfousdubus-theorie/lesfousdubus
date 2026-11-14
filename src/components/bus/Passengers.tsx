@@ -169,7 +169,7 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
   const cardPairBySeat = useMemo(() => new Map(cardPairs.flatMap(pair => [[pair.firstSeat, pair.pairIndex], [pair.secondSeat, pair.pairIndex]])), [cardPairs]);
   useEffect(() => () => { document.body.style.cursor = "auto"; }, []);
   return <group ref={root} name="bus-seated-passengers" userData={{ detailedCount: detailed.length, simplifiedCount: simplified.length }}>
-    <SimplifiedPassengers passengers={simplified} profilesBySeatIndex={profilesBySeatIndex} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion} poses={poses}/>
+    <SimplifiedPassengers passengers={simplified} profilesBySeatIndex={profilesBySeatIndex} onSelect={onPassengerSelect} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion} poses={poses}/>
     {detailed.map(({ seat, index, physicalSeatIndex, passengerKind }) => {
       const archetype = getNakamaArchetype(index, passengerKind === "visitor" ? profilesBySeatIndex.get(index)?.avatarId : null);
       return <Passenger key={`${passengerKind}-${index}`} seat={seat} index={index} archetype={archetype}
@@ -245,13 +245,21 @@ export function Passenger({
   const signatureProps = useRef<Array<THREE.Group|null>>([]);
   const targetPose = useRef(createPassengerPose());
   const currentPose = useRef(getRegisteredPassengerPose(poses,index));
+  const hovered = useRef(false);
 
   // Matériaux partagés et mis en cache par archetype
   const mats = useMemo(() => getArchetypeMaterials(archetype), [archetype]);
   const proportions = getPassengerProportions(archetype.id);
   const skeleton = getPassengerSkeleton(archetype.id);
   const displayName = label ?? profile?.displayName;
-  const interactive = Boolean(profile || onActivate);
+  const fallbackProfile = useMemo<PassengerProfile | undefined>(
+    () => (!profile && passengerKind === "visitor" && onSelect
+      ? { seatIndex: index, displayName: "Passager", comment: null }
+      : undefined),
+    [profile, passengerKind, onSelect, index],
+  );
+  const selectedProfile = profile ?? fallbackProfile;
+  const interactive = Boolean(selectedProfile || onActivate);
   const nameTexture = useMemo(
     () => displayName ? makePassengerNameTexture(displayName) : null,
     [displayName],
@@ -260,8 +268,18 @@ export function Passenger({
 
   useEffect(() => () => {
     nameTexture?.texture.dispose();
-    document.body.style.cursor = "auto";
+    if (hovered.current) {
+      hovered.current = false;
+      document.body.style.cursor = "auto";
+    }
   }, [nameTexture]);
+
+  useEffect(() => {
+    if (!interactive && hovered.current) {
+      hovered.current = false;
+      document.body.style.cursor = "auto";
+    }
+  }, [interactive]);
 
   useLayoutEffect(() => {
     if (!cardActors || physicalSeatIndex === undefined || !group.current) return;
@@ -307,20 +325,38 @@ export function Passenger({
     }
   }, -2);
 
+  const handleActivate = interactive
+    ? (event: { stopPropagation: () => void }) => {
+        event.stopPropagation();
+        if (selectedProfile) onSelect?.(selectedProfile);
+        else onActivate?.();
+      }
+    : undefined;
+  const handlePointerOver = interactive
+    ? (event: { stopPropagation: () => void }) => {
+        event.stopPropagation();
+        hovered.current = true;
+        document.body.style.cursor = "pointer";
+      }
+    : undefined;
+  const handlePointerOut = interactive
+    ? () => {
+        if (hovered.current) {
+          hovered.current = false;
+          document.body.style.cursor = "auto";
+        }
+      }
+    : undefined;
+
   return (
     <group
       ref={group}
       name={name ?? `nakama-${archetype.id}-${index}`}
       userData={{ physicalSeatIndex, passengerKind, cardPairIndex, seatIndex: passengerKind === "visitor" ? index : undefined, archetypeId: archetype.id, row: seat.row, seatInRow: seat.seatInRow }}
       position={[seat.x, 0, seat.z]}
-      onClick={
-        profile
-          ? (event: { stopPropagation: () => void }) => {
-              event.stopPropagation();
-              onSelect?.(profile);
-            }
-          : onActivate ? (event: { stopPropagation: () => void }) => { event.stopPropagation(); onActivate(); } : undefined
-      }
+      onClick={handleActivate}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
     >
       {!firstPerson && nameTexture && (
         <sprite
@@ -329,18 +365,9 @@ export function Passenger({
           position={[0, labelY, 0.14]}
           scale={[Math.min(0.4, nameTexture.aspect * 0.11), Math.min(0.11, 0.4 / nameTexture.aspect), 1]}
           renderOrder={20}
-          onClick={interactive ? (event: { stopPropagation: () => void }) => {
-            event.stopPropagation();
-            if (profile) onSelect?.(profile);
-            else onActivate?.();
-          } : undefined}
-          onPointerOver={interactive ? (event: { stopPropagation: () => void }) => {
-            event.stopPropagation();
-            document.body.style.cursor = "pointer";
-          } : undefined}
-          onPointerOut={interactive ? () => {
-            document.body.style.cursor = "auto";
-          } : undefined}
+          onClick={handleActivate}
+          onPointerOver={handlePointerOver}
+          onPointerOut={handlePointerOut}
         >
           <spriteMaterial
             map={nameTexture.texture}
