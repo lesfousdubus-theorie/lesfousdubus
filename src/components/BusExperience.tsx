@@ -1041,7 +1041,7 @@ export default function BusExperience() {
               {speedMultiplier.toFixed(1)}x
             </span>
             {speedMultiplier >= 2.0 && (
-              <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[8px] sm:text-[10px] font-black uppercase text-[#0d2190]">
+              <span className="rounded bg-[#ffd23f] px-1 py-0.5 text-[10px] font-black uppercase text-[#0d2190]">
                 Boost
               </span>
             )}
