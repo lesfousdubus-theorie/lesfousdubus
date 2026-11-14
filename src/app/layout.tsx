@@ -100,6 +100,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" className="h-full overflow-hidden">
       <head>
+        <link rel="preconnect" href="https://www.youtube.com" />
+        <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+        <link rel="preconnect" href="https://i.ytimg.com" />
+        <link rel="preconnect" href="https://www.googlevideo.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="//www.youtube.com" />
+        <link rel="dns-prefetch" href="//www.youtube-nocookie.com" />
         {/* Données structurées Schema.org (JSON-LD) */}
         <script
           type="application/ld+json"
