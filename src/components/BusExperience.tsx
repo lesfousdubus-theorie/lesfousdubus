@@ -86,13 +86,17 @@ async function fetchJson<T>(
   init: RequestInit = {},
   timeoutMs = API_TIMEOUT_MS,
 ): Promise<T> {
-  const timeoutController = new AbortController();
-  const timeout = window.setTimeout(() => timeoutController.abort(), timeoutMs);
-  const signal = init.signal
-    ? AbortSignal.any([init.signal, timeoutController.signal])
-    : timeoutController.signal;
+  const requestController = new AbortController();
+  const externalSignal = init.signal;
+  const abortFromExternal = () => requestController.abort();
+  if (externalSignal?.aborted) {
+    abortFromExternal();
+  } else {
+    externalSignal?.addEventListener("abort", abortFromExternal, { once: true });
+  }
+  const timeout = window.setTimeout(() => requestController.abort(), timeoutMs);
   try {
-    const response = await fetch(input, { ...init, signal });
+    const response = await fetch(input, { ...init, signal: requestController.signal });
     const data = (await response.json().catch(() => ({}))) as T & { error?: string };
     if (!response.ok) {
       throw new ApiError(
@@ -104,6 +108,7 @@ async function fetchJson<T>(
     return data;
   } finally {
     window.clearTimeout(timeout);
+    externalSignal?.removeEventListener("abort", abortFromExternal);
   }
 }
 

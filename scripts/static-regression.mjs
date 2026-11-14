@@ -25,6 +25,7 @@ assert.doesNotMatch(bus, /!reducedMotion && rainStrength/, "Rain must keep the w
 assert.doesNotMatch(bus, /tvIframeRefs|primaryIframeRef|sendYoutubeCommand/, "Legacy multi-iframe synchronization must stay removed.");
 assert.match(busTv, /cc_load_policy:\s*0/, "The bus TV must request captions off by default.");
 assert.match(busTv, /playVideo\(\);[\s\S]*setTimeout/, "The player must warm up on initial load.");
+assert.match(busTv, /desiredRef\.current\.hasEntered[\s\S]*applyDesiredPlayback\(\);[\s\S]*return;/, "A late YouTube ready event must skip warm-up after the user has already entered.");
 assert.match(busTv, /data-tv-wheel-capture[\s\S]*bus-zoom/, "Mouse-wheel zoom must keep working over the TV surface.");
 assert.match(busTv, /requestFullscreen/, "The TV overlay must preserve fullscreen interaction.");
 assert.doesNotMatch(busTv, /bus-video-state|bus-video-seek/, "Obsolete synchronized-video state must stay removed.");
@@ -59,9 +60,12 @@ assert.doesNotMatch(css, /#tv-frame:fullscreen/, "Obsolete fullscreen CSS must s
 assert.doesNotMatch(experience, /text-\[(?:8|9)px\]/, "Primary HUD text must not fall below 10px.");
 assert.doesNotMatch(theory, /animate-in\s+fade-in/, "Unsupported theory modal animation utilities must stay removed.");
 assert.match(api, /scopedIdentity/, "Rate limiting must isolate visitors sharing one IP.");
+assert.match(api, /typeof body\.displayName !== "string"[\s\S]*typeof body\.comment !== "string"/, "Profile fields with invalid JSON types must be rejected.");
 assert.match(api, /visitorId,\s*\n\s*\);/, "Visitor identity must participate in write rate limiting.");
 assert.match(experience, /isValidVisitorId\(storedVisitorId\)/, "Corrupted stored visitor IDs must self-heal.");
 assert.match(experience, /previousBodyOverflow[\s\S]*previousHtmlOverflow/, "Body and document overflow must restore independently.");
+assert.doesNotMatch(experience, /AbortSignal\.any/, "Fetch cancellation must not depend on AbortSignal.any browser support.");
+assert.match(experience, /externalSignal\?\.addEventListener\("abort"/, "External aborts must still cancel timed requests.");
 
 
 assert.match(passengers, /passengerCount <= BASE_ROWS \* 4/, "Row capacity must match the four logical passenger slots rendered per row.");

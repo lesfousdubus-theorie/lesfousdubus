@@ -221,8 +221,17 @@ export function BusTvPlayer({
               iframe.style.border = "0";
               iframe.style.display = "block";
 
-              // Préchargement réel : le lecteur est initialisé immédiatement, démarre
-              // brièvement en muet pour amorcer le flux, puis revient exactement à 0.
+              // Si l'utilisateur est déjà entré pendant le chargement de l'API,
+              // on honore immédiatement l'état demandé au lieu d'ajouter 900 ms
+              // de préchauffage muet après coup.
+              if (desiredRef.current.hasEntered) {
+                warmingRef.current = false;
+                applyDesiredPlayback();
+                return;
+              }
+
+              // Préchargement réel avant l'entrée : le lecteur démarre brièvement
+              // en muet pour amorcer le flux, puis revient exactement à 0.
               event.target.mute();
               event.target.setVolume(0);
               event.target.playVideo();
