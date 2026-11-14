@@ -97,6 +97,7 @@ try {
   await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape" });
   await wait("!document.querySelector('[aria-label=\"Progression de la musique\"]')", "Escape closes music details");
   await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await wait("innerWidth===1440&&document.querySelector('[data-bottom-layout]')?.dataset.bottomLayout!=='compact'&&Boolean([...document.querySelectorAll('button[aria-label=\"Lancer la fête\"]')].find(b=>!b.disabled&&!b.closest('[aria-hidden=\"true\"]')&&b.getBoundingClientRect().width>0))", "Desktop controls restore at 1440×900");
   await run("window.dispatchEvent(new CustomEvent('bus-music-seek',{detail:{track:'background',seconds:42}}))");
   await wait("mediaTestPlayers.background.getCurrentTime()>=42&&mediaTestPlayers.background.getCurrentTime()<44", "Typed seek channel changes background position");
   await nativeClick('button[aria-label="Lancer la fête"]');
