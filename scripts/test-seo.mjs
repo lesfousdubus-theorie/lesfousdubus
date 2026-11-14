@@ -68,7 +68,7 @@ if (base) {
   assert.equal(jsonLd(missing.html).length, 0, "Error pages must not claim to contain an article or video.");
   assert(!home.html.includes('id="theorie-fous-du-bus-manifeste"'), "The crawler-only hidden article must be removed.");
   assert.match(home.html, /href="\/theorie"/);
-  assert.match(home.html, /La théorie One Piece du Mont Corvo/);
+  assert.match(home.html, /id="bus-loading-wheel"/);
   assert.match(reading.html, /<title>Théorie One Piece/);
   assert.equal(meta(reading.html, "og:image"), `${SITE_URL}/og-image.jpg`);
   assert.equal(meta(reading.html, "og:type"), "article");
