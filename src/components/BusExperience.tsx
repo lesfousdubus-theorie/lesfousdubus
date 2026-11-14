@@ -7,7 +7,8 @@ import { BusHud, type ToastMessage } from "./BusHud";
 import { computeNumRows } from "@/lib/bus-layout";
 import { type Phase, type WorldState } from "./bus/constants";
 import type { PassengerManifestEntry, PassengerProfile } from "@/types/passenger";
-import { playDing, playHorn, playStretch, playBoost, unlockAudio } from "@/lib/horn";
+import { playDing, playStretch, unlockAudio } from "@/lib/horn";
+import { useBusControls } from "./useBusControls";
 import { getOrCreateVisitorId, isRetryableRegistrationError, fetchJson, ApiError, type BusApiState } from "@/lib/client/bus-api";
 import { JoinBusModal } from "./modals/JoinBusModal";
 import { PassengerCard } from "./modals/PassengerCard";
@@ -18,7 +19,6 @@ import { useBusSync } from "./useBusSync";
 
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
 
-const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
 const MAX_DEBUG_PASSENGERS = 10_000;
 
 export default function BusExperience() {
@@ -29,8 +29,6 @@ export default function BusExperience() {
     }
     return "outside";
   });
-  const [headlights, setHeadlights] = useState(false);
-  const [hornPulse, setHornPulse] = useState(0);
   const [tvOn, setTvOn] = useState(false);
 
   // Le lecteur est préchargé dès l'arrivée, mais reste en pause et invisible avant l'entrée.
@@ -72,20 +70,6 @@ export default function BusExperience() {
   const [statsRetryToken, setStatsRetryToken] = useState(0);
   const [theoryAgeInDays, setTheoryAgeInDays] = useState(getTheoryAgeInDays);
 
-  // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
-  const [speedMultiplier, setSpeedMultiplier] = useState(() => {
-    if (typeof window !== "undefined") {
-      const b = new URLSearchParams(window.location.search).get("boost");
-      if (b === "1" || b === "true") return 2.5;
-      const s = new URLSearchParams(window.location.search).get("speed");
-      if (s) {
-        const parsed = parseFloat(s);
-        if (!Number.isNaN(parsed) && parsed > 0) return Math.min(3.0, Math.max(0.3, parsed));
-      }
-    }
-    return 1.0;
-  });
-
   // Compteur initial démarre à 0 si la base est vide (le bus est vide au début)
   const [count, setCount] = useState<number | null>(() => {
     if (typeof window !== "undefined") {
@@ -117,9 +101,6 @@ export default function BusExperience() {
   });
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  const [isNight, setIsNight] = useState(false);
-  const [manualDayNight, setManualDayNight] = useState<"day" | "night" | null>(null);
-
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const passengerManifestButtonRef = useRef<HTMLButtonElement>(null);
   const passengerCardRequest = useRef<AbortController | null>(null);
@@ -137,19 +118,10 @@ export default function BusExperience() {
     weatherIntensity: 0,
   });
 
-  // Références pour les phares automatiques jour / nuit
-  const prevIsNight = useRef(false);
-  const manualHeadlightsRef = useRef<boolean | null>(null);
-
-  const toggleDayNight = useCallback(() => {
-    if (manualDayNight !== null) {
-      setManualDayNight(null);
-      return;
-    }
-    const nextMode = isNight ? "day" : "night";
-    setManualDayNight(nextMode);
-    setIsNight(nextMode === "night");
-  }, [isNight, manualDayNight]);
+  const {
+    headlights, hornPulse, speedMultiplier, isNight, manualDayNight,
+    toggleDayNight, accelerateBus, decelerateBus, toggleHeadlights, honk,
+  } = useBusControls(phase, worldRef);
 
   // Affiche une notification festive
   const showToast = useCallback((text: string, sub?: string, badge?: string) => {
@@ -199,11 +171,6 @@ export default function BusExperience() {
     return true;
   }, [updateSeatCapacity]);
 
-  // Synchronise en continu la vitesse du bus avec le moteur 3D
-  useEffect(() => {
-    worldRef.current.speedMultiplier = speedMultiplier;
-  }, [speedMultiplier]);
-
   // Actualise le compteur d'âge exactement au prochain minuit local.
   useEffect(() => {
     let timer = 0;
@@ -226,48 +193,6 @@ export default function BusExperience() {
     manifestRequest.current?.abort();
   }, []);
 
-  // Détection du mode boost via l'URL (?boost=1), sans notification intrusive.
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const b = new URLSearchParams(window.location.search).get("boost");
-      if (b === "1" || b === "true") {
-        const playOnInteraction = () => {
-          window.removeEventListener("pointerdown", playOnInteraction);
-          window.removeEventListener("keydown", playOnInteraction);
-          playBoost();
-        };
-        window.addEventListener("pointerdown", playOnInteraction, { once: true });
-        window.addEventListener("keydown", playOnInteraction, { once: true });
-        return () => {
-          window.removeEventListener("pointerdown", playOnInteraction);
-          window.removeEventListener("keydown", playOnInteraction);
-        };
-      }
-    }
-  }, []);
-
-  // Faire accélérer le bus (jusqu'à 3.0x max)
-  const accelerateBus = useCallback(() => {
-    setSpeedMultiplier((cur) => {
-      const next = SPEED_STEPS.find((speed) => speed > cur + 0.001) ?? SPEED_STEPS.at(-1)!;
-      if (next >= 2.5) {
-        playBoost();
-      } else {
-        playDing();
-      }
-      return next;
-    });
-  }, []);
-
-  // Faire ralentir le bus (jusqu'à 0.3x min)
-  const decelerateBus = useCallback(() => {
-    setSpeedMultiplier((cur) => {
-      const next = SPEED_STEPS.findLast((speed) => speed < cur - 0.001) ?? SPEED_STEPS[0];
-      playDing();
-      return next;
-    });
-  }, []);
-
   useBusSync({
     applyBusSnapshot,
     statsRetryToken,
@@ -277,6 +202,7 @@ export default function BusExperience() {
     profileRevision,
     setPassengerProfiles,
     seatCapacityRef,
+    count,
     setCount,
     showToast,
     registrationPending,
@@ -284,38 +210,6 @@ export default function BusExperience() {
     setCurrentPassengerSeatIndex,
     setRegistrationPending,
   });
-
-  // Ne remonte vers React que le changement jour/nuit, pas les valeurs 3D à chaque tick.
-  useEffect(() => {
-    const id = setInterval(() => {
-      const curDaylight = worldRef.current.daylight;
-      const curIsNight = curDaylight < 0.4;
-      if (curIsNight !== prevIsNight.current) {
-        setIsNight(curIsNight);
-        if (curIsNight) {
-          // Passage automatique en mode nuit : allumage des phares
-          setHeadlights(true);
-          manualHeadlightsRef.current = null;
-        } else {
-          // Retour du jour : extinction automatique des phares sauf si allumés manuellement le jour
-          if (manualHeadlightsRef.current !== true) {
-            setHeadlights(false);
-          }
-          manualHeadlightsRef.current = null;
-        }
-        prevIsNight.current = curIsNight;
-      }
-    }, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const toggleHeadlights = useCallback(() => {
-    setHeadlights((prev) => {
-      const next = !prev;
-      manualHeadlightsRef.current = next;
-      return next;
-    });
-  }, []);
 
   // Empêche tout scroll de la page
   useEffect(() => {
@@ -631,49 +525,6 @@ export default function BusExperience() {
   const onArrived = useCallback((p: "inside" | "outside") => {
     setPhase(p);
   }, []);
-
-  const honk = useCallback(() => {
-    playHorn();
-    setHornPulse(performance.now());
-  }, []);
-
-  // Les commandes globales restent inactives pendant la saisie, dans les fenêtres
-  // et à l'intérieur, où les flèches et +/- contrôlent exclusivement la caméra.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (
-        document.querySelector("[role='dialog']") ||
-        document.activeElement?.tagName === "INPUT" ||
-        document.activeElement?.tagName === "TEXTAREA"
-      ) {
-        return;
-      }
-
-      if (e.key === "h" || e.key === "H") honk();
-      if (e.key === "l" || e.key === "L") toggleHeadlights();
-      if (phase !== "inside" && (e.key === "+" || e.key === "=" || e.key === "ArrowUp")) {
-        e.preventDefault();
-        accelerateBus();
-      }
-      if (phase !== "inside" && (e.key === "-" || e.key === "_" || e.key === "ArrowDown")) {
-        e.preventDefault();
-        decelerateBus();
-      }
-      if (e.key === "b" || e.key === "B") {
-        setSpeedMultiplier((cur) => {
-          if (cur < 2.0) {
-            playBoost();
-            return 2.5;
-          } else {
-            playDing();
-            return 1.0;
-          }
-        });
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [phase, honk, toggleHeadlights, accelerateBus, decelerateBus]);
 
   // Filet de sécurité : si la phase reste bloquée à "entering" ou "exiting"
   // (par exemple si le planificateur d'images du Canvas est suspendu parce que
