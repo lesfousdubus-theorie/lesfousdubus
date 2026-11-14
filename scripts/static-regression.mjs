@@ -71,7 +71,8 @@ assert.doesNotMatch(experience, /AbortSignal\.any/, "Fetch cancellation must not
 assert.match(experience, /externalSignal\?\.addEventListener\("abort"/, "External aborts must still cancel timed requests.");
 assert.match(experience, /MAX_DEBUG_PASSENGERS/, "Public debug passenger parameters must be bounded.");
 assert.match(experience, /setSeatRow\(\(row\) => Math\.max/, "Debug row selection must clamp when capacity changes.");
-assert.doesNotMatch(experience, /useState\(getTheoryAgeInDays\)/, "Theory age must not stay frozen across midnight.");
+assert.match(experience, /setTheoryAgeInDays\(getTheoryAgeInDays\(\)\)/, "Theory age must refresh after midnight.");
+assert.match(experience, /nextMidnight/, "Theory age refresh must be scheduled for the next local midnight.");
 
 
 assert.match(passengers, /passengerCount <= BASE_ROWS \* 4/, "Row capacity must match the four logical passenger slots rendered per row.");
