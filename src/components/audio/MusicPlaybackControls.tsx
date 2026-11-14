@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { emitBusAudioEvent, INITIAL_MUSIC_PLAYBACK, onBusAudioEvent, type BusMusicPlayback } from "@/lib/bus-audio";
+import { EqualizerDetailsIcon } from "../ui/BusIcons";
 
 function formatTime(seconds: number) {
   const total = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0));
@@ -10,11 +11,11 @@ function formatTime(seconds: number) {
 }
 
 function playbackLabel(playback: BusMusicPlayback) {
-  if (playback.state === "error") return "Indisponible · réessayez avec Musique";
+  if (playback.state === "error") return "Indisponible · réessaie avec Musique";
   if (playback.state === "suspended") return "En pause pendant la vidéo";
   if (playback.state === "playing") return "En lecture";
   if (playback.state === "loading") return playback.requested ? "Démarrage…" : "Préparation…";
-  return playback.elapsed > 0 ? "En pause" : "Prête à jouer";
+  return playback.elapsed > 0 ? "En pause" : "En attente";
 }
 
 interface MusicPlaybackControlsProps {
@@ -158,9 +159,9 @@ export default function MusicPlaybackControls({
     <div ref={panelRef} id={id} role="region" aria-label="Progression de la musique"
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
-      className="pointer-events-auto fixed z-50 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-[#ffd23f]/40 bg-[#07142b]/95 px-4 py-2.5 text-white shadow-[0_8px_28px_rgba(0,0,0,0.55)] backdrop-blur-md">
+      className="pointer-events-auto fixed z-50 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-[#ffd23f]/45 bg-[#07142b]/95 px-4 py-2.5 text-white shadow-[0_8px_28px_rgba(0,0,0,0.55)] backdrop-blur-md">
       <p className="truncate text-sm font-bold text-[#ffd23f]" title={playback.title}>{playback.title}</p>
-      <p role="status" className="mt-0.5 text-xs leading-5 text-white/85">{status}</p>
+      <p role="status" className="mt-0.5 text-xs leading-5 text-[#b6c7eb]">{status}</p>
       <input type="range" min={0} max={playback.duration || 1} step={0.1}
         disabled={!seekEnabled} value={Math.min(elapsed, playback.duration || 0)}
         aria-label={`Position dans ${playback.title}`}
@@ -171,8 +172,8 @@ export default function MusicPlaybackControls({
           emitBusAudioEvent("musicSeek", { track: playback.track, seconds });
           settleDraft();
         }} onPointerUp={settleDraft} onKeyUp={settleDraft} onBlur={settleDraft}
-        className="mt-1 h-11 w-full cursor-pointer rounded-lg accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:cursor-wait disabled:opacity-50" />
-      <div className="-mt-1 flex justify-between text-xs font-semibold tabular-nums text-white/85" aria-hidden="true">
+        className="mt-1 h-11 w-full cursor-pointer rounded-lg accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-wait disabled:opacity-50" />
+      <div className="-mt-1 flex justify-between text-xs font-semibold tabular-nums text-[#b6c7eb]" aria-hidden="true">
         <span>{formatTime(elapsed)}</span><span>{playback.duration ? formatTime(playback.duration) : "—:—"}</span>
       </div>
     </div>
@@ -185,13 +186,11 @@ export default function MusicPlaybackControls({
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
       title={`${playback.title} · ${status} · afficher la progression`}
-      className={`flex h-11 w-11 items-center justify-center gap-2 rounded-full border shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] cursor-pointer ${compact ? "bus-icon-button bus-glass bg-black/75" : "bg-[#07142b]/95 lg:w-[170px] lg:justify-start lg:px-3"} ${open ? "border-[#ffd23f] text-[#ffd23f]" : "border-white/35 text-white"}`}>
-      <svg aria-hidden="true" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <path d="M4 6h16M4 12h16M4 18h16" /><path d="M9 3v6m6 0v6m-7 0v6" strokeWidth="4" />
-      </svg>
+      className={`flex h-11 w-11 items-center justify-center gap-2 rounded-full border bg-[#07142b]/95 shadow-lg transition-colors hover:bg-[#0c1b3a]/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] cursor-pointer ${compact ? "bus-icon-button bus-glass" : "lg:w-[170px] lg:justify-start lg:px-3"} ${open ? "border-[#ffd23f] text-[#ffd23f]" : "border-white/35 text-white hover:border-[#ffd23f]/70 hover:text-[#ffd23f]"}`}>
+      <EqualizerDetailsIcon />
       {!compact && <span className="hidden min-w-0 text-left lg:block">
         <span className="block truncate text-xs font-bold">{playback.title}</span>
-        <span className="block text-[10px] tabular-nums text-white/80">{formatTime(playback.elapsed)} / {playback.duration ? formatTime(playback.duration) : "—:—"}</span>
+        <span className="block text-[10px] tabular-nums text-[#b6c7eb]">{formatTime(playback.elapsed)} / {playback.duration ? formatTime(playback.duration) : "—:—"}</span>
       </span>}
     </button>}
     {panel ? (portalTarget ? createPortal(panel, portalTarget) : panel) : null}
