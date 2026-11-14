@@ -314,7 +314,10 @@ export default function CameraRig({
     }
 
     if ((p === "entering" || p === "exiting") && a.active) {
-      a.t = Math.min(1, a.t + dt / TRANSITION_TIME);
+      // Une première frame très tardive (GPU occupé, reprise d'onglet, appareil lent)
+      // ne doit jamais avaler toute l'animation d'entrée/sortie d'un seul coup.
+      const transitionDt = Math.min(dt, 0.05);
+      a.t = Math.min(1, a.t + transitionDt / TRANSITION_TIME);
       const s = a.t * a.t * (3 - 2 * a.t);
       cam.position.lerpVectors(a.from, a.to, s);
       // petite courbe : la caméra s'élève un peu au milieu du trajet

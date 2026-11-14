@@ -10,6 +10,7 @@ const experience = read("src/components/BusExperience.tsx");
 const theory = read("src/components/TheoryModal.tsx");
 const syncedVideo = read("src/components/SyncedTheoryVideo.tsx");
 const scene = read("src/components/bus/Scene.tsx");
+const cameraRig = read("src/components/bus/CameraRig.tsx");
 const css = read("src/app/globals.css");
 const api = read("src/app/api/bus-entries/route.ts");
 
@@ -42,6 +43,7 @@ assert.match(syncedVideo, /cc_load_policy:\s*0/, "The modal video must request c
 assert.match(scene, /frameloop=\{renderPaused \? "demand" : "always"\}/, "The active 3D scene must render at the display's native requestAnimationFrame cadence.");
 assert.match(scene, /AdaptiveDpr/, "The scene must adapt pixel density instead of capping FPS.");
 assert.doesNotMatch(scene, /FrameScheduler|fps=\{/, "Artificial 30/60 FPS caps must stay removed.");
+assert.match(cameraRig, /const transitionDt = Math\.min\(dt, 0\.05\)/, "Camera transitions must cap large frame deltas so animations cannot be skipped.");
 assert.match(scene, /webglcontextlost/, "WebGL context loss must be handled.");
 assert.match(css, /safe-area-inset-bottom/, "HUD must respect device safe areas.");
 assert.match(css, /orientation: landscape/, "Compact mobile landscape layout must remain covered.");
