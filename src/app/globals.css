@@ -249,7 +249,9 @@ body {
    Cette passe compacte évite que les contrôles se chevauchent comme sur tablette. */
 @media (orientation: landscape) and (max-height: 520px) {
   .bus-title-panel {
-    max-width: 36vw !important;
+    /* La théorie et l'aide tiennent côte à côte, laissant la hauteur libre
+       pour les notifications sur les téléphones en paysage étroit. */
+    max-width: 48vw !important;
   }
 
   .bus-title-panel h1,
