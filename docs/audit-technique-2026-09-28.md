@@ -1,5 +1,7 @@
 # Revue technique et architecture — 28 septembre 2026
 
+> Archive historique : ce document décrit la revue à sa date, pas l’état actuel du projet. Voir le [guide d’architecture](architecture.md), les [tests actuels](tests.md) et le [guide d’exploitation](exploitation.md). Les priorités et conclusions ci-dessous peuvent avoir été traitées depuis.
+
 Revue de l'arborescence versionnée, des responsabilités des modules, des scripts,
 des migrations D1, des ressources publiques et du README. Les changements de
 structure ci-dessous sont limités aux frontières qui séparent déjà des fonctions
@@ -16,7 +18,7 @@ tests de comportement.
 | `src/components/modals/`, `src/components/theory/` | Fenêtres des passagers et contenu de la théorie | Séparation claire. |
 | `src/lib/` | Calculs et ressources partagés | `client/` et `server/` séparent les accès réseau et D1 ; `bus-front-geometry.ts` centralise les cotes de la calandre. |
 | `src/types/`, `migrations/` | Types partagés et six migrations D1 ordonnées | Noms et hiérarchie cohérents. |
-| `public/`, `scripts/` | Ressources statiques et tests locaux | Les ressources référencées existent ; les vérifications s'exécutent avant le déploiement. |
+| `public/`, `scripts/` | Ressources statiques et tests locaux | Les ressources référencées existent ; les vérifications de cette revue ont été lancées manuellement. |
 
 Convention de noms vérifiée : composants React en `PascalCase`, hooks en `use...`,
 fonctions et données partagées en noms descriptifs minuscules, migrations numérotées.

@@ -2,6 +2,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { PassengerProfile } from "@/types/passenger";
 import { isValidVisitorId } from "@/lib/visitor-id";
 import { findModerationIssue, MODERATION_MESSAGES } from "@/lib/server/moderation";
+import { isModerationAuthorized } from "@/lib/server/moderation-auth";
 import {
   READ_HEADERS, WRITE_HEADERS, acceptsJsonBody, unsupportedMediaTypeResponse,
   getPassengerDatabase, readBusStats, toNamedPassengerProfile, cleanText, readJsonBody,
@@ -189,23 +190,25 @@ export async function DELETE(request: Request) {
   if (!acceptsJsonBody(request)) return unsupportedMediaTypeResponse();
   try {
     const body = await readJsonBody(request);
-    const authHeader = request.headers.get("authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.slice(7).trim();
+    // An explicit seat selects administration. Never downgrade a failed admin
+    // request to a personal deletion, even when visitorId is also supplied.
+    if (Object.prototype.hasOwnProperty.call(body, "seatIndex")) {
       const { env } = await getCloudflareContext({ async: true });
-      if (token && env.RATE_LIMIT_SECRET && token === env.RATE_LIMIT_SECRET) {
-        const seatIndex = Number(body.seatIndex);
-        if (Number.isSafeInteger(seatIndex) && seatIndex >= 0) {
-          const database = await getPassengerDatabase();
-          const deletion = await database.prepare("DELETE FROM bus_entries WHERE seat_index = ?").bind(seatIndex).run();
-          const stats = await readBusStats(database);
-          return Response.json({
-            ...stats,
-            removed: (deletion.meta.changes ?? 0) > 0,
-            seatIndex,
-          }, { headers: WRITE_HEADERS });
-        }
+      if (!await isModerationAuthorized(request, env)) {
+        return Response.json({ error: "Action de modération non autorisée." }, { status: 403, headers: WRITE_HEADERS });
       }
+      const seatIndex = body.seatIndex;
+      if (typeof seatIndex !== "number" || !Number.isSafeInteger(seatIndex) || seatIndex < 0) {
+        return Response.json({ error: "Passager invalide." }, { status: 400, headers: WRITE_HEADERS });
+      }
+      const database = await getPassengerDatabase();
+      const deletion = await database.prepare("DELETE FROM bus_entries WHERE seat_index = ?").bind(seatIndex).run();
+      const stats = await readBusStats(database);
+      return Response.json({
+        ...stats,
+        removed: (deletion.meta.changes ?? 0) > 0,
+        seatIndex,
+      }, { headers: WRITE_HEADERS });
     }
 
     const visitorId = typeof body.visitorId === "string" ? body.visitorId.trim() : "";

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { createCdp, evaluate, waitForJson, waitForPageCondition, sleep } from "./browser-helpers.mjs";
 import { spawn } from "node:child_process";
 import { rmSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { runMediaPlaybackChecks } from "./media-playback-checks.mjs";
 import { runHudLayoutChecks } from "./hud-layout-checks.mjs";
 import { runBusCameraChecks } from "./bus-camera-checks.mjs";
@@ -8,6 +10,24 @@ import { runBusCameraChecks } from "./bus-camera-checks.mjs";
 const baseUrl = process.env.BASE_URL ?? "http://localhost:3000";
 const chromePath = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
 const debugPort = Number(process.env.CDP_PORT ?? 9222);
+
+// Keep the long 3D inspection separate from form/HUD checks. Each process owns
+// a fresh Chrome profile and releases its software WebGL contexts before the next.
+if (!process.env.BUS_CAMERA_CHECKS) {
+  for (const scenario of ["camera", "characters", "ui"]) {
+    console.log(`UI scenario: ${scenario}`);
+    const status = await new Promise((resolve, reject) => {
+      const child = spawn(process.execPath, [fileURLToPath(import.meta.url)], {
+        env: { ...process.env, BUS_CAMERA_CHECKS: scenario }, stdio: "inherit",
+      });
+      child.once("error", reject);
+      child.once("close", code => resolve(code ?? 1));
+    });
+    if (status !== 0) process.exit(status);
+  }
+  console.log("All isolated UI scenarios passed.");
+  process.exit(0);
+}
 
 for (const method of ["POST", "DELETE"]) {
   const body = JSON.stringify({ visitorId: "invalid" });
@@ -23,73 +43,6 @@ for (const method of ["POST", "DELETE"]) {
     body,
   });
   assert.equal(validMediaType.status, 400, `${method} must still parse JSON requests.`);
-}
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-async function waitForJson(url, attempts = 120) {
-  let lastError;
-  for (let i = 0; i < attempts; i += 1) {
-    try {
-      const response = await fetch(url);
-      if (response.ok) return await response.json();
-    } catch (error) {
-      lastError = error;
-    }
-    await sleep(250);
-  }
-  throw lastError ?? new Error(`Unable to reach ${url}`);
-}
-
-function createCdp(ws) {
-  let id = 1;
-  const pending = new Map();
-  ws.addEventListener("message", (event) => {
-    const data = JSON.parse(event.data);
-    if (!data.id) return;
-    const waiter = pending.get(data.id);
-    if (!waiter) return;
-    pending.delete(data.id);
-    if (data.error) waiter.reject(new Error(data.error.message ?? JSON.stringify(data.error)));
-    else waiter.resolve(data.result);
-  });
-  return (method, params = {}) => new Promise((resolve, reject) => {
-    const requestId = id++;
-    const timeout = setTimeout(() => {
-      pending.delete(requestId);
-      reject(new Error(`Chrome did not respond to ${method} within 30 seconds.`));
-    }, 30_000);
-    pending.set(requestId, {
-      resolve: result => { clearTimeout(timeout); resolve(result); },
-      reject: error => { clearTimeout(timeout); reject(error); },
-    });
-    ws.send(JSON.stringify({ id: requestId, method, params }));
-  });
-}
-
-async function evaluate(send, expression) {
-  const result = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
-  if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text ?? "Runtime evaluation failed.");
-  return result.result?.value;
-}
-
-async function waitForPageCondition(send, expression, label, timeoutMs = 8_000) {
-  const startedAt = Date.now();
-  let lastValue = null;
-  while (Date.now() - startedAt < timeoutMs) {
-    lastValue = await evaluate(send, expression);
-    if (lastValue) return lastValue;
-    await sleep(150);
-  }
-  const diagnostics = await evaluate(send, `
-    (() => ({
-      readyState: document.readyState,
-      phase: document.querySelector("[data-phase]")?.getAttribute("data-phase") ?? null,
-      bodyText: document.body.innerText.slice(0, 600),
-      buttons: [...document.querySelectorAll("button")].map((button) => button.textContent?.trim() ?? ""),
-    }))()
-  `);
-  throw new Error(`${label} timed out after ${timeoutMs}ms: ${JSON.stringify(diagnostics)}`);
 }
 
 const chromeProfileDir = `/tmp/lesfousdubus-chrome-${process.pid}`;
@@ -138,9 +91,11 @@ try {
   await send("Runtime.enable");
   if(process.env.UI_LOW_POWER==="1")await send("Emulation.setHardwareConcurrencyOverride",{hardwareConcurrency:4});
 
-  await runBusCameraChecks({ send, evaluate, waitForPageCondition, baseUrl });
+  if (process.env.BUS_CAMERA_CHECKS !== "ui") {
+    await runBusCameraChecks({ send, evaluate, waitForPageCondition, baseUrl });
+  }
 
-  if (!["crew-seats", "extensions", "hands", "door-confetti", "party", "characters", "performance", "playback", "playback-zoom", "door-music", "music-live", "led"].includes(process.env.BUS_CAMERA_CHECKS)) {
+  if (!["camera", "crew-seats", "extensions", "hands", "door-confetti", "party", "characters", "performance", "playback", "playback-zoom", "door-music", "music-live", "led"].includes(process.env.BUS_CAMERA_CHECKS)) {
   const viewports = [
     { width: 320, height: 568, mobile: true },
     { width: 393, height: 852, mobile: true },
@@ -565,7 +520,7 @@ try {
   // vrai parcours utilisateur critique : chargement, entrée et player unique.
   }
   ws.close();
-  const targeted = ["crew-seats", "extensions", "hands", "door-confetti", "party", "playback", "playback-zoom", "door-music", "led"].includes(process.env.BUS_CAMERA_CHECKS);
+  const targeted = ["camera", "crew-seats", "extensions", "hands", "door-confetti", "party", "playback", "playback-zoom", "door-music", "led"].includes(process.env.BUS_CAMERA_CHECKS);
   console.log(process.env.BUS_CAMERA_CHECKS === "music-live" ? "Live music diagnostic completed." : targeted ? "Targeted bus interaction checks passed." : process.env.BUS_CAMERA_CHECKS === "performance" ? "Scene performance sample passed." : process.env.BUS_CAMERA_CHECKS === "characters" ? "Character visual checks passed." : "Responsive/UI smoke checks passed.");
 } finally {
   if (chrome.exitCode === null) chrome.kill("SIGTERM");
