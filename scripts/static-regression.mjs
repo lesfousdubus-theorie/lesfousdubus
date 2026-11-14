@@ -42,6 +42,8 @@ assert.doesNotMatch(syncedVideo, /seekTo\(/, "The modal video must not seek or s
 assert.match(syncedVideo, /cc_load_policy:\s*0/, "The modal video must request captions off by default.");
 assert.match(scene, /frameloop=\{renderPaused \? "demand" : "always"\}/, "The active 3D scene must render at the display's native requestAnimationFrame cadence.");
 assert.match(scene, /AdaptiveDpr/, "The scene must adapt pixel density instead of capping FPS.");
+assert.match(scene, /renderPaused = hidden \|\| contextLost \|\| uiPaused/, "Covered modals must pause the hidden 3D render loop.");
+assert.match(scene, /playbackSuspended = hidden \|\| contextLost/, "Pausing hidden 3D for UI must not implicitly destroy the TV playback state.");
 assert.doesNotMatch(scene, /FrameScheduler|fps=\{/, "Artificial 30/60 FPS caps must stay removed.");
 assert.match(cameraRig, /const transitionDt = Math\.min\(dt, 0\.05\)/, "Camera transitions must cap large frame deltas so animations cannot be skipped.");
 assert.match(scene, /webglcontextlost/, "WebGL context loss must be handled.");
