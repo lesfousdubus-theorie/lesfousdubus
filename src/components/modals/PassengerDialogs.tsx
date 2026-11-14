@@ -28,6 +28,7 @@ export function PassengerDialogs({ profile, directory, count, currentSeatIndex, 
         saving={profile.profileSaving}
         error={profile.onboardingError}
         onClearError={profile.clearOnboardingError}
+        onDraftChange={profile.onboardingReason === "boarding" ? profile.updateOnboardingDraft : undefined}
         onClose={profile.onboardingReason === "boarding" ? profile.closeOnboardingModal : undefined}
         onSubmit={onSubmitOnboarding}
       />
@@ -41,7 +42,7 @@ export function PassengerDialogs({ profile, directory, count, currentSeatIndex, 
     />
     <PassengerCard
       passenger={directory.selectedPassenger} loading={directory.passengerCardLoading} error={directory.passengerCardError}
-      returnFocusRef={directory.passengerManifestButtonRef}
+      returnFocusRef={directory.passengerOpenedFromList ? directory.passengerManifestButtonRef : undefined}
       onRetry={() => directory.selectedPassenger && void directory.openPassengerCard(directory.selectedPassenger)}
       onBack={directory.passengerOpenedFromList ? directory.backToManifest : undefined}
       onClose={directory.closePassengerCard}
@@ -49,6 +50,15 @@ export function PassengerDialogs({ profile, directory, count, currentSeatIndex, 
     <PassengerListModal
       isOpen={directory.showPassengerList} count={count} passengers={directory.passengerManifest}
       loading={directory.manifestLoading} error={directory.manifestError} hasMore={directory.manifestHasMore}
+      currentSeatIndex={currentSeatIndex}
+      restoreFocusSeatIndex={directory.lastManifestSeatIndex}
+      initialScrollTop={directory.manifestScrollTop}
+      onScrollTopChange={directory.saveManifestScrollTop}
+      searchQuery={directory.manifestSearchQuery}
+      onSearchQueryChange={directory.setManifestSearchQuery}
+      onlyWithComment={directory.manifestOnlyWithComment}
+      onOnlyWithCommentChange={directory.setManifestOnlyWithComment}
+      onRefresh={directory.refreshPassengerManifest}
       returnFocusRef={directory.passengerManifestButtonRef}
       onLoadMore={() => void directory.loadPassengerManifest(directory.manifestNextFrom)}
       onRetry={() => void directory.loadPassengerManifest(directory.passengerManifest.length === 0 ? 0 : directory.manifestNextFrom)}

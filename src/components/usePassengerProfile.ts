@@ -49,6 +49,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
   });
   const [onboardingReason, setOnboardingReason] = useState<OnboardingReason | null>(null);
   const [onboardingError, setOnboardingError] = useState("");
+  const [onboardingDraft, setOnboardingDraft] = useState<OnboardingSubmission | null>(null);
   const [onboardingSeed, setOnboardingSeed] = useState<OnboardingSubmission & { hasLockedDbAvatar: boolean }>({
     displayName: "",
     comment: "",
@@ -59,6 +60,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
 
   const profileRequest = useRef<AbortController | null>(null);
   const profileMutationLock = useRef(false);
+  const onboardingDraftRef = useRef<OnboardingSubmission | null>(null);
   const savedProfileRef = useRef(savedProfile);
   const savedAvatarIdRef = useRef(savedAvatarId);
   const pendingAvatarIdRef = useRef(pendingAvatarId);
@@ -73,6 +75,16 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
   }, [pendingAvatarId]);
   useEffect(() => () => profileRequest.current?.abort(), []);
 
+  const updateOnboardingDraft = useCallback((draft: OnboardingSubmission) => {
+    onboardingDraftRef.current = draft;
+    setOnboardingDraft(draft);
+  }, []);
+
+  const clearOnboardingDraft = useCallback(() => {
+    onboardingDraftRef.current = null;
+    setOnboardingDraft(null);
+  }, []);
+
   const openProfileModal = useCallback((mode: "name" | "comment") => {
     if (profileMutationLock.current) return;
     setJoinName(savedProfile.name);
@@ -86,13 +98,36 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     if (profileMutationLock.current) return;
     const name = cleanText(joinName, 24);
     const comment = cleanText(joinComment, 180, true);
-    if (profileModalMode === "name" && !name) {
-      setJoinError("Choisis un pseudo à afficher au-dessus de ton personnage.");
-      return;
-    }
-    if (profileModalMode === "comment" && !comment) {
-      setJoinError("Écris un commentaire avant de l’enregistrer.");
-      return;
+    if (profileModalMode === "name") {
+      if (!name) {
+        setJoinError("Choisis un pseudo à afficher au-dessus de ton personnage.");
+        return;
+      }
+      const nameIssue = findModerationIssue(name);
+      if (nameIssue) {
+        setJoinError(MODERATION_MESSAGES[nameIssue]);
+        return;
+      }
+      if (name === savedProfile.name) {
+        setJoinError("");
+        setShowJoinModal(false);
+        return;
+      }
+    } else {
+      if (!comment) {
+        setJoinError("Écris un commentaire avant de l’enregistrer.");
+        return;
+      }
+      const commentIssue = findModerationIssue(comment);
+      if (commentIssue) {
+        setJoinError(MODERATION_MESSAGES[commentIssue]);
+        return;
+      }
+      if (comment === savedProfile.comment) {
+        setJoinError("");
+        setShowJoinModal(false);
+        return;
+      }
     }
 
     profileMutationLock.current = true;
@@ -146,9 +181,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       setShowJoinModal(false);
       showToast(
         profileModalMode === "name" ? "Pseudo enregistré !" : "Commentaire enregistré !",
-        profileModalMode === "name"
-          ? "Il apparaît maintenant au-dessus de ton personnage."
-          : "Il sera visible lorsqu’on cliquera sur ton personnage.",
+        undefined,
         "PROFIL",
       );
     } catch (error) {
@@ -159,7 +192,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       profileRequest.current = null;
       setProfileSaving(false);
     }
-  }, [applyBusSnapshot, joinComment, joinName, profileModalMode, showToast, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow]);
+  }, [applyBusSnapshot, joinComment, joinName, profileModalMode, savedProfile.comment, savedProfile.name, showToast, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow]);
 
   const removeProfileField = useCallback(async () => {
     if (profileMutationLock.current || profileModalMode !== "comment") return;
@@ -198,11 +231,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       }
       setJoinComment("");
       setShowJoinModal(false);
-      showToast(
-        "Commentaire retiré",
-        "Ton pseudo reste affiché, mais ton commentaire a été supprimé.",
-        "PROFIL",
-      );
+      showToast("Commentaire retiré", undefined, "PROFIL");
     } catch (error) {
       if (controller.signal.aborted) return;
       setJoinError(error instanceof ApiError ? error.message : "Impossible de supprimer pour le moment. Réessaie dans quelques instants.");
@@ -214,6 +243,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
   }, [applyBusSnapshot, profileModalMode, showToast, setPassengerProfiles]);
 
   const restoreSavedProfile = useCallback((passenger: PassengerProfile | null) => {
+    clearOnboardingDraft();
     if (passenger === null) {
       setSavedAvatarId(null);
       setPendingAvatarId(null);
@@ -246,9 +276,10 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     } catch {
       /* Le stockage local reste optionnel. */
     }
-  }, []);
+  }, [clearOnboardingDraft]);
 
   const clearLocalRegistrationOnly = useCallback(() => {
+    clearOnboardingDraft();
     try {
       localStorage.removeItem("fdb-display-name");
       localStorage.removeItem("fdb-comment");
@@ -261,10 +292,11 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     setJoinComment("");
     setSavedProfile({ name: "", comment: "" });
     setSavedAvatarId(pendingAvatarIdRef.current);
-  }, [setCurrentPassengerEntryNumber]);
+  }, [clearOnboardingDraft, setCurrentPassengerEntryNumber]);
 
   const clearProfile = useCallback(() => {
     profileRequest.current?.abort();
+    clearOnboardingDraft();
     try { localStorage.removeItem("fdb-display-name"); localStorage.removeItem("fdb-comment"); localStorage.removeItem("fdb-avatar-id"); localStorage.removeItem("fdb-avatar-draft"); } catch { /* Profil déjà supprimé du serveur. */ }
     setCurrentPassengerEntryNumber(null);
     setJoinName(""); setJoinComment(""); setSavedProfile({ name: "", comment: "" });
@@ -273,7 +305,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     setOnboardingError("");
     setSavedAvatarId(null); setShowAvatarModal(false); setAvatarError("");
     setPendingAvatarId(null);
-  }, [setCurrentPassengerEntryNumber]);
+  }, [clearOnboardingDraft, setCurrentPassengerEntryNumber]);
 
   const openOnboardingModal = useCallback((reason: OnboardingReason, initialError = "", seed?: OnboardingSeed) => {
     if (reason === "boarding" && profileMutationLock.current) return;
@@ -281,19 +313,30 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       setShowJoinModal(false);
       setShowAvatarModal(false);
     }
+    const draft = reason === "boarding" ? onboardingDraftRef.current : null;
     const avatarSeed = seed && "avatarId" in seed
       ? (seed.avatarId ?? null)
-      : (savedAvatarIdRef.current ?? pendingAvatarIdRef.current ?? null);
-    setOnboardingSeed({
-      displayName: seed?.displayName ?? savedProfileRef.current.name,
-      comment: seed?.comment ?? savedProfileRef.current.comment,
+      : draft
+        ? draft.avatarId
+        : (savedAvatarIdRef.current ?? pendingAvatarIdRef.current ?? null);
+    const nextSeed = {
+      displayName: seed?.displayName ?? draft?.displayName ?? savedProfileRef.current.name,
+      comment: seed?.comment ?? draft?.comment ?? savedProfileRef.current.comment,
       avatarId: avatarSeed,
       hasLockedDbAvatar: Boolean(seed?.hasLockedDbAvatar),
-    });
+    };
+    if (reason === "boarding") {
+      updateOnboardingDraft({
+        displayName: nextSeed.displayName,
+        comment: nextSeed.comment,
+        avatarId: nextSeed.avatarId,
+      });
+    }
+    setOnboardingSeed(nextSeed);
     setOnboardingInstanceKey((k) => k + 1);
     setOnboardingError(initialError);
     setOnboardingReason(reason);
-  }, []);
+  }, [updateOnboardingDraft]);
 
   const closeOnboardingModal = useCallback(() => {
     setOnboardingReason(null);
@@ -436,11 +479,8 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     if (!profileMutationLock.current) setShowJoinModal(false);
   }, []);
 
-  const [hasExistingVisitor, setHasExistingVisitor] = useState(false);
-
   const openAvatarModal = useCallback(() => {
     if (profileMutationLock.current) return;
-    setHasExistingVisitor(Boolean(getExistingVisitorId()));
     setAvatarError("");
     setShowAvatarModal(true);
   }, []);
@@ -449,19 +489,44 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     if (!profileMutationLock.current) setShowAvatarModal(false);
   }, []);
 
+  const clearPreferredAvatar = useCallback(() => {
+    if (profileMutationLock.current || hasRegisteredPlace) return;
+    setPendingAvatarId(null);
+    setSavedAvatarId(null);
+    if (onboardingDraftRef.current) {
+      updateOnboardingDraft({ ...onboardingDraftRef.current, avatarId: null });
+    }
+    try {
+      localStorage.removeItem("fdb-avatar-draft");
+      localStorage.removeItem("fdb-avatar-id");
+    } catch {
+      /* Le choix reste disponible pendant cette visite. */
+    }
+    setShowAvatarModal(false);
+    showToast("Choix automatique rétabli", "Un personnage te sera attribué automatiquement à la montée.", "PERSONNAGE");
+  }, [hasRegisteredPlace, showToast, updateOnboardingDraft]);
+
   const saveAvatarDraft = useCallback((avatarId: PassengerAvatarId) => {
     setPendingAvatarId(avatarId);
     setSavedAvatarId(avatarId);
+    if (onboardingDraftRef.current) {
+      updateOnboardingDraft({ ...onboardingDraftRef.current, avatarId });
+    }
     try {
       localStorage.setItem("fdb-avatar-draft", avatarId);
       localStorage.setItem("fdb-avatar-id", avatarId);
     } catch { /* Le choix reste disponible pendant cette visite. */ }
     setShowAvatarModal(false);
-    showToast("Personnage choisi !", "Il sera utilisé quand tu monteras dans le bus.", "PERSONNAGE");
-  }, [showToast]);
+    showToast("Personnage choisi !", undefined, "PERSONNAGE");
+  }, [showToast, updateOnboardingDraft]);
 
-  const submitAvatar = useCallback(async (avatarId: PassengerAvatarId) => {
-    if (profileMutationLock.current || !isPassengerAvatarId(avatarId)) return;
+  const submitAvatar = useCallback(async (avatarId: PassengerAvatarId | null) => {
+    if (profileMutationLock.current) return;
+    if (avatarId === null) {
+      clearPreferredAvatar();
+      return;
+    }
+    if (!isPassengerAvatarId(avatarId)) return;
     const visitorId = hasRegisteredPlace ? getOrCreateVisitorId() : getExistingVisitorId();
     if (!visitorId) {
       saveAvatarDraft(avatarId);
@@ -502,7 +567,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
         setPassengerProfiles(profiles => [...profiles.filter(profile => profile.seatIndex !== data.passenger!.seatIndex), data.passenger!]);
       }
       setShowAvatarModal(false);
-      showToast("Personnage enregistré !", "Tu le retrouveras lors de ta prochaine visite.", "PROFIL");
+      showToast("Personnage enregistré !", undefined, "PROFIL");
     } catch (error) {
       if (!controller.signal.aborted) setAvatarError(error instanceof ApiError ? error.message : "Impossible d’enregistrer ton personnage. Réessaie dans quelques instants.");
     } finally {
@@ -510,13 +575,13 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       profileRequest.current = null;
       setProfileSaving(false);
     }
-  }, [hasRegisteredPlace, applyBusSnapshot, clearLocalRegistrationOnly, restoreSavedProfile, saveAvatarDraft, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles, showToast]);
+  }, [hasRegisteredPlace, applyBusSnapshot, clearLocalRegistrationOnly, clearPreferredAvatar, restoreSavedProfile, saveAvatarDraft, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles, showToast]);
 
   return { showJoinModal, profileModalMode, joinName, joinComment, joinError, profileSaving, savedProfile,
-    showAvatarModal, avatarError, savedAvatarId, pendingAvatarId, hasExistingVisitor, openAvatarModal, closeAvatarModal, submitAvatar,
+    showAvatarModal, avatarError, savedAvatarId, pendingAvatarId, openAvatarModal, closeAvatarModal, submitAvatar, clearPreferredAvatar,
     openProfileModal, submitProfile, removeProfileField, restoreSavedProfile, clearLocalRegistrationOnly, clearProfile, closeProfile,
-    onboardingReason, onboardingError, onboardingSeed, onboardingInstanceKey,
-    openOnboardingModal, closeOnboardingModal, clearOnboardingError, validateOnboarding, syncBoardingDraftAvatar, submitMissingNameOnboarding,
+    onboardingReason, onboardingError, onboardingSeed, onboardingDraft, onboardingInstanceKey,
+    openOnboardingModal, closeOnboardingModal, clearOnboardingError, updateOnboardingDraft, validateOnboarding, syncBoardingDraftAvatar, submitMissingNameOnboarding,
     changeName: (value: string) => {
       const chars = Array.from(value);
       setJoinName(chars.length > 24 ? chars.slice(0, 24).join("") : value);

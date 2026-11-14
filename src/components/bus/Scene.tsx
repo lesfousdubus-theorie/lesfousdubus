@@ -21,6 +21,7 @@ import {
   type WorldState,
 } from "./constants";
 import type { PassengerProfile } from "@/types/passenger";
+import { isPassengerAvatarId } from "@/lib/passenger-avatar";
 import { THEORY_VIDEO_URL } from "@/lib/theory-video";
 import { createDprSample, sampleSceneDpr } from "@/lib/scene-performance";
 import { BusFrontIcon, ExternalArrowIcon } from "../ui/BusIcons";
@@ -59,7 +60,7 @@ interface SceneProps {
 function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil.", onReadTheory }: { reason?: string; onReadTheory?: () => void }) {
   return (
     <div className="absolute inset-0 bg-gradient-to-b from-[#79c2ff] to-[#174f91] text-center text-white">
-      <div className="bus-scene-fallback absolute inset-x-3 bottom-3 top-48 grid place-items-center overflow-y-auto sm:top-52 lg:top-40">
+      <div className="bus-scene-fallback absolute inset-x-3 bottom-3 top-52 grid place-items-center overflow-y-auto sm:top-52 lg:top-40">
       <div role="status" className="max-w-md rounded-2xl border border-[#ffd23f]/45 bg-[#07142b] p-5 shadow-2xl">
         <div className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-2xl border border-[#ffd23f]/35 bg-[#ffd23f]/10" aria-hidden="true">
           <BusFrontIcon className="h-9 w-9 text-[#ffd23f]" />
@@ -330,6 +331,15 @@ export default function Scene({
   const currentSeatX = avatarSeat.seat.x;
   const tvPositions = useMemo(() => getTvPositions(numRows, TV_POSITION), [numRows]);
   const tvTargetZ = tvPositions[getActiveTvIndex(tvPositions, clampedRow)][2];
+  const currentPassengerProfile = useMemo<PassengerProfile | undefined>(() => {
+    if (currentPassengerSeatIndex === null) return undefined;
+    return passengerProfiles.find((profile) => profile.seatIndex === currentPassengerSeatIndex) ?? {
+      seatIndex: currentPassengerSeatIndex,
+      displayName: "Passager",
+      comment: null,
+      avatarId: isPassengerAvatarId(currentPassengerAvatarId) ? currentPassengerAvatarId : null,
+    };
+  }, [currentPassengerSeatIndex, currentPassengerAvatarId, passengerProfiles]);
 
   if (webGLSupported === false) return <SceneFallback onReadTheory={onReadTheory} />;
   if (webGLSupported === null) return <div role="status" className="sr-only">Préparation de la scène 3D…</div>;
@@ -383,7 +393,7 @@ export default function Scene({
           playbackSuspended={playbackSuspended}
         />
       </Suspense>
-      <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
+      <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} profile={currentPassengerProfile} onSelect={phase !== "inside" || freeView ? onPassengerSelect : undefined} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
       <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={freeView ? "outside" : phase} cabinCenterZ={cabinCenterZ} />
       <CameraRig
         letterShortcutsEnabled={letterShortcutsEnabled}
