@@ -71,7 +71,7 @@ try{
  await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
  await send('Page.navigate',{url:baseUrl+'/?count=2&phase=inside'});await sceneReady();
  await wait("window.mediaTestPlayers.bus?.state===2",'TV preloaded silently');
- await click('button[aria-label="Aide et confort"]');
+ await key('F1');
  await wait("document.activeElement?.id==='bus-help-title'",'Help receives focus');
  assert.equal(await run("document.getElementById('site-content').inert"),true);
  await capture('aide-desktop.png');
@@ -79,7 +79,7 @@ try{
  // The checkbox labels contain their own input; select by order for preferences.
  await run("document.querySelectorAll('[role=dialog] input')[1].click()");
  await close();
- await wait("document.activeElement?.getAttribute('aria-label')==='Aide et confort'",'Help trigger regains focus');
+ assert.equal(await run("Boolean(document.querySelector('button[aria-label=\"Aide et confort\"]'))"),false,'The removed help button stays absent.');
  assert.equal(await run("localStorage.getItem('fdb-scenery-paused')"),'true');
  assert.equal(await run("localStorage.getItem('fdb-letter-shortcuts')"),'false');
  const settle=async()=>{const frame=await run('comfortScene().gl.info.render.frame');await wait('comfortScene().gl.info.render.frame>'+Number(frame+2),'Rendered frames after interaction');};await settle();
@@ -104,9 +104,9 @@ try{
  for(const viewport of [{width:1240,height:900,mobile:false},{width:320,height:568,mobile:true},{width:393,height:852,mobile:true},{width:667,height:375,mobile:true},{width:568,height:320,mobile:true}]){
    await send('Emulation.setDeviceMetricsOverride',{...viewport,deviceScaleFactor:1});
    await run('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
-   const hud=await run(`(()=>{const b=document.querySelector('button[aria-label="Aide et confort"]'),r=b.getBoundingClientRect();return {rect:[r.x,r.y,r.width,r.height],overflow:document.documentElement.scrollWidth>innerWidth};})()`);assert(!hud.overflow&&hud.rect[0]>=0&&hud.rect[1]>=0&&hud.rect[0]+hud.rect[2]<=viewport.width&&hud.rect[1]+hud.rect[3]<=viewport.height,'Help button remains in the viewport.');
+   const hud=await run(`({helpButton:Boolean(document.querySelector('button[aria-label="Aide et confort"]')),overflow:document.documentElement.scrollWidth>innerWidth})`);assert(!hud.overflow&&!hud.helpButton,'The HUD fits without the removed help button.');
    await capture('commandes-'+viewport.width+'x'+viewport.height+'.png');
-   await click('button[aria-label="Aide et confort"]');
+   await key('F1');
    await wait("document.activeElement?.id==='bus-help-title'",'Help visible at '+viewport.width);
    const scan=await run(`(()=>{const d=document.querySelector('[role=dialog]'),r=d.getBoundingClientRect();return {width:innerWidth,height:innerHeight,overflow:document.documentElement.scrollWidth>innerWidth,dialog:[r.x,r.y,r.width,r.height],text:d.innerText};})()`);
    assert.equal(scan.overflow,false);assert(scan.dialog[0]>=0&&scan.dialog[1]>=0&&scan.dialog[0]+scan.dialog[2]<=viewport.width+.5&&scan.dialog[1]+scan.dialog[3]<=viewport.height+.5);
@@ -114,7 +114,7 @@ try{
  }
  await send('Page.reload',{ignoreCache:true});await sceneReady();
  assert.equal(await run('comfortWorld().sceneryPaused'),true,'Scenery preference survives reload.');
- await click('button[aria-label="Aide et confort"]');await wait("document.activeElement?.id==='bus-help-title'",'Help focus after reload');assert.equal(await run("document.querySelectorAll('[role=dialog] input')[1].checked"),false);await close();
+ await key('F1');await wait("document.activeElement?.id==='bus-help-title'",'Help focus after reload');assert.equal(await run("document.querySelectorAll('[role=dialog] input')[1].checked"),false);await close();
  await click('button[aria-label="Sortir du bus"]');await wait("document.querySelector('.bus-app').dataset.phase==='outside'",'Exit unaffected by frozen scenery');
  await run("[...document.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.includes('Entrer dans le bus')).click()");
  await wait("document.querySelector('.bus-app').dataset.phase==='inside'",'Boarding unaffected by frozen scenery');

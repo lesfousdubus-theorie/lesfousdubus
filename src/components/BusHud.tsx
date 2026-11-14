@@ -4,6 +4,7 @@ import { useState, type Dispatch, type RefObject, type SetStateAction } from "re
 import type { Phase } from "./bus/constants";
 import { useHudLayout } from "./useHudLayout";
 import { countPeopleOnBoard } from "@/lib/bus-crew";
+import MusicPlaybackControls from "./audio/MusicPlaybackControls";
 
 export interface ToastMessage {
   id: number;
@@ -16,7 +17,7 @@ interface BusHudProps {
   phase: Phase;
   freeView: boolean;
   toggleFreeView: () => void;
-  openHelp: () => void;
+  openAvatarModal: () => void;
   hidden: boolean;
   sceneAvailable: boolean;
   toast: ToastMessage | null;
@@ -61,7 +62,7 @@ interface BusHudProps {
 }
 
 export function BusHud({
-  phase, freeView, toggleFreeView, openHelp, hidden, sceneAvailable, toast, passengerManifestButtonRef, statsLoadError, count,
+  phase, freeView, toggleFreeView, openAvatarModal, hidden, sceneAvailable, toast, passengerManifestButtonRef, statsLoadError, count,
   numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow,
   exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
   tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, setStatsLoadError,
@@ -124,10 +125,11 @@ export function BusHud({
               <span>📜</span>
               <span>La Théorie</span>
             </button>
-            <button type="button" onClick={openHelp} disabled={busy} aria-haspopup="dialog" aria-label="Aide et confort" className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#07142b]/95 px-3 text-xs font-bold text-white shadow-lg transition-colors hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60 cursor-pointer">
-              <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 16v1" /></svg>
-              Aide
-            </button>
+            {phase === "inside" && <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label="Changer de personnage"
+              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-4 text-xs font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f] hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] disabled:opacity-60 cursor-pointer">
+              <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg>
+              <span className="lg:hidden">Personnage</span><span className="hidden lg:inline">Changer de personnage</span>
+            </button>}
           </div>
         </div>
 
@@ -220,6 +222,8 @@ export function BusHud({
             </span>
           )}
         </button>
+
+        <MusicPlaybackControls />
 
         {/* Réglage du volume de la musique de fond (Desktop direct + Mobile popover) */}
         <div className="relative flex items-center">

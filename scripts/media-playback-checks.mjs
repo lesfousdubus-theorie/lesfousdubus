@@ -4,6 +4,10 @@ import assert from "node:assert/strict";
 // external API so buffering, autoplay failures and late events are repeatable.
 export function installTestYouTube() {
   window.mediaTestPlayers = {};
+  // The production player keeps both songs buffered. Keep the historical
+  // `music` handle useful to interaction suites by resolving the selected song.
+  Object.defineProperty(window.mediaTestPlayers, "music", { configurable: true,
+    get: () => window.mediaTestPlayers[document.querySelector('.bus-app')?.dataset.party === 'true' ? 'party' : 'background'] });
   window.YT = { Player: class {
     constructor(element, options) {
       this.options = options;
@@ -20,7 +24,8 @@ export function installTestYouTube() {
       this.captionsVisible = true; // Simulate a remembered YouTube preference.
       this.captionResets = 0;
       this.source = element.closest("[data-theory-video]") ? "theory"
-        : options.videoId === "63RzVcR1qHg" ? "music" : "bus";
+        : options.videoId === "63RzVcR1qHg" ? "background"
+        : options.videoId === "RbZMoeHdR3I" ? "party" : "bus";
       this.bufferReadyAt = performance.now() + (this.source === "bus" ? window.mediaTestBufferDelay ?? 0 : 0);
       this.iframe = document.createElement("iframe");
       this.iframe.src = "about:blank";
@@ -176,9 +181,10 @@ export async function runMediaPlaybackChecks({ send, evaluate, waitForPageCondit
   await run("window.mediaTestPlayers.bus.emitState(1)");
   await wait(musicPaused, "Bus TV resumes");
   await openTheory();
-  await wait(musicPlaying, "Reading pauses bus TV and lets music continue");
+  await wait(musicPaused, "Reading keeps bus TV playing and preserves its audio channel");
+  assert.equal(await run("window.mediaTestPlayers.bus.state"), 1, "A reading overlay must not pause television.");
   await run(`document.querySelector('button[aria-label="Fermer la fenêtre"]').click()`);
-  await wait(musicPaused, "Closing reading restores the active bus TV");
+  await wait(musicPaused, "Closing reading keeps bus TV active");
   await run(`document.querySelector('button[aria-label="Éteindre la télévision"]').click()`);
   await wait(musicPlaying, "Turning the TV off restores music");
   await send("Page.removeScriptToEvaluateOnNewDocument", { identifier });

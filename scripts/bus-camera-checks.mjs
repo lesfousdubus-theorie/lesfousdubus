@@ -71,8 +71,9 @@ export async function runBusCameraChecks({ send, evaluate, waitForPageCondition,
           const fiber=queue.pop();if(!fiber)continue;
           let hook=fiber.memoizedState;
           while(hook){
-            const player=hook.memoizedState?.current;
-            if(typeof player?.getIframe==='function'&&player.getIframe()?.id===iframeId)return player;
+            const value=hook.memoizedState?.current;
+            const candidates=[value,value?.background?.player,value?.party?.player];
+            for(const player of candidates)if(typeof player?.getIframe==='function'&&player.getIframe()?.id===iframeId)return player;
             hook=hook.next;
           }
           queue.push(fiber.child,fiber.sibling);

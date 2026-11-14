@@ -35,7 +35,7 @@ export function sampleCardGame(state: CardGameState, time: number, pairIndex: nu
   return state;
 }
 
-interface CardOccupant { physicalSeatIndex: number; index: number }
+interface CardOccupant { physicalSeatIndex: number; index: number; archetypeId?: string }
 export interface PassengerCardPair { pairIndex: number; firstSeat: number; secondSeat: number }
 const armRigs = new Map<string, { shape: ReturnType<typeof getPassengerProportions>; rig: ReturnType<typeof getPassengerSkeleton> }>();
 
@@ -46,7 +46,8 @@ export function getPassengerCardPairs(occupants: readonly CardOccupant[], ids: r
   for (const actor of occupants) {
     if (actor.physicalSeatIndex % 2) continue;
     const other = present.get(actor.physicalSeatIndex + 1);
-    if (!other || ids[actor.index % ids.length] === "shanks" || ids[other.index % ids.length] === "shanks") continue;
+    if (!other || (actor.archetypeId ?? ids[actor.index % ids.length]) === "shanks"
+      || (other.archetypeId ?? ids[other.index % ids.length]) === "shanks") continue;
     pairs.push({ pairIndex: Math.floor(actor.physicalSeatIndex / 2), firstSeat: actor.physicalSeatIndex, secondSeat: other.physicalSeatIndex });
     if (pairs.length === MAX_CARD_PAIRS) break;
   }

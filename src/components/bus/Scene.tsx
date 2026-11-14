@@ -45,6 +45,7 @@ interface SceneProps {
   boardingPending?: boolean;
   passengerProfiles?: PassengerProfile[];
   currentPassengerSeatIndex?: number | null;
+  currentPassengerAvatarId?: string | null;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   modeOverride?: "day" | "night" | null;
   resetViewToken?: number;
@@ -275,6 +276,7 @@ export default function Scene({
   boardingPending = false,
   passengerProfiles = [],
   currentPassengerSeatIndex = null,
+  currentPassengerAvatarId = null,
   onPassengerSelect,
   modeOverride,
   resetViewToken = 0,
@@ -357,7 +359,7 @@ export default function Scene({
           playbackSuspended={playbackSuspended}
         />
       </Suspense>
-      <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
+      <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
       <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={freeView ? "outside" : phase} cabinCenterZ={cabinCenterZ} />
       <CameraRig
         letterShortcutsEnabled={letterShortcutsEnabled}
@@ -372,6 +374,7 @@ export default function Scene({
         currentSeatZ={currentSeatZ}
         currentSeatX={currentSeatX}
         currentPassengerSeatIndex={currentPassengerSeatIndex}
+        currentPassengerAvatarId={currentPassengerAvatarId}
         tvTargetZ={tvTargetZ}
         reducedMotion={reducedMotion}
       />
