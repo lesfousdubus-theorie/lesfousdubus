@@ -5,6 +5,9 @@ import {rmSync, readdirSync, statSync} from "node:fs";
 import {mkdir, writeFile} from "node:fs/promises";
 import {resolve} from "node:path";
 import {installTestYouTube} from "./media-playback-checks.mjs";
+import {build} from "esbuild";
+const theoryBundle=await build({entryPoints:['src/lib/theory-data.ts'],bundle:true,write:false,format:'esm',platform:'node'});
+const {FULL_THEORY_SECTIONS,THEORY_FAQ}=await import(`data:text/javascript;base64,${Buffer.from(theoryBundle.outputFiles[0].text).toString('base64')}`);
 // Isolated browser fixtures: these checks never register or modify real visitors.
 const baseUrl=process.env.BASE_URL??'http://localhost:3000';
 const output=resolve(process.env.BUS_VISUAL_OUTPUT??'/tmp/lesfousdubus-comfort');
@@ -52,12 +55,13 @@ try{
  await send('Emulation.setScriptExecutionDisabled',{value:true});
  await send('Page.navigate',{url:baseUrl+'/theorie'});
  await wait("Boolean(document.querySelector('#theory-reading details summary'))",'Theory renders without JavaScript');
- assert.equal(await run("document.querySelectorAll('#theory-chapters h3').length"),22);
+ assert.equal(await run("document.querySelectorAll('#theory-chapters h3').length"),FULL_THEORY_SECTIONS.length);
+ assert.equal(await run("document.querySelectorAll('section[aria-labelledby=theory-faq-title] details').length"),THEORY_FAQ.length);
  await click('#theory-reading details summary');
  assert.equal(await run("document.querySelector('#theory-reading details').open"),true);
  assert.equal(await run("document.documentElement.scrollWidth>innerWidth"),false);
  await capture('theorie-mobile-sans-javascript.png');
- report.checks.push('Complete 22-part theory and 7 native FAQs usable without JavaScript at 320px.');
+ report.checks.push(`Complete ${FULL_THEORY_SECTIONS.length}-part theory and ${THEORY_FAQ.length} native FAQs usable without JavaScript at 320px.`);
  await send('Emulation.setScriptExecutionDisabled',{value:false});
  chunkAction='fail';await send('Fetch.enable',{patterns:[{urlPattern:baseUrl+'/_next/static/chunks/'+chunk,requestStage:'Request'}]});
  await send('Page.navigate',{url:baseUrl});
