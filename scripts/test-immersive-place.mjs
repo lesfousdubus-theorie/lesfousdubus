@@ -59,6 +59,7 @@ try {
     await wait("Boolean(document.querySelector('[data-immersive=true][inert][aria-hidden=true]'))", "HUD hidden from pointer and keyboard");
     const bounds = await run(`(()=>{const b=document.querySelector('button[aria-label^="Quitter le mode immersif"]'),r=b.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,focused:document.activeElement===b,phase:document.querySelector('.bus-app').dataset.phase,tv:mediaTestPlayers.bus?.state};})()`);
     assert(bounds.focused&&bounds.left>=0&&bounds.right<=width&&bounds.top>=0&&bounds.bottom<=height, "Restore control stays visible, touch sized and focused");
+    assert(bounds.right>width-64&&bounds.top<64, "Restore control sits at top right");
     assert.equal(bounds.phase,before.phase);
     if(before.tvOn) assert.equal(bounds.tv,before.tv);
     else assert.equal(await run("mediaTestPlayers.music.state===1&&!mediaTestPlayers.music.muted"),true,"Immersion preserves active music");
@@ -73,6 +74,13 @@ try {
   };
   await click('.bus-music-playback button');
   await checkImmersion(1240,900);
+  await click('button[aria-label="Activer le mode immersif"]');
+  await wait("document.querySelector('.bus-immersive-restore')?.dataset.visible==='true'", "Restore button starts visible");
+  await wait("document.querySelector('.bus-immersive-restore')?.dataset.visible==='false' && getComputedStyle(document.querySelector('.bus-immersive-restore')).opacity==='0'", "Restore button auto-hides after 2s of inactivity");
+  await send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 320, y: 240 });
+  await wait("document.querySelector('.bus-immersive-restore')?.dataset.visible==='true' && getComputedStyle(document.querySelector('.bus-immersive-restore')).opacity==='1'", "Moving the mouse reveals the restore button again");
+  await escape();
+  await wait("Boolean(document.querySelector('[data-immersive=false]:not([inert])'))", "Escape restores controls after mouse reveal");
   if(await run("Boolean(document.querySelector('[aria-label=\"Progression de la musique\"]'))")) await escape();
   await clickText("Entrer dans le bus");
   await wait("document.querySelector('.bus-app').dataset.phase==='inside'", "Returning visitor boards");

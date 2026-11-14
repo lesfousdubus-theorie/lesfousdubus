@@ -11,8 +11,6 @@ interface BusHelpModalProps {
   onClose: () => void;
   letterShortcutsEnabled: boolean;
   setLetterShortcutsEnabled: (enabled: boolean) => void;
-  sceneryPaused: boolean;
-  setSceneryPaused: (paused: boolean) => void;
 }
 
 function Kbd({ children }: { children: ReactNode }) {
@@ -23,7 +21,7 @@ function Kbd({ children }: { children: ReactNode }) {
   );
 }
 
-export function BusHelpModal({ isOpen, onClose, letterShortcutsEnabled, setLetterShortcutsEnabled, sceneryPaused, setSceneryPaused }: BusHelpModalProps) {
+export function BusHelpModal({ isOpen, onClose, letterShortcutsEnabled, setLetterShortcutsEnabled }: BusHelpModalProps) {
   const dialogRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const handleKeyDown = useModalAccessibility(isOpen, onClose, dialogRef, titleRef);
@@ -63,13 +61,6 @@ export function BusHelpModal({ isOpen, onClose, letterShortcutsEnabled, setLette
             <legend className="sr-only">Confort et raccourcis</legend>
             <p aria-hidden="true" className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-[#ffd23f]">Confort et raccourcis</p>
             <div className="space-y-3">
-              <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl border border-white/15 bg-[#0c1b3a] p-3.5 text-sm leading-relaxed transition hover:border-[#ffd23f]/45">
-                <input type="checkbox" checked={sceneryPaused} onChange={(event) => setSceneryPaused(event.target.checked)} className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a]" />
-                <span className="min-w-0">
-                  <span className="block font-bold text-white">Figer le défilement du décor</span>
-                  <span className="mt-0.5 block text-[#dce7ff]">Pour regarder la télé plus tranquillement. La vidéo, les personnages et les entrées et sorties restent actifs.</span>
-                </span>
-              </label>
               <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl border border-white/15 bg-[#0c1b3a] p-3.5 text-sm leading-relaxed transition hover:border-[#ffd23f]/45">
                 <input type="checkbox" checked={letterShortcutsEnabled} onChange={(event) => setLetterShortcutsEnabled(event.target.checked)} className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a]" />
                 <span className="min-w-0">

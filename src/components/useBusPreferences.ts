@@ -22,6 +22,5 @@ function useSavedPreference(key: string, fallback: boolean) {
 
 export function useBusPreferences() {
   const [letterShortcutsEnabled, setLetterShortcutsEnabled] = useSavedPreference("fdb-letter-shortcuts", true);
-  const [sceneryPaused, setSceneryPaused] = useSavedPreference("fdb-scenery-paused", false);
-  return { letterShortcutsEnabled, setLetterShortcutsEnabled, sceneryPaused, setSceneryPaused };
+  return { letterShortcutsEnabled, setLetterShortcutsEnabled };
 }

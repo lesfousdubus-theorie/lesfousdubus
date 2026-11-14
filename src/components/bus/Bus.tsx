@@ -8,6 +8,7 @@ import type { PassengerProfile } from "@/types/passenger";
 import Passengers from "./Passengers";
 import BusRelayPassenger from "./BusRelayPassenger";
 import BusConfetti from "./BusConfetti";
+import BusPartyLights from "./BusPartyLights";
 import type { JourneyState } from "@/lib/bus-journey";
 import { BusTvFrame, BusTvPlayer } from "./BusTv";
 import { getRenderedRowIndices, getActiveTvIndex, getTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelZClearOfDoors, BUS_FRONT_Z } from "@/lib/bus-layout";
@@ -32,6 +33,7 @@ interface BusProps {
   seatCapacity?: number;
   vacantSeatRanges?: Array<[number, number, number]>;
   reservedRow?: number;
+  reservedColumn?: number | null;
   isMutedForFullscreen?: boolean;
   hasEntered?: boolean;
   boardingPending?: boolean;
@@ -58,6 +60,7 @@ export default function Bus({
   seatCapacity = passengerCount,
   vacantSeatRanges = [],
   reservedRow = 3,
+  reservedColumn = null,
   isMutedForFullscreen = false,
   hasEntered = false,
   boardingPending = false,
@@ -165,6 +168,15 @@ export default function Bus({
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
   const rightTarget = useRef<THREE.Object3D>(null);
+  const partyWarmColor = useMemo(() => new THREE.Color("#fff4db"), []);
+  const partyLightColor = useMemo(() => new THREE.Color(), []);
+
+  useEffect(() => {
+    if (partyOn) return;
+    interiorLights.current.forEach((light) => {
+      if (light) light.color.copy(partyWarmColor);
+    });
+  }, [partyOn, partyWarmColor]);
 
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime;
@@ -218,12 +230,29 @@ export default function Bus({
       });
     }
 
-    // Éclairage intérieur doux et constant de jour comme de nuit
+    // Éclairage intérieur doux en temps normal, jeux de lumière disco de nuit en mode Fête
     const daylight = worldRef.current?.daylight ?? 1;
     const cabinIntensity = 3.8 + (1 - daylight) * 2.5;
-    interiorLights.current.forEach((light) => {
-      if (light) light.intensity = cabinIntensity;
-    });
+    const nightParty = partyOn && daylight < 0.68
+      ? THREE.MathUtils.clamp((0.68 - daylight) / 0.35, 0, 1)
+      : 0;
+    if (nightParty > 0) {
+      const cyclePhase = reducedMotion ? 0.15 : t * 0.45;
+      interiorLights.current.forEach((light, idx) => {
+        if (!light) return;
+        const hue = (cyclePhase + idx * 0.33) % 1;
+        partyLightColor.setHSL(hue, 0.95, 0.58);
+        light.color.copy(partyWarmColor).lerp(partyLightColor, nightParty);
+        const pulse = reducedMotion ? 1.5 : (0.5 + 0.5 * Math.sin(t * 7.5 + idx * 2.1)) * 4.2;
+        light.intensity = cabinIntensity * (1 - nightParty) + (8.5 + pulse) * nightParty;
+      });
+    } else {
+      interiorLights.current.forEach((light) => {
+        if (!light) return;
+        light.color.copy(partyWarmColor);
+        light.intensity = cabinIntensity;
+      });
+    }
   });
 
   return (
@@ -280,6 +309,7 @@ export default function Bus({
         hornPulse={hornPulse}
         partyOn={partyDancing}
         reservedRow={reservedRow}
+        reservedColumn={reservedColumn}
         avatarAboard={phase !== "outside" && !boardingPending}
         activePassengerIndex={phase === "inside" || phase === "entering" ? currentPassengerSeatIndex : null}
         passengerProfiles={passengerProfiles}
@@ -292,6 +322,7 @@ export default function Bus({
       {/* ---------- POSTE DE CONDUITE & TABLEAU DE BORD COMPLET DU BUS ---------- */}
       <BusRelayPassenger hornPulse={hornPulse} reducedMotion={reducedMotion} partyOn={partyDancing} />
       {partyOn&&<BusConfetti focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion}/>}
+      {partyOn&&<BusPartyLights worldRef={worldRef} focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion}/>}
       <BusCockpit mats={mats} dashTex={dashTex} hornPulse={hornPulse}
         partyOn={partyDancing} reducedMotion={reducedMotion} />
 

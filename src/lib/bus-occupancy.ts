@@ -11,10 +11,13 @@ export function getPhysicalSeat(physicalSeatIndex: number): SeatInfo {
   return { x: PASSENGER_SEAT_X[seatInRow], z: getSeatRowZ(row), row, seatInRow };
 }
 
-export function getAvatarSeat(seatCapacity: number, row: number, passengerIndex: number | null) {
+export function getAvatarSeat(seatCapacity: number, row: number, passengerIndex: number | null, seatColumn?: number | null) {
   const assigned = passengerIndex !== null && passengerIndex >= 0 && passengerIndex < seatCapacity;
   const originSeatIndex = assigned ? passengerIndex : Math.max(0, seatCapacity);
-  const seatInRow = assigned ? passengerIndex % 4 : 3;
+  const defaultSeatInRow = assigned ? passengerIndex % 4 : 3;
+  const seatInRow = seatColumn !== undefined && seatColumn !== null
+    ? Math.max(0, Math.min(3, Math.floor(seatColumn)))
+    : defaultSeatInRow;
   const clampedRow = Math.max(0, Math.min(getBusPhysicalRows(seatCapacity) - 1, row));
   const physicalSeatIndex = clampedRow * 4 + seatInRow;
   return { originSeatIndex, physicalSeatIndex, seat: getPhysicalSeat(physicalSeatIndex) };
@@ -33,6 +36,7 @@ interface OccupancyOptions {
   vacantSeatRanges?: Array<[number, number, number]>;
   renderedRowIndices?: number[];
   reservedRow: number;
+  reservedColumn?: number | null;
   currentPassengerIndex: number | null;
   avatarAboard: boolean;
   lowPower: boolean;
@@ -41,7 +45,7 @@ interface OccupancyOptions {
 
 /** Attribue chaque position physique une seule fois, sans modifier les identifiants persistants. */
 export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges = [], renderedRowIndices,
-  reservedRow, currentPassengerIndex, avatarAboard, lowPower, detailFocus }: OccupancyOptions) {
+  reservedRow, reservedColumn = null, currentPassengerIndex, avatarAboard, lowPower, detailFocus }: OccupancyOptions) {
   const capacity = Math.max(0, seatCapacity), numRows = getBusPhysicalRows(capacity), visitorRows = getVisitorRows(capacity);
   const renderedRows = new Set(renderedRowIndices ?? getRenderedRowIndices(numRows, reservedRow));
   const vacant = vacantSeatRanges.map(([start, end, before]) => ({ start: Math.max(0, start), end: Math.min(capacity - 1, end), before }))
@@ -58,7 +62,7 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
   const occupied = (index: number) => index >= 0 && index < capacity
     && vacantThrough(index) === (index ? vacantThrough(index - 1) : 0)
     && index - vacantThrough(index) < occupiedCount;
-  const avatar = getAvatarSeat(capacity, reservedRow, currentPassengerIndex);
+  const avatar = getAvatarSeat(capacity, reservedRow, currentPassengerIndex, reservedColumn);
   const relocate = (index: number) => avatarAboard && index === avatar.physicalSeatIndex ? avatar.originSeatIndex : index;
   const make = (index: number): BusOccupant => {
     const physicalSeatIndex = relocate(index);

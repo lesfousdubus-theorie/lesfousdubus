@@ -140,6 +140,7 @@ export default function BusExperience() {
     }
     return 3;
   });
+  const [seatColumn, setSeatColumn] = useState<number | null>(null);
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -165,10 +166,6 @@ export default function BusExperience() {
     headlights, hornPulse, speedMultiplier, isNight, manualDayNight,
     toggleDayNight, accelerateBus, decelerateBus, toggleHeadlights, honk,
   } = useBusControls(phase, worldRef, preferences.letterShortcutsEnabled);
-
-  useEffect(() => {
-    worldRef.current.sceneryPaused = preferences.sceneryPaused;
-  }, [preferences.sceneryPaused]);
 
   const clearToastTimer = useCallback(() => {
     if (toastTimeout.current) {
@@ -497,6 +494,7 @@ export default function BusExperience() {
       }
       if (d.seatIndex !== null) {
         setSeatRow(Math.min(computeNumRows(d.seatCapacity) - 1, Math.floor(d.seatIndex / 4)));
+        setSeatColumn(d.seatIndex % 4);
       }
       if (resolvedPassenger) {
         setPassengerProfiles((profiles) => [
@@ -577,6 +575,7 @@ export default function BusExperience() {
       setHasEntered(false);
       setCurrentPassengerSeatIndex(null);
       setCurrentPassengerEntryNumber(null);
+      setSeatColumn(null);
       setShowTheoryModal(false);
       setShowPlaceModal(false);
       transitionPhase((current) => current === "inside" ? "exiting" : "outside");
@@ -649,6 +648,7 @@ export default function BusExperience() {
     ? (currentPassengerEntryNumber ?? currentPassengerSeatIndex + 1)
     : null;
   const numRows = getBusPhysicalRows(seatCapacity);
+  const effectiveSeatColumn = seatColumn ?? (currentPassengerSeatIndex !== null ? currentPassengerSeatIndex % 4 : 3);
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
@@ -686,6 +686,7 @@ export default function BusExperience() {
         seatCapacity={seatCapacity}
         vacantSeatRanges={vacantSeatRanges}
         currentSeatRow={seatRow}
+        currentSeatColumn={effectiveSeatColumn}
         isMutedForFullscreen={theoryVideoPlaying}
         uiPaused={overlayOpen}
         hasEntered={hasEntered}
@@ -725,6 +726,7 @@ export default function BusExperience() {
         manualDayNight={manualDayNight}
         speedMultiplier={speedMultiplier}
         seatRow={seatRow}
+        seatColumn={effectiveSeatColumn}
         exteriorControlsVisible={exteriorControlsVisible}
         interiorControlsVisible={interiorControlsVisible}
         headlights={headlights}
@@ -739,6 +741,7 @@ export default function BusExperience() {
         setStatsLoadError={setStatsLoadError}
         setStatsRetryToken={setStatsRetryToken}
         setSeatRow={setSeatRow}
+        setSeatColumn={setSeatColumn}
         toggleTv={toggleTv}
         openPassengerManifest={openPassengerManifest}
         toggleDayNight={toggleDayNight}
@@ -782,8 +785,6 @@ export default function BusExperience() {
           onEditName={() => { setShowPlaceModal(false); openProfileModal("name"); }}
           onEditComment={() => { setShowPlaceModal(false); openProfileModal("comment"); }}
           hasComment={Boolean(profile.savedProfile.comment)}
-          sceneryPaused={preferences.sceneryPaused}
-          onSceneryPausedChange={preferences.setSceneryPaused}
           onExit={() => { setShowPlaceModal(false); exitBus(); }}
           onDelete={leaveBusPermanently}
         />
