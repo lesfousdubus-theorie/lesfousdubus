@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
 import { isYouTubePlaybackActive, loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
+import { ExternalArrowIcon, TvIcon } from "../ui/BusIcons";
 
 export default function SyncedTheoryVideo({ onPlaybackChange }: { onPlaybackChange?: (active: boolean) => void }) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -114,7 +115,7 @@ export default function SyncedTheoryVideo({ onPlaybackChange }: { onPlaybackChan
   return (
     <div
       data-theory-video
-      className="relative mt-4 aspect-video min-h-[200px] w-full overflow-hidden rounded-xl border border-white/20 bg-black"
+      className="relative mt-4 aspect-video min-h-[200px] w-full overflow-hidden rounded-xl border border-white/15 bg-[#040b18]"
     >
       <div ref={mountRef} className="h-full w-full" />
       {(autoplayBlocked || failed) && (
@@ -125,9 +126,30 @@ export default function SyncedTheoryVideo({ onPlaybackChange }: { onPlaybackChan
               ? () => window.open(THEORY_VIDEO_URL, "_blank", "noopener,noreferrer")
               : resume
           }
-          className="absolute inset-0 grid place-items-center bg-[#020617]/85 text-base font-black text-[#ffd23f] transition hover:bg-[#020617]/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffd23f]"
+          className="group absolute inset-0 grid cursor-pointer place-items-center bg-[#020617]/85 p-4 text-center transition-colors hover:bg-[#020617]/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffd23f] motion-reduce:transition-none"
         >
-          {failed ? "Ouvrir la vidéo sur YouTube" : "▶ Reprendre la vidéo"}
+          <span className="inline-flex min-h-11 items-center justify-center gap-2.5 rounded-xl bg-[#ffd23f] px-5 py-3 text-sm font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition group-hover:bg-[#ffe271] group-active:translate-y-1 group-active:shadow-none motion-reduce:transform-none motion-reduce:transition-none sm:text-base">
+            {failed ? (
+              <>
+                <TvIcon className="h-5 w-5 shrink-0" />
+                <span>Ouvrir la vidéo sur YouTube</span>
+                <ExternalArrowIcon className="h-4 w-4 shrink-0" />
+              </>
+            ) : (
+              <>
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  className="h-4 w-4 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <polygon points="6 4 20 12 6 20 6 4" />
+                </svg>
+                <span>Reprendre la vidéo</span>
+              </>
+            )}
+          </span>
         </button>
       )}
     </div>

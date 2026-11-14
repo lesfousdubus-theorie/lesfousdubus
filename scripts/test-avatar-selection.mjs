@@ -357,7 +357,7 @@ try {
   // Returning visitor in D1 without a display_name must open non-closable OnboardingModal automatically on site load.
   await run("localStorage.setItem('avatar-test-fixture', JSON.stringify({ seatIndex: 0, displayName: '', comment: 'Ancien message', avatarId: 'sanji' })); localStorage.removeItem('fdb-display-name'); localStorage.removeItem('fdb-avatar-id');");
   await send("Page.navigate", { url: baseUrl });
-  await wait("document.getElementById('onboarding-title')?.textContent === 'Choisis ton identifiant' && Boolean(document.getElementById('onboarding-name'))", "Returning visitor without pseudo opens mandatory identification automatically on load");
+  await wait("document.getElementById('onboarding-title')?.textContent === 'Choisis ton pseudo' && Boolean(document.getElementById('onboarding-name'))", "Returning visitor without pseudo opens mandatory identification automatically on load");
   assert.equal(await run("document.querySelector('.bus-app')?.dataset.phase"), "outside", "Missing-name prompt opens immediately on landing outside.");
   assert.equal(await run("document.getElementById('onboarding-comment')?.value"), "Ancien message", "Existing saved comment is preserved in the modal.");
   assert.equal(await run("Boolean(document.querySelector('[role=\"dialog\"] button[aria-label=\"Fermer la fenêtre\"]'))"), false, "Missing-name onboarding modal has no close button.");

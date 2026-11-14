@@ -87,11 +87,11 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     const name = cleanText(joinName, 24);
     const comment = cleanText(joinComment, 180, true);
     if (profileModalMode === "name" && !name) {
-      setJoinError("Choisis un nom à afficher au-dessus de ton personnage.");
+      setJoinError("Choisis un pseudo à afficher au-dessus de ton personnage.");
       return;
     }
     if (profileModalMode === "comment" && !comment) {
-      setJoinError("Écris un petit message avant de l’enregistrer.");
+      setJoinError("Écris un commentaire avant de l’enregistrer.");
       return;
     }
 
@@ -145,11 +145,11 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       }
       setShowJoinModal(false);
       showToast(
-        profileModalMode === "name" ? "Pseudo enregistré !" : "Message enregistré !",
+        profileModalMode === "name" ? "Pseudo enregistré !" : "Commentaire enregistré !",
         profileModalMode === "name"
           ? "Il apparaît maintenant au-dessus de ton personnage."
           : "Il sera visible lorsqu’on cliquera sur ton personnage.",
-        "✅ PROFIL",
+        "PROFIL",
       );
     } catch (error) {
       if (controller.signal.aborted) return;
@@ -200,8 +200,8 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       setShowJoinModal(false);
       showToast(
         "Commentaire retiré",
-        "Ton pseudo reste affiché, mais ton message a été supprimé.",
-        "✓ PROFIL",
+        "Ton pseudo reste affiché, mais ton commentaire a été supprimé.",
+        "PROFIL",
       );
     } catch (error) {
       if (controller.signal.aborted) return;
@@ -309,7 +309,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     const comment = cleanText(submission.comment, 180, true);
     const avatarId = isPassengerAvatarId(submission.avatarId) ? submission.avatarId : null;
     if (!displayName) {
-      setOnboardingError("Choisis un nom ou pseudo avant de continuer.");
+      setOnboardingError("Choisis un pseudo avant de continuer.");
       return null;
     }
     const nameIssue = findModerationIssue(displayName);
@@ -394,7 +394,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
         showToast(
           "Place introuvable",
           "Entre dans le bus pour obtenir une nouvelle place.",
-          "⚠ PLACE",
+          "PLACE",
         );
         return;
       }
@@ -418,9 +418,9 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       setOnboardingReason(null);
       setOnboardingError("");
       showToast(
-        "Identifiant enregistré !",
+        "Pseudo enregistré !",
         "Tu peux maintenant monter dans le bus à tout moment.",
-        "✅ PROFIL",
+        "PROFIL",
       );
     } catch (error) {
       if (controller.signal.aborted) return;
@@ -457,7 +457,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       localStorage.setItem("fdb-avatar-id", avatarId);
     } catch { /* Le choix reste disponible pendant cette visite. */ }
     setShowAvatarModal(false);
-    showToast("Personnage choisi !", "Il sera utilisé quand tu monteras dans le bus.", "✓ PERSONNAGE");
+    showToast("Personnage choisi !", "Il sera utilisé quand tu monteras dans le bus.", "PERSONNAGE");
   }, [showToast]);
 
   const submitAvatar = useCallback(async (avatarId: PassengerAvatarId) => {
@@ -502,7 +502,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
         setPassengerProfiles(profiles => [...profiles.filter(profile => profile.seatIndex !== data.passenger!.seatIndex), data.passenger!]);
       }
       setShowAvatarModal(false);
-      showToast("Personnage enregistré !", "Tu le retrouveras lors de ta prochaine visite.", "✓ PROFIL");
+      showToast("Personnage enregistré !", "Tu le retrouveras lors de ta prochaine visite.", "PROFIL");
     } catch (error) {
       if (!controller.signal.aborted) setAvatarError(error instanceof ApiError ? error.message : "Impossible d’enregistrer ton personnage. Réessaie dans quelques instants.");
     } finally {

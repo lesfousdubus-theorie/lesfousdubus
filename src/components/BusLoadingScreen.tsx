@@ -7,7 +7,7 @@ export default function BusLoadingScreen({ failed = false }: { failed?: boolean 
       aria-labelledby="bus-loading-title"
       className="fixed inset-0 grid place-items-center overflow-y-auto overscroll-contain bg-[#07142b] px-6 py-10 text-white"
     >
-      <div className="my-auto flex max-w-lg flex-col items-center text-center">
+      <div className="my-auto flex w-full max-w-lg flex-col items-center text-center">
         <svg id="bus-loading-wheel" viewBox="0 0 256 256" aria-hidden="true" focusable="false"
           className="h-48 w-48 shrink-0 drop-shadow-[0_8px_24px_rgba(0,0,0,0.35)] sm:h-56 sm:w-56">
           <g className={failed ? undefined : "bus-loading-wheel-spin"}>
@@ -36,15 +36,26 @@ export default function BusLoadingScreen({ failed = false }: { failed?: boolean 
             preserveAspectRatio="xMidYMid meet" clipPath="url(#bus-loading-logo-clip)" />
         </svg>
 
-        <div role={failed ? "alert" : "status"}>
-          <h1 id="bus-loading-title" className={failed ? "mt-6 text-2xl font-black leading-tight text-[#ffd23f]" : "sr-only"}>
+        <div
+          role={failed ? "alert" : "status"}
+          className={failed ? "mt-6 w-full max-w-md rounded-2xl border border-[#ffd23f]/45 bg-[#0c1b3a] px-5 py-6 shadow-[0_24px_64px_rgba(2,6,23,0.65)] sm:px-7" : undefined}
+        >
+          <h1
+            id="bus-loading-title"
+            className={failed ? "text-2xl font-black leading-tight text-[#ffd23f]" : "mt-5 text-sm font-bold tracking-wide text-[#dce7ff]"}
+          >
             {failed ? "Le bus n’a pas pu démarrer" : "Chargement du bus…"}
           </h1>
           {failed && (
             <>
-              <p className="mt-3 text-sm leading-6 text-white/85">Le chargement a échoué. Tu peux réessayer.</p>
-              <button type="button" onClick={() => window.location.reload()}
-                className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl border border-white/35 px-5 py-3 font-bold transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ffd23f]">
+              <p className="mt-3 text-sm leading-relaxed text-[#dce7ff]">
+                Le chargement a échoué. Tu peux réessayer.
+              </p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#ffd23f] px-6 py-3 text-sm font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] motion-reduce:transform-none motion-reduce:transition-none sm:text-base"
+              >
                 Réessayer le chargement
               </button>
             </>
