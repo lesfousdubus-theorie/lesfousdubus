@@ -26,6 +26,7 @@ import { createDprSample, sampleSceneDpr } from "@/lib/scene-performance";
 interface SceneProps {
   phase: Phase;
   freeView?: boolean;
+  letterShortcutsEnabled?: boolean;
   headlights: boolean;
   hornPulse: number;
   partyOn?: boolean;
@@ -257,6 +258,7 @@ export default function Scene({
   freeView = false,
   headlights,
   hornPulse,
+  letterShortcutsEnabled = true,
   partyOn = false,
   partyDancing = false,
   tvOn,
@@ -358,6 +360,7 @@ export default function Scene({
       <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
       <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={freeView ? "outside" : phase} cabinCenterZ={cabinCenterZ} />
       <CameraRig
+        letterShortcutsEnabled={letterShortcutsEnabled}
         resetViewToken={resetViewToken}
         phase={phase}
         freeView={freeView}

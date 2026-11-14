@@ -10,6 +10,7 @@ import { getExteriorMaxDistance } from "@/lib/bus-camera";
 import { ARRIVAL_STOP_TIME, ease, type JourneyState } from "@/lib/bus-journey";
 import { getPassengerSkeleton } from "@/lib/passenger-proportions";
 import { NAKAMA_ROSTER } from "./passenger-archetypes";
+import { isBrowserZoomWheel, shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts";
 
 interface Props {
   phase: Phase;
@@ -23,6 +24,7 @@ interface Props {
   currentPassengerSeatIndex?: number | null;
   tvTargetZ?: number;
   reducedMotion?: boolean;
+  letterShortcutsEnabled?: boolean;
   resetViewToken?: number;
   journey:React.RefObject<JourneyState>;
 }
@@ -47,6 +49,7 @@ export default function CameraRig({
   currentPassengerSeatIndex = null,
   tvTargetZ = TV_POSITION.z,
   reducedMotion = false,
+  letterShortcutsEnabled = true,
   resetViewToken = 0,
   journey,
 }: Props) {
@@ -412,6 +415,7 @@ export default function CameraRig({
 
     // Zoom molette de la souris (uniquement sur la scène 3D, jamais dans un modal)
     const wheel = (e: WheelEvent) => {
+      if (isBrowserZoomWheel(e)) return;
       if (phaseRef.current !== "inside" || freeViewRef.current) return;
       if ((e.target as HTMLElement)?.closest?.("[role='dialog'], [data-modal], .overflow-y-auto")) {
         return;
@@ -423,25 +427,31 @@ export default function CameraRig({
 
     const key = (e: KeyboardEvent) => {
       if (phaseRef.current !== "inside" || freeViewRef.current) return;
-      if (document.querySelector("[role='dialog'][aria-modal='true']")) return;
-      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") {
-        return;
-      }
+      if (shouldIgnoreBusShortcut(e, document.activeElement,
+        Boolean(document.querySelector("[role='dialog']")), letterShortcutsEnabled)) return;
+      const key = e.key.toLowerCase();
       const step = 0.15;
-      if (e.key === "ArrowLeft" || e.key === "q" || e.key === "a") l.targetYaw += step;
-      if (e.key === "ArrowRight" || e.key === "d") l.targetYaw -= step;
-      if (e.key === "ArrowUp") l.targetPitch = Math.min(0.9, l.targetPitch + step);
-      if (e.key === "ArrowDown") l.targetPitch = Math.max(-0.9, l.targetPitch - step);
+      if (key === "arrowleft" || key === "q" || key === "a") l.targetYaw += step;
+      else if (key === "arrowright" || key === "d") l.targetYaw -= step;
+      else if (key === "arrowup") l.targetPitch = Math.min(0.9, l.targetPitch + step);
+      else if (key === "arrowdown") l.targetPitch = Math.max(-0.9, l.targetPitch - step);
       // Touches + / - pour zoomer
-      if (e.key === "+" || e.key === "=") {
+      else if (key === "+" || key === "=") {
         targetFovRef.current = Math.max(22, targetFovRef.current - 5);
       }
-      if (e.key === "-" || e.key === "_") {
+      else if (key === "-" || key === "_") {
         targetFovRef.current = Math.min(75, targetFovRef.current + 5);
-      }
+      } else return;
+      e.preventDefault();
     };
 
     const target = gl.domElement.parentElement ?? el;
+    // OrbitControls also listens here: keep modified wheel events away from it
+    // without cancelling the browser's own zoom gesture.
+    const preserveBrowserZoom = (event: WheelEvent) => {
+      if (isBrowserZoomWheel(event)) event.stopImmediatePropagation();
+    };
+    target.addEventListener("wheel", preserveBrowserZoom, { capture: true });
     target.addEventListener("pointerdown", down);
     target.addEventListener("lostpointercapture", up);
     window.addEventListener("pointermove", move);
@@ -459,10 +469,11 @@ export default function CameraRig({
       window.removeEventListener("pointercancel", up);
       window.removeEventListener("blur", cancelGesture);
       cancelGesture();
+      target.removeEventListener("wheel", preserveBrowserZoom, { capture: true });
       target.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", key);
     };
-  }, [gl]);
+  }, [gl, letterShortcutsEnabled]);
 
   // Au-delà de l'horizon, lever seulement le regard : faire descendre toute
   // la caméra sous le sol exposerait l'intérieur du bus et le dessous du décor.

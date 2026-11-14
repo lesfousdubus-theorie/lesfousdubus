@@ -20,6 +20,8 @@ import { useBusSync } from "./useBusSync";
 import { useVisualViewport } from "./useVisualViewport";
 import BackgroundMusicPlayer from "./audio/BackgroundMusicPlayer";
 import { useBusParty } from "./useBusParty";
+import { useBusPreferences } from "./useBusPreferences";
+import { BusHelpModal } from "./modals/BusHelpModal";
 
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
 
@@ -27,6 +29,8 @@ const MAX_DEBUG_PASSENGERS = 10_000;
 
 export default function BusExperience() {
   useVisualViewport();
+  const preferences = useBusPreferences();
+  const [showHelp, setShowHelp] = useState(false);
   const [resetViewToken, setResetViewToken] = useState(0);
   const [freeView, setFreeView] = useState(false);
   const [sceneAvailable, setSceneAvailable] = useState(false);
@@ -166,7 +170,11 @@ export default function BusExperience() {
   const {
     headlights, hornPulse, speedMultiplier, isNight, manualDayNight,
     toggleDayNight, accelerateBus, decelerateBus, toggleHeadlights, honk,
-  } = useBusControls(phase, worldRef);
+  } = useBusControls(phase, worldRef, preferences.letterShortcutsEnabled);
+
+  useEffect(() => {
+    worldRef.current.sceneryPaused = preferences.sceneryPaused;
+  }, [preferences.sceneryPaused]);
 
   // Affiche une notification festive
   const showToast = useCallback((text: string, sub?: string, badge?: string) => {
@@ -657,7 +665,7 @@ export default function BusExperience() {
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
-  const overlayOpen = showTheoryModal || showJoinModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
+  const overlayOpen = showHelp || showTheoryModal || showJoinModal || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
 
   return (
     <div data-party={partyOn ? "true" : "false"} data-party-dancing={partyDancing ? "true" : "false"} data-phase={phase} data-view={phase === "inside" && freeView ? "free" : "seat"} data-scene-available={sceneAvailable} data-tv-on={tvOn ? "true" : "false"} className="bus-app fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
@@ -665,6 +673,7 @@ export default function BusExperience() {
         {toast ? [toast.badge, toast.text, toast.sub].filter(Boolean).join(". ") : ""}
       </div>
       <Scene
+        letterShortcutsEnabled={preferences.letterShortcutsEnabled}
         phase={phase}
         freeView={phase === "inside" && freeView}
         headlights={headlights}
@@ -693,6 +702,7 @@ export default function BusExperience() {
       />
 
       <BusHud
+        openHelp={() => setShowHelp(true)}
         phase={phase}
         freeView={freeView}
         toggleFreeView={() => setFreeView(value => !value)}
@@ -751,6 +761,7 @@ export default function BusExperience() {
       />
 
       {/* Modal interactif complet de la théorie des Fous du Bus */}
+      <BusHelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} {...preferences} />
       <TheoryModal
         isOpen={showTheoryModal}
         onVideoPlaybackChange={setTheoryVideoPlaying}
