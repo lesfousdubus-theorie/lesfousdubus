@@ -17,7 +17,7 @@ export async function runMugiwaraCabinChecks({ send, evaluate, waitForPageCondit
         if(object.name.startsWith('crew-nakama-'))synthetic.push(object.name);
         if(/^nakama-.*-\\d+$/.test(object.name)&&object.userData.passengerKind==='visitor'&&visible(object))
           people.push({name:object.name,...object.userData,position:bus.worldToLocal(object.getWorldPosition(s.camera.position.clone())).toArray()});
-        if(object.name==='bus-distant-passenger-bodies'&&visible(object))for(let i=0;i<object.count;i++){
+        if(object.name==='bus-distant-passenger-bodies'&&visible(object.parent))for(let i=0;i<object.count;i++){
           const matrix=object.matrixWorld.clone();object.getMatrixAt(i,matrix);
           const point=s.camera.position.clone().setFromMatrixPosition(matrix);object.localToWorld(point);bus.worldToLocal(point);
           const metadata=object.userData.occupants[i],ids=${JSON.stringify(roster.map(actor => actor.id))};

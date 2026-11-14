@@ -133,7 +133,13 @@ export async function runBusPartyChecks({send,evaluate,waitForPageCondition,base
     assert(lowPowerPopulation.detailedCount<=2,'Constrained devices use at most two detailed visitor models.');
     assert.equal(lowPowerPopulation.detailedCount+lowPowerPopulation.simplifiedCount,16);
     assert.equal(lowPowerPopulation.artificial,0);
-    await start();await wait(`window.busCameraTestState().scene.getObjectByName('bus-distant-party-arms')?.visible`,'Distant passengers also raise their hands');
+    const distantArm = `(()=>{let arm;window.busCameraTestState().scene.traverse(object=>{
+      if(!arm&&object.isInstancedMesh&&object.visible&&object.count>0&&object.userData.role==='upperRight')arm=object;
+    });return arm ? Array.from(arm.instanceMatrix.array.slice(0,16)) : null;})()`;
+    await wait(`Boolean(${distantArm})`,'A costumed distant arm is rendered');
+    const restingArm = await run(distantArm);
+    await start();
+    await wait(`JSON.stringify(${distantArm})!==${JSON.stringify(JSON.stringify(restingArm))}`,'Distant passengers move their rendered arms during the party');
     assert.equal(await run(`window.busCameraTestState().scene.getObjectByName('bus-party-confetti').count`),120,'Constrained devices use fewer confetti.');
     if(directory)await writeFile(resolve(directory,'verification-fete.json'),JSON.stringify({desktopPopulation,lowPowerPopulation,effects,first,later,partyPlay,staticPose,confettiReducedVersion:version},null,2));
     await stop();

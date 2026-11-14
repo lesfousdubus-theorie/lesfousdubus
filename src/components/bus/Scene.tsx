@@ -1,5 +1,6 @@
 "use client";
 
+import PartyMusicClock from "./PartyMusicClock";
 import { Component, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import Bus from "./Bus";
@@ -328,6 +329,7 @@ export default function Scene({
       fallback={<div aria-hidden={canvasReady}><SceneFallback onReadTheory={onReadTheory} /></div>}
     >
       <WebGLContextGuard setLost={setContextLost} />
+      <PartyMusicClock />
       <CappedFrameLoop paused={renderPaused} />
       <AdaptiveDpr lowPower={lowPower} onDprChange={setSceneDpr} />
       <BoardingController phase={phase} journey={journey} worldRef={worldRef} seatZ={currentSeatZ-0.03} seatX={currentSeatX}
