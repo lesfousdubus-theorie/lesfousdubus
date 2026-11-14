@@ -5,7 +5,7 @@ import { fetchJson, type BusApiState } from "@/lib/client/bus-api";
 import type { PassengerManifestEntry, PassengerProfile } from "@/types/passenger";
 
 /** Liste paginée et fiches passagers : chaque réponse reste attachée à sa requête active. */
-export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => boolean) {
+export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => boolean, profileRevision = 0) {
   const [showPassengerList, setShowPassengerList] = useState(false);
   const [selectedPassenger, setSelectedPassenger] = useState<PassengerProfile | null>(null);
   const [passengerOpenedFromList, setPassengerOpenedFromList] = useState(false);
@@ -30,7 +30,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
     setPassengerCardLoading(true);
 
     try {
-      const data = await fetchJson<{ passenger: PassengerProfile }>(`/api/bus-entries?seat=${summary.seatIndex}`, {
+      const data = await fetchJson<{ passenger: PassengerProfile }>(`/api/bus-entries?seat=${summary.seatIndex}&rev=${profileRevision}`, {
         cache: "no-store",
         signal: controller.signal,
       });
@@ -42,7 +42,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
     } finally {
       if (passengerCardRequest.current === controller) setPassengerCardLoading(false);
     }
-  }, []);
+  }, [profileRevision]);
 
   useEffect(() => {
     if (!selectedPassenger) passengerCardRequest.current?.abort();
@@ -59,7 +59,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
         passengers: PassengerManifestEntry[];
         nextFrom: number;
         hasMore: boolean;
-      }>(`/api/bus-entries?manifest=1&from=${from}&limit=100`, {
+      }>(`/api/bus-entries?manifest=1&from=${from}&limit=60&rev=${profileRevision}`, {
         cache: "no-store",
         signal: controller.signal,
       });
@@ -75,7 +75,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
     } finally {
       if (manifestRequest.current === controller) setManifestLoading(false);
     }
-  }, [applyBusSnapshot]);
+  }, [applyBusSnapshot, profileRevision]);
 
   const openPassengerManifest = useCallback(() => {
     setPassengerManifest([]);

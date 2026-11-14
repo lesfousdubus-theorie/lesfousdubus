@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useEffect,
   useLayoutEffect,
   useState,
   useCallback,
@@ -47,20 +46,6 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
   }, [activeTab]);
 
   const handleDialogKeyDown = useModalAccessibility(isOpen, handleClose, dialogRef, dialogTitleRef);
-
-  // Écoute de l'événement global pour ouvrir le modal depuis n'importe quel composant
-  useEffect(() => {
-    const handleOpenEvent = (e: Event) => {
-      const customEvent = e as CustomEvent<{ tab?: TheoryTab }>;
-      if (customEvent.detail?.tab) {
-        if (THEORY_TABS.includes(customEvent.detail.tab)) selectTab(customEvent.detail.tab);
-      }
-      setInternalOpen(true);
-    };
-
-    window.addEventListener("open-theory-modal", handleOpenEvent);
-    return () => window.removeEventListener("open-theory-modal", handleOpenEvent);
-  }, [selectTab]);
 
   const selectTabFromKeyboard = useCallback((index: number) => {
     const tab = THEORY_TABS[index];

@@ -95,14 +95,16 @@ export function JoinBusModal({
                 disabled={joining}
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? "join-bus-error join-bus-visibility" : "join-bus-visibility"}
-                maxLength={24}
                 value={name}
-                onChange={(event) => onNameChange(event.target.value)}
+                onChange={(event) => {
+                  const chars = Array.from(event.target.value);
+                  onNameChange(chars.length > 24 ? chars.slice(0, 24).join("") : event.target.value);
+                }}
                 placeholder="Ex. NakamaBasque"
                 className="w-full select-text rounded-xl border border-white/20 bg-black/25 px-4 py-3 text-base text-white outline-none placeholder:text-[#9aabd2] focus:border-[#ffd23f] focus:ring-2 focus:ring-[#ffd23f]/25"
               />
               <span className="mt-1.5 block text-right text-xs font-semibold tabular-nums text-[#aebde0]">
-                {name.length}/24
+                {Array.from(name).length}/24
               </span>
             </label>
           ) : (
@@ -116,15 +118,17 @@ export function JoinBusModal({
                 disabled={joining}
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? "join-bus-error join-bus-visibility" : "join-bus-visibility"}
-                maxLength={180}
                 rows={4}
                 value={comment}
-                onChange={(event) => onCommentChange(event.target.value)}
+                onChange={(event) => {
+                  const chars = Array.from(event.target.value);
+                  onCommentChange(chars.length > 180 ? chars.slice(0, 180).join("") : event.target.value);
+                }}
                 placeholder="Ex. Trop bien, vive la théorie !"
                 className="w-full resize-none select-text rounded-xl border border-white/20 bg-black/25 px-4 py-3 text-base leading-relaxed text-white outline-none placeholder:text-[#9aabd2] focus:border-[#ffd23f] focus:ring-2 focus:ring-[#ffd23f]/25"
               />
               <span className="mt-1.5 block text-right text-xs font-semibold tabular-nums text-[#aebde0]">
-                {comment.length}/180
+                {Array.from(comment).length}/180
               </span>
             </label>
           )}

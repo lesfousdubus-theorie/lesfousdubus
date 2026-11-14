@@ -5,6 +5,7 @@ import { playStretch } from "@/lib/horn";
 import { ApiError, fetchJson, getOrCreateVisitorId, isRetryableRegistrationError, type BusApiState } from "@/lib/client/bus-api";
 import type { PassengerProfile } from "@/types/passenger";
 import type { Phase } from "./bus/constants";
+import { computeNumRows } from "@/lib/bus-layout";
 import { getBusPhysicalRows } from "@/lib/bus-occupancy";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
 
@@ -15,6 +16,7 @@ interface BusSyncOptions {
   setStatsLoadError: Dispatch<SetStateAction<boolean>>;
   phase: Phase;
   seatRow: number;
+  setSeatRow: Dispatch<SetStateAction<number>>;
   profileRevision: number;
   setPassengerProfiles: Dispatch<SetStateAction<PassengerProfile[]>>;
   seatCapacityRef: RefObject<number>;
@@ -29,7 +31,7 @@ interface BusSyncOptions {
 }
 
 export function useBusSync({
-  applyBusSnapshot, statsRetryToken, setStatsLoadError, phase, seatRow,
+  applyBusSnapshot, statsRetryToken, setStatsLoadError, phase, seatRow, setSeatRow,
   profileRevision, setPassengerProfiles, seatCapacityRef, count, setCount, showToast,
   registrationPending, registrationRetryDelayRef, setCurrentPassengerSeatIndex,
   setRegistrationPending, restoreSavedProfile,
@@ -65,7 +67,7 @@ export function useBusSync({
     const controller = new AbortController();
 
     void fetchJson<BusApiState & { passengers?: PassengerProfile[] }>(
-      `/api/bus-entries?profiles=1&from=${from}&limit=48`, {
+      `/api/bus-entries?profiles=1&from=${from}&limit=48&rev=${profileRevision}`, {
       cache: "no-store",
       signal: controller.signal,
     })
@@ -171,6 +173,15 @@ export function useBusSync({
         applyBusSnapshot(data);
         setCurrentPassengerSeatIndex(data.seatIndex);
         restoreSavedProfile(data.passenger);
+        if (data.seatIndex !== null) {
+          setSeatRow(Math.min(computeNumRows(data.seatCapacity) - 1, Math.floor(data.seatIndex / 4)));
+        }
+        if (data.passenger) {
+          setPassengerProfiles((profiles) => [
+            ...profiles.filter((profile) => profile.seatIndex !== data.passenger!.seatIndex),
+            data.passenger!,
+          ]);
+        }
         registrationRetryDelayRef.current = 10_000;
         setRegistrationPending(false);
       } catch (error) {
@@ -200,6 +211,6 @@ export function useBusSync({
       document.removeEventListener("visibilitychange", resume);
       controller.abort();
     };
-  }, [applyBusSnapshot, registrationPending, registrationRetryDelayRef, restoreSavedProfile, setCurrentPassengerSeatIndex, setRegistrationPending, showToast, pendingAvatarId]);
+  }, [applyBusSnapshot, registrationPending, registrationRetryDelayRef, restoreSavedProfile, setCurrentPassengerSeatIndex, setRegistrationPending, showToast, pendingAvatarId, setSeatRow, setPassengerProfiles]);
 
 }
