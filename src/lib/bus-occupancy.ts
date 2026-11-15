@@ -1,10 +1,23 @@
-import { BASE_ROWS, getRenderedRowIndices, getSeatRowZ, type SeatInfo } from "./bus-layout";
+import { BASE_ROWS, DOOR_SECTION_ROWS, getRenderedRowIndices, getSeatCountInRow, getSeatRowZ, type SeatInfo } from "./bus-layout";
 export const PASSENGER_SEAT_X = [-0.94, -0.5, 0.5, 0.94] as const;
+const SEATS_PER_SECTION = (DOOR_SECTION_ROWS - 1) * PASSENGER_SEAT_X.length + 2;
 
 /** Les places correspondent uniquement aux visiteurs enregistrés. */
-export const getVisitorRows = (seatCapacity: number) => Math.max(1, Math.ceil(Math.max(0, seatCapacity) / 4));
+export const getVisitorRows = (seatCapacity: number) => getRegisteredSeat(Math.max(0, seatCapacity - 1)).row + 1;
 /** Une place de secours permet un échange local avant l'attribution d'un siège. */
-export const getBusPhysicalRows = (seatCapacity: number) => Math.max(BASE_ROWS, Math.ceil((Math.max(0, seatCapacity) + 1) / 4));
+export const getBusPhysicalRows = (seatCapacity: number) => Math.max(BASE_ROWS, getVisitorRows(seatCapacity + 1));
+
+/** Les indices D1 restent contigus et indépendants des places physiques. */
+export function getRegisteredSeat(passengerIndex: number): { row: number; column: number } {
+  const section = Math.floor(passengerIndex / SEATS_PER_SECTION);
+  const offset = passengerIndex % SEATS_PER_SECTION;
+  return { row: section * DOOR_SECTION_ROWS + Math.floor(offset / 4), column: offset % 4 };
+}
+
+export function getRegisteredSeatIndex(row: number, column = 0): number {
+  const section = Math.floor(row / DOOR_SECTION_ROWS);
+  return section * SEATS_PER_SECTION + (row % DOOR_SECTION_ROWS) * 4 + column;
+}
 
 export function getPhysicalSeat(physicalSeatIndex: number): SeatInfo {
   const row = Math.floor(physicalSeatIndex / 4), seatInRow = physicalSeatIndex % 4;
@@ -14,11 +27,9 @@ export function getPhysicalSeat(physicalSeatIndex: number): SeatInfo {
 export function getAvatarSeat(seatCapacity: number, row: number, passengerIndex: number | null, seatColumn?: number | null) {
   const assigned = passengerIndex !== null && passengerIndex >= 0 && passengerIndex < seatCapacity;
   const originSeatIndex = assigned ? passengerIndex : Math.max(0, seatCapacity);
-  const defaultSeatInRow = assigned ? passengerIndex % 4 : 3;
-  const seatInRow = seatColumn !== undefined && seatColumn !== null
-    ? Math.max(0, Math.min(3, Math.floor(seatColumn)))
-    : defaultSeatInRow;
   const clampedRow = Math.max(0, Math.min(getBusPhysicalRows(seatCapacity) - 1, row));
+  const defaultSeatInRow = assigned ? getRegisteredSeat(passengerIndex).column : 3;
+  const seatInRow = Math.max(0, Math.min(getSeatCountInRow(clampedRow) - 1, Math.floor(seatColumn ?? defaultSeatInRow)));
   const physicalSeatIndex = clampedRow * 4 + seatInRow;
   return { originSeatIndex, physicalSeatIndex, seat: getPhysicalSeat(physicalSeatIndex) };
 }
@@ -63,9 +74,10 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
     && vacantThrough(index) === (index ? vacantThrough(index - 1) : 0)
     && index - vacantThrough(index) < occupiedCount;
   const avatar = getAvatarSeat(capacity, reservedRow, currentPassengerIndex, reservedColumn);
-  const relocate = (index: number) => avatarAboard && index === avatar.physicalSeatIndex ? avatar.originSeatIndex : index;
+  const avatarSeatIndex = getRegisteredSeatIndex(avatar.seat.row, avatar.seat.seatInRow);
   const make = (index: number): BusOccupant => {
-    const physicalSeatIndex = relocate(index);
+    const { row, column } = getRegisteredSeat(avatarAboard && index === avatarSeatIndex ? avatar.originSeatIndex : index);
+    const physicalSeatIndex = row * 4 + column;
     return { index, passengerKind: "visitor", physicalSeatIndex, seat: getPhysicalSeat(physicalSeatIndex) };
   };
   const detailLimit = lowPower ? 2 : 8;
@@ -73,8 +85,8 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
   // places évite de parcourir tous les rangs occupés quand un long bus est vide
   // à l'avant, même si ses seuls visiteurs visibles sont tout à l'arrière.
   const candidates: BusOccupant[] = [];
-  for (const row of renderedRows) for (let column = 0; column < 4; column++) {
-    const index = row * 4 + column;
+  for (const row of renderedRows) for (let column = 0; column < getSeatCountInRow(row); column++) {
+    const index = getRegisteredSeatIndex(row, column);
     // Dès que son identité est connue, le visiteur local est représenté par
     // BoardingAvatar, y compris pendant sa sortie et après son départ.
     // Le réinsérer ici quand la caméra passe dehors le faisait réapparaître assis.
@@ -83,9 +95,9 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
     if (renderedRows.has(occupant.seat.row)) candidates.push(occupant);
   }
   // Un passager échangé peut se trouver hors des rangées normalement visibles.
-  if (avatarAboard && occupied(avatar.physicalSeatIndex) && avatar.physicalSeatIndex !== currentPassengerIndex
-    && !candidates.some(occupant => occupant.index === avatar.physicalSeatIndex)) {
-    candidates.push(make(avatar.physicalSeatIndex));
+  if (avatarAboard && occupied(avatarSeatIndex) && avatarSeatIndex !== currentPassengerIndex
+    && !candidates.some(occupant => occupant.index === avatarSeatIndex)) {
+    candidates.push(make(avatarSeatIndex));
   }
   const focus = detailFocus ?? avatar.seat;
   // Une banquette proche est détaillée ensemble. Le rang réservé ne décrit

@@ -5,6 +5,7 @@ import type { Phase } from "./bus/constants";
 import { COMPACT_HUD_MEDIA_QUERY, useHudLayout } from "./useHudLayout";
 import { emitBusAudioEvent, INITIAL_MUSIC_PLAYBACK, onBusAudioEvent, type BusMusicPlayback } from "@/lib/bus-audio";
 import { countPeopleOnBoard } from "@/lib/bus-crew";
+import { getSeatCountInRow } from "@/lib/bus-layout";
 import MusicPlaybackControls from "./audio/MusicPlaybackControls";
 import {
   BusFrontIcon,
@@ -129,6 +130,7 @@ export function BusHud({
   partyOn, toggleParty,
 }: BusHudProps) {
   const compactHud = useSyncExternalStore(subscribeCompactHud, getCompactHudSnapshot, () => false);
+  const seatCountInRow = getSeatCountInRow(seatRow);
   const [immersive, setImmersive] = useState(false);
   const [immersiveRestoreVisible, setImmersiveRestoreVisible] = useState(true);
   const [mobileMenuState, setMobileMenuState] = useState<{ open: boolean; phase: Phase }>({ open: false, phase });
@@ -292,45 +294,47 @@ export function BusHud({
         </div>
 
         {/* Actions supérieures (sous la rangée titre/compteurs en portrait, en haut à gauche en paysage compact) */}
-        <div className="bus-title-actions pointer-events-none absolute left-2 top-[4.25rem] flex flex-wrap items-center gap-1 min-[360px]:gap-1.5 sm:left-4 sm:gap-2">
-          <button
-            type="button"
-            onClick={() => setShowTheoryModal(true)}
-            className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-[#07142b]/95 px-2 text-[11px] font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-[#ffd23f] hover:bg-[#0c1b3a]/95 hover:text-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 min-[360px]:px-2.5 min-[390px]:px-3 sm:px-4 sm:text-xs cursor-pointer"
-            title="Découvrir la théorie des Fous du Bus"
-          >
-            <ScrollIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 min-[360px]:block" />
-            <span><span className="bus-landscape-hide hidden min-[360px]:inline">La </span>Théorie</span>
-          </button>
-          <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label={phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}
-            className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 min-[360px]:px-2.5 min-[390px]:px-3 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer">
-            <PersonIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 sm:block" />
-            <span>Personnage</span>
-          </button>
-          {hasSavedPlace && (
+        <div className="bus-title-actions pointer-events-none absolute left-2 top-[4.25rem] flex flex-col items-start gap-1 min-[360px]:gap-1.5 sm:left-4 sm:gap-2">
+          <div className="bus-title-primary-actions flex max-w-full flex-wrap items-center gap-1 min-[360px]:gap-1.5 sm:gap-2">
             <button
               type="button"
-              data-place-button
-              onClick={openPlaceModal}
-              disabled={busy}
-              aria-haspopup="dialog"
-              aria-label={entryNumber ? `Ma place, numéro ${entryNumber}` : "Ma place"}
-              title={entryNumber ? `Place n° ${entryNumber} (${entryNumber === 1 ? "1re" : `${entryNumber}e`} personne à être rentrée dans le bus)` : "Gérer ma place"}
-              className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 min-[360px]:px-2.5 min-[390px]:px-3 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer"
+              onClick={() => setShowTheoryModal(true)}
+              className="bus-glass pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#ffd23f]/50 bg-[#07142b]/95 px-2 text-[11px] font-black uppercase text-[#ffd23f] shadow-lg backdrop-blur-md transition hover:border-[#ffd23f] hover:bg-[#0c1b3a]/95 hover:text-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 min-[360px]:px-2.5 min-[390px]:px-3 sm:px-4 sm:text-xs cursor-pointer"
+              title="Découvrir la théorie des Fous du Bus"
             >
-              <SeatTicketIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 sm:block" />
-              <span>Ma place</span>
-              {entryNumber !== null && entryNumber !== undefined && (
-                <span className="rounded-full bg-[#ffd23f] px-1.5 py-0.5 text-[10px] font-black leading-none tabular-nums text-[#091c5c] sm:text-[11px]">
-                  N°&nbsp;{entryNumber.toLocaleString("fr-FR")}
-                </span>
-              )}
+              <ScrollIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 min-[360px]:block" />
+              <span><span className="bus-landscape-hide hidden min-[360px]:inline">La </span>Théorie</span>
             </button>
-          )}
+            <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label={phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}
+              className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 min-[360px]:px-2.5 min-[390px]:px-3 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer">
+              <PersonIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 sm:block" />
+              <span>Personnage</span>
+            </button>
+            {hasSavedPlace && (
+              <button
+                type="button"
+                data-place-button
+                onClick={openPlaceModal}
+                disabled={busy}
+                aria-haspopup="dialog"
+                aria-label={entryNumber ? `Ma place, numéro ${entryNumber}` : "Ma place"}
+                title={entryNumber ? `Place n° ${entryNumber} (${entryNumber === 1 ? "1re" : `${entryNumber}e`} personne à être rentrée dans le bus)` : "Gérer ma place"}
+                className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 min-[360px]:px-2.5 min-[390px]:px-3 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer"
+              >
+                <SeatTicketIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 sm:block" />
+                <span>Ma place</span>
+                {entryNumber !== null && entryNumber !== undefined && (
+                  <span className="rounded-full bg-[#ffd23f] px-1.5 py-0.5 text-[10px] font-black leading-none tabular-nums text-[#091c5c] sm:text-[11px]">
+                    N°&nbsp;{entryNumber.toLocaleString("fr-FR")}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
           <button ref={immersiveButtonRef} type="button" onClick={() => { setMusicDetailsState({ open: false, phase, epoch: phaseEpoch }); closeMobileMenu(); setImmersiveRestoreVisible(true); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif" title="Mode immersif"
-            className="bus-immersive-toggle pointer-events-auto inline-flex min-h-11 w-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/35 bg-[#07142b]/95 px-0 text-xs font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 sm:w-auto sm:px-4 cursor-pointer">
+            className="bus-immersive-toggle pointer-events-auto inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full border border-white/35 bg-[#07142b]/95 px-2.5 text-[11px] font-bold text-white shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:opacity-60 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer">
             <FullscreenExpandIcon className="h-4 w-4 shrink-0" />
-            <span className="bus-landscape-hide hidden sm:inline">Mode immersif</span>
+            <span className="bus-landscape-hide">Mode immersif</span>
           </button>
         </div>
 
@@ -535,7 +539,7 @@ export function BusHud({
               </button>
             </div>
 
-            {/* Déplacement latéral sur les 4 sièges de la rangée */}
+            {/* Déplacement latéral sur les sièges de la rangée */}
             <div className="bus-glass flex h-11 items-center gap-1 rounded-2xl bg-[#07142b]/95 px-1.5 shadow-lg ring-1 ring-white/35 backdrop-blur-md sm:px-3">
               <button
                 type="button"
@@ -552,15 +556,15 @@ export function BusHud({
                 <span>Place</span>
                 <span className="ml-1 text-[#ffd23f]">{seatColumn + 1}</span>
                 <span className="mx-0.5 text-[#dce7ff]">/</span>
-                <span>4</span>
+                <span>{seatCountInRow}</span>
               </span>
               <button
                 type="button"
-                onClick={() => setSeatColumn(Math.min(3, seatColumn + 1))}
-                disabled={freeView || seatColumn >= 3}
+                onClick={() => setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1))}
+                disabled={freeView || seatColumn >= seatCountInRow - 1}
                 aria-label="Place à droite"
                 className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
-                title={freeView ? "Désactive la vue libre pour changer de place" : seatColumn >= 3 ? "Place fenêtre droite atteinte" : "Aller sur la place à droite"}
+                title={freeView ? "Désactive la vue libre pour changer de place" : seatColumn >= seatCountInRow - 1 ? "Dernière place de la rangée atteinte" : "Aller sur la place à droite"}
               >
                 <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
                 <ChevronRightIcon className="relative h-4 w-4 shrink-0" />

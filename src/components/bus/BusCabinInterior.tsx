@@ -1,32 +1,41 @@
 "use client";
 
-import { useLayoutEffect, useRef, type RefObject } from "react";
+import { useLayoutEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
-import { BUS_FRONT_Z, SEAT_CUSHION_DEPTH, SEAT_CUSHION_Z, SEAT_BASE_DEPTH, type BusDoorLayout, type TvPosition } from "@/lib/bus-layout";
+import { useFrame } from "@react-three/fiber";
+import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUniformsLib.js";
+import { BUS_FRONT_Z, SEAT_CUSHION_DEPTH, SEAT_CUSHION_Z, SEAT_BASE_DEPTH, getSeatCountInRow, getSeatRowZ, type BusDoorLayout, type TvPosition } from "@/lib/bus-layout";
 import { getInteriorRailSpans, INTERIOR_RAIL_X, INTERIOR_RAIL_DEPTH } from "@/lib/bus-interior-geometry";
 import BusCabinDetails from "./BusCabinDetails";
 import BusSpanMeshes from "./BusSpanMeshes";
 import type { BusMaterials } from "./useBusResources";
+import type { WorldState } from "./constants";
+
+RectAreaLightUniformsLib.init();
 
 interface Props {
   mats: BusMaterials;
   cabinLength: number;
   cabinCenterZ: number;
   rearWallZ: number;
-  rowZs: number[];
+  rows: number[];
   wheelPositions: [number, number][];
   tvPositions: TvPosition[];
   doors: BusDoorLayout[];
-  interiorLightZs: number[];
-  interiorLights: RefObject<THREE.PointLight[]>;
+  worldRef: RefObject<WorldState>;
 }
 
 /** Cabin fixtures stay in the vehicle's existing coordinate system: no wrapper group. */
-export default function BusCabinInterior({ mats, cabinLength, cabinCenterZ, rearWallZ, rowZs: SEAT_ROWS,
-  wheelPositions, tvPositions, doors, interiorLightZs, interiorLights }: Props) {
+export default function BusCabinInterior({ mats, cabinLength, cabinCenterZ, rearWallZ, rows,
+  wheelPositions, tvPositions, doors, worldRef }: Props) {
+  const rowZs = useMemo(() => rows.map(getSeatRowZ), [rows]);
+  const ceilingLight = useRef<THREE.RectAreaLight>(null);
+  useFrame(() => {
+    if (ceilingLight.current) ceilingLight.current.intensity = THREE.MathUtils.lerp(2.15, 0.85, worldRef.current.daylight);
+  });
   return <>
       {/* ---------- INTÉRIEUR DU BUS ---------- */}
-      <BusCabinDetails mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ} rearWallZ={rearWallZ} rowZs={SEAT_ROWS} wheelPositions={wheelPositions} tvPositions={tvPositions} />
+      <BusCabinDetails mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ} rearWallZ={rearWallZ} rowZs={rowZs} wheelPositions={wheelPositions} tvPositions={tvPositions} />
       {/* Habillage intérieur du toit extensible */}
       <mesh material={mats.interiorWall} position={[0, 3.15, cabinCenterZ]}>
         <boxGeometry args={[2.5, 0.02, cabinLength - 0.1]} />
@@ -51,23 +60,12 @@ export default function BusCabinInterior({ mats, cabinLength, cabinCenterZ, rear
         </mesh>
       ))}
 
-      {/* Éclairages intérieurs chauds et bien répartis le long du bus */}
-      {interiorLightZs.map((lz, idx) => (
-        <pointLight
-          key={`interior-light-${idx}`}
-          ref={(el: THREE.PointLight | null) => {
-            if (el) interiorLights.current[idx] = el;
-          }}
-          position={[0, 2.85, lz]}
-          color="#fff4db"
-          intensity={4.5}
-          distance={Math.max(9.5, cabinLength / 2)}
-          decay={1.5}
-        />
-      ))}
+      {/* Toute la rampe diffuse vers le bas, sans sources ponctuelles au-dessus des essieux. */}
+      <rectAreaLight ref={ceilingLight} name="bus-cabin-ceiling-light" position={[0, 3.1, cabinCenterZ]}
+        rotation={[-Math.PI / 2, 0, 0]} color="#fff4db" intensity={0.85} width={1.14} height={cabinLength - 0.12} />
 
       {/* Les sièges gardent leur quantité exacte mais partagent quatre draw calls. */}
-      <SeatInstances rows={SEAT_ROWS} seatMaterial={mats.seat} frameMaterial={mats.seatFrame} />
+      <SeatInstances rows={rows} seatMaterial={mats.seat} frameMaterial={mats.seatFrame} />
 
   </>;
 }
@@ -85,25 +83,26 @@ function SeatInstances({
   const back = useRef<THREE.InstancedMesh>(null);
   const base = useRef<THREE.InstancedMesh>(null);
   const headrest = useRef<THREE.InstancedMesh>(null);
+  const benches = useMemo(() => rows.flatMap(row => {
+    const z = getSeatRowZ(row);
+    return getSeatCountInRow(row) === 2 ? [[-0.72, z]] : [[-0.72, z], [0.72, z]];
+  }), [rows]);
   useLayoutEffect(() => {
     const refs = [cushion, back, base, headrest];
     const offsets = [[1.05, SEAT_CUSHION_Z], [1.38, 0.33], [0.82, SEAT_CUSHION_Z], [1.7, 0.33]];
     const matrix = new THREE.Matrix4();
     refs.forEach((meshRef, part) => {
       if (!meshRef.current) return;
-      let index = 0;
-      for (const z of rows) {
-        for (const x of [-0.72, 0.72]) {
-          matrix.makeTranslation(x, offsets[part][0], z + offsets[part][1]);
-          meshRef.current.setMatrixAt(index++, matrix);
-        }
-      }
+      benches.forEach(([x, z], index) => {
+        matrix.makeTranslation(x, offsets[part][0], z + offsets[part][1]);
+        meshRef.current!.setMatrixAt(index, matrix);
+      });
       meshRef.current.instanceMatrix.needsUpdate = true;
       // Le bus peut s'allonger : les bornes de visibilité doivent suivre les instances.
       meshRef.current.computeBoundingSphere();
     });
-  }, [rows]);
-  const count = rows.length * 2;
+  }, [benches]);
+  const count = benches.length;
   // Taille fixe : l'ajout d'une rangée ne recrée pas les quatre buffers GPU.
   const capacity = 180 * 2;
   return (

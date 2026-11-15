@@ -4,19 +4,13 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { BUS_FRONT_Z } from "@/lib/bus-layout";
-import { createConfettiSeeds, getConfettiZ } from "@/lib/bus-confetti";
+import { getPartyDanceTime, PARTY_BEAT_SECONDS } from "@/lib/party-rhythm";
 import type { WorldState } from "./constants";
 
-const PARTY_LIGHT_PALETTE = [
-  "#ff1f8f",
-  "#00e5ff",
-  "#ffd23f",
-  "#a855f7",
-  "#00f59b",
-  "#ff3d57",
-  "#3b82f6",
-  "#ff8800",
-];
+const BEAM_Y = 3.083;
+const FLOOR_Y = 0.647;
+const TAU = Math.PI * 2;
+const DOWN = new THREE.Vector3(0, -1, 0);
 
 function createBeamFadeTexture(): THREE.DataTexture {
   const height = 64;
@@ -68,9 +62,22 @@ function createRadialSpotTexture(): THREE.DataTexture {
 }
 
 /**
- * Jeux de lumière disco multicolores actifs la nuit pendant le mode Fête :
- * faisceaux balayants au plafond, néons LED multicolores, spots lumineux et taches au sol dans tout le bus.
+ * Les projecteurs restent sur une grille fixe. Pour une cabine très longue,
+ * on garde toute la densité autour de la caméra et des rappels jusqu'au fond.
  */
+function sampleStations(total: number, capacity: number, focus: number) {
+  if (total <= capacity) return Array.from({ length: total }, (_, index) => index);
+  const nearbyCount = Math.floor(capacity * 0.65);
+  const start = THREE.MathUtils.clamp(focus - Math.floor(nearbyCount / 2), 0, total - nearbyCount);
+  const stations = Array.from({ length: nearbyCount }, (_, index) => start + index);
+  const remoteCount = capacity - nearbyCount;
+  for (let index = 0; index < remoteCount; index++) {
+    const station = Math.round(index * (total - nearbyCount - 1) / (remoteCount - 1));
+    stations.push(station >= start ? station + nearbyCount : station);
+  }
+  return stations;
+}
+
 export default function BusPartyLights({
   worldRef,
   focusZ,
@@ -84,305 +91,171 @@ export default function BusPartyLights({
   lowPower: boolean;
   reducedMotion: boolean;
 }) {
+  const group = useRef<THREE.Group>(null);
   const conesRef = useRef<THREE.InstancedMesh>(null);
   const orbsRef = useRef<THREE.InstancedMesh>(null);
   const poolsRef = useRef<THREE.InstancedMesh>(null);
   const barsRef = useRef<THREE.InstancedMesh>(null);
-
   const beamMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const orbMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const poolMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const barMatRef = useRef<THREE.MeshBasicMaterial>(null);
 
-  const count = lowPower ? 14 : 26;
-  const barCount = lowPower ? 12 : 24;
-  const from = BUS_FRONT_Z + 0.45;
-  const to = rearZ - 0.45;
-  const seeds = useMemo(() => createConfettiSeeds(count, Math.max(1, to - from)), [count, from, to]);
-  const barSeeds = useMemo(() => createConfettiSeeds(barCount, Math.max(1, to - from)), [barCount, from, to]);
+  const from = BUS_FRONT_Z + 0.82;
+  const to = rearZ - 0.82;
+  const stationCount = 1 + Math.ceil((to - from) / (lowPower ? 1.55 : 0.9));
+  const stationCapacity = Math.min(stationCount, lowPower ? 30 : 36);
+  const beamsPerStation = lowPower ? 1 : 2;
+  const beamCount = stationCapacity * beamsPerStation;
+  const step = (to - from) / (stationCount - 1);
 
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  const cameraLocal = useMemo(() => new THREE.Vector3(), []);
-  const color = useMemo(() => new THREE.Color(), []);
+  const lastFrame = useRef({ time: NaN, focus: -1, night: -1, stations: [] as number[] });
+  const { dummy, cameraLocal, direction, color } = useMemo(() => ({
+    dummy: new THREE.Object3D(),
+    cameraLocal: new THREE.Vector3(),
+    direction: new THREE.Vector3(),
+    color: new THREE.Color(),
+  }), []);
 
   const coneGeo = useMemo(() => {
-    const g = new THREE.ConeGeometry(0.76, 2.38, 14, 1, true);
-    // Déplace le sommet du cône à l'origine pour pivoter depuis le plafond.
-    g.translate(0, -1.19, 0);
-    return g;
-  }, []);
-
-  const poolGeo = useMemo(() => {
-    const g = new THREE.CircleGeometry(0.56, 18);
-    g.rotateX(-Math.PI / 2);
-    return g;
-  }, []);
-
-  const orbGeo = useMemo(() => new THREE.SphereGeometry(0.085, 10, 10), []);
-  const barGeo = useMemo(() => new THREE.BoxGeometry(0.16, 0.036, 0.72), []);
-
+    // Cone d'un mètre, sommet à l'origine et direction verticale négative.
+    const geometry = new THREE.ConeGeometry(0.29, 1, lowPower ? 8 : 12, 1, true);
+    geometry.translate(0, -0.5, 0);
+    return geometry;
+  }, [lowPower]);
+  const poolGeo = useMemo(() => new THREE.CircleGeometry(0.44, 14).rotateX(-Math.PI / 2), []);
+  const orbGeo = useMemo(() => new THREE.SphereGeometry(0.056, 8, 6), []);
+  const barGeo = useMemo(() => new THREE.BoxGeometry(0.095, 0.022, 0.47), []);
   const beamTex = useMemo(() => createBeamFadeTexture(), []);
   const poolTex = useMemo(() => createRadialSpotTexture(), []);
 
-  useEffect(() => {
-    return () => {
-      coneGeo.dispose();
-      poolGeo.dispose();
-      orbGeo.dispose();
-      barGeo.dispose();
-      beamTex.dispose();
-      poolTex.dispose();
-    };
+  useEffect(() => () => {
+    coneGeo.dispose();
+    poolGeo.dispose();
+    orbGeo.dispose();
+    barGeo.dispose();
+    beamTex.dispose();
+    poolTex.dispose();
   }, [coneGeo, poolGeo, orbGeo, barGeo, beamTex, poolTex]);
 
   useLayoutEffect(() => {
-    const sphere = new THREE.Sphere(
-      new THREE.Vector3(0, 1.9, (from + to) / 2),
-      Math.hypot(1.6, 1.6, Math.max(1, to - from) / 2 + 0.5),
-    );
-    seeds.forEach((seed, i) => {
-      const z = getConfettiZ(seed, from, to, focusZ);
-      const laneX = ((i % 3) - 1) * 0.62;
-      const hex = PARTY_LIGHT_PALETTE[i % PARTY_LIGHT_PALETTE.length];
-      color.set(hex);
-
-      if (conesRef.current) {
-        dummy.position.set(laneX, 3.1, z);
-        dummy.rotation.set(Math.sin(seed.spin) * 0.35, 0, Math.cos(seed.spin) * 0.35);
-        dummy.scale.setScalar(1);
-        dummy.updateMatrix();
-        conesRef.current.setMatrixAt(i, dummy.matrix);
-        conesRef.current.setColorAt(i, color);
-      }
-
-      if (orbsRef.current) {
-        dummy.position.set(laneX, 3.09, z);
-        dummy.rotation.set(0, 0, 0);
-        dummy.scale.setScalar(1);
-        dummy.updateMatrix();
-        orbsRef.current.setMatrixAt(i, dummy.matrix);
-        orbsRef.current.setColorAt(i, color);
-      }
-
-      if (poolsRef.current) {
-        dummy.position.set(laneX * 1.15, 0.654, z);
-        dummy.rotation.set(0, 0, 0);
-        dummy.scale.setScalar(1);
-        dummy.updateMatrix();
-        poolsRef.current.setMatrixAt(i, dummy.matrix);
-        poolsRef.current.setColorAt(i, color);
-      }
-    });
-
-    if (barsRef.current) {
-      barSeeds.forEach((seed, i) => {
-        const z = getConfettiZ(seed, from, to, focusZ);
-        const sideX = i % 2 === 0 ? -0.5 : 0.5;
-        color.set(PARTY_LIGHT_PALETTE[(i * 3) % PARTY_LIGHT_PALETTE.length]);
-        dummy.position.set(sideX, 3.112, z);
-        dummy.rotation.set(0, 0, 0);
-        dummy.scale.setScalar(1);
-        dummy.updateMatrix();
-        barsRef.current!.setMatrixAt(i, dummy.matrix);
-        barsRef.current!.setColorAt(i, color);
-      });
+    lastFrame.current = { time: NaN, focus: -1, night: -1, stations: [] };
+    const sphere = new THREE.Sphere(new THREE.Vector3(0, 1.9, (from + to) / 2),
+      Math.hypot(1.6, 1.45, (to - from) / 2 + 0.5));
+    for (const mesh of [conesRef.current, orbsRef.current, poolsRef.current, barsRef.current]) {
+      if (!mesh) continue;
+      mesh.boundingSphere = sphere;
+      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     }
-
-    [conesRef.current, orbsRef.current, poolsRef.current, barsRef.current].forEach((mesh) => {
-      if (!mesh) return;
-      mesh.instanceMatrix.needsUpdate = true;
-      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      mesh.boundingSphere = sphere.clone();
-    });
-  }, [seeds, barSeeds, from, to, focusZ, dummy, color]);
+  }, [from, to, beamCount, stationCount, reducedMotion]);
 
   useFrame(({ clock, camera }) => {
-    const daylight = worldRef.current?.daylight ?? 1;
-    const nightFactor = THREE.MathUtils.clamp((0.68 - daylight) / 0.35, 0, 1);
-    const active = nightFactor > 0.01;
+    const anchor = group.current;
+    const cones = conesRef.current, orbs = orbsRef.current, pools = poolsRef.current, bars = barsRef.current;
+    if (!anchor || !cones || !orbs || !pools || !bars) return;
 
-    const cones = conesRef.current;
-    const orbs = orbsRef.current;
-    const pools = poolsRef.current;
-    const bars = barsRef.current;
+    const night = THREE.MathUtils.smoothstep(1 - worldRef.current.daylight, 0.36, 0.9);
+    anchor.visible = night > 0.01;
+    if (!anchor.visible) return;
 
-    if (cones) cones.visible = active;
-    if (orbs) orbs.visible = active;
-    if (pools) pools.visible = active;
-    if (bars) bars.visible = active;
-    if (!active) return;
-
-    if (beamMatRef.current) beamMatRef.current.opacity = 0.24 * nightFactor;
-    if (poolMatRef.current) poolMatRef.current.opacity = 0.72 * nightFactor;
-    if (orbMatRef.current) orbMatRef.current.opacity = 0.95 * nightFactor;
-    if (barMatRef.current) barMatRef.current.opacity = 0.92 * nightFactor;
-
-    const t = clock.elapsedTime;
-    const anchor = cones ?? orbs ?? pools ?? bars;
-    let denseFocus = focusZ;
-    if (anchor) {
-      camera.getWorldPosition(cameraLocal);
-      anchor.worldToLocal(cameraLocal);
-      const inCabin =
-        Math.abs(cameraLocal.x) < 1.7 &&
-        cameraLocal.y > 0.45 &&
-        cameraLocal.y < 3.5 &&
-        cameraLocal.z > from - 0.5 &&
-        cameraLocal.z < to + 0.5;
-      if (inCabin) denseFocus = cameraLocal.z;
+    const previous = lastFrame.current;
+    if (night !== previous.night) {
+      const brightness = night * (reducedMotion ? 0.72 : 1);
+      if (beamMatRef.current) beamMatRef.current.opacity = (lowPower ? 0.26 : 0.22) * brightness;
+      if (poolMatRef.current) poolMatRef.current.opacity = 0.66 * brightness;
+      if (orbMatRef.current) orbMatRef.current.opacity = 0.95 * brightness;
+      if (barMatRef.current) barMatRef.current.opacity = 0.9 * brightness;
+      previous.night = night;
     }
 
-    seeds.forEach((seed, i) => {
-      const baseZ = getConfettiZ(seed, from, to, denseFocus);
-      const laneX = ((i % 3) - 1) * 0.62;
-      const swayX = reducedMotion ? Math.sin(seed.spin) * 0.34 : Math.sin(t * (1.8 + seed.speed) + seed.spin) * 0.46;
-      const swayZ = reducedMotion ? Math.cos(seed.spin) * 0.34 : Math.cos(t * (1.5 + seed.speed * 0.8) + seed.spin) * 0.48;
+    let visibleFocus = 0;
+    if (stationCount > stationCapacity) {
+      camera.getWorldPosition(cameraLocal);
+      anchor.worldToLocal(cameraLocal);
+      const inCabin = Math.abs(cameraLocal.x) <= 1.7 && cameraLocal.y > 0.45 && cameraLocal.y < 3.5;
+      const viewZ = inCabin ? cameraLocal.z : focusZ;
+      // Changer de fenêtre au plus tous les quatre projecteurs.
+      visibleFocus = Math.round((viewZ - from) / (step * 4)) * 4;
+    }
+    const time = reducedMotion ? 0 : getPartyDanceTime(clock.elapsedTime);
+    if (time === previous.time && visibleFocus === previous.focus) return;
+    const moved = visibleFocus !== previous.focus;
+    if (moved) previous.stations = sampleStations(stationCount, stationCapacity, visibleFocus);
+    previous.time = time;
+    previous.focus = visibleFocus;
 
-      const hue = reducedMotion
-        ? (i / seeds.length) % 1
-        : (t * 0.28 + i / seeds.length + seed.phase * 0.25) % 1;
-      const pulse = reducedMotion ? 1 : 0.78 + 0.32 * Math.sin(t * 7.2 + seed.spin * 2);
-      color.setHSL(hue, 0.96, 0.56);
+    // Huit temps par rotation, avec des phases opposées des deux côtés de l'allée.
+    const beats = time / PARTY_BEAT_SECONDS;
+    const beatGlow = 0.91 + 0.09 * Math.cos(beats * TAU);
+    previous.stations.forEach((station, stationIndex) => {
+      const stationZ = from + station * step;
+      for (let fixture = 0; fixture < beamsPerStation; fixture++) {
+        const side = (lowPower ? station % 2 : fixture) === 0 ? -1 : 1;
+        const index = stationIndex * beamsPerStation + fixture;
+        const phase = beats * TAU / 8 * side + station * 1.73 + fixture * Math.PI;
+        const sourceX = side * 0.51;
+        const sourceZ = THREE.MathUtils.clamp(stationZ + side * 0.19, from, to);
+        const targetX = sourceX * 0.37 + Math.cos(phase) * 0.62;
+        const targetZ = THREE.MathUtils.clamp(sourceZ + Math.sin(phase) * 0.8, from, to);
+        direction.set(targetX - sourceX, FLOOR_Y - BEAM_Y, targetZ - sourceZ);
+        const beamLength = direction.length();
 
-      if (cones) {
-        dummy.position.set(laneX, 3.1, baseZ);
-        dummy.rotation.set(swayX, 0, swayZ);
-        dummy.scale.set(pulse, 1, pulse);
+        const hue = (station * 0.143 + fixture * 0.38 + beats / 24) % 1;
+        color.setHSL(hue, 0.93, 0.56).multiplyScalar(beatGlow);
+
+        dummy.position.set(sourceX, BEAM_Y, sourceZ);
+        dummy.quaternion.setFromUnitVectors(DOWN, direction.normalize());
+        dummy.scale.set(1, beamLength, 1);
         dummy.updateMatrix();
-        cones.setMatrixAt(i, dummy.matrix);
-        cones.setColorAt(i, color);
-      }
+        cones.setMatrixAt(index, dummy.matrix);
+        cones.setColorAt(index, color);
 
-      if (orbs) {
-        dummy.position.set(laneX, 3.09, baseZ);
+        dummy.position.set(targetX, FLOOR_Y, targetZ);
         dummy.rotation.set(0, 0, 0);
-        dummy.scale.setScalar(0.85 + pulse * 0.35);
+        dummy.scale.setScalar(0.86 + 0.14 * beatGlow);
         dummy.updateMatrix();
-        orbs.setMatrixAt(i, dummy.matrix);
-        orbs.setColorAt(i, color);
-      }
+        pools.setMatrixAt(index, dummy.matrix);
+        pools.setColorAt(index, color);
 
-      if (pools) {
-        const hitX = THREE.MathUtils.clamp(laneX - Math.sin(swayZ) * 1.4, -1.02, 1.02);
-        const hitZ = THREE.MathUtils.clamp(baseZ + Math.sin(swayX) * 1.3, from, to);
-        dummy.position.set(hitX, 0.654, hitZ);
-        dummy.rotation.set(0, 0, 0);
-        dummy.scale.setScalar(0.75 + pulse * 0.45);
-        dummy.updateMatrix();
-        pools.setMatrixAt(i, dummy.matrix);
-        pools.setColorAt(i, color);
+        if (moved) {
+          dummy.position.set(sourceX, BEAM_Y + 0.012, sourceZ);
+          dummy.scale.setScalar(1);
+          dummy.updateMatrix();
+          orbs.setMatrixAt(index, dummy.matrix);
+          dummy.position.y = 3.105;
+          dummy.updateMatrix();
+          bars.setMatrixAt(index, dummy.matrix);
+        }
+        orbs.setColorAt(index, color);
+        bars.setColorAt(index, color);
       }
     });
 
-    if (bars) {
-      barSeeds.forEach((seed, i) => {
-        const z = getConfettiZ(seed, from, to, denseFocus);
-        const sideX = i % 2 === 0 ? -0.5 : 0.5;
-        const hue = reducedMotion
-          ? ((i * 0.17) % 1)
-          : (t * 0.35 + i / barSeeds.length) % 1;
-        color.setHSL(hue, 0.98, 0.6);
-        dummy.position.set(sideX, 3.112, z);
-        dummy.rotation.set(0, 0, 0);
-        dummy.scale.setScalar(1);
-        dummy.updateMatrix();
-        bars.setMatrixAt(i, dummy.matrix);
-        bars.setColorAt(i, color);
-      });
-      bars.instanceMatrix.needsUpdate = true;
-      if (bars.instanceColor) bars.instanceColor.needsUpdate = true;
-    }
-
-    if (cones) {
-      cones.instanceMatrix.needsUpdate = true;
-      if (cones.instanceColor) cones.instanceColor.needsUpdate = true;
-    }
-    if (orbs) {
-      orbs.instanceMatrix.needsUpdate = true;
-      if (orbs.instanceColor) orbs.instanceColor.needsUpdate = true;
-    }
-    if (pools) {
-      pools.instanceMatrix.needsUpdate = true;
-      if (pools.instanceColor) pools.instanceColor.needsUpdate = true;
+    for (const mesh of [cones, pools, orbs, bars]) {
+      if (moved || mesh === cones || mesh === pools) mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
   });
 
   return (
-    <group name="bus-party-lights">
-      <instancedMesh
-        name="bus-party-light-cones"
-        ref={conesRef}
-        args={[undefined, undefined, count]}
-        count={count}
-        geometry={coneGeo}
-        raycast={() => null}
-      >
-        <meshBasicMaterial
-          ref={beamMatRef}
-          color="#ffffff"
-          map={beamTex}
-          transparent
-          opacity={0.22}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          side={THREE.DoubleSide}
-          toneMapped={false}
-        />
+    <group ref={group} name="bus-party-lights" visible={false}>
+      <instancedMesh name="bus-party-light-cones" ref={conesRef} args={[undefined, undefined, beamCount]}
+        geometry={coneGeo} raycast={() => null}>
+        <meshBasicMaterial ref={beamMatRef} map={beamTex} transparent blending={THREE.AdditiveBlending}
+          depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
       </instancedMesh>
-      <instancedMesh
-        name="bus-party-light-orbs"
-        ref={orbsRef}
-        args={[undefined, undefined, count]}
-        count={count}
-        geometry={orbGeo}
-        raycast={() => null}
-      >
-        <meshBasicMaterial
-          ref={orbMatRef}
-          color="#ffffff"
-          transparent
-          opacity={0.92}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          toneMapped={false}
-        />
+      <instancedMesh name="bus-party-light-orbs" ref={orbsRef} args={[undefined, undefined, beamCount]}
+        geometry={orbGeo} raycast={() => null}>
+        <meshBasicMaterial ref={orbMatRef} transparent blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
       </instancedMesh>
-      <instancedMesh
-        name="bus-party-light-pools"
-        ref={poolsRef}
-        args={[undefined, undefined, count]}
-        count={count}
-        geometry={poolGeo}
-        raycast={() => null}
-      >
-        <meshBasicMaterial
-          ref={poolMatRef}
-          color="#ffffff"
-          map={poolTex}
-          transparent
-          opacity={0.65}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          toneMapped={false}
-        />
+      <instancedMesh name="bus-party-light-pools" ref={poolsRef} args={[undefined, undefined, beamCount]}
+        geometry={poolGeo} raycast={() => null}>
+        <meshBasicMaterial ref={poolMatRef} map={poolTex} transparent blending={THREE.AdditiveBlending}
+          depthWrite={false} toneMapped={false} />
       </instancedMesh>
-      <instancedMesh
-        name="bus-party-ceiling-bars"
-        ref={barsRef}
-        args={[undefined, undefined, barCount]}
-        count={barCount}
-        geometry={barGeo}
-        raycast={() => null}
-      >
-        <meshBasicMaterial
-          ref={barMatRef}
-          color="#ffffff"
-          transparent
-          opacity={0.9}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          toneMapped={false}
-        />
+      <instancedMesh name="bus-party-ceiling-bars" ref={barsRef} args={[undefined, undefined, beamCount]}
+        geometry={barGeo} raycast={() => null}>
+        <meshBasicMaterial ref={barMatRef} transparent blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
       </instancedMesh>
     </group>
   );

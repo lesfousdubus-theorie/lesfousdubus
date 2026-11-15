@@ -129,7 +129,6 @@ export default function BusFront({
               toneMapped={false}
             />
           </mesh>
-          <pointLight color="#d6ecff" intensity={headlights ? 8 : 0} distance={8} decay={1.8} />
         </group>
       ))}
 

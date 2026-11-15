@@ -314,9 +314,6 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
 
   return (
     <group>
-      {/* Lumière dédiée douce au poste de conduite pour une excellente visibilité jour & nuit */}
-      <pointLight position={[0, 2.75, -4.0]} color="#fff7e6" intensity={2.6} distance={4.2} decay={1.5} />
-
       {/* ============================================================== */}
       {/* 1. KAMAL (CONDUCTEUR AU VOLANT) */}
       {/* ============================================================== */}

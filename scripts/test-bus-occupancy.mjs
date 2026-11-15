@@ -5,10 +5,10 @@ async function load(path) {
   const compiled = await build({ entryPoints: [path], bundle: true, format: "esm", platform: "node", write: false, logLevel: "silent" });
   return import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);
 }
-const { getBusOccupancy, getAvatarSeat, getPhysicalSeat, getVisitorRows, getBusPhysicalRows, PASSENGER_SEAT_X } = await load("src/lib/bus-occupancy.ts");
-const { getRenderedRowIndices, getNearestBusDoor, getSeatRowZ } = await load("src/lib/bus-layout.ts");
+const { getBusOccupancy, getAvatarSeat, getPhysicalSeat, getVisitorRows, getBusPhysicalRows, getRegisteredSeat, getRegisteredSeatIndex, PASSENGER_SEAT_X } = await load("src/lib/bus-occupancy.ts");
+const { getRenderedRowIndices, getNearestBusDoor, getSeatCountInRow, getSeatRowZ, getBusDoors, getBusRearWallZ, getBusDoorBounds, getWheelPositions } = await load("src/lib/bus-layout.ts");
 const { BUS_CREW, countPeopleOnBoard } = await load("src/lib/bus-crew.ts");
-const { createJourneyState, beginJourney, updateJourney } = await load("src/lib/bus-journey.ts");
+const { createJourneyState, beginJourney, getPassengerWalkPath, updateJourney } = await load("src/lib/bus-journey.ts");
 assert.equal(BUS_CREW.length, 3);
 assert.equal(countPeopleOnBoard(0), BUS_CREW.length, "An empty visitor list includes only the three guides.");
 assert.equal(countPeopleOnBoard(2), 5, "The two real visitors must not be mixed with artificial passengers.");
@@ -24,6 +24,7 @@ const check = options => {
     const key = `${person.seat.row}:${person.seat.seatInRow < 2 ? "left" : "right"}`;
     benches.set(key, (benches.get(key) ?? 0) + 1);
     assert.equal(person.seat.x, PASSENGER_SEAT_X[person.seat.seatInRow]);
+    assert(person.seat.seatInRow < getSeatCountInRow(person.seat.row), "Nobody occupies the door-side steps.");
     assert(person.physicalSeatIndex >= 0 && person.physicalSeatIndex < result.numRows * 4);
   }
   assert([...benches.values()].every(count => count <= 2), "No bench may contain a third figure, including the current avatar.");
@@ -81,6 +82,45 @@ for (let capacity = 0; capacity <= 32; capacity++) {
   assert.equal(getAvatarSeat(capacity,0,null).originSeatIndex,capacity,
     "The fallback seat follows the registered slots without reserving an NPC block.");
   assert.equal(getBusPhysicalRows(capacity), Math.max(6, Math.ceil((capacity + 1) / 4)), "The bus reserves only visitor rows and one fallback slot.");
+}
+
+// A 34-seat section has eight full rows followed by two places opposite its door.
+const longCapacity = 104;
+const longRows = getBusPhysicalRows(longCapacity);
+const longBus = check({ ...base, passengerCount: longCapacity, seatCapacity: longCapacity, currentPassengerIndex: null, avatarAboard: false });
+assert.equal(longBus.detailed.length + longBus.simplified.length, longCapacity);
+for (const person of [...longBus.detailed, ...longBus.simplified]) {
+  assert.equal(getRegisteredSeatIndex(person.seat.row, person.seat.seatInRow), person.index);
+  const registered = getRegisteredSeat(person.index);
+  assert.deepEqual(registered, { row: person.seat.row, column: person.seat.seatInRow });
+}
+for (const door of getBusDoors(longRows).slice(1)) {
+  const occupants = [...longBus.detailed, ...longBus.simplified].filter(person => person.seat.z === door.z);
+  assert.deepEqual(occupants.map(person => person.seat.x).sort((a, b) => a - b), [-0.94, -0.5]);
+  assert.deepEqual(getNearestBusDoor(door.z, longRows), door);
+  for (const { seat } of occupants) {
+    const path = getPassengerWalkPath(seat.z, door, seat.x);
+    assert.equal(path[0].z, door.z, "The visitor enters through the door opposite their bench.");
+    assert(path.some(point => point.x === 0 && point.z === door.z), "The path reaches the aisle before turning into the bench.");
+    assert.deepEqual(path.at(-1).toArray(), [seat.x, .64, seat.z]);
+  }
+}
+const vestibuleSwap = check({ ...base, passengerCount: longCapacity, seatCapacity: longCapacity, reservedRow: 8, reservedColumn: 3 });
+assert.equal(vestibuleSwap.avatar.seat.seatInRow, 1, "The avatar stays on the bench across from the door.");
+assert([...vestibuleSwap.detailed, ...vestibuleSwap.simplified].some(person => person.index === 33 && person.physicalSeatIndex === 0),
+  "The displaced visitor keeps their database identity and moves to the avatar's original seat.");
+assert.deepEqual(getRegisteredSeat(34), { row: 9, column: 0 }, "Seats resume on both sides after a vestibule.");
+
+for (const numRows of [6, 9, 10, 18, 37, 1000]) {
+  const doors = getBusDoors(numRows), rearWall = getBusRearWallZ(numRows);
+  const positions = getWheelPositions(rearWall, doors);
+  assert.equal(positions.length, 4, "Extending the bus preserves two axles and creates no middle wheels.");
+  const axleZs = [...new Set(positions.map(([, z]) => z))];
+  assert.equal(axleZs.length, 2);
+  for (const z of axleZs) for (const door of doors) {
+    const { frontZ, rearZ } = getBusDoorBounds(door);
+    assert(z + .66 < frontZ || z - .66 > rearZ, "The wheel keeps each door well open.");
+  }
 }
 const outside = check({...base,avatarAboard:false});
 assert.deepEqual(outside.detailed.map(person=>person.index).sort(),[1,2,3],

@@ -3,8 +3,8 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BusHud, type ToastMessage } from "./BusHud";
-import { computeNumRows } from "@/lib/bus-layout";
-import { getBusPhysicalRows } from "@/lib/bus-occupancy";
+import { getSeatCountInRow } from "@/lib/bus-layout";
+import { getBusPhysicalRows, getRegisteredSeat } from "@/lib/bus-occupancy";
 import { type Phase, type WorldState } from "./bus/constants";
 import type { PassengerProfile } from "@/types/passenger";
 import { playDing, playStretch, unlockAudio } from "@/lib/horn";
@@ -493,8 +493,9 @@ export default function BusExperience() {
         restoreSavedProfile(resolvedPassenger);
       }
       if (d.seatIndex !== null) {
-        setSeatRow(Math.min(computeNumRows(d.seatCapacity) - 1, Math.floor(d.seatIndex / 4)));
-        setSeatColumn(d.seatIndex % 4);
+        const seat = getRegisteredSeat(d.seatIndex);
+        setSeatRow(seat.row);
+        setSeatColumn(seat.column);
       }
       if (resolvedPassenger) {
         setPassengerProfiles((profiles) => [
@@ -648,7 +649,8 @@ export default function BusExperience() {
     ? (currentPassengerEntryNumber ?? currentPassengerSeatIndex + 1)
     : null;
   const numRows = getBusPhysicalRows(seatCapacity);
-  const effectiveSeatColumn = seatColumn ?? (currentPassengerSeatIndex !== null ? currentPassengerSeatIndex % 4 : 3);
+  const registeredColumn = currentPassengerSeatIndex !== null ? getRegisteredSeat(currentPassengerSeatIndex).column : 3;
+  const effectiveSeatColumn = Math.min(seatColumn ?? registeredColumn, getSeatCountInRow(seatRow) - 1);
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
@@ -688,7 +690,7 @@ export default function BusExperience() {
         currentSeatRow={seatRow}
         currentSeatColumn={effectiveSeatColumn}
         isMutedForFullscreen={theoryVideoPlaying}
-        uiPaused={overlayOpen && !directory.showMessages}
+        uiPaused={overlayOpen}
         hasEntered={hasEntered}
         boardingPending={joining}
         boardingFromSeat={boardingFromSeat}
