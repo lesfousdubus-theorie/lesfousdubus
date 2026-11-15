@@ -189,7 +189,7 @@ export function PassengerListModal({
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative min-w-[12rem] flex-1">
                   <label htmlFor="passenger-list-search" className="sr-only">
-                    Rechercher un passager par pseudo ou numéro de place
+                    Rechercher un passager par nom ou numéro de place
                   </label>
                   <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#b6c7eb]" />
                   <input
@@ -197,7 +197,7 @@ export function PassengerListModal({
                     type="search"
                     value={activeSearchQuery}
                     onChange={(event) => setActiveSearchQuery(event.target.value)}
-                    placeholder="Rechercher un pseudo ou n° de place…"
+                    placeholder="Rechercher un nom ou n° de place…"
                     className="min-h-11 w-full rounded-xl border border-white/20 bg-[#0c1b3a] py-2 pl-10 pr-11 text-base text-white placeholder:text-[#8ea5d4] transition-colors focus:border-[#ffd23f] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] sm:text-sm"
                   />
                   {activeSearchQuery && (

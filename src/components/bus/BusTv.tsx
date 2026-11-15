@@ -28,14 +28,16 @@ export function BusTvFrame({
   pos,
   idx,
   tvOn,
-  isActive,
+  isActive: _isActive,
   visible,
   mats,
   tvOffTex,
-  posterTex,
+  posterTex: _posterTex,
   partyCards,
   reducedMotion,
 }: BusTvFrameProps) {
+  void _isActive;
+  void _posterTex;
   return (
     <group name="bus-tv-frame" userData={{ index: idx }} key={`tv-frame-${idx}-${pos[2]}`} position={pos} visible={visible}>
       <mesh material={mats.dark} castShadow>
@@ -59,13 +61,13 @@ export function BusTvFrame({
         <mesh name="bus-tv-display" position={[0, 0, 0.053]}>
           <planeGeometry args={[TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT]} />
           <meshStandardMaterial
-            map={tvOn ? posterTex : tvOffTex}
-            color={tvOn ? "#ffffff" : "#05070b"}
+            map={tvOffTex}
+            color="#05070b"
             emissive="#ffffff"
-            emissiveMap={tvOn ? posterTex : tvOffTex}
-            emissiveIntensity={tvOn ? (isActive ? 0.52 : 0.32) : 0}
-            roughness={tvOn ? 0.42 : 0.25}
-            metalness={tvOn ? 0.06 : 0.8}
+            emissiveMap={tvOffTex}
+            emissiveIntensity={0}
+            roughness={tvOn ? 0.35 : 0.25}
+            metalness={tvOn ? 0.1 : 0.8}
             toneMapped={false}
           />
         </mesh>

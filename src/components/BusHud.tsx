@@ -504,71 +504,73 @@ export function BusHud({
           </>
         )}
 
-        {/* Navigation entre les rangées et les colonnes quand on est à l'intérieur */}
+        {/* Navigation unifiée entre les rangées et les colonnes quand on est à l'intérieur */}
         {phase === "inside" && (
-          <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] flex flex-col items-end gap-1.5 sm:right-4 sm:top-[6.25rem] sm:gap-2">
-            {/* Déplacement dans l'allée */}
-            <div className="bus-glass flex h-11 items-center gap-1 rounded-2xl bg-[#07142b]/95 px-1.5 shadow-lg ring-1 ring-white/35 backdrop-blur-md sm:px-3">
-              <button
-                type="button"
-                onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
-                disabled={freeView || seatRow <= 0}
-                aria-label="Rangée précédente"
-                className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
-                title={freeView ? "Désactive la vue libre pour changer de rangée" : seatRow <= 0 ? "Première rangée atteinte" : "Rangée précédente"}
-              >
-                <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
-                <ChevronLeftIcon className="relative h-4 w-4 shrink-0" />
-              </button>
-              <span className="flex h-11 items-center justify-center px-1.5 text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white sm:px-2">
-                <span>Rangée</span>
-                <span className="ml-1 text-[#ffd23f]">{seatRow + 1}</span>
-                <span className="mx-0.5 text-[#dce7ff]">/</span>
-                <span>{numRows}</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
-                disabled={freeView || seatRow >= numRows - 1}
-                aria-label="Rangée suivante"
-                className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
-                title={freeView ? "Désactive la vue libre pour changer de rangée" : seatRow >= numRows - 1 ? "Dernière rangée atteinte" : "Rangée suivante"}
-              >
-                <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
-                <ChevronRightIcon className="relative h-4 w-4 shrink-0" />
-              </button>
-            </div>
+          <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] sm:right-4 sm:top-[6.25rem]">
+            <div className="bus-glass flex flex-col gap-1 rounded-2xl bg-[#07142b]/95 p-1.5 shadow-lg ring-1 ring-white/35 backdrop-blur-md">
+              {/* Déplacement dans l'allée */}
+              <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => { if (freeView) toggleFreeView(); setSeatRow((r) => Math.max(0, r - 1)); }}
+                  disabled={seatRow <= 0}
+                  aria-label="Rangée précédente"
+                  className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/50 active:scale-95 cursor-pointer"
+                  title={seatRow <= 0 ? "Première rangée atteinte" : "Rangée précédente"}
+                >
+                  <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
+                  <ChevronLeftIcon className="relative h-4 w-4 shrink-0" />
+                </button>
+                <span className="flex h-11 items-center justify-center text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
+                  <span>Rangée</span>
+                  <span className="ml-1 text-[#ffd23f]">{seatRow + 1}</span>
+                  <span className="mx-0.5 text-[#dce7ff]">/</span>
+                  <span>{numRows}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { if (freeView) toggleFreeView(); setSeatRow((r) => Math.min(numRows - 1, r + 1)); }}
+                  disabled={seatRow >= numRows - 1}
+                  aria-label="Rangée suivante"
+                  className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/50 active:scale-95 cursor-pointer"
+                  title={seatRow >= numRows - 1 ? "Dernière rangée atteinte" : "Rangée suivante"}
+                >
+                  <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
+                  <ChevronRightIcon className="relative h-4 w-4 shrink-0" />
+                </button>
+              </div>
 
-            {/* Déplacement latéral sur les sièges de la rangée */}
-            <div className="bus-glass flex h-11 items-center gap-1 rounded-2xl bg-[#07142b]/95 px-1.5 shadow-lg ring-1 ring-white/35 backdrop-blur-md sm:px-3">
-              <button
-                type="button"
-                onClick={() => setSeatColumn(Math.max(0, seatColumn - 1))}
-                disabled={freeView || seatColumn <= 0}
-                aria-label="Colonne à gauche"
-                className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
-                title={freeView ? "Désactive la vue libre pour changer de colonne" : seatColumn <= 0 ? "Déjà dans la colonne la plus à gauche" : "Colonne à gauche"}
-              >
-                <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
-                <ChevronLeftIcon className="relative h-4 w-4 shrink-0" />
-              </button>
-              <span className="flex h-11 items-center justify-center px-1.5 text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white sm:px-2">
-                <span>Colonne</span>
-                <span className="ml-1 text-[#ffd23f]">{seatColumn + 1}</span>
-                <span className="mx-0.5 text-[#dce7ff]">/</span>
-                <span>{seatCountInRow}</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1))}
-                disabled={freeView || seatColumn >= seatCountInRow - 1}
-                aria-label="Colonne à droite"
-                className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
-                title={freeView ? "Désactive la vue libre pour changer de colonne" : seatColumn >= seatCountInRow - 1 ? "Déjà dans la colonne la plus à droite" : "Colonne à droite"}
-              >
-                <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
-                <ChevronRightIcon className="relative h-4 w-4 shrink-0" />
-              </button>
+              {/* Déplacement latéral sur les sièges de la rangée */}
+              <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1 border-t border-white/10 pt-1">
+                <button
+                  type="button"
+                  onClick={() => { if (freeView) toggleFreeView(); setSeatColumn(Math.max(0, seatColumn - 1)); }}
+                  disabled={seatColumn <= 0}
+                  aria-label="Colonne à gauche"
+                  className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/50 active:scale-95 cursor-pointer"
+                  title={seatColumn <= 0 ? "Déjà dans la colonne la plus à gauche" : "Colonne à gauche"}
+                >
+                  <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
+                  <ChevronLeftIcon className="relative h-4 w-4 shrink-0" />
+                </button>
+                <span className="flex h-11 items-center justify-center text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
+                  <span>Colonne</span>
+                  <span className="ml-1 text-[#ffd23f]">{seatColumn + 1}</span>
+                  <span className="mx-0.5 text-[#dce7ff]">/</span>
+                  <span>{seatCountInRow}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { if (freeView) toggleFreeView(); setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1)); }}
+                  disabled={seatColumn >= seatCountInRow - 1}
+                  aria-label="Colonne à droite"
+                  className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/50 active:scale-95 cursor-pointer"
+                  title={seatColumn >= seatCountInRow - 1 ? "Déjà dans la colonne la plus à droite" : "Colonne à droite"}
+                >
+                  <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
+                  <ChevronRightIcon className="relative h-4 w-4 shrink-0" />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -752,8 +754,8 @@ export function BusHud({
           {compactHud ? (
             <>
               <div className="flex w-full items-center justify-center gap-1 min-[360px]:gap-1.5">
-                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={() => { closeMobileMenu(); openProfileModal("name"); }} ariaLabel="Modifier mon pseudo" icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
-                  Pseudo
+                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={() => { closeMobileMenu(); openProfileModal("name"); }} ariaLabel="Modifier mon nom" icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
+                  Nom
                 </HudButton>
                 <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={() => { closeMobileMenu(); openProfileModal("comment"); }} ariaLabel="Mettre un commentaire" icon={<CommentBubbleIcon />} disabled={busy || !interiorControlsVisible}>
                   Commenter
@@ -799,8 +801,8 @@ export function BusHud({
           ) : (
             <>
               <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2">
-                <HudButton className="min-w-0 flex-auto" onClick={() => openProfileModal("name")} ariaLabel="Modifier mon pseudo" icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
-                  Pseudo
+                <HudButton className="min-w-0 flex-auto" onClick={() => openProfileModal("name")} ariaLabel="Modifier mon nom" icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
+                  Nom
                 </HudButton>
                 <HudButton className="min-w-0 flex-auto" onClick={() => openProfileModal("comment")} ariaLabel="Mettre un commentaire" icon={<CommentBubbleIcon />} disabled={busy || !interiorControlsVisible}>
                   Commenter

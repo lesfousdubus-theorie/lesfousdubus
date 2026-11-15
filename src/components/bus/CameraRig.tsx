@@ -113,6 +113,7 @@ export default function CameraRig({
   const freeCamera = useRef<{ pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
   const preparedPhaseRef = useRef<Phase | null>(null);
   const framingScaleRef = useRef(1);
+  const initialFramedRef = useRef(false);
   const resetViewRef = useRef(resetViewToken);
   const resetTransition = useRef({
     active: false,
@@ -148,10 +149,23 @@ export default function CameraRig({
   }, [currentSeatZ,currentSeatX,eyeY]);
   const activeTvTarget = useMemo(() => new THREE.Vector3(0, TV_POSITION.y, tvTargetZ), [tvTargetZ]);
 
-  // Cible de rotation OrbitControls ajustée selon la longueur du bus
+  // Cible de rotation OrbitControls centrée sur toute la longueur du bus
   const orbitTargetZ = useMemo(() => {
-    return Math.max(-2.5, cabinCenterZ - 1.2);
+    return cabinCenterZ - 0.5;
   }, [cabinCenterZ]);
+
+  const framingScale = useMemo(() => {
+    const aspect = Math.max(size.width / Math.max(size.height, 1), 0.45);
+    const vFov = THREE.MathUtils.degToRad(55);
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * aspect);
+    const baseDist = DEFAULT_EXTERIOR_OFFSET.length();
+    const halfSpan = cabinLength * 0.52 + 2.4;
+    const neededDist = Math.max(
+      halfSpan / Math.tan(hFov * 0.44),
+      (halfSpan * 0.62) / Math.tan(vFov * 0.44),
+    );
+    return Math.min(4.2, Math.max(1.15, neededDist / baseDist));
+  }, [cabinLength, size.height, size.width]);
 
   const maxOrbitDistance = useMemo(() => {
     return getExteriorMaxDistance(cabinLength);
@@ -222,12 +236,27 @@ export default function CameraRig({
     arrivedRef.current(destination);
   }, [camera]);
 
-  // Le même angle doit montrer le bus entier sur un écran portrait.
+  // Le même angle doit montrer le bus entier sur un écran 16:9 comme sur portrait.
   // Au redimensionnement, préserver le zoom choisi en ajustant sa distance.
   useEffect(() => {
-    const scale = THREE.MathUtils.clamp(0.85 / (size.width / Math.max(1, size.height)), 1, 2.5);
+    const scale = framingScale;
     const ratio = scale / framingScaleRef.current;
     framingScaleRef.current = scale;
+    const hasCamParam = typeof window !== "undefined" && Boolean(new URLSearchParams(window.location.search).get("cam"));
+    if (!initialFramedRef.current) {
+      initialFramedRef.current = true;
+      if (!hasCamParam && phaseRef.current === "outside") {
+        const targetTarget = new THREE.Vector3(0, 1.9, orbitTargetZ);
+        camera.position.copy(targetTarget).addScaledVector(DEFAULT_EXTERIOR_OFFSET, scale);
+        if (controls.current) {
+          controls.current.target.copy(targetTarget);
+          controls.current.update();
+        }
+        saved.current.target.copy(targetTarget);
+        saved.current.pos.copy(camera.position);
+        return;
+      }
+    }
     if (phaseRef.current === "outside" || freeViewRef.current) {
       const rt = resetTransition.current;
       if (rt.active) {
@@ -239,13 +268,12 @@ export default function CameraRig({
       controls.current?.update();
     } else {
       saved.current.pos.sub(saved.current.target).multiplyScalar(ratio).add(saved.current.target);
-      if(phaseRef.current==="exiting") {
-        const a=anim.current;
+      if (phaseRef.current === "exiting") {
+        const a = anim.current;
         a.to.copy(saved.current.pos);
-
       }
     }
-  }, [camera, size.width, size.height, activeEyePos]);
+  }, [camera, framingScale, orbitTargetZ, activeEyePos]);
 
   useEffect(() => {
     if (resetViewRef.current === resetViewToken) return;
@@ -265,10 +293,9 @@ export default function CameraRig({
     if ((phase === "outside" || freeViewRef.current) && controls.current) {
       const control = controls.current;
       const targetTarget = new THREE.Vector3(0, 1.9, orbitTargetZ);
-      const targetPos = DEFAULT_CAMERA_POS.clone()
-        .sub(targetTarget)
-        .multiplyScalar(framingScaleRef.current)
-        .add(targetTarget);
+      const targetPos = targetTarget
+        .clone()
+        .addScaledVector(DEFAULT_EXTERIOR_OFFSET, framingScaleRef.current);
 
       if (reducedMotion) {
         control.minPolarAngle = 0;

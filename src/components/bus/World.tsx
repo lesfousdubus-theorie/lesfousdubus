@@ -8,7 +8,6 @@ import WorldOcean from "./WorldOcean";
 import WorldSeaCreatures from "./WorldSeaCreatures";
 import { useFrame } from "@react-three/fiber";
 import { WORLD_SPEED, type Phase, type WorldState } from "./constants";
-import { obstructsBusView } from "@/lib/bus-camera";
 import { BRIDGE_MARKING_BOX } from "@/lib/world-geometry";
 
 export const ZONE_LEN = 160;
@@ -144,7 +143,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
   );
   const propRefs = useRef<(THREE.Group | null)[]>([]);
   const propBounds = useRef<THREE.Box3[]>([]);
-  const occlusion = useMemo(() => ({ ray: new THREE.Ray(), box: new THREE.Box3(), shift: new THREE.Vector3(), hit: new THREE.Vector3() }), []);
+  const occlusion = useMemo(() => ({ box: new THREE.Box3(), shift: new THREE.Vector3() }), []);
   useLayoutEffect(() => {
     propBounds.current = propRefs.current.map((group) => {
       if (!group) return new THREE.Box3();
@@ -154,14 +153,6 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
   }, [props]);
   const zoneRefs = useRef<(THREE.Group | null)[]>([]);
   const sceneryRefs = useRef<(THREE.Group | null)[]>([]);
-  const sceneryBounds = useRef<THREE.Box3[]>([]);
-  useLayoutEffect(() => {
-    sceneryBounds.current = sceneryRefs.current.map((group) => {
-      if (!group) return new THREE.Box3();
-      group.updateWorldMatrix(true, true);
-      return new THREE.Box3().setFromObject(group).translate(new THREE.Vector3(0, 0, -group.parent!.position.z));
-    });
-  }, [lowPower]);
   const dashRef = useRef<THREE.InstancedMesh>(null);
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
   const activeWeatherKey = useRef("");
@@ -173,26 +164,21 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
     const scroll = (worldRef.current?.scroll ?? 0) + frameDt * WORLD_SPEED * mult;
     if (worldRef.current) worldRef.current.scroll = scroll;
 
-    occlusion.ray.origin.copy(state.camera.position);
-    occlusion.ray.direction.set(0, 1.9, cabinCenterZ).sub(state.camera.position);
-    const busDistance = occlusion.ray.direction.length();
-    occlusion.ray.direction.normalize();
-
-    // Défilement des décors
+    // Défilement des décors : ne masquer un élément que si la caméra passe littéralement dedans.
     for (let i = 0; i < props.length; i++) {
       const g = propRefs.current[i];
       if (!g) continue;
       const z = (((props[i].base + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
       g.position.z = z;
-      g.visible = z > -380 && z < 320;
+      g.visible = z > -430 && z < 350;
       const bounds = propBounds.current[i];
       if (g.visible && phase !== "inside" && bounds && !bounds.isEmpty()) {
-        occlusion.box.copy(bounds).translate(occlusion.shift.set(0, 0, z));
-        g.visible = !obstructsBusView(occlusion.ray, occlusion.box, busDistance, occlusion.hit);
+        occlusion.box.copy(bounds).translate(occlusion.shift.set(0, 0, z)).expandByScalar(1.1);
+        g.visible = !occlusion.box.containsPoint(state.camera.position);
       }
     }
 
-    // Défilement des îles
+    // Défilement des îles : garder les monuments visibles dans tout le champ de vision lors de l'orbite.
     for (let i = 0; i < 5; i++) {
       const g = zoneRefs.current[i];
       if (!g) continue;
@@ -200,25 +186,18 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       let z = (((center + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
       if (z > 360) z -= LOOP;
       g.position.z = z;
-      // Buildings and foliage share the same exterior visibility protection as
-      // loose props. Separate left/right bounds never span across the bus.
       for (let part = 0; part < 3; part++) {
         const index = i * 3 + part;
         const scenery = sceneryRefs.current[index];
         if (!scenery) continue;
-        scenery.visible = z > -420 && z < 350;
-        const bounds = sceneryBounds.current[index];
-        if (scenery.visible && phase !== "inside" && bounds && !bounds.isEmpty()) {
-          occlusion.box.copy(bounds).translate(occlusion.shift.set(0, 0, z));
-          scenery.visible = !obstructsBusView(occlusion.ray, occlusion.box, busDistance, occlusion.hit);
-        }
+        scenery.visible = z > -430 && z < 350;
       }
     }
 
     // Défilement des lignes blanches du pont
     for (let i = 0; i < dashes.length; i++) {
       const z = ((((dashes[i] + scroll) % 800) + 800) % 800) - 440;
-      dashMatrix.makeTranslation(0, 0.038, z);
+      dashMatrix.makeTranslation(0, 0.052, z);
       dashRef.current?.setMatrixAt(i, dashMatrix);
     }
     if (dashRef.current) dashRef.current.instanceMatrix.needsUpdate = true;
@@ -245,7 +224,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
   return (
     <group>
       <WorldOcean reducedMotion={reducedMotion} />
-      <WorldSeaCreatures cabinCenterZ={cabinCenterZ} reducedMotion={reducedMotion} lowPower={lowPower} />
+      <WorldSeaCreatures worldRef={worldRef} cabinCenterZ={cabinCenterZ} reducedMotion={reducedMotion} lowPower={lowPower} />
 
       {/* Îles des 5 mondes avec rivages et plages */}
       {ZONES.map((zone, i) => (
@@ -256,7 +235,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
           }}
         >
           {/* Terre principale */}
-          <mesh position={[0, -0.3, 0]} receiveShadow>
+          <mesh position={[0, -0.34, 0]} receiveShadow>
             <boxGeometry args={[96, 0.6, ZONE_LEN - 16]} />
             <meshStandardMaterial color={zone.ground} roughness={0.9} />
           </mesh>
@@ -281,16 +260,16 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       ))}
 
       {/* Pont maritime continu de Grand Line */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, -60]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.024, -60]} receiveShadow>
         <planeGeometry args={[7.4, 960]} />
         <meshStandardMaterial color="#2d3036" roughness={0.92} />
       </mesh>
 
       {/* Bandes de rive jaunes */}
       {[-3.5, 3.5].map((x) => (
-        <mesh key={x} name={`world-bridge-edge-marking-${x < 0 ? "left" : "right"}`} position={[x, 0.035, -60]}>
+        <mesh key={x} name={`world-bridge-edge-marking-${x < 0 ? "left" : "right"}`} position={[x, 0.048, -60]}>
           <boxGeometry args={BRIDGE_MARKING_BOX} />
-          <meshStandardMaterial color="#ffc107" roughness={0.8} />
+          <meshStandardMaterial color="#ffc107" roughness={0.8} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
         </mesh>
       ))}
 
@@ -307,7 +286,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       {/* Ligne médiane discontinue animée */}
       <instancedMesh ref={dashRef} args={[undefined, undefined, dashes.length]} frustumCulled={false}>
         <boxGeometry args={[0.22, 0.02, 3.2]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.7} />
+        <meshStandardMaterial color="#ffffff" roughness={0.7} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </instancedMesh>
 
       {/* Décors 3D enrichis des mondes */}

@@ -43,7 +43,6 @@ export function startMessageMotion(wall: HTMLElement, moving: boolean) {
     height = nextHeight;
     const count = nodes.length;
     const columns = Math.min(count, Math.max(1, Math.round(Math.sqrt(count * width / Math.max(1, height) / 2.1))));
-    const rows = Math.ceil(count / columns);
     const cellWidth = width / columns;
     const bubbleWidth = Math.min(Math.max(cellWidth - 14, 96), 256, Math.max(0, width - PADDING * 2));
     wall.style.setProperty("--message-bubble-width", `${bubbleWidth}px`);
@@ -53,16 +52,20 @@ export function startMessageMotion(wall: HTMLElement, moving: boolean) {
       const speed = (width < 640 ? 17 : 25) + index % 5 * 4;
       const nodeWidth = node.offsetWidth;
       const bubbleHeight = node.offsetHeight;
-      const left = ((index % columns + .5) * cellWidth) - nodeWidth / 2;
-      const top = ((Math.floor(index / columns) + .5) * height / rows) - bubbleHeight / 2;
+      const spanX = Math.max(0, width - nodeWidth - PADDING * 2);
+      const spanY = Math.max(0, height - bubbleHeight - PADDING * 2);
+      const scatterX = (index * 0.61803398875 + (index % 7) * 0.143) % 1;
+      const scatterY = (index * 0.38196601125 + (index % 5) * 0.197) % 1;
+      const originX = scatterX * spanX;
+      const originY = scatterY * spanY;
       return {
         node, width: nodeWidth, height: bubbleHeight,
-        x: left, y: top, originX: Math.max(0, left - PADDING), originY: Math.max(0, top - PADDING),
+        x: PADDING + originX, y: PADDING + originY, originX, originY,
         vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
       };
     });
     const saved = wallProgress.get(wall);
-    age = saved?.width === width && saved.height === height && saved.count === count ? saved.age : 0;
+    age = saved?.width === width && saved.height === height && saved.count === count ? saved.age : 37;
     paint();
     wall.dataset.positioned = "true";
   }

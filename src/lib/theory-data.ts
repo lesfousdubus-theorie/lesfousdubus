@@ -120,7 +120,7 @@ export const THEORY_GROUPS: readonly TheoryGroup[] = [
       },
       {
         id: "fresque-harley", icon: "🎨",
-        title: "La fresque serait un récit illustré",
+        title: "La fresque serait l’histoire illustrée qui est en train de se passer",
         summary: "Les géants, peut-être des enfants, auraient illustré les textes reçus du futur avec leurs propres codes. Cela expliquerait les ressemblances avec les héros actuels et certaines différences. L’épée et le bouclier pourraient même évoquer Zoro et Sanji.",
         sources: [THEORY_REFERENCES.mural, THEORY_REFERENCES.swordAndShield],
       },

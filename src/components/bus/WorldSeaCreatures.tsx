@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { createSeaCreatures, type SeaCreatureModel } from "@/lib/sea-creature-models";
+import { WORLD_SPEED, type WorldState } from "./constants";
 import { SEA_LEVEL } from "./WorldOcean";
 
 const PERIOD = 20;
@@ -78,8 +79,8 @@ function animateWater(effect: Effect, scratch: THREE.Object3D, crossing: number,
   spray.instanceMatrix.needsUpdate = true;
 }
 
-export default function WorldSeaCreatures({ cabinCenterZ, reducedMotion, lowPower }: {
-  cabinCenterZ: number; reducedMotion: boolean; lowPower: boolean;
+export default function WorldSeaCreatures({ worldRef, cabinCenterZ, reducedMotion, lowPower }: {
+  worldRef: React.RefObject<WorldState>; cabinCenterZ: number; reducedMotion: boolean; lowPower: boolean;
 }) {
   const limit = lowPower ? 2 : SLOTS.length;
   const material = useMemo(() => new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: .79, emissive: "#182339", emissiveIntensity: .19 }), []);
@@ -88,6 +89,7 @@ export default function WorldSeaCreatures({ cabinCenterZ, reducedMotion, lowPowe
   const scratch = useMemo(() => new THREE.Object3D(), []);
   const firstFrame = useRef<number | null>(null);
   const animation = useRef<{ models: SeaCreatureModel[]; slots: Effect[] }>(null);
+  const cycleAnchors = useRef(SLOTS.map(() => ({ cycle: Number.NaN, anchorScroll: 0, entryZ: 0 })));
 
   useLayoutEffect(() => {
     animation.current = { models, slots: effects.slots };
@@ -113,9 +115,13 @@ export default function WorldSeaCreatures({ cabinCenterZ, reducedMotion, lowPowe
     const cycles = Math.ceil(models.length / slots.length);
     firstFrame.current ??= clock.elapsedTime;
     const time = clock.elapsedTime - firstFrame.current;
+    const world = worldRef.current;
+    const scroll = world?.scroll ?? 0;
+    const busSpeed = WORLD_SPEED * (world?.speedMultiplier ?? 1) * (world?.motionFactor ?? 1);
     for (let index = 0; index < slots.length; index++) {
       const slot = SLOTS[index];
       const effect = slots[index];
+      const anchor = cycleAnchors.current[index];
       const elapsed = time + slot.offset;
       const cycle = Math.floor(elapsed / PERIOD);
       const local = elapsed - cycle * PERIOD;
@@ -131,21 +137,34 @@ export default function WorldSeaCreatures({ cabinCenterZ, reducedMotion, lowPowe
         effect.group.visible = false;
         continue;
       }
-      effect.model = model;
-      const group = model.group;
-      group.visible = true;
+      const route = index % 2 ? Math.cos(cycle * 2.2) * 12 : Math.sin(cycle * 1.7) * 14;
+      if (anchor.cycle !== cycle) {
+        anchor.cycle = cycle;
+        anchor.anchorScroll = scroll - busSpeed * local;
+        anchor.entryZ = cabinCenterZ + (index % 2 ? -12 : 10) + route * 0.6 - duration * 0.5 * busSpeed;
+      }
+      const swimSpan = model.motion === "rise" ? 16 : 42;
       const p = reducedMotion ? .46 : local / duration;
+      const z = reducedMotion
+        ? cabinCenterZ + slot.z
+        : anchor.entryZ + (scroll - anchor.anchorScroll) + slot.direction * (p - .5) * swimSpan;
+      const group = model.group;
+      if (z < -420 || z > 340) {
+        group.visible = false;
+        effect.group.visible = false;
+        continue;
+      }
+      effect.model = model;
+      group.visible = true;
       const rise = THREE.MathUtils.smoothstep(p, 0, .29);
       const dive = THREE.MathUtils.smoothstep(p, .68, 1);
       const jumpTime = THREE.MathUtils.clamp((p - .20) / .57, 0, 1);
       const arc = model.motion === "breach" && !reducedMotion ? Math.sin(Math.PI * jumpTime) ** 1.70 : 0;
       const surface = model.motion === "surface" ? -1.4 : model.motion === "rise" ? -.8 : -2.4;
       const height = surface - (1 - rise + dive) * 25 + arc * 10.8 + (reducedMotion ? 0 : Math.sin(local * 1.9) * .37);
-      const route = index % 2 ? Math.cos(cycle * 2.2) * 12 : Math.sin(cycle * 1.7) * 14;
       // Les plages s'arrêtent à |x| = 52. Les créatures restent au large, nageoires comprises.
       const x = slot.side * (72 + (1 - p) * 8 + Math.sin(p * Math.PI) * 4);
-      const z = cabinCenterZ + slot.z + route + slot.direction * (p - .5) * 46;
-      const heading = Math.atan2(-slot.side * (8 - Math.cos(p * Math.PI) * 12.56), slot.direction * 46);
+      const heading = Math.atan2(-slot.side * (8 - Math.cos(p * Math.PI) * 12.56), slot.direction * swimSpan);
       const pitch = reducedMotion ? 0 : model.motion === "breach" && jumpTime > 0 && jumpTime < 1
         ? -Math.cos(Math.PI * jumpTime) * Math.sqrt(Math.max(0, arc)) * .65
         : Math.sin(local * 1.24) * .065 + dive * .20 - (1 - rise) * .18;
