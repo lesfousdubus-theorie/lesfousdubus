@@ -3,16 +3,17 @@ import { getBusDoorBounds, type BusDoorLayout } from "./bus-layout";
 // Formulations courtes des pistes de theory-data.ts, écrites pour des écrans et des tags.
 export const THEORY_SIGN_MESSAGES = [
   { id: "siecle", lines: ["LE SIÈCLE OUBLIÉ", "C’EST LE PRÉSENT"] },
-  { id: "luffy", lines: ["LUFFY, NIKA", "ET JOY BOY"] },
+  { id: "luffy", lines: ["LUFFY EST NIKA", "ET JOY BOY"] },
   { id: "barbe-noire", lines: ["BARBE NOIRE EST", "DAVY D. JONES"] },
   { id: "poneglyphes", lines: ["LES PONÉGLYPHES", "VIENNENT DU FUTUR"] },
   { id: "timing", lines: ["TOUT EST UNE QUESTION", "DE TIMING"] },
-  { id: "lili", lines: ["VIVI SERA", "LA REINE LILI"] },
-  { id: "ryuma", lines: ["ZORO SERA", "LE SABREUR RYUMA"] },
-  { id: "robin", lines: ["ROBIN ÉCRIRA", "LE RIO PONÉGLYPHE"] },
+  { id: "lili", lines: ["VIVI SERA", "LILY"] },
+  { id: "ryuma", lines: ["ZORO SERA", "RYUMA"] },
+  { id: "robin", lines: ["ROBIN ÉCRIRA", "LES PONÉGLYPHES"] },
   { id: "harley", lines: ["USOPP ÉCRIRA", "LE HARLEY"] },
   { id: "all-blue", lines: ["LES QUATRE MERS", "FORMERONT ALL BLUE"] },
-  { id: "laugh-tale", lines: ["LAUGH TALE : LE BON LIEU", "ET LE BON MOMENT"] },
+  { id: "laugh-tale", lines: ["LAUGH TALE EST", "UNE QUESTION DE TEMPS"] },
+  { id: "premier-pirate", lines: ["LUFFY SERA LE PREMIER PIRATE", "À PRENDRE LA MER !"] },
 ] as const;
 
 interface GraffitiPlacement {
