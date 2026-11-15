@@ -116,7 +116,7 @@ export function ManagePlaceModal({
                       className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/30 bg-[#0c1b3a] px-4 py-2.5 text-sm font-bold text-white transition hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a]"
                     >
                       <UserBadgeIcon className="h-4 w-4 shrink-0" />
-                      <span>Modifier mon pseudo</span>
+                      <span>Modifier mon nom</span>
                     </button>
                   )}
                   {onEditComment && (

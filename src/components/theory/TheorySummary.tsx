@@ -86,16 +86,28 @@ export default function TheorySummary() {
       </div>
 
       <div ref={groupsRef} className="space-y-10">
-        {THEORY_GROUPS.map(group => (
-          <section key={group.id} id={"modal-" + group.id} className="scroll-mt-6">
-            <h4 className="mb-5 text-xl font-black leading-7 text-[#ffd23f] sm:text-2xl">{group.title}</h4>
-            <div className="grid items-start gap-3 sm:grid-cols-2">
-              {getOrderedSections(group.sections).map(section => (
-                <PointCard key={section.id} section={section} onToggle={syncAllExpanded} />
-              ))}
-            </div>
-          </section>
-        ))}
+        {THEORY_GROUPS.map(group => {
+          const orderedSections = getOrderedSections(group.sections);
+          const leftSections = orderedSections.filter((_, index) => index % 2 === 0);
+          const rightSections = orderedSections.filter((_, index) => index % 2 === 1);
+          return (
+            <section key={group.id} id={"modal-" + group.id} className="scroll-mt-6">
+              <h4 className="mb-5 text-xl font-black leading-7 text-[#ffd23f] sm:text-2xl">{group.title}</h4>
+              <div className="grid items-start gap-3 sm:grid-cols-2">
+                <div className="flex flex-col gap-3">
+                  {leftSections.map(section => (
+                    <PointCard key={section.id} section={section} onToggle={syncAllExpanded} />
+                  ))}
+                </div>
+                <div className="flex flex-col gap-3">
+                  {rightSections.map(section => (
+                    <PointCard key={section.id} section={section} onToggle={syncAllExpanded} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          );
+        })}
       </div>
 
       <div className="border-t border-white/10 pt-5 text-sm text-[#b6c7eb]">

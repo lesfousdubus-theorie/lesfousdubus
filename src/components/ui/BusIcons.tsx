@@ -362,3 +362,20 @@ export function CheckIcon({ className = "h-4 w-4 shrink-0" }: IconProps) {
     </svg>
   );
 }
+
+export function ListOrderedIcon({ className = "h-4 w-4 shrink-0" }: IconProps) {
+  return (
+    <svg aria-hidden="true" focusable="false" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 6h11M10 12h11M10 18h11" />
+      <path d="M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
+    </svg>
+  );
+}
+
+export function ShuffleIcon({ className = "h-4 w-4 shrink-0" }: IconProps) {
+  return (
+    <svg aria-hidden="true" focusable="false" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+    </svg>
+  );
+}

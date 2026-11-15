@@ -12,12 +12,7 @@ const PLAYER_WIDTH = 560;
 const PLAYER_HEIGHT = 315;
 const screenOrigin = () => [0, 0];
 const keepPortalMounted = () => {}; // The aperture owns visibility, including when the camera turns away.
-const screenFromPixels = new THREE.Matrix4().set(
-  TV_SCREEN_WIDTH / PLAYER_WIDTH, 0, 0, -TV_SCREEN_WIDTH / 2,
-  0, -TV_SCREEN_HEIGHT / PLAYER_HEIGHT, 0, TV_SCREEN_HEIGHT / 2,
-  0, 0, 0, 0,
-  0, 0, 0, 1,
-);
+const eps = (value: number) => (Math.abs(value) < 1e-10 ? 0 : value);
 
 const vertexShader = `
   void main() {
@@ -25,36 +20,6 @@ const vertexShader = `
   }
 `;
 const fragmentShader = "void main() { gl_FragColor = vec4(0.0); }";
-
-// Gecko can play a cross-origin iframe without painting it when its CSS
-// transform contains perspective. Cover the same projected quad with a flat
-// parallelogram there. The depth aperture still clips its exact outline.
-function flatFrameTransform(m: number[], width: number, height: number) {
-  const point = (x: number, y: number) => {
-    const w = Math.max(.01, m[3] * x + m[7] * y + m[15]);
-    return { x: (m[0] * x + m[4] * y + m[12]) / w, y: (m[1] * x + m[5] * y + m[13]) / w };
-  };
-  const topLeft = point(0, 0), topRight = point(PLAYER_WIDTH, 0);
-  const bottomLeft = point(0, PLAYER_HEIGHT), bottomRight = point(PLAYER_WIDTH, PLAYER_HEIGHT);
-  const ux = (topRight.x - topLeft.x + bottomRight.x - bottomLeft.x) / 2;
-  const uy = (topRight.y - topLeft.y + bottomRight.y - bottomLeft.y) / 2;
-  const vx = (bottomLeft.x - topLeft.x + bottomRight.x - topRight.x) / 2;
-  const vy = (bottomLeft.y - topLeft.y + bottomRight.y - topRight.y) / 2;
-  const determinant = ux * vy - uy * vx;
-  if (Math.abs(determinant) < .01) return `matrix(${width / PLAYER_WIDTH},0,0,${height / PLAYER_HEIGHT},0,0)`;
-  let minU = 0, maxU = 0, minV = 0, maxV = 0;
-  for (const corner of [topRight, bottomRight, bottomLeft]) {
-    const dx = corner.x - topLeft.x, dy = corner.y - topLeft.y;
-    const u = (dx * vy - dy * vx) / determinant;
-    const v = (dy * ux - dx * uy) / determinant;
-    minU = Math.min(minU, u); maxU = Math.max(maxU, u);
-    minV = Math.min(minV, v); maxV = Math.max(maxV, v);
-  }
-  const x = (maxU - minU) / PLAYER_WIDTH, y = (maxV - minV) / PLAYER_HEIGHT;
-  const left = topLeft.x + ux * minU + vx * minV;
-  const top = topLeft.y + uy * minU + vy * minV;
-  return `matrix(${ux * x},${uy * x},${vx * y},${vy * y},${left},${top})`;
-}
 
 const HALF_W = TV_SCREEN_WIDTH / 2;
 const HALF_H = TV_SCREEN_HEIGHT / 2;
@@ -81,14 +46,14 @@ export default function BusTvScreen({ isOn, interactive, children }: {
   children: ReactNode;
 }) {
   const aperture = useRef<THREE.Mesh>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const cameraLayerRef = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const surfaceRef = useRef<HTMLElement | null>(null);
-  const lastTransform = useRef("");
+  const lastState = useRef({ viewport: "", camera: "", frame: "" });
   const { camera, gl, scene, size } = useThree();
-  const flatFrame = useMemo(() => typeof CSS !== "undefined" && CSS.supports("-moz-appearance", "none"), []);
   const scratch = useMemo(() => ({
     cameraLocal: new THREE.Vector3(),
-    projection: new THREE.Matrix4(),
     screenToView: new THREE.Matrix4(),
     corner: new THREE.Vector3(),
     raycaster: new THREE.Raycaster(),
@@ -98,26 +63,39 @@ export default function BusTvScreen({ isOn, interactive, children }: {
 
   function projectFrame() {
     const screen = aperture.current;
+    const viewport = viewportRef.current;
+    const cameraLayer = cameraLayerRef.current;
     const html = frame.current;
-    if (!screen || !html || !screen.visible) return;
-    // Use the very same world/view transform as the WebGL plane. A single
-    // projective CSS matrix avoids nested perspective containers, which can
-    // make cross-origin video frames paint black in Firefox.
-    const matrix = scratch.projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
-      .multiply(screen.matrixWorld).multiply(screenFromPixels);
-    const m = matrix.elements;
-    const normalization = 1 / Math.max(.001, Math.abs(m[15]));
-    for (let column = 0; column < 16; column += 4) {
-      const w = m[column + 3];
-      m[column] = (m[column] + w) * size.width / 2 * normalization;
-      m[column + 1] = (w - m[column + 1]) * size.height / 2 * normalization;
-      m[column + 2] = column === 8 ? 1 : 0;
-      m[column + 3] = w * normalization;
+    if (!screen || !viewport || !cameraLayer || !html || !screen.visible) return;
+
+    camera.updateMatrixWorld();
+    screen.updateMatrixWorld();
+
+    const fovPx = camera.projectionMatrix.elements[5] * (size.height / 2);
+    const viewportKey = `${size.width}x${size.height}:${fovPx.toFixed(2)}`;
+    if (lastState.current.viewport !== viewportKey) {
+      lastState.current.viewport = viewportKey;
+      viewport.style.width = `${size.width}px`;
+      viewport.style.height = `${size.height}px`;
+      viewport.style.perspective = `${fovPx}px`;
+      cameraLayer.style.width = `${size.width}px`;
+      cameraLayer.style.height = `${size.height}px`;
     }
-    const transform = flatFrame ? flatFrameTransform(m, size.width, size.height) : `matrix3d(${m.join(",")})`;
-    if (lastTransform.current !== transform) {
-      lastTransform.current = transform;
-      html.style.transform = transform;
+
+    const c = camera.matrixWorldInverse.elements;
+    const cameraTransform = `translate3d(0,0,${eps(fovPx)}px) matrix3d(${eps(c[0])},${eps(-c[1])},${eps(c[2])},${eps(c[3])},${eps(c[4])},${eps(-c[5])},${eps(c[6])},${eps(c[7])},${eps(c[8])},${eps(-c[9])},${eps(c[10])},${eps(c[11])},${eps(c[12])},${eps(-c[13])},${eps(c[14])},${eps(c[15])}) translate(${size.width / 2}px,${size.height / 2}px)`;
+    if (lastState.current.camera !== cameraTransform) {
+      lastState.current.camera = cameraTransform;
+      cameraLayer.style.transform = cameraTransform;
+    }
+
+    const w = screen.matrixWorld.elements;
+    const sx = TV_SCREEN_WIDTH / PLAYER_WIDTH;
+    const sy = TV_SCREEN_HEIGHT / PLAYER_HEIGHT;
+    const frameTransform = `translate3d(-50%,-50%,0) matrix3d(${eps(w[0] * sx)},${eps(w[1] * sx)},${eps(w[2] * sx)},${eps(w[3] * sx)},${eps(-w[4] * sy)},${eps(-w[5] * sy)},${eps(-w[6] * sy)},${eps(-w[7] * sy)},${eps(w[8])},${eps(w[9])},${eps(w[10])},${eps(w[11])},${eps(w[12])},${eps(w[13])},${eps(w[14])},${eps(w[15])})`;
+    if (lastState.current.frame !== frameTransform) {
+      lastState.current.frame = frameTransform;
+      html.style.transform = frameTransform;
     }
   }
 
@@ -136,6 +114,7 @@ export default function BusTvScreen({ isOn, interactive, children }: {
       }
     }
     screen.visible = visible;
+    if (visible) projectFrame();
     const visibility = visible ? "visible" : "hidden";
     if (frame.current.style.visibility !== visibility) frame.current.style.visibility = visibility;
     if (!visible || !interactive) {
@@ -234,20 +213,23 @@ export default function BusTvScreen({ isOn, interactive, children }: {
         blending={THREE.NoBlending} toneMapped={false} />
     </mesh>
     <Html calculatePosition={screenOrigin} onOcclude={keepPortalMounted} zIndexRange={[1, 0]} position={[0, 0, SCREEN_Z]}
-      style={{ userSelect: "none", pointerEvents: "none" }}>
-      <div ref={frame} id="tv-frame" style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: PLAYER_WIDTH,
-        height: PLAYER_HEIGHT,
-        transformOrigin: "0 0",
-        background: "#05070c",
-        overflow: "hidden",
-        visibility: "hidden",
-        pointerEvents: "none",
-      }}>
-        {children}
+      style={{ position: "absolute", top: 0, left: 0, userSelect: "none", pointerEvents: "none" }}>
+      <div ref={viewportRef} style={{ position: "absolute", top: 0, left: 0, overflow: "hidden", pointerEvents: "none" }}>
+        <div ref={cameraLayerRef} style={{ position: "absolute", top: 0, left: 0, transformStyle: "preserve-3d", pointerEvents: "none" }}>
+          <div ref={frame} id="tv-frame" style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: PLAYER_WIDTH,
+            height: PLAYER_HEIGHT,
+            background: "#05070c",
+            overflow: "hidden",
+            visibility: "hidden",
+            pointerEvents: "none",
+          }}>
+            {children}
+          </div>
+        </div>
       </div>
     </Html>
   </>;

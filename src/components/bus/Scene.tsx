@@ -134,17 +134,13 @@ function readSceneRuntimeState() {
     || connection?.effectiveType === "2g";
   const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
   const shortSide = Math.min(window.innerWidth, window.innerHeight);
-  const cappedDpr = Math.min(window.devicePixelRatio || 1, 2);
-  const pixelBudget = window.innerWidth * window.innerHeight * cappedDpr * cappedDpr;
   return {
     hidden: document.hidden,
-    // La petite dimension reste stable quand un téléphone pivote, contrairement
-    // à innerWidth seul. On tient aussi compte du coût réel en pixels.
+    // La petite dimension reste stable quand un téléphone pivote, contrairement à innerWidth seul.
     lowPower: constrainedNetwork
       || navigator.hardwareConcurrency <= 4
       || memory <= 4
-      || (coarsePointer && shortSide < 900)
-      || pixelBudget > 5_000_000,
+      || (coarsePointer && shortSide < 900),
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   };
 }
@@ -200,8 +196,8 @@ function useWebGLSupport() {
 
 function AdaptiveDpr({ lowPower, onDprChange }: { lowPower: boolean; onDprChange: (value: number) => void }) {
   const setDpr = useThree((state) => state.setDpr);
-  const baseDpr = Math.min(window.devicePixelRatio || 1, lowPower ? 1.35 : 2);
-  const minimumDpr = Math.min(baseDpr, lowPower ? 1 : 1.15);
+  const baseDpr = typeof window === "undefined" ? 1 : Math.min(window.devicePixelRatio || 1, lowPower ? 1.5 : 2);
+  const minimumDpr = Math.min(baseDpr, lowPower ? 1.15 : 1.5);
   const sampleRef = useRef(createDprSample(baseDpr));
 
   useEffect(() => {
@@ -357,7 +353,7 @@ export default function Scene({
       shadows={lowPower ? false : "basic"}
       frameloop="never"
       dpr={sceneDpr}
-      camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.1, far: cameraFar }}
+      camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.2, far: cameraFar }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none", isolation: "isolate" }}
       onCreated={() => setCanvasReady(true)}

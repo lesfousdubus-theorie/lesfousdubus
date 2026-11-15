@@ -187,7 +187,7 @@ export function OnboardingModal({
                 {reason === "missing-name" ? "Place enregistrée" : "Embarquement"}
               </p>
               <h2 id="onboarding-title" className="mt-0.5 text-xl font-black leading-tight sm:text-2xl">
-                {reason === "missing-name" ? "Choisis ton pseudo" : "Monte dans le bus !"}
+                {reason === "missing-name" ? "Choisis ton nom" : "Monte dans le bus !"}
               </h2>
             </div>
           </div>
@@ -210,7 +210,7 @@ export function OnboardingModal({
         >
           <div>
             <label htmlFor="onboarding-name" className="mb-1.5 flex items-center justify-between gap-2 text-sm font-black text-white">
-              <span>Pseudo</span>
+              <span>Nom</span>
               <span className="text-xs font-semibold text-[#ffd23f]">Obligatoire · 24 caractères max.</span>
             </label>
             <input
@@ -419,7 +419,7 @@ export function OnboardingModal({
             {saving
               ? "Enregistrement…"
               : reason === "missing-name"
-                ? "Enregistrer mon pseudo"
+                ? "Enregistrer mon nom"
                 : "Monter dans le bus"}
           </button>
         </form>

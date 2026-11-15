@@ -76,7 +76,7 @@ export function JoinBusModal({
             <div className="min-w-0 flex-1">
               <h2 id="join-bus-title" className="text-xl font-black leading-tight sm:text-2xl">
                 {mode === "name"
-                  ? hasSavedValue ? "Modifie ton pseudo" : "Ajoute ton pseudo"
+                  ? hasSavedValue ? "Modifie ton nom" : "Ajoute ton nom"
                   : hasSavedValue ? "Modifie ton commentaire" : "Laisse un commentaire"}
               </h2>
             </div>
@@ -97,7 +97,7 @@ export function JoinBusModal({
           {mode === "name" ? (
             <div>
               <label htmlFor="join-bus-name" className="mb-2 flex items-center justify-between gap-3 text-sm font-black text-white">
-                <span>Pseudo</span>
+                <span>Nom</span>
                 <span className="text-xs font-semibold text-[#ffd23f]">24 caractères max.</span>
               </label>
               <input

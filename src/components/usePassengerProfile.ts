@@ -100,7 +100,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     const comment = cleanText(joinComment, 180, true);
     if (profileModalMode === "name") {
       if (!name) {
-        setJoinError("Choisis un pseudo à afficher au-dessus de ton personnage.");
+        setJoinError("Choisis un nom à afficher au-dessus de ton personnage.");
         return;
       }
       const nameIssue = findModerationIssue(name);
@@ -178,7 +178,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       }
       setShowJoinModal(false);
       showToast(
-        profileModalMode === "name" ? "Pseudo enregistré !" : "Commentaire enregistré !",
+        profileModalMode === "name" ? "Nom enregistré !" : "Commentaire enregistré !",
         undefined,
         "PROFIL",
       );
@@ -350,7 +350,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     const comment = cleanText(submission.comment, 180, true);
     const avatarId = isPassengerAvatarId(submission.avatarId) ? submission.avatarId : null;
     if (!displayName) {
-      setOnboardingError("Choisis un pseudo avant de continuer.");
+      setOnboardingError("Choisis un nom avant de continuer.");
       return null;
     }
     const nameIssue = findModerationIssue(displayName);
@@ -457,7 +457,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       setOnboardingReason(null);
       setOnboardingError("");
       showToast(
-        "Pseudo enregistré !",
+        "Nom enregistré !",
         "Tu peux maintenant monter dans le bus à tout moment.",
         "PROFIL",
       );

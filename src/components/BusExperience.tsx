@@ -513,7 +513,7 @@ export default function BusExperience() {
           setBoardingFromSeat(false);
           handleOpenOnboardingModal(
             "boarding",
-            error instanceof ApiError ? error.message : "Pseudo refusé par le serveur.",
+            error instanceof ApiError ? error.message : "Nom refusé par le serveur.",
             submission,
           );
           return;

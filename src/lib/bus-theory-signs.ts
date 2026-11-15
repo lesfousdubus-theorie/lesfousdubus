@@ -35,13 +35,6 @@ export function getBusGraffitiPlacements(
     if (width >= 1.35) placements.push({ message, side, z: (from + to) / 2, width });
   };
 
-  // The title sits opposite the front door, above the front step.
-  const front = doors[0] && getBusDoorBounds(doors[0]);
-  if (front) {
-    const frontAxle = Math.min(...axlePositions);
-    addTag(Math.max(front.frontZ - .28, frontAxle + .72), front.rearZ + .16, 0, -1);
-  }
-
   for (const [section, door] of doors.entries()) {
     const from = getBusDoorBounds(door).rearZ + .24;
     const next = doors[section + 1];
@@ -50,8 +43,7 @@ export function getBusGraffitiPlacements(
     // ahead of the wheel arch so the lettering always rests on painted metal.
     const lastAxle = axlePositions.find(z => z + .72 > from && z - .72 < to);
     const end = lastAxle === undefined ? to : lastAxle - .72;
-    const order = section === 0 ? [2, 1, 3, 4]
-      : Array.from({ length: 4 }, (_, i) => (5 + (section - 1) * 4 + i) % THEORY_SIGN_MESSAGES.length);
+    const order = Array.from({ length: 4 }, (_, i) => (section * 4 + i) % THEORY_SIGN_MESSAGES.length);
     if (end - from >= 2.98) {
       const middle = (from + end) / 2;
       addTag(from, middle - .14, order[0], -1);

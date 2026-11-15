@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { fetchJson } from "@/lib/client/bus-api";
-import { PauseIcon, PlayIcon } from "@/components/ui/BusIcons";
+import { ListOrderedIcon, PauseIcon, PlayIcon, ShuffleIcon } from "@/components/ui/BusIcons";
 import { startMessageMotion } from "./passenger-message-motion";
 import { useModalAccessibility } from "./useModalAccessibility";
 
@@ -29,6 +29,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [pauseOverride, setPauseOverride] = useState<boolean>();
+  const [ordered, setOrdered] = useState(false);
   const [reading, setReading] = useState<Message | null>(null);
   const request = useRef<AbortController | null>(null);
   const nextFrom = useRef(0);
@@ -65,12 +66,12 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
   }, [load]);
 
   const messageCount = messages.length;
-  const moving = !paused && !reading && messageCount > 0;
+  const moving = !ordered && !paused && !reading && messageCount > 0;
   useLayoutEffect(() => {
     const wall = wallRef.current;
-    if (!wall || messageCount === 0) return;
+    if (!wall || ordered || messageCount === 0) return;
     return startMessageMotion(wall, moving);
-  }, [moving, messageCount]);
+  }, [moving, ordered, messageCount]);
 
   function readMessage(message: Message, button: HTMLButtonElement) {
     activeBubble.current = button;
@@ -104,15 +105,29 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
           )}
           <button
             type="button"
-            aria-pressed={paused}
-            aria-label={paused ? "Reprendre le défilement" : "Mettre en pause le défilement"}
-            title={paused ? "Reprendre" : "Mettre en pause"}
-            disabled={messageCount === 0 || Boolean(reading)}
-            onClick={() => setPauseOverride(!paused)}
+            aria-pressed={ordered}
+            aria-label={ordered ? "Remettre les messages en mouvement" : "Ordonner les messages"}
+            title={ordered ? "En vrac" : "Ordonner les messages"}
+            disabled={messageCount === 0}
+            onClick={() => setOrdered((previous) => !previous)}
             className="messages-wall-control shrink-0"
           >
-            {paused ? <PlayIcon className="h-4 w-4" /> : <PauseIcon className="h-4 w-4" />}
+            {ordered ? <ShuffleIcon className="h-3.5 w-3.5 text-[#ffd23f]" /> : <ListOrderedIcon className="h-3.5 w-3.5 text-[#ffd23f]" />}
+            <span>{ordered ? "En vrac" : "Ordonner"}</span>
           </button>
+          {!ordered && (
+            <button
+              type="button"
+              aria-pressed={paused}
+              aria-label={paused ? "Reprendre le défilement" : "Mettre en pause le défilement"}
+              title={paused ? "Reprendre" : "Mettre en pause"}
+              disabled={messageCount === 0 || Boolean(reading)}
+              onClick={() => setPauseOverride(!paused)}
+              className="messages-wall-control shrink-0"
+            >
+              {paused ? <PlayIcon className="h-4 w-4" /> : <PauseIcon className="h-4 w-4" />}
+            </button>
+          )}
           <button
             ref={buttonRef}
             type="button"
@@ -127,16 +142,43 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
       </header>
 
       <div className="messages-wall-stage relative min-h-0 overflow-hidden">
-        <div ref={wallRef} className="messages-wall-track" data-moving={moving} data-count={messageCount}
-          data-dense={messageCount > 40} aria-hidden={reading ? true : undefined} inert={reading ? true : undefined}>
-          {messages.map((message, index) => (
-            <button type="button" key={message.seatIndex} onClick={event => readMessage(message, event.currentTarget)}
-              className="message-bubble" style={{ zIndex: index + 1 }}>
-              <span className="message-bubble-preview">{message.comment}</span>
-              <span className="message-bubble-author">— {message.displayName}</span>
-            </button>
-          ))}
-        </div>
+        {ordered ? (
+          <div
+            className="h-full overflow-y-auto px-3 py-4 sm:px-6 sm:py-6"
+            aria-hidden={reading ? true : undefined}
+            inert={reading ? true : undefined}
+          >
+            <div className="mx-auto grid max-w-7xl gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {messages.map((message) => (
+                <button
+                  type="button"
+                  key={message.seatIndex}
+                  onClick={(event) => readMessage(message, event.currentTarget)}
+                  className="flex cursor-pointer flex-col justify-between gap-2 rounded-2xl border border-[#ffd23f]/45 bg-[#0c1b3a]/95 p-3.5 text-left text-white shadow-[0_8px_22px_rgba(2,6,23,0.38)] transition hover:border-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+                >
+                  <span className="whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-white">
+                    {message.comment}
+                  </span>
+                  <span className="flex items-center justify-between gap-2 text-xs font-bold text-[#ffd23f]">
+                    <span className="text-[#b6c7eb]">Place n°{message.seatIndex + 1}</span>
+                    <span className="truncate">— {message.displayName}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div ref={wallRef} className="messages-wall-track" data-moving={moving} data-count={messageCount}
+            data-dense={messageCount > 40} aria-hidden={reading ? true : undefined} inert={reading ? true : undefined}>
+            {messages.map((message, index) => (
+              <button type="button" key={message.seatIndex} onClick={event => readMessage(message, event.currentTarget)}
+                className="message-bubble" style={{ zIndex: index + 1 }}>
+                <span className="message-bubble-preview">{message.comment}</span>
+                <span className="message-bubble-author">— {message.displayName}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {reading && (
           <div className="messages-wall-reading absolute inset-0 z-30 grid min-h-0 place-items-center p-3 sm:p-6">
