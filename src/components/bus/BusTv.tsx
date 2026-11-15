@@ -8,6 +8,7 @@ import type { JourneyState } from "@/lib/bus-journey";
 import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
 import { createInitialCaptionReset, isYouTubePlaybackActive, mountYouTubePlayer, type YouTubePlayer } from "@/lib/youtube-player";
 import { emitBusAudioEvent, onBusAudioEvent } from "@/lib/bus-audio";
+import BusPartyTv from "./BusPartyTv";
 import BusTvScreen, { TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT } from "./BusTvScreen";
 
 interface BusTvFrameProps {
@@ -19,6 +20,8 @@ interface BusTvFrameProps {
   mats: Record<string, THREE.Material>;
   tvOffTex: THREE.CanvasTexture;
   posterTex: THREE.Texture;
+  partyCards: THREE.Texture[] | null;
+  reducedMotion: boolean;
 }
 
 export function BusTvFrame({
@@ -30,6 +33,8 @@ export function BusTvFrame({
   mats,
   tvOffTex,
   posterTex,
+  partyCards,
+  reducedMotion,
 }: BusTvFrameProps) {
   return (
     <group name="bus-tv-frame" userData={{ index: idx }} key={`tv-frame-${idx}-${pos[2]}`} position={pos} visible={visible}>
@@ -50,19 +55,21 @@ export function BusTvFrame({
         <planeGeometry args={[1.28, 0.73]} />
         <meshBasicMaterial color="#05070c" side={THREE.DoubleSide} />
       </mesh>
-      <mesh name="bus-tv-display" position={[0, 0, 0.053]}>
-        <planeGeometry args={[TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT]} />
-        <meshStandardMaterial
-          map={tvOn ? posterTex : tvOffTex}
-          color={tvOn ? "#ffffff" : "#05070b"}
-          emissive="#ffffff"
-          emissiveMap={tvOn ? posterTex : tvOffTex}
-          emissiveIntensity={tvOn ? (isActive ? 0.52 : 0.32) : 0}
-          roughness={tvOn ? 0.42 : 0.25}
-          metalness={tvOn ? 0.06 : 0.8}
-          toneMapped={false}
-        />
-      </mesh>
+      {partyCards ? <BusPartyTv cards={partyCards} index={idx} reducedMotion={reducedMotion} /> : (
+        <mesh name="bus-tv-display" position={[0, 0, 0.053]}>
+          <planeGeometry args={[TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT]} />
+          <meshStandardMaterial
+            map={tvOn ? posterTex : tvOffTex}
+            color={tvOn ? "#ffffff" : "#05070b"}
+            emissive="#ffffff"
+            emissiveMap={tvOn ? posterTex : tvOffTex}
+            emissiveIntensity={tvOn ? (isActive ? 0.52 : 0.32) : 0}
+            roughness={tvOn ? 0.42 : 0.25}
+            metalness={tvOn ? 0.06 : 0.8}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
       <mesh position={[0.48, 0.275, 0.058]} visible={tvOn && !isActive}>
         <planeGeometry args={[0.18, 0.07]} />
         <meshBasicMaterial color="#cc1f2f" toneMapped={false} />

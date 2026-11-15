@@ -11,7 +11,8 @@ import BusConfetti from "./BusConfetti";
 import BusPartyLights from "./BusPartyLights";
 import type { JourneyState } from "@/lib/bus-journey";
 import { BusTvFrame, BusTvPlayer } from "./BusTv";
-import { getRenderedRowIndices, getActiveTvIndex, getTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelZClearOfDoors, BUS_FRONT_Z } from "@/lib/bus-layout";
+import { usePartyTvCards } from "./BusPartyTv";
+import { getRenderedRowIndices, getActiveTvIndex, getTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelPositions, BUS_FRONT_Z } from "@/lib/bus-layout";
 import { getBusPhysicalRows } from "@/lib/bus-occupancy";
 import { advanceWiperAngle } from "@/lib/bus-wipers";
 import BusExterior from "./BusExterior";
@@ -75,7 +76,6 @@ export default function Bus({
   const group = useRef<THREE.Group>(null);
   const hat = useRef<THREE.Group>(null);
   const wheels = useRef<(THREE.Group | null)[]>([]);
-  const interiorLights = useRef<THREE.PointLight[]>([]);
   const leftWiper = useRef<THREE.Group>(null);
   const rightWiper = useRef<THREE.Group>(null);
 
@@ -87,10 +87,6 @@ export default function Bus({
   const renderedRowIndices = useMemo(
     () => getRenderedRowIndices(numRows, reservedRow),
     [numRows, reservedRow],
-  );
-  const SEAT_ROWS = useMemo(
-    () => renderedRowIndices.map(getSeatRowZ),
-    [renderedRowIndices],
   );
 
   // Une TV principale réelle et au maximum 8 rappels visuels légers dans les très longs bus.
@@ -121,31 +117,7 @@ export default function Bus({
     return arr;
   }, [rearWallZ, renderedRowIndices]);
 
-  // Points lumineux de plafond répartis le long de l'habitacle
-  const interiorLightZs = useMemo(() => {
-    // Garder trois lumières : une variation du nombre de sources force Three.js
-    // à recompiler les matériaux lorsque le bus s'allonge.
-    const count = 3;
-    const start = -2.5;
-    const end = rearWallZ - 1.2;
-    const step = (end - start) / (count - 1);
-    return Array.from({ length: count }, (_, i) => start + i * step);
-  }, [rearWallZ]);
-
-  // Emplacement des roues (2 avant fixes, 2 arrière mobiles, + essieu médian si bus long)
-  const wheelPositions = useMemo(() => {
-    const arr: [number, number][] = [
-      [-1.2, -4.3],
-      [1.2, -4.3],
-      [-1.2, getWheelZClearOfDoors(rearWallZ - 1.6, doors, rearWallZ)],
-      [1.2, getWheelZClearOfDoors(rearWallZ - 1.6, doors, rearWallZ)],
-    ];
-    if (numRows >= 10) {
-      arr.push([-1.2, getWheelZClearOfDoors(cabinCenterZ, doors, rearWallZ)]);
-      arr.push([1.2, getWheelZClearOfDoors(cabinCenterZ, doors, rearWallZ)]);
-    }
-    return arr;
-  }, [numRows, rearWallZ, cabinCenterZ, doors]);
+  const wheelPositions = useMemo(() => getWheelPositions(rearWallZ, doors), [rearWallZ, doors]);
 
   // Détection du moment d'extension pour animer le rebond
   const stretchRef = useRef(0);
@@ -163,21 +135,12 @@ export default function Bus({
   const HAT_BASE_POS: [number, number, number] = useMemo(() => [0, 3.40, -3.55], []);
   const HAT_BASE_ROT: [number, number, number] = useMemo(() => [0, 0, 0], []);
 
-  const { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex, tagSiecleTex, tagBarbeNoireTex, tagLuffyNikaTex, tagPoneglyphesTex, tagTimingTex } = useBusResources();
+  const { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex } = useBusResources();
+  const partyCards = usePartyTvCards(partyOn);
 
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
   const rightTarget = useRef<THREE.Object3D>(null);
-  const partyWarmColor = useMemo(() => new THREE.Color("#fff4db"), []);
-  const partyLightColor = useMemo(() => new THREE.Color(), []);
-
-  useEffect(() => {
-    if (partyDancing) return;
-    interiorLights.current.forEach((light) => {
-      if (light) light.color.copy(partyWarmColor);
-    });
-  }, [partyDancing, partyWarmColor]);
-
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime;
     const frameDt = Math.min(dt, 0.1);
@@ -230,29 +193,6 @@ export default function Bus({
       });
     }
 
-    // Éclairage intérieur doux en temps normal, jeux de lumière disco de nuit en mode Fête
-    const daylight = worldRef.current?.daylight ?? 1;
-    const cabinIntensity = 3.8 + (1 - daylight) * 2.5;
-    const nightParty = partyDancing && daylight < 0.68
-      ? THREE.MathUtils.clamp((0.68 - daylight) / 0.35, 0, 1)
-      : 0;
-    if (nightParty > 0) {
-      const cyclePhase = reducedMotion ? 0.15 : t * 0.45;
-      interiorLights.current.forEach((light, idx) => {
-        if (!light) return;
-        const hue = (cyclePhase + idx * 0.33) % 1;
-        partyLightColor.setHSL(hue, 0.95, 0.58);
-        light.color.copy(partyWarmColor).lerp(partyLightColor, nightParty);
-        const pulse = reducedMotion ? 1.5 : (0.5 + 0.5 * Math.sin(t * 7.5 + idx * 2.1)) * 4.2;
-        light.intensity = cabinIntensity * (1 - nightParty) + (8.5 + pulse) * nightParty;
-      });
-    } else {
-      interiorLights.current.forEach((light) => {
-        if (!light) return;
-        light.color.copy(partyWarmColor);
-        light.intensity = cabinIntensity;
-      });
-    }
   });
 
   return (
@@ -286,18 +226,12 @@ export default function Bus({
         hat={hat}
         hatBasePos={HAT_BASE_POS}
         hatBaseRot={HAT_BASE_ROT}
-        tagSiecleTex={tagSiecleTex}
-        tagBarbeNoireTex={tagBarbeNoireTex}
-        tagLuffyNikaTex={tagLuffyNikaTex}
-        tagPoneglyphesTex={tagPoneglyphesTex}
-        tagTimingTex={tagTimingTex}
         contactShadowTex={contactShadowTex}
       />
 
       <BusCabinInterior mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ}
-        rearWallZ={rearWallZ} rowZs={SEAT_ROWS} wheelPositions={wheelPositions}
-        tvPositions={tvPositions} doors={doors} interiorLightZs={interiorLightZs}
-        interiorLights={interiorLights} />
+        rearWallZ={rearWallZ} rows={renderedRowIndices} wheelPositions={wheelPositions}
+        tvPositions={tvPositions} doors={doors} worldRef={worldRef} />
 
       {/* PASSAGERS NAKAMA ASSIS DANS LE BUS */}
       <Passengers
@@ -339,6 +273,8 @@ export default function Bus({
           mats={mats}
           tvOffTex={tvOffTex}
           posterTex={montCorvoTex}
+          partyCards={partyCards}
+          reducedMotion={reducedMotion}
         />
       ))}
       <BusTvPlayer

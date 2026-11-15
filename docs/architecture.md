@@ -157,8 +157,10 @@ ne constituent pas un système de comptes ni une récupération multi-appareils.
   éloignés restent bornés ; la longueur logique peut continuer à augmenter.
 - Un seul lecteur vidéo réel pour les télévisions du bus ; les écrans secondaires
   sont des cadres légers et le lecteur rejoint la télévision active.
-- Une porte et un vestibule supplémentaires toutes les huit rangées, trajet par
-  la porte la plus proche et espace libre devant chaque télévision.
+- Après chaque groupe de huit rangées complètes, une demi-rangée de deux sièges
+  fait face aux marches d’une porte intermédiaire. Le trajet passe par la porte
+  la plus proche. Le bus conserve deux essieux et un espace libre devant chaque
+  télévision.
 - Figer le défilement du décor ne suspend ni les médias ni le trajet du passager.
 - Réduire les animations respecte la préférence système ; les tests émulés ne
   prouvent pas l’autonomie, la chauffe ou la fluidité sur un appareil physique.

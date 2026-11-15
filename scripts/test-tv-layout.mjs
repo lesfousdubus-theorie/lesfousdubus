@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { build } from "esbuild";
 
 const compiled = await build({
-  entryPoints: ["src/lib/bus-layout.ts"],
+  stdin: {
+    contents: "export * from './src/lib/bus-layout'; export * from './src/lib/bus-theory-signs';",
+    resolveDir: process.cwd(),
+  },
   bundle: true,
   format: "esm",
   platform: "neutral",
@@ -10,7 +13,10 @@ const compiled = await build({
   logLevel: "silent",
 });
 const moduleUrl = `data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`;
-const { getActiveTvIndex, getTvPositions } = await import(moduleUrl);
+const {
+  getActiveTvIndex, getTvPositions, getBusDoors, getBusRearWallZ, getWheelPositions,
+  getBusDoorBounds, getBusGraffitiPlacements,
+} = await import(moduleUrl);
 
 const front = { x: 0, y: 2.55, z: -4.2 };
 const shortBus = getTvPositions(4, front);
@@ -28,4 +34,27 @@ const longBus = getTvPositions(40, front);
 assert(longBus.length <= 9, "The bus should mount at most eight secondary screens.");
 assert(longBus.every((position, index) => index === 0 || position[2] > longBus[index - 1][2]));
 
-console.log("TV layout regression checks passed.");
+for (const rows of [6, 9, 10, 18, 41, 150]) {
+  const doors = getBusDoors(rows);
+  const rear = getBusRearWallZ(rows);
+  const axles = [...new Set(getWheelPositions(rear, doors).map(([, z]) => z))];
+  const tags = getBusGraffitiPlacements(doors, rear, axles);
+  for (const tag of tags) {
+    const left = tag.z - tag.width / 2, right = tag.z + tag.width / 2;
+    assert(right <= rear && axles.every(z => left - z >= .719 || z - right >= .719));
+    if (tag.side === 1) assert(doors.every(door => {
+      const { frontZ, rearZ } = getBusDoorBounds(door);
+      return right <= frontZ || left >= rearZ;
+    }), "Tags must stay outside the door apertures.");
+  }
+  for (let i = 1; i < doors.length; i++) {
+    const start = getBusDoorBounds(doors[i - 1]).rearZ;
+    const end = getBusDoorBounds(doors[i]).frontZ;
+    for (const side of [-1, 1]) {
+      const inSection = tags.filter(tag => tag.side === side && tag.z - tag.width / 2 > start && tag.z + tag.width / 2 < end);
+      assert.equal(inSection.length, 2, `Each full section has two tags per side, with ${rows} rows.`);
+    }
+  }
+}
+
+console.log("TV layout and door-to-door graffiti checks passed.");

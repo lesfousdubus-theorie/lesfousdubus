@@ -11,8 +11,9 @@ import BusDoors from "./BusDoors";
 import BusSpanMeshes from "./BusSpanMeshes";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import BusDestination from "./BusDestination";
+import BusGraffiti from "./BusGraffiti";
 import { BUS_DOOR, BUS_FRONT_Z, splitAtDoors, type BusDoorLayout } from "@/lib/bus-layout";
-import { createLowerBodyGeometry, SIDE_LABEL_Y } from "./BusBodyGeometry";
+import { createLowerBodyGeometry } from "./BusBodyGeometry";
 import { isWindowPillarClearOfDoor } from "@/lib/bus-interior-geometry";
 import type { JourneyState } from "@/lib/bus-journey";
 
@@ -45,11 +46,6 @@ interface BusExteriorProps {
   hat: RefObject<THREE.Group | null>;
   hatBasePos: [number, number, number];
   hatBaseRot: [number, number, number];
-  tagSiecleTex: THREE.Texture;
-  tagBarbeNoireTex: THREE.Texture;
-  tagLuffyNikaTex: THREE.Texture;
-  tagPoneglyphesTex: THREE.Texture;
-  tagTimingTex: THREE.Texture;
   contactShadowTex: THREE.Texture;
 }
 
@@ -57,8 +53,7 @@ export default function BusExterior({
   headlights, phase, journey, mats, cabinLength, cabinCenterZ, rearWallZ, doors, numRows, focusZ, lowPower,
   pillars, wheelPositions, wheels, leftWiper, rightWiper, leftTarget, rightTarget,
   sideLabel, reducedMotion, freeView, licensePlateTex, montCorvoTex, hatGeo, ribbonGeo, hat,
-  hatBasePos, hatBaseRot, tagSiecleTex, tagBarbeNoireTex, tagLuffyNikaTex,
-  tagPoneglyphesTex, tagTimingTex, contactShadowTex,
+  hatBasePos, hatBaseRot, contactShadowTex,
 }: BusExteriorProps) {
   const sidePanels = useMemo(() => [-1, 1].map(side => {
     const pieces = splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, side > 0).map(([from, to]) => {
@@ -89,95 +84,10 @@ export default function BusExterior({
           <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, sx > 0)} material={mats.windowGlass} x={sx * 1.3} y={2.25} width={0} height={1} planeSide={sx} />
           <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, sx > 0)} material={mats.yellow} x={sx * 1.35} y={1.72} width={0.024} height={0.08} />
 
-          {/* Slogans de la théorie tagués en grand style graffiti street art : 3 phrases à gauche, 2 phrases à droite */}
-          {sx < 0 ? (
-            <>
-              {/* CÔTÉ GAUCHE (3 phrases grandes et artistiques) */}
-              {/* 1. Le siècle oublié c'est le présent (avant gauche) */}
-              <mesh
-                name="bus-side-slogan-siecle" position={[sx * 1.352, SIDE_LABEL_Y, -2.45]}
-                rotation={[0, -Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[2.9, 0.725]} />
-                <meshStandardMaterial
-                  map={tagSiecleTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-2}
-                  roughness={0.4}
-                />
-              </mesh>
-              {/* 2. Barbe Noire est Davy D. Jones (milieu gauche) */}
-              <mesh
-                name="bus-side-slogan-barbe-noire" position={[sx * 1.352, SIDE_LABEL_Y, 0.0]}
-                rotation={[0, -Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[2.7, 0.675]} />
-                <meshStandardMaterial
-                  map={tagBarbeNoireTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-2}
-                  roughness={0.4}
-                />
-              </mesh>
-              {/* 3. Luffy est Nika et Joy Boy (arrière gauche) */}
-              <mesh
-                name="bus-side-slogan-luffy" position={[sx * 1.352, SIDE_LABEL_Y, 2.7]}
-                rotation={[0, -Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[2.7, 0.675]} />
-                <meshStandardMaterial
-                  map={tagLuffyNikaTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-2}
-                  roughness={0.4}
-                />
-              </mesh>
-            </>
-          ) : (
-            <>
-              {/* CÔTÉ DROIT (2 phrases grandes et artistiques) */}
-              {/* 4. Les ponéglyphes viennent du futur (avant/milieu droit) */}
-              <mesh
-                name="bus-side-slogan-poneglyphes" position={[sx * 1.352, SIDE_LABEL_Y, -0.7]}
-                rotation={[0, Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[3.1, 0.775]} />
-                <meshStandardMaterial
-                  map={tagPoneglyphesTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-2}
-                  roughness={0.4}
-                />
-              </mesh>
-              {/* 5. Tout est une question de timing (milieu/arrière droit) */}
-              <mesh
-                name="bus-side-slogan-timing" position={[sx * 1.352, SIDE_LABEL_Y, 2.35]}
-                rotation={[0, Math.PI / 2, 0]}
-              >
-                <planeGeometry args={[3, 0.75]} />
-                <meshStandardMaterial
-                  map={tagTimingTex}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-2}
-                  roughness={0.4}
-                />
-              </mesh>
-            </>
-          )}
-
         </group>
       ))}
 
+      <BusGraffiti doors={doors} rearWallZ={rearWallZ} wheelPositions={wheelPositions} />
       <PillarInstances positions={pillars} doors={doors} material={mats.bodyDark} />
 
       {/* Face avant : pare-brise panoramique */}

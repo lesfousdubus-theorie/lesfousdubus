@@ -438,7 +438,7 @@ export function makeGraffitiTexture({
   const maxTextW = width * 0.86;
   const measured = Math.max(...lines.map((line) => c.measureText(line).width));
   if (measured > maxTextW) {
-    fontSize = Math.max(78, Math.floor((fontSize * maxTextW) / measured));
+    fontSize = Math.floor((fontSize * maxTextW) / measured);
     setFont();
   }
   c.textAlign = "center";

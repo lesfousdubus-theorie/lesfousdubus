@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { useTexture } from "@react-three/drei";
 import {
-  makeDashboardTexture, makeGraffitiTexture, makeLabelTexture,
+  makeDashboardTexture, makeLabelTexture,
   makeLicensePlateTexture, makeTvOffTexture, makeBusContactShadowTexture,
 } from "@/lib/textures";
 import { createStrawHatGeometry } from "./StrawHatGeometry";
@@ -145,78 +145,6 @@ export default function useBusResources() {
   const licensePlateTex = useMemo(() => makeLicensePlateTexture(), []);
   const contactShadowTex = useMemo(() => makeBusContactShadowTexture(), []);
 
-  // Les 5 phrases exactes de la théorie taguées sur le bus
-  // 1. Le siècle oublié c'est le présent
-  const tagSiecleTex = useMemo(
-    () =>
-      makeGraffitiTexture({
-        text: "LE SIÈCLE OUBLIÉ\nC'EST LE PRÉSENT",
-        height: 384,
-        color: "#fff1a8",
-        stroke: "#071952",
-        accent: "#ef3340",
-        angle: -0.03,
-      }),
-    [],
-  );
-
-  // 2. Barbe Noire est Davy D. Jones
-  const tagBarbeNoireTex = useMemo(
-    () =>
-      makeGraffitiTexture({
-        text: "BARBE NOIRE EST\nDAVY D. JONES",
-        height: 384,
-        color: "#f7d6e0",
-        stroke: "#3b0a2a",
-        accent: "#ff9f1c",
-        angle: 0.045,
-      }),
-    [],
-  );
-
-  // 3. Luffy est Nika et Joy Boy
-  const tagLuffyNikaTex = useMemo(
-    () =>
-      makeGraffitiTexture({
-        text: "LUFFY EST NIKA\nET JOY BOY",
-        height: 384,
-        color: "#ffdc4a",
-        stroke: "#34145f",
-        accent: "#22d3ee",
-        angle: -0.055,
-        decorationWidthScale: 0.65,
-      }),
-    [],
-  );
-
-  // 4. Les ponéglyphes viennent du futur
-  const tagPoneglyphesTex = useMemo(
-    () =>
-      makeGraffitiTexture({
-        text: "LES PONÉGLYPHES\nVIENNENT DU FUTUR",
-        height: 384,
-        color: "#baf7d0",
-        stroke: "#053d33",
-        accent: "#ff6b35",
-        angle: 0.06,
-      }),
-    [],
-  );
-
-  // 5. Tout est une question de timing
-  const tagTimingTex = useMemo(
-    () =>
-      makeGraffitiTexture({
-        text: "TOUT EST UNE QUESTION\nDE TIMING",
-        height: 384,
-        color: "#bde7ff",
-        stroke: "#071f5c",
-        accent: "#ff4da6",
-        angle: -0.045,
-      }),
-    [],
-  );
-
   useEffect(() => () => {
     hatGeo.dispose();
     ribbonGeo.dispose();
@@ -225,11 +153,6 @@ export default function useBusResources() {
     dashTex.dispose();
     licensePlateTex.dispose();
     contactShadowTex.dispose();
-    tagSiecleTex.dispose();
-    tagBarbeNoireTex.dispose();
-    tagLuffyNikaTex.dispose();
-    tagPoneglyphesTex.dispose();
-    tagTimingTex.dispose();
   }, [
     hatGeo,
     ribbonGeo,
@@ -238,15 +161,10 @@ export default function useBusResources() {
     dashTex,
     licensePlateTex,
     contactShadowTex,
-    tagSiecleTex,
-    tagBarbeNoireTex,
-    tagLuffyNikaTex,
-    tagPoneglyphesTex,
-    tagTimingTex,
   ]);
 
 
-  return { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex, tagSiecleTex, tagBarbeNoireTex, tagLuffyNikaTex, tagPoneglyphesTex, tagTimingTex };
+  return { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex };
 }
 
 export type BusMaterials = ReturnType<typeof useBusResources>["mats"];

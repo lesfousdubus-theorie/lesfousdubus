@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { computeNumRows } from "@/lib/bus-layout";
+import { getRegisteredSeat } from "@/lib/bus-occupancy";
 import { ApiError, fetchJson, getExistingVisitorId, getOrCreateVisitorId, type BusApiState } from "@/lib/client/bus-api";
 import type { PassengerProfile } from "@/types/passenger";
 import { isPassengerAvatarId, type PassengerAvatarId } from "@/lib/passenger-avatar";
@@ -173,9 +173,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
           data.passenger!,
         ]);
         if (profileModalMode === "name") {
-          setSeatRow(
-            Math.min(computeNumRows(data.seatCapacity) - 1, Math.floor(data.passenger.seatIndex / 4)),
-          );
+          setSeatRow(getRegisteredSeat(data.passenger.seatIndex).row);
         }
       }
       setShowJoinModal(false);
@@ -454,9 +452,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
           ...profiles.filter((profile) => profile.seatIndex !== data.passenger!.seatIndex),
           data.passenger!,
         ]);
-        setSeatRow(
-          Math.min(computeNumRows(data.seatCapacity) - 1, Math.floor(data.passenger.seatIndex / 4)),
-        );
+        setSeatRow(getRegisteredSeat(data.passenger.seatIndex).row);
       }
       setOnboardingReason(null);
       setOnboardingError("");

@@ -5,9 +5,8 @@ import { playStretch } from "@/lib/horn";
 import { ApiError, fetchJson, getExistingVisitorId, getOrCreateVisitorId, isRetryableRegistrationError, type BusApiState } from "@/lib/client/bus-api";
 import type { PassengerProfile } from "@/types/passenger";
 import type { Phase } from "./bus/constants";
-import { computeNumRows } from "@/lib/bus-layout";
 import { countPeopleOnBoard } from "@/lib/bus-crew";
-import { getBusPhysicalRows } from "@/lib/bus-occupancy";
+import { getBusPhysicalRows, getRegisteredSeat, getRegisteredSeatIndex } from "@/lib/bus-occupancy";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
 import type { OnboardingReason } from "./modals/OnboardingModal";
 import type { OnboardingSeed } from "./usePassengerProfile";
@@ -194,7 +193,7 @@ export function useBusSync({
   // grandir sans télécharger des milliers de commentaires à chaque actualisation.
   useEffect(() => {
     const focusRow = phase === "inside" ? seatRow : 0;
-    const from = Math.max(0, (focusRow - 4) * 4);
+    const from = getRegisteredSeatIndex(Math.max(0, focusRow - 4));
     const controller = new AbortController();
 
     void fetchJson<BusApiState & { passengers?: PassengerProfile[] }>(
@@ -256,7 +255,7 @@ export function useBusSync({
                       displayName: refreshed.passenger?.displayName?.trim() || latestRegistrationRef.current.displayName,
                     };
                     setCurrentPassengerSeatIndex(nextSeat);
-                    setSeatRow(Math.min(computeNumRows(refreshed.seatCapacity) - 1, Math.floor(nextSeat / 4)));
+                    setSeatRow(getRegisteredSeat(nextSeat).row);
                   }
                   setCurrentPassengerEntryNumber(nextEntry);
                 }
@@ -394,7 +393,7 @@ export function useBusSync({
         };
         restoreSavedProfile(resolvedPassenger);
         if (data.seatIndex !== null) {
-          setSeatRow(Math.min(computeNumRows(data.seatCapacity) - 1, Math.floor(data.seatIndex / 4)));
+          setSeatRow(getRegisteredSeat(data.seatIndex).row);
         }
         if (resolvedPassenger) {
           setPassengerProfiles((profiles) => [

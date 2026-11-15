@@ -21,11 +21,13 @@ L'affichage utilise une police bitmap 5×7 sur une matrice de 72×9 points : une
 seule texture, aucun éclairage supplémentaire, environ 18 mises à jour par
 seconde. Avec `prefers-reduced-motion`, le nom choisi au départ reste affiché sans défilement.
 
-La porte avant se trouve sur le côté droit, derrière l’essieu avant. Quand le bus dépasse huit rangées, une porte et un vestibule libre sont ajoutés toutes les huit rangées. L’entrée et la sortie utilisent la porte la plus proche de la place choisie, sans changer les numéros des sièges. La carrosserie,
-les vitres, le plancher et le châssis comportent une véritable ouverture. Kamal et
-Kyta sont assis côte à côte, chacun près d'un bord du pare-brise, devant le vestibule. Les
-rangées commencent à Z = −1,55 m ; leurs indices et la capacité logique du bus
-sont conservés.
+La porte avant se trouve sur le côté droit, derrière l’essieu avant. Après chaque
+groupe de huit rangées complètes, la rangée suivante accueille deux places à
+gauche et les marches d’une porte à droite. L’entrée et la sortie passent par la
+porte la plus proche de la place choisie. Les numéros d’arrivée restent stables.
+La carrosserie, les vitres, le plancher et le châssis comportent une véritable
+ouverture à chaque porte. Kamal et Kyta sont assis de chaque côté du pare-brise,
+devant le vestibule avant. L’essieu arrière suit l’allongement du bus.
 
 La durée d’embarquement dépend du chemin entre la porte choisie et le siège :
 `getJourneyTiming` calcule la distance réelle et garde une vitesse de marche

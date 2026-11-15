@@ -4,8 +4,10 @@ export const BASE_ROWS = 6;
 export const BUS_FRONT_Z = -4.6;
 export const FIRST_SEAT_Z = -1.55;
 export const SEAT_ROW_SPACING = 1.2;
-export const DOOR_SECTION_ROWS = 8;
+const FULL_ROWS_PER_SECTION = 8;
+export const DOOR_SECTION_ROWS = FULL_ROWS_PER_SECTION + 1;
 export const DOOR_VESTIBULE_LENGTH = 1.65;
+const DOOR_SECTION_LENGTH = FULL_ROWS_PER_SECTION * SEAT_ROW_SPACING + DOOR_VESTIBULE_LENGTH;
 // L'avant de l'assise reste derrière les mollets, à z = -0,10.
 export const SEAT_CUSHION_DEPTH = 0.4;
 export const SEAT_CUSHION_Z = 0.14;
@@ -28,9 +30,26 @@ export const CREW_SEATS = {
   kyta: [0.84, 0, -4.03],
 } satisfies Record<string, [number, number, number]>;
 
+// Chaque section se termine par une demi-rangée, en face des marches.
+export function getSeatCountInRow(row: number): number {
+  return (row + 1) % DOOR_SECTION_ROWS === 0 ? 2 : 4;
+}
+
+function getWholeSeatRowZ(row: number): number {
+  const section = Math.floor(Math.max(0, row) / DOOR_SECTION_ROWS);
+  const rowInSection = row - section * DOOR_SECTION_ROWS;
+  const frontZ = FIRST_SEAT_Z + section * DOOR_SECTION_LENGTH;
+  if (rowInSection === FULL_ROWS_PER_SECTION) {
+    const lastFullRowZ = frontZ + (FULL_ROWS_PER_SECTION - 1) * SEAT_ROW_SPACING;
+    return (lastFullRowZ + frontZ + DOOR_SECTION_LENGTH) / 2;
+  }
+  return frontZ + rowInSection * SEAT_ROW_SPACING;
+}
+
 export function getSeatRowZ(row: number): number {
-  return FIRST_SEAT_Z + row * SEAT_ROW_SPACING
-    + Math.floor(Math.max(0, row) / DOOR_SECTION_ROWS) * DOOR_VESTIBULE_LENGTH;
+  const wholeRow = Math.floor(row);
+  const z = getWholeSeatRowZ(wholeRow);
+  return row === wholeRow ? z : z + (getWholeSeatRowZ(wholeRow + 1) - z) * (row - wholeRow);
 }
 
 /** Le mur arrière suit la dernière rangée sans ajouter un vestibule inutilisé. */
@@ -38,11 +57,11 @@ export function getBusRearWallZ(numRows: number): number {
   return getSeatRowZ(Math.max(0, numRows - 1)) + SEAT_ROW_SPACING;
 }
 
-/** Les numéros de place restent inchangés : seuls les intervalles physiques grandissent. */
+/** La porte d’entrée fait face au siège du relais, les autres à une demi-rangée. */
 export function getBusDoors(numRows: number): BusDoorLayout[] {
   const doors: BusDoorLayout[] = [{ ...BUS_DOOR, index: 0 }];
-  for (let row = DOOR_SECTION_ROWS; row < numRows; row += DOOR_SECTION_ROWS) {
-    doors.push({ ...BUS_DOOR, index: doors.length, z: (getSeatRowZ(row - 1) + getSeatRowZ(row)) / 2 });
+  for (let row = DOOR_SECTION_ROWS - 1; row < numRows; row += DOOR_SECTION_ROWS) {
+    doors.push({ ...BUS_DOOR, index: doors.length, z: getSeatRowZ(row) });
   }
   return doors;
 }
@@ -52,12 +71,11 @@ export function getBusDoorBounds(door: BusDoorLayout): { frontZ: number; rearZ: 
 }
 
 export function getNearestBusDoor(seatZ: number, numRows: number): BusDoorLayout {
-  const lastIndex = Math.max(0, Math.floor((numRows - 1) / DOOR_SECTION_ROWS));
+  const lastIndex = Math.max(0, Math.floor(numRows / DOOR_SECTION_ROWS));
   if (!lastIndex) return { ...BUS_DOOR, index: 0 };
-  const firstZ = (getSeatRowZ(DOOR_SECTION_ROWS - 1) + getSeatRowZ(DOOR_SECTION_ROWS)) / 2;
-  const pitch = DOOR_SECTION_ROWS * SEAT_ROW_SPACING + DOOR_VESTIBULE_LENGTH;
-  const index = Math.min(lastIndex, Math.max(1, Math.round((seatZ - firstZ) / pitch) + 1));
-  const z = firstZ + (index - 1) * pitch;
+  const firstZ = getSeatRowZ(DOOR_SECTION_ROWS - 1);
+  const index = Math.min(lastIndex, Math.max(1, Math.round((seatZ - firstZ) / DOOR_SECTION_LENGTH) + 1));
+  const z = getSeatRowZ(index * DOOR_SECTION_ROWS - 1);
   return Math.abs(BUS_DOOR.z - seatZ) <= Math.abs(z - seatZ)
     ? { ...BUS_DOOR, index: 0 } : { ...BUS_DOOR, index, z };
 }
@@ -74,6 +92,11 @@ export function getWheelZClearOfDoors(z: number, doors: readonly BusDoorLayout[]
     z = canUseBefore && (!canUseAfter || Math.abs(before - z) <= Math.abs(after - z)) ? before : after;
   }
   return z;
+}
+
+export function getWheelPositions(rearWallZ: number, doors: readonly BusDoorLayout[]): [number, number][] {
+  const rearAxle = getWheelZClearOfDoors(rearWallZ - 1.6, doors, rearWallZ);
+  return [[-1.2, -4.3], [1.2, -4.3], [-1.2, rearAxle], [1.2, rearAxle]];
 }
 
 /** Interrompt tout habillage aux baies des portes, même hors de la zone détaillée. */
@@ -99,17 +122,6 @@ export function splitAtDoors(from: number, to: number, doors: readonly BusDoorLa
 /** Compatibilité de la porte avant pour les scènes et tests historiques. */
 export function splitAtDoor(from: number, to: number, rightSide = true): Array<[number, number]> {
   return splitAtDoors(from, to, [{ ...BUS_DOOR, index: 0 }], rightSide);
-}
-
-/**
- * Calcule le nombre de rangées nécessaires pour asseoir `passengerCount` personnes.
- * Les 6 rangées de base offrent 24 positions logiques (4 par rangée). Le passager
- * courant utilise l'une de ces positions et est simplement déplacé vers la caméra
- * en vue intérieure, il ne consomme donc pas une place supplémentaire.
- */
-export function computeNumRows(passengerCount: number): number {
-  if (passengerCount <= BASE_ROWS * 4) return BASE_ROWS;
-  return BASE_ROWS + Math.ceil((passengerCount - BASE_ROWS * 4) / 4);
 }
 
 export interface SeatInfo {
