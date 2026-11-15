@@ -4,6 +4,8 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { WorldLandmark, type PropDef, type PropType } from "./WorldLandmark";
 import WorldSetPiece, { WorldForeground } from "./WorldSetPiece";
+import WorldOcean from "./WorldOcean";
+import WorldSeaCreatures from "./WorldSeaCreatures";
 import { useFrame } from "@react-three/fiber";
 import { WORLD_SPEED, type Phase, type WorldState } from "./constants";
 import { obstructsBusView } from "@/lib/bus-camera";
@@ -162,7 +164,6 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
   }, [lowPower]);
   const dashRef = useRef<THREE.InstancedMesh>(null);
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
-  const oceanMat = useRef<THREE.MeshStandardMaterial>(null);
   const activeWeatherKey = useRef("");
   const dashes = useMemo(() => Array.from({ length: 80 }, (_, i) => i * 10), []);
 
@@ -239,27 +240,12 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       worldRef.current.weatherIntensity +=
         (targetIntensity - worldRef.current.weatherIntensity) * Math.min(1, frameDt * 0.65);
     }
-
-    // Ondulation de l'océan de Grand Line
-    if (oceanMat.current) {
-      const t = state.clock.elapsedTime;
-      oceanMat.current.emissiveIntensity = reducedMotion ? 0.08 : 0.08 + Math.sin(t * 1.8) * 0.04;
-    }
   });
 
   return (
     <group>
-      {/* Océan infini de Grand Line */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.38, -150]} receiveShadow>
-        <planeGeometry args={[2600, 2600]} />
-        <meshStandardMaterial
-          ref={oceanMat}
-          color="#165ea3"
-          roughness={0.28}
-          metalness={0.25}
-          emissive="#06274d"
-        />
-      </mesh>
+      <WorldOcean reducedMotion={reducedMotion} />
+      <WorldSeaCreatures cabinCenterZ={cabinCenterZ} reducedMotion={reducedMotion} lowPower={lowPower} />
 
       {/* Îles des 5 mondes avec rivages et plages */}
       {ZONES.map((zone, i) => (
