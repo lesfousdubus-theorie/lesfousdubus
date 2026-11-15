@@ -45,6 +45,7 @@ interface SceneProps {
   currentSeatColumn?: number | null;
   isMutedForFullscreen?: boolean;
   uiPaused?: boolean;
+  messagesBackdrop?: boolean;
   hasEntered?: boolean;
   boardingPending?: boolean;
   boardingFromSeat?: boolean;
@@ -296,6 +297,7 @@ export default function Scene({
   currentSeatColumn = null,
   isMutedForFullscreen = false,
   uiPaused = false,
+  messagesBackdrop = false,
   hasEntered = false,
   boardingPending = false,
   boardingFromSeat = false,
@@ -377,7 +379,7 @@ export default function Scene({
           tvOn={tvOn}
           onVideoPlaybackChange={onVideoPlaybackChange}
           phase={phase}
-          freeView={freeView}
+          freeView={freeView || messagesBackdrop}
           journey={journey}
           worldRef={worldRef}
           passengerCount={passengerCount}
@@ -397,12 +399,13 @@ export default function Scene({
         />
       </Suspense>
       <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} profile={currentPassengerProfile} onSelect={phase !== "inside" || freeView ? onPassengerSelect : undefined} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
-      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={freeView ? "outside" : phase} cabinCenterZ={cabinCenterZ} />
+      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={freeView || messagesBackdrop ? "outside" : phase} cabinCenterZ={cabinCenterZ} />
       <CameraRig
         letterShortcutsEnabled={letterShortcutsEnabled}
         resetViewToken={resetViewToken}
         phase={phase}
         freeView={freeView}
+        messagesBackdrop={messagesBackdrop}
         journey={journey}
         onArrived={onArrived}
         cabinLength={cabinLength}
