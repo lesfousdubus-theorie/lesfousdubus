@@ -6,7 +6,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { DEFAULT_CAMERA_POS, DEFAULT_TARGET, SEAT_EYE, TV_POSITION, type Phase } from "./constants";
-import { getExteriorMaxDistance, getExteriorOrbitFloor, wheelZoomRatio } from "@/lib/bus-camera";
+import { getExteriorMaxDistance, wheelZoomRatio } from "@/lib/bus-camera";
 import { ease, type JourneyState } from "@/lib/bus-journey";
 import { getPassengerSkeleton } from "@/lib/passenger-proportions";
 import { getNakamaArchetype } from "./passenger-archetypes";
@@ -35,7 +35,7 @@ const FOV_EPSILON = 0.01;
 const EXTERIOR_MAX_POLAR_ANGLE = Math.PI / 2 - 0.04;
 const EXTERIOR_SKY_PITCH_LIMIT = Math.PI - EXTERIOR_MAX_POLAR_ANGLE - 0.02;
 const EXTERIOR_SKY_DRAG_SPEED = 0.0045;
-const EXTERIOR_MIN_DISTANCE = 0.65;
+const MIN_ORBIT_DISTANCE = .18;
 const LOCAL_X_AXIS = new THREE.Vector3(1, 0, 0);
 const LOCAL_Z_AXIS = new THREE.Vector3(0, 0, 1);
 const CAMERA_UP = new THREE.Vector3(0, 1, 0);
@@ -153,11 +153,8 @@ export default function CameraRig({
     if (!control || !Number.isFinite(ratio) || ratio <= 0) return;
     const distance = camera.position.distanceTo(control.target);
     const radius = orbitRadius.current ?? distance;
-    // Un zoom arrière doit répondre dès que la caisse a limité le zoom avant.
-    const minimum = freeViewRef.current ? .18 : getExteriorOrbitFloor(orbitOffset.copy(camera.position).sub(control.target).normalize(), cabinLength);
-    const current = ratio > 1 ? Math.max(radius, minimum) : radius;
-    orbitRadius.current = THREE.MathUtils.clamp(current * ratio, freeViewRef.current ? .18 : EXTERIOR_MIN_DISTANCE, maxOrbitDistance);
-  }, [camera, cabinLength, orbitOffset, maxOrbitDistance]);
+    orbitRadius.current = THREE.MathUtils.clamp(radius * ratio, MIN_ORBIT_DISTANCE, maxOrbitDistance);
+  }, [camera, maxOrbitDistance]);
 
   useLayoutEffect(() => {
     if (!messagesBackdrop) return;
@@ -748,16 +745,13 @@ export default function CameraRig({
         if(trip.completed)finishTransition(p==="entering"?"inside":"outside");
         return;
       }
-      const watchZ = trip.entryFromSeat ? trip.doorZ : trip.position.z;
-      const focusY = characterId === "chopper" ? .7 : 1.05;
-      // Le cadre suit le passager ou sa porte. Le zoom extérieur est restauré à la fin de la sortie.
-      cinematic.target.set(trip.entryFromSeat ? .45 : trip.position.x * .72, trip.position.y + focusY, watchZ);
       const aspect = Math.max(.55, size.width / Math.max(1, size.height));
       const setback = THREE.MathUtils.clamp(.83 / aspect, 1, 1.36);
-      const side = 5.6 + THREE.MathUtils.clamp(trip.position.x, 0, 3.3) * .75;
-      cinematic.pos.set(cinematic.target.x + side * setback, cinematic.target.y + 1.45, watchZ - 2.65 * setback);
-      if(p==="entering") {
-        if(trip.elapsed<trip.timing.entryCameraTime) {
+      if (p === "entering") {
+        if (trip.elapsed < trip.timing.entryCameraTime) {
+          // Plan fixe face à la porte pendant que le passager entre dans le cadre et monte.
+          cinematic.target.set(1.25, 1.25, trip.doorZ - .65);
+          cinematic.pos.set(1.25 + 6.05 * setback, 2.8, trip.doorZ - 2.65 * setback);
           const approach = ease(trip.elapsed / 1.15);
           cam.position.lerpVectors(a.from, cinematic.pos, approach);
           cinematic.matrix.lookAt(cam.position,cinematic.target,CAMERA_UP);
@@ -772,6 +766,11 @@ export default function CameraRig({
           cam.quaternion.slerpQuaternions(a.fromQ,a.toQ,trip.cameraBlend);
         }
       } else {
+        const focusY = characterId === "chopper" ? .7 : 1.05;
+        const watchZ = trip.position.z;
+        cinematic.target.set(trip.position.x * .72, trip.position.y + focusY, watchZ);
+        const side = 5.6 + THREE.MathUtils.clamp(trip.position.x, 0, 3.3) * .75;
+        cinematic.pos.set(cinematic.target.x + side * setback, cinematic.target.y + 1.45, watchZ - 2.65 * setback);
         const outward = exitFromFreeView.current ? ease(trip.elapsed / 1.15) : 1 - trip.cameraBlend;
         cinematic.matrix.lookAt(cinematic.pos,cinematic.target,CAMERA_UP);
         cinematic.quaternion.setFromRotationMatrix(cinematic.matrix);
@@ -847,14 +846,12 @@ export default function CameraRig({
       );
     } else if (p === "outside" || freeViewRef.current) {
       const control = controls.current;
-      if (control) {
+      if (control && orbitRadius.current !== null) {
         const distance = orbitOffset.copy(cam.position).sub(control.target).length();
         if (distance > 0) {
           orbitOffset.multiplyScalar(1 / distance);
-          const floor = freeViewRef.current ? .18 : getExteriorOrbitFloor(orbitOffset, cabinLength);
-          if (distance < floor && orbitRadius.current === null) orbitRadius.current = distance;
-          const requested = THREE.MathUtils.clamp(orbitRadius.current ?? distance, floor, maxOrbitDistance);
-          const next = Math.max(floor, reducedMotion ? requested : THREE.MathUtils.damp(distance, requested, 12, Math.min(dt, .1)));
+          const requested = THREE.MathUtils.clamp(orbitRadius.current, MIN_ORBIT_DISTANCE, maxOrbitDistance);
+          const next = reducedMotion ? requested : THREE.MathUtils.damp(distance, requested, 12, Math.min(dt, .1));
           if (Math.abs(next - distance) > .0001) cam.position.copy(control.target).addScaledVector(orbitOffset, next);
         }
       }
@@ -878,7 +875,7 @@ export default function CameraRig({
       camera={camera}
       domElement={gl.domElement.parentElement ?? gl.domElement}
       enabled={phase === "outside" || (phase === "inside" && freeView)}
-      minDistance={freeView ? 0.18 : EXTERIOR_MIN_DISTANCE}
+      minDistance={MIN_ORBIT_DISTANCE}
       maxDistance={maxOrbitDistance}
       enableZoom={false}
       maxPolarAngle={EXTERIOR_MAX_POLAR_ANGLE}

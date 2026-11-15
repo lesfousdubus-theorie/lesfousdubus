@@ -50,6 +50,7 @@ interface SceneProps {
   boardingPending?: boolean;
   boardingFromSeat?: boolean;
   passengerProfiles?: PassengerProfile[];
+  profileRevision?: number;
   currentPassengerSeatIndex?: number | null;
   currentPassengerAvatarId?: string | null;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
@@ -299,6 +300,7 @@ export default function Scene({
   boardingPending = false,
   boardingFromSeat = false,
   passengerProfiles = [],
+  profileRevision = 0,
   currentPassengerSeatIndex = null,
   currentPassengerAvatarId = null,
   onPassengerSelect,
@@ -388,6 +390,7 @@ export default function Scene({
           hasEntered={hasEntered}
           boardingPending={boardingPending}
           passengerProfiles={passengerProfiles}
+          profileRevision={profileRevision}
           currentPassengerSeatIndex={currentPassengerSeatIndex}
           onPassengerSelect={onPassengerSelect}
           reducedMotion={reducedMotion}
@@ -396,8 +399,7 @@ export default function Scene({
         />
       </Suspense>
       <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} profile={currentPassengerProfile} onSelect={phase !== "inside" || freeView ? onPassengerSelect : undefined} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
-      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={phase === "inside" && (freeView || messagesBackdrop) ? "outside" : phase}
-        cabinCenterZ={cabinCenterZ} cabinLength={cabinLength} journey={journey} />
+      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={phase} cabinCenterZ={cabinCenterZ} />
       <CameraRig
         letterShortcutsEnabled={letterShortcutsEnabled}
         resetViewToken={resetViewToken}

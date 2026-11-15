@@ -10,6 +10,7 @@ import { DRIVER_ARM_FIELDS, DRIVER_FOREARM, DRIVER_SEAT_POSITIONS, DRIVER_SHOULD
 import { sampleCopilotDance } from "@/lib/copilot-dance";
 import { SEATED_HIP_HEIGHT, SEATED_HIP_Z } from "@/lib/passenger-gait";
 import { blendPassengerPose, createPassengerPose, samplePassengerPose } from "@/lib/passenger-motion";
+import { usePassengerNameScale } from "./PassengerNameTags";
 
 interface BusDriversProps {
   hornPulse: number;
@@ -132,6 +133,10 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
   // Étiquettes contenant UNIQUEMENT le prénom de chacun
   const kamalNameTex = useMemo(() => makeDriverNameTexture("Kamal"), []);
   const kytaNameTex = useMemo(() => makeDriverNameTexture("Kyta"), []);
+  const kamalName = useRef<THREE.Sprite>(null);
+  const kytaName = useRef<THREE.Sprite>(null);
+  usePassengerNameScale(kamalName, kamalNameTex.aspect);
+  usePassengerNameScale(kytaName, kytaNameTex.aspect);
 
   useEffect(() => {
     return () => {
@@ -329,7 +334,7 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
         }}
       >
         {/* Bulle avec UNIQUEMENT le prénom "Kamal" */}
-        <sprite position={[0, 2.35, 0.14]} scale={[kamalNameTex.aspect * 0.11, 0.11, 1]}>
+        <sprite ref={kamalName} position={[0, 2.35, 0.14]} scale={[kamalNameTex.aspect * 0.11, 0.11, 1]}>
           <spriteMaterial
             map={kamalNameTex.texture}
             transparent
@@ -375,7 +380,7 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
         }}
       >
         {/* Bulle avec UNIQUEMENT le prénom "Kyta" */}
-        <sprite position={[0, 2.35, 0.14]} scale={[kytaNameTex.aspect * 0.11, 0.11, 1]}>
+        <sprite ref={kytaName} position={[0, 2.35, 0.14]} scale={[kytaNameTex.aspect * 0.11, 0.11, 1]}>
           <spriteMaterial
             map={kytaNameTex.texture}
             transparent

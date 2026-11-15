@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { setSceneryParts } from "./world-visibility";
 
 type Point = [number, number, number];
 type MaterialKey = keyof typeof SCENERY_MATERIALS;
@@ -122,7 +123,7 @@ class Builder {
       const geometry = mergeGeometries(shapes, false)!;
       geometry.computeBoundingBox();
       geometry.computeBoundingSphere();
-      geometry.userData.occlusionBounds = shapes.map(shape => shape.boundingBox);
+      setSceneryParts(geometry, shapes);
       shapes.forEach((shape) => shape.dispose());
       return { material: SCENERY_MATERIALS[key], geometry, section };
     });

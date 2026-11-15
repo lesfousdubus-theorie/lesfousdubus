@@ -21,6 +21,7 @@ import { getPassengerCardPairs } from "@/lib/passenger-card-game";
 import { BODY_BEHIND_HIP } from "@/lib/passenger-gait";
 import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, getRegisteredPassengerPose, pruneRegisteredPassengerPoses, samplePassengerPose, type PassengerPoseRegistry } from "@/lib/passenger-motion";
 import { keepPassengerHandsApart } from "@/lib/passenger-space";
+import { DistantPassengerNames, PassengerNameTag, useVisiblePassengerNames } from "./PassengerNameTags";
 
 /** Hauteur visuelle du sommet de chaque passager assis, accessoires compris. */
 function getPassengerLabelY(archetype: NakamaArchetype): number {
@@ -127,6 +128,7 @@ interface PassengersProps {
   reservedRow?: number;
   reservedColumn?: number | null;
   passengerProfiles?: PassengerProfile[];
+  profileRevision?: number;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   activePassengerIndex?: number | null;
   lowPower?: boolean;
@@ -137,7 +139,7 @@ interface PassengersProps {
 
 function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSeatRanges = [], hornPulse,
   partyOn = false, reservedRow = 3, reservedColumn = null, passengerProfiles = [], onPassengerSelect,
-  lowPower = false, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
+  profileRevision = 0, lowPower = false, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
   const camera = useThree(state => state.camera);
   const root = useRef<THREE.Group>(null), cameraPoint = useMemo(() => new THREE.Vector3(), []);
   const [detailFocus, setDetailFocus] = useState(() => ({ x: camera.position.x, z: camera.position.z }));
@@ -160,6 +162,14 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
     avatarAboard, lowPower, detailFocus }), [passengerCount, seatCapacity, vacantSeatRanges, renderedRowIndices,
       reservedRow, reservedColumn, excludedPassengerIndex, avatarAboard, lowPower, detailFocus]);
   const profilesBySeatIndex = useMemo(() => new Map(passengerProfiles.map(profile => [profile.seatIndex, profile])), [passengerProfiles]);
+  const occupants = useMemo(() => [...detailed, ...simplified], [detailed, simplified]);
+  const names = useVisiblePassengerNames(occupants, profileRevision);
+  const distantLabels = useMemo(() => simplified.map(({ seat, index, passengerKind }) => {
+    const profile = passengerKind === "visitor" ? profilesBySeatIndex.get(index) : undefined;
+    const archetype = getNakamaArchetype(index, profile?.avatarId);
+    const name = (passengerKind === "visitor" ? profile?.displayName?.trim() || names.get(index) : null) || archetype.name;
+    return { index, name, x: seat.x, y: getPassengerLabelY(archetype), z: seat.z + .14 };
+  }), [names, profilesBySeatIndex, simplified]);
   const detailedSeats = new Set(detailed.map(occupant => occupant.physicalSeatIndex));
   const poses=useMemo<PassengerPoseRegistry>(()=>new Map(),[]);
   useEffect(()=>{
@@ -175,6 +185,7 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
   useEffect(() => () => { document.body.style.cursor = "auto"; }, []);
   return <group ref={root} name="bus-seated-passengers" userData={{ detailedCount: detailed.length, simplifiedCount: simplified.length }}>
     <SimplifiedPassengers passengers={simplified} profilesBySeatIndex={profilesBySeatIndex} onSelect={onPassengerSelect} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion} poses={poses}/>
+    <DistantPassengerNames labels={distantLabels} />
     {detailed.map(({ seat, index, physicalSeatIndex, passengerKind }) => {
       const archetype = getNakamaArchetype(index, passengerKind === "visitor" ? profilesBySeatIndex.get(index)?.avatarId : null);
       return <Passenger key={`${passengerKind}-${index}`} seat={seat} index={index} archetype={archetype}
@@ -183,7 +194,7 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
         passengerKind={passengerKind} physicalSeatIndex={physicalSeatIndex}
         cardActors={cardActors} cardPairIndex={cardPairBySeat.get(physicalSeatIndex) ?? null}
         label={passengerKind === "nakama" ? (["shanks", "buggy"].includes(archetype.id)
-          ? archetype.name.split(" ")[0] : archetype.name.split(" ").at(-1)) : undefined}
+          ? archetype.name.split(" ")[0] : archetype.name.split(" ").at(-1)) : profilesBySeatIndex.get(index)?.displayName?.trim() || names.get(index) || archetype.name}
         hornPulse={hornPulse} partyOn={partyOn}
         peerSide={detailedSeats.has(physicalSeatIndex ^ 1) ? (seat.seatInRow % 2 === 0 ? 1 : -1) : 0}
         interactionPairIndex={Math.floor(physicalSeatIndex / 2)}
@@ -265,10 +276,6 @@ export function Passenger({
   );
   const selectedProfile = profile ?? fallbackProfile;
   const interactive = Boolean(selectedProfile || onActivate);
-  const nameTexture = useMemo(
-    () => displayName ? makePassengerNameTexture(displayName) : null,
-    [displayName],
-  );
   const labelY = useMemo(() => getPassengerLabelY(archetype), [archetype]);
 
   useEffect(() => () => {
@@ -362,27 +369,12 @@ export function Passenger({
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
     >
-      {!firstPerson && nameTexture && (
-        <sprite
-          name="nakama-name-label"
-          userData={{ label: displayName, textureAspect: nameTexture.aspect }}
-          position={[0, labelY, 0.14]}
-          scale={[Math.min(0.4, nameTexture.aspect * 0.11), Math.min(0.11, 0.4 / nameTexture.aspect), 1]}
-          renderOrder={20}
+      {!firstPerson && displayName && (
+        <PassengerNameTag name={displayName} position={[0, labelY, 0.14]}
           onClick={handleActivate}
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
-        >
-          <spriteMaterial
-            map={nameTexture.texture}
-            transparent
-            alphaTest={0.08}
-            depthTest
-            depthWrite={false}
-            fog={false}
-            toneMapped={false}
-          />
-        </sprite>
+        />
       )}
       <group name="nakama-hips" position={[0, 0.64 + skeleton.seatedHipHeight, skeleton.seatedHipZ]}>
         <PassengerLowerBody mats={mats} archetype={archetype} kickPose={archetype.id==="sanji"?currentPose:undefined} />
@@ -414,57 +406,6 @@ export function Passenger({
 
     </group>
   );
-}
-
-const PASSENGER_NAME_TEXTURE_CACHE = new Map<string, { texture: THREE.CanvasTexture; aspect: number }>();
-let passengerNameMeasureContext: CanvasRenderingContext2D | null = null;
-
-function makePassengerNameTexture(displayName: string) {
-  const cached = PASSENGER_NAME_TEXTURE_CACHE.get(displayName);
-  if (cached) return cached;
-
-  const font = "900 64px ui-sans-serif, system-ui, sans-serif";
-  if (!passengerNameMeasureContext) {
-    passengerNameMeasureContext = document.createElement("canvas").getContext("2d");
-  }
-  const measureContext = passengerNameMeasureContext!;
-  measureContext.font = font;
-  const measuredWidth = Math.ceil(measureContext.measureText(displayName).width + 48);
-  const width = Math.min(1024, Math.max(256, THREE.MathUtils.ceilPowerOfTwo(measuredWidth)));
-  const height = 128;
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d")!;
-
-  context.clearRect(0, 0, width, height);
-  context.font = font;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.lineJoin = "round";
-  context.strokeStyle = "rgba(2, 6, 23, 0.96)";
-  context.lineWidth = 12;
-  context.strokeText(displayName, width / 2, height / 2 + 2, width - 36);
-  context.fillStyle = "#ffffff";
-  context.fillText(displayName, width / 2, height / 2 + 2, width - 36);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = THREE.LinearMipmapLinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  texture.anisotropy = 4;
-
-  const entry = { texture, aspect: width / height };
-  if (PASSENGER_NAME_TEXTURE_CACHE.size >= 256) {
-    const oldestKey = PASSENGER_NAME_TEXTURE_CACHE.keys().next().value;
-    if (oldestKey !== undefined) {
-      const oldest = PASSENGER_NAME_TEXTURE_CACHE.get(oldestKey);
-      oldest?.texture.dispose();
-      PASSENGER_NAME_TEXTURE_CACHE.delete(oldestKey);
-    }
-  }
-  PASSENGER_NAME_TEXTURE_CACHE.set(displayName, entry);
-  return entry;
 }
 
 export default memo(Passengers);
