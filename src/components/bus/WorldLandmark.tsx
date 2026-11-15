@@ -3,6 +3,7 @@
 import * as THREE from "three";
 import { useLayoutEffect, useRef } from "react";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { setSceneryParts } from "@/lib/world-visibility";
 
 export type PropType =
   | "palm"
@@ -496,7 +497,7 @@ export function WorldLandmark({ def }: { def: PropDef }) {
     for (const { material, cast, receive, shapes } of batches.values()) {
       const combined = mergeGeometries(shapes);
       if (combined) {
-        combined.userData.occlusionBounds = shapes.map(shape => shape.boundingBox);
+        setSceneryParts(combined, shapes);
         const mesh = new THREE.Mesh(combined, material);
         mesh.castShadow = cast;
         mesh.receiveShadow = receive;

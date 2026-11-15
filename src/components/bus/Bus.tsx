@@ -39,6 +39,7 @@ interface BusProps {
   hasEntered?: boolean;
   boardingPending?: boolean;
   passengerProfiles?: PassengerProfile[];
+  profileRevision?: number;
   currentPassengerSeatIndex?: number | null;
   journey:React.RefObject<JourneyState>;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
@@ -66,6 +67,7 @@ export default function Bus({
   hasEntered = false,
   boardingPending = false,
   passengerProfiles = [],
+  profileRevision = 0,
   currentPassengerSeatIndex = null,
   journey,
   onPassengerSelect,
@@ -247,6 +249,7 @@ export default function Bus({
         avatarAboard={phase !== "outside" && !boardingPending}
         activePassengerIndex={phase === "inside" || phase === "entering" ? currentPassengerSeatIndex : null}
         passengerProfiles={passengerProfiles}
+        profileRevision={profileRevision}
         onPassengerSelect={onPassengerSelect}
         lowPower={lowPower}
         reducedMotion={reducedMotion}

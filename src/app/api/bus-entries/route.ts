@@ -107,6 +107,21 @@ export async function GET(request: Request) {
     const wantsProfiles = url.searchParams.get("profiles") === "1";
     const wantsManifest = url.searchParams.get("manifest") === "1";
 
+    if (url.searchParams.get("names") === "1") {
+      const values = url.searchParams.get("seats")?.split(",") ?? [];
+      const seats = values.map(value => /^\d+$/.test(value) ? Number(value) : NaN);
+      if (!seats.length || seats.length > 80 || seats.some(seat => !Number.isSafeInteger(seat))) {
+        return Response.json({ error: "Liste de places invalide." }, { status: 400, headers: WRITE_HEADERS });
+      }
+      const placeholders = seats.map(() => "?").join(",");
+      const rows = await database.prepare(
+        `SELECT seat_index, display_name FROM bus_entries WHERE seat_index IN (${placeholders})`,
+      ).bind(...seats).all<Pick<PassengerRow, "seat_index" | "display_name">>();
+      return Response.json({ names: rows.results.map(row => ({
+        seatIndex: Number(row.seat_index), displayName: row.display_name,
+      })) }, { headers: READ_HEADERS });
+    }
+
     if (wantsManifest) {
       const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
       const limit = Math.min(100, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 60, 100)));

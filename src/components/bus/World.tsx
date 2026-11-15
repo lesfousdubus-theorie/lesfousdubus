@@ -10,12 +10,15 @@ import { useFrame } from "@react-three/fiber";
 import { WORLD_SPEED, type Phase, type WorldState } from "./constants";
 import { BRIDGE_MARKING_BOX } from "@/lib/world-geometry";
 import { cacheSceneryBounds, createSceneryVisibility, type SceneryBounds } from "@/lib/world-visibility";
-import type { JourneyState } from "@/lib/bus-journey";
 
 export const ZONE_LEN = 160;
 const LOOP = ZONE_LEN * 5;
 const WINDOW_START = -440;
 const TERRAIN_RELIEF = [1.1, .32, .55, .65, 1.05];
+const TERRAIN_WIDTH = 96;
+const TERRAIN_DEPTH = ZONE_LEN - 16;
+const TERRAIN_COLUMNS = 28;
+const TERRAIN_ROWS = 36;
 
 export const ZONES = [
   { name: "Alabasta", subtitle: "Royaume des sables", ground: "#e5bd6a", shore: "#d8a84e" },
@@ -72,7 +75,7 @@ function getTerrainHeight(zone: number, x: number, wave: number) {
 }
 
 function makeTerrain(zone: number) {
-  const geometry = new THREE.PlaneGeometry(96, ZONE_LEN - 16, 28, 36);
+  const geometry = new THREE.PlaneGeometry(TERRAIN_WIDTH, TERRAIN_DEPTH, TERRAIN_COLUMNS, TERRAIN_ROWS);
   geometry.rotateX(-Math.PI / 2);
   const positions = geometry.getAttribute("position") as THREE.BufferAttribute;
   const colors = new Float32Array(positions.count * 3);
@@ -93,6 +96,23 @@ function makeTerrain(zone: number) {
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
   return geometry;
+}
+
+function terrainSurfaceAt(geometry: THREE.BufferGeometry, x: number, z: number) {
+  const u = (x / TERRAIN_WIDTH + .5) * TERRAIN_COLUMNS;
+  const v = (z / TERRAIN_DEPTH + .5) * TERRAIN_ROWS;
+  if (u < 0 || v < 0 || u > TERRAIN_COLUMNS || v > TERRAIN_ROWS) return -Infinity;
+  const column = Math.min(TERRAIN_COLUMNS - 1, Math.floor(u));
+  const row = Math.min(TERRAIN_ROWS - 1, Math.floor(v));
+  const across = u - column, along = v - row;
+  const first = row * (TERRAIN_COLUMNS + 1) + column;
+  const nextRow = first + TERRAIN_COLUMNS + 1;
+  const positions = geometry.getAttribute("position");
+  const a = positions.getY(first), b = positions.getY(nextRow);
+  const c = positions.getY(nextRow + 1), d = positions.getY(first + 1);
+  return across + along <= 1
+    ? a * (1 - across - along) + d * across + b * along
+    : c * (across + along - 1) + d * (1 - along) + b * (1 - across);
 }
 
 function buildProps(): PropDef[] {
@@ -135,11 +155,9 @@ interface WorldProps {
   lowPower?: boolean;
   phase?: Phase;
   cabinCenterZ?: number;
-  cabinLength?: number;
-  journey?: React.RefObject<JourneyState>;
 }
 
-export default function World({ worldRef, reducedMotion = false, lowPower = false, phase = "outside", cabinCenterZ = 0, cabinLength = 10, journey }: WorldProps) {
+export default function World({ worldRef, reducedMotion = false, lowPower = false, phase = "outside", cabinCenterZ = 0 }: WorldProps) {
   const allProps = useMemo(() => buildProps(), []);
   const terrains = useMemo(() => ZONES.map((_, index) => makeTerrain(index)), []);
 
@@ -185,9 +203,8 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
     const scroll = (worldRef.current?.scroll ?? 0) + frameDt * WORLD_SPEED * mult;
     if (worldRef.current) worldRef.current.scroll = scroll;
 
-    const trip = phase === "entering" || phase === "exiting" ? journey?.current : undefined;
-    visibility.begin(state.camera, cabinCenterZ, cabinLength, phase !== "inside", trip?.avatarVisible ? trip.position : undefined);
-    for (const rail of railBounds.current) visibility.update(rail, 0, true);
+    visibility.begin(state.camera);
+    for (const rail of railBounds.current) visibility.update(rail, 0);
 
     // Les limites détaillées ne sont testées qu'à proximité et devant la caméra.
     for (let i = 0; i < props.length; i++) {
@@ -211,8 +228,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       const terrain = terrainRefs.current[i];
       const eye = state.camera.position;
       const localZ = eye.z - z;
-      if (terrain) terrain.visible = eye.y > 1.37 || Math.abs(eye.x) > 48 || Math.abs(localZ) > (ZONE_LEN - 16) / 2
-        || eye.y > getTerrainHeight(i, eye.x, getTerrainWave(i, eye.x, localZ)) + (terrain.visible ? .1 : .2);
+      if (terrain) terrain.visible = eye.y > 1.37 || eye.y >= terrainSurfaceAt(terrain.geometry, eye.x, localZ);
       for (const block of sceneBounds.current[i] ?? []) visibility.update(block, z);
     }
 

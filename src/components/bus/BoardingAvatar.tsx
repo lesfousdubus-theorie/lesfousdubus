@@ -17,6 +17,7 @@ import { PassengerUpperArm, PassengerForearm, PassengerFoot, passengerCalfMateri
 import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, samplePassengerPose } from "@/lib/passenger-motion";
 import PassengerSignatureProp from "./PassengerSignatureProp";
 import { keepPassengerHandsApart } from "@/lib/passenger-space";
+import { PassengerNameTag } from "./PassengerNameTags";
 
 function isObjectVisible(object: THREE.Object3D | null): boolean {
   for (let current = object; current; current = current.parent) {
@@ -193,7 +194,9 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
       <group ref={head} name="bus-boarding-avatar-head" position={[0, skeleton.neckAboveHip-skeleton.torsoAboveHip, 0]}>
         <PassengerNeck archetype={archetype} mats={mats} />
         <group position={[0, skeleton.headAboveNeck, 0]}><PassengerHead archetype={archetype} mats={mats}
-          motion={pose} index={passengerIndex ?? 0} reducedMotion={reducedMotion}/></group>
+          motion={pose} index={passengerIndex ?? 0} reducedMotion={reducedMotion}/>
+          <PassengerNameTag name={profile?.displayName?.trim() || archetype.name} position={[0, .34, .12]} />
+        </group>
       </group>
       </group>
     </group>

@@ -696,6 +696,7 @@ export default function BusExperience() {
         boardingPending={joining}
         boardingFromSeat={boardingFromSeat}
         passengerProfiles={passengerProfiles}
+        profileRevision={profileRevision}
         currentPassengerSeatIndex={currentPassengerSeatIndex}
         currentPassengerAvatarId={profile.savedAvatarId}
         onPassengerSelect={selectPassenger}
