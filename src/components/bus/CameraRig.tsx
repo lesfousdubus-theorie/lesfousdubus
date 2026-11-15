@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
@@ -15,6 +15,7 @@ import { isBrowserZoomWheel, shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts
 interface Props {
   phase: Phase;
   freeView?: boolean;
+  messagesBackdrop?: boolean;
   onArrived: (phase: "inside" | "outside") => void;
   cabinLength?: number;
   cabinCenterZ?: number;
@@ -40,6 +41,7 @@ const CAMERA_UP = new THREE.Vector3(0, 1, 0);
 const TEMP_DOLLY_DIR = new THREE.Vector3();
 const TEMP_TARGET = new THREE.Vector3();
 const TEMP_SHIFT = new THREE.Vector3();
+const DEFAULT_EXTERIOR_OFFSET = DEFAULT_CAMERA_POS.clone().sub(DEFAULT_TARGET);
 
 function advanceOrbitDolly(
   control: OrbitControlsImpl,
@@ -67,6 +69,7 @@ function advanceOrbitDolly(
 export default function CameraRig({
   phase,
   freeView = false,
+  messagesBackdrop = false,
   onArrived,
   cabinLength = 9.2,
   cabinCenterZ = 0,
@@ -81,7 +84,10 @@ export default function CameraRig({
   resetViewToken = 0,
   journey,
 }: Props) {
-  const { camera, gl, size } = useThree();
+  const { camera: sceneCamera, gl, size, get, set } = useThree();
+  const [camera] = useState(sceneCamera);
+  const passengerCamera = useRef(camera);
+  const backdropCamera = useRef<THREE.PerspectiveCamera | null>(null);
   const controls = useRef<OrbitControlsImpl>(null);
   const saved = useRef({ pos: DEFAULT_CAMERA_POS.clone(), target: DEFAULT_TARGET.clone() });
   const anim = useRef({
@@ -150,6 +156,44 @@ export default function CameraRig({
   const maxOrbitDistance = useMemo(() => {
     return getExteriorMaxDistance(cabinLength);
   }, [cabinLength]);
+
+  useLayoutEffect(() => {
+    if (!messagesBackdrop) return;
+    const backdrop = backdropCamera.current ?? new THREE.PerspectiveCamera(55, 1, 0.1);
+    backdropCamera.current = backdrop;
+    const aspect = size.width / Math.max(1, size.height);
+    const halfLength = cabinLength / 2;
+    const offsetLength = DEFAULT_EXTERIOR_OFFSET.length();
+    // Le bout le plus proche reste dans le cadre même avec une longue caisse en portrait.
+    const nearEnd = halfLength * Math.abs(DEFAULT_EXTERIOR_OFFSET.z) / offsetLength;
+    const halfWidth = halfLength * DEFAULT_EXTERIOR_OFFSET.x / Math.hypot(DEFAULT_EXTERIOR_OFFSET.x, DEFAULT_EXTERIOR_OFFSET.z) + 1.5;
+    const halfHeight = 2.4 + nearEnd * DEFAULT_EXTERIOR_OFFSET.y / offsetLength;
+    const halfFrustumHeight = Math.tan(THREE.MathUtils.degToRad(backdrop.fov / 2));
+    const distance = nearEnd + Math.max(halfWidth / Math.max(0.1, aspect), halfHeight) / (0.84 * halfFrustumHeight);
+    const target = new THREE.Vector3(0, DEFAULT_TARGET.y, cabinCenterZ);
+    backdrop.aspect = aspect || 1;
+    backdrop.far = cameraFar;
+    backdrop.position.copy(DEFAULT_EXTERIOR_OFFSET)
+      .multiplyScalar(Math.max(1, distance / offsetLength)).add(target);
+    backdrop.lookAt(target);
+    backdrop.updateProjectionMatrix();
+    backdrop.updateMatrixWorld();
+  }, [cameraFar, cabinLength, cabinCenterZ, messagesBackdrop, size.width, size.height]);
+
+  useLayoutEffect(() => {
+    if (!messagesBackdrop || !backdropCamera.current) return;
+    const original = passengerCamera.current;
+    // Préserver la caméra du passager, son zoom et la cible de ses commandes.
+    set({ camera: backdropCamera.current });
+    return () => {
+      if (original instanceof THREE.PerspectiveCamera && !original.manual) {
+        const viewport = get().size;
+        original.aspect = viewport.width / Math.max(1, viewport.height) || 1;
+        original.updateProjectionMatrix();
+      }
+      set({ camera: original });
+    };
+  }, [get, messagesBackdrop, set]);
 
   const finishTransition = useCallback((destination: "inside" | "outside") => {
     const a = anim.current;
@@ -657,10 +701,10 @@ export default function CameraRig({
     };
   }, [gl, camera, cabinLength]);
 
-  useFrame((state, dt) => {
+  useFrame((_, dt) => {
     const a = anim.current;
     const p = phaseRef.current;
-    const cam = state.camera;
+    const cam = passengerCamera.current;
 
     // Gestion du FOV (zoom)
     if (cam instanceof THREE.PerspectiveCamera) {
@@ -817,6 +861,7 @@ export default function CameraRig({
     <OrbitControls
       ref={controls}
       makeDefault
+      camera={camera}
       domElement={gl.domElement.parentElement ?? gl.domElement}
       enabled={phase === "outside" || (phase === "inside" && freeView)}
       target={[0, 1.9, orbitTargetZ]}

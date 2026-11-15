@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { fetchJson } from "@/lib/client/bus-api";
-import { messageWallCapacity, startMessageMotion } from "./passenger-message-motion";
+import { startMessageMotion } from "./passenger-message-motion";
 import { useModalAccessibility } from "./useModalAccessibility";
 
 type Message = { seatIndex: number; displayName: string; comment: string };
@@ -25,66 +25,51 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
   const closeMessageRef = useRef<HTMLButtonElement>(null);
   const activeBubble = useRef<HTMLButtonElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [nextFrom, setNextFrom] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [pageStart, setPageStart] = useState(0);
-  const [capacity, setCapacity] = useState(3);
   const [pauseOverride, setPauseOverride] = useState<boolean>();
   const [reading, setReading] = useState<Message | null>(null);
   const request = useRef<AbortController | null>(null);
+  const nextFrom = useRef(0);
   const reducedMotion = useSyncExternalStore(subscribeToMotionPreference, prefersReducedMotion, serverMotionPreference);
   const paused = pauseOverride ?? reducedMotion;
   const handleKeyDown = useModalAccessibility(true, onClose, dialogRef, buttonRef, returnFocusRef);
 
-  const load = useCallback(async (from: number, reveal?: number) => {
+  const load = useCallback(async () => {
     request.current?.abort();
     const controller = new AbortController();
     request.current = controller;
     setLoading(true);
     setError(false);
     try {
-      const page = await fetchJson<MessagePage>(`/api/bus-entries?messages=1&from=${from}&limit=60`, { cache: "no-store", signal: controller.signal });
-      if (controller.signal.aborted) return;
-      setMessages(current => from === 0 ? page.messages : [...current, ...page.messages]);
-      setNextFrom(page.nextFrom);
-      setHasMore(page.hasMore);
-      if (reveal !== undefined && page.messages.length) setPageStart(reveal);
+      while (!controller.signal.aborted) {
+        const from = nextFrom.current;
+        const page = await fetchJson<MessagePage>(`/api/bus-entries?messages=1&from=${from}&limit=60`, { cache: "no-store", signal: controller.signal });
+        if (controller.signal.aborted) return;
+        if (page.hasMore && page.nextFrom <= from) throw new Error("Invalid message cursor");
+        nextFrom.current = page.nextFrom;
+        setMessages(current => [...current, ...page.messages]);
+        if (!page.hasMore) break;
+      }
     } catch {
       if (!controller.signal.aborted) setError(true);
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [setPageStart]);
+  }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => void load(0), 0);
+    const timer = window.setTimeout(() => void load(), 0);
     return () => { window.clearTimeout(timer); request.current?.abort(); };
   }, [load]);
 
+  const messageCount = messages.length;
+  const moving = !paused && !reading && messageCount > 0;
   useLayoutEffect(() => {
     const wall = wallRef.current;
-    if (!wall) return;
-    const resize = new ResizeObserver(([entry]) => {
-      setCapacity(messageWallCapacity(entry.contentRect.width, entry.contentRect.height));
-    });
-    resize.observe(wall);
-    return () => resize.disconnect();
-  }, []);
-
-  const pageEnd = Math.min(pageStart + capacity, messages.length);
-  const moving = !paused && !reading && pageEnd > pageStart;
-  useLayoutEffect(() => {
-    const wall = wallRef.current;
-    if (!wall || !moving) return;
-    return startMessageMotion(wall);
-  }, [moving, pageStart, pageEnd]);
-
-  function nextPage() {
-    if (pageEnd < messages.length) setPageStart(pageEnd);
-    else if (hasMore && !loading) void load(nextFrom, pageEnd);
-  }
+    if (!wall || messageCount === 0) return;
+    return startMessageMotion(wall, moving);
+  }, [moving, messageCount]);
 
   function readMessage(message: Message, button: HTMLButtonElement) {
     activeBubble.current = button;
@@ -96,8 +81,6 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
     setReading(null);
     window.requestAnimationFrame(() => activeBubble.current?.focus());
   }
-
-  const visibleMessages = messages.slice(pageStart, pageEnd);
 
   return createPortal(
     <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="messages-title"
@@ -117,8 +100,9 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
       </header>
 
       <div className="messages-wall-stage relative min-h-0 overflow-hidden">
-        <div ref={wallRef} className="messages-wall-track" data-moving={moving} aria-hidden={reading ? true : undefined} inert={reading ? true : undefined}>
-          {visibleMessages.map((message, index) => (
+        <div ref={wallRef} className="messages-wall-track" data-moving={moving} data-count={messageCount}
+          data-dense={messageCount > 40} aria-hidden={reading ? true : undefined} inert={reading ? true : undefined}>
+          {messages.map((message, index) => (
             <button type="button" key={message.seatIndex} onClick={event => readMessage(message, event.currentTarget)}
               className="message-bubble" style={{ zIndex: index + 1 }}>
               <span className="message-bubble-preview">{message.comment}</span>
@@ -138,11 +122,11 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
             </div>
           </div>
         )}
-        {(loading || error || messages.length === 0) && !reading && (
+        {messageCount === 0 && !reading && (
           <div className="messages-wall-state z-20 text-center">
             {loading && <p role="status">Chargement des messages…</p>}
             {error && <div role="alert"><p>Impossible de charger les messages.</p>
-              <button type="button" onClick={() => void load(nextFrom, messages.length || undefined)} className="messages-wall-control mt-2">Réessayer</button>
+              <button type="button" onClick={() => void load()} className="messages-wall-control mt-2">Réessayer</button>
             </div>}
             {!loading && !error && <p>Aucun message pour le moment.</p>}
           </div>
@@ -150,17 +134,15 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
       </div>
 
       <footer className="messages-wall-footer flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2 sm:px-7">
-        <button type="button" aria-pressed={paused} disabled={messages.length === 0 || Boolean(reading)}
+        <button type="button" aria-pressed={paused} disabled={messageCount === 0 || Boolean(reading)}
           onClick={() => setPauseOverride(!paused)} className="messages-wall-control">
           {paused ? "Reprendre" : "Mettre en pause"}
         </button>
-        <div role="group" aria-label="Parcourir les messages" className="flex items-center gap-1.5">
-          <button type="button" aria-label="Messages précédents" disabled={pageStart === 0 || Boolean(reading)}
-            onClick={() => setPageStart(current => Math.max(0, current - capacity))} className="messages-wall-control messages-wall-arrow">←</button>
-          <span className="text-xs tabular-nums text-[#dce7ff] sm:text-sm" role="status">{pageEnd > pageStart ? `${pageStart + 1}–${pageEnd}` : "—"}</span>
-          <button type="button" aria-label="Messages suivants" disabled={Boolean(reading) || !(pageEnd < messages.length || (hasMore && !loading && !error))}
-            onClick={nextPage} className="messages-wall-control messages-wall-arrow">→</button>
-        </div>
+        {messageCount > 0 && loading && <p role="status" className="text-xs">Chargement des autres messages…</p>}
+        {messageCount > 0 && error && !reading && <div className="flex flex-wrap items-center gap-2">
+          <p role="alert" className="text-xs">Certains messages n’ont pas été chargés.</p>
+          <button type="button" onClick={() => void load()} className="messages-wall-control">Réessayer</button>
+        </div>}
       </footer>
     </section>, document.body,
   );

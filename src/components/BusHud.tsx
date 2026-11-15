@@ -504,7 +504,7 @@ export function BusHud({
           </>
         )}
 
-        {/* Navigation entre les rangées et places latérales quand on est à l'intérieur */}
+        {/* Navigation entre les rangées et les colonnes quand on est à l'intérieur */}
         {phase === "inside" && (
           <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] flex flex-col items-end gap-1.5 sm:right-4 sm:top-[6.25rem] sm:gap-2">
             {/* Déplacement dans l'allée */}
@@ -545,15 +545,15 @@ export function BusHud({
                 type="button"
                 onClick={() => setSeatColumn(Math.max(0, seatColumn - 1))}
                 disabled={freeView || seatColumn <= 0}
-                aria-label="Place à gauche"
+                aria-label="Colonne à gauche"
                 className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
-                title={freeView ? "Désactive la vue libre pour changer de place" : seatColumn <= 0 ? "Place fenêtre gauche atteinte" : "Aller sur la place à gauche"}
+                title={freeView ? "Désactive la vue libre pour changer de colonne" : seatColumn <= 0 ? "Déjà dans la colonne la plus à gauche" : "Colonne à gauche"}
               >
                 <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
                 <ChevronLeftIcon className="relative h-4 w-4 shrink-0" />
               </button>
               <span className="flex h-11 items-center justify-center px-1.5 text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white sm:px-2">
-                <span>Place</span>
+                <span>Colonne</span>
                 <span className="ml-1 text-[#ffd23f]">{seatColumn + 1}</span>
                 <span className="mx-0.5 text-[#dce7ff]">/</span>
                 <span>{seatCountInRow}</span>
@@ -562,9 +562,9 @@ export function BusHud({
                 type="button"
                 onClick={() => setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1))}
                 disabled={freeView || seatColumn >= seatCountInRow - 1}
-                aria-label="Place à droite"
+                aria-label="Colonne à droite"
                 className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/80 active:scale-95 cursor-pointer"
-                title={freeView ? "Désactive la vue libre pour changer de place" : seatColumn >= seatCountInRow - 1 ? "Dernière place de la rangée atteinte" : "Aller sur la place à droite"}
+                title={freeView ? "Désactive la vue libre pour changer de colonne" : seatColumn >= seatCountInRow - 1 ? "Déjà dans la colonne la plus à droite" : "Colonne à droite"}
               >
                 <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-1 rounded-lg bg-white/10 transition-colors group-hover:bg-white/20 group-disabled:bg-white/5" />
                 <ChevronRightIcon className="relative h-4 w-4 shrink-0" />
