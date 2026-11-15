@@ -1,5 +1,14 @@
 import * as THREE from "three";
 
+function configureCrispTexture(tex: THREE.CanvasTexture): THREE.CanvasTexture {
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.generateMipmaps = true;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.anisotropy = 16;
+  return tex;
+}
+
 export interface LabelOptions {
   text: string;
   width?: number;
@@ -59,10 +68,7 @@ export function makeLabelTexture({
     c.fillText(sub, width / 2, height * 0.76);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
-  return tex;
+  return configureCrispTexture(new THREE.CanvasTexture(canvas));
 }
 
 /** Plaque d'immatriculation rétro Grand Line */
@@ -98,9 +104,7 @@ export function makeLicensePlateTexture(text = "MUGI-56"): THREE.CanvasTexture {
   c.textBaseline = "middle";
   c.fillText(text, w / 2 + 24, h / 2);
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
+  return configureCrispTexture(new THREE.CanvasTexture(canvas));
 }
 
 /** Texture du tableau de bord avec compteurs lumineux ultra-détaillés */
@@ -320,10 +324,7 @@ export function makeDashboardTexture(): THREE.CanvasTexture {
   drawLed(512, 280, "#10b981", true, "STATUS");
   drawLed(565, 280, "#f97316", true, "BOOST");
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
-  return tex;
+  return configureCrispTexture(new THREE.CanvasTexture(canvas));
 }
 
 /** Texture de l'ombre d'occlusion au sol sous le bus. */
@@ -386,9 +387,7 @@ export function makeTvOffTexture(): THREE.CanvasTexture {
   c.fillStyle = reflection;
   c.fillRect(0, 0, w, h);
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
+  return configureCrispTexture(new THREE.CanvasTexture(canvas));
 }
 
 export interface GraffitiOptions {
@@ -503,8 +502,5 @@ export function makeGraffitiTexture({
 
   c.restore();
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 16;
-  return tex;
+  return configureCrispTexture(new THREE.CanvasTexture(canvas));
 }

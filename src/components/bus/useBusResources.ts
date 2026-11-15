@@ -22,6 +22,9 @@ export default function useBusResources() {
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
       tex.repeat.set(1, 1);
       tex.colorSpace = THREE.SRGBColorSpace;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.anisotropy = 16;
     }
   });
 
@@ -29,6 +32,9 @@ export default function useBusResources() {
   const montCorvoTex = useTexture("/textures/montcorvo.png", (tex) => {
     if (!Array.isArray(tex)) {
       tex.colorSpace = THREE.SRGBColorSpace;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.anisotropy = 16;
     }
   });
 

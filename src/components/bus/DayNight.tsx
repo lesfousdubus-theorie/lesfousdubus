@@ -152,7 +152,7 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
 
   return (
     <>
-      <fog attach="fog" args={["#bfe3ff", 60, 520]} />
+      <fog attach="fog" args={["#bfe3ff", 120, 680]} />
       <ambientLight ref={ambient} intensity={0.5} />
       <hemisphereLight ref={hemi} args={["#bde3ff", "#5a4a30", 0.6]} />
       <primitive object={sunTarget} />

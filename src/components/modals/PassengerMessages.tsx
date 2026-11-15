@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { fetchJson } from "@/lib/client/bus-api";
+import { PauseIcon, PlayIcon } from "@/components/ui/BusIcons";
 import { startMessageMotion } from "./passenger-message-motion";
 import { useModalAccessibility } from "./useModalAccessibility";
 
@@ -92,11 +93,37 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
         } else handleKeyDown(event);
       }}
       className="messages-page fixed inset-0 z-[2147483647] grid overflow-hidden text-white focus:outline-none">
-      <header className="messages-wall-header flex min-w-0 items-center justify-between gap-2 px-3 py-2 sm:gap-4 sm:px-7 sm:py-4">
-        <h1 id="messages-title" className="min-w-0 text-lg font-black leading-tight sm:text-2xl">Messages des passagers</h1>
-        <button ref={buttonRef} type="button" onClick={onClose} aria-label="Retour au bus" className="messages-wall-control shrink-0">
-          <span aria-hidden="true">←</span> <span className="hidden min-[390px]:inline">Retour au </span>bus
-        </button>
+      <header className="messages-wall-header flex min-w-0 items-center justify-between gap-2 px-3 py-1.5 sm:gap-3 sm:px-5 sm:py-2">
+        <h1 id="messages-title" className="min-w-0 truncate text-base font-black leading-tight sm:text-lg">Messages des passagers</h1>
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          {messageCount > 0 && loading && <p role="status" className="hidden text-xs text-white/75 sm:block">Chargement…</p>}
+          {messageCount > 0 && error && !reading && (
+            <button type="button" onClick={() => void load()} className="messages-wall-control px-2.5 text-xs">
+              Réessayer
+            </button>
+          )}
+          <button
+            type="button"
+            aria-pressed={paused}
+            aria-label={paused ? "Reprendre le défilement" : "Mettre en pause le défilement"}
+            title={paused ? "Reprendre" : "Mettre en pause"}
+            disabled={messageCount === 0 || Boolean(reading)}
+            onClick={() => setPauseOverride(!paused)}
+            className="messages-wall-control shrink-0"
+          >
+            {paused ? <PlayIcon className="h-4 w-4" /> : <PauseIcon className="h-4 w-4" />}
+          </button>
+          <button
+            ref={buttonRef}
+            type="button"
+            onClick={onClose}
+            aria-label="Retour au bus"
+            title="Retour au bus"
+            className="messages-wall-control shrink-0"
+          >
+            <span aria-hidden="true" className="text-base leading-none">←</span>
+          </button>
+        </div>
       </header>
 
       <div className="messages-wall-stage relative min-h-0 overflow-hidden">
@@ -132,18 +159,6 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
           </div>
         )}
       </div>
-
-      <footer className="messages-wall-footer flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2 sm:px-7">
-        <button type="button" aria-pressed={paused} disabled={messageCount === 0 || Boolean(reading)}
-          onClick={() => setPauseOverride(!paused)} className="messages-wall-control">
-          {paused ? "Reprendre" : "Mettre en pause"}
-        </button>
-        {messageCount > 0 && loading && <p role="status" className="text-xs">Chargement des autres messages…</p>}
-        {messageCount > 0 && error && !reading && <div className="flex flex-wrap items-center gap-2">
-          <p role="alert" className="text-xs">Certains messages n’ont pas été chargés.</p>
-          <button type="button" onClick={() => void load()} className="messages-wall-control">Réessayer</button>
-        </div>}
-      </footer>
     </section>, document.body,
   );
 }

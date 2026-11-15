@@ -200,7 +200,8 @@ function useWebGLSupport() {
 
 function AdaptiveDpr({ lowPower, onDprChange }: { lowPower: boolean; onDprChange: (value: number) => void }) {
   const setDpr = useThree((state) => state.setDpr);
-  const baseDpr = Math.min(window.devicePixelRatio || 1, lowPower ? 1.15 : 1.6);
+  const baseDpr = Math.min(window.devicePixelRatio || 1, lowPower ? 1.35 : 2);
+  const minimumDpr = Math.min(baseDpr, lowPower ? 1 : 1.15);
   const sampleRef = useRef(createDprSample(baseDpr));
 
   useEffect(() => {
@@ -210,7 +211,7 @@ function AdaptiveDpr({ lowPower, onDprChange }: { lowPower: boolean; onDprChange
   }, [baseDpr, setDpr, onDprChange]);
 
   useFrame((_, dt) => {
-    const next = sampleSceneDpr(sampleRef.current, dt, baseDpr, lowPower ? 0.65 : 0.75);
+    const next = sampleSceneDpr(sampleRef.current, dt, baseDpr, minimumDpr);
     if (next !== null) { setDpr(next); onDprChange(next); }
   });
 

@@ -144,12 +144,16 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
   const lastFocus = useRef({ ...detailFocus, time: -Infinity });
   useFrame(({ camera }) => {
     const now = performance.now();
-    if (!root.current || now - lastFocus.current.time < 120) return;
+    if (!root.current || now - lastFocus.current.time < 250) return;
     lastFocus.current.time = now;
-    camera.getWorldPosition(cameraPoint); root.current.worldToLocal(cameraPoint);
-    if (Math.hypot(cameraPoint.x-lastFocus.current.x, cameraPoint.z-lastFocus.current.z) < .2) return;
-    lastFocus.current = { x: cameraPoint.x, z: cameraPoint.z, time: now };
-    setDetailFocus({ x: cameraPoint.x, z: cameraPoint.z });
+    camera.getWorldPosition(cameraPoint);
+    root.current.worldToLocal(cameraPoint);
+    const outsidePerimeter = Math.abs(cameraPoint.x) > 3.2 || cameraPoint.z < -8 || cameraPoint.z > 24;
+    const nextX = outsidePerimeter ? 0 : Math.round(cameraPoint.x / 1.2) * 1.2;
+    const nextZ = outsidePerimeter ? 0 : Math.round(cameraPoint.z / 1.5) * 1.5;
+    if (Math.hypot(nextX - lastFocus.current.x, nextZ - lastFocus.current.z) <= 1.0) return;
+    lastFocus.current = { x: nextX, z: nextZ, time: now };
+    setDetailFocus({ x: nextX, z: nextZ });
   }, -3);
   const { detailed, simplified } = useMemo(() => getBusOccupancy({ passengerCount, seatCapacity,
     vacantSeatRanges, renderedRowIndices, reservedRow, reservedColumn, currentPassengerIndex: excludedPassengerIndex,
@@ -268,12 +272,11 @@ export function Passenger({
   const labelY = useMemo(() => getPassengerLabelY(archetype), [archetype]);
 
   useEffect(() => () => {
-    nameTexture?.texture.dispose();
     if (hovered.current) {
       hovered.current = false;
       document.body.style.cursor = "auto";
     }
-  }, [nameTexture]);
+  }, []);
 
   useEffect(() => {
     if (!interactive && hovered.current) {
@@ -413,10 +416,18 @@ export function Passenger({
   );
 }
 
+const PASSENGER_NAME_TEXTURE_CACHE = new Map<string, { texture: THREE.CanvasTexture; aspect: number }>();
+let passengerNameMeasureContext: CanvasRenderingContext2D | null = null;
+
 function makePassengerNameTexture(displayName: string) {
+  const cached = PASSENGER_NAME_TEXTURE_CACHE.get(displayName);
+  if (cached) return cached;
+
   const font = "900 64px ui-sans-serif, system-ui, sans-serif";
-  const measureCanvas = document.createElement("canvas");
-  const measureContext = measureCanvas.getContext("2d")!;
+  if (!passengerNameMeasureContext) {
+    passengerNameMeasureContext = document.createElement("canvas").getContext("2d");
+  }
+  const measureContext = passengerNameMeasureContext!;
   measureContext.font = font;
   const measuredWidth = Math.ceil(measureContext.measureText(displayName).width + 48);
   const width = Math.min(1024, Math.max(256, THREE.MathUtils.ceilPowerOfTwo(measuredWidth)));
@@ -443,7 +454,17 @@ function makePassengerNameTexture(displayName: string) {
   texture.magFilter = THREE.LinearFilter;
   texture.anisotropy = 4;
 
-  return { texture, aspect: width / height };
+  const entry = { texture, aspect: width / height };
+  if (PASSENGER_NAME_TEXTURE_CACHE.size >= 256) {
+    const oldestKey = PASSENGER_NAME_TEXTURE_CACHE.keys().next().value;
+    if (oldestKey !== undefined) {
+      const oldest = PASSENGER_NAME_TEXTURE_CACHE.get(oldestKey);
+      oldest?.texture.dispose();
+      PASSENGER_NAME_TEXTURE_CACHE.delete(oldestKey);
+    }
+  }
+  PASSENGER_NAME_TEXTURE_CACHE.set(displayName, entry);
+  return entry;
 }
 
 export default memo(Passengers);

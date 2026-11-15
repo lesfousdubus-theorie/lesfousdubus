@@ -4,14 +4,14 @@ import { getBusDoorBounds, type BusDoorLayout } from "./bus-layout";
 export const THEORY_SIGN_MESSAGES = [
   { id: "siecle", lines: ["LE SIÈCLE OUBLIÉ", "C’EST LE PRÉSENT"] },
   { id: "luffy", lines: ["LUFFY, NIKA", "ET JOY BOY"] },
-  { id: "barbe-noire", lines: ["BARBE NOIRE", "DAVY D. JONES ?"] },
-  { id: "poneglyphes", lines: ["LES PONÉGLYPHES", "VIENDRAIENT DU FUTUR"] },
+  { id: "barbe-noire", lines: ["BARBE NOIRE EST", "DAVY D. JONES"] },
+  { id: "poneglyphes", lines: ["LES PONÉGLYPHES", "VIENNENT DU FUTUR"] },
   { id: "timing", lines: ["TOUT EST UNE QUESTION", "DE TIMING"] },
-  { id: "lili", lines: ["VIVI SERAIT", "LA REINE LILI"] },
-  { id: "ryuma", lines: ["ZORO SERAIT", "LE SABREUR RYUMA"] },
-  { id: "robin", lines: ["ROBIN ÉCRIRAIT", "LE RIO PONÉGLYPHE"] },
-  { id: "harley", lines: ["USOPP ÉCRIRAIT", "LE HARLEY"] },
-  { id: "all-blue", lines: ["LES QUATRE MERS", "FORMERAIENT ALL BLUE"] },
+  { id: "lili", lines: ["VIVI SERA", "LA REINE LILI"] },
+  { id: "ryuma", lines: ["ZORO SERA", "LE SABREUR RYUMA"] },
+  { id: "robin", lines: ["ROBIN ÉCRIRA", "LE RIO PONÉGLYPHE"] },
+  { id: "harley", lines: ["USOPP ÉCRIRA", "LE HARLEY"] },
+  { id: "all-blue", lines: ["LES QUATRE MERS", "FORMERONT ALL BLUE"] },
   { id: "laugh-tale", lines: ["LAUGH TALE : LE BON LIEU", "ET LE BON MOMENT"] },
 ] as const;
 

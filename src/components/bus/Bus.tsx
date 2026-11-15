@@ -250,7 +250,7 @@ export default function Bus({
         onPassengerSelect={onPassengerSelect}
         lowPower={lowPower}
         reducedMotion={reducedMotion}
-        excludedPassengerIndex={hasEntered || (phase !== "outside" && !boardingPending) ? currentPassengerSeatIndex : null}
+        excludedPassengerIndex={currentPassengerSeatIndex}
       />
 
       {/* ---------- POSTE DE CONDUITE & TABLEAU DE BORD COMPLET DU BUS ---------- */}

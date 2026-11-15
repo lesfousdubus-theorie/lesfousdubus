@@ -12,14 +12,45 @@ export default function BusDestination({ mats, reducedMotion }: { mats: Record<s
   const startOffset = useMemo(() => getDestinationStartOffset(startingStop), [startingStop]);
   const message = useMemo(() => encodeLedText(reducedMotion ? GRAND_LINE_STOPS[startingStop] : DESTINATION_MESSAGE), [reducedMotion, startingStop]);
   const display = useMemo(() => {
+    const cell = 8;
+    const width = LED_COLUMNS * cell;
+    const height = LED_ROWS * cell;
     const canvas = document.createElement("canvas");
-    canvas.width = LED_COLUMNS * 8;
-    canvas.height = LED_ROWS * 8;
+    canvas.width = width;
+    canvas.height = height;
+    const baseCanvas = document.createElement("canvas");
+    baseCanvas.width = width;
+    baseCanvas.height = height;
+    const baseCtx = baseCanvas.getContext("2d")!;
+    baseCtx.fillStyle = "#070b0e";
+    baseCtx.fillRect(0, 0, width, height);
+    baseCtx.fillStyle = "#211d13";
+    for (let x = 0; x < LED_COLUMNS; x++) {
+      for (let y = 0; y < LED_ROWS; y++) {
+        baseCtx.beginPath();
+        baseCtx.arc(x * cell + 4, y * cell + 4, 3.2, 0, Math.PI * 2);
+        baseCtx.fill();
+      }
+    }
+    const litDot = document.createElement("canvas");
+    litDot.width = cell;
+    litDot.height = cell;
+    const dotCtx = litDot.getContext("2d")!;
+    dotCtx.beginPath();
+    dotCtx.arc(4, 4, 3.2, 0, Math.PI * 2);
+    dotCtx.fillStyle = "#a96b16";
+    dotCtx.fill();
+    dotCtx.beginPath();
+    dotCtx.arc(4, 4, 2.35, 0, Math.PI * 2);
+    dotCtx.fillStyle = "#ffd46a";
+    dotCtx.fill();
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
-    texture.generateMipmaps = false;
-    texture.minFilter = THREE.LinearFilter;
-    return { canvas, texture, context: canvas.getContext("2d")! };
+    texture.generateMipmaps = true;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.anisotropy = 8;
+    return { canvas, baseCanvas, litDot, texture, context: canvas.getContext("2d")! };
   }, []);
   const displayRef = useRef(display);
   useEffect(() => { displayRef.current = display; }, [display]);
@@ -32,21 +63,13 @@ export default function BusDestination({ mats, reducedMotion }: { mats: Record<s
     previous.current = offset;
     const currentDisplay = displayRef.current;
     const ctx = currentDisplay.context;
-    ctx.fillStyle = "#070b0e";
-    ctx.fillRect(0, 0, currentDisplay.canvas.width, currentDisplay.canvas.height);
+    ctx.drawImage(currentDisplay.baseCanvas, 0, 0);
     for (let x = 0; x < LED_COLUMNS; x++) {
       const column = reducedMotion ? (message[x] ?? 0) : message[(x + offset) % message.length];
+      if (!column) continue;
       for (let y = 0; y < LED_ROWS; y++) {
-        const lit = Boolean(column & (1 << y));
-        ctx.beginPath();
-        ctx.arc(x * 8 + 4, y * 8 + 4, 3.2, 0, Math.PI * 2);
-        ctx.fillStyle = lit ? "#a96b16" : "#211d13";
-        ctx.fill();
-        if (lit) {
-          ctx.beginPath();
-          ctx.arc(x * 8 + 4, y * 8 + 4, 2.35, 0, Math.PI * 2);
-          ctx.fillStyle = "#ffd46a";
-          ctx.fill();
+        if (column & (1 << y)) {
+          ctx.drawImage(currentDisplay.litDot, x * 8, y * 8);
         }
       }
     }
