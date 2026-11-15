@@ -210,13 +210,16 @@ export function useBusSync({
     return () => controller.abort();
   }, [applyBusSnapshot, phase, profileRevision, seatRow, setPassengerProfiles]);
 
-  // Synchronisation en direct, ralentie et suspendue quand l'onglet est masqué.
+  // Synchronisation en direct espacée (3 min) et suspendue quand l'onglet est masqué.
   useEffect(() => {
+    const POLL_INTERVAL_MS = 3 * 60 * 1_000;
     let timeout: ReturnType<typeof setTimeout> | null = null;
     let stopped = false;
+    let lastPollAt = Date.now();
 
     const poll = async () => {
       if (stopped || document.hidden) return;
+      lastPollAt = Date.now();
       try {
         const d = await fetchJson<BusApiState>("/api/bus-entries");
         const previousSeatCapacity = seatCapacityRef.current;
@@ -295,14 +298,17 @@ export function useBusSync({
     const schedule = () => {
       if (timeout) clearTimeout(timeout);
       if (!document.hidden) {
+        const remaining = Math.max(0, POLL_INTERVAL_MS - (Date.now() - lastPollAt));
         timeout = setTimeout(async () => {
           await poll();
           schedule();
-        }, 10_000);
+        }, remaining || POLL_INTERVAL_MS);
       }
     };
     const refresh = () => {
-      if (!document.hidden) void poll();
+      if (!document.hidden && Date.now() - lastPollAt >= POLL_INTERVAL_MS) {
+        void poll();
+      }
       schedule();
     };
 
