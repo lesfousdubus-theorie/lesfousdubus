@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import type { PassengerProfile } from "@/types/passenger";
 import { bakePassengerIdentity, bakedPassengerIdentities, type IdentityPart, type IdentityRole } from "@/lib/baked-passenger";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import { getPassengerSignatureGain } from "@/lib/passenger-motion";
@@ -38,20 +37,17 @@ function Prototype({ id, onReady }: { id: string; onReady: (parts: IdentityPart[
 
 interface IdentityInstancesProps {
   passengers: BusOccupant[];
-  profilesBySeatIndex?: Map<number, PassengerProfile>;
-  onSelect?: (passenger: PassengerProfile) => void;
   drivers: IdentityDrivers;
   partyOn: boolean;
   reducedMotion: boolean;
 }
 
 /** Même tête, mêmes cheveux et même tenue à distance. Seule l'expression est figée. */
-function IdentityGroup({ id, indices, passengers, profilesBySeatIndex, onSelect, drivers, partyOn, reducedMotion }:
+function IdentityGroup({ id, indices, passengers, drivers, partyOn, reducedMotion }:
   IdentityInstancesProps & { id: string; indices: number[] }) {
   const [parts, setParts] = useState(() => bakedPassengerIdentities.get(id));
   const meshes = useRef<Array<THREE.InstancedMesh | null>>([]);
   const lastRevision = useRef(-1);
-  const hovered = useRef(false);
   const scratch = useMemo(() => ({ matrix: new THREE.Matrix4(), adjust: new THREE.Matrix4() }), []);
   const rig = getPassengerSkeleton(id);
   const shape = useMemo(() => getPassengerProportions(id), [id]);
@@ -94,27 +90,6 @@ function IdentityGroup({ id, indices, passengers, profilesBySeatIndex, onSelect,
     });
   }, [parts, indices, passengers, drivers, partyOn, reducedMotion, id, rig, shape, scratch]);
 
-  useEffect(() => () => {
-    if (hovered.current) {
-      hovered.current = false;
-      document.body.style.cursor = "auto";
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!onSelect && hovered.current) {
-      hovered.current = false;
-      document.body.style.cursor = "auto";
-    }
-  }, [onSelect]);
-
-  const getVisitorOccupant = useCallback((instanceId?: number) => {
-    if (instanceId === undefined) return undefined;
-    const passengerIndex = indices[instanceId];
-    const occupant = passengerIndex !== undefined ? passengers[passengerIndex] : undefined;
-    return occupant?.passengerKind === "visitor" ? occupant : undefined;
-  }, [indices, passengers]);
-
   useLayoutEffect(() => {
     const onSync = () => {
       if (lastRevision.current === drivers.revision.current) return;
@@ -141,52 +116,11 @@ function IdentityGroup({ id, indices, passengers, profilesBySeatIndex, onSelect,
     {parts.map((part, i) => <instancedMesh key={`${part.role}-${i}`} name={`bus-distant-${id}-${part.role}-${i}`}
       ref={node => { meshes.current[i] = node; }} geometry={part.geometry} material={part.material} dispose={null}
       args={[undefined, undefined, 160]} count={indices.length} frustumCulled={false} userData={{ role: part.role, archetypeId: id }}
-      onClick={onSelect ? (event) => {
-        const occupant = getVisitorOccupant(event.instanceId);
-        if (!occupant) return;
-        event.stopPropagation();
-        const seatIndex = occupant.index;
-        onSelect(profilesBySeatIndex?.get(seatIndex) ?? { seatIndex, displayName: "Passager", comment: null });
-      } : undefined}
-      onPointerOver={onSelect ? (event) => {
-        const occupant = getVisitorOccupant(event.instanceId);
-        if (!occupant) {
-          if (hovered.current) {
-            hovered.current = false;
-            document.body.style.cursor = "auto";
-          }
-          return;
-        }
-        event.stopPropagation();
-        hovered.current = true;
-        document.body.style.cursor = "pointer";
-      } : undefined}
-      onPointerMove={onSelect ? (event) => {
-        const occupant = getVisitorOccupant(event.instanceId);
-        if (!occupant) {
-          if (hovered.current) {
-            hovered.current = false;
-            document.body.style.cursor = "auto";
-          }
-          return;
-        }
-        event.stopPropagation();
-        if (!hovered.current) {
-          hovered.current = true;
-          document.body.style.cursor = "pointer";
-        }
-      } : undefined}
-      onPointerOut={onSelect ? () => {
-        if (hovered.current) {
-          hovered.current = false;
-          document.body.style.cursor = "auto";
-        }
-      } : undefined}
     />)}
   </group>;
 }
 
-export default function PassengerIdentityInstances({ ids, passengers, profilesBySeatIndex, onSelect, drivers, partyOn, reducedMotion }:
+export default function PassengerIdentityInstances({ ids, passengers, drivers, partyOn, reducedMotion }:
   IdentityInstancesProps & { ids: string[] }) {
   const groups = useMemo(() => {
     const result = new Map<string, number[]>();
@@ -198,5 +132,5 @@ export default function PassengerIdentityInstances({ ids, passengers, profilesBy
     return [...result];
   }, [ids]);
   return <>{groups.map(([id, indices]) => <IdentityGroup key={id} id={id} indices={indices}
-    passengers={passengers} profilesBySeatIndex={profilesBySeatIndex} onSelect={onSelect} drivers={drivers} partyOn={partyOn} reducedMotion={reducedMotion} />)}</>;
+    passengers={passengers} drivers={drivers} partyOn={partyOn} reducedMotion={reducedMotion} />)}</>;
 }

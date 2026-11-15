@@ -13,9 +13,8 @@ import { keepPassengerHandsApart } from "@/lib/passenger-space";
 import PassengerIdentityInstances from "./PassengerIdentityInstances";
 
 /** Un seul lot borné par membre, avec les mêmes articulations que les passagers proches. */
-export function SimplifiedPassengers({ passengers, profilesBySeatIndex, onSelect, partyOn, hornPulse, reducedMotion, poses }: {
+export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn, hornPulse, reducedMotion, poses }: {
   passengers: BusOccupant[]; profilesBySeatIndex?: Map<number, PassengerProfile>;
-  onSelect?: (passenger: PassengerProfile) => void;
   partyOn: boolean; hornPulse: number; reducedMotion: boolean;
   poses?:PassengerPoseRegistry;
 }) {
@@ -87,7 +86,7 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, onSelect
   },-2);
   if (!passengers.length) return null;
   return <>
-    <PassengerIdentityInstances ids={ids} passengers={passengers} profilesBySeatIndex={profilesBySeatIndex} onSelect={onSelect} drivers={drivers} partyOn={partyOn} reducedMotion={reducedMotion}/>
+    <PassengerIdentityInstances ids={ids} passengers={passengers} drivers={drivers} partyOn={partyOn} reducedMotion={reducedMotion}/>
     {/* Ces matrices servent aux lots de costumes et restent côté CPU. */}
     <instancedMesh visible={false} name="bus-distant-passenger-bodies" userData={{ occupants: passengers.map(({ index, physicalSeatIndex, passengerKind, seat }) => ({ seatIndex: index, physicalSeatIndex, passengerKind, row: seat.row, seatInRow: seat.seatInRow })) }} ref={bodies} args={[undefined, undefined, 160]} count={passengers.length}/>
     <instancedMesh visible={false} name="bus-distant-passenger-heads" ref={heads} args={[undefined, undefined, 160]} count={passengers.length}/>
