@@ -40,10 +40,13 @@ export const SCENERY_MATERIALS = {
 export interface SceneryBatch {
   material: THREE.MeshStandardMaterial;
   geometry: THREE.BufferGeometry;
+  section: number | null;
 }
 
 class Builder {
-  private pieces = new Map<MaterialKey, THREE.BufferGeometry[]>();
+  private pieces = new Map<string, { key: MaterialKey; section: number | null; shapes: THREE.BufferGeometry[] }>();
+
+  constructor(private readonly splitForeground = false) {}
 
   add(geometry: THREE.BufferGeometry, material: MaterialKey, position: Point, rotation: Point = [0, 0, 0], scale: Point = [1, 1, 1]) {
     const matrix = new THREE.Matrix4().compose(
@@ -55,9 +58,15 @@ class Builder {
     if (plain !== geometry) geometry.dispose();
     plain.deleteAttribute("uv");
     plain.applyMatrix4(matrix);
-    const group = this.pieces.get(material) ?? [];
-    group.push(plain);
-    this.pieces.set(material, group);
+    plain.computeBoundingBox();
+    const bounds = plain.boundingBox!;
+    // Les canaux et autres bandes continues gardent leur lot d'origine.
+    const section = this.splitForeground && bounds.max.y > .5 && bounds.max.z - bounds.min.z < 28
+      ? Math.floor((bounds.min.z + bounds.max.z) / 44) : null;
+    const id = `${material}:${section}`;
+    const group = this.pieces.get(id) ?? { key: material, section, shapes: [] };
+    group.shapes.push(plain);
+    this.pieces.set(id, group);
   }
 
   box(material: MaterialKey, position: Point, size: Point, rotation: Point = [0, 0, 0]) {
@@ -109,12 +118,13 @@ class Builder {
   }
 
   finish(): SceneryBatch[] {
-    return Array.from(this.pieces, ([key, pieces]) => {
-      const geometry = mergeGeometries(pieces, false)!;
+    return Array.from(this.pieces.values(), ({ key, section, shapes }) => {
+      const geometry = mergeGeometries(shapes, false)!;
       geometry.computeBoundingBox();
       geometry.computeBoundingSphere();
-      pieces.forEach((piece) => piece.dispose());
-      return { material: SCENERY_MATERIALS[key], geometry };
+      geometry.userData.occlusionBounds = shapes.map(shape => shape.boundingBox);
+      shapes.forEach((shape) => shape.dispose());
+      return { material: SCENERY_MATERIALS[key], geometry, section };
     });
   }
 }
@@ -447,7 +457,7 @@ function dune(b: Builder, x: number, z: number, scale: Point, light = false) {
 
 /** Low, authored terrain details retain the route's open sightlines. */
 export function createOnePieceForeground(zone: number, side: number, lowPower = false): SceneryBatch[] {
-  const b = new Builder();
+  const b = new Builder(true);
   if (zone === 0) {
     for (let i = 0; i < (lowPower ? 3 : 6); i++) {
       dune(b, side * (27 + (i % 2) * 9), -55 + i * 22, [8 + i % 3, 1.0 + i % 2 * 0.65, 5.5], i % 2 === 0);

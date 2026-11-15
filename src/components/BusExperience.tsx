@@ -593,8 +593,7 @@ export default function BusExperience() {
     dismissToast();
     transitionPhase("exiting");
     playDing();
-    showToast("Tu sors du bus");
-  }, [dismissToast, phase, showToast, transitionPhase]);
+  }, [dismissToast, phase, transitionPhase]);
 
   const onArrived = useCallback((p: "inside" | "outside") => {
     setFreeView(false);

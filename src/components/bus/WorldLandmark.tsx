@@ -1,6 +1,8 @@
 "use client";
 
 import * as THREE from "three";
+import { useLayoutEffect, useRef } from "react";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 export type PropType =
   | "palm"
@@ -61,7 +63,7 @@ const MATS = {
   steelRail: new THREE.MeshStandardMaterial({ color: "#545963", metalness: 0.8, roughness: 0.3 }),
 };
 
-export function WorldLandmark({ def }: { def: PropDef }) {
+function LandmarkModel({ def }: { def: PropDef }) {
   const s = def.s;
   switch (def.type) {
     case "palm":
@@ -463,4 +465,56 @@ export function WorldLandmark({ def }: { def: PropDef }) {
         </mesh>
       );
   }
+}
+
+/** Les éléments fixes regroupent leurs pièces par matériau et par comportement d’ombre. */
+export function WorldLandmark({ def }: { def: PropDef }) {
+  const group = useRef<THREE.Group>(null);
+  const source = useRef<THREE.Group>(null);
+  useLayoutEffect(() => {
+    const root = group.current;
+    const original = source.current;
+    if (!root || !original) return;
+    original.updateWorldMatrix(true, true);
+    const inverse = original.matrixWorld.clone().invert();
+    const batches = new Map<string, { material: THREE.Material; cast: boolean; receive: boolean; shapes: THREE.BufferGeometry[] }>();
+    original.traverse(object => {
+      if (!(object instanceof THREE.Mesh) || Array.isArray(object.material)) return;
+      const cast = object.castShadow;
+      const receive = object.receiveShadow;
+      const key = `${object.material.uuid}:${cast}:${receive}`;
+      const batch = batches.get(key) ?? { material: object.material, cast, receive, shapes: [] as THREE.BufferGeometry[] };
+      const geometry = object.geometry.index ? object.geometry.toNonIndexed() : object.geometry.clone();
+      geometry.deleteAttribute("uv");
+      geometry.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse, object.matrixWorld));
+      geometry.computeBoundingBox();
+      batch.shapes.push(geometry);
+      batches.set(key, batch);
+    });
+
+    const meshes: THREE.Mesh[] = [];
+    for (const { material, cast, receive, shapes } of batches.values()) {
+      const combined = mergeGeometries(shapes);
+      if (combined) {
+        combined.userData.occlusionBounds = shapes.map(shape => shape.boundingBox);
+        const mesh = new THREE.Mesh(combined, material);
+        mesh.castShadow = cast;
+        mesh.receiveShadow = receive;
+        meshes.push(mesh);
+      }
+      shapes.forEach(shape => shape.dispose());
+    }
+    if (meshes.length !== batches.size || meshes.length === 0) {
+      meshes.forEach(mesh => mesh.geometry.dispose());
+      return;
+    }
+    original.removeFromParent();
+    root.add(...meshes);
+    return () => {
+      root.add(original);
+      root.remove(...meshes);
+      meshes.forEach(mesh => mesh.geometry.dispose());
+    };
+  }, [def]);
+  return <group ref={group}><group ref={source}><LandmarkModel def={def} /></group></group>;
 }

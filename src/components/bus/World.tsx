@@ -9,10 +9,13 @@ import WorldSeaCreatures from "./WorldSeaCreatures";
 import { useFrame } from "@react-three/fiber";
 import { WORLD_SPEED, type Phase, type WorldState } from "./constants";
 import { BRIDGE_MARKING_BOX } from "@/lib/world-geometry";
+import { cacheSceneryBounds, createSceneryVisibility, type SceneryBounds } from "@/lib/world-visibility";
+import type { JourneyState } from "@/lib/bus-journey";
 
 export const ZONE_LEN = 160;
 const LOOP = ZONE_LEN * 5;
 const WINDOW_START = -440;
+const TERRAIN_RELIEF = [1.1, .32, .55, .65, 1.05];
 
 export const ZONES = [
   { name: "Alabasta", subtitle: "Royaume des sables", ground: "#e5bd6a", shore: "#d8a84e" },
@@ -55,6 +58,19 @@ function smoothstep(start: number, end: number, value: number) {
   return t * t * (3 - 2 * t);
 }
 
+function getTerrainWave(zone: number, x: number, z: number) {
+  return Math.sin(z * .11 + x * .21 + zone) * .5 + Math.sin(z * .23 - x * .13) * .27;
+}
+
+function getTerrainHeight(zone: number, x: number, wave: number) {
+  const shoulder = smoothstep(7, 17, Math.abs(x));
+  const shore = 1 - smoothstep(38, 48, Math.abs(x));
+  const relief = TERRAIN_RELIEF[zone];
+  // Les canaux de Water Seven passent sous leur surface d'eau fixe.
+  const canal = zone === 1 ? 1 - smoothstep(1.4, 3.5, Math.abs(Math.abs(x) - 22)) : 0;
+  return .008 + shoulder * shore * Math.max(0, .35 + wave) * relief * (1 - canal) - canal * .06;
+}
+
 function makeTerrain(zone: number) {
   const geometry = new THREE.PlaneGeometry(96, ZONE_LEN - 16, 28, 36);
   geometry.rotateX(-Math.PI / 2);
@@ -67,17 +83,8 @@ function makeTerrain(zone: number) {
   for (let i = 0; i < positions.count; i++) {
     const x = positions.getX(i);
     const z = positions.getZ(i);
-    const shoulder = smoothstep(7, 17, Math.abs(x));
-    const shore = 1 - smoothstep(38, 48, Math.abs(x));
-    const wave = Math.sin(z * 0.11 + x * 0.21 + zone) * 0.5
-      + Math.sin(z * 0.23 - x * 0.13) * 0.27;
-    const relief = [1.1, 0.32, 0.55, 0.65, 1.05][zone];
-    // Les canaux de Water Seven doivent rester sous leur surface d'eau fixe.
-    const canal = zone === 1
-      ? 1 - smoothstep(1.4, 3.5, Math.abs(Math.abs(x) - 22))
-      : 0;
-    const height = 0.008 + shoulder * shore * Math.max(0, 0.35 + wave) * relief * (1 - canal) - canal * 0.06;
-    positions.setY(i, height);
+    const wave = getTerrainWave(zone, x, z);
+    positions.setY(i, getTerrainHeight(zone, x, wave));
     color.copy(base).lerp(tint, THREE.MathUtils.clamp(0.22 + wave * 0.3, 0, 0.55));
     colors[i * 3] = color.r;
     colors[i * 3 + 1] = color.g;
@@ -128,9 +135,11 @@ interface WorldProps {
   lowPower?: boolean;
   phase?: Phase;
   cabinCenterZ?: number;
+  cabinLength?: number;
+  journey?: React.RefObject<JourneyState>;
 }
 
-export default function World({ worldRef, reducedMotion = false, lowPower = false, phase = "outside", cabinCenterZ = 0 }: WorldProps) {
+export default function World({ worldRef, reducedMotion = false, lowPower = false, phase = "outside", cabinCenterZ = 0, cabinLength = 10, journey }: WorldProps) {
   const allProps = useMemo(() => buildProps(), []);
   const terrains = useMemo(() => ZONES.map((_, index) => makeTerrain(index)), []);
 
@@ -142,17 +151,29 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
     [allProps, lowPower],
   );
   const propRefs = useRef<(THREE.Group | null)[]>([]);
-  const propBounds = useRef<THREE.Box3[]>([]);
-  const occlusion = useMemo(() => ({ box: new THREE.Box3(), shift: new THREE.Vector3() }), []);
-  useLayoutEffect(() => {
-    propBounds.current = propRefs.current.map((group) => {
-      if (!group) return new THREE.Box3();
-      group.updateWorldMatrix(true, true);
-      return new THREE.Box3().setFromObject(group).translate(new THREE.Vector3(0, 0, -group.position.z));
-    });
-  }, [props]);
   const zoneRefs = useRef<(THREE.Group | null)[]>([]);
+  const terrainRefs = useRef<(THREE.Mesh | null)[]>([]);
   const sceneryRefs = useRef<(THREE.Group | null)[]>([]);
+  const railRefs = useRef<(THREE.Group | null)[]>([]);
+  const propBounds = useRef<(SceneryBounds | null)[]>([]);
+  const sceneBounds = useRef<SceneryBounds[][]>([]);
+  const railBounds = useRef<SceneryBounds[]>([]);
+  const visibility = useMemo(() => createSceneryVisibility(), []);
+  useLayoutEffect(() => {
+    propBounds.current = propRefs.current.map(group => group && cacheSceneryBounds(group, group.position.z));
+    sceneBounds.current = ZONES.map((_, zone) => {
+      const z = zoneRefs.current[zone]?.position.z ?? 0;
+      const objects: THREE.Object3D[] = [];
+      const landmark = sceneryRefs.current[zone * 3];
+      if (landmark) objects.push(landmark);
+      for (const side of [1, 2]) {
+        const foreground = sceneryRefs.current[zone * 3 + side]?.children[0];
+        if (foreground) objects.push(...foreground.children);
+      }
+      return objects.map(object => cacheSceneryBounds(object, z));
+    });
+    railBounds.current = railRefs.current.flatMap(group => group ? [cacheSceneryBounds(group, 0)] : []);
+  }, [props, lowPower]);
   const dashRef = useRef<THREE.InstancedMesh>(null);
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
   const activeWeatherKey = useRef("");
@@ -164,21 +185,22 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
     const scroll = (worldRef.current?.scroll ?? 0) + frameDt * WORLD_SPEED * mult;
     if (worldRef.current) worldRef.current.scroll = scroll;
 
-    // Défilement des décors : ne masquer un élément que si la caméra passe littéralement dedans.
+    const trip = phase === "entering" || phase === "exiting" ? journey?.current : undefined;
+    visibility.begin(state.camera, cabinCenterZ, cabinLength, phase !== "inside", trip?.avatarVisible ? trip.position : undefined);
+    for (const rail of railBounds.current) visibility.update(rail, 0, true);
+
+    // Les limites détaillées ne sont testées qu'à proximité et devant la caméra.
     for (let i = 0; i < props.length; i++) {
       const g = propRefs.current[i];
       if (!g) continue;
       const z = (((props[i].base + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
       g.position.z = z;
-      g.visible = z > -430 && z < 350;
       const bounds = propBounds.current[i];
-      if (g.visible && phase !== "inside" && bounds && !bounds.isEmpty()) {
-        occlusion.box.copy(bounds).translate(occlusion.shift.set(0, 0, z)).expandByScalar(1.1);
-        g.visible = !occlusion.box.containsPoint(state.camera.position);
-      }
+      if (bounds && z > -430 && z < 350) visibility.update(bounds, z);
+      else g.visible = false;
     }
 
-    // Défilement des îles : garder les monuments visibles dans tout le champ de vision lors de l'orbite.
+    // Une portion du premier plan peut disparaître sans retirer tout le décor de l'île.
     for (let i = 0; i < 5; i++) {
       const g = zoneRefs.current[i];
       if (!g) continue;
@@ -186,12 +208,12 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       let z = (((center + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
       if (z > 360) z -= LOOP;
       g.position.z = z;
-      for (let part = 0; part < 3; part++) {
-        const index = i * 3 + part;
-        const scenery = sceneryRefs.current[index];
-        if (!scenery) continue;
-        scenery.visible = z > -430 && z < 350;
-      }
+      const terrain = terrainRefs.current[i];
+      const eye = state.camera.position;
+      const localZ = eye.z - z;
+      if (terrain) terrain.visible = eye.y > 1.37 || Math.abs(eye.x) > 48 || Math.abs(localZ) > (ZONE_LEN - 16) / 2
+        || eye.y > getTerrainHeight(i, eye.x, getTerrainWave(i, eye.x, localZ)) + (terrain.visible ? .1 : .2);
+      for (const block of sceneBounds.current[i] ?? []) visibility.update(block, z);
     }
 
     // Défilement des lignes blanches du pont
@@ -230,6 +252,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       {ZONES.map((zone, i) => (
         <group
           key={zone.name}
+          name={`world-island-${i}`}
           ref={(el: THREE.Group | null) => {
             zoneRefs.current[i] = el;
           }}
@@ -239,7 +262,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
             <boxGeometry args={[96, 0.6, ZONE_LEN - 16]} />
             <meshStandardMaterial color={zone.ground} roughness={0.9} />
           </mesh>
-          <mesh geometry={terrains[i]} receiveShadow>
+          <mesh ref={(el: THREE.Mesh | null) => { terrainRefs.current[i] = el; }} geometry={terrains[i]} receiveShadow>
             <meshStandardMaterial vertexColors roughness={0.95} side={THREE.DoubleSide} />
           </mesh>
           <group ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3] = element; }}>
@@ -274,8 +297,8 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       ))}
 
       {/* Rambardes de sécurité chromées du pont maritime */}
-      {[-3.85, 3.85].map((x) => (
-        <group key={x}>
+      {[-3.85, 3.85].map((x, i) => (
+        <group key={x} ref={(el: THREE.Group | null) => { railRefs.current[i] = el; }}>
           <mesh position={[x, 0.42, -60]}>
             <boxGeometry args={[0.1, 0.55, 960]} />
             <meshStandardMaterial color="#969cb0" roughness={0.5} metalness={0.5} />
@@ -293,6 +316,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       {props.map((p, i) => (
         <group
           key={i}
+          name={`world-prop-${p.type}-${i}`}
           ref={(el: THREE.Group | null) => {
             propRefs.current[i] = el;
           }}
