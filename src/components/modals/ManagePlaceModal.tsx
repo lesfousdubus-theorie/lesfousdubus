@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { CommentBubbleIcon, ExitBusIcon, SeatTicketIcon, UserBadgeIcon } from "../ui/BusIcons";
+import { CommentBubbleIcon, SeatTicketIcon, UserBadgeIcon } from "../ui/BusIcons";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { useModalAccessibility } from "./useModalAccessibility";
 
@@ -10,7 +10,6 @@ export function ManagePlaceModal({
   inside,
   entryNumber,
   onClose,
-  onExit,
   onDelete,
   onEditName,
   onEditComment,
@@ -19,7 +18,7 @@ export function ManagePlaceModal({
   inside: boolean;
   entryNumber?: number | null;
   onClose: () => void;
-  onExit: () => void;
+  onExit?: () => void;
   onDelete: () => Promise<boolean>;
   onEditName?: () => void;
   onEditComment?: () => void;
@@ -108,12 +107,6 @@ export function ManagePlaceModal({
                 </div>
               )}
               {error && <p role="alert" className="mt-4 rounded-xl border border-red-400/50 bg-red-950/60 px-3.5 py-2.5 text-sm font-bold text-red-100">{error}</p>}
-              {inside && (
-                <button type="button" onClick={onExit} className="mt-2 flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#ffd23f] px-5 py-3 text-sm font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a]">
-                  <ExitBusIcon className="h-4 w-4 shrink-0" />
-                  <span>Sortir en gardant ma place</span>
-                </button>
-              )}
               {!inside && (onEditName || onEditComment) && (
                 <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
                   {onEditName && (
