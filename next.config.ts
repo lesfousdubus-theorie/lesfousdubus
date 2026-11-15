@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   agentRules: false,
   poweredByHeader: false,
+  experimental: {
+    // Un build incrémental a mêlé l'ancien CSS global au JavaScript à jour.
+    turbopackFileSystemCacheForBuild: false,
+  },
   async redirects() {
     return [
       // Ancienne adresse encore enregistrée dans la Search Console.
