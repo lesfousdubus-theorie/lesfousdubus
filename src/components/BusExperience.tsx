@@ -698,6 +698,7 @@ export default function BusExperience() {
         passengerProfiles={passengerProfiles}
         profileRevision={profileRevision}
         currentPassengerSeatIndex={currentPassengerSeatIndex}
+        currentPassengerName={profile.savedProfile.name}
         currentPassengerAvatarId={profile.savedAvatarId}
         onPassengerSelect={selectPassenger}
         modeOverride={manualDayNight}

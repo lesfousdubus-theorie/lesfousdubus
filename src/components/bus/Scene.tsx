@@ -52,6 +52,7 @@ interface SceneProps {
   passengerProfiles?: PassengerProfile[];
   profileRevision?: number;
   currentPassengerSeatIndex?: number | null;
+  currentPassengerName?: string;
   currentPassengerAvatarId?: string | null;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   modeOverride?: "day" | "night" | null;
@@ -302,6 +303,7 @@ export default function Scene({
   passengerProfiles = [],
   profileRevision = 0,
   currentPassengerSeatIndex = null,
+  currentPassengerName = "",
   currentPassengerAvatarId = null,
   onPassengerSelect,
   modeOverride,
@@ -338,11 +340,11 @@ export default function Scene({
     if (currentPassengerSeatIndex === null) return undefined;
     return passengerProfiles.find((profile) => profile.seatIndex === currentPassengerSeatIndex) ?? {
       seatIndex: currentPassengerSeatIndex,
-      displayName: "Passager",
+      displayName: currentPassengerName,
       comment: null,
       avatarId: isPassengerAvatarId(currentPassengerAvatarId) ? currentPassengerAvatarId : null,
     };
-  }, [currentPassengerSeatIndex, currentPassengerAvatarId, passengerProfiles]);
+  }, [currentPassengerSeatIndex, currentPassengerName, currentPassengerAvatarId, passengerProfiles]);
 
   if (webGLSupported === false) return <SceneFallback onReadTheory={onReadTheory} />;
   if (webGLSupported === null) return <div role="status" className="sr-only">Préparation de la scène 3D…</div>;
