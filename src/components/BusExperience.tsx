@@ -464,7 +464,7 @@ export default function BusExperience() {
       // Une inscription déjà présente au chargement correspond au personnage
       // que l'on voit assis depuis l'extérieur. Seule la caméra le rejoint.
       // Après une sortie dans cette session, il doit en revanche remonter à pied.
-      setBoardingFromSeat(!hasEntered && d.added === false && d.seatIndex !== null);
+      setBoardingFromSeat(false);
       setRegistrationPending(false);
       setCurrentPassengerSeatIndex(d.seatIndex);
       setCurrentPassengerEntryNumber((previous) =>
@@ -542,7 +542,7 @@ export default function BusExperience() {
       enteringLockRef.current = false;
       setJoining(false);
     }
-  }, [applyBusSnapshot, dismissToast, phase, sceneAvailable, hasEntered, showToast, restoreSavedProfile, handleOpenOnboardingModal, transitionPhase]);
+  }, [applyBusSnapshot, dismissToast, phase, sceneAvailable, showToast, restoreSavedProfile, handleOpenOnboardingModal, transitionPhase]);
 
   const handleSubmitOnboarding = useCallback((submission: OnboardingSubmission) => {
     const validated = validateOnboarding(submission);

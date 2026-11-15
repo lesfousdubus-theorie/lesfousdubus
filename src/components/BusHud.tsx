@@ -700,7 +700,11 @@ export function BusHud({
                 onToggle={toggleMobileMenu}
               />
               <HudButton className="shrink-0 px-3.5 min-[360px]:px-4" onClick={() => { closeMobileMenu(); void enterBus(); }} primary icon={<EnterBusIcon />} disabled={joining || phase !== "outside"}>
-                {joining || phase === "entering" ? "Installation…" : <>Entrer<span className="hidden min-[460px]:inline"> dans le bus</span></>}
+                {joining || phase === "entering"
+                  ? "Installation…"
+                  : hasSavedPlace
+                    ? <>Revenir<span className="hidden min-[430px]:inline"> à sa place</span></>
+                    : <>Entrer<span className="hidden min-[460px]:inline"> dans le bus</span></>}
               </HudButton>
             </>
           ) : (
@@ -730,7 +734,7 @@ export function BusHud({
                 </div>
               )}
               <HudButton className="min-w-[190px] flex-[1_0_auto] sm:w-[190px] sm:flex-none" onClick={() => void enterBus()} primary icon={<EnterBusIcon />} disabled={joining || phase !== "outside"}>
-                {joining || phase === "entering" ? "Installation…" : "Entrer dans le bus"}
+                {joining || phase === "entering" ? "Installation…" : hasSavedPlace ? "Revenir à sa place" : "Entrer dans le bus"}
               </HudButton>
             </>
           )}

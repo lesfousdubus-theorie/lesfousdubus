@@ -11,7 +11,7 @@ import { BRIDGE_MARKING_BOX } from "@/lib/world-geometry";
 
 export const ZONE_LEN = 160;
 const LOOP = ZONE_LEN * 5;
-const WINDOW_START = -620;
+const WINDOW_START = -440;
 
 export const ZONES = [
   { name: "Alabasta", subtitle: "Royaume des sables", ground: "#e5bd6a", shore: "#d8a84e" },
@@ -164,7 +164,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
   const oceanMat = useRef<THREE.MeshStandardMaterial>(null);
   const activeWeatherKey = useRef("");
-  const dashes = useMemo(() => Array.from({ length: 48 }, (_, i) => i * 10), []);
+  const dashes = useMemo(() => Array.from({ length: 80 }, (_, i) => i * 10), []);
 
   useFrame((state, dt) => {
     const frameDt = Math.min(dt, phase==="entering"||phase==="exiting"?0.25:0.1);
@@ -183,7 +183,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       if (!g) continue;
       const z = (((props[i].base + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
       g.position.z = z;
-      g.visible = z > -180 && z < 110;
+      g.visible = z > -380 && z < 320;
       const bounds = propBounds.current[i];
       if (g.visible && phase !== "inside" && bounds && !bounds.isEmpty()) {
         occlusion.box.copy(bounds).translate(occlusion.shift.set(0, 0, z));
@@ -197,7 +197,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       if (!g) continue;
       const center = i * ZONE_LEN + ZONE_LEN / 2;
       let z = (((center + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
-      if (z > 160) z -= LOOP;
+      if (z > 360) z -= LOOP;
       g.position.z = z;
       // Buildings and foliage share the same exterior visibility protection as
       // loose props. Separate left/right bounds never span across the bus.
@@ -205,7 +205,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
         const index = i * 3 + part;
         const scenery = sceneryRefs.current[index];
         if (!scenery) continue;
-        scenery.visible = z > -300 && z < 220;
+        scenery.visible = z > -420 && z < 350;
         const bounds = sceneryBounds.current[index];
         if (scenery.visible && phase !== "inside" && bounds && !bounds.isEmpty()) {
           occlusion.box.copy(bounds).translate(occlusion.shift.set(0, 0, z));
@@ -216,7 +216,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
 
     // Défilement des lignes blanches du pont
     for (let i = 0; i < dashes.length; i++) {
-      const z = ((((dashes[i] + scroll) % 480) + 480) % 480) - 400;
+      const z = ((((dashes[i] + scroll) % 800) + 800) % 800) - 440;
       dashMatrix.makeTranslation(0, 0.038, z);
       dashRef.current?.setMatrixAt(i, dashMatrix);
     }
@@ -295,14 +295,14 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       ))}
 
       {/* Pont maritime continu de Grand Line */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, -200]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, -60]} receiveShadow>
         <planeGeometry args={[7.4, 960]} />
         <meshStandardMaterial color="#2d3036" roughness={0.92} />
       </mesh>
 
       {/* Bandes de rive jaunes */}
       {[-3.5, 3.5].map((x) => (
-        <mesh key={x} name={`world-bridge-edge-marking-${x < 0 ? "left" : "right"}`} position={[x, 0.035, -200]}>
+        <mesh key={x} name={`world-bridge-edge-marking-${x < 0 ? "left" : "right"}`} position={[x, 0.035, -60]}>
           <boxGeometry args={BRIDGE_MARKING_BOX} />
           <meshStandardMaterial color="#ffc107" roughness={0.8} />
         </mesh>
@@ -311,7 +311,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       {/* Rambardes de sécurité chromées du pont maritime */}
       {[-3.85, 3.85].map((x) => (
         <group key={x}>
-          <mesh position={[x, 0.42, -200]}>
+          <mesh position={[x, 0.42, -60]}>
             <boxGeometry args={[0.1, 0.55, 960]} />
             <meshStandardMaterial color="#969cb0" roughness={0.5} metalness={0.5} />
           </mesh>

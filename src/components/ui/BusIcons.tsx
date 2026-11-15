@@ -328,6 +328,15 @@ export function PlayIcon({ className = "h-4 w-4 shrink-0" }: IconProps) {
   );
 }
 
+export function PauseIcon({ className = "h-4 w-4 shrink-0" }: IconProps) {
+  return (
+    <svg aria-hidden="true" focusable="false" className={className} viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="5" width="4" height="14" rx="1" />
+      <rect x="14" y="5" width="4" height="14" rx="1" />
+    </svg>
+  );
+}
+
 export function SearchIcon({ className = "h-4 w-4 shrink-0" }: IconProps) {
   return (
     <svg aria-hidden="true" focusable="false" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">

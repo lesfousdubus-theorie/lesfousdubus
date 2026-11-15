@@ -70,10 +70,6 @@ export function BusTvFrame({
           />
         </mesh>
       )}
-      <mesh position={[0.48, 0.275, 0.058]} visible={tvOn && !isActive}>
-        <planeGeometry args={[0.18, 0.07]} />
-        <meshBasicMaterial color="#cc1f2f" toneMapped={false} />
-      </mesh>
     </group>
   );
 }

@@ -166,7 +166,7 @@ export function PassengerListModal({
                       href={member.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-0.5 inline-flex min-h-11 cursor-pointer items-center gap-1 rounded-sm py-2 text-xs font-bold text-[#ffd23f] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a]"
+                      className="mt-0.5 inline-flex cursor-pointer items-center gap-1 rounded-sm text-xs font-bold leading-tight text-[#ffd23f] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a]"
                     >
                       <span>{member.handle}</span>
                       <ExternalArrowIcon className="h-3.5 w-3.5 shrink-0" />

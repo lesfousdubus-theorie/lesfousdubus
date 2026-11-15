@@ -25,16 +25,19 @@ export default function BusGraffiti({ doors, rearWallZ, wheelPositions }: {
     const materials = THEORY_SIGN_MESSAGES.map(({ lines }, index) => new THREE.MeshStandardMaterial({
       map: makeGraffitiTexture({
         text: lines.join("\n"),
-        width: 1152,
-        height: 384,
+        width: 1536,
+        height: 512,
         ...PALETTES[index % PALETTES.length],
         angle: index % 2 === 0 ? -.035 : .045,
         decorationWidthScale: .76,
       }),
-      alphaTest: .18,
+      transparent: true,
+      alphaTest: .03,
+      depthWrite: false,
       polygonOffset: true,
       polygonOffsetFactor: -2,
-      roughness: .5,
+      polygonOffsetUnits: -2,
+      roughness: .45,
     }));
     return { geometry, materials };
   }, []);
