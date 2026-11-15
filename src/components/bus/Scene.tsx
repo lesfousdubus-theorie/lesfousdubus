@@ -396,7 +396,8 @@ export default function Scene({
         />
       </Suspense>
       <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} profile={currentPassengerProfile} onSelect={phase !== "inside" || freeView ? onPassengerSelect : undefined} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
-      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={freeView || messagesBackdrop ? "outside" : phase} cabinCenterZ={cabinCenterZ} />
+      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={phase === "inside" && (freeView || messagesBackdrop) ? "outside" : phase}
+        cabinCenterZ={cabinCenterZ} cabinLength={cabinLength} journey={journey} />
       <CameraRig
         letterShortcutsEnabled={letterShortcutsEnabled}
         resetViewToken={resetViewToken}
