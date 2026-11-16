@@ -686,6 +686,7 @@ export default function BusExperience() {
         onArrived={onArrived}
         passengerCount={effectiveCount}
         seatCapacity={seatCapacity}
+        initialStatsReady={count !== null}
         vacantSeatRanges={vacantSeatRanges}
         currentSeatRow={seatRow}
         currentSeatColumn={effectiveSeatColumn}

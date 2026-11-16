@@ -3,10 +3,9 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { DEFAULT_CAMERA_POS, DEFAULT_TARGET, SEAT_EYE, TV_POSITION, type Phase } from "./constants";
-import { dollyOrbitCamera, getExteriorMaxDistance, MIN_ORBIT_DISTANCE, ORBIT_CAMERA_FLOOR, wheelZoomRatio } from "@/lib/bus-camera";
+import { getExteriorMaxDistance, getOverviewDistance, wheelZoomRatio } from "@/lib/bus-camera";
+import { isBusViewportInput, useBusExploration } from "./useBusExploration";
 import { ease, type JourneyState } from "@/lib/bus-journey";
 import { getPassengerSkeleton } from "@/lib/passenger-proportions";
 import { getNakamaArchetype } from "./passenger-archetypes";
@@ -20,6 +19,9 @@ interface Props {
   cabinLength?: number;
   cabinCenterZ?: number;
   cameraFar?: number;
+  visitCameraRef: React.RefObject<THREE.Camera | null>;
+  initialStatsReady: boolean;
+  inputsPaused: boolean;
   currentSeatZ?: number;
   currentSeatX?: number;
   currentPassengerSeatIndex?: number | null;
@@ -32,11 +34,6 @@ interface Props {
 }
 
 const FOV_EPSILON = 0.01;
-const EXTERIOR_MAX_POLAR_ANGLE = Math.PI / 2 - 0.04;
-const EXTERIOR_SKY_PITCH_LIMIT = Math.PI - EXTERIOR_MAX_POLAR_ANGLE - 0.02;
-const EXTERIOR_SKY_DRAG_SPEED = 0.0045;
-const LOCAL_X_AXIS = new THREE.Vector3(1, 0, 0);
-const LOCAL_Z_AXIS = new THREE.Vector3(0, 0, 1);
 const CAMERA_UP = new THREE.Vector3(0, 1, 0);
 const DEFAULT_EXTERIOR_OFFSET = DEFAULT_CAMERA_POS.clone().sub(DEFAULT_TARGET);
 
@@ -48,6 +45,9 @@ export default function CameraRig({
   cabinLength = 9.2,
   cabinCenterZ = 0,
   cameraFar = 2000,
+  visitCameraRef,
+  initialStatsReady,
+  inputsPaused,
   currentSeatZ,
   currentSeatX = SEAT_EYE.x,
   currentPassengerSeatIndex = null,
@@ -59,13 +59,12 @@ export default function CameraRig({
   journey,
 }: Props) {
   const { camera: sceneCamera, gl, size, get, set } = useThree();
-  const [camera] = useState(sceneCamera);
-  const passengerCamera = useRef(camera);
+  // Le Canvas de la scène fournit toujours une caméra de perspective.
+  const [camera] = useState(() => sceneCamera as THREE.PerspectiveCamera);
+  const cameraRef = useRef(camera);
   const backdropCamera = useRef<THREE.PerspectiveCamera | null>(null);
-  const controls = useRef<OrbitControlsImpl>(null);
-  const saved = useRef({ pos: DEFAULT_CAMERA_POS.clone(), target: DEFAULT_TARGET.clone() });
+  const saved = useRef({ pos: DEFAULT_CAMERA_POS.clone(), target: DEFAULT_TARGET.clone(), orientation: new THREE.Quaternion() });
   const anim = useRef({
-    t: 0,
     from: new THREE.Vector3(),
     fromQ: new THREE.Quaternion(),
     to: new THREE.Vector3(),
@@ -76,19 +75,15 @@ export default function CameraRig({
   const targetFovRef = useRef(55);
   const currentFovRef = useRef(55);
   const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
-  const exteriorPointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
-  const exteriorPinchDistRef = useRef<number | null>(null);
-  const orbitZoom = useRef({ logRatio: 0, cursor: new THREE.Vector2() });
-  const skyPitchRef = useRef(0);
-  const skyTiltRef = useRef(new THREE.Quaternion());
   const pinchStartDistRef = useRef<number | null>(null);
   const pinchStartFovRef = useRef<number>(55);
   const phaseRef = useRef<Phase>(phase);
   const freeViewRef = useRef(false);
-  const freeCamera = useRef<{ pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
+  const freeCamera = useRef<typeof saved.current | null>(null);
   const preparedPhaseRef = useRef<Phase | null>(null);
-  const framingScaleRef = useRef(1);
   const initialFramedRef = useRef(false);
+  const framedWithStats = useRef(false);
+  const explored = useRef(false);
   const resetViewRef = useRef(resetViewToken);
   const resetTransition = useRef({
     active: false,
@@ -98,7 +93,7 @@ export default function CameraRig({
     toPos: new THREE.Vector3(),
     fromTarget: new THREE.Vector3(),
     toTarget: new THREE.Vector3(),
-    fromSkyPitch: 0,
+    canInterrupt: false,
     toSeat: false,
     fromQ: new THREE.Quaternion(),
     toQ: new THREE.Quaternion(),
@@ -125,39 +120,31 @@ export default function CameraRig({
   }, [currentSeatZ,currentSeatX,eyeY]);
   const activeTvTarget = useMemo(() => new THREE.Vector3(0, TV_POSITION.y, tvTargetZ), [tvTargetZ]);
 
-  // Cible du cadrage initial et du recentrage sur toute la longueur du bus.
-  const orbitTargetZ = cabinCenterZ;
-  const previousOrbitTarget = useRef(orbitTargetZ);
+  const aspect = size.width / Math.max(1, size.height) || 1;
+  const overview = useMemo(() => {
+    const target = new THREE.Vector3(0, 1.9, cabinCenterZ);
+    const pos = DEFAULT_EXTERIOR_OFFSET.clone().setLength(getOverviewDistance(cabinLength, aspect, DEFAULT_EXTERIOR_OFFSET)).add(target);
+    const orientation = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(pos, target, CAMERA_UP));
+    return { pos, target, orientation };
+  }, [aspect, cabinCenterZ, cabinLength]);
 
-  const framingScale = useMemo(() => {
-    const aspect = Math.max(size.width / Math.max(size.height, 1), 0.45);
-    const vFov = THREE.MathUtils.degToRad(55);
-    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * aspect);
-    const baseDist = DEFAULT_EXTERIOR_OFFSET.length();
-    const halfSpan = cabinLength * 0.52 + 2.4;
-    const neededDist = Math.max(
-      halfSpan / Math.tan(hFov * 0.44),
-      (halfSpan * 0.62) / Math.tan(vFov * 0.44),
-    );
-    return Math.min(4.2, Math.max(1.15, neededDist / baseDist));
-  }, [cabinLength, size.height, size.width]);
+  const canExplore = useCallback((start: boolean) => {
+    if (phaseRef.current !== "outside" && !freeViewRef.current) return false;
+    const transition = resetTransition.current;
+    if (transition.active && (!start || !transition.canInterrupt)) return false;
+    if (start) {
+      explored.current = true;
+      transition.active = false;
+    }
+    return true;
+  }, []);
+  const { pivot, cancelExplorationInput } = useBusExploration(camera, cabinCenterZ + cabinLength / 2,
+    getExteriorMaxDistance(cabinLength), reducedMotion, inputsPaused, canExplore);
 
-  const maxOrbitDistance = useMemo(() => {
-    return getExteriorMaxDistance(cabinLength);
-  }, [cabinLength]);
-
-  const requestOrbitZoom = useCallback((ratio: number, clientX: number, clientY: number) => {
-    const logRatio = Math.log(ratio);
-    if (!logRatio || !Number.isFinite(logRatio)) return;
-    const rect = gl.domElement.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    const zoom = orbitZoom.current;
-    zoom.cursor.set(
-      THREE.MathUtils.clamp((clientX - rect.left) / rect.width, 0, 1) * 2 - 1,
-      1 - THREE.MathUtils.clamp((clientY - rect.top) / rect.height, 0, 1) * 2,
-    );
-    zoom.logRatio = logRatio + (zoom.logRatio * logRatio < 0 ? 0 : zoom.logRatio);
-  }, [gl]);
+  useLayoutEffect(() => {
+    visitCameraRef.current = camera;
+    return () => { visitCameraRef.current = null; };
+  }, [camera, visitCameraRef]);
 
   useLayoutEffect(() => {
     if (!messagesBackdrop) return;
@@ -184,19 +171,18 @@ export default function CameraRig({
 
   useLayoutEffect(() => {
     if (!messagesBackdrop || !backdropCamera.current) return;
-    orbitZoom.current.logRatio = 0;
-    const original = passengerCamera.current;
+    const original = camera;
     // Préserver la caméra du passager, son zoom et la cible de ses commandes.
     set({ camera: backdropCamera.current });
     return () => {
-      if (original instanceof THREE.PerspectiveCamera && !original.manual) {
+      if (!("manual" in original && original.manual)) {
         const viewport = get().size;
         original.aspect = viewport.width / Math.max(1, viewport.height) || 1;
         original.updateProjectionMatrix();
       }
       set({ camera: original });
     };
-  }, [get, messagesBackdrop, set]);
+  }, [camera, get, messagesBackdrop, set]);
 
   const finishTransition = useCallback((destination: "inside" | "outside") => {
     const a = anim.current;
@@ -209,149 +195,77 @@ export default function CameraRig({
       const e = new THREE.Euler().setFromQuaternion(a.toQ, "YXZ");
       look.current.yaw = look.current.targetYaw = e.y;
       look.current.pitch = look.current.targetPitch = e.x;
-    } else if(controls.current) {
-      const control=controls.current;
-      const damping=control.enableDamping;
-      control.enabled=true;
-      control.enableDamping=false;
-      // Vider les mouvements amortis avant de restaurer la cible enregistrée.
-      control.update();
-      control.target.copy(saved.current.target);
-      camera.position.copy(a.to);
-      control.update();
-      control.enableDamping=damping;
+    } else {
+      pivot.copy(saved.current.target);
     }
 
     arrivedRef.current(destination);
-  }, [camera]);
+  }, [camera, pivot]);
 
-  // Le même angle doit montrer le bus entier sur un écran 16:9 comme sur portrait.
-  // Au redimensionnement, préserver le zoom choisi en ajustant sa distance.
-  useEffect(() => {
-    const scale = framingScale;
-    const ratio = scale / framingScaleRef.current;
-    const centerShift = orbitTargetZ - previousOrbitTarget.current;
-    framingScaleRef.current = scale;
-    previousOrbitTarget.current = orbitTargetZ;
-    const hasCamParam = typeof window !== "undefined" && Boolean(new URLSearchParams(window.location.search).get("cam"));
-    if (!initialFramedRef.current) {
-      initialFramedRef.current = true;
-      const target = new THREE.Vector3(0, 1.9, orbitTargetZ);
-      saved.current.target.copy(target);
-      saved.current.pos.copy(target).addScaledVector(DEFAULT_EXTERIOR_OFFSET, scale);
-      if (!hasCamParam && phaseRef.current === "outside") {
-        camera.position.copy(saved.current.pos);
-        if (controls.current) {
-          controls.current.target.copy(target);
-          controls.current.update();
-        } else {
-          camera.lookAt(target);
-        }
-      }
-      return;
+  // Le cadrage d'ensemble est appliqué à l'arrivée et lors d'un recentrage explicite.
+  useLayoutEffect(() => {
+    if (initialFramedRef.current && (!initialStatsReady || framedWithStats.current || explored.current || phase !== "outside")) return;
+    initialFramedRef.current = true;
+    framedWithStats.current = initialStatsReady;
+    const camParam = new URLSearchParams(window.location.search).get("cam");
+    const { target, orientation } = overview;
+    const pos = overview.pos.clone();
+    if (camParam === "side" || camParam === "front") {
+      const offset = camParam === "side" ? new THREE.Vector3(11, 1.9, 0) : new THREE.Vector3(0, 1.7, -12);
+      pos.copy(offset).setLength(getOverviewDistance(cabinLength, aspect, offset)).add(target);
     }
-    if (ratio === 1 && centerShift === 0) return;
-    const outside = phaseRef.current === "outside";
-    saved.current.target.addScaledVector(LOCAL_Z_AXIS, centerShift);
-    saved.current.pos.addScaledVector(LOCAL_Z_AXIS, centerShift)
-      .sub(saved.current.target).multiplyScalar(ratio).add(saved.current.target);
-    if (phaseRef.current === "outside" || freeViewRef.current) {
-      const rt = resetTransition.current;
-      const shift = outside ? centerShift : 0;
-      if (rt.active) {
-        rt.fromTarget.addScaledVector(LOCAL_Z_AXIS, shift);
-        rt.toTarget.addScaledVector(LOCAL_Z_AXIS, shift);
-        rt.fromPos.addScaledVector(LOCAL_Z_AXIS, shift);
-        rt.toPos.addScaledVector(LOCAL_Z_AXIS, shift);
-        rt.fromPos.sub(rt.fromTarget).multiplyScalar(ratio).add(rt.fromTarget);
-        rt.toPos.sub(rt.toTarget).multiplyScalar(ratio).add(rt.toTarget);
-      }
-      const target = controls.current?.target ?? DEFAULT_TARGET;
-      controls.current?.target.addScaledVector(LOCAL_Z_AXIS, shift);
-      camera.position.addScaledVector(LOCAL_Z_AXIS, shift).sub(target).multiplyScalar(ratio).add(target);
-      controls.current?.update();
-    } else if (phaseRef.current === "exiting") {
-      anim.current.to.copy(saved.current.pos);
+    saved.current.pos.copy(pos);
+    saved.current.target.copy(target);
+    saved.current.orientation.copy(
+      camParam === "side" || camParam === "front"
+        ? new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(pos, target, CAMERA_UP))
+        : orientation,
+    );
+    if (phaseRef.current === "outside") {
+      camera.position.copy(pos);
+      camera.quaternion.copy(saved.current.orientation);
+      pivot.copy(target);
     }
-  }, [camera, framingScale, orbitTargetZ]);
+  }, [aspect, cabinLength, camera, overview, pivot, initialStatsReady, phase]);
 
   useEffect(() => {
     if (resetViewRef.current === resetViewToken) return;
     resetViewRef.current = resetViewToken;
-    orbitZoom.current.logRatio = 0;
+    explored.current = true;
+    cancelExplorationInput();
     activePointersRef.current.clear();
-    exteriorPointersRef.current.clear();
     pinchStartDistRef.current = null;
-    exteriorPinchDistRef.current = null;
     look.current.dragging = false;
-    if ((phase === "outside" || freeViewRef.current) && controls.current) {
-      const damping = controls.current.enableDamping;
-      controls.current.enableDamping = false;
-      controls.current.update();
-      controls.current.enableDamping = damping;
-    }
     targetFovRef.current = 55;
-    if ((phase === "outside" || freeViewRef.current) && controls.current) {
-      const control = controls.current;
-      const targetTarget = new THREE.Vector3(0, 1.9, orbitTargetZ);
-      const targetPos = targetTarget
-        .clone()
-        .addScaledVector(DEFAULT_EXTERIOR_OFFSET, framingScaleRef.current);
-
+    if (phase === "outside" || freeViewRef.current) {
       if (reducedMotion) {
-        control.minPolarAngle = 0;
-        control.target.copy(targetTarget);
-        const damping = control.enableDamping;
-        control.enableDamping = false;
-        control.update();
-        camera.position.copy(targetPos);
-        control.update();
-        control.enableDamping = damping;
-        skyPitchRef.current = 0;
+        camera.position.copy(overview.pos);
+        camera.quaternion.copy(overview.orientation);
+        pivot.copy(overview.target);
+        resetTransition.current.active = false;
       } else {
         const rt = resetTransition.current;
         rt.active = true;
+        rt.canInterrupt = true;
         rt.t = 0;
-        rt.duration = .85;
+        rt.duration = .65;
         rt.fromPos.copy(camera.position);
-        rt.toPos.copy(targetPos);
-        rt.fromTarget.copy(control.target);
-        rt.toTarget.copy(targetTarget);
-        rt.fromSkyPitch = skyPitchRef.current;
+        rt.toPos.copy(overview.pos);
+        rt.fromTarget.copy(pivot);
+        rt.toTarget.copy(overview.target);
         rt.toSeat = false;
         rt.fromQ.copy(camera.quaternion);
-        rt.toQ.setFromRotationMatrix(new THREE.Matrix4().lookAt(targetPos, targetTarget, new THREE.Vector3(0, 1, 0)));
-        control.enabled = false;
+        rt.toQ.copy(overview.orientation);
       }
     } else if (phase === "inside") {
-      const matrix = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
+      const matrix = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, CAMERA_UP);
       const rotation = new THREE.Euler().setFromRotationMatrix(matrix, "YXZ");
-      // Chemin angulaire le plus court pour le recentrage fluide de la tête
       const currentYaw = look.current.yaw;
-      let diffYaw = (rotation.y - currentYaw) % (Math.PI * 2);
-      if (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
-      if (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
-      look.current.targetYaw = currentYaw + diffYaw;
+      const diff = rotation.y - currentYaw;
+      look.current.targetYaw = currentYaw + Math.atan2(Math.sin(diff), Math.cos(diff));
       look.current.targetPitch = rotation.x;
     }
-  }, [resetViewToken, phase, camera, orbitTargetZ, activeEyePos, activeTvTarget, reducedMotion]);
-
-  // Support vue caméra optionnelle (ex: pour vérification ou captures tests)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const camParam = new URLSearchParams(window.location.search).get("cam");
-    if (!camParam) return;
-    if (camParam !== "side" && camParam !== "front") return;
-    const focusZ = previousOrbitTarget.current;
-    const target = new THREE.Vector3(0, 1.9, focusZ);
-    if (camParam === "side") camera.position.set(11, 3.8, focusZ);
-    else camera.position.set(0, 3.6, focusZ - 12);
-    camera.position.sub(target).multiplyScalar(framingScaleRef.current).add(target);
-    if (controls.current) {
-      controls.current.target.copy(target);
-      controls.current.update();
-    }
-  }, [camera]);
+  }, [resetViewToken, phase, camera, overview, pivot, activeEyePos, activeTvTarget, cancelExplorationInput, reducedMotion]);
 
   // Prépare la transition à chaque changement de phase
   useEffect(() => {
@@ -363,10 +277,10 @@ export default function CameraRig({
       if (phaseChanged) {
         headApproach.current=false;
         saved.current.pos.copy(camera.position);
-        if (controls.current) saved.current.target.copy(controls.current.target);
+        saved.current.target.copy(pivot);
+        saved.current.orientation.copy(camera.quaternion);
         a.from.copy(camera.position);
         a.fromQ.copy(camera.quaternion);
-        a.t = 0;
         a.active = true;
       }
       seatXRef.current = activeEyePos.x;
@@ -379,27 +293,17 @@ export default function CameraRig({
       a.from.copy(camera.position);
       a.fromQ.copy(camera.quaternion);
       a.to.copy(saved.current.pos);
-      const m = new THREE.Matrix4().lookAt(saved.current.pos, saved.current.target, new THREE.Vector3(0, 1, 0));
-      a.toQ.setFromRotationMatrix(m);
-      a.t = 0;
+      a.toQ.copy(saved.current.orientation);
       a.active = true;
     } else if (phaseChanged) {
       a.active = false;
-    }
-    if (phaseChanged && phase !== "outside") {
-      orbitZoom.current.logRatio = 0;
-      // Garder la caméra extérieure à sa place pendant le regard vers le ciel.
-      // La transition part de son orientation actuelle, puis réinitialise ce regard.
-      skyPitchRef.current = 0;
-      exteriorPointersRef.current.clear();
-      if (controls.current) controls.current.minPolarAngle = 0;
     }
     if (phaseChanged && phase !== "inside") {
       activePointersRef.current.clear();
       pinchStartDistRef.current = null;
       look.current.dragging = false;
     }
-  }, [phase, camera, activeEyePos, activeTvTarget, cabinCenterZ, cabinLength]);
+  }, [phase, camera, activeEyePos, activeTvTarget, pivot]);
 
   // Chaque déplacement dans l'allée oriente le regard vers le lecteur actif.
   // Le visiteur peut ensuite tourner librement la tête avec la souris ou le doigt.
@@ -417,18 +321,11 @@ export default function CameraRig({
     if (freeViewRef.current === next) return;
     const wasFree = freeViewRef.current;
     freeViewRef.current = next;
-    orbitZoom.current.logRatio = 0;
     activePointersRef.current.clear();
-    exteriorPointersRef.current.clear();
     pinchStartDistRef.current = null;
-    exteriorPinchDistRef.current = null;
     look.current.dragging = false;
-    if (wasFree && controls.current) {
-      const damping = controls.current.enableDamping;
-      controls.current.enableDamping = false;
-      controls.current.update();
-      controls.current.enableDamping = damping;
-      freeCamera.current = { pos: camera.position.clone(), target: controls.current.target.clone() };
+    if (wasFree) {
+      freeCamera.current = { pos: camera.position.clone(), target: pivot.clone(), orientation: camera.quaternion.clone() };
     }
     if (phase !== "inside") {
       resetTransition.current.active = false;
@@ -436,42 +333,33 @@ export default function CameraRig({
     }
     const rt = resetTransition.current;
     rt.active = true;
+    rt.canInterrupt = false;
     rt.t = 0;
     rt.duration = reducedMotion ? 0.01 : 0.85;
     rt.toSeat = !next;
     rt.fromPos.copy(camera.position);
     rt.fromQ.copy(camera.quaternion);
-    rt.fromSkyPitch = skyPitchRef.current;
     const destination = freeCamera.current ?? saved.current;
     rt.toPos.copy(next ? destination.pos : activeEyePos);
     rt.toTarget.copy(next ? destination.target : activeTvTarget);
-    rt.fromTarget.copy(next ? camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(4)) : controls.current?.target ?? activeTvTarget);
-    rt.toQ.setFromRotationMatrix(new THREE.Matrix4().lookAt(rt.toPos, rt.toTarget, new THREE.Vector3(0, 1, 0)));
-    skyPitchRef.current = 0;
-    if (controls.current) controls.current.enabled = false;
+    rt.fromTarget.copy(pivot);
+    if (next) rt.toQ.copy(destination.orientation);
+    else rt.toQ.setFromRotationMatrix(new THREE.Matrix4().lookAt(rt.toPos, rt.toTarget, CAMERA_UP));
     targetFovRef.current = 55;
-  }, [freeView, phase, camera, activeEyePos, activeTvTarget, reducedMotion]);
+  }, [freeView, phase, camera, activeEyePos, activeTvTarget, pivot, reducedMotion]);
 
   // Contrôles "tourner la tête" & Zoom à l'intérieur (souris / tactile / clavier / molette)
   useEffect(() => {
+    if (inputsPaused) return;
     // Html avec occlusion "blending" désactive les événements du canvas.
-    // Son conteneur reste la surface stable, déjà utilisée par OrbitControls.
+    // Le conteneur reste la surface stable pendant les changements de mode.
     const el = gl.domElement.parentElement ?? gl.domElement;
     const l = look.current;
     const pointers = activePointersRef.current;
 
     const down = (e: PointerEvent) => {
       if (phaseRef.current !== "inside" || freeViewRef.current || resetTransition.current.active) return;
-      const targetEl = e.target as HTMLElement | null;
-      const currentEl = e.currentTarget as HTMLElement | null;
-      if (
-        currentEl?.dataset?.tvPointerHit === "true"
-        || currentEl?.parentElement?.dataset?.tvPointerHit === "true"
-        || Boolean(currentEl?.closest?.('[data-tv-pointer-hit="true"]'))
-        || Boolean(targetEl?.closest?.("#tv-frame, [data-bus-tv-overlay]"))
-      ) {
-        return;
-      }
+      if (!isBusViewportInput(e) || (e.pointerType === "mouse" && e.button !== 0)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       if (pointers.size === 1) {
@@ -535,26 +423,10 @@ export default function CameraRig({
 
     // Les gestes de zoom du navigateur et la molette dans les modales gardent la priorité.
     const wheel = (e: WheelEvent) => {
-      if (!e.deltaY || isBrowserZoomWheel(e) || get().camera !== camera) return;
-      if ((e.target as HTMLElement)?.closest?.("[role='dialog'], [data-modal], .overflow-y-auto")) {
-        return;
-      }
-      const ratio = wheelZoomRatio(e.deltaY, e.deltaMode, el.clientHeight);
-      if (phaseRef.current === "outside" || freeViewRef.current) {
-        const control = controls.current;
-        if (!control) return;
-        if (resetTransition.current.active) {
-          if (phaseRef.current === "inside") return;
-          resetTransition.current.active = false;
-          control.enabled = true;
-          control.update();
-        }
-        e.preventDefault();
-        requestOrbitZoom(ratio, e.clientX, e.clientY);
-        return;
-      }
-      if (phaseRef.current !== "inside" || resetTransition.current.active) return;
+      if (phaseRef.current !== "inside" || freeViewRef.current || resetTransition.current.active) return;
+      if (!e.deltaY || isBrowserZoomWheel(e) || get().camera !== camera || !isBusViewportInput(e)) return;
       e.preventDefault();
+      const ratio = wheelZoomRatio(e.deltaY, e.deltaMode, el.clientHeight);
       const halfFov = THREE.MathUtils.degToRad(targetFovRef.current / 2);
       const angle = Math.atan(Math.tan(halfFov) * ratio);
       targetFovRef.current = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(angle) * 2, 14, 75);
@@ -601,122 +473,12 @@ export default function CameraRig({
       target.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", key);
     };
-  }, [gl, get, camera, letterShortcutsEnabled, requestOrbitZoom]);
-
-  // Au-delà de l'horizon, lever seulement le regard : faire descendre toute
-  // la caméra sous le sol exposerait l'intérieur du bus et le dessous du décor.
-  useEffect(() => {
-    const surface = gl.domElement.parentElement ?? gl.domElement;
-    const pointers = exteriorPointersRef.current;
-
-    const down = (event: PointerEvent) => {
-      if (get().camera !== camera || (phaseRef.current !== "outside" && !freeViewRef.current)) return;
-      if (resetTransition.current.active && phaseRef.current === "inside") return;
-      const targetEl = event.target as HTMLElement | null;
-      const currentEl = event.currentTarget as HTMLElement | null;
-      if (
-        currentEl?.dataset?.tvPointerHit === "true"
-        || currentEl?.parentElement?.dataset?.tvPointerHit === "true"
-        || Boolean(currentEl?.closest?.('[data-tv-pointer-hit="true"]'))
-        || Boolean(targetEl?.closest?.("#tv-frame, [data-bus-tv-overlay]"))
-      ) {
-        return;
-      }
-      if (resetTransition.current.active) {
-        resetTransition.current.active = false;
-        if (controls.current) {
-          controls.current.enabled = true;
-          controls.current.update();
-        }
-      }
-      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-      if (pointers.size === 2) {
-        const pts = [...pointers.values()];
-        exteriorPinchDistRef.current = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
-      } else {
-        exteriorPinchDistRef.current = null;
-      }
-    };
-
-    const move = (event: PointerEvent) => {
-      if ((phaseRef.current !== "outside" && !freeViewRef.current) || !pointers.has(event.pointerId)) return;
-      const previous = pointers.get(event.pointerId)!;
-      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-
-      const control = controls.current;
-      if (!control) return;
-
-      if (pointers.size === 2) {
-        const [a, b] = pointers.values();
-        const curDist = Math.hypot(b.x - a.x, b.y - a.y);
-        if (exteriorPinchDistRef.current && curDist > 0) {
-          const ratio = THREE.MathUtils.clamp(exteriorPinchDistRef.current / curDist, 0.5, 2);
-          requestOrbitZoom(ratio, (a.x + b.x) / 2, (a.y + b.y) / 2);
-        }
-        exteriorPinchDistRef.current = curDist;
-        return;
-      }
-
-      if (pointers.size !== 1) return;
-
-      const deltaY = event.clientY - previous.y;
-      if (event.pointerType === "mouse") {
-        if (event.buttons & 4) {
-          requestOrbitZoom(wheelZoomRatio(deltaY * 3, 0, surface.clientHeight), event.clientX, event.clientY);
-          return;
-        }
-        if (!(event.buttons & 1) || event.shiftKey || event.ctrlKey || event.metaKey) return;
-      }
-      if (deltaY < 0 && (skyPitchRef.current > 0 || control.getPolarAngle() >= EXTERIOR_MAX_POLAR_ANGLE - 0.01)) {
-        skyPitchRef.current = Math.min(
-          EXTERIOR_SKY_PITCH_LIMIT,
-          skyPitchRef.current - deltaY * EXTERIOR_SKY_DRAG_SPEED,
-        );
-      } else if (deltaY > 0 && skyPitchRef.current > 0) {
-        skyPitchRef.current = Math.max(0, skyPitchRef.current - deltaY * EXTERIOR_SKY_DRAG_SPEED);
-      }
-      // Quand le regard est levé, OrbitControls reste à l'horizon. Un glisser
-      // vers le bas ramène d'abord le ciel, puis reprend l'orbite habituelle.
-      control.minPolarAngle = skyPitchRef.current > 0 ? EXTERIOR_MAX_POLAR_ANGLE : 0;
-    };
-
-    const up = (event: PointerEvent) => {
-      pointers.delete(event.pointerId);
-      if (pointers.size < 2) {
-        exteriorPinchDistRef.current = null;
-      }
-    };
-
-    const clearPointers = () => {
-      pointers.clear();
-      exteriorPinchDistRef.current = null;
-    };
-
-    const blur = () => {
-      clearPointers();
-      orbitZoom.current.logRatio = 0;
-    };
-
-    surface.addEventListener("pointerdown", down);
-    surface.addEventListener("lostpointercapture", up);
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
-    window.addEventListener("pointercancel", up);
-    window.addEventListener("blur", blur);
-    return () => {
-      surface.removeEventListener("pointerdown", down);
-      surface.removeEventListener("lostpointercapture", up);
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-      window.removeEventListener("pointercancel", up);
-      window.removeEventListener("blur", blur);
-    };
-  }, [gl, get, camera, requestOrbitZoom]);
+  }, [gl, get, camera, inputsPaused, letterShortcutsEnabled]);
 
   useFrame((_, dt) => {
     const a = anim.current;
     const p = phaseRef.current;
-    const cam = passengerCamera.current;
+    const cam = cameraRef.current;
 
     // Gestion du FOV (zoom)
     if (cam instanceof THREE.PerspectiveCamera) {
@@ -813,29 +575,17 @@ export default function CameraRig({
       const s = t * t * t * (t * (t * 6 - 15) + 10);
 
       cam.position.lerpVectors(rt.fromPos, rt.toPos, s);
-      const curTarget = cinematic.target.lerpVectors(rt.fromTarget, rt.toTarget, s);
       cam.quaternion.slerpQuaternions(rt.fromQ, rt.toQ, s);
-      skyPitchRef.current = THREE.MathUtils.lerp(rt.fromSkyPitch, 0, s);
-
-      if (controls.current) {
-        controls.current.target.copy(curTarget);
-      }
+      pivot.lerpVectors(rt.fromTarget, rt.toTarget, s);
 
       if (rt.t >= 1) {
         rt.active = false;
-        skyPitchRef.current = 0;
         if (rt.toSeat) {
           const rotation = new THREE.Euler().setFromQuaternion(rt.toQ, "YXZ");
           look.current.yaw = look.current.targetYaw = rotation.y;
           look.current.pitch = look.current.targetPitch = rotation.x;
           seatXRef.current = activeEyePos.x;
           seatZRef.current = activeEyePos.z;
-        } else if (controls.current) {
-          controls.current.enabled = true;
-          controls.current.minPolarAngle = 0;
-          controls.current.target.copy(rt.toTarget);
-          cam.position.copy(rt.toPos);
-          controls.current.update();
         }
       }
       return;
@@ -859,43 +609,8 @@ export default function CameraRig({
         eyeY,
         seatZRef.current,
       );
-    } else if (p === "outside" || freeViewRef.current) {
-      const control = controls.current;
-      if (control && cam.position.y < ORBIT_CAMERA_FLOOR) {
-        control.target.y += ORBIT_CAMERA_FLOOR - cam.position.y;
-        cam.position.y = ORBIT_CAMERA_FLOOR;
-      }
-      if (skyPitchRef.current > 0) {
-        // Le regard se lève indépendamment de l'orbite autour du bus.
-        skyTiltRef.current.setFromAxisAngle(LOCAL_X_AXIS, skyPitchRef.current);
-        cam.quaternion.multiply(skyTiltRef.current);
-      }
-      const zoom = orbitZoom.current;
-      if (control && cam instanceof THREE.PerspectiveCamera && zoom.logRatio) {
-        const step = reducedMotion || Math.abs(zoom.logRatio) < 0.00005
-          ? zoom.logRatio
-          : zoom.logRatio * -Math.expm1(-21 * dt);
-        dollyOrbitCamera(cam, control.target, zoom.cursor, step, maxOrbitDistance);
-        zoom.logRatio -= step;
-      }
     }
   }, -0.5);
 
-  return (
-    <OrbitControls
-      ref={controls}
-      makeDefault
-      camera={camera}
-      domElement={gl.domElement.parentElement ?? gl.domElement}
-      enabled={phase === "outside" || (phase === "inside" && freeView)}
-      minDistance={MIN_ORBIT_DISTANCE}
-      maxDistance={maxOrbitDistance}
-      enableZoom={false}
-      maxPolarAngle={EXTERIOR_MAX_POLAR_ANGLE}
-      enablePan={phase === "outside" || (phase === "inside" && freeView)}
-      touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
-      enableDamping={!reducedMotion}
-      dampingFactor={0.08}
-    />
-  );
+  return null;
 }

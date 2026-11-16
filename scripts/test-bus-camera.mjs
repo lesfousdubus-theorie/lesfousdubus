@@ -9,8 +9,8 @@ const { outputFiles } = await build({
   bundle: true, format: "esm", platform: "node", write: false, logLevel: "silent",
 });
 const { BoxGeometry, Group, Mesh, PerspectiveCamera, PlaneGeometry, SphereGeometry, Vector2, Vector3,
-  MIN_ORBIT_DISTANCE, ORBIT_CAMERA_FLOOR, cacheSceneryBounds, createSceneryVisibility, dollyOrbitCamera,
-  getPassengerSkeleton, getWalkingLegPose, mergeGeometries, setSceneryParts, wheelZoomRatio } = await import(
+  ORBIT_CAMERA_FLOOR, cacheSceneryBounds, createBusExploration, createSceneryVisibility,
+  getOverviewDistance, getPassengerSkeleton, getWalkingLegPose, mergeGeometries, setSceneryParts, wheelZoomRatio } = await import(
   `data:text/javascript;base64,${Buffer.from(outputFiles[0].text).toString("base64")}`
 );
 
@@ -26,47 +26,91 @@ assert.equal(wheelZoomRatio(0, 0, 720), 1);
 assert.equal(wheelZoomRatio(2, 1, 720), wheelZoomRatio(32, 0, 720));
 assert(Math.abs(wheelZoomRatio(-120, 0, 720) * wheelZoomRatio(120, 0, 720) - 1) < 1e-10);
 
-const camera = new PerspectiveCamera(55, 1.6, .1, 500);
-const pivot = new Vector3(0, 2, 0);
-const cursor = new Vector2(.53, .21);
-camera.position.set(18, 5, 0);
-camera.lookAt(pivot);
-camera.updateMatrixWorld();
+const camera = new PerspectiveCamera(55, 1.6, .2, 500);
+const exploration = createBusExploration();
+const { pivot } = exploration;
+const cabinRear = 8;
+const maxDistance = 140;
+const cursor = new Vector2();
+const logWheel = Math.log(wheelZoomRatio(-120, 0, 720));
+const zoom = (direction = 1) => exploration.zoom(camera, cursor, direction * logWheel, cabinRear, maxDistance);
+function aim(position, point) {
+  camera.position.fromArray(position);
+  pivot.fromArray(point);
+  camera.lookAt(pivot);
+  camera.updateMatrixWorld();
+}
+
+const overviewOffset = new Vector3(7.5, 1.3, -8);
+const longBus = 210;
+const portrait = .48;
+const overviewCamera = new PerspectiveCamera(55, portrait, .2, 1500);
+overviewCamera.position.copy(overviewOffset).setLength(getOverviewDistance(longBus, portrait, overviewOffset));
+overviewCamera.lookAt(0, 0, 0);
+overviewCamera.updateMatrixWorld();
+const distantCorner = new Vector3(1.6, 2.8, -longBus / 2 - .8).project(overviewCamera);
+assert(Math.abs(distantCorner.x) <= .841 && Math.abs(distantCorner.y) <= .841, "Frame a long bus on a portrait screen.");
+
+const bus = new Group();
+const door = new Mesh(new BoxGeometry(.08, 2, 1));
+door.position.set(1.3, 1.7, -3);
+const floor = new Mesh(new BoxGeometry(2.6, .08, 12.6));
+floor.position.set(0, .6, 1.7);
+bus.add(door, floor);
+bus.updateMatrixWorld(true);
+aim([18, 5, 0], [0, 2, 0]);
+const onDoor = new Vector3(1.34, 1.7, -3);
+const projected = onDoor.clone().project(camera);
+cursor.set(projected.x, projected.y);
 const position = camera.position.clone();
 const orientation = camera.quaternion.clone();
-const targetUnderCursor = new Vector3(cursor.x, cursor.y, .99).unproject(camera);
-const logWheel = Math.log(wheelZoomRatio(-120, 0, 720));
-dollyOrbitCamera(camera, pivot, cursor, logWheel, 140);
+exploration.focus(camera, cursor, cabinRear, bus);
+assert(pivot.distanceTo(onDoor) < 1e-6, "Select a real surface under the cursor.");
+zoom();
 camera.updateMatrixWorld();
-const projected = targetUnderCursor.project(camera);
-assert(Math.hypot(projected.x - cursor.x, projected.y - cursor.y) < 1e-8, "Keep the scene point under the cursor.");
-assert(camera.quaternion.equals(orientation), "An off-center zoom should move the pivot without tilting.");
-assert(Math.abs(pivot.z) > .5, "The orbit pivot should move along the bus.");
-dollyOrbitCamera(camera, pivot, cursor, -logWheel, 140);
-assert(camera.position.distanceTo(position) < 1e-8, "One matching outward step should restore the wide view.");
+const focusProjection = onDoor.clone().project(camera);
+assert(focusProjection.z < projected.z, "Zoom advances toward the selected point.");
+assert(Math.hypot(focusProjection.x - cursor.x, focusProjection.y - cursor.y) < 1e-6);
+assert(camera.quaternion.equals(orientation), "Zoom preserves the camera angle.");
+zoom(-1);
+assert(camera.position.distanceTo(position) < 1e-8, "A reversed zoom follows the same ray.");
+exploration.rotate(camera, -.3, .25, cabinRear, maxDistance);
+camera.updateMatrixWorld();
+const afterRotation = onDoor.clone().project(camera);
+assert(Math.hypot(afterRotation.x - cursor.x, afterRotation.y - cursor.y) < 1e-6, "Orbit around the off-center door without reframing.");
+const doorPivot = pivot.clone();
+exploration.focus(camera, new Vector2(-.95, .95), cabinRear, bus);
+assert(pivot.equals(doorPivot), "Keep the last pivot when pointing away from the bus.");
 
-const center = new Vector2();
-camera.position.set(MIN_ORBIT_DISTANCE, 1.5, 0);
-pivot.set(0, 1.5, 0);
-camera.lookAt(pivot);
-for (let i = 0; i < 4; i++) dollyOrbitCamera(camera, pivot, center, logWheel, 140);
-assert(camera.position.x < -.5, "Keep moving through the pivot near the bus.");
-assert(Math.abs(camera.position.distanceTo(pivot) - MIN_ORBIT_DISTANCE) < 1e-8);
-const beforeReversing = camera.position.x;
-dollyOrbitCamera(camera, pivot, center, -logWheel, 140);
-assert(camera.position.x - beforeReversing > .4, "Retreat remains responsive after traversing the pivot.");
-
-camera.position.set(.92, ORBIT_CAMERA_FLOOR, 0);
-pivot.set(-.5, -.38, 0);
-camera.lookAt(pivot);
-dollyOrbitCamera(camera, pivot, center, logWheel, 140);
+aim([0, 5.1, 0], [0, 1.8, 0]);
+const roof = new Mesh(new BoxGeometry(2.68, .22, 12.6));
+roof.position.set(0, 3.26, 1.7);
+bus.add(roof);
+bus.updateMatrixWorld(true);
+cursor.set(0, 0);
+exploration.focus(camera, cursor, cabinRear, bus);
+assert(Math.abs(pivot.y - 3.37) < 1e-6, "Anchor to the roof when taking an overhead approach.");
+for (let i = 0; i < 7; i++) zoom();
+assert(camera.position.y < 2.3, "Travel through the roof and into the cabin.");
+for (let i = 0; i < 12; i++) zoom();
 assert.equal(camera.position.y, ORBIT_CAMERA_FLOOR);
-assert(camera.position.x < .55, "The floor should preserve horizontal travel.");
-camera.position.set(140, 1.5, 0);
-pivot.set(0, 1.5, 0);
-camera.lookAt(pivot);
-dollyOrbitCamera(camera, pivot, center, -logWheel, 140);
-assert.equal(camera.position.x, 140, "Keep the maximum overview distance.");
+const floorPosition = camera.position.clone();
+const floorPivot = pivot.clone();
+exploration.pan(camera, 0, .35, cabinRear, maxDistance);
+assert.equal(camera.position.y, ORBIT_CAMERA_FLOOR);
+assert(camera.position.distanceTo(floorPosition) > .8, "Move horizontally in an overhead view at floor height.");
+assert(pivot.clone().sub(floorPivot).distanceTo(camera.position.clone().sub(floorPosition)) < 1e-8);
+zoom(-1);
+assert(camera.position.y > ORBIT_CAMERA_FLOOR + .3, "Reverse away from the ground immediately.");
+
+aim([8, 2, 0], [0, 2, 0]);
+exploration.rotate(camera, 0, .45, cabinRear, maxDistance);
+assert(camera.position.y >= ORBIT_CAMERA_FLOOR);
+assert(camera.getWorldDirection(new Vector3()).y > .4, "Look upward with the same orbit and the ground limit.");
+
+aim([140, ORBIT_CAMERA_FLOOR, 0], [0, ORBIT_CAMERA_FLOOR, 0]);
+zoom(-1);
+assert(camera.position.length() < maxDistance + .001, "Keep the maximum zoom-out distance.");
 
 const visibility = createSceneryVisibility();
 const begin = (x, y, z, aim = [0, 1.7, 0]) => {
