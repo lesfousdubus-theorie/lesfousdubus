@@ -7,7 +7,7 @@ import type { Phase } from "./constants";
 import type { JourneyState } from "@/lib/bus-journey";
 import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
 import { createInitialCaptionReset, isYouTubePlaybackActive, mountYouTubePlayer, type YouTubePlayer } from "@/lib/youtube-player";
-import { emitBusAudioEvent, onBusAudioEvent } from "@/lib/bus-audio";
+import { emitBusAudioEvent, getFreeViewTvVolume, onBusAudioEvent, OUTSIDE_TV_VOLUME } from "@/lib/bus-audio";
 import BusPartyTv from "./BusPartyTv";
 import BusTvScreen, { TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT } from "./BusTvScreen";
 
@@ -80,6 +80,9 @@ interface BusTvPlayerProps {
   pos: [number, number, number];
   tvOn: boolean;
   phase: Phase;
+  freeView: boolean;
+  busGroup: React.RefObject<THREE.Group | null>;
+  rearWallZ: number;
   hasEntered: boolean;
   journey: React.RefObject<JourneyState>;
   isMutedForFullscreen: boolean;
@@ -91,6 +94,9 @@ export function BusTvPlayer({
   pos,
   tvOn,
   phase,
+  freeView,
+  busGroup,
+  rearWallZ,
   hasEntered,
   journey,
   isMutedForFullscreen,
@@ -103,7 +109,7 @@ export function BusTvPlayer({
   const startTimerRef = useRef<number | null>(null);
   const warmTimerRef = useRef<number | null>(null);
   const volumeTimerRef = useRef<number | null>(null);
-  const exitVolumeRef = useRef<number | null>(null);
+  const dynamicVolume = useRef({ sent: null as number | null, nextUpdateAt: 0, listener: new THREE.Vector3() });
   const warmingRef = useRef(true);
   const playbackActiveRef = useRef(false);
   const partyAudioRef = useRef(false);
@@ -118,6 +124,7 @@ export function BusTvPlayer({
   const desiredRef = useRef({
     tvOn,
     phase,
+    freeView,
     hasEntered,
     isMutedForFullscreen,
     playbackSuspended,
@@ -219,12 +226,13 @@ export function BusTvPlayer({
       if (startTimerRef.current !== null && !fromClick && !playing) return;
       clearStartTimer();
       stopVolumeRamp();
-      exitVolumeRef.current = null;
+      dynamicVolume.current.sent = null;
+      dynamicVolume.current.nextUpdateAt = 0;
       // Reserve sound before unmuting, only once the iframe can take commands.
       // A refusal or a missing playback event releases it below.
       reportPlayback(true);
-      if (desired.phase === "outside") { player.setVolume(25); player.unMute(); }
-      else if (desired.phase === "exiting") player.unMute();
+      if (desired.phase === "outside") { player.setVolume(OUTSIDE_TV_VOLUME); player.unMute(); }
+      else if (desired.phase === "exiting" || desired.freeView) player.unMute();
       else rampVolume(100, 300);
       if (playing) return;
       startTimerRef.current = window.setTimeout(() => {
@@ -248,13 +256,13 @@ export function BusTvPlayer({
       && (previous.tvOn !== tvOn || previous.hasEntered !== hasEntered || previous.phase !== phase)) {
       resumeAfterPartyRef.current = true;
     }
-    desiredRef.current = { tvOn, phase, hasEntered, isMutedForFullscreen, playbackSuspended };
+    desiredRef.current = { tvOn, phase, freeView, hasEntered, isMutedForFullscreen, playbackSuspended };
     if (hasEntered && warmingRef.current) {
       stopWarmup();
       try { playerRef.current?.seekTo(0, true); } catch { queueMicrotask(failPlayer); return; }
     }
     applyDesiredPlayback();
-  }, [tvOn, phase, hasEntered, isMutedForFullscreen, playbackSuspended, applyDesiredPlayback, stopWarmup, failPlayer]);
+  }, [tvOn, phase, freeView, hasEntered, isMutedForFullscreen, playbackSuspended, applyDesiredPlayback, stopWarmup, failPlayer]);
 
   // A pending start can reserve audio only for the bounded start attempt.
   useEffect(() => {
@@ -411,15 +419,28 @@ export function BusTvPlayer({
     return () => { stopPrepare(); stopPlay(); stopToggle(); };
   }, [applyDesiredPlayback, connectPlayer, failPlayer, reportPlayback, shouldPlay, stopVolumeRamp]);
 
-  useFrame(() => {
+  useFrame(({ camera, controls }) => {
     const desired = desiredRef.current;
     const trip = journey.current;
-    if (!shouldPlay() || desired.phase !== "exiting" || trip.phase !== "exiting" || warmingRef.current) return;
-    const volume = Math.round(25 + 75 * trip.cameraBlend);
-    if (volume === exitVolumeRef.current || !playerRef.current) return;
+    const player = playerRef.current;
+    if (!player || !shouldPlay() || warmingRef.current || manualPauseRef.current) return;
+    const state = dynamicVolume.current;
+    let volume: number;
+    if (desired.phase === "exiting" && trip.phase === "exiting") {
+      volume = Math.round(OUTSIDE_TV_VOLUME + (100 - OUTSIDE_TV_VOLUME) * trip.cameraBlend);
+    } else if (desired.phase === "inside" && desired.freeView && busGroup.current) {
+      const now = performance.now();
+      if (now < state.nextUpdateAt) return;
+      state.nextUpdateAt = now + 80;
+      // Le mur des messages a sa propre caméra. Le son suit la caméra de visite.
+      const listener = controls && "object" in controls && controls.object instanceof THREE.Camera ? controls.object : camera;
+      busGroup.current.worldToLocal(listener.getWorldPosition(state.listener));
+      volume = getFreeViewTvVolume(state.listener.x, state.listener.y, state.listener.z, rearWallZ);
+    } else return;
+    if (volume === state.sent) return;
     try {
-      playerRef.current.setVolume(volume);
-      exitVolumeRef.current = volume;
+      player.setVolume(volume);
+      state.sent = volume;
     } catch { /* The iframe may be changing state. */ }
   });
 

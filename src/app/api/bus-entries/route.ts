@@ -115,10 +115,11 @@ export async function GET(request: Request) {
       }
       const placeholders = seats.map(() => "?").join(",");
       const rows = await database.prepare(
-        `SELECT seat_index, display_name FROM bus_entries WHERE seat_index IN (${placeholders})`,
-      ).bind(...seats).all<Pick<PassengerRow, "seat_index" | "display_name">>();
+        `SELECT seat_index, display_name, avatar_id FROM bus_entries WHERE seat_index IN (${placeholders})`,
+      ).bind(...seats).all<Pick<PassengerRow, "seat_index" | "display_name" | "avatar_id">>();
       return Response.json({ names: rows.results.map(row => ({
         seatIndex: Number(row.seat_index), displayName: row.display_name,
+        avatarId: isPassengerAvatarId(row.avatar_id) ? row.avatar_id : null,
       })) }, { headers: READ_HEADERS });
     }
 

@@ -21,42 +21,11 @@ import { getPassengerCardPairs } from "@/lib/passenger-card-game";
 import { BODY_BEHIND_HIP } from "@/lib/passenger-gait";
 import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, getRegisteredPassengerPose, pruneRegisteredPassengerPoses, samplePassengerPose, type PassengerPoseRegistry } from "@/lib/passenger-motion";
 import { keepPassengerHandsApart } from "@/lib/passenger-space";
-import { DistantPassengerNames, getVisiblePassengerName, PassengerNameTag, useVisiblePassengerNames } from "./PassengerNameTags";
+import { DistantPassengerNames, getVisiblePassengerName, PassengerNameTag, useVisiblePassengerSummaries } from "./PassengerNameTags";
+import { getPassengerNameHeightFromHip, usePassengerHeadHeight, usePassengerHeadHeights } from "./usePassengerHeadHeight";
 
-function visitorLabel(index: number, profiles: ReadonlyMap<number, PassengerProfile>, names: ReadonlyMap<number, string | null>) {
-  return getVisiblePassengerName(profiles.get(index)?.displayName) ?? getVisiblePassengerName(names.get(index));
-}
-
-/** Hauteur visuelle du sommet de chaque passager assis, accessoires compris. */
-export function getPassengerLabelY(archetype: NakamaArchetype): number {
-  const hairTop = {
-    spiky: 2.04,
-    crop: 2.03,
-    flowing: 2.03,
-    swoop: 2.03,
-    afro: 2.14,
-    pompadour: 2.13,
-    topknot: 2.08,
-    wavy: 2.03,
-    shaggy: 2.03,
-  }[archetype.hairStyle];
-
-  const accessoryTops: Partial<Record<NonNullable<NakamaArchetype["accessory"]>, number>> = {
-    straw_hat: 2.12,
-    reindeer_hat: 2.28,
-    top_hat: 2.27,
-    white_cap: 2.13,
-    cowboy_hat: 2.11,
-    horns: 2.07,
-  };
-  const accessoryTop = accessoryTops[archetype.accessory ?? "none"];
-
-  // Le centre du sprite tient compte de sa demi-hauteur (0,055 pour une hauteur de 0,11)
-  // et garde environ 0,05 d'air au-dessus des cheveux ou du chapeau.
-  const rig = getPassengerSkeleton(archetype.id), adult = getPassengerSkeleton("");
-  const headOffset = rig.seatedHipHeight + rig.neckAboveHip + rig.headAboveNeck
-    - adult.seatedHipHeight - adult.neckAboveHip - adult.headAboveNeck;
-  return Math.max(hairTop, accessoryTop ?? 0) + 0.105 + headOffset;
+function getSeatedPassengerNameHeight(id: string, crown: number) {
+  return .64 + getPassengerSkeleton(id).seatedHipHeight + getPassengerNameHeightFromHip(id, crown);
 }
 
 const ARCHETYPE_MATS_CACHE = new Map<string, Record<string, THREE.Material>>();
@@ -165,15 +134,25 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
     vacantSeatRanges, renderedRowIndices, reservedRow, reservedColumn, currentPassengerIndex: excludedPassengerIndex,
     avatarAboard, lowPower, detailFocus }), [passengerCount, seatCapacity, vacantSeatRanges, renderedRowIndices,
       reservedRow, reservedColumn, excludedPassengerIndex, avatarAboard, lowPower, detailFocus]);
-  const profilesBySeatIndex = useMemo(() => new Map(passengerProfiles.map(profile => [profile.seatIndex, profile])), [passengerProfiles]);
   const occupants = useMemo(() => [...detailed, ...simplified], [detailed, simplified]);
-  const names = useVisiblePassengerNames(occupants, profileRevision);
+  const summaries = useVisiblePassengerSummaries(occupants, profileRevision);
+  const profilesBySeatIndex = useMemo(() => {
+    const profiles = new Map(passengerProfiles.map(profile => [profile.seatIndex, profile]));
+    for (const [index, summary] of summaries) {
+      if (!summary || profiles.has(index)) continue;
+      profiles.set(index, { seatIndex: index, displayName: summary.displayName ?? "", avatarId: summary.avatarId, comment: null });
+    }
+    return profiles;
+  }, [passengerProfiles, summaries]);
+  const headHeights = usePassengerHeadHeights();
   const distantLabels = useMemo(() => simplified.flatMap(({ seat, index, passengerKind }) => {
     const profile = passengerKind === "visitor" ? profilesBySeatIndex.get(index) : undefined;
     const archetype = getNakamaArchetype(index, profile?.avatarId);
-    const name = passengerKind === "visitor" ? visitorLabel(index, profilesBySeatIndex, names) : archetype.name;
-    return name ? [{ index, name, x: seat.x, y: getPassengerLabelY(archetype), z: seat.z + .14 }] : [];
-  }), [names, profilesBySeatIndex, simplified]);
+    const name = passengerKind === "visitor" ? getVisiblePassengerName(profile?.displayName) : archetype.name;
+    const crown = headHeights.get(archetype.id);
+    if (!name || crown === undefined) return [];
+    return [{ index, name, x: seat.x, y: getSeatedPassengerNameHeight(archetype.id, crown), z: seat.z + .14 }];
+  }), [headHeights, profilesBySeatIndex, simplified]);
   const detailedSeats = new Set(detailed.map(occupant => occupant.physicalSeatIndex));
   const poses=useMemo<PassengerPoseRegistry>(()=>new Map(),[]);
   useEffect(()=>{
@@ -198,7 +177,7 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
         passengerKind={passengerKind} physicalSeatIndex={physicalSeatIndex}
         cardActors={cardActors} cardPairIndex={cardPairBySeat.get(physicalSeatIndex) ?? null}
         label={passengerKind === "nakama" ? (["shanks", "buggy"].includes(archetype.id)
-          ? archetype.name.split(" ")[0] : archetype.name.split(" ").at(-1)) : visitorLabel(index, profilesBySeatIndex, names) ?? null}
+          ? archetype.name.split(" ")[0] : archetype.name.split(" ").at(-1)) : getVisiblePassengerName(profilesBySeatIndex.get(index)?.displayName) ?? null}
         hornPulse={hornPulse} partyOn={partyOn}
         peerSide={detailedSeats.has(physicalSeatIndex ^ 1) ? (seat.seatInRow % 2 === 0 ? 1 : -1) : 0}
         interactionPairIndex={Math.floor(physicalSeatIndex / 2)}
@@ -257,6 +236,7 @@ export function Passenger({
 }) {
   const group = useRef<THREE.Group>(null);
   const headGroup = useRef<THREE.Group>(null);
+  const headModel = useRef<THREE.Group>(null);
   const torsoGroup = useRef<THREE.Group>(null);
   const upperBody = useRef<THREE.Group>(null);
   const arms = useRef<Array<THREE.Group | null>>([]);
@@ -279,7 +259,7 @@ export function Passenger({
     [profile, passengerKind, onSelect, index, displayName],
   );
   const interactive = Boolean(selectedProfile || onActivate);
-  const labelY = useMemo(() => getPassengerLabelY(archetype), [archetype]);
+  const crown = usePassengerHeadHeight(archetype.id, headModel, !firstPerson);
 
   useEffect(() => () => {
     if (hovered.current) {
@@ -372,8 +352,8 @@ export function Passenger({
       onPointerOver={onActivate ? handlePointerOver : undefined}
       onPointerOut={onActivate ? handlePointerOut : undefined}
     >
-      {!firstPerson && displayName && (
-        <PassengerNameTag name={displayName} position={[0, labelY, 0.14]}
+      {!firstPerson && displayName && crown !== undefined && (
+        <PassengerNameTag name={displayName} position={[0, getSeatedPassengerNameHeight(archetype.id, crown), .14]}
           onClick={handleActivate}
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
@@ -398,7 +378,7 @@ export function Passenger({
         {!firstPerson && <group ref={headGroup} position={[0, skeleton.neckAboveHip-skeleton.torsoAboveHip, 0]}>
           <PassengerNeck archetype={archetype} mats={mats} />
           {/* Parole et écoute suivent le banc physique, comme les gestes des voisins. */}
-          <group position={[0, skeleton.headAboveNeck, 0]}>{head ?? <PassengerHead archetype={archetype} mats={mats}
+          <group ref={headModel} position={[0, skeleton.headAboveNeck, 0]}>{head ?? <PassengerHead archetype={archetype} mats={mats}
             motion={currentPose} index={physicalSeatIndex ?? index} reducedMotion={reducedMotion}/>}</group>
         </group>}
         </group>

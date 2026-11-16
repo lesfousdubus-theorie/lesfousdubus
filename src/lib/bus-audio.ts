@@ -1,3 +1,5 @@
+import { BUS_DOOR, BUS_FRONT_Z } from "./bus-layout";
+
 /** Shared DOM contract for the page and the Three.js React root. */
 export const BUS_AUDIO_EVENTS = {
   tvPrepare: "bus-tv-user-prepare",
@@ -80,4 +82,15 @@ export function getBusAudioOwner(requests: BusAudioRequests): "theory" | "party"
   if (requests.busVideoPlaying) return "tv";
   if (requests.bgmPlaying) return "background";
   return null;
+}
+export const OUTSIDE_TV_VOLUME = 25;
+
+/** Atténuation selon la distance à la carrosserie, dans le repère du bus. */
+export function getFreeViewTvVolume(x: number, y: number, z: number, rearWallZ: number) {
+  const outside = Math.hypot(
+    Math.max(0, Math.abs(x) - BUS_DOOR.x),
+    Math.max(0, .6 - y, y - 3.2),
+    Math.max(0, BUS_FRONT_Z - z, z - rearWallZ),
+  );
+  return Math.round(100 - (100 - OUTSIDE_TV_VOLUME) * Math.min(1, outside / 1.4));
 }

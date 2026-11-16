@@ -23,6 +23,9 @@ export const TORSO_HEIGHT = 0.43;
 /** Chopper's hybrid form is a small body with a large head, rather than a scaled adult. */
 function makePassengerSkeleton(id: string) {
   const small = id === "chopper";
+  const thighLength = small ? .14 : .28;
+  const shinLength = small ? .18 : .48;
+  const ankleHeight = small ? .04 : .08;
   return {
     neckHeight: small ? .08 : NECK_HEIGHT,
     headAboveNeck: small ? .12 : HEAD_ABOVE_NECK,
@@ -37,14 +40,15 @@ function makePassengerSkeleton(id: string) {
     pelvisHeight: small ? .09 : .14,
     pelvisDepth: small ? .19 : .25,
     hipSpacing: small ? .07 : .09,
-    thighLength: small ? .14 : .28,
-    shinLength: small ? .18 : .48,
-    standingHipHeight: small ? .36 : .8,
+    thighLength,
+    shinLength,
+    standingHipHeight: thighLength + shinLength + ankleHeight,
+    walkingHipHeight: small ? .36 : .8,
     seatedHipHeight: small ? .525 : .55,
     seatedHipZ: small ? .025 : .12,
     footScale: small ? .5 : 1,
     stride: small ? .075 : .14,
-    ankleHeight: small ? .04 : .08,
+    ankleHeight,
     stepHeight: small ? .055 : .11,
     strideDistance: small ? .38 : .65,
   };

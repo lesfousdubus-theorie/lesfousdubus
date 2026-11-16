@@ -2,7 +2,7 @@ import { getPassengerSkeleton } from "./passenger-proportions";
 
 export const THIGH_LENGTH = 0.28;
 export const SHIN_LENGTH = 0.48;
-export const STANDING_HIP_HEIGHT = 0.8;
+export const STANDING_HIP_HEIGHT = getPassengerSkeleton("").standingHipHeight;
 export const SEATED_HIP_HEIGHT = 0.55;
 export const SEATED_HIP_Z = 0.12;
 export const TORSO_ABOVE_HIP = 0.235;
@@ -20,7 +20,7 @@ export function getWalkingLegPose(cycle: number, hipHeight: number, strength: nu
   const seatedAnkleY = id === "chopper" ? hipHeight - shin : .07;
   const ankleY = rig.ankleHeight * (1 - sit) + seatedAnkleY * sit + Math.max(0, Math.sin(cycle)) * rig.stepHeight * strength * (1 - sit);
   const y = ankleY - hipHeight;
-  const distance = Math.max(Math.abs(thigh - shin) + .001, Math.min(thigh + shin - .001, Math.hypot(y, z)));
+  const distance = Math.max(Math.abs(thigh - shin) + .001, Math.min(thigh + shin, Math.hypot(y, z)));
   const hip = Math.acos(Math.max(-1, Math.min(1,
     (thigh ** 2 + distance ** 2 - shin ** 2) / (2 * thigh * distance))));
   const knee = Math.PI - Math.acos(Math.max(-1, Math.min(1,
