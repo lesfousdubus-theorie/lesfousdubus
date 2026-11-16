@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { createOnePieceScenery, createOnePieceForeground, SET_PIECE_OFFSET_X, type SceneryBatch } from "@/lib/one-piece-scenery";
+import { useFrame } from "@react-three/fiber";
+import { createOnePieceScenery, createOnePieceForeground, setElbafWaterTime, SET_PIECE_OFFSET_X, type SceneryBatch } from "@/lib/one-piece-scenery";
 
 const NAMES = [
   "alubarna-palace",
@@ -15,13 +16,17 @@ const NAMES = [
 ];
 
 /** A destination is baked into a handful of shared-material meshes. */
-export default function WorldSetPiece({ zone, lowPower = false }: { zone: number; lowPower?: boolean }) {
+export default function WorldSetPiece({ zone, lowPower = false, reducedMotion = false }:
+  { zone: number; lowPower?: boolean; reducedMotion?: boolean }) {
   const batches = useMemo(() => createOnePieceScenery(zone, lowPower), [zone, lowPower]);
   useEffect(() => () => batches.forEach(({ geometry }) => geometry.dispose()), [batches]);
+  useFrame(({ clock }) => {
+    if (zone === 6) setElbafWaterTime(reducedMotion ? 0 : clock.elapsedTime);
+  });
 
   return <group name={`world-landmark-${NAMES[zone]}`} position={[SET_PIECE_OFFSET_X, 0, 0]}>
     {batches.map(({ geometry, material }) => (
-      <mesh key={material.uuid} geometry={geometry} material={material} castShadow receiveShadow dispose={null} />
+      <mesh key={material.uuid} geometry={geometry} material={material} castShadow={!material.transparent} receiveShadow dispose={null} />
     ))}
   </group>;
 }

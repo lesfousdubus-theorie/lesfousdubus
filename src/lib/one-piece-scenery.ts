@@ -5,8 +5,14 @@ import { setSceneryParts } from "./world-visibility";
 type Point = [number, number, number];
 type MaterialKey = keyof typeof SCENERY_MATERIALS;
 
-// One palette and one merged mesh per material. Small façade details add vertices,
-// not draw calls; no textures or lights are allocated by a destination.
+const elbafFlowTime = { value: 0 };
+
+export function setElbafWaterTime(time: number) {
+  elbafFlowTime.value = time;
+}
+
+// Shared materials keep façade details in the same meshes without allocating
+// textures or lights for each destination.
 export const SCENERY_MATERIALS = {
   sandstone: new THREE.MeshStandardMaterial({ color: "#c9894d", roughness: 1 }),
   sandLight: new THREE.MeshStandardMaterial({ color: "#f3d49a", roughness: 0.94 }),
@@ -39,6 +45,46 @@ export const SCENERY_MATERIALS = {
   neonCyan: new THREE.MeshStandardMaterial({ color: "#8ff6ff", emissive: "#1cd4ff", emissiveIntensity: 0.75, roughness: 0.35 }),
   metal: new THREE.MeshStandardMaterial({ color: "#8d9db0", metalness: 0.62, roughness: 0.38 }),
   foliageDeep: new THREE.MeshStandardMaterial({ color: "#2d6f43", roughness: 0.94 }),
+  eggCobalt: new THREE.MeshStandardMaterial({ color: "#1762df", roughness: 0.53 }),
+  eggIndigo: new THREE.MeshStandardMaterial({ color: "#24398e", roughness: 0.53 }),
+  eggAqua: new THREE.MeshStandardMaterial({ color: "#21bddd", roughness: 0.52 }),
+  eggRed: new THREE.MeshStandardMaterial({ color: "#eb5147", roughness: 0.58 }),
+  eggOrange: new THREE.MeshStandardMaterial({ color: "#ff981f", roughness: 0.56 }),
+  eggYellow: new THREE.MeshStandardMaterial({ color: "#ffcc39", roughness: 0.52 }),
+  eggMint: new THREE.MeshStandardMaterial({ color: "#50c6ab", roughness: 0.73 }),
+  eggWindow: new THREE.MeshStandardMaterial({ color: "#b7faff", emissive: "#43d9ff", emissiveIntensity: 0.5, roughness: 0.34 }),
+  eggTube: new THREE.MeshStandardMaterial({ color: "#a6edff", emissive: "#45baff", emissiveIntensity: 0.16,
+    transparent: true, opacity: 0.22, depthWrite: false, roughness: 0.28 }),
+  elbafCliff: new THREE.MeshStandardMaterial({ color: "#957d6b", roughness: 1 }),
+  elbafBark: new THREE.MeshStandardMaterial({ color: "#946139", roughness: 1 }),
+  elbafGrass: new THREE.MeshStandardMaterial({ color: "#8fc344", roughness: 1 }),
+  elbafRainbow: new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide,
+    transparent: true, opacity: .68, depthWrite: false, toneMapped: false }),
+  elbafFalls: new THREE.MeshStandardMaterial({ color: "#70bfea", emissive: "#51a7e2", emissiveIntensity: .24,
+    side: THREE.DoubleSide, transparent: true, opacity: .93, depthWrite: false }),
+};
+
+SCENERY_MATERIALS.elbafRainbow.onBeforeCompile = (shader) => {
+  shader.fragmentShader = shader.fragmentShader.replace("#include <opaque_fragment>", `
+    outgoingLight = diffuseColor.rgb;
+    #include <opaque_fragment>
+  `);
+};
+
+SCENERY_MATERIALS.elbafFalls.onBeforeCompile = (shader) => {
+  shader.uniforms.elbafFlowTime = elbafFlowTime;
+  shader.vertexShader = shader.vertexShader
+    .replace("#include <common>", "#include <common>\nvarying vec3 vElbafFlow;")
+    .replace("#include <begin_vertex>", "#include <begin_vertex>\nvElbafFlow = position;");
+  shader.fragmentShader = shader.fragmentShader
+    .replace("#include <common>", "#include <common>\nuniform float elbafFlowTime;\nvarying vec3 vElbafFlow;")
+    .replace("#include <color_fragment>", `
+      #include <color_fragment>
+      float stream = sin(vElbafFlow.z * 17.0 + sin(vElbafFlow.z * 5.0)) * .36;
+      float flow = sin(vElbafFlow.y * 2.1 + elbafFlowTime * 5.8 + vElbafFlow.z * 4.2);
+      float foam = smoothstep(.22, .95, .34 + stream + flow * .27);
+      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.86, .98, 1.0), .21 + foam * .72);
+    `);
 };
 
 export interface SceneryBatch {
@@ -511,162 +557,413 @@ function drum(b: Builder, lowPower: boolean) {
   }
 }
 
-function egghead(b: Builder, lowPower: boolean) {
-  // Base industrielle et piliers soutenant la Labophase sur son nuage.
-  b.cylinder("metal", [1, 5.2, 0], 4.2, 5.6, 10.4, 12);
-  b.cylinder("neonCyan", [1, 5.4, 0], 2.1, 2.1, 9.8, 12);
-  for (let i = 0; i < (lowPower ? 4 : 6); i++) {
-    const a = i / (lowPower ? 4 : 6) * Math.PI * 2;
-    b.cylinder("castle", [1 + Math.cos(a) * 6.5, 5.2, Math.sin(a) * 6.5], 0.7, 0.95, 10.2, 8);
+function eggheadTower(b: Builder, x: number, z: number, radius: number, height: number,
+  body: MaterialKey, trim: MaterialKey, lowPower: boolean, front = -1) {
+  const drum = (material: MaterialKey, y: number, top: number, bottom: number, depth: number) =>
+    b.cylinder(material, [x, y * height, z], radius * top, radius * bottom, depth * height, 16);
+  drum("snow", .13, .9, .96, .26);
+  drum(body, .34, 1, .91, .23);
+  drum("eggWindow", .48, 1.01, 1.01, .14);
+  drum(body, .62, .96, 1.02, .18);
+  drum(trim, .71, 1, .96, .04);
+  b.dome(body, [x, height * .7, z], radius * .97, [1, height * .29 / radius, 1]);
+  for (const y of [.23, .405, .555, .685]) b.ring(trim, [x, height * y, z], radius * .99, .052 * radius);
+  const pillars = lowPower ? 8 : 12;
+  for (let i = 0; i < pillars; i++) {
+    const a = i * Math.PI * 2 / pillars;
+    b.box(trim, [x + Math.cos(a) * radius * 1.01, height * .48, z + Math.sin(a) * radius * 1.01],
+      [radius * .09, height * .13, radius * .085], [0, -a, 0]);
   }
-  // Plateau de nuages technologiques de la Labophase.
-  const cloudLobes = lowPower ? 7 : 12;
-  for (let i = 0; i < cloudLobes; i++) {
-    const a = i / cloudLobes * Math.PI * 2;
-    b.sphere(i % 2 ? "cloud" : "cloudShade", [1 + Math.cos(a) * 8.4, 10.4, Math.sin(a) * 8.4], 3.8, [1.1, 0.55, 1]);
-  }
-  b.sphere("cloud", [1, 10.8, 0], 9.2, [1.1, 0.35, 1.05]);
-  b.cylinder("castle", [1, 11.8, 0], 8.2, 8.8, 1.2, 16);
+  const rise = .14 / .29;
+  const across = Math.sqrt(1 - rise * rise);
+  const angle = Math.atan2(across / (radius * .97), rise / (height * .29));
+  const porthole = (offset: number): Point => [
+    x + front * (radius * .97 * across + Math.sin(angle) * offset),
+    height * .84 + Math.cos(angle) * offset, z,
+  ];
+  const tilt: Point = [0, 0, -front * angle];
+  b.cylinder(trim, porthole(.15), radius * .2, radius * .2, .26, 12, tilt);
+  b.cylinder("eggWindow", porthole(.31), radius * .145, radius * .145, .08, 12, tilt);
+  const doorX = x + front * radius * .96;
+  const doorHeight = height * .17;
+  b.box("dark", [doorX, .06 + doorHeight / 2, z], [.18, doorHeight, radius * .4]);
+  b.dome("dark", [doorX, .06 + doorHeight, z], radius * .2, [.12, .78, 1]);
+}
 
-  // Dôme-œuf géant de Punk Records surmonté de la pomme-antenne de Vegapunk.
-  b.sphere("snow", [1, 17.5, 0], 5.6, [1, 1.38, 1], 18);
-  b.cylinder("neonCyan", [1, 16.9, 0], 5.72, 5.72, 0.68, 20);
-  b.ring("metal", [1, 14.5, 0], 5.45, 0.28);
-  b.ring("neonCyan", [1, 20.6, 0], 4.7, 0.18);
-  b.dome("vermilion", [1, 24.8, 0], 2.15, [1, 0.75, 1]);
-  b.cylinder("cream", [1, 24.75, 0], 2.2, 2.2, 0.28, 14);
-  b.cylinder("gold", [1, 27.2, 0], 0.14, 0.26, 3.2, 8);
-  b.sphere("neonCyan", [1, 28.9, 0], 0.45);
-  b.ring("neonCyan", [1, 27.6, 0], 1.25, 0.12);
-
-  // Dômes-laboratoires périphériques et tube de transport lumineux.
-  for (const side of [-1, 1]) {
-    b.cylinder("castle", [-4.6, 13.4, side * 7.8], 2.2, 2.4, 2.4, 12);
-    b.dome("snow", [-4.6, 14.6, side * 7.8], 2.2, [1, 0.85, 1]);
-    b.box("neonCyan", [-6.82, 13.5, side * 7.8], [0.12, 0.65, 2.1]);
+function eggheadTube(b: Builder, points: Point[], radius: number, lowPower: boolean) {
+  const curve = new THREE.CatmullRomCurve3(points.map(point => new THREE.Vector3(...point)));
+  const segments = lowPower ? 18 : 28;
+  b.add(new THREE.TubeGeometry(curve, segments, radius, lowPower ? 8 : 12), "eggTube", [0, 0, 0]);
+  const normal = new THREE.Vector3(0, 0, 1);
+  const tangent = new THREE.Vector3(), center = new THREE.Vector3();
+  const rotation = new THREE.Quaternion(), euler = new THREE.Euler();
+  const collarCount = lowPower ? 5 : 8;
+  for (let i = 0; i < collarCount; i++) {
+    const t = i / (collarCount - 1);
+    curve.getPointAt(t, center);
+    curve.getTangentAt(t, tangent);
+    euler.setFromQuaternion(rotation.setFromUnitVectors(normal, tangent));
+    b.ring("eggYellow", [center.x, center.y, center.z], radius * 1.04, radius * .09, [euler.x, euler.y, euler.z]);
   }
-  const tubePoints: Point[] = [[-11.5, 1.6, -8.5], [-9.2, 5.4, -6], [-6.2, 9.6, -3.5], [-4.5, 12.6, 0]];
-  b.cylinder("metal", [-11.5, 0.85, -8.5], 0.8, 1.0, 1.7, 10);
-  b.ring("neonCyan", [-11.5, 1.6, -8.5], 0.85, 0.12);
-  b.curve("neonCyan", tubePoints, 0.34, 18);
-  if (!lowPower) {
-    const tubeCurve = new THREE.CatmullRomCurve3(tubePoints.map((p) => new THREE.Vector3(...p)));
-    const zAxis = new THREE.Vector3(0, 0, 1);
-    for (let i = 1; i <= 3; i++) {
-      const t = i / 4;
-      const pt = tubeCurve.getPoint(t);
-      const tan = tubeCurve.getTangent(t).normalize();
-      const euler = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(zAxis, tan));
-      b.ring("metal", [pt.x, pt.y, pt.z], 0.54, 0.1, [euler.x, euler.y, euler.z]);
+  const rail = (offset: number): Point[] => points.map(([x, y, z]) => [x - radius * .45, y + radius * offset, z]);
+  b.curve("eggWindow", rail(.88), .045, segments);
+  b.curve("eggAqua", rail(-.88), .05, segments);
+}
+
+function eggheadPalm(b: Builder, x: number, z: number, height: number, lowPower: boolean) {
+  b.curve("peach", [[x, .15, z], [x + .22, height * .44, z - .13], [x + .65, height, z]], height * .064, 8);
+  const leaves = lowPower ? 4 : 6;
+  for (let i = 0; i < leaves; i++) {
+    const a = i * Math.PI * 2 / leaves;
+    const dx = Math.cos(a), dz = Math.sin(a);
+    b.add(new THREE.SphereGeometry(1, 8, 5), i % 2 ? "leafLight" : "leaf",
+      [x + .65 + dx * height * .27, height + .1, z + dz * height * .27],
+      [0, -a, -.22], [height * .42, height * .044, height * .13]);
+  }
+  b.sphere("eggOrange", [x + .64, height -.1, z], height * .08);
+}
+
+const VEGAPUNK_LETTERS = {
+  V: ["10001", "10001", "10001", "01010", "00100"],
+  E: ["11111", "10000", "11110", "10000", "11111"],
+  G: ["01110", "10000", "10111", "10001", "01110"],
+  A: ["01110", "10001", "11111", "10001", "10001"],
+  P: ["11110", "10001", "11110", "10000", "10000"],
+  U: ["10001", "10001", "10001", "10001", "01110"],
+  N: ["10001", "11001", "10101", "10011", "10001"],
+  K: ["10001", "10010", "11100", "10010", "10001"],
+};
+
+function vegapunkSign(b: Builder, x: number, y: number, z: number, unit: number) {
+  const name = "VEGA PUNK";
+  for (let i = 0; i < name.length; i++) {
+    const glyph = VEGAPUNK_LETTERS[name[i] as keyof typeof VEGAPUNK_LETTERS];
+    if (!glyph) continue;
+    for (const [row, line] of glyph.entries()) {
+      for (const run of line.matchAll(/1+/g)) {
+        const width = run[0].length;
+        const column = (run.index ?? 0) + (width - 1) * .5;
+        b.box("eggYellow", [x, y + (2 - row) * unit, z + (i * 6 + column - 26) * unit],
+          [.085, unit * .9, unit * (width - .1)]);
+      }
     }
-    // Anneau orbital holographique autour de Punk Records et projecteurs d'écrans sur la terrasse.
-    b.ring("neonCyan", [1, 18.2, 0], 7.4, 0.13, [1.22, 0.35, 0.18]);
-    for (const [hx, hy, hz] of [[-6.7, 14.3, -2.5], [-6.7, 14.7, 2.5]]) {
-      b.cylinder("metal", [hx, 12.6, hz], 0.45, 0.55, 0.4, 8);
-      b.box("neonCyan", [hx, hy, hz], [0.08, 1.6, 2.5]);
-    }
-    // Serre climatique végétale sur la terrasse de la Labophase.
-    b.cylinder("neonCyan", [6.6, 12.6, 5.4], 2.3, 2.3, 0.24, 12);
-    b.sphere("leaf", [6.6, 13.8, 5.4], 1.7, [1.1, 0.8, 1.1]);
-    b.sphere("leafLight", [6.1, 14.5, 5.0], 1.1, [1, 0.8, 1]);
-  }
-
-  // Silhouette du robot géant (Emeth / Vegaforce) au pied de la Labophase.
-  const rx = -8.5, rz = 8.2;
-  for (const leg of [-1, 1]) b.cylinder("metal", [rx, 1.8, rz + leg * 1.1], 0.65, 0.75, 3.6, 8);
-  b.box("castle", [rx, 5.4, rz], [3.2, 3.8, 4.1]);
-  b.sphere("metal", [rx, 7.6, rz], 1.55, [1, 0.85, 1.1]);
-  b.box("neonCyan", [rx - 1.48, 7.55, rz], [0.16, 0.38, 1.7]);
-  for (const side of [-1, 1]) {
-    b.sphere("vermilion", [rx, 6.6, rz + side * 2.55], 1.05, [0.95, 0.9, 0.95]);
-    b.cylinder("metal", [rx - 0.3, 4.5, rz + side * 2.7], 0.52, 0.58, 3.4, 8);
-    b.curve("oldGold", [[rx, 8.6, rz + side * 0.9], [rx - 0.3, 9.8, rz + side * 1.7], [rx - 0.1, 10.6, rz + side * 1.3]], 0.22, 8);
   }
 }
 
-function elbaf(b: Builder, lowPower: boolean) {
-  // Socle rocheux nordique et cascade descendant des falaises d'Elbaf.
-  b.cylinder("rock", [1, 2.8, 0], 13.5, 16.5, 5.6, 12);
-  b.cylinder("foliageDeep", [1, 5.7, 0], 13.2, 13.7, 0.6, 12);
-  for (let i = 0; i < (lowPower ? 5 : 9); i++) {
-    const a = i / (lowPower ? 5 : 9) * Math.PI * 2;
-    b.cylinder(i % 2 ? "rock" : "rockLight", [1 + Math.cos(a) * 14.5, 2.5, Math.sin(a) * 14.5], 1.1, 2.2, 5 + (i % 3), 6);
+function egghead(b: Builder, lowPower: boolean) {
+  b.box("snow", [-5.9, .21, 0], [13, .42, 44]);
+  // Au fond, le laboratoire sur son nuage dépasse la Fabriophase.
+  for (let i = 0; i < (lowPower ? 8 : 12); i++) {
+    const a = i * Math.PI * 2 / (lowPower ? 8 : 12);
+    b.sphere(i % 3 ? "cloud" : "cloudShade", [5.4 + Math.cos(a) * 5.3, 20.6 + Math.sin(i * 1.8) * .5,
+      -2 + Math.sin(a) * 8], 3.35, [1, .63, 1.1]);
   }
-  b.box("water", [-11.5, 2.8, 1.5], [1.2, 5.6, 3.6], [0, 0, 0.18]);
-  b.sphere("foam", [-13.2, 0.35, 1.5], 2.2, [1.1, 0.35, 1.5]);
+  b.sphere("cloud", [5.2, 21.2, -2], 7.1, [1, .49, 1.25]);
+  b.sphere("snow", [5, 26, -2], 4.75, [1, 1.36, 1.05], 18);
+  b.ring("eggAqua", [5, 24.2, -2], 4.56, .12, [1.48, .15, -.16]);
+  b.dome("eggRed", [5, 31.8, -2], 1.34, [1, .74, 1]);
+  b.curve("eggYellow", [[5, 32.25, -2], [5.1, 33.35, -2.02], [5.58, 33.8, -2.21]], .14, 8);
 
-  // L'Arbre-Trésor Adam : racines géantes, tronc tressé colossal et canopée multi-étages.
-  for (let strand = 0; strand < 3; strand++) {
-    const offset = strand * Math.PI * 2 / 3;
-    const pts: Point[] = [];
-    for (let i = 0; i <= 7; i++) {
-      const y = 4 + i * 3.6;
-      const twist = offset + i * 0.35;
-      const spread = Math.max(0.9, 2.6 - i * 0.22);
-      pts.push([1.5 + Math.cos(twist) * spread, y, Math.sin(twist) * spread]);
-    }
-    b.curve("wood", pts, 2.2, 20);
-  }
-  for (let i = 0; i < (lowPower ? 4 : 6); i++) {
-    const a = i / (lowPower ? 4 : 6) * Math.PI * 2;
-    b.curve("wood", [[1.5, 7, 0], [1.5 + Math.cos(a) * 7, 4.8, Math.sin(a) * 7], [1.5 + Math.cos(a) * 12, 1.8, Math.sin(a) * 12]], 1.15, 10);
-  }
-  // Grandes branches et feuillage monumental.
-  const branches: [Point, Point, number][] = [
-    [[1.5, 17, 0], [-10, 21, -7], 1.2],
-    [[1.5, 19, 0], [-9, 24, 8], 1.15],
-    [[1.5, 21, 0], [11, 26, -6], 1.1],
-    [[1.5, 23, 0], [10, 27, 7], 1.05],
-  ];
-  for (const [start, end, radius] of branches) {
-    const mid: Point = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2 + 1.5, (start[2] + end[2]) / 2];
-    b.curve("wood", [start, mid, end], radius, 10);
-    b.sphere("foliageDeep", end, 6.2, [1.25, 0.52, 1.15]);
-    b.sphere("leaf", [end[0], end[1] + 1.6, end[2]], 4.8, [1.15, 0.48, 1.1]);
-  }
-  b.sphere("foliageDeep", [1.5, 29.5, 0], 10.5, [1.25, 0.45, 1.2]);
-  b.sphere("leaf", [1.5, 32, 0], 8.6, [1.15, 0.45, 1.1]);
-  b.sphere("leafLight", [0.8, 34, -0.5], 6.0, [1.1, 0.42, 1.05]);
+  eggheadTower(b, -6.6, -15.5, 4.8, 14.8, "eggCobalt", "eggIndigo", lowPower);
+  b.cylinder("eggYellow", [-6.6, 16.1, -15.5], .22, 1.18, 2.95, 12);
+  b.sphere("eggAqua", [-6.6, 17.8, -15.5], .64);
+  b.ring("eggWindow", [-6.6, 16.65, -15.5], 1.64, .075, [1.02, 0, .38]);
 
-  // Hall viking / Château fondé sur un bastion rocheux ancré dans le plateau.
-  b.box("rockLight", [-6.5, 8.55, -3.5], [7.2, 5.5, 9.2]);
-  b.box("wood", [-6.5, 12.8, -3.5], [5.8, 3.2, 8.2]);
-  b.roof("dark", [-6.5, 14.4, -3.5], 7.4, 9.8, 3.4);
+  eggheadTower(b, -5.2, 16, 4.3, 12.1, "eggOrange", "eggRed", lowPower);
+  b.cylinder("eggYellow", [-5.2, 15.4, 16], .7, 1.25, 7.1, 16);
+  b.cylinder("eggCobalt", [-5.2, 18.9, 16], 2.14, .74, 1.6, 16);
+  b.sphere("eggRed", [-5.2, 20.15, 16], 4.26, [1, .25, 1], 16);
+  b.dome("eggCobalt", [-5.2, 20.4, 16], 2.58, [1, .52, 1]);
+  b.ring("eggWindow", [-5.2, 19.6, 16], 3.41, .13);
+
+  // Le globe et sa signalétique Vegapunk donnent un repère au milieu des tours.
+  b.cylinder("eggRed", [-4.5, 2.8, 0], 2.1, 2.75, 5.6, 16);
+  b.cylinder("eggIndigo", [-4.5, 5.8, 0], 2.56, 2.1, 1.2, 16);
+  b.cylinder("snow", [-4.5, 10.25, 0], .72, 1.08, 8.3, 12);
+  b.curve("eggRed", [[-5.48, 6.6, .62], [-5.5, 8.85, -.72], [-5.24, 11.1, .66], [-5.15, 14.0, -.48]], .21, 16);
+  b.cylinder("eggOrange", [-4.5, 14.2, 0], 3.16, 1.1, 1.28, 16);
+  b.sphere("eggAqua", [-4.5, 17.1, 0], 3.24, [1, 1.04, 1], 18);
+  b.ring("eggIndigo", [-4.5, 15.0, 0], 3.07, .2);
+  b.box("eggIndigo", [-7.55, 17.25, 0], [.42, 1.45, 6.34]);
+  vegapunkSign(b, -7.79, 17.25, 0, .109);
+  b.cylinder("eggYellow", [-4.5, 20.68, 0], .08, .15, 1.4, 8);
+  b.ring("eggOrange", [-4.5, 21.1, 0], .7, .055, [1.08, .18, .22]);
+
+  // Un anneau suspendu encadre une capsule et rappelle les enseignes de la ville.
+  b.ring("eggAqua", [-6.6, 18.7, 8.6], 3.45, .22, [1.1, .28, -.21]);
+  b.ring("eggWindow", [-6.6, 18.7, 8.6], 3.5, .063, [1.1, .28, -.21]);
+  b.sphere("eggRed", [-6.6, 18.65, 8.6], 1.22, [1, .81, 1]);
+  b.dome("snow", [-6.6, 18.83, 8.6], 1.2, [1, .55, 1]);
+  b.box("eggWindow", [-7.76, 18.64, 8.6], [.12, .22, .63]);
+
+  eggheadTower(b, 3.9, -27, 3.65, 10.8, "eggMint", "eggAqua", lowPower);
+  eggheadTower(b, 3.7, 28.2, 3.6, 10.8, "snow", "eggAqua", lowPower);
+  eggheadTower(b, 6.5, -11.2, 3.05, 11.4, "eggOrange", "eggYellow", lowPower);
+  eggheadTower(b, 7, -.6, 3.2, 13.2, "eggMint", "eggAqua", lowPower);
+  eggheadTower(b, 7.6, 17, 3.25, 10, "eggAqua", "eggIndigo", lowPower);
+  if (!lowPower) {
+    eggheadTower(b, 6.1, 7.3, 2.9, 11.2, "eggRed", "eggOrange", lowPower);
+    eggheadTower(b, 1.3, -34, 2.65, 7.8, "eggOrange", "eggYellow", lowPower);
+    eggheadTower(b, -.4, -7.1, 2.05, 6.6, "eggRed", "eggOrange", lowPower);
+  }
+
+  eggheadTube(b, [[-6.7, 10.8, -18.4], [-10, 10.82, -12.2], [-10.6, 13.5, -6], [-8.9, 13, 2.2],
+    [-9.2, 10.1, 10.2], [-7.25, 10.1, 14.2]], .72, lowPower);
+  eggheadTube(b, [[2.4, 8.6, -27], [-2.55, 9.65, -23], [-6.7, 11.4, -18.6]], .64, lowPower);
+  eggheadTube(b, [[-5.3, 15, 16], [-9.3, 14.9, 21], [-6, 12.8, 26], [.7, 8.55, 28]], .65, lowPower);
+}
+
+function elbafBeam(b: Builder, material: MaterialKey, start: Point, end: Point, radius: number, taper = .8) {
+  const direction = new THREE.Vector3(...end).sub(new THREE.Vector3(...start));
+  const center = new THREE.Vector3(...start).addScaledVector(direction, .5);
+  const rotation = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+  const { x, y, z } = new THREE.Euler().setFromQuaternion(rotation);
+  b.cylinder(material, center.toArray(), radius * taper, radius, direction.length(), 7, [x, y, z]);
+}
+
+function elbafTerrace(b: Builder, x: number, z: number, floor: number, top: number,
+  width: number, length: number, lowPower: boolean) {
+  const height = top - floor;
+  const sides = lowPower ? 9 : 13;
+  b.add(new THREE.CylinderGeometry(.92, 1.07, height, sides), "elbafCliff",
+    [x, floor + height / 2, z], [0, .12, 0], [width, 1, length]);
+  b.add(new THREE.CylinderGeometry(.94, .98, .5, sides), "foliageDeep",
+    [x, top - .2, z], [0, .12, 0], [width, 1, length]);
+  b.add(new THREE.CylinderGeometry(.93, .94, .23, sides), "elbafGrass",
+    [x, top + .055, z], [0, .12, 0], [width, 1, length]);
+  for (let i = 0; i < sides; i++) {
+    const angle = (i + .35) * Math.PI * 2 / sides;
+    const ridge = i % 3;
+    b.add(new THREE.CylinderGeometry(.65, 1.13, height * (.73 + ridge * .08), 5), ridge ? "elbafCliff" : "sandstone",
+      [x + Math.cos(angle) * width * .93, floor + height * (.43 + ridge * .024), z + Math.sin(angle) * length * .93],
+      [.07 * Math.sin(angle), -angle, .2 * Math.cos(angle)], [width * .13, 1, length * .115]);
+  }
+}
+
+function elbafLodge(b: Builder, x: number, y: number, z: number, size: number, lowPower: boolean,
+  front = -1, roof: MaterialKey = "roof") {
+  const depth = size * 1.12, width = size, wall = size * .66;
+  const rise = size * .73, span = size * .67;
+  b.box("elbafCliff", [x, y + .1 * size, z], [depth * 1.04, size * .2, width * 1.04]);
+  b.box("sandLight", [x, y + wall * .54, z], [depth, wall, width]);
+  const shape = new THREE.Shape().moveTo(-width / 2, 0).lineTo(width / 2, 0).lineTo(0, rise).closePath();
+  const gable = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false }).translate(0, 0, -depth / 2);
+  b.add(gable, "elbafBark", [x, y + wall, z], [0, Math.PI / 2, 0]);
+  const angle = Math.atan2(rise, span);
   for (const side of [-1, 1]) {
-    b.curve("gold", [[-6.5, 17.8, -3.5 + side * 4.4], [-6.5, 19.2, -3.5 + side * 5.2], [-6.5, 19.7, -3.5 + side * 4.5]], 0.2, 8);
+    b.box(roof, [x, y + wall + rise * .46, z + side * span / 2],
+      [depth * 1.18, size * .07, Math.hypot(rise, span)], [side * angle, 0, 0]);
+    for (const t of lowPower ? [.6] : [.28, .53, .78]) {
+      b.box(t > .6 ? "leaf" : "wood", [x, y + wall + rise * (1 - t) + size * .025, z + side * span * t],
+        [depth * 1.19, size * .046, size * .105], [side * angle, 0, 0]);
+    }
   }
-  for (let i = 0; i < 4; i++) {
-    const sz = -6.5 + i * 2;
-    b.cylinder(i % 2 ? "gold" : "vermilion", [-9.45, 12.7, sz], 0.58, 0.58, 0.16, 10, [0, 0, Math.PI / 2]);
-    b.box("lamp", [-9.45, 13.7, sz], [0.1, 0.55, 0.45]);
+  const face = x + front * depth * .5;
+  const faceY = y + wall;
+  elbafBeam(b, "wood", [face, faceY + rise, z], [face - front * depth, faceY + rise, z], size * .046, 1);
+  for (const side of [-1, 1]) {
+    elbafBeam(b, "wood", [face + front * .07, faceY - size * .13, z + side * span],
+      [face + front * .07, faceY + rise * 1.13, z - side * size * .12], size * .035);
+    b.box("wood", [face + front * .025, y + wall * .56, z + side * width * .37], [.14, wall, size * .065]);
+    b.box("lamp", [face + front * .045, y + wall * .67, z + side * width * .29], [.1, size * .16, size * .12]);
+  }
+  b.box("dark", [face + front * .055, y + wall * .3, z], [.16, wall * .54, size * .27]);
+  b.box("wood", [face + front * .035, faceY + .05, z], [.18, size * .1, width * 1.09]);
+}
+
+function elbafPine(b: Builder, x: number, y: number, z: number, height: number) {
+  b.cylinder("elbafBark", [x, y + height * .25, z], height * .045, height * .067, height * .5, 6);
+  for (let i = 0; i < 3; i++) {
+    b.cylinder(i === 0 ? "foliageDeep" : "leaf", [x, y + height * (.37 + i * .19), z],
+      .05, height * (.26 - i * .054), height * (.48 - i * .067), 7);
+  }
+}
+
+function elbafTree(b: Builder, x: number, y: number, z: number, size: number, lowPower: boolean) {
+  const point = (dx: number, dy: number, dz: number): Point => [x + dx * size, y + dy * size, z + dz * size];
+  const split = point(-.4, 16, -.25);
+  elbafBeam(b, "elbafBark", point(0, 0, 0), split, 3.7 * size, .62);
+  elbafBeam(b, "elbafBark", split, point(.7, 28, .3), 2.36 * size, .53);
+  b.sphere("elbafBark", split, 2.34 * size, [1, .8, 1]);
+  for (const side of [-1, 1]) {
+    elbafBeam(b, "elbafBark", split, point(-1.2, 25, side * 5.3), size * 1.42, .28);
+    elbafBeam(b, "wood", point(-2.1, 2, side * 2), point(-2, 17, side * 1.7), size * .66, .48);
+    b.curve("elbafBark", [point(-.15, 8, side * 1.5), point(-4.7, 2.7, side * 4.4), point(-7.4, -.3, side * 5.4)],
+      size * 1.13, 10);
+    b.sphere("foliageDeep", point(-2.1, 26.4, side * 5.6), size * 5.2, [1.02, .52, 1.24]);
+    b.sphere("leaf", point(-1.2, 28.1, side * 6.3), size * 4.8, [.96, .56, 1.22]);
+  }
+  b.sphere("foliageDeep", point(0, 28.2, 0), size * 6.7, [1, .55, 1.22]);
+  b.sphere("leaf", point(.1, 30.3, 0), size * 6.25, [1, .57, 1.26]);
+  b.sphere("elbafGrass", point(-.25, 32, -1.9), size * 4.7, [1.04, .48, 1.38]);
+  if (!lowPower) {
+    for (const side of [-1, 1]) b.sphere("elbafGrass", point(-1.65, 29.7, side * 8.2), size * 3.25, [1, .55, 1.13]);
+  }
+}
+
+function elbafFalls(b: Builder, x: number, z: number, top: number, bottom: number, width: number) {
+  const rim: Point[] = [[x + 1.55, top + .2, width], [x + .1, top + .15, width * .94],
+    [x - 1.12, top - .94, width * .86], [x - 1.58, bottom + .86, width * .76], [x - 1.92, bottom + .08, width]];
+  const vertices: number[] = [];
+  const point = (row: number, column: number): Point => {
+    const [px, y, w] = rim[row];
+    const side = column / 3 - 1;
+    return [px + side * side * .12 + column % 2 * .04, y, z + side * w / 2];
+  };
+  for (let row = 0; row < rim.length - 1; row++) {
+    for (let col = 0; col < 6; col++) {
+      const left = point(row, col), right = point(row, col + 1);
+      const nextLeft = point(row + 1, col), nextRight = point(row + 1, col + 1);
+      vertices.push(...left, ...right, ...nextRight, ...left, ...nextRight, ...nextLeft);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  geometry.computeVertexNormals();
+  b.add(geometry, "elbafFalls", [0, 0, 0]);
+  b.sphere("water", [x - 1.95, bottom + .04, z], width * .95, [1.01, .052, .87]);
+  for (const side of [-1, 0, 1]) {
+    b.sphere("foam", [x - 2.03 - Math.abs(side) * .36, bottom + .13, z + side * width * .34],
+      width * .42, [1, .17, .68]);
+  }
+}
+
+function elbafStoneBridge(b: Builder, x: number, z: number, deck: number, span: number) {
+  const shape = new THREE.Shape();
+  shape.moveTo(-span, 0);
+  shape.lineTo(-span, deck);
+  shape.quadraticCurveTo(0, deck + 2.9, span, deck);
+  shape.lineTo(span, 0);
+  shape.lineTo(span * .78, 0);
+  shape.bezierCurveTo(span * .78, deck * 1.06, -span * .78, deck * 1.06, -span * .78, 0);
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: 2.9, bevelEnabled: false, curveSegments: 12 }).translate(0, 0, -1.45);
+  b.add(geometry, "elbafCliff", [x, 0, z], [0, Math.PI / 2, 0]);
+  const height = (fraction: number) => deck + 1.45 * (1 - fraction * fraction);
+  for (const side of [-1, 1]) {
+    const edge = x + side * 1.42;
+    b.curve("sandstone", [-1, -.5, 0, .5, 1].map(t => [edge, height(t) + .16, z + t * span]), .13, 12);
+    b.curve("wood", [-1, -.5, 0, .5, 1].map(t => [edge, height(t) + .82, z + t * span]), .071, 12);
+    for (const t of [-1, -.75, -.5, -.25, 0, .25, .5, .75, 1]) {
+      b.box("sandLight", [edge, height(t) + .41, z + t * span], [.18, .74, .19]);
+    }
+  }
+}
+
+function elbafRopeBridge(b: Builder, x: number, z1: number, z2: number, startY: number, endY: number, lowPower: boolean) {
+  const floor = (t: number) => THREE.MathUtils.lerp(startY, endY, t) - Math.sin(t * Math.PI) * 1.2;
+  const boards = lowPower ? 10 : 16;
+  const spacing = (z2 - z1) / boards;
+  for (let i = 0; i < boards; i++) {
+    const t = (i + .5) / boards;
+    const rise = floor((i + 1) / boards) - floor(i / boards);
+    b.box("elbafBark", [x, floor(t), THREE.MathUtils.lerp(z1, z2, t)],
+      [1.53, .17, Math.hypot(spacing, rise) * .98], [-Math.atan2(rise, spacing), 0, 0]);
+  }
+  for (const side of [-1, 1]) {
+    const edge = x + side * .76;
+    b.curve("wood", [0, .25, .5, .75, 1].map(t => [edge, floor(t) - .06, THREE.MathUtils.lerp(z1, z2, t)]), .077, 12);
+    b.curve("wood", [0, .25, .5, .75, 1].map(t => [edge, floor(t) + 1, THREE.MathUtils.lerp(z1, z2, t)]), .073, 12);
+    for (const t of [0, .25, .5, .75, 1]) {
+      b.box("wood", [edge, floor(t) + .52, THREE.MathUtils.lerp(z1, z2, t)], [.13, 1.1, .14]);
+    }
+  }
+}
+
+function elbafCastle(b: Builder, x: number, y: number, z: number, lowPower: boolean) {
+  b.box("castle", [x, y + 2.05, z], [5.65, 4.1, 7.9]);
+  b.box("cream", [x, y + 4.18, z], [5.95, .39, 8.2]);
+  arch(b, x - 2.86, y + .15, z, 1.57, 2.8, "castle");
+  for (const [dx, dz, h, radius] of [[-.6, -2.88, 9.8, 1.51], [-.3, 2.6, 7.3, 1.19], [2.05, .25, 12.55, 1.13]]) {
+    const tx = x + dx, tz = z + dz;
+    b.cylinder("castle", [tx, y + h / 2, tz], radius * .92, radius, h, 12);
+    b.cylinder("cream", [tx, y + h, tz], radius * 1.13, radius, .45, 12);
+    b.cylinder("roof", [tx, y + h + 1.57, tz], 0, radius * 1.17, 3.25, 12);
+    b.sphere("gold", [tx, y + h + 3.25, tz], .18);
+    arch(b, tx - radius * .98, y + h * .61, tz, .36, .93, "castle");
+  }
+  const blocks = lowPower ? 5 : 8;
+  for (let i = 0; i < blocks; i++) {
+    b.box("castle", [x - 2.72, y + 4.54, z - 3.62 + i * 7.24 / (blocks - 1)], [.36, .55, .46]);
+  }
+}
+
+function elbafRainbow(b: Builder, lowPower: boolean) {
+  const colors = ["#f26e64", "#ffa162", "#ffe581", "#bce381", "#83d8ec", "#8da7ed", "#c29ce3"];
+  const positions: number[] = [], tints: number[] = [];
+  const segments = lowPower ? 20 : 32;
+  for (const [band, color] of colors.entries()) {
+    const tint = new THREE.Color(color);
+    const point = (segment: number, edge: number): Point => {
+      const angle = segment * Math.PI / segments;
+      const offset = (band + edge) * .34;
+      return [12.9, 8.5 + Math.sin(angle) * (22.5 - offset), -.8 + Math.cos(angle) * (25.8 - offset)];
+    };
+    for (let segment = 0; segment < segments; segment++) {
+      const a = point(segment, 0), b = point(segment, 1), c = point(segment + 1, 1), d = point(segment + 1, 0);
+      positions.push(...a, ...b, ...c, ...a, ...c, ...d);
+      for (let i = 0; i < 6; i++) tints.push(tint.r, tint.g, tint.b);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.Float32BufferAttribute(tints, 3));
+  geometry.computeVertexNormals();
+  b.add(geometry, "elbafRainbow", [0, 0, 0]);
+}
+
+function elbaf(b: Builder, lowPower: boolean) {
+  // Deux falaises en terrasses encadrent le passage et la grande arche de pierre.
+  elbafTerrace(b, -5.2, -20.6, -.2, 7, 9.2, 11.7, lowPower);
+  elbafTerrace(b, 1.2, -23.3, 6.9, 14.5, 5.8, 7.9, lowPower);
+  elbafTerrace(b, -5.2, 15.6, -.2, 6.6, 9.2, 11.4, lowPower);
+  elbafTerrace(b, 4.1, 18.3, 6.45, 12.5, 6.5, 7.9, lowPower);
+  elbafTerrace(b, -10.9, -33.4, -.2, 4.9, 5.3, 5.4, lowPower);
+  elbafTerrace(b, 5.2, -1, -.2, 9.75, 5.8, 9, lowPower);
+
+  elbafFalls(b, -14.16, -23.8, 7.05, .28, 4.05);
+  elbafFalls(b, -15.7, -33.4, 5, .28, 3.1);
+  elbafFalls(b, -13.2, 12, 6.68, .26, 3.65);
+  elbafFalls(b, -4.39, -26.5, 14.54, 6.93, 2.35);
+  elbafFalls(b, -.15, -.15, 9.82, .65, 4.4);
+  const river = new THREE.Shape().moveTo(-21, -.95)
+    .bezierCurveTo(-11, -1.45, -8.2, 2.4, -2.1, -2)
+    .quadraticCurveTo(1.15, -.75, -.7, 1.65)
+    .bezierCurveTo(-9, 3.5, -12.6, 4.25, -21, 3.04).closePath();
+  b.add(new THREE.ShapeGeometry(river, 14), "water", [0, .67, 0], [-Math.PI / 2, 0, 0]);
+  elbafStoneBridge(b, -9.7, -2.2, 5.85, 9.4);
+
+  elbafTree(b, 8.1, 12, 17.6, 1, lowPower);
+  elbafTree(b, 7.22, 13.9, -23.3, .65, lowPower);
+  elbafCastle(b, -.1, 14.62, -24.5, lowPower);
+  elbafRainbow(b, lowPower);
+  elbafRopeBridge(b, -.4, -19.2, 13.3, 14.65, 12.7, lowPower);
+  for (const [z, y] of [[-37.5, 20], [34.4, 19.1]]) {
+    b.sphere("cloudShade", [14.6, y, z], 3.8, [1.15, .49, 1.5]);
+    b.sphere("cloud", [13.8, y + 1.1, z + 1.2], 3.65, [1, .67, 1.24]);
+    b.sphere("cloud", [13.5, y + .1, z - 3], 2.25, [1.04, .7, 1.2]);
+  }
+
+  const houses: [x: number, y: number, z: number, width: number, roof?: MaterialKey][] = [
+    [-7.9, 7.16, -15.1, 3.3, "roof"], [-5.1, 7.12, -20, 3.75, "jadeRoof"], [-9.8, 7.16, -26.7, 2.8],
+    [-11.6, 5.05, -34.5, 2.78, "roof"], [-7.9, 6.76, 9.2, 3.2, "roof"], [-9.8, 6.78, 19.4, 4.35, "roof"],
+    [2.15, 12.65, 18.1, 4.25, "jadeRoof"], [-2.2, 6.75, 15.2, 2.85, "roof"], [3, 9.95, 2.75, 3.45, "roof"],
+  ];
+  for (const [x, y, z, width, roof] of houses) elbafLodge(b, x, y, z, width, lowPower, -1, roof);
+  // Un second chalet repose sur un épaulement du tronc principal.
+  elbafBeam(b, "elbafBark", [8, 16.4, 18], [4, 20.1, 24.6], 1.17, .53);
+  b.box("elbafBark", [4.8, 20.1, 24.3], [3.95, .53, 4]);
+  elbafLodge(b, 4.8, 20.36, 24.3, 2.8, lowPower, -1, "roof");
+  for (const [x, y, z, height] of [[-5.1, 7.17, -10.3, 3.9], [-11.7, 6.74, 5.5, 3.8], [-4.9, 6.78, 24.3, 4.45],
+    [-2.9, 14.69, -29.2, 3.65], [5, 10, 5.4, 4.22], [1.4, 12.67, 23.4, 3.7]]) {
+    elbafPine(b, x, y, z, height);
   }
   if (!lowPower) {
-    // Cabanes suspendues sous les branches d'Adam et braseros géants sur la terrasse du hall.
-    for (const [hx, hy, hz] of [[-10.4, 17.6, -7.2], [-9.4, 20.4, 7.6]]) {
-      b.cylinder("wood", [hx, hy + 2.1, hz], 0.14, 0.14, 2.8, 6);
-      b.box("wood", [hx, hy, hz], [2.6, 2.0, 2.6]);
-      b.roof("dark", [hx, hy + 1.0, hz], 3.5, 3.5, 1.5);
-      b.box("lamp", [hx - 1.33, hy, hz], [0.08, 0.7, 0.9]);
+    for (let i = 0; i < 7; i++) {
+      const height = .31 + i * .81;
+      b.box(i % 3 ? "sandLight" : "sandstone", [-7.7 + i * .87, 6.6 + height / 2, 13.8], [.9, height, 2.3]);
     }
-    for (const bz of [-7.2, 0.2]) {
-      b.cylinder("rock", [-9.4, 11.95, bz], 0.52, 0.38, 1.3, 8);
-      b.sphere("lamp", [-9.4, 12.85, bz], 0.48);
-    }
-    // Stèle de la fresque du Harley posée au pied ouest de la falaise.
-    b.box("rockLight", [-17.2, 2.2, -7.2], [1.2, 4.4, 5.2]);
-    b.box("gold", [-17.85, 2.4, -7.2], [0.08, 2.8, 4.0]);
-    b.sphere("neonCyan", [-17.92, 3.0, -7.2], 0.55, [0.25, 1, 1]);
   }
-
-  // Grande épée des géants plantée dans la falaise face au bus (garde et poignée alignées sur la lame).
-  const swordRot: Point = [0.16, 0.2, 0.24];
-  const swordAxis = new THREE.Vector3(0, 1, 0).applyEuler(new THREE.Euler(...swordRot));
-  const bladeCenter = new THREE.Vector3(-11.5, 6.2, 9.2);
-  const guardPos = bladeCenter.clone().addScaledVector(swordAxis, 5.35);
-  const hiltPos = bladeCenter.clone().addScaledVector(swordAxis, 6.8);
-  b.box("metal", [bladeCenter.x, bladeCenter.y, bladeCenter.z], [1.1, 10.5, 0.28], swordRot);
-  b.box("gold", [guardPos.x, guardPos.y, guardPos.z], [3.4, 0.55, 0.65], swordRot);
-  b.cylinder("wood", [hiltPos.x, hiltPos.y, hiltPos.z], 0.22, 0.24, 2.5, 8, swordRot);
 }
 
 function eniesLobby(b: Builder, lowPower: boolean) {
@@ -917,63 +1214,50 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
     }
   }
   if (zone === 5) {
-    // Egghead : plateformes futuristes, bordures lumineuses cyan et modules de la Fabriophase.
-    const x = side * 23;
-    b.box("castle", [x, 0.16, 0], [3.2, 0.18, 128]);
-    b.box("neonCyan", [x - side * 1.62, 0.26, 0], [0.16, 0.12, 128]);
-    for (let i = 0; i < (lowPower ? 3 : 5); i++) {
-      const z = -50 + i * 25;
-      b.cylinder("metal", [side * 28, 1.4, z], 0.4, 0.5, 2.8, 8);
-      b.ring("neonCyan", [side * 28, 3.0, z], 0.9, 0.11);
+    const sidewalk = side * 13.2;
+    b.box("snow", [sidewalk, .15, 0], [3.7, .27, 132]);
+    b.box("eggMint", [sidewalk - side * 1.73, .3, 0], [.18, .12, 130]);
+    for (const z of [-49, -26, -5, 18, 38, 55]) {
+      b.cylinder("snow", [side * 17.4, .19, z], 1.73, 1.85, .38, 12);
+      b.cylinder("leafLight", [side * 17.4, .42, z], 1.57, 1.69, .12, 12);
+      eggheadPalm(b, side * 17.4, z, z === -26 || z === 18 ? 4.8 : 3.4, lowPower);
     }
-    if (side < 0) {
-      for (const z of [-38, 12]) {
-        b.cylinder("castle", [-33, 1.8, z], 3.4, 3.8, 3.6, 12);
-        b.dome("snow", [-33, 3.6, z], 3.4, [1, 0.78, 1]);
-        b.ring("neonCyan", [-33, 3.6, z], 3.5, 0.14);
-      }
-      const conduit: Point[] = [[-39.5, 1.1, -55], [-38, 2.4, -15], [-39.5, 1.8, 30], [-37, 1.2, 56]];
-      b.curve("neonCyan", conduit, 0.25, 24);
-      for (const [cx, cy, cz] of conduit) {
-        b.cylinder("metal", [cx, cy / 2, cz], 0.25, 0.34, cy, 8);
-      }
-      if (!lowPower) {
-        // Mini véhicule Vega-Tank posé sur ses chenilles sur la passerelle.
-        b.box("dark", [-23, 0.42, -14], [2.1, 0.34, 3.2]);
-        b.box("metal", [-23, 0.88, -14], [1.9, 0.65, 3.0]);
-        b.sphere("vermilion", [-23, 1.38, -14], 0.75, [0.9, 0.7, 1.1]);
-        b.box("neonCyan", [-23, 1.4, -14.78], [0.95, 0.22, 0.16]);
-      }
+    if (side > 0) {
+      eggheadTower(b, 19.7, 8.2, 2.37, 5.2, "snow", "eggOrange", lowPower);
+      eggheadTower(b, 23, -38, 2.46, 5.6, "eggRed", "eggOrange", lowPower);
+    } else {
+      eggheadTower(b, -26, -23, 3.45, 8.95, "eggAqua", "eggCobalt", lowPower, 1);
+      eggheadTower(b, -28, 12, 3.1, 7.2, "eggRed", "eggOrange", lowPower, 1);
+      eggheadTower(b, -33, 30, 3.45, 10.8, "eggCobalt", "eggIndigo", lowPower, 1);
+      eggheadTube(b, [[-26, 7.3, -23], [-21.5, 8.1, -14], [-21, 8.25, -1], [-25.5, 6.5, 11]], .59, lowPower);
     }
   }
   if (zone === 6) {
-    // Elbaf : reliefs rocheux nordiques, pierres runiques et village viking sur le rivage ouest.
-    for (let i = 0; i < (lowPower ? 3 : 5); i++) {
-      const x = side * (26 + (i % 2) * 8), z = -52 + i * 25;
-      b.cylinder(i % 2 ? "rock" : "rockLight", [x, 0.9 + (i % 2) * 0.5, z], 2.2, 3.6, 1.8 + (i % 2), 7);
+    // Chemin et clairières au niveau de la route, au pied des terrasses.
+    const pathX = side * 20;
+    b.box("sandLight", [pathX, .24, 0], [2.9, .34, 118]);
+    for (const [z, height] of [[-53, 4.1], [-38, 5.6], [-13, 4.85], [11, 5.0], [29, 4.4], [50, 5.9]]) {
+      elbafPine(b, side * 23.6, .18, z, height);
     }
     if (side < 0) {
-      for (const z of [-36, 18]) {
-        b.box("wood", [-33, 1.6, z], [6.5, 3.2, 8.2]);
-        b.roof("dark", [-33, 3.2, z], 8.2, 9.6, 3.1);
-        b.box("lamp", [-29.7, 1.7, z], [0.12, 0.8, 1.4]);
-        if (!lowPower) {
-          b.cylinder("wood", [-28.5, 0.6, z - 2.5], 0.55, 0.55, 1.2, 8);
-          b.cylinder("wood", [-28.5, 0.6, z + 2.5], 0.55, 0.55, 1.2, 8);
-        }
-      }
-      for (const z of [-12, 42]) {
-        b.cylinder("rock", [-26, 2.2, z], 0.7, 1.2, 4.4, 6);
-        b.box("gold", [-25.35, 2.4, z], [0.08, 2.2, 0.3]);
-      }
+      elbafTerrace(b, -33.4, -22, -.17, 3.1, 6.2, 8.2, lowPower);
+      elbafTerrace(b, -34.9, 15, -.17, 4.1, 6.3, 8.8, lowPower);
+      elbafLodge(b, -33.9, 3.27, -23, 3.25, lowPower, 1, "jadeRoof");
+      elbafLodge(b, -35.1, 4.28, 16, 3.9, lowPower, 1);
+      elbafLodge(b, -27.1, .4, 25.7, 3.1, lowPower, 1);
+      elbafPine(b, -34.9, 4.19, 20.7, 4.85);
+      elbafPine(b, -32.2, 3.25, -27.6, 3.9);
+      elbafRopeBridge(b, -33.9, -14.2, 6.6, 3.2, 4.26, lowPower);
       if (!lowPower) {
-        // Drakkar viking complet amarré au bord du village d'Elbaf.
-        b.sphere("wood", [-37, 0.85, -8], 1.5, [1.1, 0.55, 3.1]);
-        b.cylinder("wood", [-37, 3.2, -8], 0.12, 0.16, 4.5, 8);
-        b.cylinder("wood", [-37, 4.55, -7.8], 0.08, 0.08, 3.1, 6, [0, 0, Math.PI / 2]);
-        b.box("vermilion", [-37, 3.5, -7.8], [2.8, 2.0, 0.12]);
-        b.cylinder("gold", [-37, 1.7, -3.5], 0.1, 0.36, 1.4, 6, [0.45, 0, 0]);
+        // Drakkar sur la grève.
+        b.sphere("wood", [-41.4, .65, 34], 1.32, [1.1, .55, 3.05]);
+        b.cylinder("elbafBark", [-41.4, 2.8, 34], .12, .16, 4.2, 8);
+        b.box("vermilion", [-41.4, 3.55, 34.25], [1.5, 1.75, .12]);
+        b.cylinder("oldGold", [-41.4, 1.5, 30.5], .1, .33, 1.25, 6, [.45, 0, 0]);
       }
+    } else {
+      elbafLodge(b, 17.2, .48, -43.3, 2.65, lowPower);
+      elbafLodge(b, 17.7, .48, 32.9, 2.92, lowPower, -1, "jadeRoof");
     }
   }
   if (zone === 7) {
