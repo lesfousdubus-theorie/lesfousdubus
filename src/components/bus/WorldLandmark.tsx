@@ -23,9 +23,6 @@ export type PropType =
   | "snowman"
   | "drumMesa"
   | "rock"
-  | "techDome"
-  | "holoTower"
-  | "mechPod"
   | "giantSword"
   | "vikingHall"
   | "runestone"
@@ -531,65 +528,6 @@ function LandmarkModel({ def }: { def: PropDef }) {
           </mesh>
           <mesh material={MATS.black} position={[0, 3.75, 0]}>
             <cylinderGeometry args={[0.65, 0.65, 0.08, 12]} />
-          </mesh>
-        </group>
-      );
-
-    case "techDome":
-      return (
-        <group scale={s * 1.2}>
-          <mesh material={MATS.marble} position={[0, 1.4, 0]} castShadow>
-            <cylinderGeometry args={[3.1, 3.5, 2.8, 16]} />
-          </mesh>
-          <mesh material={MATS.snow} position={[0, 2.8, 0]} castShadow>
-            <sphereGeometry args={[3.1, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          </mesh>
-          <mesh material={MATS.neonCyan} position={[0, 2.8, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[3.2, 0.14, 6, 24]} />
-          </mesh>
-          <mesh material={MATS.steelRail} position={[0, 6.2, 0]}>
-            <cylinderGeometry args={[0.09, 0.16, 1.4, 8]} />
-          </mesh>
-          <mesh material={MATS.neonCyan} position={[0, 7.0, 0]}>
-            <sphereGeometry args={[0.28, 10, 10]} />
-          </mesh>
-        </group>
-      );
-
-    case "holoTower":
-      return (
-        <group scale={s * 1.1}>
-          <mesh material={MATS.steelRail} position={[0, 2.6, 0]} castShadow>
-            <cylinderGeometry args={[0.35, 0.75, 5.2, 10]} />
-          </mesh>
-          <mesh material={MATS.neonCyan} position={[0, 3.3, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[1.35, 0.12, 6, 20]} />
-          </mesh>
-          <mesh material={MATS.neonCyan} position={[0, 4.7, 0]} rotation={[Math.PI / 2, 0.25, 0]}>
-            <torusGeometry args={[0.95, 0.1, 6, 20]} />
-          </mesh>
-          <mesh material={MATS.gold} position={[0, 5.6, 0]}>
-            <sphereGeometry args={[0.32, 10, 10]} />
-          </mesh>
-        </group>
-      );
-
-    case "mechPod":
-      return (
-        <group scale={s}>
-          {[-0.65, 0.65].map((x) => (
-            <mesh key={x} material={MATS.steelRail} position={[x, 1.1, 0]} castShadow>
-              <cylinderGeometry args={[0.36, 0.42, 2.2, 8]} />
-            </mesh>
-          ))}
-          <mesh material={MATS.marble} position={[0, 3.0, 0]} castShadow>
-            <boxGeometry args={[2.2, 2.1, 1.6]} />
-          </mesh>
-          <mesh material={MATS.steelRail} position={[0, 4.3, 0]}>
-            <sphereGeometry args={[0.85, 12, 10]} />
-          </mesh>
-          <mesh material={MATS.neonCyan} position={[0, 4.3, 0.78]}>
-            <boxGeometry args={[1.05, 0.24, 0.16]} />
           </mesh>
         </group>
       );

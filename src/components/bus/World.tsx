@@ -13,7 +13,7 @@ import { cacheSceneryBounds, createSceneryVisibility, type SceneryBounds } from 
 
 export const ZONE_LEN = 160;
 const WINDOW_START = -440;
-const TERRAIN_RELIEF = [1.1, .32, .55, .65, 1.05, .45, 1.2, .25];
+const TERRAIN_RELIEF = [1.1, .32, .55, .65, 1.05, .45, .64, .25];
 const TERRAIN_WIDTH = 96;
 const TERRAIN_DEPTH = ZONE_LEN - 16;
 const TERRAIN_COLUMNS = 28;
@@ -25,8 +25,8 @@ export const ZONES = [
   { name: "Skypiea", subtitle: "L'île céleste", ground: "#f5f3ec", shore: "#e4e1d6" },
   { name: "Pays des Wa", subtitle: "Terre des samouraïs", ground: "#5da854", shore: "#86c878" },
   { name: "Île de Drum", subtitle: "Royaume des neiges", ground: "#ebf2fa", shore: "#dbe5f2" },
-  { name: "Egghead", subtitle: "L'île du futur", ground: "#dfe9f3", shore: "#8ec8e8" },
-  { name: "Elbaf", subtitle: "Royaume des géants", ground: "#4e8c45", shore: "#8b7a5e" },
+  { name: "Egghead", subtitle: "L'île du futur", ground: "#83cfa3", shore: "#80cfda" },
+  { name: "Elbaf", subtitle: "Royaume des géants", ground: "#76a951", shore: "#9a8664" },
   { name: "Enies Lobby", subtitle: "L'île judiciaire", ground: "#8fa5b5", shore: "#c6f0ed" },
 ] as const;
 
@@ -38,8 +38,8 @@ const TINT_COLORS = [
   "#ffffff",
   "#a4cf77",
   "#ffffff",
-  "#f3f9ff",
-  "#8bc462",
+  "#bfe89b",
+  "#a6cf65",
   "#c9d6e0",
 ] as const;
 
@@ -49,7 +49,7 @@ const ZONE_PROPS: Record<number, PropType[]> = {
   2: ["cloud", "cloud", "cloud", "giantJack", "bell"],
   3: ["sakura", "sakura", "sakura", "pagoda", "torii", "lantern"],
   4: ["pine", "pine", "pine", "snowman", "drumMesa", "rock"],
-  5: ["techDome", "holoTower", "mechPod", "cloud"],
+  5: ["palm"],
   6: ["pine", "giantSword", "vikingHall", "runestone", "drakkar", "rock"],
   7: ["justicePillar", "courthouse", "waterfallCliff", "seaTrainPoles", "rock"],
 };
@@ -71,7 +71,7 @@ function weatherForLandscape(zone: number, visit: number): WorldState["weather"]
   if (zone === 1) return value < 0.62 ? "rain" : value < 0.68 ? "snow" : "clear";
   if (zone === 3) return value < 0.34 ? "rain" : value < 0.5 ? "snow" : "clear";
   if (zone === 2) return value < 0.25 ? "rain" : value < 0.35 ? "snow" : "clear";
-  if (zone === 6) return value < 0.2 ? "snow" : value < 0.45 ? "rain" : "clear";
+  if (zone === 6) return value < 0.16 ? "rain" : "clear";
   if (zone === 7) return value < 0.25 ? "rain" : "clear";
   if (zone === 5) return value < 0.18 ? "rain" : "clear";
   return value < 0.12 ? "rain" : "clear";
@@ -151,7 +151,6 @@ function buildProps(): PropDef[] {
         type === "bell" ||
         type === "giantJack" ||
         type === "drumMesa" ||
-        type === "techDome" ||
         type === "vikingHall" ||
         type === "courthouse" ||
         type === "waterfallCliff";
@@ -308,7 +307,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
             <meshStandardMaterial vertexColors roughness={0.95} side={THREE.DoubleSide} />
           </mesh>
           <group ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3] = element; }}>
-            <WorldSetPiece zone={i} lowPower={lowPower} />
+            <WorldSetPiece zone={i} lowPower={lowPower} reducedMotion={reducedMotion} />
           </group>
           {[-1, 1].map((side, part) => <group
             key={side}
