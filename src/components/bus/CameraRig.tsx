@@ -6,7 +6,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { DEFAULT_CAMERA_POS, DEFAULT_TARGET, SEAT_EYE, TV_POSITION, type Phase } from "./constants";
-import { getExteriorMaxDistance, wheelZoomRatio } from "@/lib/bus-camera";
+import { dollyOrbitCamera, getExteriorMaxDistance, MIN_ORBIT_DISTANCE, ORBIT_CAMERA_FLOOR, wheelZoomRatio } from "@/lib/bus-camera";
 import { ease, type JourneyState } from "@/lib/bus-journey";
 import { getPassengerSkeleton } from "@/lib/passenger-proportions";
 import { getNakamaArchetype } from "./passenger-archetypes";
@@ -35,37 +35,10 @@ const FOV_EPSILON = 0.01;
 const EXTERIOR_MAX_POLAR_ANGLE = Math.PI / 2 - 0.04;
 const EXTERIOR_SKY_PITCH_LIMIT = Math.PI - EXTERIOR_MAX_POLAR_ANGLE - 0.02;
 const EXTERIOR_SKY_DRAG_SPEED = 0.0045;
-const MIN_ORBIT_DISTANCE = .18;
 const LOCAL_X_AXIS = new THREE.Vector3(1, 0, 0);
 const LOCAL_Z_AXIS = new THREE.Vector3(0, 0, 1);
 const CAMERA_UP = new THREE.Vector3(0, 1, 0);
-const TEMP_DOLLY_DIR = new THREE.Vector3();
-const TEMP_TARGET = new THREE.Vector3();
-const TEMP_SHIFT = new THREE.Vector3();
 const DEFAULT_EXTERIOR_OFFSET = DEFAULT_CAMERA_POS.clone().sub(DEFAULT_TARGET);
-
-function advanceOrbitDolly(
-  control: OrbitControlsImpl,
-  camera: THREE.Camera,
-  dir: THREE.Vector3,
-  step: number,
-  cabinLength: number,
-) {
-  const minCamY = 0.28;
-  TEMP_TARGET.copy(control.target).addScaledVector(dir, step);
-  TEMP_TARGET.x = THREE.MathUtils.clamp(TEMP_TARGET.x, -35, 35);
-  TEMP_TARGET.y = THREE.MathUtils.clamp(TEMP_TARGET.y, 0.32, 22);
-  TEMP_TARGET.z = THREE.MathUtils.clamp(TEMP_TARGET.z, -cabinLength - 30, cabinLength + 30);
-  TEMP_SHIFT.copy(TEMP_TARGET).sub(control.target);
-  if (camera.position.y + TEMP_SHIFT.y < minCamY) {
-    TEMP_SHIFT.y = Math.min(22 - control.target.y, Math.max(TEMP_SHIFT.y, minCamY - camera.position.y));
-  }
-  if (TEMP_SHIFT.lengthSq() > 1e-6) {
-    control.target.add(TEMP_SHIFT);
-    camera.position.add(TEMP_SHIFT);
-    control.update();
-  }
-}
 
 export default function CameraRig({
   phase,
@@ -105,6 +78,7 @@ export default function CameraRig({
   const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
   const exteriorPointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
   const exteriorPinchDistRef = useRef<number | null>(null);
+  const orbitZoom = useRef({ logRatio: 0, cursor: new THREE.Vector2() });
   const skyPitchRef = useRef(0);
   const skyTiltRef = useRef(new THREE.Quaternion());
   const pinchStartDistRef = useRef<number | null>(null);
@@ -151,7 +125,7 @@ export default function CameraRig({
   }, [currentSeatZ,currentSeatX,eyeY]);
   const activeTvTarget = useMemo(() => new THREE.Vector3(0, TV_POSITION.y, tvTargetZ), [tvTargetZ]);
 
-  // Cible de rotation OrbitControls centrée sur toute la longueur du bus
+  // Cible du cadrage initial et du recentrage sur toute la longueur du bus.
   const orbitTargetZ = cabinCenterZ;
   const previousOrbitTarget = useRef(orbitTargetZ);
 
@@ -171,6 +145,19 @@ export default function CameraRig({
   const maxOrbitDistance = useMemo(() => {
     return getExteriorMaxDistance(cabinLength);
   }, [cabinLength]);
+
+  const requestOrbitZoom = useCallback((ratio: number, clientX: number, clientY: number) => {
+    const logRatio = Math.log(ratio);
+    if (!logRatio || !Number.isFinite(logRatio)) return;
+    const rect = gl.domElement.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const zoom = orbitZoom.current;
+    zoom.cursor.set(
+      THREE.MathUtils.clamp((clientX - rect.left) / rect.width, 0, 1) * 2 - 1,
+      1 - THREE.MathUtils.clamp((clientY - rect.top) / rect.height, 0, 1) * 2,
+    );
+    zoom.logRatio = logRatio + (zoom.logRatio * logRatio < 0 ? 0 : zoom.logRatio);
+  }, [gl]);
 
   useLayoutEffect(() => {
     if (!messagesBackdrop) return;
@@ -197,6 +184,7 @@ export default function CameraRig({
 
   useLayoutEffect(() => {
     if (!messagesBackdrop || !backdropCamera.current) return;
+    orbitZoom.current.logRatio = 0;
     const original = passengerCamera.current;
     // Préserver la caméra du passager, son zoom et la cible de ses commandes.
     set({ camera: backdropCamera.current });
@@ -290,6 +278,7 @@ export default function CameraRig({
   useEffect(() => {
     if (resetViewRef.current === resetViewToken) return;
     resetViewRef.current = resetViewToken;
+    orbitZoom.current.logRatio = 0;
     activePointersRef.current.clear();
     exteriorPointersRef.current.clear();
     pinchStartDistRef.current = null;
@@ -398,6 +387,7 @@ export default function CameraRig({
       a.active = false;
     }
     if (phaseChanged && phase !== "outside") {
+      orbitZoom.current.logRatio = 0;
       // Garder la caméra extérieure à sa place pendant le regard vers le ciel.
       // La transition part de son orientation actuelle, puis réinitialise ce regard.
       skyPitchRef.current = 0;
@@ -427,6 +417,7 @@ export default function CameraRig({
     if (freeViewRef.current === next) return;
     const wasFree = freeViewRef.current;
     freeViewRef.current = next;
+    orbitZoom.current.logRatio = 0;
     activePointersRef.current.clear();
     exteriorPointersRef.current.clear();
     pinchStartDistRef.current = null;
@@ -542,12 +533,13 @@ export default function CameraRig({
       l.dragging = false;
     };
 
-    // Zoom molette de la souris (uniquement sur la scène 3D, jamais dans un modal)
+    // Les gestes de zoom du navigateur et la molette dans les modales gardent la priorité.
     const wheel = (e: WheelEvent) => {
-      if (isBrowserZoomWheel(e)) return;
+      if (!e.deltaY || isBrowserZoomWheel(e) || get().camera !== camera) return;
       if ((e.target as HTMLElement)?.closest?.("[role='dialog'], [data-modal], .overflow-y-auto")) {
         return;
       }
+      const ratio = wheelZoomRatio(e.deltaY, e.deltaMode, el.clientHeight);
       if (phaseRef.current === "outside" || freeViewRef.current) {
         const control = controls.current;
         if (!control) return;
@@ -557,27 +549,14 @@ export default function CameraRig({
           control.enabled = true;
           control.update();
         }
-        if (skyPitchRef.current !== 0 || control.minPolarAngle !== 0) {
-          skyPitchRef.current = 0;
-          control.minPolarAngle = 0;
-        }
-        const dist = camera.position.distanceTo(control.target);
-        if (e.deltaY < 0 && dist <= 1.2) {
-          const rect = gl.domElement.getBoundingClientRect();
-          const ndcX = rect.width > 0 ? ((e.clientX - rect.left) / rect.width) * 2 - 1 : 0;
-          const ndcY = rect.height > 0 ? -((e.clientY - rect.top) / rect.height) * 2 + 1 : 0;
-          camera.updateMatrixWorld();
-          TEMP_DOLLY_DIR.set(ndcX, ndcY, 0.5).unproject(camera).sub(camera.position).normalize();
-          const rawDelta = Math.abs(e.deltaY) * (e.deltaMode === 1 ? 16 : 1);
-          const step = THREE.MathUtils.clamp(rawDelta * 0.0045, 0.02, 0.85);
-          advanceOrbitDolly(control, camera, TEMP_DOLLY_DIR, step, cabinLength);
-        }
+        e.preventDefault();
+        requestOrbitZoom(ratio, e.clientX, e.clientY);
         return;
       }
-      if (phaseRef.current !== "inside") return;
+      if (phaseRef.current !== "inside" || resetTransition.current.active) return;
       e.preventDefault();
       const halfFov = THREE.MathUtils.degToRad(targetFovRef.current / 2);
-      const angle = Math.atan(Math.tan(halfFov) * wheelZoomRatio(e.deltaY, e.deltaMode, el.clientHeight));
+      const angle = Math.atan(Math.tan(halfFov) * ratio);
       targetFovRef.current = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(angle) * 2, 14, 75);
     };
 
@@ -602,12 +581,6 @@ export default function CameraRig({
     };
 
     const target = gl.domElement.parentElement ?? el;
-    // OrbitControls also listens here: keep modified wheel events away from it
-    // without cancelling the browser's own zoom gesture.
-    const preserveBrowserZoom = (event: WheelEvent) => {
-      if (isBrowserZoomWheel(event)) event.stopImmediatePropagation();
-    };
-    target.addEventListener("wheel", preserveBrowserZoom, { capture: true });
     target.addEventListener("pointerdown", down);
     target.addEventListener("lostpointercapture", up);
     window.addEventListener("pointermove", move);
@@ -625,11 +598,10 @@ export default function CameraRig({
       window.removeEventListener("pointercancel", up);
       window.removeEventListener("blur", cancelGesture);
       cancelGesture();
-      target.removeEventListener("wheel", preserveBrowserZoom, { capture: true });
       target.removeEventListener("wheel", wheel);
       window.removeEventListener("keydown", key);
     };
-  }, [gl, camera, cabinLength, letterShortcutsEnabled]);
+  }, [gl, get, camera, letterShortcutsEnabled, requestOrbitZoom]);
 
   // Au-delà de l'horizon, lever seulement le regard : faire descendre toute
   // la caméra sous le sol exposerait l'intérieur du bus et le dessous du décor.
@@ -638,7 +610,7 @@ export default function CameraRig({
     const pointers = exteriorPointersRef.current;
 
     const down = (event: PointerEvent) => {
-      if (phaseRef.current !== "outside" && !freeViewRef.current) return;
+      if (get().camera !== camera || (phaseRef.current !== "outside" && !freeViewRef.current)) return;
       if (resetTransition.current.active && phaseRef.current === "inside") return;
       const targetEl = event.target as HTMLElement | null;
       const currentEl = event.currentTarget as HTMLElement | null;
@@ -675,21 +647,11 @@ export default function CameraRig({
       if (!control) return;
 
       if (pointers.size === 2) {
-        const pts = [...pointers.values()];
-        const curDist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
-        if (exteriorPinchDistRef.current !== null && curDist > 0) {
-          const distDelta = curDist - exteriorPinchDistRef.current;
-          const dist = camera.position.distanceTo(control.target);
-          const threshold = freeViewRef.current ? 1.1 : 1.8;
-          if (distDelta > 0.5 && dist <= threshold) {
-            if (skyPitchRef.current !== 0 || control.minPolarAngle !== 0) {
-              skyPitchRef.current = 0;
-              control.minPolarAngle = 0;
-            }
-            const step = THREE.MathUtils.clamp(distDelta * 0.025, 0.01, 0.45);
-            camera.getWorldDirection(TEMP_DOLLY_DIR).normalize();
-            advanceOrbitDolly(control, camera, TEMP_DOLLY_DIR, step, cabinLength);
-          }
+        const [a, b] = pointers.values();
+        const curDist = Math.hypot(b.x - a.x, b.y - a.y);
+        if (exteriorPinchDistRef.current && curDist > 0) {
+          const ratio = THREE.MathUtils.clamp(exteriorPinchDistRef.current / curDist, 0.5, 2);
+          requestOrbitZoom(ratio, (a.x + b.x) / 2, (a.y + b.y) / 2);
         }
         exteriorPinchDistRef.current = curDist;
         return;
@@ -698,6 +660,13 @@ export default function CameraRig({
       if (pointers.size !== 1) return;
 
       const deltaY = event.clientY - previous.y;
+      if (event.pointerType === "mouse") {
+        if (event.buttons & 4) {
+          requestOrbitZoom(wheelZoomRatio(deltaY * 3, 0, surface.clientHeight), event.clientX, event.clientY);
+          return;
+        }
+        if (!(event.buttons & 1) || event.shiftKey || event.ctrlKey || event.metaKey) return;
+      }
       if (deltaY < 0 && (skyPitchRef.current > 0 || control.getPolarAngle() >= EXTERIOR_MAX_POLAR_ANGLE - 0.01)) {
         skyPitchRef.current = Math.min(
           EXTERIOR_SKY_PITCH_LIMIT,
@@ -723,21 +692,26 @@ export default function CameraRig({
       exteriorPinchDistRef.current = null;
     };
 
+    const blur = () => {
+      clearPointers();
+      orbitZoom.current.logRatio = 0;
+    };
+
     surface.addEventListener("pointerdown", down);
     surface.addEventListener("lostpointercapture", up);
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
-    window.addEventListener("blur", clearPointers);
+    window.addEventListener("blur", blur);
     return () => {
       surface.removeEventListener("pointerdown", down);
       surface.removeEventListener("lostpointercapture", up);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", up);
-      window.removeEventListener("blur", clearPointers);
+      window.removeEventListener("blur", blur);
     };
-  }, [gl, camera, cabinLength]);
+  }, [gl, get, camera, requestOrbitZoom]);
 
   useFrame((_, dt) => {
     const a = anim.current;
@@ -885,15 +859,25 @@ export default function CameraRig({
         eyeY,
         seatZRef.current,
       );
-    } else if ((p === "outside" || freeViewRef.current) && skyPitchRef.current > 0) {
-      // Lever le regard sans déplacer le pivot ni faire descendre la caméra sous le pont.
-      skyTiltRef.current.setFromAxisAngle(LOCAL_X_AXIS, skyPitchRef.current);
-      cam.quaternion.multiply(skyTiltRef.current);
-    }
-    if (freeViewRef.current && cam.position.y < 0.24) {
-      const lift = 0.24 - cam.position.y;
-      cam.position.y += lift;
-      if (controls.current) controls.current.target.y += lift;
+    } else if (p === "outside" || freeViewRef.current) {
+      const control = controls.current;
+      if (control && cam.position.y < ORBIT_CAMERA_FLOOR) {
+        control.target.y += ORBIT_CAMERA_FLOOR - cam.position.y;
+        cam.position.y = ORBIT_CAMERA_FLOOR;
+      }
+      if (skyPitchRef.current > 0) {
+        // Le regard se lève indépendamment de l'orbite autour du bus.
+        skyTiltRef.current.setFromAxisAngle(LOCAL_X_AXIS, skyPitchRef.current);
+        cam.quaternion.multiply(skyTiltRef.current);
+      }
+      const zoom = orbitZoom.current;
+      if (control && cam instanceof THREE.PerspectiveCamera && zoom.logRatio) {
+        const step = reducedMotion || Math.abs(zoom.logRatio) < 0.00005
+          ? zoom.logRatio
+          : zoom.logRatio * -Math.expm1(-21 * dt);
+        dollyOrbitCamera(cam, control.target, zoom.cursor, step, maxOrbitDistance);
+        zoom.logRatio -= step;
+      }
     }
   }, -0.5);
 
@@ -906,7 +890,7 @@ export default function CameraRig({
       enabled={phase === "outside" || (phase === "inside" && freeView)}
       minDistance={MIN_ORBIT_DISTANCE}
       maxDistance={maxOrbitDistance}
-      zoomToCursor={phase === "outside" || (phase === "inside" && freeView)}
+      enableZoom={false}
       maxPolarAngle={EXTERIOR_MAX_POLAR_ANGLE}
       enablePan={phase === "outside" || (phase === "inside" && freeView)}
       touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
