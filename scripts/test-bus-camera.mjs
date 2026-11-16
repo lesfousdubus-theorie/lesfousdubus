@@ -3,16 +3,24 @@ import { build } from "esbuild";
 
 const { outputFiles } = await build({
   stdin: {
-    contents: 'export * from "./src/lib/bus-camera"; export * from "./src/lib/world-visibility"; export { BoxGeometry, Group, Mesh, PerspectiveCamera, PlaneGeometry, SphereGeometry, Vector2, Vector3 } from "three"; export { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";',
+    contents: 'export * from "./src/lib/bus-camera"; export * from "./src/lib/world-visibility"; export { getWalkingLegPose } from "./src/lib/passenger-gait"; export { getPassengerSkeleton } from "./src/lib/passenger-proportions"; export { BoxGeometry, Group, Mesh, PerspectiveCamera, PlaneGeometry, SphereGeometry, Vector2, Vector3 } from "three"; export { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";',
     resolveDir: process.cwd(), loader: "ts",
   },
   bundle: true, format: "esm", platform: "node", write: false, logLevel: "silent",
 });
 const { BoxGeometry, Group, Mesh, PerspectiveCamera, PlaneGeometry, SphereGeometry, Vector2, Vector3,
   MIN_ORBIT_DISTANCE, ORBIT_CAMERA_FLOOR, cacheSceneryBounds, createSceneryVisibility, dollyOrbitCamera,
-  mergeGeometries, setSceneryParts, wheelZoomRatio } = await import(
+  getPassengerSkeleton, getWalkingLegPose, mergeGeometries, setSceneryParts, wheelZoomRatio } = await import(
   `data:text/javascript;base64,${Buffer.from(outputFiles[0].text).toString("base64")}`
 );
+
+for (const id of ["luffy", "chopper", "brook"]) {
+  const rig = getPassengerSkeleton(id);
+  const rest = getWalkingLegPose(0, rig.standingHipHeight, 0, 0, id);
+  for (const angle of Object.values(rest)) assert(Math.abs(angle) < 1e-6, `${id} stands with straight legs`);
+  const seated = getWalkingLegPose(0, rig.seatedHipHeight, 0, 1, id);
+  assert(seated.upper > .8 && seated.lower < -.8, `${id} can still bend to sit`);
+}
 
 assert.equal(wheelZoomRatio(0, 0, 720), 1);
 assert.equal(wheelZoomRatio(2, 1, 720), wheelZoomRatio(32, 0, 720));

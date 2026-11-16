@@ -7,8 +7,8 @@ import { fetchJson } from "@/lib/client/bus-api";
 import type { BusOccupant } from "@/lib/bus-occupancy";
 import type { PassengerProfile } from "@/types/passenger";
 
-type NameEntry = { seatIndex: number; displayName: string | null };
-const EMPTY_NAMES = new Map<number, string | null>();
+type NameEntry = Pick<PassengerProfile, "seatIndex" | "avatarId"> & { displayName: string | null };
+const EMPTY_NAMES = new Map<number, NameEntry | null>();
 const NAME_PAGE_SIZE = 80;
 const NAME_HEIGHT = 128;
 const MAX_NAME_WIDTH = 1024;
@@ -23,12 +23,12 @@ export function getVisiblePassengerName(value: string | null | undefined) {
   return lower !== "anonyme" && lower !== "passager" ? name : undefined;
 }
 
-/** Charger les noms des places rendues, même hors de la fenêtre des profils détaillés. */
-export function useVisiblePassengerNames(passengers: BusOccupant[], revision: number) {
+/** Charger le pseudo et le personnage des places rendues, hors des profils détaillés. */
+export function useVisiblePassengerSummaries(passengers: BusOccupant[], revision: number) {
   const key = passengers.filter(person => person.passengerKind === "visitor")
     .map(person => person.index).sort((a, b) => a - b).join(",");
-  const cache = useRef({ revision, names: new Map<number, string | null>() });
-  const [result, setResult] = useState<{ revision: number; names: ReadonlyMap<number, string | null> }>();
+  const cache = useRef({ revision, names: new Map<number, NameEntry | null>() });
+  const [result, setResult] = useState<{ revision: number; names: ReadonlyMap<number, NameEntry | null> }>();
   useEffect(() => {
     if (!key) return;
     if (cache.current.revision !== revision) cache.current = { revision, names: new Map() };
@@ -51,7 +51,7 @@ export function useVisiblePassengerNames(passengers: BusOccupant[], revision: nu
           return;
         }
         for (const seat of slices[index]) memory.names.set(seat, null);
-        for (const { seatIndex, displayName } of response.value.names) memory.names.set(seatIndex, displayName?.trim() || null);
+        for (const summary of response.value.names) memory.names.set(summary.seatIndex, summary);
       });
       setResult({ revision, names: new Map(memory.names) });
       if (canRetry && failed.length) retry = window.setTimeout(() => void load(failed, false), 1400);

@@ -29,6 +29,7 @@ interface BusProps {
   onVideoPlaybackChange?: (active: boolean) => void;
   phase: "outside" | "entering" | "inside" | "exiting";
   freeView?: boolean;
+  messagesBackdrop?: boolean;
   worldRef: React.RefObject<WorldState>;
   passengerCount?: number;
   seatCapacity?: number;
@@ -57,6 +58,7 @@ export default function Bus({
   onVideoPlaybackChange,
   phase,
   freeView = false,
+  messagesBackdrop = false,
   worldRef,
   passengerCount = 0,
   seatCapacity = passengerCount,
@@ -80,6 +82,7 @@ export default function Bus({
   const wheels = useRef<(THREE.Group | null)[]>([]);
   const leftWiper = useRef<THREE.Group>(null);
   const rightWiper = useRef<THREE.Group>(null);
+  const exteriorView = freeView || messagesBackdrop;
 
   // Calcul dynamique de la longueur et des rangées du bus
   const numRows = getBusPhysicalRows(seatCapacity);
@@ -188,7 +191,7 @@ export default function Bus({
     }
 
     // Rotation des roues du bus adaptée à la vitesse de défilement
-    if (phase !== "inside" || freeView) {
+    if (phase !== "inside" || exteriorView) {
       wheels.current.forEach((w) => {
         // Le support tourne Y local vers -X monde : +Y fait rouler vers -Z.
         if (w) w.rotation.y = (w.rotation.y + frameDt * 12 * mult) % (Math.PI * 2);
@@ -220,7 +223,7 @@ export default function Bus({
         rightTarget={rightTarget}
         sideLabel={sideLabel}
         reducedMotion={reducedMotion}
-        freeView={freeView}
+        freeView={exteriorView}
         licensePlateTex={licensePlateTex}
         montCorvoTex={montCorvoTex}
         hatGeo={hatGeo}
@@ -271,7 +274,7 @@ export default function Bus({
           idx={idx}
           tvOn={tvOn && !partyOn}
           isActive={idx === activeTvIndex}
-          visible={freeView || idx === activeTvIndex || phase !== "inside"
+          visible={exteriorView || idx === activeTvIndex || phase !== "inside"
             || viewerZ <= pos[2] || viewerZ - pos[2] >= 2.5}
           mats={mats}
           tvOffTex={tvOffTex}
@@ -285,6 +288,9 @@ export default function Bus({
         tvOn={tvOn}
         onPlaybackChange={onVideoPlaybackChange}
         phase={phase}
+        freeView={freeView}
+        busGroup={group}
+        rearWallZ={rearWallZ}
         hasEntered={hasEntered}
         journey={journey}
         isMutedForFullscreen={isMutedForFullscreen}

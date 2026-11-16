@@ -116,6 +116,10 @@ export async function runServerAuthorizationChecks() {
         assert.equal(chosen.data.passenger.avatarId, "chopper");
         assert.equal(chosen.data.passenger.displayName, "Nakama Test");
         assert.equal(chosen.data.passenger.comment, "Vive le bus !");
+        const distantName = await worker.fetch(`http://isolated.test/api/bus-entries?names=1&seats=${chosen.data.seatIndex}`);
+        assert.deepEqual((await distantName.json()).names, [
+          { seatIndex: chosen.data.seatIndex, displayName: "Nakama Test", avatarId: "chopper" },
+        ]);
         assert(chosen.data.profileRevision > named.data.profileRevision, "Avatar changes invalidate nearby public profiles.");
         const namedLookup = await worker.fetch(`http://isolated.test/api/bus-entries?visitorId=${encodeURIComponent(ownId)}`);
         assert.equal(namedLookup.status, 200);

@@ -7,7 +7,7 @@ import type { PassengerProfile } from "@/types/passenger";
 import { JOURNEY_MAX_DT, type JourneyState } from "@/lib/bus-journey";
 import { getWalkingLegPose, BODY_BEHIND_HIP } from "@/lib/passenger-gait";
 import { getNakamaArchetype } from "./passenger-archetypes";
-import { getArchetypeMaterials, getPassengerLabelY } from "./Passengers";
+import { getArchetypeMaterials } from "./Passengers";
 import { CharacterPart } from "./CharacterShapes";
 import PassengerHead from "./PassengerHead";
 import { PassengerNeck, PassengerTorso } from "./PassengerAnatomy";
@@ -18,6 +18,7 @@ import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, sam
 import PassengerSignatureProp from "./PassengerSignatureProp";
 import { keepPassengerHandsApart } from "@/lib/passenger-space";
 import { getVisiblePassengerName, PassengerNameTag } from "./PassengerNameTags";
+import { getPassengerNameHeightFromHip, usePassengerHeadHeight } from "./usePassengerHeadHeight";
 
 /** Le même nakama attend, marche, s'assoit, puis devient le corps en vue subjective. */
 export default function BoardingAvatar({ journey, passengerIndex, avatarId, physicalSeatIndex, profile, onSelect, partyOn, hornPulse, reducedMotion }: {
@@ -32,6 +33,7 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
   const hovered = useRef(false);
   const hips = useRef<THREE.Group>(null);
   const head = useRef<THREE.Group>(null);
+  const headModel = useRef<THREE.Group>(null);
   const nameTag = useRef<THREE.Group>(null);
   const upperBody = useRef<THREE.Group>(null);
   const legs = useRef<(THREE.Group | null)[]>([]);
@@ -55,10 +57,7 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
     [profile, passengerIndex, displayName],
   );
   const interactive = Boolean(resolvedProfile && onSelect);
-  const labelY = useMemo(
-    () => getPassengerLabelY(archetype) - (0.64 + skeleton.seatedHipHeight),
-    [archetype, skeleton.seatedHipHeight],
-  );
+  const crown = usePassengerHeadHeight(archetype.id, headModel);
 
   useEffect(() => () => {
     if (hovered.current) {
@@ -105,7 +104,8 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
     const turn = Math.atan2(Math.sin(heading - root.current.rotation.y), Math.cos(heading - root.current.rotation.y));
     root.current.rotation.y += turn * (1 - Math.exp(-24 * Math.min(dt, 0.25)));
     const bob = Math.sin(cycle * 2) * 0.009 * gait.strength * (1 - sit);
-    hips.current.position.set(0, THREE.MathUtils.lerp(skeleton.standingHipHeight, skeleton.seatedHipHeight, sit) + bob, skeleton.seatedHipZ * sit);
+    const standingY = THREE.MathUtils.lerp(skeleton.standingHipHeight, skeleton.walkingHipHeight, gait.strength);
+    hips.current.position.set(0, THREE.MathUtils.lerp(standingY, skeleton.seatedHipHeight, sit) + bob, skeleton.seatedHipZ * sit);
     if(upperBody.current){
       upperBody.current.position.y=skeleton.torsoAboveHip+pose.current.bob*.5*sit;
       upperBody.current.rotation.set(pose.current.torsoPitch,pose.current.torsoYaw+pose.current.rootYaw,pose.current.torsoRoll);
@@ -140,11 +140,11 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
     seatIndex: passengerIndex, archetypeId: archetype.id, row: Math.floor(physicalSeatIndex / 4), seatInRow: physicalSeatIndex % 4 }} visible={false}
   >
     <group ref={hips} name="nakama-hips">
-      {displayName && (
+      {displayName && crown !== undefined && (
         <group ref={nameTag}>
           <PassengerNameTag
             name={displayName}
-            position={[0, labelY, 0.14 - skeleton.seatedHipZ]}
+            position={[0, getPassengerNameHeightFromHip(archetype.id, crown), .14 - skeleton.seatedHipZ]}
             onClick={interactive ? (event) => {
               if (!resolvedProfile) return;
               event.stopPropagation();
@@ -187,7 +187,7 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
       </group>)}
       <group ref={head} name="bus-boarding-avatar-head" position={[0, skeleton.neckAboveHip-skeleton.torsoAboveHip, 0]}>
         <PassengerNeck archetype={archetype} mats={mats} />
-        <group position={[0, skeleton.headAboveNeck, 0]}><PassengerHead archetype={archetype} mats={mats}
+        <group ref={headModel} position={[0, skeleton.headAboveNeck, 0]}><PassengerHead archetype={archetype} mats={mats}
           motion={pose} index={passengerIndex ?? 0} reducedMotion={reducedMotion}/>
         </group>
       </group>

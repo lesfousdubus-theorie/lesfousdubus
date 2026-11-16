@@ -380,7 +380,8 @@ export default function Scene({
           tvOn={tvOn}
           onVideoPlaybackChange={onVideoPlaybackChange}
           phase={phase}
-          freeView={freeView || messagesBackdrop}
+          freeView={freeView}
+          messagesBackdrop={messagesBackdrop}
           journey={journey}
           worldRef={worldRef}
           passengerCount={passengerCount}

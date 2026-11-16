@@ -5,9 +5,17 @@ const compiled = await build({
   entryPoints: ["src/lib/bus-audio.ts"], bundle: true, write: false,
   format: "esm", platform: "node", logLevel: "silent",
 });
-const { BUS_AUDIO_EVENTS, emitBusAudioEvent, onBusAudioEvent, getBusAudioOwner } = await import(
+const { BUS_AUDIO_EVENTS, emitBusAudioEvent, onBusAudioEvent, getBusAudioOwner, getFreeViewTvVolume } = await import(
   `data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`,
 );
+
+assert.equal(getFreeViewTvVolume(.9, 1.85, 39, 42), 100);
+assert.equal(getFreeViewTvVolume(4.2, 1.85, 39, 42), 25);
+assert.equal(getFreeViewTvVolume(0, 5, 39, 42), 25);
+assert.equal(getFreeViewTvVolume(0, 1.85, 45, 42), 25);
+assert.equal(getFreeViewTvVolume(0, 1.85, -7, 42), 25);
+const closeOutside = getFreeViewTvVolume(1.8, 1.85, 39, 42);
+assert(closeOutside > 25 && closeOutside < 100);
 
 // Every combination has exactly one owner; disabling a higher-priority source
 // must return the channel to the next requested source, including silence.

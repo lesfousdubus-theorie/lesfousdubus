@@ -512,7 +512,7 @@ export function BusHud({
               <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1">
                 <button
                   type="button"
-                  onClick={() => { if (freeView) toggleFreeView(); setSeatRow((r) => Math.max(0, r - 1)); }}
+                  onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
                   disabled={seatRow <= 0}
                   aria-label="Rangée précédente"
                   className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/50 active:scale-95 cursor-pointer"
@@ -529,7 +529,7 @@ export function BusHud({
                 </span>
                 <button
                   type="button"
-                  onClick={() => { if (freeView) toggleFreeView(); setSeatRow((r) => Math.min(numRows - 1, r + 1)); }}
+                  onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
                   disabled={seatRow >= numRows - 1}
                   aria-label="Rangée suivante"
                   className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/50 active:scale-95 cursor-pointer"
@@ -544,7 +544,7 @@ export function BusHud({
               <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1 border-t border-white/10 pt-1">
                 <button
                   type="button"
-                  onClick={() => { if (freeView) toggleFreeView(); setSeatColumn(Math.max(0, seatColumn - 1)); }}
+                  onClick={() => setSeatColumn(Math.max(0, seatColumn - 1))}
                   disabled={seatColumn <= 0}
                   aria-label="Colonne à gauche"
                   className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/50 active:scale-95 cursor-pointer"
@@ -561,7 +561,7 @@ export function BusHud({
                 </span>
                 <button
                   type="button"
-                  onClick={() => { if (freeView) toggleFreeView(); setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1)); }}
+                  onClick={() => setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1))}
                   disabled={seatColumn >= seatCountInRow - 1}
                   aria-label="Colonne à droite"
                   className="group relative grid h-11 w-11 place-items-center rounded-lg p-0 text-white transition-transform hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-not-allowed disabled:text-white/50 active:scale-95 cursor-pointer"
