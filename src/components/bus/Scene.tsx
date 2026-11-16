@@ -3,6 +3,7 @@
 import PartyMusicClock from "./PartyMusicClock";
 import { Component, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import type { Camera } from "three";
 import Bus from "./Bus";
 import World from "./World";
 import DayNight from "./DayNight";
@@ -40,6 +41,7 @@ interface SceneProps {
   onArrived: (phase: "inside" | "outside") => void;
   passengerCount?: number;
   seatCapacity?: number;
+  initialStatsReady?: boolean;
   vacantSeatRanges?: Array<[number, number, number]>;
   currentSeatRow?: number;
   currentSeatColumn?: number | null;
@@ -291,6 +293,7 @@ export default function Scene({
   onArrived,
   passengerCount = 0,
   seatCapacity = passengerCount,
+  initialStatsReady = true,
   vacantSeatRanges = [],
   currentSeatRow = 3,
   currentSeatColumn = null,
@@ -328,6 +331,7 @@ export default function Scene({
   const cabinCenterZ = useMemo(() => (BUS_FRONT_Z + rearWallZ) / 2, [rearWallZ]);
   const cameraFar = useMemo(() => getBusCameraFar(cabinLength), [cabinLength]);
   const journey=useRef(createJourneyState());
+  const visitCameraRef = useRef<Camera>(null);
 
   // Position Z du regard du passager (rangée choisie)
   const clampedRow = Math.max(0, Math.min(numRows - 1, currentSeatRow));
@@ -382,6 +386,7 @@ export default function Scene({
           phase={phase}
           freeView={freeView}
           messagesBackdrop={messagesBackdrop}
+          visitCameraRef={visitCameraRef}
           journey={journey}
           worldRef={worldRef}
           passengerCount={passengerCount}
@@ -414,6 +419,9 @@ export default function Scene({
         cabinLength={cabinLength}
         cabinCenterZ={cabinCenterZ}
         cameraFar={cameraFar}
+        visitCameraRef={visitCameraRef}
+        initialStatsReady={initialStatsReady}
+        inputsPaused={renderPaused || messagesBackdrop}
         currentSeatZ={currentSeatZ}
         currentSeatX={currentSeatX}
         currentPassengerSeatIndex={currentPassengerSeatIndex}

@@ -30,6 +30,7 @@ interface BusProps {
   phase: "outside" | "entering" | "inside" | "exiting";
   freeView?: boolean;
   messagesBackdrop?: boolean;
+  visitCameraRef: React.RefObject<THREE.Camera | null>;
   worldRef: React.RefObject<WorldState>;
   passengerCount?: number;
   seatCapacity?: number;
@@ -59,6 +60,7 @@ export default function Bus({
   phase,
   freeView = false,
   messagesBackdrop = false,
+  visitCameraRef,
   worldRef,
   passengerCount = 0,
   seatCapacity = passengerCount,
@@ -290,6 +292,7 @@ export default function Bus({
         phase={phase}
         freeView={freeView}
         busGroup={group}
+        visitCameraRef={visitCameraRef}
         rearWallZ={rearWallZ}
         hasEntered={hasEntered}
         journey={journey}

@@ -82,6 +82,7 @@ interface BusTvPlayerProps {
   phase: Phase;
   freeView: boolean;
   busGroup: React.RefObject<THREE.Group | null>;
+  visitCameraRef: React.RefObject<THREE.Camera | null>;
   rearWallZ: number;
   hasEntered: boolean;
   journey: React.RefObject<JourneyState>;
@@ -96,6 +97,7 @@ export function BusTvPlayer({
   phase,
   freeView,
   busGroup,
+  visitCameraRef,
   rearWallZ,
   hasEntered,
   journey,
@@ -419,7 +421,7 @@ export function BusTvPlayer({
     return () => { stopPrepare(); stopPlay(); stopToggle(); };
   }, [applyDesiredPlayback, connectPlayer, failPlayer, reportPlayback, shouldPlay, stopVolumeRamp]);
 
-  useFrame(({ camera, controls }) => {
+  useFrame(({ camera }) => {
     const desired = desiredRef.current;
     const trip = journey.current;
     const player = playerRef.current;
@@ -433,7 +435,7 @@ export function BusTvPlayer({
       if (now < state.nextUpdateAt) return;
       state.nextUpdateAt = now + 80;
       // Le mur des messages a sa propre caméra. Le son suit la caméra de visite.
-      const listener = controls && "object" in controls && controls.object instanceof THREE.Camera ? controls.object : camera;
+      const listener = visitCameraRef.current ?? camera;
       busGroup.current.worldToLocal(listener.getWorldPosition(state.listener));
       volume = getFreeViewTvVolume(state.listener.x, state.listener.y, state.listener.z, rearWallZ);
     } else return;
