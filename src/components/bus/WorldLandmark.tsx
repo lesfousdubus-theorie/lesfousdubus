@@ -22,7 +22,17 @@ export type PropType =
   | "pine"
   | "snowman"
   | "drumMesa"
-  | "rock";
+  | "rock"
+  | "techDome"
+  | "holoTower"
+  | "mechPod"
+  | "giantSword"
+  | "vikingHall"
+  | "runestone"
+  | "drakkar"
+  | "justicePillar"
+  | "waterfallCliff"
+  | "courthouse";
 
 export interface PropDef {
   type: PropType;
@@ -62,6 +72,14 @@ const MATS = {
     emissiveIntensity: 1.8,
   }),
   steelRail: new THREE.MeshStandardMaterial({ color: "#545963", metalness: 0.8, roughness: 0.3 }),
+  neonCyan: new THREE.MeshStandardMaterial({
+    color: "#9ef8ff",
+    emissive: "#19d4ff",
+    emissiveIntensity: 1.4,
+    roughness: 0.25,
+  }),
+  water: new THREE.MeshStandardMaterial({ color: "#43bdd7", roughness: 0.28, metalness: 0.08 }),
+  marble: new THREE.MeshStandardMaterial({ color: "#dce5ef", roughness: 0.85 }),
 };
 
 function LandmarkModel({ def }: { def: PropDef }) {
@@ -113,13 +131,18 @@ function LandmarkModel({ def }: { def: PropDef }) {
           <mesh material={MATS.gold} position={[0, 8.2, 0]} rotation={[0, Math.PI / 4, 0]}>
             <coneGeometry args={[1.8, 1.8, 4]} />
           </mesh>
-          {/* Portail d'entrée du temple */}
+          {/* Portail d'entrée du temple et colonnes */}
           <mesh material={MATS.black} position={[0, 1.2, 6.2]} rotation={[0, 0, 0]}>
             <boxGeometry args={[2.2, 2.4, 0.3]} />
           </mesh>
           <mesh material={MATS.sandDark} position={[0, 2.5, 6.3]}>
             <boxGeometry args={[3.2, 0.4, 0.5]} />
           </mesh>
+          {[-1.5, 1.5].map((x) => (
+            <mesh key={x} material={MATS.sandDark} position={[x, 1.35, 6.55]}>
+              <cylinderGeometry args={[0.25, 0.34, 2.7, 6]} />
+            </mesh>
+          ))}
         </group>
       );
 
@@ -199,18 +222,21 @@ function LandmarkModel({ def }: { def: PropDef }) {
           <mesh material={MATS.gold} position={[0, h + 2.5, 0]}>
             <coneGeometry args={[0.25, 1.2, 8]} />
           </mesh>
-          {/* Fenêtres à arches sur les étages */}
-          {[0, 1, 2].map((floor) =>
+          {/* Fenêtres à arches et lueurs adaptées à la hauteur du bâtiment */}
+          {Array.from({ length: Math.max(1, Math.min(3, Math.floor((h - 0.8) / 2.2))) }, (_, floor) =>
             [-w * 0.28, w * 0.28].map((fx, fi) => (
               <mesh
                 key={`${floor}-${fi}`}
-                material={MATS.black}
+                material={(floor + fi) % 2 === 0 ? MATS.lanternLight : MATS.black}
                 position={[fx, 1.5 + floor * 2.2, w * 0.45 + 0.02]}
               >
                 <boxGeometry args={[0.65, 1.1, 0.06]} />
               </mesh>
             )),
           )}
+          <mesh material={MATS.wallPastelA} position={[0, 2.9, w * 0.48]}>
+            <boxGeometry args={[w * 0.72, 0.16, 0.45]} />
+          </mesh>
         </group>
       );
     }
@@ -329,25 +355,40 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "pagoda":
       return (
         <group scale={s * 1.25}>
+          {/* Socle en pierre de la pagode */}
+          <mesh material={MATS.rock} position={[0, 0.25, 0]} receiveShadow>
+            <boxGeometry args={[6.0, 0.5, 6.0]} />
+          </mesh>
           {/* Pagode traditionnelle à 3 étages de Wano */}
-          {[0, 1, 2].map((i) => (
-            <group key={i} position={[0, i * 3.4, 0]}>
-              <mesh material={MATS.redWood} position={[0, 1.5, 0]} castShadow>
-                <boxGeometry args={[5.2 - i * 1.1, 3.0, 5.2 - i * 1.1]} />
-              </mesh>
-              {/* Toit incurvé traditionnel */}
-              <mesh
-                material={MATS.darkRoof}
-                position={[0, 3.2, 0]}
-                rotation={[0, Math.PI / 4, 0]}
-                castShadow
-              >
-                <coneGeometry args={[(6.8 - i * 1.2) * 0.76, 1.5, 4]} />
-              </mesh>
-            </group>
-          ))}
+          {[0, 1, 2].map((i) => {
+            const w = 5.2 - i * 1.1;
+            const winW = w * 0.42;
+            return (
+              <group key={i} position={[0, 0.4 + i * 3.4, 0]}>
+                <mesh material={MATS.redWood} position={[0, 1.5, 0]} castShadow>
+                  <boxGeometry args={[w, 3.0, w]} />
+                </mesh>
+                {/* Fenêtres shoji éclairées sur les façades */}
+                <mesh material={MATS.lanternLight} position={[0, 1.5, w / 2 + 0.03]}>
+                  <boxGeometry args={[winW, 1.05, 0.06]} />
+                </mesh>
+                <mesh material={MATS.lanternLight} position={[0, 1.5, -w / 2 - 0.03]}>
+                  <boxGeometry args={[winW, 1.05, 0.06]} />
+                </mesh>
+                {/* Toit incurvé traditionnel */}
+                <mesh
+                  material={MATS.darkRoof}
+                  position={[0, 3.2, 0]}
+                  rotation={[0, Math.PI / 4, 0]}
+                  castShadow
+                >
+                  <coneGeometry args={[(6.8 - i * 1.2) * 0.76, 1.5, 4]} />
+                </mesh>
+              </group>
+            );
+          })}
           {/* Flèche d'or au sommet */}
-          <mesh material={MATS.gold} position={[0, 11.2, 0]}>
+          <mesh material={MATS.gold} position={[0, 11.6, 0]}>
             <coneGeometry args={[0.3, 2.0, 8]} />
           </mesh>
         </group>
@@ -356,23 +397,31 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "torii":
       return (
         <group scale={s * 1.4}>
-          {/* Portail Torii vermillon */}
+          {/* Socles en pierre et piliers du portail Torii vermillon */}
           {[-1.8, 1.8].map((x) => (
-            <mesh key={x} material={MATS.redWood} position={[x, 2.2, 0]} castShadow>
-              <cylinderGeometry args={[0.24, 0.3, 4.4, 12]} />
-            </mesh>
+            <group key={x} position={[x, 0, 0]}>
+              <mesh material={MATS.rock} position={[0, 0.25, 0]}>
+                <cylinderGeometry args={[0.38, 0.45, 0.5, 10]} />
+              </mesh>
+              <mesh material={MATS.redWood} position={[0, 2.2, 0]} castShadow>
+                <cylinderGeometry args={[0.24, 0.3, 4.4, 12]} />
+              </mesh>
+            </group>
           ))}
           {/* Linteau supérieur noir galbé */}
-          <mesh material={MATS.black} position={[0, 4.9, 0]} castShadow>
+          <mesh material={MATS.black} position={[0, 4.72, 0]} castShadow>
             <boxGeometry args={[5.8, 0.35, 0.55]} />
           </mesh>
           {/* Poutre principale rouge */}
           <mesh material={MATS.redWood} position={[0, 4.4, 0]} castShadow>
             <boxGeometry args={[5.2, 0.38, 0.45]} />
           </mesh>
-          {/* Poutre intermédiaire */}
+          {/* Poutre intermédiaire et tablette dorée */}
           <mesh material={MATS.redWood} position={[0, 3.5, 0]}>
             <boxGeometry args={[4.2, 0.28, 0.32]} />
+          </mesh>
+          <mesh material={MATS.gold} position={[0, 4.05, 0.2]}>
+            <boxGeometry args={[0.55, 0.75, 0.14]} />
           </mesh>
         </group>
       );
@@ -444,6 +493,34 @@ function LandmarkModel({ def }: { def: PropDef }) {
           <mesh material={MATS.snow} position={[0, 3.4, 0]} castShadow>
             <sphereGeometry args={[0.55, 14, 14]} />
           </mesh>
+          {/* Écharpe rouge et boutons en charbon */}
+          <mesh material={MATS.redWood} position={[0, 2.95, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.55, 0.12, 8, 16]} />
+          </mesh>
+          <mesh material={MATS.redWood} position={[0.35, 2.6, 0.5]} rotation={[0.2, 0, -0.35]}>
+            <boxGeometry args={[0.18, 0.72, 0.08]} />
+          </mesh>
+          {[2.1, 2.4, 2.68].map((y) => (
+            <mesh key={y} material={MATS.black} position={[0, y, 0.76]}>
+              <sphereGeometry args={[0.07, 6, 6]} />
+            </mesh>
+          ))}
+          {[-0.18, 0.18].map((x) => (
+            <mesh key={x} material={MATS.black} position={[x, 3.52, 0.48]}>
+              <sphereGeometry args={[0.06, 6, 6]} />
+            </mesh>
+          ))}
+          {/* Bras en brindilles */}
+          {[-1, 1].map((side) => (
+            <mesh
+              key={side}
+              material={MATS.trunk}
+              position={[side * 0.98, 2.55, 0]}
+              rotation={[0, 0, -side * 0.75]}
+            >
+              <cylinderGeometry args={[0.05, 0.07, 1.1, 6]} />
+            </mesh>
+          ))}
           {/* Nez carotte */}
           <mesh material={MATS.carrot} position={[0, 3.4, 0.55]} rotation={[Math.PI / 2, 0, 0]}>
             <coneGeometry args={[0.12, 0.6, 8]} />
@@ -455,6 +532,235 @@ function LandmarkModel({ def }: { def: PropDef }) {
           <mesh material={MATS.black} position={[0, 3.75, 0]}>
             <cylinderGeometry args={[0.65, 0.65, 0.08, 12]} />
           </mesh>
+        </group>
+      );
+
+    case "techDome":
+      return (
+        <group scale={s * 1.2}>
+          <mesh material={MATS.marble} position={[0, 1.4, 0]} castShadow>
+            <cylinderGeometry args={[3.1, 3.5, 2.8, 16]} />
+          </mesh>
+          <mesh material={MATS.snow} position={[0, 2.8, 0]} castShadow>
+            <sphereGeometry args={[3.1, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          </mesh>
+          <mesh material={MATS.neonCyan} position={[0, 2.8, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[3.2, 0.14, 6, 24]} />
+          </mesh>
+          <mesh material={MATS.steelRail} position={[0, 6.2, 0]}>
+            <cylinderGeometry args={[0.09, 0.16, 1.4, 8]} />
+          </mesh>
+          <mesh material={MATS.neonCyan} position={[0, 7.0, 0]}>
+            <sphereGeometry args={[0.28, 10, 10]} />
+          </mesh>
+        </group>
+      );
+
+    case "holoTower":
+      return (
+        <group scale={s * 1.1}>
+          <mesh material={MATS.steelRail} position={[0, 2.6, 0]} castShadow>
+            <cylinderGeometry args={[0.35, 0.75, 5.2, 10]} />
+          </mesh>
+          <mesh material={MATS.neonCyan} position={[0, 3.3, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[1.35, 0.12, 6, 20]} />
+          </mesh>
+          <mesh material={MATS.neonCyan} position={[0, 4.7, 0]} rotation={[Math.PI / 2, 0.25, 0]}>
+            <torusGeometry args={[0.95, 0.1, 6, 20]} />
+          </mesh>
+          <mesh material={MATS.gold} position={[0, 5.6, 0]}>
+            <sphereGeometry args={[0.32, 10, 10]} />
+          </mesh>
+        </group>
+      );
+
+    case "mechPod":
+      return (
+        <group scale={s}>
+          {[-0.65, 0.65].map((x) => (
+            <mesh key={x} material={MATS.steelRail} position={[x, 1.1, 0]} castShadow>
+              <cylinderGeometry args={[0.36, 0.42, 2.2, 8]} />
+            </mesh>
+          ))}
+          <mesh material={MATS.marble} position={[0, 3.0, 0]} castShadow>
+            <boxGeometry args={[2.2, 2.1, 1.6]} />
+          </mesh>
+          <mesh material={MATS.steelRail} position={[0, 4.3, 0]}>
+            <sphereGeometry args={[0.85, 12, 10]} />
+          </mesh>
+          <mesh material={MATS.neonCyan} position={[0, 4.3, 0.78]}>
+            <boxGeometry args={[1.05, 0.24, 0.16]} />
+          </mesh>
+        </group>
+      );
+
+    case "giantSword":
+      return (
+        <group scale={s * 1.1}>
+          <mesh material={MATS.rock} position={[0, 0.9, 0]} castShadow>
+            <dodecahedronGeometry args={[1.8, 1]} />
+          </mesh>
+          <group position={[0, 1.4, 0]} rotation={[0.12, 0.2, 0.22]}>
+            <mesh material={MATS.steelRail} position={[0, 3.6, 0]} castShadow>
+              <boxGeometry args={[0.95, 7.2, 0.22]} />
+            </mesh>
+            <mesh material={MATS.gold} position={[0, 7.2, 0]}>
+              <boxGeometry args={[2.8, 0.42, 0.48]} />
+            </mesh>
+            <mesh material={MATS.trunk} position={[0, 8.3, 0]}>
+              <cylinderGeometry args={[0.2, 0.22, 2.0, 8]} />
+            </mesh>
+          </group>
+        </group>
+      );
+
+    case "vikingHall":
+      return (
+        <group scale={s * 1.2}>
+          <mesh material={MATS.trunk} position={[0, 1.8, 0]} castShadow>
+            <boxGeometry args={[5.4, 3.6, 7.2]} />
+          </mesh>
+          <mesh material={MATS.darkRoof} position={[0, 5.2, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+            <coneGeometry args={[5.6, 3.4, 4]} />
+          </mesh>
+          {[-2.72, 2.72].map((x) => (
+            <mesh key={x} material={MATS.gold} position={[x, 2.0, 0]} rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry args={[0.55, 0.55, 0.14, 10]} />
+            </mesh>
+          ))}
+          <mesh material={MATS.lanternLight} position={[0, 1.8, 3.62]}>
+            <boxGeometry args={[1.2, 1.6, 0.1]} />
+          </mesh>
+        </group>
+      );
+
+    case "runestone":
+      return (
+        <group scale={s}>
+          <mesh material={MATS.rock} position={[0, 2.2, 0]} castShadow>
+            <cylinderGeometry args={[0.75, 1.25, 4.4, 6]} />
+          </mesh>
+          <mesh material={MATS.gold} position={[0, 2.35, 0.88]}>
+            <boxGeometry args={[0.28, 2.2, 0.08]} />
+          </mesh>
+          <mesh material={MATS.neonCyan} position={[0, 2.85, 0.86]}>
+            <boxGeometry args={[0.7, 0.2, 0.08]} />
+          </mesh>
+        </group>
+      );
+
+    case "drakkar":
+      return (
+        <group scale={s * 1.15}>
+          <mesh material={MATS.trunk} position={[0, 0.85, 0]} scale={[1.1, 0.6, 2.8]} castShadow>
+            <sphereGeometry args={[1.8, 12, 10]} />
+          </mesh>
+          <mesh material={MATS.trunk} position={[0, 3.4, 0]}>
+            <cylinderGeometry args={[0.14, 0.2, 5.2, 8]} />
+          </mesh>
+          <mesh material={MATS.trunk} position={[0, 4.95, 0.25]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.09, 0.09, 3.8, 6]} />
+          </mesh>
+          <mesh material={MATS.redWood} position={[0, 3.7, 0.25]}>
+            <boxGeometry args={[3.4, 2.4, 0.12]} />
+          </mesh>
+          {/* Boucliers dorés plaqués contre la courbure de la coque */}
+          {[
+            [-1.8, 1.66],
+            [0, 1.88],
+            [1.8, 1.66],
+          ].map(([z, offset]) =>
+            [-1, 1].map((side) => (
+              <mesh
+                key={`${z}-${side}`}
+                material={MATS.gold}
+                position={[side * offset, 1.2, z]}
+                rotation={[0, 0, Math.PI / 2]}
+              >
+                <cylinderGeometry args={[0.38, 0.38, 0.12, 10]} />
+              </mesh>
+            )),
+          )}
+          <mesh material={MATS.gold} position={[0, 1.8, 4.5]} rotation={[0.45, 0, 0]}>
+            <coneGeometry args={[0.45, 1.8, 6]} />
+          </mesh>
+        </group>
+      );
+
+    case "justicePillar":
+      return (
+        <group scale={s * 1.15}>
+          <mesh material={MATS.marble} position={[0, 0.5, 0]} castShadow>
+            <boxGeometry args={[2.2, 1.0, 2.2]} />
+          </mesh>
+          <mesh material={MATS.snow} position={[0, 3.5, 0]} castShadow>
+            <cylinderGeometry args={[0.62, 0.72, 5.2, 12]} />
+          </mesh>
+          <mesh material={MATS.marble} position={[0, 6.2, 0]}>
+            <boxGeometry args={[2.0, 0.55, 2.0]} />
+          </mesh>
+        </group>
+      );
+
+    case "waterfallCliff":
+      return (
+        <group scale={s * 1.2}>
+          <mesh material={MATS.rock} position={[0, 3.6, 0]} castShadow>
+            <cylinderGeometry args={[3.0, 3.8, 7.2, 10]} />
+          </mesh>
+          <mesh material={MATS.water} position={[0, 3.6, 3.15]}>
+            <boxGeometry args={[2.4, 7.0, 0.3]} />
+          </mesh>
+          <mesh material={MATS.snow} position={[0, 0.55, 3.5]} scale={[1.4, 0.45, 0.9]}>
+            <sphereGeometry args={[1.6, 10, 8]} />
+          </mesh>
+        </group>
+      );
+
+    case "courthouse":
+      return (
+        <group scale={s * 1.2}>
+          <mesh material={MATS.snow} position={[0, 0.25, 0.2]} receiveShadow>
+            <boxGeometry args={[7.0, 0.5, 6.0]} />
+          </mesh>
+          <mesh material={MATS.marble} position={[0, 2.8, 0]} castShadow>
+            <boxGeometry args={[6.2, 5.2, 5.0]} />
+          </mesh>
+          <mesh material={MATS.darkRoof} position={[0, 6.3, 0]} rotation={[0, Math.PI / 4, 0]}>
+            <coneGeometry args={[5.1, 2.0, 4]} />
+          </mesh>
+          {[-2.3, -1.2, 1.2, 2.3].map((x) => (
+            <mesh key={x} material={MATS.snow} position={[x, 2.8, 2.65]}>
+              <cylinderGeometry args={[0.26, 0.32, 4.8, 8]} />
+            </mesh>
+          ))}
+          {/* Portail central dégagé et fenêtres latérales du palais de justice */}
+          <mesh material={MATS.black} position={[0, 1.4, 2.53]}>
+            <boxGeometry args={[1.35, 2.2, 0.08]} />
+          </mesh>
+          {[-1.75, 1.75].map((x) => (
+            <mesh key={x} material={MATS.lanternLight} position={[x, 3.2, 2.53]}>
+              <boxGeometry args={[0.55, 0.95, 0.06]} />
+            </mesh>
+          ))}
+          {/* Emblème à 5 points du Gouvernement Mondial centré sous le toit */}
+          <mesh material={MATS.gold} position={[0, 4.45, 2.56]}>
+            <boxGeometry args={[1.25, 0.14, 0.08]} />
+          </mesh>
+          <mesh material={MATS.gold} position={[0, 4.45, 2.56]}>
+            <boxGeometry args={[0.14, 1.25, 0.08]} />
+          </mesh>
+          {[
+            [0, 4.45],
+            [-0.55, 4.45],
+            [0.55, 4.45],
+            [0, 5.0],
+            [0, 3.9],
+          ].map(([ex, ey], idx) => (
+            <mesh key={idx} material={MATS.gold} position={[ex, ey, 2.6]}>
+              <sphereGeometry args={[0.15, 8, 8]} />
+            </mesh>
+          ))}
         </group>
       );
 

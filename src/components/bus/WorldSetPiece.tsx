@@ -3,7 +3,16 @@
 import { useEffect, useMemo } from "react";
 import { createOnePieceScenery, createOnePieceForeground, SET_PIECE_OFFSET_X, type SceneryBatch } from "@/lib/one-piece-scenery";
 
-const NAMES = ["alubarna-palace", "water-seven-fountain", "shandora-golden-bell", "wano-flower-castle", "drum-rockies-castle"];
+const NAMES = [
+  "alubarna-palace",
+  "water-seven-fountain",
+  "shandora-golden-bell",
+  "wano-flower-castle",
+  "drum-rockies-castle",
+  "egghead-punk-records",
+  "elbaf-adam-tree",
+  "enies-lobby-justice-gate",
+];
 
 /** A destination is baked into a handful of shared-material meshes. */
 export default function WorldSetPiece({ zone, lowPower = false }: { zone: number; lowPower?: boolean }) {

@@ -62,7 +62,7 @@ ils ne doivent pas être exécutés pendant le rendu serveur de l’accueil.
 
 `AvatarSelectionModal` réutilise le rig de `BoardingAvatar` dans un Canvas à la
 demande : seuls le changement de personnage et la rotation rendent l’aperçu.
-`WorldSetPiece` fusionne les géométries des cinq destinations par matériau ;
+`WorldSetPiece` fusionne les géométries des huit destinations par matériau ;
 `one-piece-scenery.ts` fournit aussi les détails allégés pour les appareils modestes.
 
 ## Contrat audio entre les racines React

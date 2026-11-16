@@ -12,9 +12,8 @@ import { BRIDGE_MARKING_BOX } from "@/lib/world-geometry";
 import { cacheSceneryBounds, createSceneryVisibility, type SceneryBounds } from "@/lib/world-visibility";
 
 export const ZONE_LEN = 160;
-const LOOP = ZONE_LEN * 5;
 const WINDOW_START = -440;
-const TERRAIN_RELIEF = [1.1, .32, .55, .65, 1.05];
+const TERRAIN_RELIEF = [1.1, .32, .55, .65, 1.05, .45, 1.2, .25];
 const TERRAIN_WIDTH = 96;
 const TERRAIN_DEPTH = ZONE_LEN - 16;
 const TERRAIN_COLUMNS = 28;
@@ -26,6 +25,22 @@ export const ZONES = [
   { name: "Skypiea", subtitle: "L'île céleste", ground: "#f5f3ec", shore: "#e4e1d6" },
   { name: "Pays des Wa", subtitle: "Terre des samouraïs", ground: "#5da854", shore: "#86c878" },
   { name: "Île de Drum", subtitle: "Royaume des neiges", ground: "#ebf2fa", shore: "#dbe5f2" },
+  { name: "Egghead", subtitle: "L'île du futur", ground: "#dfe9f3", shore: "#8ec8e8" },
+  { name: "Elbaf", subtitle: "Royaume des géants", ground: "#4e8c45", shore: "#8b7a5e" },
+  { name: "Enies Lobby", subtitle: "L'île judiciaire", ground: "#8fa5b5", shore: "#c6f0ed" },
+] as const;
+
+const LOOP = ZONE_LEN * ZONES.length;
+
+const TINT_COLORS = [
+  "#f6d38a",
+  "#d7e1d6",
+  "#ffffff",
+  "#a4cf77",
+  "#ffffff",
+  "#f3f9ff",
+  "#8bc462",
+  "#c9d6e0",
 ] as const;
 
 const ZONE_PROPS: Record<number, PropType[]> = {
@@ -34,6 +49,9 @@ const ZONE_PROPS: Record<number, PropType[]> = {
   2: ["cloud", "cloud", "cloud", "giantJack", "bell"],
   3: ["sakura", "sakura", "sakura", "pagoda", "torii", "lantern"],
   4: ["pine", "pine", "pine", "snowman", "drumMesa", "rock"],
+  5: ["techDome", "holoTower", "mechPod", "cloud"],
+  6: ["pine", "giantSword", "vikingHall", "runestone", "drakkar", "rock"],
+  7: ["justicePillar", "courthouse", "waterfallCliff", "seaTrainPoles", "rock"],
 };
 
 function mulberry32(a: number) {
@@ -53,6 +71,9 @@ function weatherForLandscape(zone: number, visit: number): WorldState["weather"]
   if (zone === 1) return value < 0.62 ? "rain" : value < 0.68 ? "snow" : "clear";
   if (zone === 3) return value < 0.34 ? "rain" : value < 0.5 ? "snow" : "clear";
   if (zone === 2) return value < 0.25 ? "rain" : value < 0.35 ? "snow" : "clear";
+  if (zone === 6) return value < 0.2 ? "snow" : value < 0.45 ? "rain" : "clear";
+  if (zone === 7) return value < 0.25 ? "rain" : "clear";
+  if (zone === 5) return value < 0.18 ? "rain" : "clear";
   return value < 0.12 ? "rain" : "clear";
 }
 
@@ -80,7 +101,7 @@ function makeTerrain(zone: number) {
   const positions = geometry.getAttribute("position") as THREE.BufferAttribute;
   const colors = new Float32Array(positions.count * 3);
   const base = new THREE.Color(ZONES[zone].ground);
-  const tint = new THREE.Color(zone === 0 ? "#f6d38a" : zone === 1 ? "#d7e1d6" : zone === 2 ? "#ffffff" : zone === 3 ? "#a4cf77" : "#ffffff");
+  const tint = new THREE.Color(TINT_COLORS[zone] ?? "#ffffff");
   const color = new THREE.Color();
 
   for (let i = 0; i < positions.count; i++) {
@@ -118,7 +139,7 @@ function terrainSurfaceAt(geometry: THREE.BufferGeometry, x: number, z: number) 
 function buildProps(): PropDef[] {
   const rnd = mulberry32(2026);
   const out: PropDef[] = [];
-  for (let z = 0; z < 5; z++) {
+  for (let z = 0; z < ZONES.length; z++) {
     const types = ZONE_PROPS[z];
     const count = z === 2 ? 16 : 14;
     for (let i = 0; i < count; i++) {
@@ -129,7 +150,11 @@ function buildProps(): PropDef[] {
         type === "pagoda" ||
         type === "bell" ||
         type === "giantJack" ||
-        type === "drumMesa";
+        type === "drumMesa" ||
+        type === "techDome" ||
+        type === "vikingHall" ||
+        type === "courthouse" ||
+        type === "waterfallCliff";
       const distance = type === "building"
         ? 24 + rnd() * 18
         : big ? 20 + rnd() * 24 : 7 + rnd() * 26;
@@ -210,20 +235,21 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
     for (let i = 0; i < props.length; i++) {
       const g = propRefs.current[i];
       if (!g) continue;
-      const z = (((props[i].base + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
+      let z = (((props[i].base + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
+      if (z > 440) z -= LOOP;
       g.position.z = z;
       const bounds = propBounds.current[i];
-      if (bounds && z > -430 && z < 350) visibility.update(bounds, z);
+      if (bounds && z > -450 && z < 440) visibility.update(bounds, z);
       else g.visible = false;
     }
 
     // Une portion du premier plan peut disparaître sans retirer tout le décor de l'île.
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < ZONES.length; i++) {
       const g = zoneRefs.current[i];
       if (!g) continue;
       const center = i * ZONE_LEN + ZONE_LEN / 2;
       let z = (((center + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
-      if (z > 360) z -= LOOP;
+      if (z > 440) z -= LOOP;
       g.position.z = z;
       const terrain = terrainRefs.current[i];
       const eye = state.camera.position;
@@ -243,7 +269,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
     // Calcul de la zone active
     const baseAtBus = (((-WINDOW_START - scroll) % LOOP) + LOOP) % LOOP;
     if (worldRef.current) {
-      const zone = Math.floor(baseAtBus / ZONE_LEN) % 5;
+      const zone = Math.floor(baseAtBus / ZONE_LEN) % ZONES.length;
       const visit = Math.floor((-WINDOW_START - scroll) / LOOP);
       const weather = weatherForLandscape(zone, visit);
       const weatherKey = `${visit}:${zone}:${weather}`;
@@ -264,7 +290,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       <WorldOcean reducedMotion={reducedMotion} />
       <WorldSeaCreatures worldRef={worldRef} cabinCenterZ={cabinCenterZ} reducedMotion={reducedMotion} lowPower={lowPower} />
 
-      {/* Îles des 5 mondes avec rivages et plages */}
+      {/* Îles des 8 mondes avec rivages et plages */}
       {ZONES.map((zone, i) => (
         <group
           key={zone.name}

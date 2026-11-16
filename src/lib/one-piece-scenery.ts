@@ -36,6 +36,9 @@ export const SCENERY_MATERIALS = {
   castle: new THREE.MeshStandardMaterial({ color: "#d5deef", roughness: 0.91 }),
   pine: new THREE.MeshStandardMaterial({ color: "#34666c", roughness: 1 }),
   lamp: new THREE.MeshStandardMaterial({ color: "#ffda8d", emissive: "#f39b38", emissiveIntensity: 0.45, roughness: 0.8 }),
+  neonCyan: new THREE.MeshStandardMaterial({ color: "#8ff6ff", emissive: "#1cd4ff", emissiveIntensity: 0.75, roughness: 0.35 }),
+  metal: new THREE.MeshStandardMaterial({ color: "#8d9db0", metalness: 0.62, roughness: 0.38 }),
+  foliageDeep: new THREE.MeshStandardMaterial({ color: "#2d6f43", roughness: 0.94 }),
 };
 
 export interface SceneryBatch {
@@ -185,16 +188,31 @@ function alabasta(b: Builder, lowPower: boolean) {
   }
   if (!lowPower) {
     // Low city walls and rooftop awnings make the palace read as a kingdom.
-    for (let i = 0; i < 7; i++) {
-      const a = -Math.PI * 0.55 + i * Math.PI / 6;
+    for (let i = 0; i < 5; i++) {
+      const a = -Math.PI * 0.28 + i * Math.PI * 0.14;
       const x = Math.cos(a) * 11.6 + 0.5, z = Math.sin(a) * 11.6;
       b.box(i % 2 ? "cream" : "peach", [x, 10.0, z], [2.7, 1.8 + i % 2, 2.5]);
       b.box("sandLight", [x, 11.0 + (i % 2) * 0.5, z], [3, 0.2, 2.8]);
+      b.box(i % 2 ? "turquoise" : "coral", [x - 1.4, 10.2, z], [0.9, 0.14, 2.2], [0, 0, 0.28]);
     }
     for (let i = 0; i < 24; i++) {
       const a = i / 24 * Math.PI * 2;
       b.box("cream", [Math.cos(a) * 13.1, 10, Math.sin(a) * 13.1], [0.7, 0.85, 0.7]);
     }
+    // Obélisques au pied et au sommet du grand escalier royal d'Alubarna, plus braseros dorés.
+    for (const side of [-1, 1]) {
+      b.cylinder("sandstone", [-18.2, 2.2, side * 3.8], 0.35, 0.6, 4.4, 4);
+      b.cylinder("gold", [-18.2, 4.75, side * 3.8], 0, 0.35, 0.7, 4);
+      b.cylinder("sandstone", [-9.6, 11.6, side * 3.4], 0.28, 0.45, 3.8, 4);
+      b.cylinder("gold", [-9.6, 13.8, side * 3.4], 0, 0.28, 0.6, 4);
+      b.cylinder("sandstone", [-8.0, 9.9, side * 2.5], 0.45, 0.55, 1.0, 8);
+      b.sphere("lamp", [-8.0, 10.65, side * 2.5], 0.42);
+    }
+    // Tour de l'horloge d'Alubarna sur le côté ouest de la place, dégagée de la falaise.
+    b.box("cream", [-17.2, 4.8, -9.8], [2.6, 9.6, 2.6]);
+    b.dome("turquoise", [-17.2, 9.8, -9.8], 1.5, [1, 1.2, 1]);
+    b.cylinder("gold", [-17.2, 11.9, -9.8], 0, 0.14, 1.0, 6);
+    b.cylinder("sandLight", [-18.55, 7.6, -9.8], 0.75, 0.75, 0.12, 12, [0, 0, Math.PI / 2]);
   }
 }
 
@@ -268,10 +286,26 @@ function waterSeven(b: Builder, lowPower: boolean) {
       if (step % 2 === 0) b.box("cream", [-14.9 + side * 1.45, y + 0.36, z], [0.18, 0.65, 0.18]);
     }
   }
-  // Dock and a long, dark gondola / Yagara boat at the foot of the city.
+  // Dock, Yagara Bull gondolas, Galley-La shipyard crane and warm canal lamps.
   b.box("wood", [-16.8, 0.65, 7], [4.6, 0.22, 3.0]);
-  b.sphere("dark", [-18, 0.8, 11], 1, [0.85, 0.38, 3]);
-  b.sphere("wood", [-18, 1.0, 11], 1, [0.65, 0.14, 2.5]);
+  b.sphere("dark", [-18.2, 0.8, 12.2], 1, [0.85, 0.38, 3]);
+  b.sphere("wood", [-18.2, 1.0, 12.2], 1, [0.65, 0.14, 2.5]);
+  if (!lowPower) {
+    // Yagara Bull avec auvent rayé et figure de proue turquoise dégagée du quai.
+    b.sphere("turquoise", [-18.2, 1.15, 9.2], 0.55, [0.8, 0.8, 1.1]);
+    b.box("coral", [-18.2, 1.68, 12.2], [1.1, 0.16, 2.2]);
+    for (const pz of [11.3, 13.1]) b.cylinder("wood", [-18.2, 1.32, pz], 0.06, 0.06, 0.72, 6);
+    // Grue navale de Galley-La sur le bord du quai, flèche orientée vers l'eau.
+    b.cylinder("metal", [-18.4, 3.45, 6.4], 0.24, 0.32, 5.4, 8);
+    b.box("metal", [-20.2, 6.0, 6.4], [4.4, 0.28, 0.3], [0, 0, -0.18]);
+    b.cylinder("gold", [-22.1, 5.2, 6.4], 0.05, 0.05, 2.2, 6);
+    b.box("wood", [-22.1, 3.9, 6.4], [1.4, 0.5, 1.1]);
+    // Lanternes chaudes sur le quai et aux abords du pont.
+    for (const [lx, ly, lz] of [[-18.7, 1.85, 5.8], [-18.7, 1.85, 8.2], [-16.2, 1.2, -13.3], [-16.2, 1.2, -2.9]]) {
+      b.cylinder("dark", [lx, ly, lz], 0.07, 0.1, 2.2, 6);
+      b.sphere("lamp", [lx, ly + 1.2, lz], 0.28);
+    }
+  }
 }
 
 function skypiea(b: Builder, lowPower: boolean) {
@@ -323,6 +357,17 @@ function skypiea(b: Builder, lowPower: boolean) {
       }
       b.box("oldGold", [2.8, 11.3, z], [8.4, 0.55, 1.1]);
     }
+    // Ponéglyphe de Shandora (socle sombre gravé d'or) et braseros sacrés sur l'esplanade dorée.
+    b.box("dark", [-1.2, 8.6, 0], [1.7, 2.4, 1.7]);
+    b.box("gold", [-2.07, 8.6, 0], [0.08, 1.6, 1.1]);
+    for (const side of [-1, 1]) {
+      b.cylinder("oldGold", [-1.0, 8.1, side * 4.0], 0.5, 0.35, 1.4, 8);
+      b.sphere("lamp", [-1.0, 9.05, side * 4.0], 0.45);
+    }
+    // Petit îlot nuageux suspendu avec son arbre céleste à côté du Giant Jack.
+    b.sphere("cloud", [-12.5, 14.5, 6.5], 2.8, [1.2, 0.45, 1]);
+    b.cylinder("wood", [-12.5, 15.8, 6.5], 0.18, 0.28, 1.4, 6);
+    b.sphere("leafLight", [-12.5, 16.8, 6.5], 1.25, [1.15, 0.65, 1.15]);
   }
   // A long white cloud ribbon curls upward behind the beanstalk.
   b.curve("cloud", [[-11, 5.7, -4], [-13, 8, -7], [-10, 12, -9], [-5, 16, -8], [1, 19, -6]], 0.7, 22);
@@ -389,6 +434,16 @@ function wano(b: Builder, lowPower: boolean) {
       b.sphere("lamp", [-11, 3.6, z], 0.45, [0.85, 1.15, 0.85]);
       b.cylinder("vermilion", [-11, 4.08, z], 0.25, 0.25, 0.11, 8);
     }
+    // Maisons de la Capitale des Fleurs dégagées du rocher et bannières ancrées sur la terrasse.
+    for (const [hx, hz] of [[-7.5, -14.8], [-5.5, 14.2], [-14.8, 1.5]]) {
+      b.box("wood", [hx, 1.5, hz], [3.6, 3.0, 3.4]);
+      b.roof("jadeRoof", [hx, 3.0, hz], 4.8, 4.5, 1.35);
+      b.box("lamp", [hx - 1.85, 1.7, hz], [0.08, 1.2, 1.6]);
+    }
+    for (const side of [-1, 1]) {
+      b.cylinder("vermilion", [-4.6, 20.1, side * 4.1], 0.07, 0.09, 3.2, 6);
+      b.box("gold", [-4.6, 21.0, side * 4.5], [0.1, 1.3, 0.75]);
+    }
   }
 }
 
@@ -425,6 +480,13 @@ function drum(b: Builder, lowPower: boolean) {
   b.cylinder("castle", [1, base + 5.5, 0], 1.35, 1.6, 11, 10);
   b.cylinder("dark", [1, base + 12.3, 0], 0, 2.0, 3.5, 10);
   b.cylinder("snow", [1, base + 12.9, 0], 0, 1.45, 2.5, 10);
+  // Drapeau pirate de sakura du Dr. Hiriluk au sommet du donjon.
+  b.cylinder("metal", [1, base + 15.6, 0], 0.08, 0.1, 3.4, 6);
+  b.box("dark", [1, base + 16.4, 1.1], [0.1, 1.45, 2.1]);
+  b.sphere("blossom", [0.94, base + 16.4, 1.1], 0.34);
+  for (const [py, pz] of [[0.34, 0], [-0.34, 0], [0, 0.34], [0, -0.34]]) {
+    b.sphere("blossomLight", [0.92, base + 16.4 + py, 1.1 + pz], 0.18);
+  }
   arch(b, -3.62, base + 0.2, 0, 1.6, 3.1, "castle");
   for (const z of [-2.2, 2.2]) arch(b, -3.64, base + 2.3, z, 0.62, 1.6, "castle");
   // A winding, pale path and little snowbound village give the sheer heights scale.
@@ -437,17 +499,258 @@ function drum(b: Builder, lowPower: boolean) {
       b.roof("snow", [x, 2.74, z], 3.9, 4.2, 1.6);
       b.box("lamp", [x - 1.63, 1.4, z], [0.1, 0.65, 0.65]);
       b.box("rock", [x + 0.8, 3.7, z + 0.6], [0.45, 1.2, 0.55]);
+      b.sphere("cloudShade", [x + 0.8, 4.7, z + 0.6], 0.48, [1.1, 0.8, 1.1]);
     }
+    // Téléphérique du mont Drum : pylône de départ, câble, bras porteur et cabine éclairée.
+    b.box("rock", [-13.5, 2.1, -5.5], [1.8, 4.2, 1.8]);
+    b.box("metal", [-13.5, 4.3, -5.5], [2.0, 0.3, 2.0]);
+    b.curve("metal", [[-13.5, 4.3, -5.5], [-8.5, 15.2, -2.5], [-3.8, base + 1.5, -0.5]], 0.07, 16);
+    b.cylinder("metal", [-8.5, 14.85, -2.5], 0.08, 0.08, 0.75, 6);
+    b.box("vermilion", [-8.5, 13.7, -2.5], [1.6, 1.6, 1.8]);
+    b.box("lamp", [-9.32, 13.8, -2.5], [0.08, 0.55, 1.0]);
   }
 }
 
-const BUILDERS = [alabasta, waterSeven, skypiea, wano, drum];
+function egghead(b: Builder, lowPower: boolean) {
+  // Base industrielle et piliers soutenant la Labophase sur son nuage.
+  b.cylinder("metal", [1, 5.2, 0], 4.2, 5.6, 10.4, 12);
+  b.cylinder("neonCyan", [1, 5.4, 0], 2.1, 2.1, 9.8, 12);
+  for (let i = 0; i < (lowPower ? 4 : 6); i++) {
+    const a = i / (lowPower ? 4 : 6) * Math.PI * 2;
+    b.cylinder("castle", [1 + Math.cos(a) * 6.5, 5.2, Math.sin(a) * 6.5], 0.7, 0.95, 10.2, 8);
+  }
+  // Plateau de nuages technologiques de la Labophase.
+  const cloudLobes = lowPower ? 7 : 12;
+  for (let i = 0; i < cloudLobes; i++) {
+    const a = i / cloudLobes * Math.PI * 2;
+    b.sphere(i % 2 ? "cloud" : "cloudShade", [1 + Math.cos(a) * 8.4, 10.4, Math.sin(a) * 8.4], 3.8, [1.1, 0.55, 1]);
+  }
+  b.sphere("cloud", [1, 10.8, 0], 9.2, [1.1, 0.35, 1.05]);
+  b.cylinder("castle", [1, 11.8, 0], 8.2, 8.8, 1.2, 16);
+
+  // Dôme-œuf géant de Punk Records surmonté de la pomme-antenne de Vegapunk.
+  b.sphere("snow", [1, 17.5, 0], 5.6, [1, 1.38, 1], 18);
+  b.cylinder("neonCyan", [1, 16.9, 0], 5.72, 5.72, 0.68, 20);
+  b.ring("metal", [1, 14.5, 0], 5.45, 0.28);
+  b.ring("neonCyan", [1, 20.6, 0], 4.7, 0.18);
+  b.dome("vermilion", [1, 24.8, 0], 2.15, [1, 0.75, 1]);
+  b.cylinder("cream", [1, 24.75, 0], 2.2, 2.2, 0.28, 14);
+  b.cylinder("gold", [1, 27.2, 0], 0.14, 0.26, 3.2, 8);
+  b.sphere("neonCyan", [1, 28.9, 0], 0.45);
+  b.ring("neonCyan", [1, 27.6, 0], 1.25, 0.12);
+
+  // Dômes-laboratoires périphériques et tube de transport lumineux.
+  for (const side of [-1, 1]) {
+    b.cylinder("castle", [-4.6, 13.4, side * 7.8], 2.2, 2.4, 2.4, 12);
+    b.dome("snow", [-4.6, 14.6, side * 7.8], 2.2, [1, 0.85, 1]);
+    b.box("neonCyan", [-6.82, 13.5, side * 7.8], [0.12, 0.65, 2.1]);
+  }
+  const tubePoints: Point[] = [[-11.5, 1.6, -8.5], [-9.2, 5.4, -6], [-6.2, 9.6, -3.5], [-4.5, 12.6, 0]];
+  b.cylinder("metal", [-11.5, 0.85, -8.5], 0.8, 1.0, 1.7, 10);
+  b.ring("neonCyan", [-11.5, 1.6, -8.5], 0.85, 0.12);
+  b.curve("neonCyan", tubePoints, 0.34, 18);
+  if (!lowPower) {
+    const tubeCurve = new THREE.CatmullRomCurve3(tubePoints.map((p) => new THREE.Vector3(...p)));
+    const zAxis = new THREE.Vector3(0, 0, 1);
+    for (let i = 1; i <= 3; i++) {
+      const t = i / 4;
+      const pt = tubeCurve.getPoint(t);
+      const tan = tubeCurve.getTangent(t).normalize();
+      const euler = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(zAxis, tan));
+      b.ring("metal", [pt.x, pt.y, pt.z], 0.54, 0.1, [euler.x, euler.y, euler.z]);
+    }
+    // Anneau orbital holographique autour de Punk Records et projecteurs d'écrans sur la terrasse.
+    b.ring("neonCyan", [1, 18.2, 0], 7.4, 0.13, [1.22, 0.35, 0.18]);
+    for (const [hx, hy, hz] of [[-6.7, 14.3, -2.5], [-6.7, 14.7, 2.5]]) {
+      b.cylinder("metal", [hx, 12.6, hz], 0.45, 0.55, 0.4, 8);
+      b.box("neonCyan", [hx, hy, hz], [0.08, 1.6, 2.5]);
+    }
+    // Serre climatique végétale sur la terrasse de la Labophase.
+    b.cylinder("neonCyan", [6.6, 12.6, 5.4], 2.3, 2.3, 0.24, 12);
+    b.sphere("leaf", [6.6, 13.8, 5.4], 1.7, [1.1, 0.8, 1.1]);
+    b.sphere("leafLight", [6.1, 14.5, 5.0], 1.1, [1, 0.8, 1]);
+  }
+
+  // Silhouette du robot géant (Emeth / Vegaforce) au pied de la Labophase.
+  const rx = -8.5, rz = 8.2;
+  for (const leg of [-1, 1]) b.cylinder("metal", [rx, 1.8, rz + leg * 1.1], 0.65, 0.75, 3.6, 8);
+  b.box("castle", [rx, 5.4, rz], [3.2, 3.8, 4.1]);
+  b.sphere("metal", [rx, 7.6, rz], 1.55, [1, 0.85, 1.1]);
+  b.box("neonCyan", [rx - 1.48, 7.55, rz], [0.16, 0.38, 1.7]);
+  for (const side of [-1, 1]) {
+    b.sphere("vermilion", [rx, 6.6, rz + side * 2.55], 1.05, [0.95, 0.9, 0.95]);
+    b.cylinder("metal", [rx - 0.3, 4.5, rz + side * 2.7], 0.52, 0.58, 3.4, 8);
+    b.curve("oldGold", [[rx, 8.6, rz + side * 0.9], [rx - 0.3, 9.8, rz + side * 1.7], [rx - 0.1, 10.6, rz + side * 1.3]], 0.22, 8);
+  }
+}
+
+function elbaf(b: Builder, lowPower: boolean) {
+  // Socle rocheux nordique et cascade descendant des falaises d'Elbaf.
+  b.cylinder("rock", [1, 2.8, 0], 13.5, 16.5, 5.6, 12);
+  b.cylinder("foliageDeep", [1, 5.7, 0], 13.2, 13.7, 0.6, 12);
+  for (let i = 0; i < (lowPower ? 5 : 9); i++) {
+    const a = i / (lowPower ? 5 : 9) * Math.PI * 2;
+    b.cylinder(i % 2 ? "rock" : "rockLight", [1 + Math.cos(a) * 14.5, 2.5, Math.sin(a) * 14.5], 1.1, 2.2, 5 + (i % 3), 6);
+  }
+  b.box("water", [-11.5, 2.8, 1.5], [1.2, 5.6, 3.6], [0, 0, 0.18]);
+  b.sphere("foam", [-13.2, 0.35, 1.5], 2.2, [1.1, 0.35, 1.5]);
+
+  // L'Arbre-Trésor Adam : racines géantes, tronc tressé colossal et canopée multi-étages.
+  for (let strand = 0; strand < 3; strand++) {
+    const offset = strand * Math.PI * 2 / 3;
+    const pts: Point[] = [];
+    for (let i = 0; i <= 7; i++) {
+      const y = 4 + i * 3.6;
+      const twist = offset + i * 0.35;
+      const spread = Math.max(0.9, 2.6 - i * 0.22);
+      pts.push([1.5 + Math.cos(twist) * spread, y, Math.sin(twist) * spread]);
+    }
+    b.curve("wood", pts, 2.2, 20);
+  }
+  for (let i = 0; i < (lowPower ? 4 : 6); i++) {
+    const a = i / (lowPower ? 4 : 6) * Math.PI * 2;
+    b.curve("wood", [[1.5, 7, 0], [1.5 + Math.cos(a) * 7, 4.8, Math.sin(a) * 7], [1.5 + Math.cos(a) * 12, 1.8, Math.sin(a) * 12]], 1.15, 10);
+  }
+  // Grandes branches et feuillage monumental.
+  const branches: [Point, Point, number][] = [
+    [[1.5, 17, 0], [-10, 21, -7], 1.2],
+    [[1.5, 19, 0], [-9, 24, 8], 1.15],
+    [[1.5, 21, 0], [11, 26, -6], 1.1],
+    [[1.5, 23, 0], [10, 27, 7], 1.05],
+  ];
+  for (const [start, end, radius] of branches) {
+    const mid: Point = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2 + 1.5, (start[2] + end[2]) / 2];
+    b.curve("wood", [start, mid, end], radius, 10);
+    b.sphere("foliageDeep", end, 6.2, [1.25, 0.52, 1.15]);
+    b.sphere("leaf", [end[0], end[1] + 1.6, end[2]], 4.8, [1.15, 0.48, 1.1]);
+  }
+  b.sphere("foliageDeep", [1.5, 29.5, 0], 10.5, [1.25, 0.45, 1.2]);
+  b.sphere("leaf", [1.5, 32, 0], 8.6, [1.15, 0.45, 1.1]);
+  b.sphere("leafLight", [0.8, 34, -0.5], 6.0, [1.1, 0.42, 1.05]);
+
+  // Hall viking / Château fondé sur un bastion rocheux ancré dans le plateau.
+  b.box("rockLight", [-6.5, 8.55, -3.5], [7.2, 5.5, 9.2]);
+  b.box("wood", [-6.5, 12.8, -3.5], [5.8, 3.2, 8.2]);
+  b.roof("dark", [-6.5, 14.4, -3.5], 7.4, 9.8, 3.4);
+  for (const side of [-1, 1]) {
+    b.curve("gold", [[-6.5, 17.8, -3.5 + side * 4.4], [-6.5, 19.2, -3.5 + side * 5.2], [-6.5, 19.7, -3.5 + side * 4.5]], 0.2, 8);
+  }
+  for (let i = 0; i < 4; i++) {
+    const sz = -6.5 + i * 2;
+    b.cylinder(i % 2 ? "gold" : "vermilion", [-9.45, 12.7, sz], 0.58, 0.58, 0.16, 10, [0, 0, Math.PI / 2]);
+    b.box("lamp", [-9.45, 13.7, sz], [0.1, 0.55, 0.45]);
+  }
+  if (!lowPower) {
+    // Cabanes suspendues sous les branches d'Adam et braseros géants sur la terrasse du hall.
+    for (const [hx, hy, hz] of [[-10.4, 17.6, -7.2], [-9.4, 20.4, 7.6]]) {
+      b.cylinder("wood", [hx, hy + 2.1, hz], 0.14, 0.14, 2.8, 6);
+      b.box("wood", [hx, hy, hz], [2.6, 2.0, 2.6]);
+      b.roof("dark", [hx, hy + 1.0, hz], 3.5, 3.5, 1.5);
+      b.box("lamp", [hx - 1.33, hy, hz], [0.08, 0.7, 0.9]);
+    }
+    for (const bz of [-7.2, 0.2]) {
+      b.cylinder("rock", [-9.4, 11.95, bz], 0.52, 0.38, 1.3, 8);
+      b.sphere("lamp", [-9.4, 12.85, bz], 0.48);
+    }
+    // Stèle de la fresque du Harley posée au pied ouest de la falaise.
+    b.box("rockLight", [-17.2, 2.2, -7.2], [1.2, 4.4, 5.2]);
+    b.box("gold", [-17.85, 2.4, -7.2], [0.08, 2.8, 4.0]);
+    b.sphere("neonCyan", [-17.92, 3.0, -7.2], 0.55, [0.25, 1, 1]);
+  }
+
+  // Grande épée des géants plantée dans la falaise face au bus (garde et poignée alignées sur la lame).
+  const swordRot: Point = [0.16, 0.2, 0.24];
+  const swordAxis = new THREE.Vector3(0, 1, 0).applyEuler(new THREE.Euler(...swordRot));
+  const bladeCenter = new THREE.Vector3(-11.5, 6.2, 9.2);
+  const guardPos = bladeCenter.clone().addScaledVector(swordAxis, 5.35);
+  const hiltPos = bladeCenter.clone().addScaledVector(swordAxis, 6.8);
+  b.box("metal", [bladeCenter.x, bladeCenter.y, bladeCenter.z], [1.1, 10.5, 0.28], swordRot);
+  b.box("gold", [guardPos.x, guardPos.y, guardPos.z], [3.4, 0.55, 0.65], swordRot);
+  b.cylinder("wood", [hiltPos.x, hiltPos.y, hiltPos.z], 0.22, 0.24, 2.5, 8, swordRot);
+}
+
+function eniesLobby(b: Builder, lowPower: boolean) {
+  // Gouffre circulaire de la cascade : anneau de falaise et rideau d'eau tombant dans l'abîme.
+  b.cylinder("dark", [-2, 0.12, 0], 11.2, 11.2, 0.2, 20);
+  const segments = lowPower ? 12 : 20;
+  for (let i = 0; i < segments; i++) {
+    const a = i / segments * Math.PI * 2;
+    // Laisser une ouverture face au bus pour que la cascade reste lisible depuis le pont.
+    if (Math.cos(a) < -0.68) continue;
+    const x = -2 + Math.cos(a) * 12.6, z = Math.sin(a) * 12.6;
+    b.box("rock", [x, 1.4, z], [2.4, 2.8, 3.8], [0, -a, 0]);
+    b.box("water", [-2 + Math.cos(a) * 11.3, 1.35, Math.sin(a) * 11.3], [0.35, 2.7, 3.4], [0, -a, 0]);
+    b.box("foam", [-2 + Math.cos(a) * 11.0, 0.45, Math.sin(a) * 11.0], [0.65, 0.9, 3.5], [0, -a, 0]);
+  }
+  b.ring("foam", [-2, 0.25, 0], 10.3, 0.35);
+
+  // Esplanade et pont d'accès côté bus menant à la Tour de la Justice.
+  b.box("castle", [-11.5, 2.0, 0], [10.5, 1.1, 5.2]);
+  for (const px of [-15, -11.5, -8]) {
+    for (const pz of [-2.1, 2.1]) b.cylinder("rockLight", [px, 1.0, pz], 0.45, 0.55, 2.0, 8);
+  }
+
+  // Tour de la Justice ancrée sur son socle, colonnade dégagée du portail et tours latérales.
+  b.box("rockLight", [-4.5, 1.0, 0], [8.4, 2.0, 14.2]);
+  b.box("castle", [-4.5, 7.0, 0], [7.8, 10.4, 13.6]);
+  b.box("cream", [-4.5, 12.4, 0], [8.4, 0.6, 14.2]);
+  b.roof("dark", [-4.5, 12.7, 0], 8.8, 14.4, 2.4);
+  for (const z of [-6.0, -4.1, -2.2, 2.2, 4.1, 6.0]) {
+    b.cylinder("cream", [-8.55, 7.05, z], 0.38, 0.45, 10.1, 10);
+  }
+  arch(b, -8.45, 2.5, 0, 2.6, 5.4, "castle");
+  b.box("dark", [-8.48, 10.6, 0], [0.2, 1.5, 3.4]);
+  b.box("gold", [-8.58, 10.6, 0], [0.1, 0.16, 1.9]);
+  b.box("gold", [-8.58, 10.6, 0], [0.1, 1.05, 0.16]);
+  for (const side of [-1, 1]) {
+    b.box("castle", [-3.8, 9.05, side * 8.4], [4.4, 18.1, 4.4]);
+    b.roof("dark", [-3.8, 18.1, side * 8.4], 5.2, 5.2, 2.6);
+    arch(b, -6.05, 13.8, side * 8.4, 1.2, 2.6, "castle");
+  }
+  if (!lowPower) {
+    // Emblème des 5 points du Gouvernement Mondial et bannières sur le pont.
+    for (const [dy, dz] of [[0, 0], [0.52, 0], [-0.52, 0], [0, 0.92], [0, -0.92]]) {
+      b.sphere("gold", [-8.62, 10.6 + dy, dz], 0.16);
+    }
+    for (const px of [-15.2, -12.0]) {
+      for (const side of [-1, 1]) {
+        b.cylinder("metal", [px, 3.6, side * 2.4], 0.06, 0.08, 2.2, 6);
+        b.box("blueHouse", [px, 3.9, side * 2.4], [0.08, 1.2, 0.55]);
+        b.sphere("lamp", [px, 4.85, side * 2.4], 0.22);
+      }
+    }
+    for (const side of [-1, 1]) b.sphere("lamp", [-3.8, 20.9, side * 8.4], 0.45);
+  }
+
+  // La monumentale Porte de la Justice en arrière-plan, entrouverte vers la mer.
+  for (const side of [-1, 1]) {
+    const gz = side * 6.8;
+    const tilt = side * -0.14;
+    b.box("castle", [9.2, 16.5, gz], [2.4, 33, 10.5], [0, tilt, 0]);
+    b.box("metal", [9.2, 33.2, gz], [2.8, 1.1, 11.2], [0, tilt, 0]);
+    b.box("dark", [8.0, 16.5, gz], [0.3, 30, 0.9], [0, tilt, 0]);
+    for (const h of [6, 13, 20, 27]) {
+      b.box("metal", [9.2, h, gz], [2.65, 0.65, 10.7], [0, tilt, 0]);
+    }
+    b.cylinder("gold", [9.2, 35.0, gz], 0, 0.75, 2.8, 6);
+    if (!lowPower) {
+      b.box("gold", [7.96, 23.5, gz], [0.16, 2.6, 0.35], [0, tilt, 0]);
+      b.box("gold", [7.96, 23.5, gz], [0.16, 0.35, 2.6], [0, tilt, 0]);
+      for (const [dy, dz] of [[0, 0], [1.2, 0], [-1.2, 0], [0, 1.2], [0, -1.2]]) {
+        b.sphere("gold", [7.88, 23.5 + dy, gz + dz], 0.36);
+      }
+    }
+  }
+  b.box("dark", [10.8, 16.5, 0], [0.8, 32, 3.2]);
+}
+
+const BUILDERS = [alabasta, waterSeven, skypiea, wano, drum, egghead, elbaf, eniesLobby];
 export const SET_PIECE_OFFSET_X = 33;
 
 /** Geometry is local to an island; every authored vertex stays clear of the road. */
 export function createOnePieceScenery(zone: number, lowPower = false): SceneryBatch[] {
   const builder = new Builder();
-  BUILDERS[Math.max(0, Math.min(4, zone))](builder, lowPower);
+  BUILDERS[Math.max(0, Math.min(BUILDERS.length - 1, zone))](builder, lowPower);
   return builder.finish();
 }
 
@@ -461,6 +764,7 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
   const b = new Builder(true);
   if (zone === 0) {
     for (let i = 0; i < (lowPower ? 3 : 6); i++) {
+      if (side < 0 && i === 1) continue;
       dune(b, side * (27 + (i % 2) * 9), -55 + i * 22, [8 + i % 3, 1.0 + i % 2 * 0.65, 5.5], i % 2 === 0);
     }
     if (side < 0) {
@@ -472,6 +776,16 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
         b.box("sandLight", [-32 + i * 2.6, 3.9 + i % 2 * 2, 35], [1.4, 0.4, 1.2]);
       }
       b.box("sandstone", [-29, 5.9, 35], [6, 0.55, 1.1], [0, 0, 0.04]);
+      if (!lowPower) {
+        // Palmiers de l'oasis, tente nomade et Ponéglyphe dégagé devant les ruines.
+        for (const [px, pz] of [[-22.5, -28], [-33.5, -36]]) {
+          b.cylinder("wood", [px, 1.9, pz], 0.16, 0.24, 3.8, 7);
+          b.sphere("leaf", [px, 4.0, pz], 1.4, [1.2, 0.45, 1.2]);
+        }
+        b.roof("coral", [-23, 0.2, -21], 3.8, 3.2, 1.8);
+        b.box("dark", [-28.1, 1.0, 32.8], [1.4, 2.0, 1.4]);
+        b.box("gold", [-27.38, 1.1, 32.8], [0.06, 1.3, 0.9]);
+      }
     }
   }
   if (zone === 1) {
@@ -487,6 +801,12 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
         for (const edge of [-1, 1]) b.box("cream", [bx, y + 0.65, z + edge * 1.35], [0.96, 0.18, 0.16]);
       }
     }
+    if (!lowPower) {
+      for (const gz of [-18, 14]) {
+        b.sphere("dark", [x, 0.28, gz], 0.8, [0.65, 0.3, 2.1]);
+        b.sphere("turquoise", [x, 0.48, gz - 1.4], 0.38, [0.7, 0.7, 0.9]);
+      }
+    }
     if (side < 0) {
       const colors: MaterialKey[] = ["coral", "peach", "blueHouse"];
       for (let i = 0; i < (lowPower ? 2 : 4); i++) {
@@ -498,6 +818,16 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
         const z = -54 + i * (lowPower ? 15 : 8);
         b.box("wood", [-42.1, 0.95, z], [3.4, 0.2, 0.6]);
         if (i % 2 === 0) b.cylinder("wood", [-42.1, 0.2, z], 0.3, 0.4, 1.7, 6);
+      }
+      if (!lowPower) {
+        // Locomotive du Puffing Tom et wagon posés sur les rails avec attelage.
+        b.box("dark", [-42.1, 2.02, -12], [2.1, 1.5, 5.4]);
+        b.cylinder("metal", [-42.1, 2.35, -14.8], 0.75, 0.75, 2.4, 10, [Math.PI / 2, 0, 0]);
+        b.cylinder("vermilion", [-42.1, 3.35, -15.3], 0.3, 0.24, 1.1, 8);
+        b.sphere("cloud", [-42.1, 4.4, -14.8], 0.8, [1, 0.7, 1.2]);
+        b.sphere("lamp", [-42.1, 2.2, -16.1], 0.32);
+        b.box("metal", [-42.1, 1.6, -8.5], [0.5, 0.25, 1.8]);
+        b.box("blueHouse", [-42.1, 2.02, -5.2], [2.0, 1.45, 5.0]);
       }
     }
   }
@@ -515,26 +845,49 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
         for (const z of [-21, 26]) {
           for (const x of [-40, -32]) b.cylinder("cream", [x, 3.5, z], 0.4, 0.6, 6, 8);
           b.box("cream", [-36, 6.5, z], [9.5, 0.6, 1.3]);
-          b.roof("gold", [-36, 6.9, z], 10, 2.4, 1.2);
+          b.roof("gold", [-36, 6.8, z], 10, 2.4, 1.2);
+          b.sphere("lamp", [-36, 5.8, z], 0.38);
         }
+        // Arbres-nuages célestes et petit Waver posé sur la route blanche.
+        for (const [cx, cz] of [[-24, -40], [-25, 14]]) {
+          b.cylinder("cream", [cx, 1.7, cz], 0.2, 0.3, 3.2, 7);
+          b.sphere("cloud", [cx, 3.7, cz], 1.5, [1.2, 0.6, 1.1]);
+        }
+        b.sphere("cream", [-26.5, 2.85, -4], 0.7, [0.7, 0.35, 1.8]);
+        b.box("turquoise", [-26.5, 4.05, -4], [0.1, 1.7, 1.4]);
       }
     }
   }
   if (zone === 3) {
     // Rice paddies are actual recessed colored plots with earthen banks.
     for (let i = 0; i < (lowPower ? 3 : 5); i++) {
+      if (side < 0 && i === 2) continue;
       const z = -52 + i * 25;
       b.box("leafLight", [side * 32, 0.2, z], [17, 0.12, 13]);
       for (const offset of [-7, 7]) b.box("sandLight", [side * 32, 0.32, z + offset], [18, 0.28, 0.65]);
       for (const offset of [-9, 9]) b.box("sandLight", [side * 32 + offset, 0.32, z], [0.65, 0.28, 14]);
-      if (!lowPower) for (let row = 0; row < 5; row++) b.box("leaf", [side * 32 - 6 + row * 3, 0.35, z], [0.22, 0.3, 11]);
+      if (!lowPower) {
+        for (let row = 0; row < 5; row++) b.box("leaf", [side * 32 - 6 + row * 3, 0.35, z], [0.22, 0.3, 11]);
+        if (i % 2 === 0) {
+          b.cylinder("wood", [side * 30, 1.0, z], 0.08, 0.1, 1.8, 6);
+          b.cylinder("sandLight", [side * 30, 1.95, z], 0.1, 0.75, 0.45, 8);
+        }
+      }
     }
     if (side < 0) {
-      cherryTree(b, -28, 0.2, -24, 4.8, lowPower);
+      cherryTree(b, -28, 0.2, -14.5, 4.8, lowPower);
       cherryTree(b, -34, 0.2, 33, 5.3, lowPower);
       b.box("wood", [-29, 2.1, 4], [6.7, 4.2, 5]);
-      b.roof("jadeRoof", [-29, 4.3, 4], 8.1, 6.4, 1.8);
+      b.roof("jadeRoof", [-29, 4.2, 4], 8.1, 6.4, 1.8);
       for (const z of [2.4, 4, 5.6]) b.box("lamp", [-32.4, 2.3, z], [0.09, 1.5, 0.6]);
+      if (!lowPower) {
+        for (const [px, pz] of [[-28, -14.5], [-34, 33]]) {
+          b.sphere("blossomLight", [px, 0.22, pz], 3.1, [1.2, 0.06, 1.1]);
+        }
+        b.cylinder("rock", [-24, 0.9, 4], 0.22, 0.3, 1.6, 6);
+        b.box("lamp", [-24, 1.95, 4], [0.5, 0.55, 0.5]);
+        b.box("rock", [-24, 2.35, 4], [0.76, 0.24, 0.76]);
+      }
     }
   }
   if (zone === 4) {
@@ -552,6 +905,103 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
           b.cylinder("pine", [x, size * (2.1 + tier * 1.5), z], 0, size * (2.4 - tier * 0.5), size * 3, 8);
           b.cylinder("snow", [x, size * (2.75 + tier * 1.5), z], 0, size * (1.8 - tier * 0.42), size * 1.8, 8);
         }
+      }
+      if (!lowPower) {
+        // Lanternes enneigées et clôtures en bois bordant la piste de Drum.
+        for (const z of [-42, -14, 14, 42]) {
+          b.cylinder("wood", [-22.5, 1.2, z], 0.1, 0.14, 2.4, 6);
+          b.sphere("lamp", [-22.5, 2.5, z], 0.32);
+          b.box("snow", [-22.5, 2.86, z], [0.65, 0.18, 0.65]);
+        }
+      }
+    }
+  }
+  if (zone === 5) {
+    // Egghead : plateformes futuristes, bordures lumineuses cyan et modules de la Fabriophase.
+    const x = side * 23;
+    b.box("castle", [x, 0.16, 0], [3.2, 0.18, 128]);
+    b.box("neonCyan", [x - side * 1.62, 0.26, 0], [0.16, 0.12, 128]);
+    for (let i = 0; i < (lowPower ? 3 : 5); i++) {
+      const z = -50 + i * 25;
+      b.cylinder("metal", [side * 28, 1.4, z], 0.4, 0.5, 2.8, 8);
+      b.ring("neonCyan", [side * 28, 3.0, z], 0.9, 0.11);
+    }
+    if (side < 0) {
+      for (const z of [-38, 12]) {
+        b.cylinder("castle", [-33, 1.8, z], 3.4, 3.8, 3.6, 12);
+        b.dome("snow", [-33, 3.6, z], 3.4, [1, 0.78, 1]);
+        b.ring("neonCyan", [-33, 3.6, z], 3.5, 0.14);
+      }
+      const conduit: Point[] = [[-39.5, 1.1, -55], [-38, 2.4, -15], [-39.5, 1.8, 30], [-37, 1.2, 56]];
+      b.curve("neonCyan", conduit, 0.25, 24);
+      for (const [cx, cy, cz] of conduit) {
+        b.cylinder("metal", [cx, cy / 2, cz], 0.25, 0.34, cy, 8);
+      }
+      if (!lowPower) {
+        // Mini véhicule Vega-Tank posé sur ses chenilles sur la passerelle.
+        b.box("dark", [-23, 0.42, -14], [2.1, 0.34, 3.2]);
+        b.box("metal", [-23, 0.88, -14], [1.9, 0.65, 3.0]);
+        b.sphere("vermilion", [-23, 1.38, -14], 0.75, [0.9, 0.7, 1.1]);
+        b.box("neonCyan", [-23, 1.4, -14.78], [0.95, 0.22, 0.16]);
+      }
+    }
+  }
+  if (zone === 6) {
+    // Elbaf : reliefs rocheux nordiques, pierres runiques et village viking sur le rivage ouest.
+    for (let i = 0; i < (lowPower ? 3 : 5); i++) {
+      const x = side * (26 + (i % 2) * 8), z = -52 + i * 25;
+      b.cylinder(i % 2 ? "rock" : "rockLight", [x, 0.9 + (i % 2) * 0.5, z], 2.2, 3.6, 1.8 + (i % 2), 7);
+    }
+    if (side < 0) {
+      for (const z of [-36, 18]) {
+        b.box("wood", [-33, 1.6, z], [6.5, 3.2, 8.2]);
+        b.roof("dark", [-33, 3.2, z], 8.2, 9.6, 3.1);
+        b.box("lamp", [-29.7, 1.7, z], [0.12, 0.8, 1.4]);
+        if (!lowPower) {
+          b.cylinder("wood", [-28.5, 0.6, z - 2.5], 0.55, 0.55, 1.2, 8);
+          b.cylinder("wood", [-28.5, 0.6, z + 2.5], 0.55, 0.55, 1.2, 8);
+        }
+      }
+      for (const z of [-12, 42]) {
+        b.cylinder("rock", [-26, 2.2, z], 0.7, 1.2, 4.4, 6);
+        b.box("gold", [-25.35, 2.4, z], [0.08, 2.2, 0.3]);
+      }
+      if (!lowPower) {
+        // Drakkar viking complet amarré au bord du village d'Elbaf.
+        b.sphere("wood", [-37, 0.85, -8], 1.5, [1.1, 0.55, 3.1]);
+        b.cylinder("wood", [-37, 3.2, -8], 0.12, 0.16, 4.5, 8);
+        b.cylinder("wood", [-37, 4.55, -7.8], 0.08, 0.08, 3.1, 6, [0, 0, Math.PI / 2]);
+        b.box("vermilion", [-37, 3.5, -7.8], [2.8, 2.0, 0.12]);
+        b.cylinder("gold", [-37, 1.7, -3.5], 0.1, 0.36, 1.4, 6, [0.45, 0, 0]);
+      }
+    }
+  }
+  if (zone === 7) {
+    // Enies Lobby : colonnades judiciaires et bordure de cascade écumante.
+    const x = side * 22;
+    b.box("castle", [x, 0.22, 0], [2.4, 0.34, 130]);
+    for (let i = 0; i < (lowPower ? 5 : 9); i++) {
+      const z = -56 + i * (lowPower ? 28 : 14);
+      b.cylinder("cream", [x, 2.3, z], 0.35, 0.42, 4.2, 8);
+      b.box("castle", [x, 4.5, z], [1.2, 0.35, 1.2]);
+      if (!lowPower && i % 2 === 0) b.sphere("lamp", [x, 4.92, z], 0.28);
+    }
+    if (side < 0) {
+      for (const z of [-35, 25]) {
+        b.box("castle", [-34, 2.8, z], [7.5, 5.6, 11]);
+        b.roof("dark", [-34, 5.6, z], 8.4, 11.8, 2.0);
+        for (const cz of [-3, 0, 3]) b.cylinder("cream", [-30.1, 2.8, z + cz], 0.34, 0.38, 5.2, 8);
+      }
+      // Ligne du Sea Train sur pilotis arrivant vers l'île judiciaire.
+      for (const rx of [-43, -41.2]) b.box("metal", [rx, 1.15, 0], [0.14, 0.16, 120]);
+      for (let i = 0; i < (lowPower ? 8 : 15); i++) {
+        const z = -54 + i * (lowPower ? 15 : 8);
+        b.box("wood", [-42.1, 0.92, z], [3.2, 0.2, 0.55]);
+        if (i % 2 === 0) b.cylinder("rock", [-42.1, 0.42, z], 0.28, 0.38, 0.85, 6);
+      }
+      if (!lowPower) {
+        b.box("vermilion", [-42.1, 1.98, -5], [2.0, 1.5, 5.2]);
+        b.sphere("lamp", [-42.1, 2.05, -7.8], 0.3);
       }
     }
   }
