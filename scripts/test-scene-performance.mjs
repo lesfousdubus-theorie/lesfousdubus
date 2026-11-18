@@ -21,6 +21,7 @@ const {
   createPerformanceMonitor,
   formatGpuLabel,
   getSceneGeometryBudgets,
+  getShadowCameraFraming,
   isDefaultGraphicsSettings,
   resolveGraphicsProfile,
   sampleSceneDpr,
@@ -624,5 +625,31 @@ const wrapped = getActiveZoneLoopState(8 * 160, orderA, 160);
 assert.equal(wrapped.slot, 0);
 assert.equal(wrapped.visit, 1);
 assert.equal(wrapped.zone, orderA[0], "loop wraps back seamlessly after visiting all 8 islands");
+
+// 12. Cadrage dynamique de la caméra d'ombres (large devant le bus et extensible au dézoom)
+const closeShadow = getShadowCameraFraming({
+  cabinCenterZ: 0,
+  cabinLength: 9.2,
+  cameraX: 4.6,
+  cameraY: 3.35,
+  cameraZ: -12.5,
+  fogFar: 480,
+  shadowMapSize: 2048,
+});
+assert(closeShadow.halfWidth >= 100 && closeShadow.halfDepth >= 160, "shadow box covers islands and road far ahead");
+assert(closeShadow.centerZ < 0, "shadow focus shifts forward along the route");
+
+const zoomedOutShadow = getShadowCameraFraming({
+  cabinCenterZ: 0,
+  cabinLength: 9.2,
+  cameraX: 90,
+  cameraY: 60,
+  cameraZ: -150,
+  fogFar: 720,
+  shadowMapSize: 2048,
+});
+assert(zoomedOutShadow.halfWidth > closeShadow.halfWidth, "zooming out widens shadow frustum");
+assert(zoomedOutShadow.halfDepth > closeShadow.halfDepth, "zooming out lengthens shadow frustum");
+assert(zoomedOutShadow.centerZ < closeShadow.centerZ, "zooming out follows camera view");
 
 console.log("Scene performance GPU classification, dynamic budgets, hysteresis and sea creature physics passed.");
