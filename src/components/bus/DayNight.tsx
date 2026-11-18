@@ -16,7 +16,7 @@ interface Props {
   fogFar?: number;
   shadowsEnabled?: boolean;
   shadowMapSize?: 1024 | 2048;
-  shadowsType?: false | "basic" | "soft";
+  shadowsType?: false | "basic" | "percentage" | "soft";
   starCount?: number;
   cabinCenterZ?: number;
   cabinLength?: number;
@@ -63,7 +63,7 @@ export default function DayNight({
   const appliedShadowRef = useRef<{
     enabled: boolean;
     mapSize: 1024 | 2048;
-    type: false | "basic" | "soft" | undefined;
+    type: false | "basic" | "percentage" | "soft" | undefined;
   } | null>(null);
   const sunTarget = useMemo(() => {
     const obj = new THREE.Object3D();
@@ -80,12 +80,12 @@ export default function DayNight({
   const lightColor = useMemo(() => new THREE.Color(), []);
   const sunPosition = useMemo(() => new THREE.Vector3(), []);
   const shadowFraming = useMemo<ShadowCameraFraming>(() => ({
-    halfWidth: 76,
-    halfDepth: 88,
-    centerZ: -22,
-    sunDistance: 123,
+    halfWidth: 66,
+    halfDepth: 80,
+    centerZ: -20,
+    sunDistance: 112,
     near: 1,
-    far: 320,
+    far: 300,
     normalBias: 0.009,
   }), []);
 
@@ -123,31 +123,39 @@ export default function DayNight({
   }, [starGeo]);
 
   useFrame((state, dt) => {
+    const targetGlShadowType = shadowsType === "basic" ? THREE.BasicShadowMap : THREE.PCFShadowMap;
+    const glShadowChanged =
+      state.gl.shadowMap.enabled !== resolvedShadowsEnabled
+      || state.gl.shadowMap.type !== targetGlShadowType;
     const prevShadow = appliedShadowRef.current;
     if (
       sun.current
       && (
         !prevShadow
+        || glShadowChanged
         || prevShadow.enabled !== resolvedShadowsEnabled
         || prevShadow.mapSize !== resolvedShadowMapSize
         || prevShadow.type !== shadowsType
       )
     ) {
+      state.gl.shadowMap.enabled = resolvedShadowsEnabled;
+      state.gl.shadowMap.type = targetGlShadowType;
       sun.current.castShadow = resolvedShadowsEnabled;
       if (
-        sun.current.shadow.mapSize.width !== resolvedShadowMapSize
+        glShadowChanged
+        || sun.current.shadow.mapSize.width !== resolvedShadowMapSize
         || sun.current.shadow.mapSize.height !== resolvedShadowMapSize
       ) {
         sun.current.shadow.mapSize.set(resolvedShadowMapSize, resolvedShadowMapSize);
         sun.current.shadow.map?.dispose();
         sun.current.shadow.map = null;
       }
-      if (prevShadow && (prevShadow.enabled !== resolvedShadowsEnabled || prevShadow.type !== shadowsType)) {
+      if (glShadowChanged || (prevShadow && (prevShadow.enabled !== resolvedShadowsEnabled || prevShadow.type !== shadowsType))) {
         state.scene.traverse((object) => {
           if (object instanceof THREE.Mesh) {
             const materials = Array.isArray(object.material) ? object.material : [object.material];
             for (const material of materials) {
-              if (material instanceof THREE.MeshStandardMaterial) {
+              if (material instanceof THREE.Material) {
                 material.needsUpdate = true;
               }
             }
@@ -304,13 +312,14 @@ export default function DayNight({
         castShadow={resolvedShadowsEnabled}
         shadow-mapSize-width={resolvedShadowMapSize}
         shadow-mapSize-height={resolvedShadowMapSize}
-        shadow-camera-left={-76}
-        shadow-camera-right={76}
-        shadow-camera-top={88}
-        shadow-camera-bottom={-88}
+        shadow-camera-left={-66}
+        shadow-camera-right={66}
+        shadow-camera-top={80}
+        shadow-camera-bottom={-80}
         shadow-camera-near={1}
-        shadow-camera-far={320}
-        shadow-bias={-0.00012}
+        shadow-camera-far={300}
+        shadow-radius={2}
+        shadow-bias={-0.00015}
         shadow-normalBias={0.009}
       />
       <group ref={celestial}>

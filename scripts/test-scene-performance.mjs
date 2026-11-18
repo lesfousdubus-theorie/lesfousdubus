@@ -271,7 +271,7 @@ const mixedOverride = resolveGraphicsProfile(
 assert.equal(mixedOverride.activeTier, "low");
 assert.equal(mixedOverride.fogFar, tierProfiles[3].fogFar);
 assert.equal(mixedOverride.maxDpr, tierProfiles[3].maxDpr);
-assert.equal(mixedOverride.canvasShadows, "soft");
+assert.equal(mixedOverride.canvasShadows, "percentage");
 assert.equal(mixedOverride.shadowMapSize, 2048);
 assert.equal(mixedOverride.detailedPassengerLimit, tierProfiles[2].detailedPassengerLimit);
 
@@ -628,8 +628,8 @@ assert.equal(wrapped.zone, orderA[0], "loop wraps back seamlessly after visiting
 
 // 12. Cadrage dynamique de la caméra d'ombres (courbes nettes, portée avant et extension au dézoom)
 assert(
-  resolveGraphicsProfile({ ...DEFAULT_GRAPHICS_SETTINGS }, "medium", 2).canvasShadows === "soft",
-  "medium tier uses filtered soft shadows",
+  resolveGraphicsProfile({ ...DEFAULT_GRAPHICS_SETTINGS }, "medium", 2).canvasShadows === "percentage",
+  "medium tier uses filtered PCF shadows",
 );
 const closeShadow = getShadowCameraFraming({
   cabinCenterZ: 0,
@@ -641,7 +641,7 @@ const closeShadow = getShadowCameraFraming({
   shadowMapSize: 2048,
 });
 assert(
-  closeShadow.halfWidth >= 70 && closeShadow.halfDepth >= 80 && closeShadow.normalBias <= 0.016,
+  closeShadow.halfWidth >= 64 && closeShadow.halfDepth >= 76 && closeShadow.normalBias <= 0.016,
   "shadow box stays crisp around bus while covering islands ahead",
 );
 assert(closeShadow.centerZ < 0, "shadow focus shifts forward along the route");
