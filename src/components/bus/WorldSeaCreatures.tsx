@@ -99,10 +99,26 @@ function animateWater(
   spray.instanceMatrix.needsUpdate = true;
 }
 
-export default function WorldSeaCreatures({ worldRef, cabinCenterZ, reducedMotion, lowPower }: {
-  worldRef: React.RefObject<WorldState>; cabinCenterZ: number; reducedMotion: boolean; lowPower: boolean;
+export default function WorldSeaCreatures({
+  worldRef,
+  cabinCenterZ,
+  reducedMotion,
+  lowPower,
+  slotLimit,
+  cullAhead,
+  cullBehind,
+}: {
+  worldRef: React.RefObject<WorldState>;
+  cabinCenterZ: number;
+  reducedMotion: boolean;
+  lowPower: boolean;
+  slotLimit?: number;
+  cullAhead?: number;
+  cullBehind?: number;
 }) {
-  const limit = lowPower ? 2 : SLOTS.length;
+  const limit = Math.max(1, Math.min(SLOTS.length, slotLimit ?? (lowPower ? 2 : SLOTS.length)));
+  const maxAhead = cullAhead ?? 420;
+  const maxBehind = cullBehind ?? 340;
   const material = useMemo(() => new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: .79, emissive: "#182339", emissiveIntensity: .19 }), []);
   const models = useMemo(() => createSeaCreatures(material, lowPower), [material, lowPower]);
   const effects = useMemo(() => makeEffects(limit, lowPower), [limit, lowPower]);
@@ -175,7 +191,7 @@ export default function WorldSeaCreatures({ worldRef, cabinCenterZ, reducedMotio
         ? cabinCenterZ + (index === 0 ? 52 : -48)
         : anchor.entryZ + (scroll - anchor.anchorScroll) + slot.direction * (p - .5) * swimSpan;
       const group = model.group;
-      if (z < cabinCenterZ - 420 || z > cabinCenterZ + 340) {
+      if (z < cabinCenterZ - maxAhead || z > cabinCenterZ + maxBehind) {
         group.visible = false;
         effect.group.visible = false;
         continue;

@@ -1,0 +1,264 @@
+import assert from "node:assert/strict";
+import { build } from "esbuild";
+
+async function load(path) {
+  const compiled = await build({
+    entryPoints: [path],
+    bundle: true,
+    format: "esm",
+    platform: "node",
+    write: false,
+    logLevel: "silent",
+  });
+  return import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);
+}
+
+const {
+  DEFAULT_GRAPHICS_SETTINGS,
+  TIER_ORDER,
+  classifyGpuHardware,
+  createDprSample,
+  createPerformanceMonitor,
+  formatGpuLabel,
+  getSceneGeometryBudgets,
+  isDefaultGraphicsSettings,
+  resolveGraphicsProfile,
+  sampleSceneDpr,
+  sampleScenePerformance,
+  sanitizeGraphicsSettings,
+  syncPerformanceMonitorProfile,
+} = await load("src/lib/scene-performance.ts");
+const { getBusOccupancy } = await load("src/lib/bus-occupancy.ts");
+const { getBusCameraFar, getExteriorMaxDistance } = await load("src/lib/bus-camera.ts");
+
+// 1. Formatage des noms GPU WebGL2 / ANGLE
+assert.equal(
+  formatGpuLabel("ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Direct3D11 vs_5_0 ps_5_0, D3D11)"),
+  "NVIDIA GeForce RTX 4070",
+);
+assert.equal(
+  formatGpuLabel("ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)"),
+  "Mesa Intel(R) UHD Graphics 620",
+);
+assert.equal(
+  formatGpuLabel("ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"),
+  "Apple M2",
+);
+for (const generic of ["", null, undefined, "WebKit WebGL", "Mozilla"]) {
+  assert.equal(formatGpuLabel(generic), "Processeur graphique WebGL2");
+}
+
+// 2. Classification matérielle du GPU
+const swiftshader = classifyGpuHardware({ renderer: "Google SwiftShader" });
+assert.equal(swiftshader.recommendedTier, "low");
+assert.equal(swiftshader.canPromoteTier, false);
+assert.equal(swiftshader.softwareRenderer, true);
+
+const uhd620 = classifyGpuHardware({
+  renderer: "ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)",
+  hardwareConcurrency: 8,
+  deviceMemory: 8,
+});
+assert.equal(uhd620.recommendedTier, "low");
+assert.equal(uhd620.canPromoteTier, false);
+
+const constrained = classifyGpuHardware({
+  renderer: "NVIDIA GeForce RTX 4080",
+  constrainedNetwork: true,
+});
+assert.equal(constrained.recommendedTier, "low");
+assert.equal(constrained.canPromoteTier, false);
+
+const entryMobile = classifyGpuHardware({
+  coarsePointer: true,
+  shortSide: 390,
+  hardwareConcurrency: 4,
+  deviceMemory: 4,
+  renderer: "Mali-G57",
+});
+assert.equal(entryMobile.recommendedTier, "low");
+assert.equal(entryMobile.canPromoteTier, false);
+
+const flagshipMobile = classifyGpuHardware({
+  coarsePointer: true,
+  shortSide: 390,
+  hardwareConcurrency: 8,
+  deviceMemory: 8,
+  renderer: "Adreno (TM) 740",
+});
+assert.equal(flagshipMobile.recommendedTier, "medium");
+assert.equal(flagshipMobile.canPromoteTier, true);
+
+for (const highRenderer of ["Apple M2", "NVIDIA GeForce RTX 3060"]) {
+  const info = classifyGpuHardware({ renderer: highRenderer, hardwareConcurrency: 8, deviceMemory: 16 });
+  assert.equal(info.recommendedTier, "high");
+  assert.equal(info.canPromoteTier, true);
+}
+
+for (const ultraRenderer of [
+  "ANGLE (NVIDIA, NVIDIA GeForce RTX 4080 Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "Apple M3 Max",
+]) {
+  const info = classifyGpuHardware({ renderer: ultraRenderer, hardwareConcurrency: 12, deviceMemory: 16 });
+  assert.equal(info.recommendedTier, "ultra");
+  assert.equal(info.canPromoteTier, false);
+}
+
+// 3. Validation et normalisation des réglages utilisateur
+assert.deepEqual(sanitizeGraphicsSettings(null), DEFAULT_GRAPHICS_SETTINGS);
+assert.deepEqual(
+  sanitizeGraphicsSettings({ preset: "invalid", drawDistance: 42, shadows: "nope", adaptiveFps: "false" }),
+  DEFAULT_GRAPHICS_SETTINGS,
+);
+const partial = sanitizeGraphicsSettings({ preset: "ultra", shadows: "off" });
+assert.deepEqual(partial, {
+  preset: "ultra",
+  drawDistance: "auto",
+  pixelQuality: "auto",
+  shadows: "off",
+  worldDensity: "auto",
+  adaptiveFps: true,
+});
+assert.equal(isDefaultGraphicsSettings(DEFAULT_GRAPHICS_SETTINGS), true);
+assert.equal(isDefaultGraphicsSettings(partial), false);
+
+// 4. Croissance cohérente des profils de low à ultra + surcharges indépendantes
+const tierProfiles = TIER_ORDER.map((tier) => resolveGraphicsProfile(DEFAULT_GRAPHICS_SETTINGS, tier, 2));
+for (let i = 1; i < tierProfiles.length; i++) {
+  assert(tierProfiles[i].fogFar > tierProfiles[i - 1].fogFar, "fogFar grows across tiers");
+  assert(tierProfiles[i].islandCullDistance > tierProfiles[i - 1].islandCullDistance, "islandCullDistance grows across tiers");
+  assert(tierProfiles[i].maxDpr >= tierProfiles[i - 1].maxDpr, "maxDpr grows across tiers");
+  assert(tierProfiles[i].detailedPassengerLimit > tierProfiles[i - 1].detailedPassengerLimit, "detailedPassengerLimit grows across tiers");
+}
+assert.equal(tierProfiles[0].lowPower, true);
+assert(tierProfiles.slice(1).every((p) => p.lowPower === false));
+
+const mixedOverride = resolveGraphicsProfile(
+  sanitizeGraphicsSettings({
+    preset: "low",
+    drawDistance: "max",
+    pixelQuality: "native",
+    shadows: "high",
+    worldDensity: "rich",
+  }),
+  "high",
+  2,
+);
+assert.equal(mixedOverride.activeTier, "low");
+assert.equal(mixedOverride.fogFar, tierProfiles[3].fogFar);
+assert.equal(mixedOverride.maxDpr, tierProfiles[3].maxDpr);
+assert.equal(mixedOverride.canvasShadows, "soft");
+assert.equal(mixedOverride.shadowMapSize, 2048);
+assert.equal(mixedOverride.detailedPassengerLimit, tierProfiles[2].detailedPassengerLimit);
+
+// 5. Budgets géométriques (pont min 960 m et long bus sécurisé)
+for (const profile of tierProfiles) {
+  const shortBudgets = getSceneGeometryBudgets(profile, 9.2, getExteriorMaxDistance(9.2));
+  assert(shortBudgets.bridgeLength >= 960, "bridgeLength must stay >= 960 m marking box");
+}
+const longCabin = 400;
+const lowOnLongBus = getSceneGeometryBudgets(
+  tierProfiles[0],
+  longCabin,
+  getExteriorMaxDistance(longCabin),
+);
+assert(lowOnLongBus.fogFar >= 760);
+assert(lowOnLongBus.cameraFar >= getBusCameraFar(longCabin, tierProfiles[0].baseCameraFar));
+assert(lowOnLongBus.bridgeLength >= longCabin + lowOnLongBus.fogFar * 2);
+assert(lowOnLongBus.islandCullDistance >= lowOnLongBus.fogFar + 15);
+
+// 6. Régulation FPS -> DPR d'abord -> rétrogradation de palier sans ping-pong
+const monitor = createPerformanceMonitor({
+  tier: "high",
+  recommendedTier: "high",
+  canPromoteTier: true,
+  initialDpr: tierProfiles[2].maxDpr,
+});
+
+const stepWindow = (fps, count = 1, activeTier = monitor.tier, adaptiveFps = true, isAutoPreset = true) => {
+  const profile = resolveGraphicsProfile(DEFAULT_GRAPHICS_SETTINGS, activeTier, 2);
+  const dt = 1 / fps;
+  const steps = Math.ceil(2 / dt);
+  let last = { dprChanged: false, tierChanged: false, dpr: monitor.dpr, tier: monitor.tier, fps: null };
+  for (let w = 0; w < count; w++) {
+    for (let s = 0; s < steps; s++) {
+      last = sampleScenePerformance(monitor, dt, {
+        minDpr: profile.minDpr,
+        maxDpr: profile.maxDpr,
+        adaptiveFps,
+        isAutoPreset,
+      });
+    }
+  }
+  return last;
+};
+
+// Warmup initial de 2.5 s : ne pas réagir avant qu'il ne s'écoule
+for (let i = 0; i < 8; i++) {
+  const warmupRes = sampleScenePerformance(monitor, 0.25, {
+    minDpr: 1.0,
+    maxDpr: 1.75,
+    adaptiveFps: true,
+    isAutoPreset: true,
+  });
+  assert.equal(warmupRes.dprChanged, false);
+  assert.equal(warmupRes.tierChanged, false);
+}
+// Finir les 0.5s de warmup restants
+sampleScenePerformance(monitor, 0.25, { minDpr: 1.0, maxDpr: 1.75, adaptiveFps: true, isAutoPreset: true });
+sampleScenePerformance(monitor, 0.25, { minDpr: 1.0, maxDpr: 1.75, adaptiveFps: true, isAutoPreset: true });
+
+// À 20 FPS, le DPR baisse d'abord par paliers avant de rétrograder le palier 3D
+const firstDrop = stepWindow(20, 1);
+assert.equal(firstDrop.dprChanged, true);
+assert(firstDrop.dpr < 1.75);
+assert.equal(firstDrop.tierChanged, false);
+
+// Laisser passer les cooldowns jusqu'à atteindre le plancher minDpr = 1.0 puis rétrograder vers medium
+for (let w = 0; w < 10 && monitor.tier === "high"; w++) {
+  stepWindow(20, 1);
+}
+assert.equal(monitor.tier, "medium");
+assert.equal(monitor.demotedCeiling, "medium");
+
+syncPerformanceMonitorProfile(monitor, {
+  tier: "medium",
+  recommendedTier: "high",
+  canPromoteTier: true,
+  maxDpr: tierProfiles[1].maxDpr,
+  minDpr: tierProfiles[1].minDpr,
+});
+
+// Même avec un long passage à 60 FPS, demotedCeiling interdit le ping-pong vers "high"
+stepWindow(60, 15, "medium");
+assert.equal(monitor.tier, "medium", "demotedCeiling prevents oscillation back to high");
+
+// Vérifier le respect strict de adaptiveFps = false
+const lockedRes = sampleScenePerformance(monitor, 0.1, {
+  minDpr: 0.75,
+  maxDpr: 1.35,
+  adaptiveFps: false,
+  isAutoPreset: true,
+});
+assert.equal(lockedRes.dpr, 1.35);
+assert.equal(lockedRes.tierChanged, false);
+
+// Rétrocompatibilité sampleSceneDpr & limites d'occupation
+const legacyDpr = createDprSample(1.5);
+for (let i = 0; i < 40; i++) sampleSceneDpr(legacyDpr, 0.05, 1.5, 1);
+assert(legacyDpr.dpr < 1.5);
+
+const customOcc = getBusOccupancy({
+  passengerCount: 50,
+  seatCapacity: 50,
+  reservedRow: 2,
+  currentPassengerIndex: null,
+  avatarAboard: false,
+  lowPower: false,
+  detailLimit: 14,
+  simplifiedLimit: 12,
+});
+assert.equal(customOcc.detailed.length, 14);
+assert.equal(customOcc.simplified.length, 12);
+
+console.log("Scene performance GPU classification, dynamic budgets, hysteresis and occupancy caps passed.");

@@ -47,6 +47,8 @@ interface BusProps {
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   reducedMotion?: boolean;
   lowPower?: boolean;
+  detailedPassengerLimit?: number;
+  simplifiedPassengerLimit?: number;
   playbackSuspended?: boolean;
 }
 
@@ -91,6 +93,8 @@ export default function Bus({
   onPassengerSelect,
   reducedMotion = false,
   lowPower = false,
+  detailedPassengerLimit,
+  simplifiedPassengerLimit,
   playbackSuspended = false,
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
@@ -327,6 +331,8 @@ export default function Bus({
         profileRevision={profileRevision}
         onPassengerSelect={onPassengerSelect}
         lowPower={lowPower}
+        detailLimit={detailedPassengerLimit}
+        simplifiedLimit={simplifiedPassengerLimit}
         reducedMotion={reducedMotion}
         excludedPassengerIndex={currentPassengerSeatIndex}
       />

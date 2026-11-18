@@ -13,7 +13,7 @@ import BoardingController from "./BoardingController";
 import BoardingAvatar from "./BoardingAvatar";
 import { createJourneyState } from "@/lib/bus-journey";
 import { getAvatarSeat, getBusPhysicalRows } from "@/lib/bus-occupancy";
-import { getBusCameraFar } from "@/lib/bus-camera";
+import { getBusCameraFar, getExteriorMaxDistance } from "@/lib/bus-camera";
 import { getActiveTvIndex, getTvPositions, getBusRearWallZ, BUS_FRONT_Z } from "@/lib/bus-layout";
 import {
   DEFAULT_CAMERA_POS,
@@ -24,13 +24,28 @@ import {
 import type { PassengerProfile } from "@/types/passenger";
 import { isPassengerAvatarId } from "@/lib/passenger-avatar";
 import { THEORY_VIDEO_URL } from "@/lib/theory-video";
-import { createDprSample, sampleSceneDpr } from "@/lib/scene-performance";
+import {
+  DEFAULT_GRAPHICS_SETTINGS,
+  classifyGpuHardware,
+  createPerformanceMonitor,
+  getSceneGeometryBudgets,
+  resolveGraphicsProfile,
+  sampleScenePerformance,
+  syncPerformanceMonitorProfile,
+  type GraphicsQualityTier,
+  type GraphicsSettings,
+  type PerformanceMonitor,
+  type ResolvedGraphicsProfile,
+  type SceneGraphicsTelemetry,
+} from "@/lib/scene-performance";
 import { BusFrontIcon, ExternalArrowIcon } from "../ui/BusIcons";
 
 interface SceneProps {
   phase: Phase;
   freeView?: boolean;
   letterShortcutsEnabled?: boolean;
+  graphicsSettings?: GraphicsSettings;
+  onTelemetryChange?: (telemetry: SceneGraphicsTelemetry) => void;
   headlights: boolean;
   hornPulse: number;
   partyOn?: boolean;
@@ -125,14 +140,59 @@ class SceneErrorBoundary extends Component<{ children: ReactNode; onAvailability
   }
 }
 
+interface GpuProbeParams {
+  renderer: string | null;
+  maxTextureSize: number;
+  maxSamples: number;
+}
+
+function readWebGLParams(context: WebGL2RenderingContext | WebGLRenderingContext): GpuProbeParams {
+  let renderer: string | null = null;
+  try {
+    const debugInfo = context.getExtension("WEBGL_debug_renderer_info");
+    if (debugInfo) {
+      const unmasked = context.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      if (typeof unmasked === "string" && unmasked.trim()) renderer = unmasked.trim();
+    }
+    if (!renderer) {
+      const basic = context.getParameter(context.RENDERER);
+      if (typeof basic === "string" && basic.trim()) renderer = basic.trim();
+    }
+  } catch {
+    /* Certains navigateurs bloquent la lecture du nom GPU. */
+  }
+  let maxTextureSize = 8192;
+  let maxSamples = 4;
+  try {
+    const texSize = context.getParameter(context.MAX_TEXTURE_SIZE);
+    if (typeof texSize === "number" && Number.isFinite(texSize)) maxTextureSize = texSize;
+    if ("MAX_SAMPLES" in context) {
+      const samples = context.getParameter((context as WebGL2RenderingContext).MAX_SAMPLES);
+      if (typeof samples === "number" && Number.isFinite(samples)) maxSamples = samples;
+    }
+  } catch {
+    /* Ignorer si l'attribut n'est pas exposé. */
+  }
+  return { renderer, maxTextureSize, maxSamples };
+}
+
 function readSceneRuntimeState() {
   if (typeof window === "undefined") {
-    return { hidden: false, lowPower: false, reducedMotion: false };
+    return {
+      hidden: false,
+      constrainedNetwork: false,
+      hardwareConcurrency: 8,
+      deviceMemory: 8,
+      coarsePointer: false,
+      shortSide: 900,
+      devicePixelRatio: 1,
+      reducedMotion: false,
+    };
   }
   const connection = (navigator as Navigator & {
     connection?: { saveData?: boolean; effectiveType?: string };
   }).connection;
-  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+  const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
   const constrainedNetwork = connection?.saveData === true
     || connection?.effectiveType === "slow-2g"
     || connection?.effectiveType === "2g";
@@ -140,11 +200,13 @@ function readSceneRuntimeState() {
   const shortSide = Math.min(window.innerWidth, window.innerHeight);
   return {
     hidden: document.hidden,
+    constrainedNetwork,
+    hardwareConcurrency: navigator.hardwareConcurrency || 4,
+    deviceMemory,
+    coarsePointer,
     // La petite dimension reste stable quand un téléphone pivote, contrairement à innerWidth seul.
-    lowPower: constrainedNetwork
-      || navigator.hardwareConcurrency <= 4
-      || memory <= 4
-      || (coarsePointer && shortSide < 900),
+    shortSide,
+    devicePixelRatio: window.devicePixelRatio || 1,
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   };
 }
@@ -161,18 +223,24 @@ function useSceneRuntimeState() {
       setState((previous) => {
         const next = readSceneRuntimeState();
         return previous.hidden === next.hidden
-          && previous.lowPower === next.lowPower
+          && previous.constrainedNetwork === next.constrainedNetwork
+          && previous.hardwareConcurrency === next.hardwareConcurrency
+          && previous.deviceMemory === next.deviceMemory
+          && previous.coarsePointer === next.coarsePointer
+          && previous.shortSide === next.shortSide
+          && previous.devicePixelRatio === next.devicePixelRatio
           && previous.reducedMotion === next.reducedMotion
           ? previous
           : next;
       });
     };
-    update();
+    const frame = requestAnimationFrame(update);
     window.addEventListener("resize", update, { passive: true });
     document.addEventListener("visibilitychange", update);
     reducedQuery.addEventListener("change", update);
     connection?.addEventListener?.("change", update);
     return () => {
+      cancelAnimationFrame(frame);
       window.removeEventListener("resize", update);
       document.removeEventListener("visibilitychange", update);
       reducedQuery.removeEventListener("change", update);
@@ -183,8 +251,11 @@ function useSceneRuntimeState() {
   return state;
 }
 
-function useWebGLSupport() {
-  const [supported, setSupported] = useState<boolean | null>(null);
+function useWebGLProbe() {
+  const [probeState, setProbeState] = useState<{ supported: boolean | null; params: GpuProbeParams | null }>({
+    supported: null,
+    params: null,
+  });
   useEffect(() => {
     // Le fallback HTML d'un <canvas> reste invisible quand le navigateur
     // sait afficher un canvas mais ne peut pas créer de contexte WebGL2.
@@ -192,40 +263,106 @@ function useWebGLSupport() {
       const probe = document.createElement("canvas");
       let context: WebGL2RenderingContext | null = null;
       try {
-        context = probe.getContext("webgl2");
-        setSupported(Boolean(context));
+        context = probe.getContext("webgl2", { powerPreference: "high-performance" });
+        if (!context) {
+          setProbeState({ supported: false, params: null });
+        } else {
+          setProbeState({ supported: true, params: readWebGLParams(context) });
+        }
       } catch {
-        setSupported(false);
+        setProbeState({ supported: false, params: null });
       } finally {
         context?.getExtension("WEBGL_lose_context")?.loseContext();
       }
     });
     return () => cancelAnimationFrame(frame);
   }, []);
-  return supported;
+  return probeState;
 }
 
-function getSceneBaseDpr(lowPower: boolean) {
-  if (typeof window === "undefined") return 1;
-  return Math.min(window.devicePixelRatio || 1, lowPower ? 1.5 : 2);
-}
-
-function AdaptiveDpr({ lowPower, onDprChange }: { lowPower: boolean; onDprChange: (value: number) => void }) {
+function PerformanceDirector({
+  recommendedTier,
+  activeAutoTier,
+  canPromoteTier,
+  isAutoPreset,
+  adaptiveFps,
+  profile,
+  refreshKey,
+  dprKey,
+  paused,
+  canRefreshPaused,
+  onAutoTierChange,
+  onDprChange,
+}: {
+  recommendedTier: GraphicsQualityTier;
+  activeAutoTier: GraphicsQualityTier;
+  canPromoteTier: boolean;
+  isAutoPreset: boolean;
+  adaptiveFps: boolean;
+  profile: ResolvedGraphicsProfile;
+  refreshKey: string;
+  dprKey: string;
+  paused: boolean;
+  canRefreshPaused: boolean;
+  onAutoTierChange: (next: { baseTier: GraphicsQualityTier; tier: GraphicsQualityTier }) => void;
+  onDprChange: (next: { key: string; dpr: number }) => void;
+}) {
   const setDpr = useThree((state) => state.setDpr);
   const get = useThree((state) => state.get);
-  const baseDpr = getSceneBaseDpr(lowPower);
-  const minimumDpr = Math.min(baseDpr, 1);
-  const sampleRef = useRef(createDprSample(baseDpr));
+  const advance = useThree((state) => state.advance);
+  const monitorRef = useRef<PerformanceMonitor | null>(null);
+  const mountedRefreshRef = useRef<string | null>(null);
 
   useEffect(() => {
-    sampleRef.current = createDprSample(baseDpr);
-    if (get().viewport.dpr !== baseDpr) setDpr(baseDpr);
-    onDprChange(baseDpr);
-  }, [baseDpr, get, setDpr, onDprChange]);
+    if (!monitorRef.current) {
+      monitorRef.current = createPerformanceMonitor({
+        tier: activeAutoTier,
+        recommendedTier,
+        canPromoteTier,
+        initialDpr: profile.maxDpr,
+      });
+    } else {
+      syncPerformanceMonitorProfile(monitorRef.current, {
+        tier: activeAutoTier,
+        recommendedTier,
+        canPromoteTier,
+        maxDpr: profile.maxDpr,
+        minDpr: profile.minDpr,
+      });
+    }
+    if (get().viewport.dpr !== profile.maxDpr) setDpr(profile.maxDpr);
+  }, [activeAutoTier, canPromoteTier, dprKey, get, profile.maxDpr, profile.minDpr, recommendedTier, setDpr]);
+
+  useEffect(() => {
+    const previous = mountedRefreshRef.current;
+    mountedRefreshRef.current = refreshKey;
+    if (previous && previous !== refreshKey && paused && canRefreshPaused) {
+      // Actualise une image derrière le modal Paramètres pour refléter portée, ombres et densité.
+      const frame = requestAnimationFrame(() => advance(get().clock.elapsedTime + 0.001));
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [advance, canRefreshPaused, get, paused, refreshKey]);
 
   useFrame((_, dt) => {
-    const next = sampleSceneDpr(sampleRef.current, dt, baseDpr, minimumDpr);
-    if (next !== null) { setDpr(next); onDprChange(next); }
+    const monitor = (monitorRef.current ??= createPerformanceMonitor({
+      tier: activeAutoTier,
+      recommendedTier,
+      canPromoteTier,
+      initialDpr: profile.maxDpr,
+    }));
+    const result = sampleScenePerformance(monitor, dt, {
+      minDpr: profile.minDpr,
+      maxDpr: profile.maxDpr,
+      adaptiveFps,
+      isAutoPreset,
+    });
+    if (result.dprChanged) {
+      setDpr(result.dpr);
+      onDprChange({ key: dprKey, dpr: result.dpr });
+    }
+    if (result.tierChanged) {
+      onAutoTierChange({ baseTier: recommendedTier, tier: result.tier });
+    }
   });
 
   return null;
@@ -314,6 +451,8 @@ export default function Scene({
   headlights,
   hornPulse,
   letterShortcutsEnabled = true,
+  graphicsSettings = DEFAULT_GRAPHICS_SETTINGS,
+  onTelemetryChange,
   partyOn = false,
   partyDancing = false,
   tvOn,
@@ -343,12 +482,41 @@ export default function Scene({
   onAvailabilityChange,
   onReadTheory,
 }: SceneProps) {
-  const { hidden, lowPower, reducedMotion } = useSceneRuntimeState();
-  const webGLSupported = useWebGLSupport();
+  const runtimeState = useSceneRuntimeState();
+  const { hidden, reducedMotion } = runtimeState;
+  const webGLProbe = useWebGLProbe();
+  const [canvasGpuParams, setCanvasGpuParams] = useState<GpuProbeParams | null>(null);
   const [contextLost, setContextLost] = useState(false);
   const [canvasReady, setCanvasReady] = useState(false);
   const [busReady, setBusReady] = useState(false);
-  const [sceneDpr, setSceneDpr] = useState(() => getSceneBaseDpr(lowPower));
+
+  const effectiveGpuParams = canvasGpuParams ?? webGLProbe.params;
+  const hardware = useMemo(() => classifyGpuHardware({
+    renderer: effectiveGpuParams?.renderer,
+    maxTextureSize: effectiveGpuParams?.maxTextureSize,
+    maxSamples: effectiveGpuParams?.maxSamples,
+    hardwareConcurrency: runtimeState.hardwareConcurrency,
+    deviceMemory: runtimeState.deviceMemory,
+    coarsePointer: runtimeState.coarsePointer,
+    shortSide: runtimeState.shortSide,
+    devicePixelRatio: runtimeState.devicePixelRatio,
+    constrainedNetwork: runtimeState.constrainedNetwork,
+  }), [effectiveGpuParams, runtimeState]);
+
+  const recommendedTier = runtimeState.constrainedNetwork ? "low" : hardware.recommendedTier;
+  const [autoTierOverride, setAutoTierOverride] = useState<{ baseTier: GraphicsQualityTier; tier: GraphicsQualityTier } | null>(null);
+  const activeAutoTier = autoTierOverride && autoTierOverride.baseTier === recommendedTier
+    ? autoTierOverride.tier
+    : recommendedTier;
+
+  const profile = useMemo(
+    () => resolveGraphicsProfile(graphicsSettings, activeAutoTier, runtimeState.devicePixelRatio),
+    [graphicsSettings, activeAutoTier, runtimeState.devicePixelRatio],
+  );
+  const dprKey = `${profile.activeTier}:${profile.pixelQuality}:${profile.maxDpr}:${profile.minDpr}:${graphicsSettings.adaptiveFps}`;
+  const [dprOverride, setDprOverride] = useState<{ key: string; dpr: number } | null>(null);
+  const sceneDpr = dprOverride && dprOverride.key === dprKey ? dprOverride.dpr : profile.maxDpr;
+
   useEffect(() => {
     onAvailabilityChange?.(canvasReady && busReady && !contextLost);
   }, [busReady, canvasReady, contextLost, onAvailabilityChange]);
@@ -359,7 +527,41 @@ export default function Scene({
   const rearWallZ = useMemo(() => getBusRearWallZ(numRows), [numRows]);
   const cabinLength = useMemo(() => rearWallZ - BUS_FRONT_Z, [rearWallZ]);
   const cabinCenterZ = useMemo(() => (BUS_FRONT_Z + rearWallZ) / 2, [rearWallZ]);
-  const cameraFar = useMemo(() => getBusCameraFar(cabinLength), [cabinLength]);
+  const budgets = useMemo(
+    () => getSceneGeometryBudgets(profile, cabinLength, getExteriorMaxDistance(cabinLength)),
+    [profile, cabinLength],
+  );
+  const cameraFar = useMemo(
+    () => Math.max(getBusCameraFar(cabinLength, profile.baseCameraFar), budgets.cameraFar),
+    [budgets.cameraFar, cabinLength, profile.baseCameraFar],
+  );
+  const refreshKey = `${profile.activeTier}:${profile.drawDistance}:${profile.pixelQuality}:${profile.shadows}:${profile.worldDensity}:${budgets.fogFar}:${budgets.bridgeLength}:${sceneDpr}`;
+
+  const lastTelemetryRef = useRef<SceneGraphicsTelemetry | null>(null);
+  useEffect(() => {
+    if (!onTelemetryChange) return;
+    const next: SceneGraphicsTelemetry = {
+      gpuLabel: hardware.gpuLabel,
+      recommendedTier,
+      activeTier: profile.activeTier,
+      currentDpr: sceneDpr,
+      fogFar: budgets.fogFar,
+    };
+    const previous = lastTelemetryRef.current;
+    if (
+      previous
+      && previous.gpuLabel === next.gpuLabel
+      && previous.recommendedTier === next.recommendedTier
+      && previous.activeTier === next.activeTier
+      && Math.abs(previous.currentDpr - next.currentDpr) < 0.01
+      && previous.fogFar === next.fogFar
+    ) {
+      return;
+    }
+    lastTelemetryRef.current = next;
+    onTelemetryChange(next);
+  }, [budgets.fogFar, hardware.gpuLabel, onTelemetryChange, profile.activeTier, recommendedTier, sceneDpr]);
+
   const journey=useRef(createJourneyState());
   const visitCameraRef = useRef<Camera>(null);
 
@@ -372,7 +574,7 @@ export default function Scene({
   const tvTargetZ = tvPositions[getActiveTvIndex(tvPositions, clampedRow)][2];
   const currentPassengerProfile = useMemo<PassengerProfile | undefined>(() => {
     if (currentPassengerSeatIndex === null) return undefined;
-    return passengerProfiles.find((profile) => profile.seatIndex === currentPassengerSeatIndex) ?? {
+    return passengerProfiles.find((p) => p.seatIndex === currentPassengerSeatIndex) ?? {
       seatIndex: currentPassengerSeatIndex,
       displayName: currentPassengerName,
       comment: null,
@@ -380,31 +582,80 @@ export default function Scene({
     };
   }, [currentPassengerSeatIndex, currentPassengerName, currentPassengerAvatarId, passengerProfiles]);
 
-  if (webGLSupported === false) return <SceneFallback onReadTheory={onReadTheory} />;
-  if (webGLSupported === null) return <div role="status" className="sr-only">Préparation de la scène 3D…</div>;
+  if (webGLProbe.supported === false) return <SceneFallback onReadTheory={onReadTheory} />;
+  if (webGLProbe.supported === null) return <div role="status" className="sr-only">Préparation de la scène 3D…</div>;
 
   return (
     <SceneErrorBoundary onAvailabilityChange={onAvailabilityChange} onReadTheory={onReadTheory}>
       <div className="absolute inset-0">
       <Canvas
       className="bus-scene-canvas"
-      shadows={lowPower ? false : "basic"}
+      shadows={profile.canvasShadows}
       frameloop="never"
       dpr={sceneDpr}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.2, far: cameraFar }}
-      gl={{ antialias: !lowPower, alpha: false, powerPreference: "high-performance" }}
+      gl={{ antialias: profile.antialias, alpha: false, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none", isolation: "isolate" }}
-      onCreated={() => setCanvasReady(true)}
+      onCreated={({ gl }) => {
+        setCanvasReady(true);
+        const context = gl.getContext();
+        if (context) {
+          const next = readWebGLParams(context);
+          setCanvasGpuParams((prev) =>
+            prev
+            && prev.renderer === next.renderer
+            && prev.maxTextureSize === next.maxTextureSize
+            && prev.maxSamples === next.maxSamples
+              ? prev
+              : next,
+          );
+        }
+      }}
       fallback={<div aria-hidden={canvasReady}><SceneFallback onReadTheory={onReadTheory} /></div>}
     >
       <WebGLContextGuard setLost={setContextLost} />
       <PartyMusicClock />
       <CappedFrameLoop paused={renderPaused} />
-      <AdaptiveDpr lowPower={lowPower} onDprChange={setSceneDpr} />
+      <PerformanceDirector
+        recommendedTier={recommendedTier}
+        activeAutoTier={activeAutoTier}
+        canPromoteTier={hardware.canPromoteTier}
+        isAutoPreset={graphicsSettings.preset === "auto"}
+        adaptiveFps={graphicsSettings.adaptiveFps}
+        profile={profile}
+        refreshKey={refreshKey}
+        dprKey={dprKey}
+        paused={renderPaused}
+        canRefreshPaused={!hidden && !contextLost}
+        onAutoTierChange={setAutoTierOverride}
+        onDprChange={setDprOverride}
+      />
       <BoardingController phase={phase} journey={journey} worldRef={worldRef} seatZ={currentSeatZ-0.03} seatX={currentSeatX}
         numRows={numRows} boardingPending={boardingPending} boardingFromSeat={boardingFromSeat} reducedMotion={reducedMotion}/>
-      <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} cameraFar={cameraFar} cabinCenterZ={cabinCenterZ} cabinLength={cabinLength} />
-      <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} cabinCenterZ={cabinCenterZ} cabinLength={cabinLength} />
+      <DayNight
+        worldRef={worldRef}
+        modeOverride={modeOverride}
+        lowPower={profile.lowPower}
+        reducedMotion={reducedMotion}
+        cameraFar={cameraFar}
+        fogNear={budgets.fogNear}
+        fogFar={budgets.fogFar}
+        shadowsEnabled={profile.canvasShadows !== false}
+        shadowMapSize={profile.shadowMapSize}
+        shadowsType={profile.canvasShadows}
+        starCount={profile.starCount}
+        cabinCenterZ={cabinCenterZ}
+        cabinLength={cabinLength}
+      />
+      <Weather
+        worldRef={worldRef}
+        lowPower={profile.lowPower}
+        rainCount={profile.rainCount}
+        snowCount={profile.snowCount}
+        reducedMotion={reducedMotion}
+        cabinCenterZ={cabinCenterZ}
+        cabinLength={cabinLength}
+      />
       <Suspense fallback={null}>
         <SuspenseReady onReady={setBusReady} />
         <Bus
@@ -433,12 +684,28 @@ export default function Scene({
           currentPassengerSeatIndex={currentPassengerSeatIndex}
           onPassengerSelect={onPassengerSelect}
           reducedMotion={reducedMotion}
-          lowPower={lowPower}
+          lowPower={profile.lowPower}
+          detailedPassengerLimit={profile.detailedPassengerLimit}
+          simplifiedPassengerLimit={profile.simplifiedPassengerLimit}
           playbackSuspended={playbackSuspended}
         />
       </Suspense>
       <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} profile={currentPassengerProfile} onSelect={phase !== "inside" || freeView ? onPassengerSelect : undefined} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion} firstPerson={phase === "inside" && !freeView}/>
-      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={phase} cabinCenterZ={cabinCenterZ} cabinLength={cabinLength} />
+      <World
+        worldRef={worldRef}
+        reducedMotion={reducedMotion}
+        lowPower={profile.lowPower}
+        propFraction={profile.propFraction}
+        islandCullDistance={budgets.islandCullDistance}
+        propCullDistance={budgets.propCullDistance}
+        bridgeLengthOverride={budgets.bridgeLength}
+        seaCreatureSlots={profile.seaCreatureSlots}
+        seaCreatureCullAhead={profile.seaCreatureCullAhead}
+        seaCreatureCullBehind={profile.seaCreatureCullBehind}
+        phase={phase}
+        cabinCenterZ={cabinCenterZ}
+        cabinLength={cabinLength}
+      />
       <CameraRig
         letterShortcutsEnabled={letterShortcutsEnabled}
         resetViewToken={resetViewToken}

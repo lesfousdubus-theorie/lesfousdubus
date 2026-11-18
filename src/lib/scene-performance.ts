@@ -28,3 +28,655 @@ export function sampleSceneDpr(sample: ReturnType<typeof createDprSample>, dt: n
   sample.cooldown = fps < 25 ? 4 : 8;
   return next;
 }
+
+export type GraphicsQualityTier = "low" | "medium" | "high" | "ultra";
+export type GraphicsPresetPreference = "auto" | GraphicsQualityTier;
+export type DrawDistancePreference = "auto" | "near" | "medium" | "far" | "max";
+export type PixelQualityPreference = "auto" | "eco" | "standard" | "sharp" | "native";
+export type ShadowQualityPreference = "auto" | "off" | "standard" | "high";
+export type WorldDensityPreference = "auto" | "light" | "balanced" | "rich" | "max";
+
+export interface GraphicsSettings {
+  preset: GraphicsPresetPreference;
+  drawDistance: DrawDistancePreference;
+  pixelQuality: PixelQualityPreference;
+  shadows: ShadowQualityPreference;
+  worldDensity: WorldDensityPreference;
+  adaptiveFps: boolean;
+}
+
+export const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
+  preset: "auto",
+  drawDistance: "auto",
+  pixelQuality: "auto",
+  shadows: "auto",
+  worldDensity: "auto",
+  adaptiveFps: true,
+};
+
+export interface GpuHardwareClassificationInput {
+  renderer?: string | null;
+  maxTextureSize?: number;
+  maxSamples?: number;
+  hardwareConcurrency?: number;
+  deviceMemory?: number;
+  coarsePointer?: boolean;
+  shortSide?: number;
+  devicePixelRatio?: number;
+  constrainedNetwork?: boolean;
+}
+
+export interface GpuHardwareInfo {
+  renderer: string | null;
+  gpuLabel: string;
+  recommendedTier: GraphicsQualityTier;
+  canPromoteTier: boolean;
+  softwareRenderer: boolean;
+  mobileDevice: boolean;
+  maxTextureSize: number;
+  maxSamples: number;
+}
+
+export interface ResolvedGraphicsProfile {
+  activeTier: GraphicsQualityTier;
+  drawDistance: Exclude<DrawDistancePreference, "auto">;
+  pixelQuality: Exclude<PixelQualityPreference, "auto">;
+  shadows: Exclude<ShadowQualityPreference, "auto">;
+  worldDensity: Exclude<WorldDensityPreference, "auto">;
+  fogNear: number;
+  fogFar: number;
+  islandCullDistance: number;
+  propCullDistance: number;
+  seaCreatureCullAhead: number;
+  seaCreatureCullBehind: number;
+  bridgeBaseLength: number;
+  baseCameraFar: number;
+  minDpr: number;
+  maxDpr: number;
+  antialias: boolean;
+  canvasShadows: false | "basic" | "soft";
+  shadowMapSize: 1024 | 2048;
+  lowPower: boolean;
+  propFraction: 0.5 | 0.75 | 1;
+  detailedPassengerLimit: number;
+  simplifiedPassengerLimit: number;
+  seaCreatureSlots: number;
+  starCount: number;
+  rainCount: number;
+  snowCount: number;
+}
+
+export interface SceneGeometryBudgets {
+  fogNear: number;
+  fogFar: number;
+  islandCullDistance: number;
+  propCullDistance: number;
+  bridgeLength: number;
+  cameraFar: number;
+}
+
+export interface SceneGraphicsTelemetry {
+  gpuLabel: string;
+  recommendedTier: GraphicsQualityTier;
+  activeTier: GraphicsQualityTier;
+  currentDpr: number;
+  fogFar: number;
+}
+
+export const TIER_ORDER: readonly GraphicsQualityTier[] = ["low", "medium", "high", "ultra"];
+
+const PRESET_VALUES = new Set<GraphicsPresetPreference>(["auto", "low", "medium", "high", "ultra"]);
+const DRAW_DISTANCE_VALUES = new Set<DrawDistancePreference>(["auto", "near", "medium", "far", "max"]);
+const PIXEL_QUALITY_VALUES = new Set<PixelQualityPreference>(["auto", "eco", "standard", "sharp", "native"]);
+const SHADOW_QUALITY_VALUES = new Set<ShadowQualityPreference>(["auto", "off", "standard", "high"]);
+const WORLD_DENSITY_VALUES = new Set<WorldDensityPreference>(["auto", "light", "balanced", "rich", "max"]);
+
+function pickOption<T extends string>(value: unknown, allowed: Set<T>, fallback: T): T {
+  return typeof value === "string" && allowed.has(value as T) ? (value as T) : fallback;
+}
+
+/** Valide et normalise les réglages graphiques persistés localement. */
+export function sanitizeGraphicsSettings(raw: unknown): GraphicsSettings {
+  if (!raw || typeof raw !== "object") return { ...DEFAULT_GRAPHICS_SETTINGS };
+  const record = raw as Record<string, unknown>;
+  return {
+    preset: pickOption(record.preset, PRESET_VALUES, DEFAULT_GRAPHICS_SETTINGS.preset),
+    drawDistance: pickOption(record.drawDistance, DRAW_DISTANCE_VALUES, DEFAULT_GRAPHICS_SETTINGS.drawDistance),
+    pixelQuality: pickOption(record.pixelQuality, PIXEL_QUALITY_VALUES, DEFAULT_GRAPHICS_SETTINGS.pixelQuality),
+    shadows: pickOption(record.shadows, SHADOW_QUALITY_VALUES, DEFAULT_GRAPHICS_SETTINGS.shadows),
+    worldDensity: pickOption(record.worldDensity, WORLD_DENSITY_VALUES, DEFAULT_GRAPHICS_SETTINGS.worldDensity),
+    adaptiveFps: typeof record.adaptiveFps === "boolean" ? record.adaptiveFps : DEFAULT_GRAPHICS_SETTINGS.adaptiveFps,
+  };
+}
+
+export function isDefaultGraphicsSettings(settings: GraphicsSettings): boolean {
+  return settings.preset === DEFAULT_GRAPHICS_SETTINGS.preset
+    && settings.drawDistance === DEFAULT_GRAPHICS_SETTINGS.drawDistance
+    && settings.pixelQuality === DEFAULT_GRAPHICS_SETTINGS.pixelQuality
+    && settings.shadows === DEFAULT_GRAPHICS_SETTINGS.shadows
+    && settings.worldDensity === DEFAULT_GRAPHICS_SETTINGS.worldDensity
+    && settings.adaptiveFps === DEFAULT_GRAPHICS_SETTINGS.adaptiveFps;
+}
+
+const GENERIC_GPU_NAMES = /^(webgl|webgl2|webkit webgl|mozilla|angle|unknown|)$/i;
+
+/** Simplifie les chaînes techniques ANGLE / OpenGL / Direct3D en nom lisible de GPU. */
+export function formatGpuLabel(renderer: string | null | undefined): string {
+  if (!renderer) return "Processeur graphique WebGL2";
+  let cleaned = renderer.trim();
+  if (!cleaned || GENERIC_GPU_NAMES.test(cleaned)) return "Processeur graphique WebGL2";
+
+  if (/^ANGLE\s*\(/i.test(cleaned) && cleaned.endsWith(")")) {
+    const start = cleaned.indexOf("(") + 1;
+    const inner = cleaned.slice(start, -1);
+    const parts: string[] = [];
+    let depth = 0;
+    let chunkStart = 0;
+    for (let i = 0; i < inner.length; i++) {
+      const ch = inner[i];
+      if (ch === "(") depth += 1;
+      else if (ch === ")" && depth > 0) depth -= 1;
+      else if (ch === "," && depth === 0) {
+        const chunk = inner.slice(chunkStart, i).trim();
+        if (chunk) parts.push(chunk);
+        chunkStart = i + 1;
+      }
+    }
+    const tail = inner.slice(chunkStart).trim();
+    if (tail) parts.push(tail);
+    if (parts.length >= 2) cleaned = parts[1];
+    else if (parts.length === 1) cleaned = parts[0];
+  }
+
+  cleaned = cleaned
+    .replace(/^ANGLE Metal Renderer:\s*/i, "")
+    .replace(/\bDirect3D(?:9Ex|9|11|12)\b[^,]*/gi, "")
+    .replace(/\b(?:OpenGL|Vulkan)\s+\d+(?:\.\d+)*[^,]*/gi, "")
+    .replace(/\b(?:vs|ps)_\d+_\d+\b/gi, "")
+    .replace(/\bUnspecified Version\b/gi, "")
+    .replace(/\(\s*(?:KBL|CFL|WHL|ICL|TGL|ADL|RPL|MTL|GEN\d+|GT\d+|LLVM|DRM|TM|radeonsi|iris|crocus|zink|amdgpu|nouveau|llvmpipe|virgl)[^)]*\)/gi, (match) =>
+      match.toLowerCase() === "(tm)" || match.toLowerCase() === "(r)" ? match : "",
+    )
+    .replace(/\s+\/\s*(?:PCIe|SSE\d|OPENGL)[^,]*$/i, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/^[,\s-]+|[,\s-]+$/g, "");
+
+  if (!cleaned || GENERIC_GPU_NAMES.test(cleaned)) return "Processeur graphique WebGL2";
+  return cleaned.length > 56 ? `${cleaned.slice(0, 53).trimEnd()}…` : cleaned;
+}
+
+const SOFTWARE_RENDERER_RE = /swiftshader|llvmpipe|softpipe|software|basic render driver|gdi generic/i;
+const WEAK_GPU_RE = /mali-4|mali-t|mali-g3|mali-g5[12]|adreno\s*\(tm\)\s*[2345]|adreno\s*\(tm\)\s*61\d|powervr|videocore|hd graphics\s*[23456]\d{2}|uhd graphics\s*6\d{2}|celeron|pentium|atom/i;
+const HIGH_END_MOBILE_GPU_RE = /adreno\s*\(tm\)\s*(?:7[345]\d|8\d{2})|immortalis|apple gpu/i;
+const ULTRA_DESKTOP_GPU_RE = /geforce rtx\s*(?:208\d|30[789]\d|40[789]\d|50[789]\d)|radeon rx\s*(?:6[789]\d{2}|7[789]\d{2}|907\d)|apple m[1-9]\s*(?:pro|max|ultra)/i;
+const HIGH_GPU_RE = /geforce\s*(?:rtx|gtx\s*(?:10[78]\d|166\d))|radeon rx\s*(?:5[67]\d{2}|66\d{2}|76\d{2})|radeon\s*(?:780m|880m|890m)|arc\s*[ab][57]\d{2}|apple m[1-9]\b/i;
+const MODERN_INTEGRATED_GPU_RE = /iris|uhd graphics\s*7\d{2}|uhd graphics\b|radeon\s*(?:6[16]0m|7[46]0m|vega|graphics)|gtx\s*(?:9\d{2}|10[56]\d|165\d)/i;
+
+/** Classe la puce graphique WebGL2 et les indices matériels en un palier initial recommandé. */
+export function classifyGpuHardware(input: GpuHardwareClassificationInput = {}): GpuHardwareInfo {
+  const renderer = input.renderer?.trim() || null;
+  const maxTextureSize = input.maxTextureSize ?? 8192;
+  const maxSamples = input.maxSamples ?? 4;
+  const hardwareConcurrency = input.hardwareConcurrency ?? 8;
+  const deviceMemory = input.deviceMemory ?? 8;
+  const coarsePointer = Boolean(input.coarsePointer);
+  const shortSide = input.shortSide ?? 900;
+  const constrainedNetwork = Boolean(input.constrainedNetwork);
+
+  const mobileDevice = coarsePointer && shortSide < 900;
+  const gpuLabel = formatGpuLabel(renderer);
+  const normalized = `${renderer ?? ""} ${gpuLabel}`.trim();
+  const softwareRenderer = normalized.length > 0 && SOFTWARE_RENDERER_RE.test(normalized);
+  const genericRenderer = normalized.length === 0 || GENERIC_GPU_NAMES.test(gpuLabel);
+
+  let recommendedTier: GraphicsQualityTier = "medium";
+  let canPromoteTier = true;
+
+  if (
+    constrainedNetwork
+    || softwareRenderer
+    || maxTextureSize <= 4096
+    || hardwareConcurrency <= 2
+    || deviceMemory <= 2
+  ) {
+    recommendedTier = "low";
+    canPromoteTier = false;
+  } else if (WEAK_GPU_RE.test(normalized)) {
+    recommendedTier = "low";
+    canPromoteTier = false;
+  } else if (mobileDevice) {
+    if (hardwareConcurrency <= 4 || deviceMemory <= 4) {
+      recommendedTier = "low";
+      canPromoteTier = false;
+    } else if (HIGH_END_MOBILE_GPU_RE.test(normalized) && hardwareConcurrency >= 6 && deviceMemory >= 6) {
+      recommendedTier = "medium";
+      canPromoteTier = true;
+    } else {
+      recommendedTier = "medium";
+      canPromoteTier = false;
+    }
+  } else if (ULTRA_DESKTOP_GPU_RE.test(normalized)) {
+    recommendedTier = "ultra";
+    canPromoteTier = false;
+  } else if (
+    HIGH_GPU_RE.test(normalized)
+    || (/apple gpu/i.test(normalized) && !coarsePointer && hardwareConcurrency >= 8)
+  ) {
+    recommendedTier = "high";
+    canPromoteTier = true;
+  } else if (MODERN_INTEGRATED_GPU_RE.test(normalized)) {
+    recommendedTier = hardwareConcurrency <= 4 && deviceMemory <= 4 ? "low" : "medium";
+    canPromoteTier = false;
+  } else if (genericRenderer) {
+    if (hardwareConcurrency <= 4 || deviceMemory <= 4) {
+      recommendedTier = "low";
+      canPromoteTier = true;
+    } else if (!coarsePointer && hardwareConcurrency >= 8 && deviceMemory >= 8) {
+      recommendedTier = "high";
+      canPromoteTier = true;
+    } else {
+      recommendedTier = "medium";
+      canPromoteTier = true;
+    }
+  }
+
+  return {
+    renderer,
+    gpuLabel,
+    recommendedTier,
+    canPromoteTier,
+    softwareRenderer,
+    mobileDevice,
+    maxTextureSize,
+    maxSamples,
+  };
+}
+
+const TIER_DEFAULTS: Record<GraphicsQualityTier, {
+  drawDistance: Exclude<DrawDistancePreference, "auto">;
+  pixelQuality: Exclude<PixelQualityPreference, "auto">;
+  shadows: Exclude<ShadowQualityPreference, "auto">;
+  worldDensity: Exclude<WorldDensityPreference, "auto">;
+}> = {
+  low: { drawDistance: "near", pixelQuality: "eco", shadows: "off", worldDensity: "light" },
+  medium: { drawDistance: "medium", pixelQuality: "standard", shadows: "standard", worldDensity: "balanced" },
+  high: { drawDistance: "far", pixelQuality: "sharp", shadows: "high", worldDensity: "rich" },
+  ultra: { drawDistance: "max", pixelQuality: "native", shadows: "high", worldDensity: "max" },
+};
+
+const DRAW_DISTANCE_TABLE: Record<Exclude<DrawDistancePreference, "auto">, {
+  fogNear: number;
+  fogFar: number;
+  islandCullDistance: number;
+  propCullDistance: number;
+  seaCreatureCullAhead: number;
+  seaCreatureCullBehind: number;
+  bridgeBaseLength: number;
+  baseCameraFar: number;
+}> = {
+  near: {
+    fogNear: 55,
+    fogFar: 210,
+    islandCullDistance: 225,
+    propCullDistance: 195,
+    seaCreatureCullAhead: 210,
+    seaCreatureCullBehind: 190,
+    bridgeBaseLength: 960,
+    baseCameraFar: 900,
+  },
+  medium: {
+    fogNear: 85,
+    fogFar: 330,
+    islandCullDistance: 350,
+    propCullDistance: 320,
+    seaCreatureCullAhead: 320,
+    seaCreatureCullBehind: 270,
+    bridgeBaseLength: 1200,
+    baseCameraFar: 1350,
+  },
+  far: {
+    fogNear: 125,
+    fogFar: 450,
+    islandCullDistance: 475,
+    propCullDistance: 445,
+    seaCreatureCullAhead: 420,
+    seaCreatureCullBehind: 340,
+    bridgeBaseLength: 1600,
+    baseCameraFar: 2000,
+  },
+  max: {
+    fogNear: 180,
+    fogFar: 575,
+    islandCullDistance: 680,
+    propCullDistance: 650,
+    seaCreatureCullAhead: 520,
+    seaCreatureCullBehind: 440,
+    bridgeBaseLength: 2400,
+    baseCameraFar: 2600,
+  },
+};
+
+const SHADOW_TABLE: Record<Exclude<ShadowQualityPreference, "auto">, {
+  canvasShadows: false | "basic" | "soft";
+  shadowMapSize: 1024 | 2048;
+}> = {
+  off: { canvasShadows: false, shadowMapSize: 1024 },
+  standard: { canvasShadows: "basic", shadowMapSize: 1024 },
+  high: { canvasShadows: "soft", shadowMapSize: 2048 },
+};
+
+const WORLD_DENSITY_TABLE: Record<Exclude<WorldDensityPreference, "auto">, {
+  lowPower: boolean;
+  propFraction: 0.5 | 0.75 | 1;
+  detailedPassengerLimit: number;
+  simplifiedPassengerLimit: number;
+  seaCreatureSlots: number;
+  starCount: number;
+  rainCount: number;
+  snowCount: number;
+}> = {
+  light: {
+    lowPower: true,
+    propFraction: 0.5,
+    detailedPassengerLimit: 2,
+    simplifiedPassengerLimit: 96,
+    seaCreatureSlots: 2,
+    starCount: 700,
+    rainCount: 180,
+    snowCount: 220,
+  },
+  balanced: {
+    lowPower: false,
+    propFraction: 0.75,
+    detailedPassengerLimit: 5,
+    simplifiedPassengerLimit: 140,
+    seaCreatureSlots: 3,
+    starCount: 1200,
+    rainCount: 300,
+    snowCount: 360,
+  },
+  rich: {
+    lowPower: false,
+    propFraction: 1,
+    detailedPassengerLimit: 8,
+    simplifiedPassengerLimit: 160,
+    seaCreatureSlots: 4,
+    starCount: 1800,
+    rainCount: 420,
+    snowCount: 520,
+  },
+  max: {
+    lowPower: false,
+    propFraction: 1,
+    detailedPassengerLimit: 14,
+    simplifiedPassengerLimit: 240,
+    seaCreatureSlots: 4,
+    starCount: 2600,
+    rainCount: 600,
+    snowCount: 720,
+  },
+};
+
+function resolvePixelQuality(pixelQuality: Exclude<PixelQualityPreference, "auto">, devicePixelRatio: number) {
+  const dpr = Math.max(1, Number.isFinite(devicePixelRatio) ? devicePixelRatio : 1);
+  if (pixelQuality === "eco") {
+    return { maxDpr: Math.min(dpr, 1.0), minDpr: 0.75, antialias: false };
+  }
+  if (pixelQuality === "standard") {
+    const maxDpr = Math.min(dpr, 1.35);
+    return { maxDpr, minDpr: Math.min(maxDpr, 0.85), antialias: true };
+  }
+  if (pixelQuality === "sharp") {
+    const maxDpr = Math.min(dpr, 1.75);
+    return { maxDpr, minDpr: Math.min(maxDpr, 1.0), antialias: true };
+  }
+  const maxDpr = Math.min(Math.max(dpr, 1.25), 2.25);
+  return { maxDpr, minDpr: Math.min(maxDpr, 1.0), antialias: true };
+}
+
+/** Traduit les réglages utilisateur et le palier actif en paramètres concrets de rendu. */
+export function resolveGraphicsProfile(
+  settings: GraphicsSettings,
+  activeAutoTier: GraphicsQualityTier,
+  devicePixelRatio = 1,
+): ResolvedGraphicsProfile {
+  const activeTier = settings.preset === "auto" ? activeAutoTier : settings.preset;
+  const tierDefaults = TIER_DEFAULTS[activeTier];
+  const drawDistance = settings.drawDistance === "auto" ? tierDefaults.drawDistance : settings.drawDistance;
+  const pixelQuality = settings.pixelQuality === "auto" ? tierDefaults.pixelQuality : settings.pixelQuality;
+  const shadows = settings.shadows === "auto" ? tierDefaults.shadows : settings.shadows;
+  const worldDensity = settings.worldDensity === "auto" ? tierDefaults.worldDensity : settings.worldDensity;
+
+  return {
+    activeTier,
+    drawDistance,
+    pixelQuality,
+    shadows,
+    worldDensity,
+    ...DRAW_DISTANCE_TABLE[drawDistance],
+    ...resolvePixelQuality(pixelQuality, devicePixelRatio),
+    ...SHADOW_TABLE[shadows],
+    ...WORLD_DENSITY_TABLE[worldDensity],
+  };
+}
+
+/** Garanti qu'un long bus ne soit jamais coupé par le brouillard, le pont ou le plan lointain. */
+export function getSceneGeometryBudgets(
+  profile: ResolvedGraphicsProfile,
+  cabinLength: number,
+  exteriorMaxDistance: number,
+): SceneGeometryBudgets {
+  const fogNear = Math.max(profile.fogNear, Math.round(cabinLength * 0.55));
+  const fogFar = Math.max(profile.fogFar, Math.round(cabinLength * 1.5 + 160));
+  return {
+    fogNear,
+    fogFar,
+    islandCullDistance: Math.max(profile.islandCullDistance, fogFar + 15),
+    propCullDistance: Math.max(profile.propCullDistance, fogFar - 10),
+    bridgeLength: Math.max(profile.bridgeBaseLength, cabinLength + Math.max(520, fogFar * 2)),
+    cameraFar: Math.max(profile.baseCameraFar, fogFar + 260, exteriorMaxDistance + cabinLength + 100),
+  };
+}
+
+export interface PerformanceMonitor {
+  elapsed: number;
+  frames: number;
+  dpr: number;
+  tier: GraphicsQualityTier;
+  recommendedTier: GraphicsQualityTier;
+  canPromoteTier: boolean;
+  demotedCeiling: GraphicsQualityTier | null;
+  slowDprSamples: number;
+  fastDprSamples: number;
+  slowTierSamples: number;
+  fastTierSamples: number;
+  warmupRemaining: number;
+  dprCooldown: number;
+  tierCooldown: number;
+}
+
+export interface PerformanceSampleResult {
+  dprChanged: boolean;
+  tierChanged: boolean;
+  dpr: number;
+  tier: GraphicsQualityTier;
+  fps: number | null;
+}
+
+export function createPerformanceMonitor(options: {
+  tier: GraphicsQualityTier;
+  recommendedTier: GraphicsQualityTier;
+  canPromoteTier: boolean;
+  initialDpr: number;
+}): PerformanceMonitor {
+  return {
+    elapsed: 0,
+    frames: 0,
+    dpr: options.initialDpr,
+    tier: options.tier,
+    recommendedTier: options.recommendedTier,
+    canPromoteTier: options.canPromoteTier,
+    demotedCeiling: null,
+    slowDprSamples: 0,
+    fastDprSamples: 0,
+    slowTierSamples: 0,
+    fastTierSamples: 0,
+    warmupRemaining: 2.5,
+    dprCooldown: 0,
+    tierCooldown: 0,
+  };
+}
+
+export function syncPerformanceMonitorProfile(
+  monitor: PerformanceMonitor,
+  next: {
+    tier: GraphicsQualityTier;
+    recommendedTier: GraphicsQualityTier;
+    canPromoteTier: boolean;
+    maxDpr: number;
+    minDpr: number;
+  },
+) {
+  monitor.recommendedTier = next.recommendedTier;
+  monitor.canPromoteTier = next.canPromoteTier;
+  if (monitor.tier !== next.tier) {
+    monitor.tier = next.tier;
+    monitor.dpr = next.maxDpr;
+    monitor.elapsed = 0;
+    monitor.frames = 0;
+    monitor.slowDprSamples = 0;
+    monitor.fastDprSamples = 0;
+    monitor.slowTierSamples = 0;
+    monitor.fastTierSamples = 0;
+    monitor.warmupRemaining = 2.5;
+  } else {
+    monitor.dpr = Math.min(next.maxDpr, Math.max(next.minDpr, monitor.dpr));
+  }
+}
+
+/** Ajuste la finesse des pixels puis, au besoin, le palier GPU en évitant toute oscillation. */
+export function sampleScenePerformance(
+  monitor: PerformanceMonitor,
+  dt: number,
+  config: {
+    minDpr: number;
+    maxDpr: number;
+    adaptiveFps: boolean;
+    isAutoPreset: boolean;
+  },
+): PerformanceSampleResult {
+  if (!Number.isFinite(dt) || dt <= 0) {
+    return { dprChanged: false, tierChanged: false, dpr: monitor.dpr, tier: monitor.tier, fps: null };
+  }
+
+  if (!config.adaptiveFps) {
+    monitor.elapsed = 0;
+    monitor.frames = 0;
+    monitor.slowDprSamples = 0;
+    monitor.fastDprSamples = 0;
+    monitor.slowTierSamples = 0;
+    monitor.fastTierSamples = 0;
+    const dprChanged = Math.abs(monitor.dpr - config.maxDpr) >= 0.01;
+    monitor.dpr = config.maxDpr;
+    return { dprChanged, tierChanged: false, dpr: monitor.dpr, tier: monitor.tier, fps: null };
+  }
+
+  const clampedDt = Math.min(dt, 0.25);
+  if (monitor.warmupRemaining > 0) {
+    const leftover = clampedDt - monitor.warmupRemaining;
+    monitor.warmupRemaining = Math.max(0, monitor.warmupRemaining - clampedDt);
+    if (monitor.warmupRemaining > 0 || leftover <= 0) {
+      return { dprChanged: false, tierChanged: false, dpr: monitor.dpr, tier: monitor.tier, fps: null };
+    }
+    monitor.elapsed += leftover;
+    monitor.frames += 1;
+  } else {
+    monitor.elapsed += clampedDt;
+    monitor.frames += 1;
+  }
+
+  if (monitor.elapsed < 2) {
+    return { dprChanged: false, tierChanged: false, dpr: monitor.dpr, tier: monitor.tier, fps: null };
+  }
+
+  const windowElapsed = monitor.elapsed;
+  const fps = monitor.frames / windowElapsed;
+  monitor.elapsed = 0;
+  monitor.frames = 0;
+  monitor.dprCooldown = Math.max(0, monitor.dprCooldown - windowElapsed);
+  monitor.tierCooldown = Math.max(0, monitor.tierCooldown - windowElapsed);
+
+  // 1. Ajuster d'abord la résolution interne (DPR).
+  monitor.slowDprSamples = fps < 46 ? monitor.slowDprSamples + 1 : 0;
+  monitor.fastDprSamples = fps > 57 ? monitor.fastDprSamples + 1 : 0;
+  const dprAtFloorBefore = monitor.dpr <= config.minDpr + 0.08;
+  let nextDpr = monitor.dpr;
+  if (monitor.dprCooldown === 0 && (fps < 25 || monitor.slowDprSamples >= 2)) {
+    nextDpr = Math.max(config.minDpr, monitor.dpr - (fps < 25 ? 0.25 : 0.15));
+  } else if (monitor.dprCooldown === 0 && monitor.fastDprSamples >= 4) {
+    nextDpr = Math.min(config.maxDpr, monitor.dpr + 0.1);
+  }
+
+  const dprChanged = Math.abs(nextDpr - monitor.dpr) >= 0.04;
+  if (dprChanged) {
+    monitor.dpr = nextDpr;
+    monitor.slowDprSamples = 0;
+    monitor.fastDprSamples = 0;
+    monitor.dprCooldown = fps < 25 ? 4 : 8;
+  }
+
+  // 2. Ensuite seulement, changer de palier si la marge de DPR ne suffit plus ou si le GPU est largement à l'aise.
+  let tierChanged = false;
+  if (config.isAutoPreset && monitor.tierCooldown === 0 && !dprChanged) {
+    const currentIndex = TIER_ORDER.indexOf(monitor.tier);
+    const recommendedIndex = TIER_ORDER.indexOf(monitor.recommendedTier);
+    const ceilingIndex = monitor.demotedCeiling
+      ? TIER_ORDER.indexOf(monitor.demotedCeiling)
+      : TIER_ORDER.length - 1;
+
+    if (dprAtFloorBefore && (fps < 24 || fps < 36)) {
+      monitor.slowTierSamples = fps < 36 ? monitor.slowTierSamples + 1 : 0;
+      monitor.fastTierSamples = 0;
+      if (currentIndex > 0 && (fps < 24 || monitor.slowTierSamples >= 2)) {
+        const nextTier = TIER_ORDER[currentIndex - 1];
+        monitor.tier = nextTier;
+        monitor.demotedCeiling = nextTier;
+        monitor.slowTierSamples = 0;
+        monitor.fastTierSamples = 0;
+        monitor.warmupRemaining = 2.5;
+        monitor.tierCooldown = 10;
+        tierChanged = true;
+      }
+    } else if (
+      monitor.canPromoteTier
+      && monitor.dpr >= config.maxDpr - 0.04
+      && fps >= 57.5
+    ) {
+      monitor.slowTierSamples = 0;
+      monitor.fastTierSamples += 1;
+      const maxAllowedIndex = Math.min(recommendedIndex + 1, ceilingIndex, TIER_ORDER.length - 1);
+      if (currentIndex < maxAllowedIndex && monitor.fastTierSamples >= 5) {
+        monitor.tier = TIER_ORDER[currentIndex + 1];
+        monitor.slowTierSamples = 0;
+        monitor.fastTierSamples = 0;
+        monitor.warmupRemaining = 2.5;
+        monitor.tierCooldown = 16;
+        tierChanged = true;
+      }
+    } else {
+      monitor.slowTierSamples = 0;
+      if (fps < 57.5) monitor.fastTierSamples = 0;
+    }
+  } else {
+    monitor.slowTierSamples = 0;
+    monitor.fastTierSamples = 0;
+  }
+
+  return {
+    dprChanged,
+    tierChanged,
+    dpr: monitor.dpr,
+    tier: monitor.tier,
+    fps,
+  };
+}

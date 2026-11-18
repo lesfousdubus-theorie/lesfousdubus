@@ -51,12 +51,14 @@ interface OccupancyOptions {
   currentPassengerIndex: number | null;
   avatarAboard: boolean;
   lowPower: boolean;
+  detailLimit?: number;
+  simplifiedLimit?: number;
   detailFocus?: { x: number; z: number };
 }
 
 /** Attribue chaque position physique une seule fois, sans modifier les identifiants persistants. */
 export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges = [], renderedRowIndices,
-  reservedRow, reservedColumn = null, currentPassengerIndex, avatarAboard, lowPower, detailFocus }: OccupancyOptions) {
+  reservedRow, reservedColumn = null, currentPassengerIndex, avatarAboard, lowPower, detailLimit, simplifiedLimit, detailFocus }: OccupancyOptions) {
   const capacity = Math.max(0, seatCapacity), numRows = getBusPhysicalRows(capacity), visitorRows = getVisitorRows(capacity);
   const renderedRows = new Set(renderedRowIndices ?? getRenderedRowIndices(numRows, reservedRow));
   const vacant = vacantSeatRanges.map(([start, end, before]) => ({ start: Math.max(0, start), end: Math.min(capacity - 1, end), before }))
@@ -80,7 +82,8 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
     const physicalSeatIndex = row * 4 + column;
     return { index, passengerKind: "visitor", physicalSeatIndex, seat: getPhysicalSeat(physicalSeatIndex) };
   };
-  const detailLimit = lowPower ? 2 : 8;
+  const resolvedDetailLimit = Math.max(0, detailLimit ?? (lowPower ? 2 : 8));
+  const resolvedSimplifiedLimit = Math.max(0, simplifiedLimit ?? 160);
   // Les rangées visibles sont bornées par la virtualisation. Partir de leurs
   // places évite de parcourir tous les rangs occupés quand un long bus est vide
   // à l'avant, même si ses seuls visiteurs visibles sont tout à l'arrière.
@@ -106,11 +109,17 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
     + ((occupant.seat.seatInRow < 2 ? -.72 : .72) - focus.x) ** 2;
   const detailedVisitors = [...candidates].sort((left, right) =>
     distance(left) - distance(right) || left.index - right.index)
-    .slice(0, detailLimit);
+    .slice(0, resolvedDetailLimit);
   const detailed = detailedVisitors;
   const detailedIds = new Set(detailedVisitors.map(occupant => occupant.index));
   const distant = candidates.filter(occupant => !detailedIds.has(occupant.index));
-  const simplified = distant.length <= 160 ? distant : Array.from({ length: 160 }, (_, sample) =>
-    distant[Math.floor(sample * (distant.length - 1) / 159)]);
-  return { detailed, simplified, avatar, detailLimit, occupiedCount, visitorRows, numRows };
+  const simplified = resolvedSimplifiedLimit === 0
+    ? []
+    : distant.length <= resolvedSimplifiedLimit
+      ? distant
+      : resolvedSimplifiedLimit === 1
+        ? [distant[0]]
+        : Array.from({ length: resolvedSimplifiedLimit }, (_, sample) =>
+          distant[Math.floor(sample * (distant.length - 1) / (resolvedSimplifiedLimit - 1))]);
+  return { detailed, simplified, avatar, detailLimit: resolvedDetailLimit, occupiedCount, visitorRows, numRows };
 }

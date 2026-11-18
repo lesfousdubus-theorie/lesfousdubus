@@ -11,6 +11,12 @@ interface Props {
   lowPower?: boolean;
   reducedMotion?: boolean;
   cameraFar?: number;
+  fogNear?: number;
+  fogFar?: number;
+  shadowsEnabled?: boolean;
+  shadowMapSize?: 1024 | 2048;
+  shadowsType?: false | "basic" | "soft";
+  starCount?: number;
   cabinCenterZ?: number;
   cabinLength?: number;
 }
@@ -36,6 +42,12 @@ export default function DayNight({
   lowPower = false,
   reducedMotion = false,
   cameraFar = 2000,
+  fogNear,
+  fogFar: fogFarProp,
+  shadowsEnabled,
+  shadowMapSize,
+  shadowsType,
+  starCount,
   cabinCenterZ = 0,
   cabinLength = 9.2,
 }: Props) {
@@ -47,6 +59,11 @@ export default function DayNight({
   const hemi = useRef<THREE.HemisphereLight>(null);
   const starsMat = useRef<THREE.PointsMaterial>(null);
   const starsRef = useRef<THREE.Points>(null);
+  const appliedShadowRef = useRef<{
+    enabled: boolean;
+    mapSize: 1024 | 2048;
+    type: false | "basic" | "soft" | undefined;
+  } | null>(null);
   const sunTarget = useMemo(() => {
     const obj = new THREE.Object3D();
     obj.position.set(0, 1.2, 0);
@@ -62,14 +79,18 @@ export default function DayNight({
   const lightColor = useMemo(() => new THREE.Color(), []);
   const sunPosition = useMemo(() => new THREE.Vector3(), []);
 
-  const fogFar = Math.max(750, cameraFar * 0.85);
-  const skyDist = Math.max(900, cameraFar * 0.88);
+  const resolvedFogNear = fogNear ?? 120;
+  const resolvedFogFar = fogFarProp ?? Math.max(750, cameraFar * 0.85);
+  const skyDist = Math.max(300, cameraFar * 0.82);
+  const resolvedShadowsEnabled = shadowsEnabled ?? !lowPower;
+  const resolvedShadowMapSize = shadowMapSize ?? (lowPower ? 1024 : 2048);
+  const resolvedStarCount = starCount ?? (lowPower ? 700 : 1800);
   // Garder l'avant du bus (-4.6) dans la shadow camera [-46, 46] tout en suivant le centre cabine.
   const shadowSpanBound = Math.max(36, 42 - Math.min(8, cabinLength * 0.1));
   const targetZ = THREE.MathUtils.clamp(cabinCenterZ, -shadowSpanBound, 36);
 
   const starGeo = useMemo(() => {
-    const n = lowPower ? 700 : 1800;
+    const n = resolvedStarCount;
     const pos = new Float32Array(n * 3);
     const fractHash = (seed: number) => {
       const x = Math.sin(seed) * 43758.5453123;
@@ -88,13 +109,52 @@ export default function DayNight({
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     return g;
-  }, [lowPower]);
+  }, [resolvedStarCount]);
 
   useEffect(() => () => {
     starGeo.dispose();
   }, [starGeo]);
 
   useFrame((state, dt) => {
+    const prevShadow = appliedShadowRef.current;
+    if (
+      sun.current
+      && (
+        !prevShadow
+        || prevShadow.enabled !== resolvedShadowsEnabled
+        || prevShadow.mapSize !== resolvedShadowMapSize
+        || prevShadow.type !== shadowsType
+      )
+    ) {
+      sun.current.castShadow = resolvedShadowsEnabled;
+      if (
+        sun.current.shadow.mapSize.width !== resolvedShadowMapSize
+        || sun.current.shadow.mapSize.height !== resolvedShadowMapSize
+      ) {
+        sun.current.shadow.mapSize.set(resolvedShadowMapSize, resolvedShadowMapSize);
+        sun.current.shadow.map?.dispose();
+        sun.current.shadow.map = null;
+      }
+      if (prevShadow && (prevShadow.enabled !== resolvedShadowsEnabled || prevShadow.type !== shadowsType)) {
+        state.scene.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            const materials = Array.isArray(object.material) ? object.material : [object.material];
+            for (const material of materials) {
+              if (material instanceof THREE.MeshStandardMaterial) {
+                material.needsUpdate = true;
+              }
+            }
+          }
+        });
+      }
+      state.gl.shadowMap.needsUpdate = true;
+      appliedShadowRef.current = {
+        enabled: resolvedShadowsEnabled,
+        mapSize: resolvedShadowMapSize,
+        type: shadowsType,
+      };
+    }
+
     let targetSunY = 0.85;
     let targetSunX = 0.1;
 
@@ -148,7 +208,8 @@ export default function DayNight({
     else state.scene.background = skyColor.clone();
     if (state.scene.fog instanceof THREE.Fog) {
       state.scene.fog.color.copy(fogColor);
-      state.scene.fog.far = fogFar;
+      state.scene.fog.near = resolvedFogNear;
+      state.scene.fog.far = resolvedFogFar;
     } else if (state.scene.fog) {
       state.scene.fog.color.copy(fogColor);
     }
@@ -194,7 +255,7 @@ export default function DayNight({
 
   return (
     <>
-      <fog attach="fog" args={["#bfe3ff", 120, fogFar]} />
+      <fog attach="fog" args={["#bfe3ff", 120, 450]} />
       <ambientLight ref={ambient} intensity={0.5} />
       <hemisphereLight ref={hemi} args={["#bde3ff", "#5a4a30", 0.6]} />
       <primitive object={sunTarget} />
@@ -202,9 +263,9 @@ export default function DayNight({
         ref={sun}
         position={[30, 50, -25]}
         intensity={2.5}
-        castShadow
-        shadow-mapSize-width={lowPower ? 1024 : 2048}
-        shadow-mapSize-height={lowPower ? 1024 : 2048}
+        castShadow={resolvedShadowsEnabled}
+        shadow-mapSize-width={resolvedShadowMapSize}
+        shadow-mapSize-height={resolvedShadowMapSize}
         shadow-camera-left={-46}
         shadow-camera-right={46}
         shadow-camera-top={46}

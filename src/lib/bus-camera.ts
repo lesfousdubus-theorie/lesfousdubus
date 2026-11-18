@@ -11,8 +11,8 @@ export function getExteriorMaxDistance(cabinLength: number): number {
   return Math.max(140, cabinLength * 5);
 }
 
-export function getBusCameraFar(cabinLength: number): number {
-  return Math.max(2000, getExteriorMaxDistance(cabinLength) + cabinLength + 100);
+export function getBusCameraFar(cabinLength: number, minimumFar = 2000): number {
+  return Math.max(minimumFar, getExteriorMaxDistance(cabinLength) + cabinLength + 100);
 }
 
 export function wheelZoomRatio(delta: number, deltaMode: number, viewportHeight: number) {

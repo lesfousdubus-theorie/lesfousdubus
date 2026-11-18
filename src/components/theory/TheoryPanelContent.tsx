@@ -2,8 +2,15 @@
 
 import { THEORY_FAQ } from "@/lib/theory-data";
 import TheorySummary from "./TheorySummary";
+import TheorySettingsPanel from "./TheorySettingsPanel";
 import { THEORY_VIDEO_URL } from "@/lib/theory-video";
 import SyncedTheoryVideo from "./SyncedTheoryVideo";
+import {
+  DEFAULT_GRAPHICS_SETTINGS,
+  type GraphicsPresetPreference,
+  type GraphicsSettings,
+  type SceneGraphicsTelemetry,
+} from "@/lib/scene-performance";
 import {
   ChevronDownIcon,
   ExternalArrowIcon,
@@ -12,18 +19,32 @@ import {
   WrenchIcon,
 } from "../ui/BusIcons";
 
-export type TheoryTab = "thesis" | "video" | "faq" | "participate";
+export type TheoryTab = "thesis" | "video" | "faq" | "participate" | "settings";
 
 export default function TheoryPanelContent({
   activeTab,
   onVideoPlaybackChange,
   videoActive,
   videoMounted,
+  graphicsSettings = DEFAULT_GRAPHICS_SETTINGS,
+  graphicsTelemetry = null,
+  onSelectGraphicsPreset,
+  onUpdateGraphicsSettings,
+  onResetGraphicsSettings,
+  letterShortcutsEnabled,
+  setLetterShortcutsEnabled,
 }: {
   activeTab: TheoryTab;
   onVideoPlaybackChange?: (active: boolean) => void;
   videoActive?: boolean;
   videoMounted?: boolean;
+  graphicsSettings?: GraphicsSettings;
+  graphicsTelemetry?: SceneGraphicsTelemetry | null;
+  onSelectGraphicsPreset?: (preset: GraphicsPresetPreference) => void;
+  onUpdateGraphicsSettings?: (patch: Partial<GraphicsSettings>) => void;
+  onResetGraphicsSettings?: () => void;
+  letterShortcutsEnabled?: boolean;
+  setLetterShortcutsEnabled?: (enabled: boolean) => void;
 }) {
   return (
     <>
@@ -123,6 +144,18 @@ export default function TheoryPanelContent({
             </a>
           </section>
         </div>
+      )}
+      {/* 5. ONGLET PARAMÈTRES */}
+      {activeTab === "settings" && (
+        <TheorySettingsPanel
+          graphicsSettings={graphicsSettings}
+          telemetry={graphicsTelemetry}
+          onSelectPreset={(preset) => onSelectGraphicsPreset?.(preset)}
+          onUpdateGraphics={(patch) => onUpdateGraphicsSettings?.(patch)}
+          onResetGraphics={() => onResetGraphicsSettings?.()}
+          letterShortcutsEnabled={letterShortcutsEnabled}
+          setLetterShortcutsEnabled={setLetterShortcutsEnabled}
+        />
       )}
     </>
   );
