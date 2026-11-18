@@ -36,6 +36,7 @@ const { createConfettiSeeds } = await load("src/lib/bus-confetti.ts");
 const { DANCE_PHASE_DURATION, createPassengerPose, samplePassengerPose } = await load("src/lib/passenger-motion.ts");
 const { sampleCopilotDance } = await load("src/lib/copilot-dance.ts");
 const { PARTY_BEAT_SECONDS } = await load("src/lib/party-rhythm.ts");
+const { createZoneLoopOrder, getActiveZoneLoopState, getZoneSlotCenterZ, mulberry32 } = await load("src/lib/world-route.ts");
 
 // 1. Formatage des noms GPU WebGL2 / ANGLE
 assert.equal(
@@ -485,5 +486,27 @@ sampleCopilotDance(kytaPoseStart, 0, false);
 sampleCopilotDance(kytaPoseHalf, PARTY_BEAT_SECONDS / 2, false);
 assert(kytaPoseStart.leftX >= 2.35 && kytaPoseStart.rightElbowX < 0.65, "Kyta lifts arms overhead cleanly");
 assert(Math.abs(kytaPoseStart.leftX - kytaPoseHalf.leftX) >= 0.7, "Kyta arms swing widely on the beat");
+
+// 11. Boucle aléatoire complète des 8 îles sans doublon avant le tour suivant
+const orderA = createZoneLoopOrder(8, mulberry32(101));
+const orderB = createZoneLoopOrder(8, mulberry32(2026));
+assert.equal(orderA.length, 8);
+assert.equal(new Set(orderA).size, 8, "every island appears once per loop");
+assert.notDeepEqual(orderA, orderB, "different seeds produce distinct island orders");
+const seenOrder = [];
+for (let step = 0; step < 8; step++) {
+  const scroll = step * 160;
+  const active = getActiveZoneLoopState(scroll, orderA, 160);
+  assert.equal(active.slot, step);
+  assert.equal(active.visit, 0);
+  const centerZ = getZoneSlotCenterZ(step, scroll, 160, 1280, -640, 640);
+  assert.equal(centerZ, -40, "active island centers cleanly around the bus");
+  seenOrder.push(active.zone);
+}
+assert.deepEqual(seenOrder, orderA, "islands traverse in exact shuffled order with no duplicates");
+const wrapped = getActiveZoneLoopState(8 * 160, orderA, 160);
+assert.equal(wrapped.slot, 0);
+assert.equal(wrapped.visit, 1);
+assert.equal(wrapped.zone, orderA[0], "loop wraps back seamlessly after visiting all 8 islands");
 
 console.log("Scene performance GPU classification, dynamic budgets, hysteresis and sea creature physics passed.");

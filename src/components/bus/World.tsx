@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { WorldLandmark, type PropDef, type PropType } from "./WorldLandmark";
 import WorldSetPiece, { WorldForeground } from "./WorldSetPiece";
@@ -10,9 +10,15 @@ import { useFrame } from "@react-three/fiber";
 import { WORLD_SPEED, type Phase, type WorldState } from "./constants";
 import { BRIDGE_MARKING_BOX } from "@/lib/world-geometry";
 import { cacheSceneryBounds, createSceneryVisibility, type SceneryBounds } from "@/lib/world-visibility";
+import {
+  createRandomSeed,
+  createZoneLoopOrder,
+  getActiveZoneLoopState,
+  getZoneSlotCenterZ,
+  mulberry32,
+} from "@/lib/world-route";
 
 export const ZONE_LEN = 160;
-const WINDOW_START = -440;
 const TERRAIN_RELIEF = [1.1, .32, .55, .65, 1.05, .45, .64, .25];
 const TERRAIN_WIDTH = 96;
 const TERRAIN_DEPTH = ZONE_LEN - 16;
@@ -54,18 +60,8 @@ const ZONE_PROPS: Record<number, PropType[]> = {
   7: ["justicePillar", "courthouse", "waterfallCliff", "seaTrainPoles", "rock"],
 };
 
-function mulberry32(a: number) {
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function weatherForLandscape(zone: number, visit: number): WorldState["weather"] {
-  const value = mulberry32((visit + 2048) * 7919 + zone * 104729)();
+function weatherForLandscape(zone: number, visit: number, seed: number): WorldState["weather"] {
+  const value = mulberry32((visit + 2048) * 7919 + zone * 104729 + seed)();
 
   if (zone === 4) return value < 0.78 ? "snow" : value < 0.9 ? "rain" : "clear";
   if (zone === 1) return value < 0.62 ? "rain" : value < 0.68 ? "snow" : "clear";
@@ -167,8 +163,8 @@ function getPropRadius(type: PropType, s: number, seed: number): number {
   }
 }
 
-function buildProps(): PropDef[] {
-  const rnd = mulberry32(2026);
+function buildProps(worldSeed = 2026): PropDef[] {
+  const rnd = mulberry32(worldSeed);
   const out: PropDef[] = [];
   for (let z = 0; z < ZONES.length; z++) {
     const types = ZONE_PROPS[z];
@@ -268,7 +264,21 @@ export default function World({
   cabinCenterZ = 0,
   cabinLength = 9.2,
 }: WorldProps) {
-  const allProps = useMemo(() => buildProps(), []);
+  const [{ seed: worldSeed, order: zoneOrder }] = useState(() => {
+    const seed = createRandomSeed();
+    return {
+      seed,
+      order: createZoneLoopOrder(ZONES.length, mulberry32(seed ^ 0x9e3779b9)),
+    };
+  });
+  const slotByZone = useMemo(() => {
+    const slots = new Array<number>(ZONES.length).fill(0);
+    zoneOrder.forEach((zoneIndex, slot) => {
+      slots[zoneIndex] = slot;
+    });
+    return slots;
+  }, [zoneOrder]);
+  const allProps = useMemo(() => buildProps(worldSeed), [worldSeed]);
   const terrains = useMemo(() => ZONES.map((_, index) => makeTerrain(index)), []);
 
   useEffect(() => () => {
@@ -344,7 +354,11 @@ export default function World({
       return objects.map(object => cacheSceneryBounds(object, z));
     });
     railBounds.current = railRefs.current.flatMap(group => group ? [cacheSceneryBounds(group, 0)] : []);
-  }, [props, lowPower, cabinCenterZ, bridgeLength]);
+    if (worldRef.current) {
+      const initial = getActiveZoneLoopState(worldRef.current.scroll, zoneOrder, ZONE_LEN);
+      worldRef.current.zone = initial.zone;
+    }
+  }, [props, lowPower, cabinCenterZ, bridgeLength, worldRef, zoneOrder]);
 
   const dashRef = useRef<THREE.InstancedMesh>(null);
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
@@ -365,13 +379,11 @@ export default function World({
     const loopStart = cabinCenterZ - LOOP / 2;
     const loopEnd = cabinCenterZ + LOOP / 2;
 
-    // Boucler les 8 îles dans [cabinCenterZ - LOOP / 2, cabinCenterZ + LOOP / 2]
+    // Boucler les 8 îles dans un ordre aléatoire sans répétition avant la fin du tour
     for (let i = 0; i < ZONES.length; i++) {
       const g = zoneRefs.current[i];
       if (!g) continue;
-      const center = i * ZONE_LEN + ZONE_LEN / 2;
-      let z = (((center + scroll + WINDOW_START - loopStart) % LOOP) + LOOP) % LOOP + loopStart;
-      if (z > loopEnd) z -= LOOP;
+      const z = getZoneSlotCenterZ(slotByZone[i], scroll, ZONE_LEN, LOOP, loopStart, loopEnd);
       zoneZ.current[i] = z;
       g.position.z = z;
       const eye = state.camera.position;
@@ -417,11 +429,9 @@ export default function World({
     if (dashRef.current) dashRef.current.instanceMatrix.needsUpdate = true;
 
     // Calcul de la zone active et fondu météorologique continu
-    const baseAtBus = (((-WINDOW_START - scroll) % LOOP) + LOOP) % LOOP;
     if (worldRef.current) {
-      const zone = Math.floor(baseAtBus / ZONE_LEN) % ZONES.length;
-      const visit = Math.floor((-WINDOW_START - scroll) / LOOP);
-      const targetWeather = weatherForLandscape(zone, visit);
+      const { zone, visit } = getActiveZoneLoopState(scroll, zoneOrder, ZONE_LEN);
+      const targetWeather = weatherForLandscape(zone, visit, worldSeed);
       const currentWeather = worldRef.current.weather;
       let targetIntensity = 0;
       if (targetWeather === currentWeather) {
