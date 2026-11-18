@@ -90,7 +90,6 @@ export default function CameraRig({
   const tappedKeysRef = useRef<Set<string>>(new Set());
   const phaseRef = useRef<Phase>(phase);
   const freeViewRef = useRef(false);
-  const freeCamera = useRef<typeof saved.current | null>(null);
   const preparedPhaseRef = useRef<Phase | null>(null);
   const initialFramedRef = useRef(false);
   const framedWithStats = useRef(false);
@@ -139,7 +138,13 @@ export default function CameraRig({
   const aspect = size.width / Math.max(1, size.height) || 1;
   const overview = useMemo(() => {
     const target = new THREE.Vector3(0, 1.9, cabinCenterZ);
-    const pos = DEFAULT_EXTERIOR_OFFSET.clone().setLength(getOverviewDistance(cabinLength, aspect, DEFAULT_EXTERIOR_OFFSET)).add(target);
+    const camParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("cam") : null;
+    const offset = camParam === "side"
+      ? new THREE.Vector3(11, 1.9, 0)
+      : camParam === "front"
+        ? new THREE.Vector3(0, 1.7, -12)
+        : DEFAULT_EXTERIOR_OFFSET;
+    const pos = offset.clone().setLength(getOverviewDistance(cabinLength, aspect, offset)).add(target);
     const orientation = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(pos, target, CAMERA_UP));
     return { pos, target, orientation };
   }, [aspect, cabinCenterZ, cabinLength]);
@@ -218,31 +223,20 @@ export default function CameraRig({
     arrivedRef.current(destination);
   }, [camera, pivot]);
 
-  // Le cadrage d'ensemble est appliqué à l'arrivée et lors d'un recentrage explicite.
+  // Le cadrage d'ensemble est appliqué à l'arrivée et synchronisé sur saved.current.
   useLayoutEffect(() => {
-    if (initialFramedRef.current && (!initialStatsReady || framedWithStats.current || explored.current || (phase !== "outside" && phase !== "inside"))) return;
+    saved.current.pos.copy(overview.pos);
+    saved.current.target.copy(overview.target);
+    saved.current.orientation.copy(overview.orientation);
+    if (initialFramedRef.current && (!initialStatsReady || framedWithStats.current || explored.current || phase !== "outside")) return;
     initialFramedRef.current = true;
     framedWithStats.current = initialStatsReady;
-    const camParam = new URLSearchParams(window.location.search).get("cam");
-    const { target, orientation } = overview;
-    const pos = overview.pos.clone();
-    if (camParam === "side" || camParam === "front") {
-      const offset = camParam === "side" ? new THREE.Vector3(11, 1.9, 0) : new THREE.Vector3(0, 1.7, -12);
-      pos.copy(offset).setLength(getOverviewDistance(cabinLength, aspect, offset)).add(target);
-    }
-    saved.current.pos.copy(pos);
-    saved.current.target.copy(target);
-    saved.current.orientation.copy(
-      camParam === "side" || camParam === "front"
-        ? new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(pos, target, CAMERA_UP))
-        : orientation,
-    );
     if (phase === "outside") {
-      camera.position.copy(pos);
-      camera.quaternion.copy(saved.current.orientation);
-      pivot.copy(target);
+      camera.position.copy(overview.pos);
+      camera.quaternion.copy(overview.orientation);
+      pivot.copy(overview.target);
     }
-  }, [aspect, cabinLength, camera, overview, pivot, initialStatsReady, phase]);
+  }, [camera, overview, pivot, initialStatsReady, phase]);
 
   useEffect(() => {
     if (resetViewRef.current === resetViewToken) return;
@@ -310,13 +304,18 @@ export default function CameraRig({
       a.to.copy(activeEyePos);
       const m = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
       a.toQ.setFromRotationMatrix(m);
-    } else if (phase === "exiting" && phaseChanged) {
-      exitFromFreeView.current = freeViewRef.current;
-      a.from.copy(camera.position);
-      a.fromQ.copy(camera.quaternion);
-      a.to.copy(saved.current.pos);
-      a.toQ.copy(saved.current.orientation);
-      a.active = true;
+    } else if (phase === "exiting") {
+      if (phaseChanged) {
+        exitFromFreeView.current = freeViewRef.current;
+        a.from.copy(camera.position);
+        a.fromQ.copy(camera.quaternion);
+        a.active = true;
+      }
+      saved.current.pos.copy(overview.pos);
+      saved.current.target.copy(overview.target);
+      saved.current.orientation.copy(overview.orientation);
+      a.to.copy(overview.pos);
+      a.toQ.copy(overview.orientation);
     } else if (phaseChanged) {
       a.active = false;
     }
@@ -327,7 +326,7 @@ export default function CameraRig({
       tappedKeysRef.current.clear();
       look.current.dragging = false;
     }
-  }, [phase, camera, activeEyePos, activeTvTarget, pivot]);
+  }, [phase, camera, activeEyePos, activeTvTarget, overview, pivot]);
 
   // Chaque déplacement dans l'allée oriente le regard vers le lecteur actif.
   // Le visiteur peut ensuite tourner librement la tête avec la souris ou le doigt.
@@ -352,14 +351,10 @@ export default function CameraRig({
     }
     const next = freeView;
     if (freeViewRef.current === next) return;
-    const wasFree = freeViewRef.current;
     freeViewRef.current = next;
     activePointersRef.current.clear();
     pinchStartDistRef.current = null;
     look.current.dragging = false;
-    if (wasFree && (!resetTransition.current.active || resetTransition.current.t > 0.65)) {
-      freeCamera.current = { pos: camera.position.clone(), target: pivot.clone(), orientation: camera.quaternion.clone() };
-    }
     const rt = resetTransition.current;
     rt.active = true;
     rt.canInterrupt = false;
@@ -367,17 +362,16 @@ export default function CameraRig({
     rt.toSeat = !next;
     rt.fromPos.copy(camera.position);
     rt.fromQ.copy(camera.quaternion);
-    const destination = freeCamera.current ?? saved.current;
-    rt.toPos.copy(next ? destination.pos : activeEyePos);
+    rt.toPos.copy(next ? overview.pos : activeEyePos);
     rt.duration = reducedMotion
       ? 0.01
       : THREE.MathUtils.clamp(rt.fromPos.distanceTo(rt.toPos) / 7, 1.8, 2.5);
-    rt.toTarget.copy(next ? destination.target : activeTvTarget);
-    rt.fromTarget.copy(pivot);
-    if (next) rt.toQ.copy(destination.orientation);
+    rt.toTarget.copy(next ? overview.target : activeTvTarget);
+    rt.fromTarget.copy(next ? activeTvTarget : pivot);
+    if (next) rt.toQ.copy(overview.orientation);
     else rt.toQ.setFromRotationMatrix(new THREE.Matrix4().lookAt(rt.toPos, rt.toTarget, CAMERA_UP));
     targetFovRef.current = 55;
-  }, [freeView, phase, camera, activeEyePos, activeTvTarget, pivot, reducedMotion]);
+  }, [freeView, phase, camera, activeEyePos, activeTvTarget, overview, pivot, reducedMotion]);
 
   // Contrôles "tourner la tête" & Zoom à l'intérieur (souris / tactile / clavier / molette)
   useEffect(() => {
@@ -617,9 +611,9 @@ export default function CameraRig({
       const setback = THREE.MathUtils.clamp(.83 / aspect, 1, 1.36);
       if (p === "entering") {
         if (trip.elapsed < trip.timing.entryCameraTime) {
-          // Plan fixe face à la porte pendant que le passager entre dans le cadre et monte.
-          cinematic.target.set(1.25, 1.25, trip.doorZ - .65);
-          cinematic.pos.set(1.25 + 6.05 * setback, 2.8, trip.doorZ - 2.65 * setback);
+          // Plan fixe reculé face à la porte (même distance qu'à la sortie) pendant que le passager entre et monte.
+          cinematic.target.set(1.85, 1.35, trip.doorZ - 0.35);
+          cinematic.pos.set(1.85 + 9.2 * setback, 3.6, trip.doorZ - 4.8 * setback);
           const approach = ease(trip.elapsed / 1.8);
           cam.position.lerpVectors(a.from, cinematic.pos, approach);
           cinematic.matrix.lookAt(cinematic.pos, cinematic.target, CAMERA_UP);
@@ -661,6 +655,9 @@ export default function CameraRig({
       const rt = resetTransition.current;
       const transitionDt = Math.min(dt, 0.25);
       rt.t = Math.min(1, rt.t + transitionDt / rt.duration);
+      if (rt.t >= 0.65 && p === "inside" && freeViewRef.current) {
+        rt.canInterrupt = true;
+      }
       // Quintic smoothstep (démarrage et arrêt ultra-doux)
       const t = rt.t;
       const s = t * t * t * (t * (t * 6 - 15) + 10);

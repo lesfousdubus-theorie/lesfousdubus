@@ -1,5 +1,5 @@
 export const CONFETTI_COLORS = ["#ff354f", "#ff8e28", "#ffe34c", "#54e671", "#29dacb", "#42bfff", "#4964ff", "#a866ff", "#ff59bb", "#ffffff"];
-export const CONFETTI_DENSE_SPAN = 10;
+export const CONFETTI_DENSE_SPAN = 13;
 
 const random = (seed: number) => {
   const n = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
@@ -12,22 +12,29 @@ export interface ConfettiSeed {
   phase: number;
   speed: number;
   spin: number;
+  scale: number;
+  swirl: number;
   local: boolean;
 }
 
-/** Chaque strate couvre un morceau de cabine : les extrémités restent peuplées. */
+/** Répartition entrelacée pour couvrir uniformément toute la cabine dès les premiers confettis de l'intro. */
 export function createConfettiSeeds(count: number, cabinLength: number): ConfettiSeed[] {
-  const globalCount = cabinLength > CONFETTI_DENSE_SPAN * 1.4 ? Math.ceil(count * 0.6) : count;
+  const useLocal = cabinLength > CONFETTI_DENSE_SPAN * 1.4;
+  let localIdx = 0;
+  let globalIdx = 0;
   return Array.from({ length: count }, (_, i) => {
-    const local = i >= globalCount;
-    const layerIndex = local ? i - globalCount : i;
-    const layerCount = local ? count - globalCount : globalCount;
+    const local = useLocal && (i % 10) < 6;
+    const layerIndex = local ? localIdx++ : globalIdx++;
+    // Suite quasi-aléatoire au nombre d'or : même un sous-ensemble (intro) reste réparti partout.
+    const zPos = (layerIndex * 0.6180339887498949 + random(i * 7 + 2) * 0.03) % 1;
     return {
       x: random(i * 7 + 1),
-      z: (layerIndex + random(i * 7 + 2)) / layerCount,
+      z: zPos,
       phase: random(i * 7 + 3),
       speed: 0.7 + random(i * 7 + 4) * 0.6,
       spin: random(i * 7 + 5) * Math.PI * 2,
+      scale: 0.85 + random(i * 7 + 6) * 0.75,
+      swirl: 0.12 + random(i * 7 + 7) * 0.22,
       local,
     };
   });

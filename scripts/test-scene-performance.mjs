@@ -32,6 +32,10 @@ const { getBusOccupancy } = await load("src/lib/bus-occupancy.ts");
 const { getSeatRowZ } = await load("src/lib/bus-layout.ts");
 const { getBusCameraFar, getExteriorMaxDistance } = await load("src/lib/bus-camera.ts");
 const { getSeaCreatureDuration, sampleSeaCreaturePose } = await load("src/lib/sea-creature-motion.ts");
+const { createConfettiSeeds } = await load("src/lib/bus-confetti.ts");
+const { createPassengerPose, samplePassengerPose } = await load("src/lib/passenger-motion.ts");
+const { sampleCopilotDance } = await load("src/lib/copilot-dance.ts");
+const { PARTY_BEAT_SECONDS } = await load("src/lib/party-rhythm.ts");
 
 // 1. Formatage des noms GPU WebGL2 / ANGLE
 assert.equal(
@@ -412,5 +416,33 @@ for (const motion of ["breach", "surface", "rise"]) {
     assert(mid.jointGain < rising.jointGain, "tail wiggle calms gracefully while airborne");
   }
 }
+
+// 10. Confettis entrelacés (intro réduite puis plein régime) et bras levés au-dessus de la tête en fête
+const seeds = createConfettiSeeds(2400, 40);
+assert.equal(seeds.length, 2400);
+const introSeeds = seeds.slice(0, 180);
+const introLocalCount = introSeeds.filter((s) => s.local).length;
+assert(introLocalCount >= 90 && introLocalCount <= 120, "intro confetti balances local and full-cabin seeds");
+assert(introSeeds.some((s) => s.z < 0.15) && introSeeds.some((s) => s.z > 0.85), "intro confetti spans whole Z range");
+
+const nakamaBeatStart = createPassengerPose();
+const nakamaBeatHalf = createPassengerPose();
+samplePassengerPose(nakamaBeatStart, 0, 5, 0, 0.32, Infinity, true, false, "nakama");
+samplePassengerPose(nakamaBeatHalf, PARTY_BEAT_SECONDS / 2, 5, 0, 0.32, Infinity, true, false, "nakama");
+assert(nakamaBeatStart.leftX >= 2.35 && nakamaBeatStart.rightX >= 2.35, "party dance raises both arms overhead");
+assert(nakamaBeatStart.leftElbowX < 0.65 && nakamaBeatStart.rightElbowX < 0.65, "elbows extend upward overhead");
+assert(Math.abs(nakamaBeatStart.leftX - nakamaBeatHalf.leftX) >= 0.65, "party dance arms have wide beat swing");
+
+const shanksPose = createPassengerPose();
+samplePassengerPose(shanksPose, 0, 14, 0, 0.32, Infinity, true, false, "shanks");
+assert.equal(shanksPose.leftX, 0.12, "Shanks keeps missing left arm still");
+assert(shanksPose.rightX >= 2.35 && shanksPose.rightElbowX < 0.65, "Shanks raises right arm overhead");
+
+const kytaPoseStart = createPassengerPose();
+const kytaPoseHalf = createPassengerPose();
+sampleCopilotDance(kytaPoseStart, 0, false);
+sampleCopilotDance(kytaPoseHalf, PARTY_BEAT_SECONDS / 2, false);
+assert(kytaPoseStart.leftX >= 2.35 && kytaPoseStart.rightElbowX < 0.65, "Kyta lifts arms overhead cleanly");
+assert(Math.abs(kytaPoseStart.leftX - kytaPoseHalf.leftX) >= 0.7, "Kyta arms swing widely on the beat");
 
 console.log("Scene performance GPU classification, dynamic budgets, hysteresis and sea creature physics passed.");

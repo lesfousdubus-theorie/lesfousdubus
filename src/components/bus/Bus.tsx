@@ -339,7 +339,7 @@ export default function Bus({
 
       {/* ---------- POSTE DE CONDUITE & TABLEAU DE BORD COMPLET DU BUS ---------- */}
       <BusRelayPassenger hornPulse={hornPulse} reducedMotion={reducedMotion} partyOn={partyDancing} />
-      {partyOn&&<BusConfetti focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion}/>}
+      {partyOn&&<BusConfetti focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion} dancing={partyDancing}/>}
       {partyDancing&&<BusPartyLights worldRef={worldRef} focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion}/>}
       <BusCockpit mats={mats} dashTex={dashTex} hornPulse={hornPulse}
         partyOn={partyDancing} reducedMotion={reducedMotion} />
