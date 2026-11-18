@@ -12,7 +12,7 @@ export { SimplifiedPassengers } from "./SimplifiedPassengers";
 import { PassengerNeck, PassengerTorso } from "./PassengerAnatomy";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import type { SeatInfo } from "@/lib/bus-layout";
-import { getSeatRowZ } from "@/lib/bus-layout";
+import { FIRST_SEAT_Z, getSeatRowZ } from "@/lib/bus-layout";
 import { getBusOccupancy } from "@/lib/bus-occupancy";
 import PassengerLowerBody from "./PassengerLowerBody";
 import { PassengerUpperArm, PassengerForearm } from "./PassengerIdentity";
@@ -134,10 +134,13 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
   const root = useRef<THREE.Group>(null), cameraPoint = useMemo(() => new THREE.Vector3(), []);
   const [detailFocus, setDetailFocus] = useState(() => {
     const rearZ = getSeatRowZ(Math.max(0, numRows - 1)) + 4;
-    const outsidePerimeter = Math.abs(camera.position.x) > 14 || camera.position.z < -10 || camera.position.z > rearZ;
-    return outsidePerimeter
+    const farOutside = Math.abs(camera.position.x) > 28 || camera.position.z < -26 || camera.position.z > rearZ + 18;
+    return farOutside
       ? { x: 0, z: getSeatRowZ(reservedRow) }
-      : { x: Math.round(camera.position.x / 1.2) * 1.2, z: Math.round(camera.position.z / 1.5) * 1.5 };
+      : {
+        x: THREE.MathUtils.clamp(Math.round(camera.position.x / 1.2) * 1.2, -3, 3),
+        z: THREE.MathUtils.clamp(Math.round(camera.position.z / 1.5) * 1.5, FIRST_SEAT_Z, Math.max(FIRST_SEAT_Z, rearZ - 2)),
+      };
   });
   const lastFocus = useRef({ ...detailFocus, time: -Infinity });
   useFrame(({ camera }) => {
@@ -147,9 +150,11 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
     camera.getWorldPosition(cameraPoint);
     root.current.worldToLocal(cameraPoint);
     const rearZ = getSeatRowZ(Math.max(0, numRows - 1)) + 4;
-    const outsidePerimeter = Math.abs(cameraPoint.x) > 14 || cameraPoint.z < -10 || cameraPoint.z > rearZ;
-    const nextX = outsidePerimeter ? 0 : Math.round(cameraPoint.x / 1.2) * 1.2;
-    const nextZ = outsidePerimeter ? getSeatRowZ(reservedRow) : Math.round(cameraPoint.z / 1.5) * 1.5;
+    const farOutside = Math.abs(cameraPoint.x) > 28 || cameraPoint.z < -26 || cameraPoint.z > rearZ + 18;
+    const nextX = farOutside ? 0 : THREE.MathUtils.clamp(Math.round(cameraPoint.x / 1.2) * 1.2, -3, 3);
+    const nextZ = farOutside
+      ? getSeatRowZ(reservedRow)
+      : THREE.MathUtils.clamp(Math.round(cameraPoint.z / 1.5) * 1.5, FIRST_SEAT_Z, Math.max(FIRST_SEAT_Z, rearZ - 2));
     if (Math.hypot(nextX - lastFocus.current.x, nextZ - lastFocus.current.z) <= 1.0) return;
     lastFocus.current = { x: nextX, z: nextZ, time: now };
     setDetailFocus({ x: nextX, z: nextZ });

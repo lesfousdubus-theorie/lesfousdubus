@@ -29,6 +29,7 @@ const {
   syncPerformanceMonitorProfile,
 } = await load("src/lib/scene-performance.ts");
 const { getBusOccupancy } = await load("src/lib/bus-occupancy.ts");
+const { getSeatRowZ } = await load("src/lib/bus-layout.ts");
 const { getBusCameraFar, getExteriorMaxDistance } = await load("src/lib/bus-camera.ts");
 const { getSeaCreatureDuration, sampleSeaCreaturePose } = await load("src/lib/sea-creature-motion.ts");
 
@@ -261,6 +262,120 @@ const customOcc = getBusOccupancy({
 });
 assert.equal(customOcc.detailed.length, 14);
 assert.equal(customOcc.simplified.length, 12);
+
+// 8. Non-disparition des passagers proches quand la caméra bouge sous plafond réduit
+for (const targetRow of [16, 17]) {
+  const focusZ = getSeatRowZ(targetRow);
+  const nearFocusOcc = getBusOccupancy({
+    passengerCount: 240,
+    seatCapacity: 240,
+    reservedRow: 2,
+    currentPassengerIndex: null,
+    avatarAboard: false,
+    lowPower: false,
+    detailLimit: 5,
+    simplifiedLimit: 120,
+    detailFocus: { x: targetRow === 16 ? 0 : 1.2, z: focusZ },
+  });
+  const renderedIndices = new Set([
+    ...nearFocusOcc.detailed.map((o) => o.index),
+    ...nearFocusOcc.simplified.map((o) => o.index),
+  ]);
+  for (let idx = 48; idx < 84; idx++) {
+    assert(renderedIndices.has(idx), `nearby seat ${idx} remains rendered around row=${targetRow}`);
+  }
+}
+
+// 9. Détection GPU étendue (Vulkan/Mesa/RTX sans GeForce/masqué) et promotion à 55 FPS
+assert.equal(
+  classifyGpuHardware({
+    renderer: "NVIDIA RTX 4060",
+    coarsePointer: false,
+    hardwareConcurrency: 12,
+    deviceMemory: 8,
+  }).recommendedTier,
+  "ultra",
+);
+assert.equal(
+  classifyGpuHardware({
+    renderer: "AMD Radeon Graphics (radeonsi, navi31, LLVM 17.0.6, DRM 3.57)",
+    coarsePointer: false,
+    hardwareConcurrency: 16,
+    deviceMemory: 8,
+  }).recommendedTier,
+  "ultra",
+);
+const maskedDesktop = classifyGpuHardware({
+  renderer: "ANGLE (NVIDIA, Vulkan 1.3.280 Driver 555.0)",
+  coarsePointer: false,
+  hardwareConcurrency: 8,
+  deviceMemory: 8,
+});
+assert.equal(maskedDesktop.recommendedTier, "high");
+assert.equal(maskedDesktop.canPromoteTier, true);
+
+const strongIgpu = classifyGpuHardware({
+  renderer: "Intel(R) Iris(R) Xe Graphics",
+  coarsePointer: false,
+  hardwareConcurrency: 8,
+  deviceMemory: 8,
+});
+assert.equal(strongIgpu.recommendedTier, "medium");
+assert.equal(strongIgpu.canPromoteTier, true);
+
+const promoteMonitor = createPerformanceMonitor({
+  tier: "high",
+  recommendedTier: "high",
+  canPromoteTier: true,
+  initialDpr: tierProfiles[2].maxDpr,
+});
+for (let i = 0; i < 10; i++) {
+  sampleScenePerformance(promoteMonitor, 0.25, {
+    minDpr: tierProfiles[2].minDpr,
+    maxDpr: tierProfiles[2].maxDpr,
+    adaptiveFps: true,
+    isAutoPreset: true,
+  });
+}
+for (let w = 0; w < 3; w++) {
+  const steps = Math.ceil(2 / (1 / 56)) + 2;
+  for (let s = 0; s < steps; s++) {
+    sampleScenePerformance(promoteMonitor, 1 / 56, {
+      minDpr: tierProfiles[2].minDpr,
+      maxDpr: tierProfiles[2].maxDpr,
+      adaptiveFps: true,
+      isAutoPreset: true,
+    });
+  }
+}
+assert.equal(promoteMonitor.tier, "ultra", "sustained ~56 FPS on high desktop promotes smoothly to ultra");
+
+const mediumPromoteMonitor = createPerformanceMonitor({
+  tier: "medium",
+  recommendedTier: "medium",
+  canPromoteTier: true,
+  initialDpr: tierProfiles[1].maxDpr,
+});
+for (let i = 0; i < 10; i++) {
+  sampleScenePerformance(mediumPromoteMonitor, 0.25, {
+    minDpr: tierProfiles[1].minDpr,
+    maxDpr: tierProfiles[1].maxDpr,
+    adaptiveFps: true,
+    isAutoPreset: true,
+  });
+}
+for (let w = 0; w < 3; w++) {
+  const steps = Math.ceil(2 / (1 / 55)) + 2;
+  for (let s = 0; s < steps; s++) {
+    sampleScenePerformance(mediumPromoteMonitor, 1 / 55, {
+      minDpr: tierProfiles[1].minDpr,
+      maxDpr: tierProfiles[1].maxDpr,
+      adaptiveFps: true,
+      isAutoPreset: true,
+    });
+  }
+}
+assert.equal(mediumPromoteMonitor.tier, "high", "sustained 55 FPS on medium promotes cleanly to high");
 
 // 7. Physique des créatures marines (sortie de l'eau, saut balistique, plongeon, distance aux plages)
 for (const motion of ["breach", "surface", "rise"]) {

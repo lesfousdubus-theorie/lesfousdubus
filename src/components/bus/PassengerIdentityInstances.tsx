@@ -8,8 +8,10 @@ import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-p
 import { CABIN_FLOOR_Y } from "@/lib/passenger-gait";
 import { getPassengerSignatureGain } from "@/lib/passenger-motion";
 import type { BusOccupant } from "@/lib/bus-occupancy";
+import type { PassengerPoseRegistry } from "@/lib/passenger-motion";
+import type { PassengerProfile } from "@/types/passenger";
 import { Passenger } from "./Passengers";
-import { NAKAMA_ROSTER } from "./passenger-archetypes";
+import { getNakamaArchetype, NAKAMA_ROSTER } from "./passenger-archetypes";
 
 export interface IdentityDrivers {
   bodies: THREE.Matrix4[];
@@ -39,12 +41,16 @@ function Prototype({ id, onReady }: { id: string; onReady: (parts: IdentityPart[
 interface IdentityInstancesProps {
   passengers: BusOccupant[];
   drivers: IdentityDrivers;
+  capacity: number;
+  profilesBySeatIndex?: Map<number, PassengerProfile>;
+  hornPulse: number;
+  poses?: PassengerPoseRegistry;
   partyOn: boolean;
   reducedMotion: boolean;
 }
 
 /** Même tête, mêmes cheveux et même tenue à distance. Seule l'expression est figée. */
-function IdentityGroup({ id, indices, passengers, drivers, partyOn, reducedMotion }:
+function IdentityGroup({ id, indices, passengers, drivers, capacity, profilesBySeatIndex, hornPulse, poses, partyOn, reducedMotion }:
   IdentityInstancesProps & { id: string; indices: number[] }) {
   const clock = useThree(state => state.clock);
   const [parts, setParts] = useState(() => bakedPassengerIdentities.get(id));
@@ -111,16 +117,45 @@ function IdentityGroup({ id, indices, passengers, drivers, partyOn, reducedMotio
     update(clock.elapsedTime);
   }, -1);
 
-  if (!parts) return <Prototype id={id} onReady={setParts} />;
+  const instancedArgs = useMemo<[undefined, undefined, number]>(
+    () => [undefined, undefined, capacity],
+    [capacity],
+  );
+
+  if (!parts) {
+    return <group name={`bus-distant-fallback-${id}`} userData={{ archetypeId: id }}>
+      <Prototype id={id} onReady={setParts} />
+      {indices.map(at => {
+        const occupant = passengers[at];
+        if (!occupant) return null;
+        const profile = occupant.passengerKind === "visitor" ? profilesBySeatIndex?.get(occupant.index) : undefined;
+        const archetype = getNakamaArchetype(occupant.index, profile?.avatarId);
+        return <Passenger
+          key={`${occupant.passengerKind}-${occupant.index}`}
+          seat={occupant.seat}
+          index={occupant.index}
+          archetype={archetype}
+          poses={poses}
+          passengerKind={occupant.passengerKind}
+          physicalSeatIndex={occupant.physicalSeatIndex}
+          label={null}
+          hornPulse={hornPulse}
+          partyOn={partyOn}
+          reducedMotion={reducedMotion}
+          profile={profile}
+        />;
+      })}
+    </group>;
+  }
   return <group name={`bus-distant-identity-${id}`} userData={{ archetypeId: id }}>
-    {parts.map((part, i) => <instancedMesh key={`${part.role}-${i}`} name={`bus-distant-${id}-${part.role}-${i}`}
+    {parts.map((part, i) => <instancedMesh key={`${part.role}-${i}-${capacity}`} name={`bus-distant-${id}-${part.role}-${i}`}
       ref={node => { meshes.current[i] = node; }} geometry={part.geometry} material={part.material}
-      args={[undefined, undefined, 160]} count={indices.length} frustumCulled={false} userData={{ role: part.role, archetypeId: id }}
+      args={instancedArgs} count={indices.length} frustumCulled={false} userData={{ role: part.role, archetypeId: id }}
     />)}
   </group>;
 }
 
-export default function PassengerIdentityInstances({ ids, passengers, drivers, partyOn, reducedMotion }:
+export default function PassengerIdentityInstances({ ids, passengers, drivers, capacity, profilesBySeatIndex, hornPulse, poses, partyOn, reducedMotion }:
   IdentityInstancesProps & { ids: string[] }) {
   const groups = useMemo(() => {
     const result = new Map<string, number[]>();
@@ -132,5 +167,6 @@ export default function PassengerIdentityInstances({ ids, passengers, drivers, p
     return [...result];
   }, [ids]);
   return <>{groups.map(([id, indices]) => <IdentityGroup key={id} id={id} indices={indices}
-    passengers={passengers} drivers={drivers} partyOn={partyOn} reducedMotion={reducedMotion} />)}</>;
+    passengers={passengers} drivers={drivers} capacity={capacity} profilesBySeatIndex={profilesBySeatIndex}
+    hornPulse={hornPulse} poses={poses} partyOn={partyOn} reducedMotion={reducedMotion} />)}</>;
 }
