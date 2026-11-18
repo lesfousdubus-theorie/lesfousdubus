@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { type WorldState } from "./constants";
+import { getShadowCameraFraming, type ShadowCameraFraming } from "@/lib/scene-performance";
 
 interface Props {
   worldRef: React.RefObject<WorldState>;
@@ -78,6 +79,15 @@ export default function DayNight({
   const fogColor = useMemo(() => new THREE.Color(), []);
   const lightColor = useMemo(() => new THREE.Color(), []);
   const sunPosition = useMemo(() => new THREE.Vector3(), []);
+  const shadowFraming = useMemo<ShadowCameraFraming>(() => ({
+    halfWidth: 105,
+    halfDepth: 165,
+    centerZ: -36,
+    sunDistance: 222,
+    near: 1,
+    far: 580,
+    normalBias: 0.046,
+  }), []);
 
   const resolvedFogNear = fogNear ?? 120;
   const resolvedFogFar = fogFarProp ?? Math.max(750, cameraFar * 0.85);
@@ -85,9 +95,6 @@ export default function DayNight({
   const resolvedShadowsEnabled = shadowsEnabled ?? !lowPower;
   const resolvedShadowMapSize = shadowMapSize ?? (lowPower ? 1024 : 2048);
   const resolvedStarCount = starCount ?? (lowPower ? 700 : 1800);
-  // Garder l'avant du bus (-4.6) dans la shadow camera [-46, 46] tout en suivant le centre cabine.
-  const shadowSpanBound = Math.max(36, 42 - Math.min(8, cabinLength * 0.1));
-  const targetZ = THREE.MathUtils.clamp(cabinCenterZ, -shadowSpanBound, 36);
 
   const starGeo = useMemo(() => {
     const n = resolvedStarCount;
@@ -220,15 +227,43 @@ export default function DayNight({
     const lightX = THREE.MathUtils.lerp(-sunX, sunX, lightBlend);
     const lightY = THREE.MathUtils.lerp(Math.max(-sunY, 0.16), Math.max(sunY, 0.16), lightBlend)
       + Math.sin(lightBlend * Math.PI) * 0.25;
-    sunTarget.position.set(0, 1.2, targetZ);
+    const framing = getShadowCameraFraming({
+      cabinCenterZ,
+      cabinLength,
+      cameraX: state.camera.position.x,
+      cameraY: state.camera.position.y,
+      cameraZ: state.camera.position.z,
+      fogFar: resolvedFogFar,
+      shadowMapSize: resolvedShadowMapSize,
+    }, shadowFraming);
+    sunTarget.position.set(0, 1.2, framing.centerZ);
     sunTarget.updateMatrixWorld();
-    sunPosition.set(lightX * 60, lightY * 60, targetZ - 25);
+    sunPosition.set(
+      lightX * framing.sunDistance,
+      lightY * framing.sunDistance,
+      framing.centerZ - framing.sunDistance * 0.42,
+    );
     lightColor.copy(MOON_LIGHT).lerp(SUN_LIGHT, smoothstep(0.05, 0.45, daylight)).lerp(DUSK_LIGHT, duskGlow * 0.65);
     if (sun.current) {
       sun.current.position.copy(sunPosition);
       sun.current.intensity = 0.15 + daylight * 2.6;
       sun.current.color.copy(lightColor);
       sun.current.target = sunTarget;
+      const shadowCam = sun.current.shadow.camera;
+      if (
+        Math.abs(shadowCam.right - framing.halfWidth) > 0.5
+        || Math.abs(shadowCam.top - framing.halfDepth) > 0.5
+        || Math.abs(shadowCam.far - framing.far) > 1
+      ) {
+        shadowCam.left = -framing.halfWidth;
+        shadowCam.right = framing.halfWidth;
+        shadowCam.top = framing.halfDepth;
+        shadowCam.bottom = -framing.halfDepth;
+        shadowCam.near = framing.near;
+        shadowCam.far = framing.far;
+        shadowCam.updateProjectionMatrix();
+      }
+      sun.current.shadow.normalBias = framing.normalBias;
     }
 
     if (celestial.current) celestial.current.position.copy(state.camera.position);
@@ -266,14 +301,14 @@ export default function DayNight({
         castShadow={resolvedShadowsEnabled}
         shadow-mapSize-width={resolvedShadowMapSize}
         shadow-mapSize-height={resolvedShadowMapSize}
-        shadow-camera-left={-46}
-        shadow-camera-right={46}
-        shadow-camera-top={46}
-        shadow-camera-bottom={-46}
+        shadow-camera-left={-105}
+        shadow-camera-right={105}
+        shadow-camera-top={165}
+        shadow-camera-bottom={-165}
         shadow-camera-near={1}
-        shadow-camera-far={220}
-        shadow-bias={-0.00015}
-        shadow-normalBias={0.006}
+        shadow-camera-far={580}
+        shadow-bias={-0.00025}
+        shadow-normalBias={0.046}
       />
       <group ref={celestial}>
         <mesh ref={sunMesh} renderOrder={-1}>
