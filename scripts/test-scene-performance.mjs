@@ -33,7 +33,7 @@ const { getSeatRowZ } = await load("src/lib/bus-layout.ts");
 const { getBusCameraFar, getExteriorMaxDistance } = await load("src/lib/bus-camera.ts");
 const { getSeaCreatureDuration, sampleSeaCreaturePose } = await load("src/lib/sea-creature-motion.ts");
 const { createConfettiSeeds } = await load("src/lib/bus-confetti.ts");
-const { createPassengerPose, samplePassengerPose } = await load("src/lib/passenger-motion.ts");
+const { DANCE_PHASE_DURATION, createPassengerPose, samplePassengerPose } = await load("src/lib/passenger-motion.ts");
 const { sampleCopilotDance } = await load("src/lib/copilot-dance.ts");
 const { PARTY_BEAT_SECONDS } = await load("src/lib/party-rhythm.ts");
 
@@ -417,26 +417,67 @@ for (const motion of ["breach", "surface", "rise"]) {
   }
 }
 
-// 10. Confettis entrelacés (intro réduite puis plein régime) et bras levés au-dessus de la tête en fête
+// 10. Confettis répartis sur tout le bus (taille réduite) et danses variées/aléatoires en fête
 const seeds = createConfettiSeeds(2400, 40);
 assert.equal(seeds.length, 2400);
+const globalFraction = seeds.filter((s) => !s.local).length / seeds.length;
+assert(globalFraction > 0.75, "over 75% of confetti spread across full bus length");
+assert(seeds.every((s) => s.scale <= 1.2), "confetti scales remain compact");
 const introSeeds = seeds.slice(0, 180);
-const introLocalCount = introSeeds.filter((s) => s.local).length;
-assert(introLocalCount >= 90 && introLocalCount <= 120, "intro confetti balances local and full-cabin seeds");
-assert(introSeeds.some((s) => s.z < 0.15) && introSeeds.some((s) => s.z > 0.85), "intro confetti spans whole Z range");
+const introGlobal = introSeeds.filter((s) => !s.local);
+assert(
+  introGlobal.some((s) => s.z < 0.25)
+  && introGlobal.some((s) => s.z >= 0.4 && s.z <= 0.6)
+  && introGlobal.some((s) => s.z > 0.75),
+  "intro confetti evenly covers front, middle and back of the bus",
+);
 
-const nakamaBeatStart = createPassengerPose();
-const nakamaBeatHalf = createPassengerPose();
-samplePassengerPose(nakamaBeatStart, 0, 5, 0, 0.32, Infinity, true, false, "nakama");
-samplePassengerPose(nakamaBeatHalf, PARTY_BEAT_SECONDS / 2, 5, 0, 0.32, Infinity, true, false, "nakama");
-assert(nakamaBeatStart.leftX >= 2.35 && nakamaBeatStart.rightX >= 2.35, "party dance raises both arms overhead");
-assert(nakamaBeatStart.leftElbowX < 0.65 && nakamaBeatStart.rightElbowX < 0.65, "elbows extend upward overhead");
-assert(Math.abs(nakamaBeatStart.leftX - nakamaBeatHalf.leftX) >= 0.65, "party dance arms have wide beat swing");
+const snapshotSignatures = new Set();
+let hasHighReach = false;
+let hasModerateHeight = false;
+const beatTime = 2 * PARTY_BEAT_SECONDS;
+const quarterBeatTime = beatTime + PARTY_BEAT_SECONDS / 4;
+for (let idx = 0; idx < 16; idx++) {
+  const poseStart = createPassengerPose();
+  const poseHalf = createPassengerPose();
+  const poseQ1 = createPassengerPose();
+  const poseQ3 = createPassengerPose();
+  samplePassengerPose(poseStart, beatTime, idx, 0, 0.32, Infinity, true, false, "nakama");
+  samplePassengerPose(poseHalf, beatTime + PARTY_BEAT_SECONDS / 2, idx, 0, 0.32, Infinity, true, false, "nakama");
+  samplePassengerPose(poseQ1, quarterBeatTime, idx, 0, 0.32, Infinity, true, false, "nakama");
+  samplePassengerPose(poseQ3, quarterBeatTime + PARTY_BEAT_SECONDS / 2, idx, 0, 0.32, Infinity, true, false, "nakama");
+  snapshotSignatures.add(`${poseStart.leftX.toFixed(2)}:${poseStart.rightX.toFixed(2)}:${poseQ1.leftX.toFixed(2)}`);
+  if (Math.max(poseStart.leftX, poseStart.rightX, poseHalf.leftX, poseHalf.rightX, poseQ1.leftX, poseQ1.rightX) >= 2.65) hasHighReach = true;
+  if (Math.min(poseStart.leftX, poseStart.rightX, poseHalf.leftX, poseHalf.rightX, poseQ1.leftX, poseQ1.rightX) < 2.5) hasModerateHeight = true;
+  const maxSwing = Math.max(
+    Math.abs(poseStart.leftX - poseHalf.leftX),
+    Math.abs(poseStart.rightX - poseHalf.rightX),
+    Math.abs(poseQ1.leftX - poseQ3.leftX),
+    Math.abs(poseQ1.rightX - poseQ3.rightX),
+  );
+  assert(maxSwing >= 0.7, `passenger ${idx} maintains energetic rhythmic arm swing`);
+}
+assert(snapshotSignatures.size >= 5, "passengers do not all perform the same dance simultaneously");
+assert(hasHighReach && hasModerateHeight, "crowd mixes high overhead reaches with moderate grooves");
 
-const shanksPose = createPassengerPose();
-samplePassengerPose(shanksPose, 0, 14, 0, 0.32, Infinity, true, false, "shanks");
-assert.equal(shanksPose.leftX, 0.12, "Shanks keeps missing left arm still");
-assert(shanksPose.rightX >= 2.35 && shanksPose.rightElbowX < 0.65, "Shanks raises right arm overhead");
+let p0High = false;
+let p0Moderate = false;
+for (let phrase = 0; phrase < 8; phrase++) {
+  const t0 = phrase * DANCE_PHASE_DURATION + 1.2;
+  const pA = createPassengerPose();
+  const pB = createPassengerPose();
+  samplePassengerPose(pA, t0, 3, 0, 0.32, Infinity, true, false, "nakama");
+  samplePassengerPose(pB, t0 + PARTY_BEAT_SECONDS / 2, 3, 0, 0.32, Infinity, true, false, "nakama");
+  if (Math.max(pA.leftX, pA.rightX, pB.leftX, pB.rightX) >= 2.65) p0High = true;
+  if (Math.min(pA.leftX, pA.rightX, pB.leftX, pB.rightX) < 2.5) p0Moderate = true;
+}
+assert(p0High && p0Moderate, "an individual passenger alternates between high overhead and moderate heights over phrases");
+
+for (let phrase = 0; phrase < 6; phrase++) {
+  const shanksPose = createPassengerPose();
+  samplePassengerPose(shanksPose, phrase * DANCE_PHASE_DURATION + 1.2, 14, 0, 0.32, Infinity, true, false, "shanks");
+  assert.equal(shanksPose.leftX, 0.12, `Shanks keeps missing left arm still at phrase ${phrase}`);
+}
 
 const kytaPoseStart = createPassengerPose();
 const kytaPoseHalf = createPassengerPose();

@@ -12,19 +12,19 @@ const common: Coefficients = {
   leftElbowZ: [0, 0, 0], rightElbowZ: [0, 0, 0],
 };
 const stages: Coefficients[] = [
-  { ...common, headYaw: [.10, .18, 0], leftX: [2.82, .42, 0], rightX: [2.66, -.38, 0] },
+  { ...common, headYaw: [.10, .18, 0], leftX: [2.82, .45, 0], rightX: [2.66, -.40, 0] },
   { ...common, headYaw: [0, .24, 0], torsoRoll: [0, .055, 0], torsoYaw: [0, .09, 0],
-    leftX: [2.70, .48, 0], rightX: [2.56, -.44, 0], leftZ: [-.48, 0, .10], rightZ: [.48, 0, -.10],
-    leftElbowX: [.34, -.14, 0], rightElbowX: [.34, .14, 0] },
+    leftX: [2.75, .48, 0], rightX: [2.58, -.44, 0], leftZ: [-.48, 0, .10], rightZ: [.48, 0, -.10],
+    leftElbowX: [.30, -.14, 0], rightElbowX: [.30, .14, 0] },
   { ...common, headYaw: [.05, 0, .07], headPitch: [-.12, .03, 0], torsoYaw: [0, 0, .035],
-    leftX: [2.68, .38, 0], rightX: [2.54, .34, 0], leftZ: [.38, 0, .15], rightZ: [-.38, 0, -.15],
-    leftElbowX: [.38, 0, .12], rightElbowX: [.38, 0, .12] },
+    leftX: [1.95, .45, 0], rightX: [1.85, -.42, 0], leftZ: [.38, 0, .15], rightZ: [-.38, 0, -.15],
+    leftElbowX: [.55, 0, .12], rightElbowX: [.55, 0, .12] },
   { ...common, headYaw: [.32, 0, .05], torsoYaw: [.065, 0, .025], torsoRoll: [-.018, .025, 0],
-    leftX: [2.62, .40, 0], leftZ: [-.24, 0, .10], leftElbowX: [.36, 0, .12],
-    rightX: [2.68, .38, 0], rightZ: [.25, 0, .12], rightElbowX: [.24, -.12, 0] },
+    leftX: [1.65, .38, 0], leftZ: [-.24, 0, .10], leftElbowX: [.58, 0, .12],
+    rightX: [2.72, .42, 0], rightZ: [.25, 0, .12], rightElbowX: [.22, -.12, 0] },
   { ...common, headYaw: [.04, .15, 0], torsoPitch: [-.03, 0, .025], torsoRoll: [0, .04, 0],
-    leftX: [2.74, .46, 0], rightX: [2.60, -.42, 0], leftZ: [-.27, 0, 0], rightZ: [.27, 0, 0],
-    leftElbowX: [.28, -.16, 0], rightElbowX: [.28, .16, 0] },
+    leftX: [2.78, .46, 0], rightX: [2.62, -.42, 0], leftZ: [-.27, 0, 0], rightZ: [.27, 0, 0],
+    leftElbowX: [.26, -.14, 0], rightElbowX: [.26, .14, 0] },
 ];
 
 /** Une danse assise en cinq phrases, échantillonnée sans allocation par image. */

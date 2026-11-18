@@ -11,10 +11,11 @@ export default function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion, da
   focusZ: number; rearZ: number; lowPower: boolean; reducedMotion: boolean; dancing?: boolean;
 }) {
   const mesh = useRef<THREE.InstancedMesh>(null);
-  const maxCount = lowPower ? 750 : 2400;
-  const introCount = lowPower ? 80 : 180;
   const from = BUS_FRONT_Z + 0.35;
   const to = rearZ - 0.35;
+  const cabinSpan = Math.max(8, to - from);
+  const maxCount = lowPower ? 900 : Math.min(3600, Math.max(2400, Math.round(cabinSpan * 55)));
+  const introCount = lowPower ? 90 : Math.min(320, Math.max(180, Math.round(cabinSpan * 4.5)));
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const cameraLocal = useMemo(() => new THREE.Vector3(), []);
   const seeds = useMemo(() => createConfettiSeeds(maxCount, to - from), [maxCount, from, to]);
@@ -85,8 +86,7 @@ export default function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion, da
 
     camera.getWorldPosition(cameraLocal);
     mesh.current.worldToLocal(cameraLocal);
-    const inCabin = Math.abs(cameraLocal.x) < 1.7 && cameraLocal.y > 0.45 && cameraLocal.y < 3.5 && cameraLocal.z > from - 0.5 && cameraLocal.z < to + 0.5;
-    const denseFocus = inCabin ? cameraLocal.z : focusZ;
+    const denseFocus = THREE.MathUtils.clamp(cameraLocal.z, from, to);
     const speedBoost = dancing ? 1.35 : 0.72;
     const spinBoost = dancing ? 1.35 : 0.75;
 
@@ -113,7 +113,7 @@ export default function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion, da
   });
 
   return <instancedMesh key={maxCount} name="bus-party-confetti" ref={mesh} args={instancedArgs} raycast={() => null}>
-    <planeGeometry args={[0.068, 0.105]}/>
+    <planeGeometry args={[0.036, 0.056]}/>
     <meshBasicMaterial side={THREE.DoubleSide} toneMapped={false}/>
   </instancedMesh>;
 }

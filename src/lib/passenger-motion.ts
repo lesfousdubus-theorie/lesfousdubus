@@ -46,16 +46,62 @@ const signatureStages: Record<string, readonly number[]> = {
   law: [2], sabo: [3], yamato: [0], shanks: [0, 5], mihawk: [0, 1, 4],
   vivi: [0], doflamingo: [0, 2, 3, 5],
 };
+
+const archetypeSeeds = new Map<string, number>();
+function charIdSeed(id: string): number {
+  let seed = archetypeSeeds.get(id);
+  if (seed === undefined) {
+    seed = 0;
+    for (let i = 0; i < id.length; i++) {
+      seed = (Math.imul(seed, 31) + id.charCodeAt(i)) | 0;
+    }
+    archetypeSeeds.set(id, seed);
+  }
+  return seed;
+}
+
+function hashDance(a: number, b: number, c: number): number {
+  let h = Math.imul((a + 0x9e3779b9) | 0, 0x85ebca6b);
+  h ^= Math.imul((b + 0xc2b2ae35) | 0, 0x27d4eb2f);
+  h ^= Math.imul((c + 0x165667b1) | 0, 0x9e3779b1);
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x7feb352d);
+  h ^= h >>> 15;
+  return h >>> 0;
+}
+
+function getArchetypeBaseStage(id: string, phraseIndex: number): number {
+  const pool = (phraseIndex & 1) === 0 ? [0, 2, 4] : [1, 3, 5];
+  return pool[hashDance(charIdSeed(id), 17, phraseIndex) % pool.length];
+}
+
+function pickPassengerDanceStage(index: number, characterId: string, phraseIndex: number): number {
+  const cSeed = charIdSeed(characterId);
+  const stages = signatureStages[characterId];
+  if (stages) {
+    const baseStage = getArchetypeBaseStage(characterId, phraseIndex);
+    const propVisible = stages.includes(baseStage);
+    const eligible = [0, 1, 2, 3, 4, 5].filter((stage) => stages.includes(stage) === propVisible);
+    return eligible[hashDance(index, cSeed, phraseIndex) % eligible.length] ?? baseStage;
+  }
+  const total = characterId in CHARACTER_DANCES ? CHARACTER_DANCES[characterId].length : 12;
+  const parity = (phraseIndex + (index & 1)) & 1;
+  const half = Math.max(1, Math.floor(total / 2));
+  return parity + 2 * (hashDance(index, cSeed, phraseIndex) % half);
+}
+
 export function getPassengerSignatureGain(time: number, id: string, party: boolean, reducedMotion: boolean) {
   if (id === "foudubustv") return 1;
   const stages = signatureStages[id];
   if (!stages) return 1;
   if (!party || reducedMotion) return stages.includes(0) ? 1 : 0;
   const danceTime = getPartyDanceTime(Number.isFinite(time) ? Math.max(0, time) : 0);
-  const cycle = danceTime % (6 * DANCE_PHASE_DURATION), stage = Math.floor(cycle / DANCE_PHASE_DURATION);
-  const progress = cycle - stage * DANCE_PHASE_DURATION;
+  const phraseIndex = Math.floor(danceTime / DANCE_PHASE_DURATION);
+  const progress = danceTime - phraseIndex * DANCE_PHASE_DURATION;
   const blend = danceTime < DANCE_TRANSITION_DURATION ? 1 : smooth(progress / DANCE_TRANSITION_DURATION);
-  const previous = stages.includes((stage + 5) % 6) ? 1 : 0, current = stages.includes(stage) ? 1 : 0;
+  const prevStage = phraseIndex > 0 ? getArchetypeBaseStage(id, phraseIndex - 1) : getArchetypeBaseStage(id, 0);
+  const currStage = getArchetypeBaseStage(id, phraseIndex);
+  const previous = stages.includes(prevStage) ? 1 : 0, current = stages.includes(currStage) ? 1 : 0;
   return previous + (current - previous) * blend;
 }
 
@@ -83,7 +129,11 @@ export const CHARACTER_DANCES: Record<string, readonly string[]> = {
   foudubustv: ["smartphone-filming", "theory-board-point", "puzzle-frame", "live-tweet-frenzy", "mont-corvo-shout", "grand-fleet-beat"],
   kamal: ["two-fist-pump", "wheel-groove", "horn-slam-beat", "boost-throttle", "window-pirate-wave", "horizon-point"],
   kyta: ["destination-point", "navigator-sway", "party-clap", "log-pose-check", "crew-hype-pump", "sea-chart-trace"],
-  nakama: ["raised-arms-pump", "overhead-sway", "victory-cheer", "roof-raise-push", "alternating-fists", "pirate-anthem"],
+  nakama: [
+    "raised-arms-pump", "overhead-sway", "left-sky-right-groove", "double-ceiling-clap",
+    "alternating-overhead", "broad-shoulder-groove", "right-sky-left-groove", "windmill-spin",
+    "overhead-fan", "asymmetric-heaven-point", "forearm-wave", "pirate-salute",
+  ],
 };
 
 export function getCharacterDanceCount(characterId: string): number {
@@ -112,6 +162,9 @@ const dancePoseB: DanceTarget = {
   leftElbowX: 0, rightElbowX: 0, leftElbowZ: 0, rightElbowZ: 0,
   torsoYaw: 0, torsoPitch: 0, torsoRoll: 0, headYaw: 0, headPitch: 0, rightKick: 0,
 };
+const danceProbeZero: DanceTarget = { ...dancePoseA };
+const danceProbeW: DanceTarget = { ...dancePoseA };
+const danceProbeC: DanceTarget = { ...dancePoseA };
 
 function initDanceTarget(target: DanceTarget, wave: number) {
   target.leftX = 2.82 + wave * .48; target.rightX = 2.82 - wave * .48;
@@ -905,36 +958,66 @@ function sampleCharacterDance(
       break;
 
     default:
-      switch (s) {
+      switch (stage % 12) {
         case 0:
-          target.leftX = 2.82 + wave * .48; target.rightX = 2.82 - wave * .48;
+          target.leftX = 2.84 + wave * .46; target.rightX = 2.84 - wave * .46;
           target.leftZ = -.28; target.rightZ = .28;
-          target.leftElbowX = .22; target.rightElbowX = .22; break;
+          target.leftElbowX = .20; target.rightElbowX = .20; break;
         case 1:
-          target.leftX = 2.84 + counter * .44; target.rightX = 2.84 + counter * .44;
-          target.leftZ = -.22 + wave * .10; target.rightZ = .22 + wave * .10;
-          target.leftElbowX = .26; target.rightElbowX = .26;
+          target.leftX = 2.80 + counter * .44; target.rightX = 2.80 + counter * .44;
+          target.leftZ = -.26 + wave * .12; target.rightZ = .26 + wave * .12;
+          target.leftElbowX = .24; target.rightElbowX = .24;
           target.torsoRoll = wave * .06; break;
         case 2:
-          target.leftX = 2.74 + wave * .40; target.rightX = 2.74 - wave * .40;
-          target.leftZ = -.20; target.rightZ = .20;
-          target.leftElbowX = .32; target.rightElbowX = .32;
-          target.headPitch = -.09 + wave * .04; break;
+          target.leftX = 2.86 + wave * .44; target.rightX = 1.65 - wave * .42;
+          target.leftZ = -.24; target.rightZ = .30;
+          target.leftElbowX = .20; target.rightElbowX = .55;
+          target.torsoRoll = wave * .05; target.headYaw = -.08; break;
         case 3:
-          target.leftX = 2.88 + wave * .42; target.rightX = 2.88 + wave * .42;
-          target.leftZ = -.24; target.rightZ = .24;
-          target.leftElbowX = .18 + counter * .12; target.rightElbowX = .18 + counter * .12;
+          target.leftX = 2.92 + wave * .38; target.rightX = 2.92 + wave * .38;
+          target.leftZ = -.16; target.rightZ = .16;
+          target.leftElbowX = .22; target.rightElbowX = .22;
           target.torsoPitch = -.04; break;
         case 4:
-          target.leftX = 2.78 + wave * .48; target.rightX = 2.78 - wave * .48;
+          target.leftX = 2.74 + wave * .50; target.rightX = 2.74 - wave * .50;
           target.leftZ = -.22; target.rightZ = .22;
           target.leftElbowX = .28 + counter * .16; target.rightElbowX = .28 - counter * .16;
-          target.torsoYaw = wave * .07; break;
+          target.torsoYaw = wave * .08; break;
         case 5:
-          target.leftX = 2.72 + wave * .38; target.rightX = 2.72 + wave * .38;
-          target.leftZ = -.26; target.rightZ = .26;
+          target.leftX = 1.72 + wave * .48; target.rightX = 1.72 - wave * .48;
+          target.leftZ = -.36 + counter * .14; target.rightZ = .36 - counter * .14;
+          target.leftElbowX = .46; target.rightElbowX = .46;
+          target.headPitch = .06 + wave * .05; target.torsoPitch = .03; break;
+        case 6:
+          target.leftX = 1.58 - wave * .42; target.rightX = 2.88 + wave * .42;
+          target.leftZ = -.28; target.rightZ = .22;
+          target.leftElbowX = .62; target.rightElbowX = .18;
+          target.headYaw = .09; target.torsoRoll = -wave * .05; break;
+        case 7:
+          target.leftX = 1.95 + wave * .52; target.rightX = 1.95 + counter * .52;
+          target.leftZ = -.32; target.rightZ = .32;
+          target.leftElbowX = .34; target.rightElbowX = .34;
+          target.torsoYaw = counter * .10; break;
+        case 8:
+          target.leftX = 2.76 + counter * .42; target.rightX = 2.76 - counter * .42;
+          target.leftZ = -.38 * Math.abs(wave); target.rightZ = .38 * Math.abs(wave);
           target.leftElbowX = .26; target.rightElbowX = .26;
-          target.headPitch = .06 + wave * .04; target.torsoPitch = .03; break;
+          target.headPitch = -.08 + wave * .04; break;
+        case 9:
+          target.leftX = 2.85 + counter * .42; target.rightX = 1.85 + wave * .45;
+          target.leftZ = -.22; target.rightZ = .26;
+          target.leftElbowX = .18; target.rightElbowX = .52;
+          target.torsoYaw = wave * .07; break;
+        case 10:
+          target.leftX = 2.08 + wave * .48; target.rightX = 2.08 + wave * .48;
+          target.leftZ = -.28 + wave * .10; target.rightZ = .28 - wave * .10;
+          target.leftElbowX = .48 - wave * .18; target.rightElbowX = .48 - wave * .18;
+          target.torsoPitch = -.05 + counter * .03; break;
+        case 11:
+          target.leftX = 1.75 - counter * .40; target.rightX = 2.86 + wave * .44;
+          target.leftZ = -.26; target.rightZ = .24;
+          target.leftElbowX = .55; target.rightElbowX = .20;
+          target.headYaw = wave * .12; break;
       }
       break;
   }
@@ -964,6 +1047,67 @@ function blendDanceTarget(pose: PassengerPose, a: DanceTarget, b: DanceTarget, b
     pose.headPitch = a.headPitch + (b.headPitch - a.headPitch) * blend;
     pose.rightKick = a.rightKick + (b.rightKick - a.rightKick) * blend;
   }
+}
+
+function sampleDancePhrase(
+  target: DanceTarget, index: number, characterId: string, phraseIndex: number,
+  wave: number, counter: number, modulate: boolean
+) {
+  const stage = pickPassengerDanceStage(index, characterId, phraseIndex);
+  const cSeed = charIdSeed(characterId);
+  const beatSign = modulate && (hashDance(index, cSeed, phraseIndex + 19) & 1) ? -1 : 1;
+  const w = wave * beatSign;
+  const c = counter * beatSign;
+  initDanceTarget(target, w);
+  sampleCharacterDance(target, characterId, stage, w, c, !modulate);
+  if (!modulate) return;
+
+  initDanceTarget(danceProbeZero, 0);
+  sampleCharacterDance(danceProbeZero, characterId, stage, 0, 0, false);
+  initDanceTarget(danceProbeW, 1);
+  sampleCharacterDance(danceProbeW, characterId, stage, 1, 0, false);
+  initDanceTarget(danceProbeC, 0);
+  sampleCharacterDance(danceProbeC, characterId, stage, 0, 1, false);
+
+  // Varier librement la hauteur par passager et par phrase tout en préservant la phase exacte de chaque chorégraphie.
+  const energyMode = hashDance(index, cSeed, phraseIndex * 3 + 7) % 3;
+  const alt = (hashDance(index, cSeed, phraseIndex * 5 + 11) & 1) ? -1 : 1;
+  const shapeArm = (
+    baseX: number, baseW: number, baseC: number, elbowX: number, fallbackSign: number, mode: "high" | "mid",
+  ) => {
+    if (baseX < .7) return { x: baseX, elbowX };
+    const dw = baseW - baseX;
+    const dc = baseC - baseX;
+    const rawAmp = Math.hypot(dw, dc);
+    const delta = rawAmp >= .08
+      ? (dw * w + dc * c) * Math.max(1.08, .50 / rawAmp)
+      : .48 * fallbackSign * w;
+    if (mode === "high") {
+      const center = Math.max(2.70, Math.min(2.86, baseX < 2.35 ? 2.70 + (baseX - .7) * .10 : baseX));
+      return {
+        x: Math.max(2.35, Math.min(3.16, center + delta * .92)),
+        elbowX: Math.max(.14, Math.min(.42, elbowX * .34 + (1 - Math.min(1, Math.abs(delta) / .50)) * .08)),
+      };
+    }
+    const center = Math.max(1.50, Math.min(2.02, baseX > 2.35 ? 1.84 : baseX));
+    return {
+      x: Math.max(1.05, Math.min(2.46, center + delta)),
+      elbowX: Math.max(.26, Math.min(.68, elbowX * .72)),
+    };
+  };
+
+  const rightDom = characterId === "shanks" || (hashDance(index, cSeed, phraseIndex * 7 + 13) & 1) === 1;
+  const leftMode: "high" | "mid" = energyMode === 0 ? "high" : energyMode === 1 && !rightDom ? "high" : "mid";
+  const rightMode: "high" | "mid" = energyMode === 0 ? "high" : energyMode === 1 && rightDom ? "high" : "mid";
+
+  if (characterId !== "shanks") {
+    const left = shapeArm(danceProbeZero.leftX, danceProbeW.leftX, danceProbeC.leftX, target.leftElbowX, 1, leftMode);
+    target.leftX = left.x;
+    target.leftElbowX = left.elbowX;
+  }
+  const right = shapeArm(danceProbeZero.rightX, danceProbeW.rightX, danceProbeC.rightX, target.rightElbowX, alt, rightMode);
+  target.rightX = right.x;
+  target.rightElbowX = right.elbowX;
 }
 
 /** Modifie un objet réutilisé ; aucun état React n'est mis à jour par image. */
@@ -997,44 +1141,21 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
       sampleCharacterDance(dancePoseB, characterId, 0, wave, counter, reducedMotion);
       blendDanceTarget(pose, dancePoseB, dancePoseB, 1);
     } else {
-      const cycleTime = danceTime % (6 * DANCE_PHASE_DURATION);
-      const stage = Math.floor(cycleTime / DANCE_PHASE_DURATION);
-      const prevStage = (stage + 5) % 6;
-      const stageProgress = cycleTime - stage * DANCE_PHASE_DURATION;
+      const phraseIndex = Math.floor(danceTime / DANCE_PHASE_DURATION);
+      const stageProgress = danceTime - phraseIndex * DANCE_PHASE_DURATION;
       const transition = danceTime < DANCE_TRANSITION_DURATION ? 1 : Math.min(1, stageProgress / DANCE_TRANSITION_DURATION);
       const blend = transition * transition * (3 - 2 * transition);
 
-      initDanceTarget(dancePoseB, wave);
-      sampleCharacterDance(dancePoseB, characterId, stage, wave, counter, false);
-      if (blend >= 1) {
+      sampleDancePhrase(dancePoseB, index, characterId, phraseIndex, wave, counter, true);
+      if (blend >= 1 || phraseIndex === 0) {
         blendDanceTarget(pose, dancePoseB, dancePoseB, 1);
       } else {
-        initDanceTarget(dancePoseA, wave);
-        sampleCharacterDance(dancePoseA, characterId, prevStage, wave, counter, false);
+        sampleDancePhrase(dancePoseA, index, characterId, phraseIndex - 1, wave, counter, true);
         blendDanceTarget(pose, dancePoseA, dancePoseB, blend);
       }
     }
 
     if (!reducedMotion) {
-      // Remonter les gestes de danse franchement au-dessus de la tête avec une grande amplitude sur le rythme.
-      const boostOverheadArm = (x: number, elbowX: number, swing: number) => {
-        if (x < .7) return { x, elbowX };
-        const base = Math.max(2.64, Math.min(2.88, x < 2.35 ? 2.64 + (x - .7) * .14 : x));
-        return {
-          x: Math.max(2.36, Math.min(3.15, base + swing * .42)),
-          elbowX: Math.max(.14, Math.min(.46, elbowX * .36 + (1 - Math.abs(swing)) * .08)),
-        };
-      };
-      if (characterId !== "shanks") {
-        const left = boostOverheadArm(pose.leftX, pose.leftElbowX, wave);
-        pose.leftX = left.x;
-        pose.leftElbowX = left.elbowX;
-      }
-      const rightSwing = characterId === "nakama" || characterId === "luffy" || characterId === "kamal" ? -wave : wave;
-      const right = boostOverheadArm(pose.rightX, pose.rightElbowX, rightSwing);
-      pose.rightX = right.x;
-      pose.rightElbowX = right.elbowX;
-
       pose.bob = (.026 + .026 * wave) * gain;
       pose.rootYaw = Math.sin(beat * .5) * .08 * gain;
       pose.torsoRoll += wave * .058;
