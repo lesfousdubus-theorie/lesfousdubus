@@ -13,7 +13,7 @@ import { PassengerNeck, PassengerTorso } from "./PassengerAnatomy";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import type { SeatInfo } from "@/lib/bus-layout";
 import { FIRST_SEAT_Z, getSeatRowZ } from "@/lib/bus-layout";
-import { getBusOccupancy } from "@/lib/bus-occupancy";
+import { createVisibleBusRowRangeScratch, getBusOccupancy, getVisibleBusRowRange, type BusRowRange } from "@/lib/bus-occupancy";
 import PassengerLowerBody from "./PassengerLowerBody";
 import { PassengerUpperArm, PassengerForearm } from "./PassengerIdentity";
 import PassengerSignatureProp from "./PassengerSignatureProp";
@@ -132,6 +132,12 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
   profileRevision = 0, lowPower = false, detailLimit, simplifiedLimit, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
   const camera = useThree(state => state.camera);
   const root = useRef<THREE.Group>(null), cameraPoint = useMemo(() => new THREE.Vector3(), []);
+  const frustumScratch = useMemo(() => createVisibleBusRowRangeScratch(), []);
+  const [visibleRowState, setVisibleRowState] = useState<{ numRows: number; range: BusRowRange }>(() => ({
+    numRows,
+    range: getVisibleBusRowRange(camera, null, numRows, 3.6, frustumScratch),
+  }));
+  const visibleRangeRef = useRef<{ minRow: number; maxRow: number; numRows: number; shrinkAt: number } | null>(null);
   const [detailFocus, setDetailFocus] = useState(() => {
     const rearZ = getSeatRowZ(Math.max(0, numRows - 1)) + 4;
     const farOutside = Math.abs(camera.position.x) > 28 || camera.position.z < -26 || camera.position.z > rearZ + 18;
@@ -143,11 +149,37 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
       };
   });
   const lastFocus = useRef({ ...detailFocus, time: -Infinity });
-  useFrame(({ camera }) => {
+  useFrame(({ camera: frameCamera }) => {
     const now = performance.now();
-    if (!root.current || now - lastFocus.current.time < 250) return;
+    if (!root.current) return;
+
+    // Cache les rangées hors champ sans jamais retirer un passager visible de son siège
+    const rawVisible = getVisibleBusRowRange(frameCamera, root.current, numRows, 1.8, frustumScratch);
+    const prevVisible = visibleRangeRef.current;
+    const rawEmpty = rawVisible.minRow > rawVisible.maxRow;
+    const prevEmpty = prevVisible ? prevVisible.minRow > prevVisible.maxRow : false;
+    const needsExpand = !prevVisible
+      || prevVisible.numRows !== numRows
+      || (!rawEmpty && (prevEmpty || rawVisible.minRow < prevVisible.minRow || rawVisible.maxRow > prevVisible.maxRow));
+    const wantsShrink = Boolean(
+      prevVisible
+      && prevVisible.numRows === numRows
+      && !prevEmpty
+      && (rawEmpty || rawVisible.minRow > prevVisible.minRow + 8 || rawVisible.maxRow < prevVisible.maxRow - 8),
+    );
+    if (needsExpand || (wantsShrink && prevVisible && now >= prevVisible.shrinkAt)) {
+      const nextRange: BusRowRange = rawEmpty
+        ? { minRow: 1, maxRow: 0 }
+        : { minRow: Math.max(0, rawVisible.minRow - 3), maxRow: Math.min(numRows - 1, rawVisible.maxRow + 3) };
+      visibleRangeRef.current = { ...nextRange, numRows, shrinkAt: now + 260 };
+      setVisibleRowState({ numRows, range: nextRange });
+    } else if (!wantsShrink && prevVisible) {
+      prevVisible.shrinkAt = now + 260;
+    }
+
+    if (now - lastFocus.current.time < 250) return;
     lastFocus.current.time = now;
-    camera.getWorldPosition(cameraPoint);
+    frameCamera.getWorldPosition(cameraPoint);
     root.current.worldToLocal(cameraPoint);
     const rearZ = getSeatRowZ(Math.max(0, numRows - 1)) + 4;
     const farOutside = Math.abs(cameraPoint.x) > 28 || cameraPoint.z < -26 || cameraPoint.z > rearZ + 18;
@@ -159,10 +191,13 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
     lastFocus.current = { x: nextX, z: nextZ, time: now };
     setDetailFocus({ x: nextX, z: nextZ });
   }, -3);
+  const effectiveVisibleRowRange = visibleRowState.numRows === numRows ? visibleRowState.range : null;
   const { detailed, simplified } = useMemo(() => getBusOccupancy({ passengerCount, seatCapacity,
     vacantSeatRanges, renderedRowIndices, reservedRow, reservedColumn, currentPassengerIndex: excludedPassengerIndex,
-    avatarAboard, lowPower, detailLimit, simplifiedLimit, detailFocus }), [passengerCount, seatCapacity, vacantSeatRanges, renderedRowIndices,
-      reservedRow, reservedColumn, excludedPassengerIndex, avatarAboard, lowPower, detailLimit, simplifiedLimit, detailFocus]);
+    avatarAboard, lowPower, detailLimit, simplifiedLimit, detailFocus,
+    visibleRowRange: effectiveVisibleRowRange, preserveVisibleSeats: true }), [passengerCount, seatCapacity,
+      vacantSeatRanges, renderedRowIndices, reservedRow, reservedColumn, excludedPassengerIndex, avatarAboard,
+      lowPower, detailLimit, simplifiedLimit, detailFocus, effectiveVisibleRowRange]);
   const occupants = useMemo(() => [...detailed, ...simplified], [detailed, simplified]);
   const summaries = useVisiblePassengerSummaries(occupants, profileRevision);
   const profilesBySeatIndex = useMemo(() => {
