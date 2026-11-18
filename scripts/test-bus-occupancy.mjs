@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { build } from "esbuild";
+import { PerspectiveCamera } from "three";
 
 async function load(path) {
   const compiled = await build({ entryPoints: [path], bundle: true, format: "esm", platform: "node", write: false, logLevel: "silent" });
   return import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);
 }
-const { getBusOccupancy, getAvatarSeat, getPhysicalSeat, getVisitorRows, getBusPhysicalRows, getRegisteredSeat, getRegisteredSeatIndex, PASSENGER_SEAT_X } = await load("src/lib/bus-occupancy.ts");
+const { getBusOccupancy, getVisibleBusRowRange, getAvatarSeat, getPhysicalSeat, getVisitorRows, getBusPhysicalRows, getRegisteredSeat, getRegisteredSeatIndex, PASSENGER_SEAT_X } = await load("src/lib/bus-occupancy.ts");
 const { getRenderedRowIndices, getNearestBusDoor, getSeatCountInRow, getSeatRowZ, getBusDoors, getBusRearWallZ, getBusDoorBounds, getWheelPositions } = await load("src/lib/bus-layout.ts");
 const { BUS_CREW, countPeopleOnBoard } = await load("src/lib/bus-crew.ts");
 const { createJourneyState, beginJourney, getPassengerWalkPath, updateJourney } = await load("src/lib/bus-journey.ts");
@@ -166,4 +167,52 @@ for (let column = 0; column < 4; column++) {
   beginJourney(state,"entering",avatar.seat.z,door,avatar.seat.x);
   assert.equal(state.entryFromSeat,false,"Reboarding after leaving must restore the walking entry.");
 }
+
+// Champ de vision caméra : masquer hors champ, conserver 100 % des sièges visibles même au loin.
+const frustumCam = new PerspectiveCamera(55, 16 / 9, 0.2, 2000);
+frustumCam.position.set(120, 35, 35);
+frustumCam.lookAt(0, 1.9, 35);
+const farRows = getBusPhysicalRows(240);
+const farVisibleRange = getVisibleBusRowRange(frustumCam, null, farRows);
+assert.equal(farVisibleRange.minRow, 0, "Far overview includes the front row");
+assert.equal(farVisibleRange.maxRow, farRows - 1, "Far overview includes the rear row");
+const preservedFar = getBusOccupancy({
+  passengerCount: 240,
+  seatCapacity: 240,
+  reservedRow: 3,
+  currentPassengerIndex: null,
+  avatarAboard: false,
+  lowPower: true,
+  detailLimit: 2,
+  simplifiedLimit: 120,
+  visibleRowRange: farVisibleRange,
+  preserveVisibleSeats: true,
+});
+assert.equal(
+  preservedFar.detailed.length + preservedFar.simplified.length,
+  240,
+  "All visible passengers remain seated when zoomed out even above simplifiedLimit",
+);
+
+frustumCam.position.set(0, 1.85, getSeatRowZ(20));
+frustumCam.lookAt(0, 1.85, -4);
+const forwardRange = getVisibleBusRowRange(frustumCam, null, farRows);
+assert(forwardRange.minRow === 0 && forwardRange.maxRow <= 22, "Rows behind the camera are culled");
+
+frustumCam.position.set(0, 4, -30);
+frustumCam.lookAt(0, 4, -200);
+const offscreenRange = getVisibleBusRowRange(frustumCam, null, farRows);
+assert(offscreenRange.minRow > offscreenRange.maxRow, "Bus completely outside view produces empty range");
+const hiddenOffscreen = getBusOccupancy({
+  passengerCount: 240,
+  seatCapacity: 240,
+  reservedRow: 3,
+  currentPassengerIndex: null,
+  avatarAboard: false,
+  lowPower: false,
+  visibleRowRange: offscreenRange,
+  preserveVisibleSeats: true,
+});
+assert.equal(hiddenOffscreen.detailed.length + hiddenOffscreen.simplified.length, 0, "Offscreen passengers are hidden");
+
 console.log("Bus occupancy passed: no artificial passengers, unchanged visitor IDs, real avatar columns, local visitor swaps, max two per bench, sparse vacancies and bounded rendering through 100000000 visitors.");
