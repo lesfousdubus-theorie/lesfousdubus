@@ -7,24 +7,24 @@ const fields = ["headYaw", "headPitch", "torsoYaw", "torsoPitch", "torsoRoll", "
 type Coefficients = Record<typeof fields[number], readonly [number, number, number]>;
 const common: Coefficients = {
   headYaw: [.08, .12, 0], headPitch: [-.05, .045, 0], torsoYaw: [0, .055, 0], torsoPitch: [-.025, 0, .018], torsoRoll: [0, .038, 0],
-  rootYaw: [0, .055, 0], bob: [.018, .016, 0], leftX: [2.55, .25, 0], leftZ: [-.42, 0, .10],
-  rightX: [2.55, -.25, 0], rightZ: [.42, 0, -.10], leftElbowX: [.65, 0, .12], rightElbowX: [.65, 0, -.12],
+  rootYaw: [0, .055, 0], bob: [.024, .022, 0], leftX: [2.78, .44, 0], leftZ: [-.40, 0, .10],
+  rightX: [2.62, -.40, 0], rightZ: [.40, 0, -.10], leftElbowX: [.26, 0, .12], rightElbowX: [.26, 0, -.12],
   leftElbowZ: [0, 0, 0], rightElbowZ: [0, 0, 0],
 };
 const stages: Coefficients[] = [
-  { ...common, headYaw: [.10, .18, 0], leftX: [2.70, .20, 0], rightX: [2.65, -.20, 0] },
+  { ...common, headYaw: [.10, .18, 0], leftX: [2.82, .42, 0], rightX: [2.66, -.38, 0] },
   { ...common, headYaw: [0, .24, 0], torsoRoll: [0, .055, 0], torsoYaw: [0, .09, 0],
-    leftX: [1.85, .48, 0], rightX: [1.85, -.48, 0], leftZ: [-.55, 0, .10], rightZ: [.55, 0, -.10],
-    leftElbowX: [1.0, -.20, 0], rightElbowX: [1.0, .20, 0] },
+    leftX: [2.70, .48, 0], rightX: [2.56, -.44, 0], leftZ: [-.48, 0, .10], rightZ: [.48, 0, -.10],
+    leftElbowX: [.34, -.14, 0], rightElbowX: [.34, .14, 0] },
   { ...common, headYaw: [.05, 0, .07], headPitch: [-.12, .03, 0], torsoYaw: [0, 0, .035],
-    leftX: [1.5, .15, 0], rightX: [1.5, .15, 0], leftZ: [.43, 0, .17], rightZ: [-.43, 0, -.17],
-    leftElbowX: [1.10, 0, .13], rightElbowX: [1.10, 0, .13] },
+    leftX: [2.68, .38, 0], rightX: [2.54, .34, 0], leftZ: [.38, 0, .15], rightZ: [-.38, 0, -.15],
+    leftElbowX: [.38, 0, .12], rightElbowX: [.38, 0, .12] },
   { ...common, headYaw: [.32, 0, .05], torsoYaw: [.065, 0, .025], torsoRoll: [-.018, .025, 0],
-    leftX: [1.15, .22, 0], leftZ: [-.22, 0, .10], leftElbowX: [1.25, 0, .15],
-    rightX: [2.75, .20, 0], rightZ: [.25, 0, .12], rightElbowX: [.55, -.12, 0] },
+    leftX: [2.62, .40, 0], leftZ: [-.24, 0, .10], leftElbowX: [.36, 0, .12],
+    rightX: [2.68, .38, 0], rightZ: [.25, 0, .12], rightElbowX: [.24, -.12, 0] },
   { ...common, headYaw: [.04, .15, 0], torsoPitch: [-.03, 0, .025], torsoRoll: [0, .04, 0],
-    leftX: [1.95, .40, 0], rightX: [1.95, -.40, 0], leftZ: [-.27, 0, 0], rightZ: [.27, 0, 0],
-    leftElbowX: [.85, -.24, 0], rightElbowX: [.85, .24, 0] },
+    leftX: [2.74, .46, 0], rightX: [2.60, -.42, 0], leftZ: [-.27, 0, 0], rightZ: [.27, 0, 0],
+    leftElbowX: [.28, -.16, 0], rightElbowX: [.28, .16, 0] },
 ];
 
 /** Une danse assise en cinq phrases, échantillonnée sans allocation par image. */

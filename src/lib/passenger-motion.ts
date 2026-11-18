@@ -20,7 +20,7 @@ export function pruneRegisteredPassengerPoses(registry:PassengerPoseRegistry,vis
 const poseFields = ["headYaw","headPitch","torsoYaw","torsoPitch","torsoRoll","rootYaw","bob","leftX","leftZ","rightX","rightZ","leftElbowX","leftElbowZ","rightElbowX","rightElbowZ","rightKick"] as const;
 export function blendPassengerPose(current: PassengerPose, target: PassengerPose, dt: number, reducedMotion: boolean) {
   // Même les poses statiques passent par une courte transition, sans saut de bras.
-  const mix = 1 - Math.exp((reducedMotion ? -18 : -12) * Math.max(0, Math.min(dt, .25)));
+  const mix = 1 - Math.exp((reducedMotion ? -18 : target.celebrating ? -22 : -12) * Math.max(0, Math.min(dt, .25)));
   for (const key of poseFields) {
     const next = current[key] + (target[key] - current[key]) * mix;
     current[key] = reducedMotion && mix > 0 && Math.abs(target[key] - next) < 1e-5 ? target[key] : next;
@@ -114,9 +114,9 @@ const dancePoseB: DanceTarget = {
 };
 
 function initDanceTarget(target: DanceTarget, wave: number) {
-  target.leftX = 2.55 + wave * .25; target.rightX = 2.55 - wave * .25;
-  target.leftZ = -.35; target.rightZ = .35;
-  target.leftElbowX = .3; target.rightElbowX = .3;
+  target.leftX = 2.82 + wave * .48; target.rightX = 2.82 - wave * .48;
+  target.leftZ = -.32; target.rightZ = .32;
+  target.leftElbowX = .22; target.rightElbowX = .22;
   target.leftElbowZ = 0; target.rightElbowZ = 0;
   target.torsoYaw = 0; target.torsoPitch = 0; target.torsoRoll = 0;
   target.headYaw = 0; target.headPitch = 0; target.rightKick = 0;
@@ -907,34 +907,34 @@ function sampleCharacterDance(
     default:
       switch (s) {
         case 0:
-          target.leftX = 2.55 + wave * .25; target.rightX = 2.55 - wave * .25;
-          target.leftZ = -.30; target.rightZ = .30;
-          target.leftElbowX = .30; target.rightElbowX = .30; break;
+          target.leftX = 2.82 + wave * .48; target.rightX = 2.82 - wave * .48;
+          target.leftZ = -.28; target.rightZ = .28;
+          target.leftElbowX = .22; target.rightElbowX = .22; break;
         case 1:
-          target.leftX = 2.60 + counter * .20; target.rightX = 2.60 + counter * .20;
-          target.leftZ = -.24 + wave * .08; target.rightZ = .24 + wave * .08;
-          target.leftElbowX = .38; target.rightElbowX = .38;
-          target.torsoRoll = wave * .04; break;
+          target.leftX = 2.84 + counter * .44; target.rightX = 2.84 + counter * .44;
+          target.leftZ = -.22 + wave * .10; target.rightZ = .22 + wave * .10;
+          target.leftElbowX = .26; target.rightElbowX = .26;
+          target.torsoRoll = wave * .06; break;
         case 2:
-          target.leftX = 2.45 + wave * .16; target.rightX = 2.45 + wave * .16;
+          target.leftX = 2.74 + wave * .40; target.rightX = 2.74 - wave * .40;
           target.leftZ = -.20; target.rightZ = .20;
-          target.leftElbowX = .75; target.rightElbowX = .75;
-          target.headPitch = -.07 + wave * .03; break;
+          target.leftElbowX = .32; target.rightElbowX = .32;
+          target.headPitch = -.09 + wave * .04; break;
         case 3:
-          target.leftX = 2.70 + wave * .18; target.rightX = 2.70 + wave * .18;
-          target.leftZ = -.26; target.rightZ = .26;
-          target.leftElbowX = .20 + counter * .12; target.rightElbowX = .20 + counter * .12;
-          target.torsoPitch = -.03; break;
+          target.leftX = 2.88 + wave * .42; target.rightX = 2.88 + wave * .42;
+          target.leftZ = -.24; target.rightZ = .24;
+          target.leftElbowX = .18 + counter * .12; target.rightElbowX = .18 + counter * .12;
+          target.torsoPitch = -.04; break;
         case 4:
-          target.leftX = 2.50 + wave * .30; target.rightX = 2.50 - wave * .30;
+          target.leftX = 2.78 + wave * .48; target.rightX = 2.78 - wave * .48;
           target.leftZ = -.22; target.rightZ = .22;
-          target.leftElbowX = .48 + counter * .18; target.rightElbowX = .48 - counter * .18;
-          target.torsoYaw = wave * .05; break;
+          target.leftElbowX = .28 + counter * .16; target.rightElbowX = .28 - counter * .16;
+          target.torsoYaw = wave * .07; break;
         case 5:
-          target.leftX = 2.35 + wave * .14; target.rightX = 2.35 + wave * .14;
-          target.leftZ = -.30; target.rightZ = .30;
-          target.leftElbowX = .42; target.rightElbowX = .42;
-          target.headPitch = .07 + wave * .03; target.torsoPitch = .03; break;
+          target.leftX = 2.72 + wave * .38; target.rightX = 2.72 + wave * .38;
+          target.leftZ = -.26; target.rightZ = .26;
+          target.leftElbowX = .26; target.rightElbowX = .26;
+          target.headPitch = .06 + wave * .04; target.torsoPitch = .03; break;
       }
       break;
   }
@@ -1016,12 +1016,31 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
     }
 
     if (!reducedMotion) {
-      pose.bob = (.018 + .018 * wave) * gain;
+      // Remonter les gestes de danse franchement au-dessus de la tête avec une grande amplitude sur le rythme.
+      const boostOverheadArm = (x: number, elbowX: number, swing: number) => {
+        if (x < .7) return { x, elbowX };
+        const base = Math.max(2.64, Math.min(2.88, x < 2.35 ? 2.64 + (x - .7) * .14 : x));
+        return {
+          x: Math.max(2.36, Math.min(3.15, base + swing * .42)),
+          elbowX: Math.max(.14, Math.min(.46, elbowX * .36 + (1 - Math.abs(swing)) * .08)),
+        };
+      };
+      if (characterId !== "shanks") {
+        const left = boostOverheadArm(pose.leftX, pose.leftElbowX, wave);
+        pose.leftX = left.x;
+        pose.leftElbowX = left.elbowX;
+      }
+      const rightSwing = characterId === "nakama" || characterId === "luffy" || characterId === "kamal" ? -wave : wave;
+      const right = boostOverheadArm(pose.rightX, pose.rightElbowX, rightSwing);
+      pose.rightX = right.x;
+      pose.rightElbowX = right.elbowX;
+
+      pose.bob = (.026 + .026 * wave) * gain;
       pose.rootYaw = Math.sin(beat * .5) * .08 * gain;
-      pose.torsoRoll += wave * .045;
-      pose.torsoPitch += -.035 + counter * .025;
-      pose.headPitch += -.08 + wave * .035;
-      pose.headYaw += Math.sin(beat * .5) * .10;
+      pose.torsoRoll += wave * .058;
+      pose.torsoPitch += -.04 + counter * .032;
+      pose.headPitch += -.08 + wave * .042;
+      pose.headYaw += Math.sin(beat * .5) * .11;
 
       pose.torsoPitch = Math.max(-.115, Math.min(.115, pose.torsoPitch));
       pose.torsoRoll = Math.max(-.115, Math.min(.115, pose.torsoRoll));
@@ -1030,7 +1049,7 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
       pose.headPitch = Math.max(-.42, Math.min(.42, pose.headPitch));
       pose.headYaw = Math.max(-.90, Math.min(.90, pose.headYaw));
     }
-    const outwardLimit = Math.max(.06, .15 - Math.max(0, torsoWidth - .33));
+    const outwardLimit = Math.max(.12, .24 - Math.max(0, torsoWidth - .33));
     pose.leftZ = Math.max(-outwardLimit, pose.leftZ);
     pose.rightZ = Math.min(outwardLimit, pose.rightZ);
     for (const key of poseFields) {

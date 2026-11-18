@@ -8,7 +8,7 @@ export const SEAT_EYE = new THREE.Vector3(0.72, 1.84, 2.08);
 /** Point regardé à l'arrivée dans le bus : la TV. */
 export const TV_POSITION = new THREE.Vector3(0, 2.55, -4.2);
 
-export const DEFAULT_CAMERA_POS = new THREE.Vector3(7.5, 3.2, -10.5);
+export const DEFAULT_CAMERA_POS = new THREE.Vector3(4.6, 3.35, -12.5);
 export const DEFAULT_TARGET = new THREE.Vector3(0, 1.9, -2.5);
 
 export const WORLD_SPEED = 16; // unités / seconde
