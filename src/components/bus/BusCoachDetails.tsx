@@ -18,6 +18,8 @@ interface Props {
 /** Équipements fixes : aucune lumière ou réflexion temps réel supplémentaire. */
 export default function BusCoachDetails({ mats, rearWallZ, wheelPositions, doors }: Props) {
   const wheelZs = [...new Set(wheelPositions.map(([, z]) => z))].sort((a, b) => a - b);
+  const rearAxle = wheelZs[wheelZs.length - 1] ?? -4.3;
+  const showServiceHatch = rearWallZ - rearAxle >= 1.45;
   const lowerTrimRuns: [number, number][] = [];
   let start = -4.6;
   for (const z of wheelZs) {
@@ -41,7 +43,7 @@ export default function BusCoachDetails({ mats, rearWallZ, wheelPositions, doors
           <boxGeometry args={[0.22, 0.36, 0.04]} />
         </mesh>}
       </group>)}
-      {[-2.0, rearWallZ - 0.25].map((z) => <group key={z} position={[side * 1.355, 0.76, z]}>
+      {[-2.3, rearWallZ - 0.25].map((z) => <group key={z} position={[side * 1.355, 0.76, z]}>
         <RoundedBox args={[0.04, 0.11, 0.23]} radius={0.018} smoothness={1} bevelSegments={2} material={mats.dark} />
         <mesh material={mats.orange} position={[side * 0.025, 0, 0]}>
           <boxGeometry args={[0.014, 0.065, 0.17]} />
@@ -54,8 +56,8 @@ export default function BusCoachDetails({ mats, rearWallZ, wheelPositions, doors
       <CoachMirror side={side} mats={mats} />
     </group>)}
 
-    {/* Trappe de service et poignée, à l'écart des passages de roue. */}
-    <group position={[-1.345, 1.04, rearWallZ - 0.4]}>
+    {/* Trappe de service et poignée, masquée si le passage de roue arrière s'en approche (cas 9k+1). */}
+    {showServiceHatch && <group position={[-1.345, 1.04, rearWallZ - 0.4]}>
       <RoundedBox args={[0.022, 0.59, 0.56]} radius={0.009} smoothness={1} bevelSegments={2} material={mats.dark} />
       <mesh material={mats.bodyDark} position={[-0.013, 0, 0]}>
         <boxGeometry args={[0.015, 0.55, 0.52]} />
@@ -63,7 +65,7 @@ export default function BusCoachDetails({ mats, rearWallZ, wheelPositions, doors
       <mesh material={mats.chrome} position={[-0.025, 0.13, 0]}>
         <boxGeometry args={[0.02, 0.025, 0.12]} />
       </mesh>
-    </group>
+    </group>}
 
     {/* Ventilation moteur sous la baie arrière. */}
     <group position={[0, 1.34, rearWallZ + 0.06]}>

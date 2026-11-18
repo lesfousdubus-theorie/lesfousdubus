@@ -46,7 +46,7 @@ function BusRelayPassenger({ hornPulse, reducedMotion, partyOn }: { hornPulse: n
     } }));
   }, []);
   return <Passenger name="bus-entry-passenger" label={BUS_RELAY.name} onActivate={onActivate}
-    seat={{ x: ENTRY_SEAT_POSITION[0], z: ENTRY_SEAT_POSITION[2], row: -1, seatInRow: 0 }}
+    seat={{ x: ENTRY_SEAT_POSITION[0], z: ENTRY_SEAT_POSITION[2] - 0.04, row: -1, seatInRow: -1 }}
     index={16} archetype={archetype} hornPulse={hornPulse} reducedMotion={reducedMotion} partyOn={partyOn}
     head={<group name="bus-relay-puzzle-head">
       <mesh name="nakama-face" material={mats.skin} geometry={getPuzzleGeometry()} dispose={null} castShadow />

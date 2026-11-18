@@ -48,7 +48,7 @@ export default function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion }: 
     });
     mesh.current.instanceMatrix.needsUpdate=true;
   });
-  return <instancedMesh name="bus-party-confetti" ref={mesh} args={[undefined,undefined,count]} count={count}>
+  return <instancedMesh name="bus-party-confetti" ref={mesh} args={[undefined,undefined,count]} count={count} raycast={() => null}>
     <planeGeometry args={[.055,.085]}/>
     <meshBasicMaterial side={THREE.DoubleSide} toneMapped={false}/>
   </instancedMesh>;

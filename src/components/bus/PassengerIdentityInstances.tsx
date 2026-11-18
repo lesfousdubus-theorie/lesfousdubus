@@ -1,23 +1,24 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { bakePassengerIdentity, bakedPassengerIdentities, type IdentityPart, type IdentityRole } from "@/lib/baked-passenger";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
+import { CABIN_FLOOR_Y } from "@/lib/passenger-gait";
 import { getPassengerSignatureGain } from "@/lib/passenger-motion";
 import type { BusOccupant } from "@/lib/bus-occupancy";
 import { Passenger } from "./Passengers";
 import { NAKAMA_ROSTER } from "./passenger-archetypes";
 
 export interface IdentityDrivers {
-  bodies: RefObject<THREE.InstancedMesh | null>;
-  heads: RefObject<THREE.InstancedMesh | null>;
-  arms: RefObject<THREE.InstancedMesh | null>;
-  forearms: RefObject<THREE.InstancedMesh | null>;
-  hands: RefObject<THREE.InstancedMesh | null>;
-  revision: RefObject<number>;
-  celebration: RefObject<boolean>;
+  bodies: THREE.Matrix4[];
+  heads: THREE.Matrix4[];
+  arms: THREE.Matrix4[];
+  forearms: THREE.Matrix4[];
+  hands: THREE.Matrix4[];
+  revision: React.RefObject<number>;
+  celebration: React.RefObject<boolean>;
   listeners: Set<() => void>;
 }
 
@@ -25,7 +26,7 @@ function Prototype({ id, onReady }: { id: string; onReady: (parts: IdentityPart[
   const root = useRef<THREE.Group>(null);
   useLayoutEffect(() => {
     if (!root.current) return;
-    const parts = bakedPassengerIdentities.get(id) ?? bakePassengerIdentity(root.current);
+    const parts = bakedPassengerIdentities.get(id) ?? bakePassengerIdentity(root.current, id);
     bakedPassengerIdentities.set(id, parts);
     onReady(parts);
   }, [id, onReady]);
@@ -45,6 +46,7 @@ interface IdentityInstancesProps {
 /** Même tête, mêmes cheveux et même tenue à distance. Seule l'expression est figée. */
 function IdentityGroup({ id, indices, passengers, drivers, partyOn, reducedMotion }:
   IdentityInstancesProps & { id: string; indices: number[] }) {
+  const clock = useThree(state => state.clock);
   const [parts, setParts] = useState(() => bakedPassengerIdentities.get(id));
   const meshes = useRef<Array<THREE.InstancedMesh | null>>([]);
   const lastRevision = useRef(-1);
@@ -57,33 +59,31 @@ function IdentityGroup({ id, indices, passengers, drivers, partyOn, reducedMotio
     const gain = drivers.celebration.current ? getPassengerSignatureGain(time, id, partyOn, reducedMotion) : 0;
     const roleMatrix = (role: IdentityRole, index: number) => {
       const { seat } = passengers[index];
-      if (role === "legs") return matrix.makeTranslation(seat.x, .64 + rig.seatedHipHeight, seat.z + rig.seatedHipZ);
+      if (role === "legs") return matrix.makeTranslation(seat.x, CABIN_FLOOR_Y + rig.seatedHipHeight, seat.z + rig.seatedHipZ);
       if (role === "rest") return matrix.makeTranslation(seat.x, 0, seat.z);
       if (role === "body") {
-        drivers.bodies.current?.getMatrixAt(index, matrix);
-        return matrix.multiply(adjust.makeScale(.32 / shape.torsoWidth, .42 / shape.torsoHeight, .22 / shape.torsoDepth));
+        return matrix.copy(drivers.bodies[index]).multiply(adjust.makeScale(.32 / shape.torsoWidth, .42 / shape.torsoHeight, .22 / shape.torsoDepth));
       }
       if (role === "head" || role === "neck") {
-        drivers.heads.current?.getMatrixAt(index, matrix);
-        matrix.multiply(adjust.makeScale(.24 / shape.headWidth, .27 / shape.headHeight, .23 / shape.headDepth));
+        matrix.copy(drivers.heads[index]).multiply(adjust.makeScale(.24 / shape.headWidth, .27 / shape.headHeight, .23 / shape.headDepth));
         return role === "neck" ? matrix.multiply(adjust.makeTranslation(0, -rig.headAboveNeck, 0)) : matrix;
       }
       const armIndex = index * 2 + (role.endsWith("Right") ? 1 : 0);
       if (role.startsWith("upper")) {
-        drivers.arms.current?.getMatrixAt(armIndex, matrix);
-        return matrix.multiply(adjust.makeTranslation(0, .10, 0));
+        return matrix.copy(drivers.arms[armIndex]).multiply(adjust.makeTranslation(0, .10, 0));
       }
       if (role.startsWith("fore")) {
-        drivers.forearms.current?.getMatrixAt(armIndex, matrix);
-        return matrix.multiply(adjust.makeTranslation(0, .11, 0));
+        return matrix.copy(drivers.forearms[armIndex]).multiply(adjust.makeTranslation(0, .11, 0));
       }
-      drivers.hands.current?.getMatrixAt(armIndex, matrix);
-      return matrix.multiply(adjust.makeScale(gain / rig.armWidthScale, gain / rig.armScale, gain / rig.armWidthScale));
+      return matrix.copy(drivers.hands[armIndex]).multiply(adjust.makeScale(gain / rig.armWidthScale, gain / rig.armScale, gain / rig.armWidthScale));
     };
     parts.forEach((part, partIndex) => {
       const mesh = meshes.current[partIndex];
       if (!mesh) return;
-      mesh.visible = part.role !== "rest" || !drivers.celebration.current;
+      mesh.visible = part.role === "signatureLeft" || part.role === "signatureRight"
+        ? Boolean(drivers.celebration.current && gain > 0.001)
+        : part.role !== "rest" || !drivers.celebration.current;
+      if (!mesh.visible) return;
       indices.forEach((index, at) => mesh.setMatrixAt(at, roleMatrix(part.role, index)));
       mesh.instanceMatrix.needsUpdate = true;
       mesh.boundingSphere = null;
@@ -94,17 +94,17 @@ function IdentityGroup({ id, indices, passengers, drivers, partyOn, reducedMotio
     const onSync = () => {
       if (lastRevision.current === drivers.revision.current) return;
       lastRevision.current = drivers.revision.current;
-      update(0);
+      update(clock.elapsedTime);
     };
     drivers.listeners.add(onSync);
     if (drivers.revision.current > 0) {
       lastRevision.current = drivers.revision.current;
-      update(0);
+      update(clock.elapsedTime);
     }
     return () => {
       drivers.listeners.delete(onSync);
     };
-  }, [drivers, update]);
+  }, [clock, drivers, update]);
   useFrame(({ clock }) => {
     if (lastRevision.current === drivers.revision.current) return;
     lastRevision.current = drivers.revision.current;
@@ -114,7 +114,7 @@ function IdentityGroup({ id, indices, passengers, drivers, partyOn, reducedMotio
   if (!parts) return <Prototype id={id} onReady={setParts} />;
   return <group name={`bus-distant-identity-${id}`} userData={{ archetypeId: id }}>
     {parts.map((part, i) => <instancedMesh key={`${part.role}-${i}`} name={`bus-distant-${id}-${part.role}-${i}`}
-      ref={node => { meshes.current[i] = node; }} geometry={part.geometry} material={part.material} dispose={null}
+      ref={node => { meshes.current[i] = node; }} geometry={part.geometry} material={part.material}
       args={[undefined, undefined, 160]} count={indices.length} frustumCulled={false} userData={{ role: part.role, archetypeId: id }}
     />)}
   </group>;

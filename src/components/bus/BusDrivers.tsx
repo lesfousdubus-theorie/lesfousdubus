@@ -2,13 +2,13 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { DriverHead, DriverShirt } from "./DriverAppearance";
 import PassengerLowerBody from "./PassengerLowerBody";
 import DriverArm from "./DriverArm";
 import { DRIVER_ARM_FIELDS, DRIVER_FOREARM, DRIVER_SEAT_POSITIONS, DRIVER_SHOULDER_X, DRIVER_SHOULDER_Z, DRIVER_UPPER_ARM, getDriverArmRest, getDriverReactionGain, normalizeDriverHornArms, prepareDriverArmTarget, solveDriverArmTarget } from "@/lib/driver-arms";
 import { sampleCopilotDance } from "@/lib/copilot-dance";
-import { SEATED_HIP_HEIGHT, SEATED_HIP_Z } from "@/lib/passenger-gait";
+import { CABIN_FLOOR_Y, SEATED_HIP_HEIGHT, SEATED_HIP_Z } from "@/lib/passenger-gait";
 import { blendPassengerPose, createPassengerPose, samplePassengerPose } from "@/lib/passenger-motion";
 
 interface BusDriversProps {
@@ -108,7 +108,12 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
   const kytaHead = useRef<THREE.Group>(null);
   const kytaRightArm = useRef<THREE.Group>(null);
   const kytaCompassNeedles = useRef<(THREE.Mesh | null)[]>([]);
-  const copilotDance = useRef({ active: false, recovering: false, start: 0, yaw: 0, pitch: 0, roll: 0 });
+  const hoveredObjects = useRef(new Set<THREE.Object3D>());
+  const copilotDance = useRef({ active: false, recovering: false, start: 0 });
+  const torsoStates = useRef([
+    { yaw: 0, pitch: 0, roll: 0, bob: 0 },
+    { yaw: 0, pitch: 0, roll: 0, bob: 0 },
+  ]);
   const copilotFrame = useMemo(() => ({ inverse: new THREE.Quaternion(), neck: new THREE.Vector3(), shoulder: new THREE.Vector3() }), []);
   const armJoints = useMemo(() => [
     { driver: "kamal" as const, side: -1 as const },
@@ -134,12 +139,36 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
   const kytaNameTex = useMemo(() => makeDriverNameTexture("Kyta"), []);
 
   useEffect(() => {
+    const hovered = hoveredObjects.current;
     return () => {
       kamalNameTex.texture.dispose();
       kytaNameTex.texture.dispose();
+      hovered.clear();
       document.body.style.cursor = "auto";
     };
   }, [kamalNameTex, kytaNameTex]);
+
+  const isDriverObject = useCallback((object: THREE.Object3D) => {
+    let current: THREE.Object3D | null = object;
+    while (current) {
+      if (current === kamalRoot.current || current === kytaRoot.current) return true;
+      current = current.parent;
+    }
+    return false;
+  }, []);
+
+  const handleDriverPointerOver = useCallback((event: ThreeEvent<PointerEvent>) => {
+    event.stopPropagation();
+    hoveredObjects.current.add(event.object);
+    document.body.style.cursor = "pointer";
+  }, []);
+
+  const handleDriverPointerOut = useCallback((event: ThreeEvent<PointerEvent>) => {
+    hoveredObjects.current.delete(event.object);
+    if (hoveredObjects.current.size === 0 && !event.intersections.some(hit => isDriverObject(hit.object))) {
+      document.body.style.cursor = "auto";
+    }
+  }, [isDriverObject]);
 
   // Clic interactif sur Kamal
   const handleKamalClick = useCallback((e?: { stopPropagation: () => void }) => {
@@ -221,25 +250,10 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
       const breath = reducedMotion ? 1 : 1 + Math.sin(t * 2.1) * 0.009;
       kamalTorso.current.scale.set(breath, 1, breath);
     }
-    if (kamalHead.current) {
-      const roadBob = reducedMotion ? 0 : Math.sin(t * 4.2) * 0.012;
-      const lookRoad = reducedMotion ? 0 : Math.sin(t * 1.2) * 0.03;
-      kamalHead.current.position.y = 1.8 + hornBounce * 0.6;
-      kamalHead.current.rotation.x = roadBob + (isHonking ? -0.12 : 0);
-      kamalHead.current.rotation.y = lookRoad;
-    }
     // Respiration et attitude enthousiaste de Kyta (co-pilote)
     if (kytaTorso.current) {
       const breath = reducedMotion ? 1 : 1 + Math.sin(t * 2.3 + 0.4) * 0.009;
       kytaTorso.current.scale.set(breath, 1, breath);
-    }
-    if (kytaHead.current) {
-      const roadBob = reducedMotion ? 0 : Math.sin(t * 4.0 + 0.5) * 0.012;
-      const lookTowardsKamal = reducedMotion ? 0.1 : Math.sin(t * 0.8) * 0.1 + 0.1;
-      kytaHead.current.position.y = 1.8 + hornBounce * 0.6;
-      kytaHead.current.rotation.x = roadBob + (isHonking ? -0.15 : 0);
-      kytaHead.current.rotation.y = lookTowardsKamal;
-      kytaHead.current.rotation.z = 0;
     }
     // Aiguilles magnétiques du Log Pose du Nouveau Monde
     kytaCompassNeedles.current.forEach((needle, idx) => {
@@ -247,6 +261,7 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
         needle.rotation.y = (reducedMotion ? 0 : Math.sin(t * 5 + idx * 1.8) * 0.35) + idx * 0.8;
       }
     });
+    const delta = Math.max(0, Math.min(dt, .25));
     for(let i=0;i<2;i++){
       samplePassengerPose(targets.current[i],t,18+i,0,.36,hornPulse>0?sinceHorn:Infinity,partyOn,reducedMotion,i===0?"kamal":"kyta");
       if (i === 1 && partyOn) sampleCopilotDance(targets.current[i], t - copilotDance.current.start, reducedMotion);
@@ -258,23 +273,39 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
       if (!targets.current[i].celebrating) for (const key of DRIVER_ARM_FIELDS) targets.current[i][key] = poses.current[i].current[key];
       blendPassengerPose(poses.current[i].current,targets.current[i],dt,reducedMotion);
       const pose=poses.current[i].current,root=i===0?kamalRoot.current:kytaRoot.current;
-      if(root){root.position.y=pose.bob;root.rotation.y=pose.rootYaw;root.userData.activity=pose.activity;root.userData.danceGesture=pose.gesture;}
-      const head=i===0?kamalHead.current:kytaHead.current;
-      if(head&&pose.celebrating){head.rotation.x=pose.headPitch;head.rotation.y=pose.headYaw;}
-      if (i === 1 && kytaTorso.current && head) {
-        const dance = copilotDance.current, delta = Math.max(0, Math.min(dt, .25));
-        dance.yaw = reducedMotion ? 0 : THREE.MathUtils.damp(dance.yaw, partyOn ? pose.torsoYaw : 0, 12, delta);
-        dance.pitch = reducedMotion ? 0 : THREE.MathUtils.damp(dance.pitch, partyOn ? pose.torsoPitch : 0, 12, delta);
-        dance.roll = reducedMotion ? 0 : THREE.MathUtils.damp(dance.roll, partyOn ? pose.torsoRoll : 0, 12, delta);
-        kytaTorso.current.rotation.set(dance.pitch, dance.yaw, dance.roll);
-        // Le cou suit le haut du torse : aucune tête flottante pendant le balancement.
-        copilotFrame.neck.set(0, .32, 0).applyQuaternion(kytaTorso.current.quaternion);
-        head.position.set(copilotFrame.neck.x, 1.48 + copilotFrame.neck.y + hornBounce * .6, .14 + copilotFrame.neck.z);
-        head.quaternion.premultiply(kytaTorso.current.quaternion);
-        copilotFrame.inverse.copy(kytaTorso.current.quaternion).invert();
-      }
-      celebrationGain.current[i] = reducedMotion ? targetGain : THREE.MathUtils.damp(celebrationGain.current[i], targetGain, 12, Math.min(dt, .25));
+      if(root){root.position.y=0;root.rotation.y=0;root.userData.activity=pose.activity;root.userData.danceGesture=pose.gesture;}
+      celebrationGain.current[i] = reducedMotion ? targetGain : THREE.MathUtils.damp(celebrationGain.current[i], targetGain, 12, delta);
       const gain = celebrationGain.current[i];
+      const torso = i === 0 ? kamalTorso.current : kytaTorso.current;
+      const head = i === 0 ? kamalHead.current : kytaHead.current;
+      const torsoState = torsoStates.current[i];
+      const activeTorso = !reducedMotion && pose.celebrating;
+      torsoState.yaw = reducedMotion ? 0 : THREE.MathUtils.damp(torsoState.yaw, activeTorso ? pose.torsoYaw + pose.rootYaw : 0, 12, delta);
+      torsoState.pitch = reducedMotion ? 0 : THREE.MathUtils.damp(torsoState.pitch, activeTorso ? pose.torsoPitch : 0, 12, delta);
+      torsoState.roll = reducedMotion ? 0 : THREE.MathUtils.damp(torsoState.roll, activeTorso ? pose.torsoRoll : 0, 12, delta);
+      torsoState.bob = reducedMotion ? 0 : THREE.MathUtils.damp(torsoState.bob, activeTorso ? pose.bob * .5 : 0, 12, delta);
+      if (torso && head) {
+        torso.position.y = 1.48 + torsoState.bob;
+        torso.rotation.set(torsoState.pitch, torsoState.yaw, torsoState.roll);
+        // Le cou suit le haut du torse : aucune tête flottante pendant le balancement.
+        copilotFrame.neck.set(0, .32, 0).applyQuaternion(torso.quaternion);
+        head.position.set(copilotFrame.neck.x, 1.48 + torsoState.bob + copilotFrame.neck.y + hornBounce * .6, .14 + copilotFrame.neck.z);
+        const driveX = i === 0
+          ? (reducedMotion ? 0 : Math.sin(t * 4.2) * 0.012) + (isHonking ? -0.12 : 0)
+          : (reducedMotion ? 0 : Math.sin(t * 4.0 + 0.5) * 0.012) + (isHonking ? -0.15 : 0);
+        const driveY = i === 0
+          ? (reducedMotion ? 0 : Math.sin(t * 1.2) * 0.03)
+          : (reducedMotion ? 0.1 : Math.sin(t * 0.8) * 0.1 + 0.1);
+        head.rotation.set(
+          THREE.MathUtils.lerp(driveX, pose.headPitch, gain),
+          THREE.MathUtils.lerp(driveY, pose.headYaw, gain),
+          0,
+        );
+        head.quaternion.premultiply(torso.quaternion);
+        copilotFrame.inverse.copy(torso.quaternion).invert();
+      } else {
+        copilotFrame.inverse.identity();
+      }
       for (let arm = 0; arm < 2; arm++) {
         const joint = armJoints[i * 2 + arm], left = arm === 0;
         const shoulder = i === 0 ? left ? kamalLeftArm.current : kamalRightArm.current : left ? kytaLeftArm.current : kytaRightArm.current;
@@ -293,19 +324,18 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
         // La paume garde une marge au-dessus de la barre, même pendant le retour.
         if (i === 1 && copilotDance.current.recovering) joint.handTarget.setY(Math.max(.20, joint.handTarget.y));
         prepareDriverArmTarget(joint.handTarget, joint.rest.target, gain, joint.driver);
-        if (i === 1) {
-          // Le torse peut danser ; les mains gardent leur trajet sûr dans le bus.
-          copilotFrame.shoulder.set(joint.side * DRIVER_SHOULDER_X, .14, DRIVER_SHOULDER_Z - .14);
-          joint.handTarget.add(copilotFrame.shoulder).applyQuaternion(copilotFrame.inverse).sub(copilotFrame.shoulder);
-          joint.handTarget.clampLength(.0001, DRIVER_UPPER_ARM + DRIVER_FOREARM - .0001);
-        }
+        // Le torse peut danser ; les mains gardent leur trajet sûr dans le bus.
+        joint.handTarget.setY(joint.handTarget.y - torsoState.bob);
+        copilotFrame.shoulder.set(joint.side * DRIVER_SHOULDER_X, .14, DRIVER_SHOULDER_Z - .14);
+        joint.handTarget.add(copilotFrame.shoulder).applyQuaternion(copilotFrame.inverse).sub(copilotFrame.shoulder);
+        joint.handTarget.clampLength(.0001, DRIVER_UPPER_ARM + DRIVER_FOREARM - .0001);
         solveDriverArmTarget(joint.handTarget, joint.solution);
         if (shoulder && elbow && wrist) {
           shoulder.quaternion.setFromEuler(joint.targetEuler.set(joint.solution.shoulderX, joint.solution.shoulderYaw, 0, "YXZ"));
           elbow.quaternion.setFromEuler(joint.targetEuler.set(joint.solution.elbowX, 0, 0, "XYZ"));
           joint.handMix.copy(joint.restHand).slerp(joint.handRotation, gain);
           wrist.quaternion.copy(shoulder.quaternion).multiply(elbow.quaternion).invert();
-          if (i === 1) wrist.quaternion.multiply(copilotFrame.inverse);
+          wrist.quaternion.multiply(copilotFrame.inverse);
           wrist.quaternion.multiply(joint.handMix);
         }
       }
@@ -320,27 +350,23 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
       <group
         ref={kamalRoot} name="bus-crew-kamal" position={[DRIVER_SEAT_POSITIONS.kamal[0], 0, DRIVER_SEAT_POSITIONS.kamal[2] - 0.05]}
         onClick={handleKamalClick}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          document.body.style.cursor = "pointer";
-        }}
-        onPointerOut={() => {
-          document.body.style.cursor = "auto";
-        }}
+        onPointerOver={handleDriverPointerOver}
+        onPointerOut={handleDriverPointerOut}
       >
         {/* Bulle avec UNIQUEMENT le prénom "Kamal" */}
-        <sprite position={[0, 2.35, 0.14]} scale={[kamalNameTex.aspect * 0.11, 0.11, 1]}>
+        <sprite position={[0, 2.35, 0.14]} scale={[kamalNameTex.aspect * 0.11, 0.11, 1]} renderOrder={20}>
           <spriteMaterial
             map={kamalNameTex.texture}
             transparent
             alphaTest={0.06}
             depthTest
             depthWrite={false}
+            fog={false}
             toneMapped={false}
           />
         </sprite>
 
-        <group name="crew-hips" position={[0, 0.64 + SEATED_HIP_HEIGHT, SEATED_HIP_Z]}>
+        <group name="crew-hips" position={[0, CABIN_FLOOR_Y + SEATED_HIP_HEIGHT, SEATED_HIP_Z]}>
           <PassengerLowerBody mats={mats} />
         </group>
 
@@ -366,27 +392,23 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
       <group
         ref={kytaRoot} name="bus-crew-kyta" position={[DRIVER_SEAT_POSITIONS.kyta[0], 0, DRIVER_SEAT_POSITIONS.kyta[2] - 0.05]}
         onClick={handleKytaClick}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          document.body.style.cursor = "pointer";
-        }}
-        onPointerOut={() => {
-          document.body.style.cursor = "auto";
-        }}
+        onPointerOver={handleDriverPointerOver}
+        onPointerOut={handleDriverPointerOut}
       >
         {/* Bulle avec UNIQUEMENT le prénom "Kyta" */}
-        <sprite position={[0, 2.35, 0.14]} scale={[kytaNameTex.aspect * 0.11, 0.11, 1]}>
+        <sprite position={[0, 2.35, 0.14]} scale={[kytaNameTex.aspect * 0.11, 0.11, 1]} renderOrder={20}>
           <spriteMaterial
             map={kytaNameTex.texture}
             transparent
             alphaTest={0.06}
             depthTest
             depthWrite={false}
+            fog={false}
             toneMapped={false}
           />
         </sprite>
 
-        <group name="crew-hips" position={[0, 0.64 + SEATED_HIP_HEIGHT, SEATED_HIP_Z]}>
+        <group name="crew-hips" position={[0, CABIN_FLOOR_Y + SEATED_HIP_HEIGHT, SEATED_HIP_Z]}>
           <PassengerLowerBody mats={mats} />
         </group>
 

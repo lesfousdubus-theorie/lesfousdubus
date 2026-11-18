@@ -77,7 +77,7 @@ function costumeMaterial(id: string, face: boolean) {
         poly([[44,0],[111,88],[79,119]],"#79a6cf");poly([[212,0],[145,88],[177,119]],"#79a6cf");line(128,100,128,233,"#dcbd75",4);dot(128,116,6,"#eac967");rect(0,237,256,18,"#e5a0c4");break;
       case "franky":
         rect(67,0,123,255,"#fcd5b5");for(const [x,y] of [[32,39],[216,107],[27,183],[226,223]]){star(x,y,18,"#ffe983");dot(x,y,6,"#dc2626");}
-        line(80,81,171,81,"#e2a086",3);line(128,85,128,180,"#e2a086",3);for(const y of [135,171])line(99,y,159,y,"#e2a086",3);break;
+        break;
       case "brook": poly([[73,0],[128,92],[183,0]],"#fff3e2");poly([[79,35],[122,59],[82,82]],"#f3aa26");poly([[177,35],[134,59],[173,82]],"#f3aa26");dot(128,59,10,"#f3aa26");for(const y of [125,162,199])dot(128,y,5,"#dbc77e");break;
       case "jinbe":
         for(let x=25;x<256;x+=62)for(let y=35;y<200;y+=69)poly([[x,y-16],[x+16,y],[x,y+16],[x-16,y]],"#fff5cb");
@@ -112,7 +112,7 @@ function costumeMaterial(id: string, face: boolean) {
 export default function PassengerCostume({ archetype, face=false }: {
   archetype:NakamaArchetype; width?:number; front?:number; face?:boolean; height?:number;
 }) {
-  if(face&&archetype.id==="foudubustv")return null;
+  if(face&&["foudubustv","chopper","doflamingo"].includes(archetype.id))return null;
   const proportions = getPassengerProportions(archetype.id);
   return <mesh name={face?"nakama-face-details":`nakama-${archetype.id}-top`} material={costumeMaterial(archetype.id,face)}
     geometry={getFittedCostumeGeometry(face?proportions.headWidth:proportions.torsoWidth,

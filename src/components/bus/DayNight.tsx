@@ -10,6 +10,9 @@ interface Props {
   modeOverride?: "day" | "night" | null;
   lowPower?: boolean;
   reducedMotion?: boolean;
+  cameraFar?: number;
+  cabinCenterZ?: number;
+  cabinLength?: number;
 }
 
 const DAY_SKY = new THREE.Color("#79c2ff");
@@ -18,13 +21,25 @@ const NIGHT_SKY = new THREE.Color("#060b26");
 const DAY_FOG = new THREE.Color("#bfe3ff");
 const NIGHT_FOG = new THREE.Color("#0a1030");
 const DUSK_FOG = new THREE.Color("#ffb88a");
+const MOON_LIGHT = new THREE.Color("#9fb4ff");
+const DUSK_LIGHT = new THREE.Color("#ffcf9a");
+const SUN_LIGHT = new THREE.Color("#ffffff");
 
 function smoothstep(a: number, b: number, x: number) {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
 }
 
-export default function DayNight({ worldRef, modeOverride, lowPower = false, reducedMotion = false }: Props) {
+export default function DayNight({
+  worldRef,
+  modeOverride,
+  lowPower = false,
+  reducedMotion = false,
+  cameraFar = 2000,
+  cabinCenterZ = 0,
+  cabinLength = 9.2,
+}: Props) {
+  const celestial = useRef<THREE.Group>(null);
   const sun = useRef<THREE.DirectionalLight>(null);
   const sunMesh = useRef<THREE.Mesh>(null);
   const moonMesh = useRef<THREE.Mesh>(null);
@@ -34,7 +49,7 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
   const starsRef = useRef<THREE.Points>(null);
   const sunTarget = useMemo(() => {
     const obj = new THREE.Object3D();
-    obj.position.set(0, 1.2, -2.5);
+    obj.position.set(0, 1.2, 0);
     return obj;
   }, []);
 
@@ -44,7 +59,14 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
 
   const skyColor = useMemo(() => new THREE.Color(), []);
   const fogColor = useMemo(() => new THREE.Color(), []);
+  const lightColor = useMemo(() => new THREE.Color(), []);
   const sunPosition = useMemo(() => new THREE.Vector3(), []);
+
+  const fogFar = Math.max(750, cameraFar * 0.85);
+  const skyDist = Math.max(900, cameraFar * 0.88);
+  // Garder l'avant du bus (-4.6) dans la shadow camera [-46, 46] tout en suivant le centre cabine.
+  const shadowSpanBound = Math.max(36, 42 - Math.min(8, cabinLength * 0.1));
+  const targetZ = THREE.MathUtils.clamp(cabinCenterZ, -shadowSpanBound, 36);
 
   const starGeo = useMemo(() => {
     const n = lowPower ? 700 : 1800;
@@ -124,35 +146,55 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
 
     if (state.scene.background instanceof THREE.Color) state.scene.background.copy(skyColor);
     else state.scene.background = skyColor.clone();
-    if (state.scene.fog) state.scene.fog.color.copy(fogColor);
+    if (state.scene.fog instanceof THREE.Fog) {
+      state.scene.fog.color.copy(fogColor);
+      state.scene.fog.far = fogFar;
+    } else if (state.scene.fog) {
+      state.scene.fog.color.copy(fogColor);
+    }
 
-    // La nuit, la lune éclaire depuis l'autre côté : source maintenue au-dessus de l'horizon
-    const lightX = daylight > 0.05 ? sunX : -sunX;
-    const lightY = daylight > 0.05 ? Math.max(sunY, 0.12) : Math.max(-sunY, 0.12);
-    sunPosition.set(lightX * 60, lightY * 60, -25);
+    // Transition continue de la lumière directionnelle autour du crépuscule sans saut de direction ni de teinte
+    const lightBlend = smoothstep(0.02, 0.35, daylight);
+    const duskGlow = Math.sin(Math.PI * smoothstep(0.02, 0.55, daylight));
+    const lightX = THREE.MathUtils.lerp(-sunX, sunX, lightBlend);
+    const lightY = THREE.MathUtils.lerp(Math.max(-sunY, 0.16), Math.max(sunY, 0.16), lightBlend)
+      + Math.sin(lightBlend * Math.PI) * 0.25;
+    sunTarget.position.set(0, 1.2, targetZ);
+    sunTarget.updateMatrixWorld();
+    sunPosition.set(lightX * 60, lightY * 60, targetZ - 25);
+    lightColor.copy(MOON_LIGHT).lerp(SUN_LIGHT, smoothstep(0.05, 0.45, daylight)).lerp(DUSK_LIGHT, duskGlow * 0.65);
     if (sun.current) {
       sun.current.position.copy(sunPosition);
       sun.current.intensity = 0.15 + daylight * 2.6;
-      sun.current.color.set(daylight <= 0.05 ? "#9fb4ff" : dusk > 0.3 ? "#ffcf9a" : "#ffffff");
+      sun.current.color.copy(lightColor);
       sun.current.target = sunTarget;
     }
+
+    if (celestial.current) celestial.current.position.copy(state.camera.position);
+    const dirNorm = Math.hypot(sunX, sunY, 0.43) || 1;
+    const celestialScale = skyDist / 760;
     if (sunMesh.current) {
-      sunMesh.current.position.set(sunX * 700, sunY * 700, -300);
+      sunMesh.current.position.set((sunX / dirNorm) * skyDist, (sunY / dirNorm) * skyDist, (-0.43 / dirNorm) * skyDist);
+      sunMesh.current.scale.setScalar(celestialScale);
       sunMesh.current.visible = sunY > -0.1;
     }
     if (moonMesh.current) {
-      moonMesh.current.position.set(-sunX * 700, -sunY * 700, -300);
+      moonMesh.current.position.set((-sunX / dirNorm) * skyDist, (-sunY / dirNorm) * skyDist, (-0.43 / dirNorm) * skyDist);
+      moonMesh.current.scale.setScalar(celestialScale);
       moonMesh.current.visible = -sunY > -0.1;
     }
     if (ambient.current) ambient.current.intensity = 0.12 + daylight * 0.5;
     if (hemi.current) hemi.current.intensity = 0.15 + daylight * 0.6;
     if (starsMat.current) starsMat.current.opacity = Math.max(0, 1 - daylight * 1.4);
-    if (starsRef.current) starsRef.current.rotation.y = reducedMotion ? 0 : state.clock.elapsedTime * 0.004;
+    if (starsRef.current) {
+      starsRef.current.scale.setScalar(skyDist / 900);
+      starsRef.current.rotation.y = reducedMotion ? 0 : state.clock.elapsedTime * 0.004;
+    }
   });
 
   return (
     <>
-      <fog attach="fog" args={["#bfe3ff", 120, 680]} />
+      <fog attach="fog" args={["#bfe3ff", 120, fogFar]} />
       <ambientLight ref={ambient} intensity={0.5} />
       <hemisphereLight ref={hemi} args={["#bde3ff", "#5a4a30", 0.6]} />
       <primitive object={sunTarget} />
@@ -163,35 +205,37 @@ export default function DayNight({ worldRef, modeOverride, lowPower = false, red
         castShadow
         shadow-mapSize-width={lowPower ? 1024 : 2048}
         shadow-mapSize-height={lowPower ? 1024 : 2048}
-        shadow-camera-left={-28}
-        shadow-camera-right={28}
-        shadow-camera-top={28}
-        shadow-camera-bottom={-28}
+        shadow-camera-left={-46}
+        shadow-camera-right={46}
+        shadow-camera-top={46}
+        shadow-camera-bottom={-46}
         shadow-camera-near={1}
-        shadow-camera-far={180}
+        shadow-camera-far={220}
         shadow-bias={-0.00015}
         shadow-normalBias={0.006}
       />
-      <mesh ref={sunMesh}>
-        <sphereGeometry args={[38, 24, 24]} />
-        <meshBasicMaterial color="#fff2b0" fog={false} />
-      </mesh>
-      <mesh ref={moonMesh}>
-        <sphereGeometry args={[26, 24, 24]} />
-        <meshBasicMaterial color="#e9eefc" fog={false} />
-      </mesh>
-      <points ref={starsRef} geometry={starGeo}>
-        <pointsMaterial
-          ref={starsMat}
-          color="#ffffff"
-          size={2.2}
-          sizeAttenuation={false}
-          transparent
-          opacity={0}
-          depthWrite={false}
-          fog={false}
-        />
-      </points>
+      <group ref={celestial}>
+        <mesh ref={sunMesh} renderOrder={-1}>
+          <sphereGeometry args={[38, 24, 24]} />
+          <meshBasicMaterial color="#fff2b0" fog={false} depthWrite={false} />
+        </mesh>
+        <mesh ref={moonMesh} renderOrder={-1}>
+          <sphereGeometry args={[26, 24, 24]} />
+          <meshBasicMaterial color="#e9eefc" fog={false} depthWrite={false} />
+        </mesh>
+        <points ref={starsRef} geometry={starGeo} renderOrder={-2}>
+          <pointsMaterial
+            ref={starsMat}
+            color="#ffffff"
+            size={2.2}
+            sizeAttenuation={false}
+            transparent
+            opacity={0}
+            depthWrite={false}
+            fog={false}
+          />
+        </points>
+      </group>
     </>
   );
 }

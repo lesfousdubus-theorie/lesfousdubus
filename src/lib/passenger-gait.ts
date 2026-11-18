@@ -8,7 +8,7 @@ export const SEATED_HIP_Z = 0.12;
 export const TORSO_ABOVE_HIP = 0.235;
 export const NECK_ABOVE_HIP = 0.46;
 export const BODY_BEHIND_HIP = 0.02;
-export const CABIN_FLOOR_Y = 0.63;
+export const CABIN_FLOOR_Y = 0.64;
 
 /** Deux articulations visent la cheville, y compris pendant le passage au siège. */
 export function getWalkingLegPose(cycle: number, hipHeight: number, strength: number, sitting = 0, id = "") {
@@ -17,7 +17,7 @@ export function getWalkingLegPose(cycle: number, hipHeight: number, strength: nu
   const sit = Math.max(0, Math.min(1, sitting));
   const z = Math.cos(cycle) * rig.stride * strength * (1 - sit) - thigh * sit;
   // Small passengers keep their short legs dangling: do not stretch their feet to the floor.
-  const seatedAnkleY = id === "chopper" ? hipHeight - shin : .07;
+  const seatedAnkleY = id === "chopper" ? hipHeight - shin : .08;
   const ankleY = rig.ankleHeight * (1 - sit) + seatedAnkleY * sit + Math.max(0, Math.sin(cycle)) * rig.stepHeight * strength * (1 - sit);
   const y = ankleY - hipHeight;
   const distance = Math.max(Math.abs(thigh - shin) + .001, Math.min(thigh + shin, Math.hypot(y, z)));

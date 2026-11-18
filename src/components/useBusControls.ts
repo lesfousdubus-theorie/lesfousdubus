@@ -8,7 +8,12 @@ import { shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts";
 const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
 
 /** Commandes du véhicule, avec le moteur 3D comme source de lumière et de météo. */
-export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>, letterShortcutsEnabled = true) {
+export function useBusControls(
+  phase: Phase,
+  worldRef: RefObject<WorldState>,
+  letterShortcutsEnabled = true,
+  busy = phase === "entering" || phase === "exiting",
+) {
   const [headlights, setHeadlights] = useState(false);
   const [hornPulse, setHornPulse] = useState(0);
   // Contrôle de la vitesse du bus (vitesse de défilement du monde et rotation des roues)
@@ -128,6 +133,7 @@ export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>, le
   // et à l'intérieur, où les flèches et +/- contrôlent exclusivement la caméra.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (busy) return;
       if (shouldIgnoreBusShortcut(e, document.activeElement,
         Boolean(document.querySelector("[role='dialog']")), letterShortcutsEnabled)) return;
 
@@ -152,7 +158,7 @@ export function useBusControls(phase: Phase, worldRef: RefObject<WorldState>, le
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase, honk, toggleHeadlights, accelerateBus, decelerateBus, letterShortcutsEnabled]);
+  }, [busy, phase, honk, toggleHeadlights, accelerateBus, decelerateBus, letterShortcutsEnabled]);
 
   return {
     headlights, hornPulse, speedMultiplier, isNight, manualDayNight,

@@ -59,6 +59,7 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY,
         pan: event.button === 2 || event.shiftKey || event.ctrlKey || event.metaKey });
       if (pointers.size === 2) state.focus = true;
+      try { surface.setPointerCapture(event.pointerId); } catch {}
     };
     const move = (event: PointerEvent) => {
       const previous = pointers.get(event.pointerId);
@@ -86,7 +87,10 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
         state.rotateY -= dy * ROTATE_PER_VIEWPORT / height;
       }
     };
-    const up = (event: PointerEvent) => { pointers.delete(event.pointerId); };
+    const up = (event: PointerEvent) => {
+      pointers.delete(event.pointerId);
+      try { surface.releasePointerCapture(event.pointerId); } catch {}
+    };
     const wheel = (event: WheelEvent) => {
       if (!event.deltaY || isBrowserZoomWheel(event) || !canStart(event)) return;
       event.preventDefault();
@@ -108,6 +112,7 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
     };
 
     surface.addEventListener("pointerdown", down);
+    surface.addEventListener("lostpointercapture", up);
     surface.addEventListener("wheel", wheel, { passive: false });
     surface.addEventListener("contextmenu", context);
     window.addEventListener("pointermove", move);
@@ -116,6 +121,7 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
     window.addEventListener("blur", cancel);
     return () => {
       surface.removeEventListener("pointerdown", down);
+      surface.removeEventListener("lostpointercapture", up);
       surface.removeEventListener("wheel", wheel);
       surface.removeEventListener("contextmenu", context);
       window.removeEventListener("pointermove", move);
@@ -125,6 +131,17 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
       cancel();
     };
   }, [camera, canExplore, cancel, clearMovement, gl, get, paused]);
+
+  const keyboardCursorRef = useRef(new Vector2(0, 0));
+  const stepKeyboardExploration = useCallback((azimuth: number, elevation: number, zoomGesture: number) => {
+    if (paused || get().camera !== camera || !canExplore(true)) return;
+    if (azimuth !== 0 || elevation !== 0) {
+      navigation.rotate(camera, azimuth, elevation, rearZ, maxDistance);
+    }
+    if (zoomGesture !== 0) {
+      navigation.zoom(camera, keyboardCursorRef.current, zoomGesture, rearZ, maxDistance);
+    }
+  }, [camera, canExplore, get, maxDistance, navigation, paused, rearZ]);
 
   const vehicle = useRef<Object3D>(undefined);
   useFrame(({ camera: view, scene }, dt) => {
@@ -156,5 +173,5 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
     state.pinch = 0;
   }, -0.75);
 
-  return { pivot: navigation.pivot, cancelExplorationInput: cancel };
+  return { pivot: navigation.pivot, cancelExplorationInput: cancel, stepKeyboardExploration };
 }

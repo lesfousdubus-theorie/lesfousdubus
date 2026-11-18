@@ -36,6 +36,15 @@ interface Props {
 const FOV_EPSILON = 0.01;
 const CAMERA_UP = new THREE.Vector3(0, 1, 0);
 const DEFAULT_EXTERIOR_OFFSET = DEFAULT_CAMERA_POS.clone().sub(DEFAULT_TARGET);
+const INTERIOR_CAMERA_KEYS = new Set(["arrowleft", "arrowright", "arrowup", "arrowdown", "q", "a", "d", "z", "w", "s", "+", "-"]);
+const EXTERIOR_CAMERA_KEYS = new Set(["arrowleft", "arrowright", "arrowup", "arrowdown", "+", "-"]);
+
+function normalizeCameraKey(key: string) {
+  const lower = key.toLowerCase();
+  if (lower === "=") return "+";
+  if (lower === "_") return "-";
+  return lower;
+}
 
 export default function CameraRig({
   phase,
@@ -77,6 +86,8 @@ export default function CameraRig({
   const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
   const pinchStartDistRef = useRef<number | null>(null);
   const pinchStartFovRef = useRef<number>(55);
+  const heldKeysRef = useRef<Set<string>>(new Set());
+  const tappedKeysRef = useRef<Set<string>>(new Set());
   const phaseRef = useRef<Phase>(phase);
   const freeViewRef = useRef(false);
   const freeCamera = useRef<typeof saved.current | null>(null);
@@ -106,18 +117,23 @@ export default function CameraRig({
     arrivedRef.current = onArrived;
   }, [onArrived]);
 
-  // Position X/Z du siège actuel (lisse les déplacements latéraux et dans l'allée)
-  const seatXRef = useRef(currentSeatX);
-  const seatZRef = useRef(currentSeatZ ?? SEAT_EYE.z);
-
   // Position cible des yeux
   const characterId = getNakamaArchetype(currentPassengerSeatIndex, currentPassengerAvatarId).id;
   const skeleton = getPassengerSkeleton(characterId), adultSkeleton = getPassengerSkeleton("");
   const eyeY = SEAT_EYE.y + skeleton.seatedHipHeight + skeleton.neckAboveHip + skeleton.headAboveNeck
     - adultSkeleton.seatedHipHeight - adultSkeleton.neckAboveHip - adultSkeleton.headAboveNeck;
+  // Position X/Y/Z du siège actuel (lisse les déplacements latéraux, de hauteur d'avatar et dans l'allée)
+  const seatZ = currentSeatZ ?? SEAT_EYE.z;
+  const seatXRef = useRef(currentSeatX);
+  const seatYRef = useRef(eyeY);
+  const seatZRef = useRef(seatZ);
+  const eyeYRef = useRef(eyeY);
+  useEffect(() => {
+    eyeYRef.current = eyeY;
+  }, [eyeY]);
   const activeEyePos = useMemo(() => {
-    return new THREE.Vector3(currentSeatX, eyeY, currentSeatZ ?? SEAT_EYE.z);
-  }, [currentSeatZ,currentSeatX,eyeY]);
+    return new THREE.Vector3(currentSeatX, eyeY, seatZ);
+  }, [seatZ, currentSeatX, eyeY]);
   const activeTvTarget = useMemo(() => new THREE.Vector3(0, TV_POSITION.y, tvTargetZ), [tvTargetZ]);
 
   const aspect = size.width / Math.max(1, size.height) || 1;
@@ -138,7 +154,7 @@ export default function CameraRig({
     }
     return true;
   }, []);
-  const { pivot, cancelExplorationInput } = useBusExploration(camera, cabinCenterZ + cabinLength / 2,
+  const { pivot, cancelExplorationInput, stepKeyboardExploration } = useBusExploration(camera, cabinCenterZ + cabinLength / 2,
     getExteriorMaxDistance(cabinLength), reducedMotion, inputsPaused, canExplore);
 
   useLayoutEffect(() => {
@@ -204,7 +220,7 @@ export default function CameraRig({
 
   // Le cadrage d'ensemble est appliqué à l'arrivée et lors d'un recentrage explicite.
   useLayoutEffect(() => {
-    if (initialFramedRef.current && (!initialStatsReady || framedWithStats.current || explored.current || phase !== "outside")) return;
+    if (initialFramedRef.current && (!initialStatsReady || framedWithStats.current || explored.current || (phase !== "outside" && phase !== "inside"))) return;
     initialFramedRef.current = true;
     framedWithStats.current = initialStatsReady;
     const camParam = new URLSearchParams(window.location.search).get("cam");
@@ -221,7 +237,7 @@ export default function CameraRig({
         ? new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(pos, target, CAMERA_UP))
         : orientation,
     );
-    if (phaseRef.current === "outside") {
+    if (phase === "outside") {
       camera.position.copy(pos);
       camera.quaternion.copy(saved.current.orientation);
       pivot.copy(target);
@@ -235,6 +251,8 @@ export default function CameraRig({
     cancelExplorationInput();
     activePointersRef.current.clear();
     pinchStartDistRef.current = null;
+    heldKeysRef.current.clear();
+    tappedKeysRef.current.clear();
     look.current.dragging = false;
     targetFovRef.current = 55;
     if (phase === "outside" || freeViewRef.current) {
@@ -272,6 +290,9 @@ export default function CameraRig({
     const phaseChanged = preparedPhaseRef.current !== phase;
     preparedPhaseRef.current = phase;
     phaseRef.current = phase;
+    if (phaseChanged) {
+      resetTransition.current.active = false;
+    }
     const a = anim.current;
     if (phase === "entering") {
       if (phaseChanged) {
@@ -284,6 +305,7 @@ export default function CameraRig({
         a.active = true;
       }
       seatXRef.current = activeEyePos.x;
+      seatYRef.current = activeEyePos.y;
       seatZRef.current = activeEyePos.z;
       a.to.copy(activeEyePos);
       const m = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
@@ -301,6 +323,8 @@ export default function CameraRig({
     if (phaseChanged && phase !== "inside") {
       activePointersRef.current.clear();
       pinchStartDistRef.current = null;
+      heldKeysRef.current.clear();
+      tappedKeysRef.current.clear();
       look.current.dragging = false;
     }
   }, [phase, camera, activeEyePos, activeTvTarget, pivot]);
@@ -309,27 +333,32 @@ export default function CameraRig({
   // Le visiteur peut ensuite tourner librement la tête avec la souris ou le doigt.
   useEffect(() => {
     if (phase !== "inside") return;
-    const matrix = new THREE.Matrix4().lookAt(activeEyePos, activeTvTarget, new THREE.Vector3(0, 1, 0));
+    const eyePos = new THREE.Vector3(currentSeatX, eyeYRef.current, seatZ);
+    const tvTarget = new THREE.Vector3(0, TV_POSITION.y, tvTargetZ);
+    const matrix = new THREE.Matrix4().lookAt(eyePos, tvTarget, CAMERA_UP);
     const rotation = new THREE.Euler().setFromRotationMatrix(matrix, "YXZ");
-    look.current.targetYaw = rotation.y;
+    const currentYaw = look.current.yaw;
+    const diff = rotation.y - currentYaw;
+    look.current.targetYaw = currentYaw + Math.atan2(Math.sin(diff), Math.cos(diff));
     look.current.targetPitch = rotation.x;
-  }, [phase, activeEyePos, activeTvTarget]);
+  }, [phase, currentSeatX, seatZ, tvTargetZ]);
 
   // La caméra peut quitter les yeux sans modifier la place ni le trajet du passager.
   useEffect(() => {
-    const next = phase === "inside" && freeView;
+    if (phase !== "inside") {
+      resetTransition.current.active = false;
+      freeViewRef.current = false;
+      return;
+    }
+    const next = freeView;
     if (freeViewRef.current === next) return;
     const wasFree = freeViewRef.current;
     freeViewRef.current = next;
     activePointersRef.current.clear();
     pinchStartDistRef.current = null;
     look.current.dragging = false;
-    if (wasFree) {
+    if (wasFree && (!resetTransition.current.active || resetTransition.current.t > 0.65)) {
       freeCamera.current = { pos: camera.position.clone(), target: pivot.clone(), orientation: camera.quaternion.clone() };
-    }
-    if (phase !== "inside") {
-      resetTransition.current.active = false;
-      return;
     }
     const rt = resetTransition.current;
     rt.active = true;
@@ -372,8 +401,13 @@ export default function CameraRig({
         const pts = Array.from(pointers.values());
         pinchStartDistRef.current = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
         pinchStartFovRef.current = targetFovRef.current;
+      } else {
+        l.dragging = false;
+        pinchStartDistRef.current = null;
       }
-      el.setPointerCapture?.(e.pointerId);
+      try {
+        el.setPointerCapture?.(e.pointerId);
+      } catch {}
     };
 
     const move = (e: PointerEvent) => {
@@ -401,9 +435,19 @@ export default function CameraRig({
     };
 
     const up = (e: PointerEvent) => {
+      const prevSize = pointers.size;
       pointers.delete(e.pointerId);
+      try {
+        if (el.hasPointerCapture?.(e.pointerId)) {
+          el.releasePointerCapture(e.pointerId);
+        }
+      } catch {}
       if (pointers.size < 2) {
         pinchStartDistRef.current = null;
+      } else if (prevSize >= 3 && pointers.size === 2) {
+        const pts = Array.from(pointers.values());
+        pinchStartDistRef.current = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        pinchStartFovRef.current = targetFovRef.current;
       }
       if (pointers.size === 0) {
         l.dragging = false;
@@ -419,12 +463,16 @@ export default function CameraRig({
       pointers.clear();
       pinchStartDistRef.current = null;
       l.dragging = false;
+      heldKeysRef.current.clear();
+      tappedKeysRef.current.clear();
     };
 
     // Les gestes de zoom du navigateur et la molette dans les modales gardent la priorité.
     const wheel = (e: WheelEvent) => {
       if (phaseRef.current !== "inside" || freeViewRef.current || resetTransition.current.active) return;
-      if (!e.deltaY || isBrowserZoomWheel(e) || get().camera !== camera || !isBusViewportInput(e)) return;
+      const blockedByOverlay = e.target instanceof Element
+        && Boolean(e.target.closest("[role='dialog'], [data-modal], .overflow-y-auto"));
+      if (!e.deltaY || isBrowserZoomWheel(e) || get().camera !== camera || blockedByOverlay) return;
       e.preventDefault();
       const ratio = wheelZoomRatio(e.deltaY, e.deltaMode, el.clientHeight);
       const halfFov = THREE.MathUtils.degToRad(targetFovRef.current / 2);
@@ -432,24 +480,26 @@ export default function CameraRig({
       targetFovRef.current = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(angle) * 2, 14, 75);
     };
 
-    const key = (e: KeyboardEvent) => {
-      if (phaseRef.current !== "inside" || freeViewRef.current) return;
+    const keyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return;
       if (shouldIgnoreBusShortcut(e, document.activeElement,
         Boolean(document.querySelector("[role='dialog']")), letterShortcutsEnabled)) return;
-      const key = e.key.toLowerCase();
-      const step = 0.15;
-      if (key === "arrowleft" || key === "q" || key === "a") l.targetYaw += step;
-      else if (key === "arrowright" || key === "d") l.targetYaw -= step;
-      else if (key === "arrowup") l.targetPitch = Math.min(0.9, l.targetPitch + step);
-      else if (key === "arrowdown") l.targetPitch = Math.max(-0.9, l.targetPitch - step);
-      // Touches + / - pour zoomer
-      else if (key === "+" || key === "=") {
-        targetFovRef.current = Math.max(14, targetFovRef.current - 5);
-      }
-      else if (key === "-" || key === "_") {
-        targetFovRef.current = Math.min(75, targetFovRef.current + 5);
-      } else return;
+      const k = normalizeCameraKey(e.key);
+      const interiorMode = phaseRef.current === "inside" && !freeViewRef.current;
+      const exteriorMode = phaseRef.current === "outside" || (phaseRef.current === "inside" && freeViewRef.current);
+      const allowed = interiorMode
+        ? INTERIOR_CAMERA_KEYS.has(k)
+        : exteriorMode
+          ? EXTERIOR_CAMERA_KEYS.has(k)
+          : false;
+      if (!allowed) return;
+      heldKeysRef.current.add(k);
+      tappedKeysRef.current.add(k);
       e.preventDefault();
+    };
+
+    const keyUp = (e: KeyboardEvent) => {
+      heldKeysRef.current.delete(normalizeCameraKey(e.key));
     };
 
     const target = gl.domElement.parentElement ?? el;
@@ -460,7 +510,8 @@ export default function CameraRig({
     window.addEventListener("pointercancel", up);
     window.addEventListener("blur", cancelGesture);
     target.addEventListener("wheel", wheel, { passive: false });
-    window.addEventListener("keydown", key);
+    window.addEventListener("keydown", keyDown);
+    window.addEventListener("keyup", keyUp);
 
     return () => {
       target.removeEventListener("pointerdown", down);
@@ -471,7 +522,8 @@ export default function CameraRig({
       window.removeEventListener("blur", cancelGesture);
       cancelGesture();
       target.removeEventListener("wheel", wheel);
-      window.removeEventListener("keydown", key);
+      window.removeEventListener("keydown", keyDown);
+      window.removeEventListener("keyup", keyUp);
     };
   }, [gl, get, camera, inputsPaused, letterShortcutsEnabled]);
 
@@ -479,6 +531,43 @@ export default function CameraRig({
     const a = anim.current;
     const p = phaseRef.current;
     const cam = cameraRef.current;
+
+    if (!inputsPaused && (heldKeysRef.current.size > 0 || tappedKeysRef.current.size > 0)) {
+      const keyDt = Math.min(Math.max(dt, 1 / 60), 0.1);
+      const isActiveKey = (k: string) => heldKeysRef.current.has(k) || tappedKeysRef.current.has(k);
+      if (p === "inside" && !freeViewRef.current && !resetTransition.current.active) {
+        const l = look.current;
+        const rotSpeed = 1.6;
+        const fovSpeed = 40;
+        if (isActiveKey("arrowleft") || isActiveKey("q") || isActiveKey("a")) l.targetYaw += rotSpeed * keyDt;
+        if (isActiveKey("arrowright") || isActiveKey("d")) l.targetYaw -= rotSpeed * keyDt;
+        if (isActiveKey("arrowup") || isActiveKey("z") || isActiveKey("w")) {
+          l.targetPitch = Math.min(0.9, l.targetPitch + rotSpeed * 0.8 * keyDt);
+        }
+        if (isActiveKey("arrowdown") || isActiveKey("s")) {
+          l.targetPitch = Math.max(-0.9, l.targetPitch - rotSpeed * 0.8 * keyDt);
+        }
+        if (isActiveKey("+")) targetFovRef.current = Math.max(14, targetFovRef.current - fovSpeed * keyDt);
+        if (isActiveKey("-")) targetFovRef.current = Math.min(75, targetFovRef.current + fovSpeed * keyDt);
+      } else if ((p === "outside" || (p === "inside" && freeViewRef.current))
+        && (!resetTransition.current.active || resetTransition.current.canInterrupt)) {
+        let azimuth = 0;
+        let elevation = 0;
+        let zoomGesture = 0;
+        const orbitSpeed = 1.0;
+        const dollySpeed = 1.2;
+        if (isActiveKey("arrowleft")) azimuth += orbitSpeed * keyDt;
+        if (isActiveKey("arrowright")) azimuth -= orbitSpeed * keyDt;
+        if (isActiveKey("arrowup")) elevation += orbitSpeed * 0.75 * keyDt;
+        if (isActiveKey("arrowdown")) elevation -= orbitSpeed * 0.75 * keyDt;
+        if (isActiveKey("+")) zoomGesture -= dollySpeed * keyDt;
+        if (isActiveKey("-")) zoomGesture += dollySpeed * keyDt;
+        if (azimuth !== 0 || elevation !== 0 || zoomGesture !== 0) {
+          stepKeyboardExploration(azimuth, elevation, zoomGesture);
+        }
+      }
+      tappedKeysRef.current.clear();
+    }
 
     // Gestion du FOV (zoom)
     if (cam instanceof THREE.PerspectiveCamera) {
@@ -531,7 +620,7 @@ export default function CameraRig({
           cinematic.pos.set(1.25 + 6.05 * setback, 2.8, trip.doorZ - 2.65 * setback);
           const approach = ease(trip.elapsed / 1.15);
           cam.position.lerpVectors(a.from, cinematic.pos, approach);
-          cinematic.matrix.lookAt(cam.position,cinematic.target,CAMERA_UP);
+          cinematic.matrix.lookAt(cinematic.pos, cinematic.target, CAMERA_UP);
           cinematic.quaternion.setFromRotationMatrix(cinematic.matrix);
           cam.quaternion.slerpQuaternions(a.fromQ, cinematic.quaternion, approach);
         } else {
@@ -585,6 +674,7 @@ export default function CameraRig({
           look.current.yaw = look.current.targetYaw = rotation.y;
           look.current.pitch = look.current.targetPitch = rotation.x;
           seatXRef.current = activeEyePos.x;
+          seatYRef.current = activeEyePos.y;
           seatZRef.current = activeEyePos.z;
         }
       }
@@ -598,15 +688,15 @@ export default function CameraRig({
       l.pitch += (l.targetPitch - l.pitch) * lookBlend;
       cam.rotation.set(l.pitch, l.yaw, 0, "YXZ");
 
-      // Glissement fluide de siège latéral et le long de l'allée
+      // Glissement fluide de siège latéral, vertical et le long de l'allée
       const seatBlend = reducedMotion ? 1 : Math.min(1, dt * 5.5);
-      const targetZ = currentSeatZ ?? SEAT_EYE.z;
       seatXRef.current += (currentSeatX - seatXRef.current) * seatBlend;
-      seatZRef.current += (targetZ - seatZRef.current) * seatBlend;
+      seatYRef.current += (eyeY - seatYRef.current) * seatBlend;
+      seatZRef.current += (seatZ - seatZRef.current) * seatBlend;
 
       cam.position.set(
         seatXRef.current,
-        eyeY,
+        seatYRef.current,
         seatZRef.current,
       );
     }

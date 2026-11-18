@@ -96,6 +96,7 @@ export default function BusExperience() {
   const [showTheoryAge, setShowTheoryAge] = useState(false);
   const [joining, setJoining] = useState(false);
   const [boardingFromSeat, setBoardingFromSeat] = useState(false);
+  const [hasExitedInSession, setHasExitedInSession] = useState(false);
   const [passengerProfiles, setPassengerProfiles] = useState<PassengerProfile[]>([]);
   const [currentPassengerSeatIndex, setCurrentPassengerSeatIndex] = useState<number | null>(null);
   const [currentPassengerEntryNumber, setCurrentPassengerEntryNumber] = useState<number | null>(null);
@@ -334,6 +335,7 @@ export default function BusExperience() {
     phase,
     seatRow,
     setSeatRow,
+    setSeatColumn,
     profileRevision,
     setPassengerProfiles,
     seatCapacityRef,
@@ -397,7 +399,7 @@ export default function BusExperience() {
     unlockAudio();
     emitBusAudioEvent("tvPrepare");
     setJoining(true);
-    setBoardingFromSeat(false);
+    setBoardingFromSeat(hasRegisteredSeat && !hasExitedInSession);
     setTvOn(true);
     transitionPhase("entering");
     if (hasRegisteredSeat) {
@@ -464,7 +466,9 @@ export default function BusExperience() {
       // Une inscription déjà présente au chargement correspond au personnage
       // que l'on voit assis depuis l'extérieur. Seule la caméra le rejoint.
       // Après une sortie dans cette session, il doit en revanche remonter à pied.
-      setBoardingFromSeat(false);
+      if (d.added || d.seatIndex === null) {
+        setBoardingFromSeat(false);
+      }
       setRegistrationPending(false);
       setCurrentPassengerSeatIndex(d.seatIndex);
       setCurrentPassengerEntryNumber((previous) =>
@@ -507,10 +511,10 @@ export default function BusExperience() {
       if (!isRetryableRegistrationError(error)) {
         pendingRegistrationProfileRef.current = null;
         setRegistrationPending(false);
+        setBoardingFromSeat(false);
         if (submission) {
           setTvOn(false);
           transitionPhase("outside");
-          setBoardingFromSeat(false);
           handleOpenOnboardingModal(
             "boarding",
             error instanceof ApiError ? error.message : "Nom refusé par le serveur.",
@@ -542,7 +546,7 @@ export default function BusExperience() {
       enteringLockRef.current = false;
       setJoining(false);
     }
-  }, [applyBusSnapshot, dismissToast, phase, sceneAvailable, showToast, restoreSavedProfile, handleOpenOnboardingModal, transitionPhase]);
+  }, [applyBusSnapshot, dismissToast, hasExitedInSession, phase, sceneAvailable, showToast, restoreSavedProfile, handleOpenOnboardingModal, transitionPhase]);
 
   const handleSubmitOnboarding = useCallback((submission: OnboardingSubmission) => {
     const validated = validateOnboarding(submission);
@@ -574,6 +578,8 @@ export default function BusExperience() {
       clearProfile();
       setTvOn(false);
       setHasEntered(false);
+      setHasExitedInSession(true);
+      setBoardingFromSeat(false);
       setCurrentPassengerSeatIndex(null);
       setCurrentPassengerEntryNumber(null);
       setSeatColumn(null);
@@ -590,6 +596,8 @@ export default function BusExperience() {
   // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
   const exitBus = useCallback(() => {
     if (phase !== "inside") return;
+    setHasExitedInSession(true);
+    setBoardingFromSeat(false);
     dismissToast();
     transitionPhase("exiting");
     playDing();
@@ -597,6 +605,7 @@ export default function BusExperience() {
 
   const onArrived = useCallback((p: "inside" | "outside") => {
     setFreeView(false);
+    setBoardingFromSeat(false);
     if (p === "inside") setHasEntered(true);
     transitionPhase(p);
   }, [transitionPhase]);
@@ -696,6 +705,7 @@ export default function BusExperience() {
         hasEntered={hasEntered}
         boardingPending={joining}
         boardingFromSeat={boardingFromSeat}
+        visitorSeatedOutside={!hasExitedInSession && phase === "outside"}
         passengerProfiles={passengerProfiles}
         profileRevision={profileRevision}
         currentPassengerSeatIndex={currentPassengerSeatIndex}

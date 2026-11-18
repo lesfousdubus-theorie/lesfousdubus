@@ -50,19 +50,23 @@ export default function BusDoors({ doors, numRows, focusZ, mats, phase, journey,
 
 type DoorPart = { size: [number, number, number]; position: [number, number, number] };
 
-function createClosedGeometry(parts: DoorPart[]) {
-  const shapes = parts.map(({ size, position }) => new THREE.BoxGeometry(...size).translate(...position));
+function createClosedGeometry(parts: DoorPart[], extraShapes: THREE.BufferGeometry[] = []) {
+  const shapes = [
+    ...parts.map(({ size, position }) => new THREE.BoxGeometry(...size).translate(...position)),
+    ...extraShapes,
+  ];
   const geometry = mergeGeometries(shapes, false)!;
   shapes.forEach(shape => shape.dispose());
   return geometry;
 }
 
-/** Les portes fermées partagent six géométries et six draw calls au total. */
+/** Les portes fermées partagent sept géométries et sept draw calls au total. */
 function ClosedDoors({ doors, capacity, mats }: { doors: BusDoorLayout[]; capacity: number; mats: Record<string, THREE.Material> }) {
   const geometries = useMemo(() => {
     const width = 1.26, front = -width / 2, rear = width / 2;
     const leafWidth = width / 2 - 0.047;
-    const body: DoorPart[] = [], dark: DoorPart[] = [], yellow: DoorPart[] = [], frame: DoorPart[] = [];
+    const body: DoorPart[] = [], dark: DoorPart[] = [], yellow: DoorPart[] = [], frame: DoorPart[] = [], chrome: DoorPart[] = [];
+    const chromeCylinders: THREE.BufferGeometry[] = [];
     for (const z of [front, rear]) {
       frame.push({ size: [DOOR_FRAME_THICKNESS, 2.26, DOOR_JAMB_HALF_Z * 2], position: [DOOR_FRAME_X, 1.63, z] });
       frame.push({ size: [DOOR_INNER_TRIM_DEPTH, 2.26, DOOR_INNER_TRIM_HALF_Z * 2], position: [DOOR_INNER_TRIM_X, 1.63, z] });
@@ -74,9 +78,17 @@ function ClosedDoors({ doors, capacity, mats }: { doors: BusDoorLayout[]; capaci
       body.push({ size: [0.07, 0.87, leafWidth - 0.05], position: [1.34, 0.965, center] });
       for (const edge of [hinge, hinge + direction * leafWidth]) dark.push({ size: [0.085, 2.2, 0.045], position: [1.36, 1.63, edge] });
       for (const y of [0.54, 1.42, 2.72]) dark.push({ size: [0.085, 0.055, leafWidth], position: [1.36, y, center] });
-      yellow.push({ size: [0.018, 0.05, leafWidth - 0.06], position: [1.382, 1.72, center] });
+      yellow.push({ size: [0.018, 0.05, leafWidth - 0.06], position: [1.376, 1.37, center] });
+      chrome.push({ size: [0.03, 0.18, 0.022], position: [1.411, 1.34, hinge + direction * (leafWidth - 0.09)] });
+      for (const y of [0.63, 2.55]) {
+        chromeCylinders.push(new THREE.CylinderGeometry(0.035, 0.035, 0.15, 8).translate(1.34, y, hinge));
+      }
     }
     dark.push({ size: [DOOR_FRAME_THICKNESS, 0.08, width], position: [DOOR_FRAME_X, 2.76, 0] });
+    const railCylinders = [
+      new THREE.CylinderGeometry(0.027, 0.027, 2.08, 10).translate(1.1, 1.68, rear + 0.1),
+      new THREE.CylinderGeometry(0.022, 0.022, 0.14, 8).rotateZ(Math.PI / 2).translate(1.17, 2.7, rear + 0.1),
+    ];
     const glassParts = [1, -1].map(direction => {
       const hinge = direction > 0 ? front + 0.045 : rear - 0.045;
       return new THREE.PlaneGeometry(leafWidth - 0.07, 1.28).rotateY(Math.PI / 2).translate(1.34, 2.065, hinge + direction * leafWidth / 2);
@@ -84,9 +96,9 @@ function ClosedDoors({ doors, capacity, mats }: { doors: BusDoorLayout[]; capaci
     const glass = mergeGeometries(glassParts, false)!;
     glassParts.forEach(shape => shape.dispose());
     return {
-      body: createClosedGeometry(body), dark: createClosedGeometry(dark), yellow: createClosedGeometry(yellow),
-      bodyDark: createClosedGeometry(frame), windowGlass: glass,
-      floor: createClosedGeometry([{ size: [0.94, 0.1, width - 0.1], position: [0.88, 0.58, 0] }]),
+      body: createClosedGeometry(body), dark: createClosedGeometry(dark), yellow: createClosedGeometry(yellow, railCylinders),
+      chrome: createClosedGeometry(chrome, chromeCylinders), bodyDark: createClosedGeometry(frame), windowGlass: glass,
+      floor: createClosedGeometry([{ size: [0.96, 0.1, width], position: [0.88, 0.58, 0] }]),
     };
   }, []);
   useEffect(() => () => Object.values(geometries).forEach(geometry => geometry.dispose()), [geometries]);

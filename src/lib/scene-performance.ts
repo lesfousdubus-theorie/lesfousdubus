@@ -6,8 +6,8 @@ export function createDprSample(baseDpr: number) {
 export function sampleSceneDpr(sample: ReturnType<typeof createDprSample>, dt: number, baseDpr: number, minimumDpr: number) {
   if (!Number.isFinite(dt) || dt <= 0) return null;
   // Le frame loop est suspendu lorsque l'onglet est caché ; cette borne protège
-  // seulement d'une pause exceptionnelle du navigateur ou du débogueur.
-  sample.elapsed += Math.min(dt, 2);
+  // d'un gel ponctuel du navigateur ou d'une reprise de contexte sans fausser le DPR.
+  sample.elapsed += Math.min(dt, 0.25);
   sample.frames += 1;
   if (sample.elapsed < 2) return null;
   const fps = sample.frames / sample.elapsed;

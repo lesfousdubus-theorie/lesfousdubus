@@ -16,7 +16,7 @@ interface BusTvFrameProps {
   idx: number;
   tvOn: boolean;
   isActive: boolean;
-  visible: boolean;
+  visible?: boolean;
   mats: Record<string, THREE.Material>;
   tvOffTex: THREE.CanvasTexture;
   posterTex: THREE.Texture;
@@ -28,18 +28,17 @@ export function BusTvFrame({
   pos,
   idx,
   tvOn,
-  isActive: _isActive,
-  visible,
+  isActive,
+  visible = true,
   mats,
   tvOffTex,
-  posterTex: _posterTex,
+  posterTex,
   partyCards,
   reducedMotion,
 }: BusTvFrameProps) {
-  void _isActive;
-  void _posterTex;
+  const showPoster = tvOn && !partyCards && !isActive;
   return (
-    <group name="bus-tv-frame" userData={{ index: idx }} key={`tv-frame-${idx}-${pos[2]}`} position={pos} visible={visible}>
+    <group name="bus-tv-frame" userData={{ index: idx }} position={pos} visible={visible}>
       <mesh material={mats.dark} castShadow>
         <boxGeometry args={[1.36, 0.82, 0.08]} />
       </mesh>
@@ -61,11 +60,11 @@ export function BusTvFrame({
         <mesh name="bus-tv-display" position={[0, 0, 0.053]}>
           <planeGeometry args={[TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT]} />
           <meshStandardMaterial
-            map={tvOffTex}
-            color="#05070b"
+            map={showPoster ? posterTex : tvOffTex}
+            color={showPoster ? "#ffffff" : "#05070b"}
             emissive="#ffffff"
-            emissiveMap={tvOffTex}
-            emissiveIntensity={0}
+            emissiveMap={showPoster ? posterTex : tvOffTex}
+            emissiveIntensity={showPoster ? 0.65 : 0}
             roughness={tvOn ? 0.35 : 0.25}
             metalness={tvOn ? 0.1 : 0.8}
             toneMapped={false}
@@ -79,6 +78,7 @@ export function BusTvFrame({
 interface BusTvPlayerProps {
   pos: [number, number, number];
   tvOn: boolean;
+  partyOn?: boolean;
   phase: Phase;
   freeView: boolean;
   busGroup: React.RefObject<THREE.Group | null>;
@@ -94,6 +94,7 @@ interface BusTvPlayerProps {
 export function BusTvPlayer({
   pos,
   tvOn,
+  partyOn = false,
   phase,
   freeView,
   busGroup,
@@ -117,6 +118,7 @@ export function BusTvPlayer({
   const partyAudioRef = useRef(false);
   const resumeAfterPartyRef = useRef(false);
   const manualPauseRef = useRef(false);
+  const endedRef = useRef(false);
   const reportPlayback = useCallback((active: boolean) => {
     if (playbackActiveRef.current === active) return;
     playbackActiveRef.current = active;
@@ -125,6 +127,7 @@ export function BusTvPlayer({
   }, [onPlaybackChange]);
   const desiredRef = useRef({
     tvOn,
+    partyOn,
     phase,
     freeView,
     hasEntered,
@@ -191,6 +194,7 @@ export function BusTvPlayer({
     stopWarmup();
     stopVolumeRamp();
     manualPauseRef.current = false;
+    endedRef.current = false;
     disconnectRef.current?.();
     disconnectRef.current = null;
     playerRef.current = null;
@@ -204,7 +208,7 @@ export function BusTvPlayer({
 
   const shouldPlay = useCallback(() => {
     const desired = desiredRef.current;
-    return !partyAudioRef.current && desired.hasEntered && desired.tvOn && desired.phase !== "entering"
+    return !partyAudioRef.current && !desired.partyOn && desired.hasEntered && desired.tvOn && desired.phase !== "entering"
       && !desired.isMutedForFullscreen && !desired.playbackSuspended;
   }, []);
 
@@ -212,8 +216,9 @@ export function BusTvPlayer({
     const player = playerRef.current;
     if (!player || warmingRef.current) return;
     const desired = desiredRef.current;
+    if (fromClick) endedRef.current = false;
     try {
-      if (!shouldPlay() || (!fromClick && manualPauseRef.current)) {
+      if (!shouldPlay() || (!fromClick && (manualPauseRef.current || endedRef.current))) {
         clearStartTimer();
         stopVolumeRamp();
         if (!shouldPlay()) {
@@ -253,24 +258,25 @@ export function BusTvPlayer({
     const previous = desiredRef.current;
     if (!previous.tvOn && tvOn) {
       manualPauseRef.current = false;
+      endedRef.current = false;
     }
     if (partyAudioRef.current && hasEntered && tvOn && phase !== "entering"
       && (previous.tvOn !== tvOn || previous.hasEntered !== hasEntered || previous.phase !== phase)) {
       resumeAfterPartyRef.current = true;
     }
-    desiredRef.current = { tvOn, phase, freeView, hasEntered, isMutedForFullscreen, playbackSuspended };
+    desiredRef.current = { tvOn, partyOn, phase, freeView, hasEntered, isMutedForFullscreen, playbackSuspended };
     if (hasEntered && warmingRef.current) {
       stopWarmup();
       try { playerRef.current?.seekTo(0, true); } catch { queueMicrotask(failPlayer); return; }
     }
     applyDesiredPlayback();
-  }, [tvOn, phase, freeView, hasEntered, isMutedForFullscreen, playbackSuspended, applyDesiredPlayback, stopWarmup, failPlayer]);
+  }, [tvOn, partyOn, phase, freeView, hasEntered, isMutedForFullscreen, playbackSuspended, applyDesiredPlayback, stopWarmup, failPlayer]);
 
   // A pending start can reserve audio only for the bounded start attempt.
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (!playerRef.current || warmingRef.current) return;
-      if (manualPauseRef.current) {
+      if (manualPauseRef.current || endedRef.current) {
         reportPlayback(false);
         return;
       }
@@ -333,7 +339,15 @@ export function BusTvPlayer({
           target.playVideo();
         },
         onStateChange: ({ target, data }) => {
+          if (data === 0) {
+            endedRef.current = true;
+            clearStartTimer();
+            stopVolumeRamp();
+            reportPlayback(false);
+            return;
+          }
           if (data === 1) {
+            endedRef.current = false;
             resetInitialCaptions(target);
             if (!warmingRef.current && shouldPlay()) {
               manualPauseRef.current = false;
@@ -350,7 +364,7 @@ export function BusTvPlayer({
             return;
           }
           if (startTimerRef.current !== null && shouldPlay()) return;
-          reportPlayback(!warmingRef.current && !manualPauseRef.current && shouldPlay() && isYouTubePlaybackActive(data, playbackActiveRef.current));
+          reportPlayback(!warmingRef.current && !manualPauseRef.current && !endedRef.current && shouldPlay() && isYouTubePlaybackActive(data, playbackActiveRef.current));
         },
         onAutoplayBlocked: () => {
           if (warmingRef.current) stopWarmup();
@@ -399,6 +413,7 @@ export function BusTvPlayer({
     };
     const onUserPlay = () => {
       manualPauseRef.current = false;
+      endedRef.current = false;
       if (!shouldPlay()) return;
       if (!disconnectRef.current) {
         setPlayerStatus("loading");
@@ -414,6 +429,7 @@ export function BusTvPlayer({
       desiredRef.current.tvOn = enabled;
       if (enabled) {
         manualPauseRef.current = false;
+        endedRef.current = false;
         onUserPlay();
       }
       else applyDesiredPlayback();
@@ -425,7 +441,7 @@ export function BusTvPlayer({
     const desired = desiredRef.current;
     const trip = journey.current;
     const player = playerRef.current;
-    if (!player || !shouldPlay() || warmingRef.current || manualPauseRef.current) return;
+    if (!player || !shouldPlay() || warmingRef.current || manualPauseRef.current || endedRef.current) return;
     const state = dynamicVolume.current;
     let volume: number;
     if (desired.phase === "exiting" && trip.phase === "exiting") {
@@ -446,15 +462,23 @@ export function BusTvPlayer({
     } catch { /* The iframe may be changing state. */ }
   });
 
+  const handleActivate = useCallback(() => {
+    endedRef.current = false;
+    manualPauseRef.current = false;
+    emitBusAudioEvent("tvPlay");
+  }, []);
+
   const isScreenOn = useCallback(() => shouldPlay() && !warmingRef.current, [shouldPlay]);
+  const interactive = tvOn && phase === "inside" && !freeView && !partyOn && !isMutedForFullscreen;
   const showRetry = playerStatus === "blocked" || playerStatus === "error";
 
   return <group position={pos}>
-    <BusTvScreen isOn={isScreenOn} interactive={tvOn && phase === "inside" && !isMutedForFullscreen}>
+    <BusTvScreen isOn={isScreenOn} interactive={interactive}>
       <div ref={setMountElement} data-bus-youtube-player style={{ width: "100%", height: "100%" }} />
       {showRetry && (
         <div
           data-bus-tv-overlay=""
+          style={{ pointerEvents: "none" }}
           onPointerDown={(e) => e.stopPropagation()}
           className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#07142b] px-6 py-4 text-center text-white sm:gap-4"
         >
@@ -465,8 +489,9 @@ export function BusTvPlayer({
           </p>
           <button
             type="button"
+            style={{ pointerEvents: interactive ? "auto" : "none" }}
             onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => emitBusAudioEvent("tvPlay")}
+            onClick={handleActivate}
             aria-label={playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
             className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-[#ffd23f] px-6 py-2.5 text-lg font-black text-[#07142b] shadow-lg transition hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] sm:px-7 sm:py-3 sm:text-2xl"
           >
@@ -477,6 +502,7 @@ export function BusTvPlayer({
               href={THEORY_VIDEO_URL}
               target="_blank"
               rel="noopener noreferrer"
+              style={{ pointerEvents: interactive ? "auto" : "none" }}
               onPointerDown={(e) => e.stopPropagation()}
               className="inline-flex min-h-11 items-center justify-center rounded-lg px-3 py-1.5 text-base font-bold underline underline-offset-4 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] sm:text-xl"
             >

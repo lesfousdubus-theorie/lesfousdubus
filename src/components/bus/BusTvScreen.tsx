@@ -7,7 +7,7 @@ import * as THREE from "three";
 
 export const TV_SCREEN_WIDTH = 1.26;
 export const TV_SCREEN_HEIGHT = TV_SCREEN_WIDTH * 9 / 16;
-const SCREEN_Z = 0.054;
+const SCREEN_Z = 0.056;
 const PLAYER_WIDTH = 560;
 const PLAYER_HEIGHT = 315;
 const screenOrigin = () => [0, 0];
@@ -102,6 +102,8 @@ export default function BusTvScreen({ isOn, interactive, children }: {
   useFrame(() => {
     const screen = aperture.current;
     if (!screen || !frame.current) return;
+    camera.updateMatrixWorld();
+    screen.updateMatrixWorld();
     let visible = false;
     if (isOn() && screen.worldToLocal(camera.getWorldPosition(scratch.cameraLocal)).z > 0) {
       const screenToView = scratch.screenToView.multiplyMatrices(camera.matrixWorldInverse, screen.matrixWorld);
@@ -115,6 +117,11 @@ export default function BusTvScreen({ isOn, interactive, children }: {
     }
     screen.visible = visible;
     if (visible) projectFrame();
+    if (Boolean(document.fullscreenElement)) {
+      if (frame.current.style.visibility !== "visible") frame.current.style.visibility = "visible";
+      if (frame.current.style.pointerEvents !== "auto") frame.current.style.pointerEvents = "auto";
+      return;
+    }
     const visibility = visible ? "visible" : "hidden";
     if (frame.current.style.visibility !== visibility) frame.current.style.visibility = visibility;
     if (!visible || !interactive) {
@@ -122,6 +129,23 @@ export default function BusTvScreen({ isOn, interactive, children }: {
       writeTvPointerHit(surfaceRef.current, false);
     }
   });
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      const html = frame.current;
+      if (!html) return;
+      if (Boolean(document.fullscreenElement)) {
+        html.style.visibility = "visible";
+        html.style.pointerEvents = "auto";
+      } else {
+        html.style.visibility = aperture.current?.visible ? "visible" : "hidden";
+        html.style.pointerEvents = "none";
+        writeTvPointerHit(surfaceRef.current, false);
+      }
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
 
   useEffect(() => {
     const canvas = gl.domElement;
@@ -140,6 +164,16 @@ export default function BusTvScreen({ isOn, interactive, children }: {
       const screen = aperture.current;
       const html = frame.current;
       if (!screen || !html) {
+        writeTvPointerHit(surface, false);
+        return;
+      }
+      if (Boolean(document.fullscreenElement)) {
+        html.style.visibility = "visible";
+        html.style.pointerEvents = "auto";
+        return;
+      }
+      if ("touches" in event && (event as TouchEvent).touches.length >= 2) {
+        html.style.pointerEvents = "none";
         writeTvPointerHit(surface, false);
         return;
       }
@@ -184,6 +218,13 @@ export default function BusTvScreen({ isOn, interactive, children }: {
     }
 
     function onPointerLeave() {
+      if (Boolean(document.fullscreenElement)) {
+        if (frame.current) {
+          frame.current.style.visibility = "visible";
+          frame.current.style.pointerEvents = "auto";
+        }
+        return;
+      }
       if (frame.current) frame.current.style.pointerEvents = "none";
       writeTvPointerHit(surface, false);
     }
@@ -196,7 +237,7 @@ export default function BusTvScreen({ isOn, interactive, children }: {
     return () => {
       writeTvPointerHit(surface, false);
       if (surfaceRef.current === surface) surfaceRef.current = null;
-      if (htmlFrame) htmlFrame.style.pointerEvents = "none";
+      if (htmlFrame && !document.fullscreenElement) htmlFrame.style.pointerEvents = "none";
       surface.removeEventListener("pointermove", updatePointer as EventListener, true);
       surface.removeEventListener("pointerover", updatePointer as EventListener, true);
       surface.removeEventListener("pointerdown", updatePointer as EventListener, true);
@@ -210,7 +251,8 @@ export default function BusTvScreen({ isOn, interactive, children }: {
       onBeforeRender={projectFrame}>
       <planeGeometry args={[TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT]} />
       <shaderMaterial vertexShader={vertexShader} fragmentShader={fragmentShader}
-        blending={THREE.NoBlending} toneMapped={false} />
+        blending={THREE.NoBlending} toneMapped={false}
+        polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
     </mesh>
     <Html calculatePosition={screenOrigin} onOcclude={keepPortalMounted} zIndexRange={[1, 0]} position={[0, 0, SCREEN_Z]}
       style={{ position: "absolute", top: 0, left: 0, userSelect: "none", pointerEvents: "none" }}>

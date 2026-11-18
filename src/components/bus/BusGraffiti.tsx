@@ -51,21 +51,29 @@ export default function BusGraffiti({ doors, rearWallZ, wheelPositions }: {
   }, [resources]);
 
   // One instanced batch per slogan, even when the bus spans many doors.
-  const batches = useMemo(() => {
+  const tags = useMemo(() => {
     const axles = [...new Set(wheelPositions.map(([, z]) => z))];
-    const tags = getBusGraffitiPlacements(doors, rearWallZ, axles);
-    const byMessage = new Map<number, typeof tags>();
-    for (const tag of tags) {
-      const group = byMessage.get(tag.message);
-      if (group) group.push(tag);
-      else byMessage.set(tag.message, [tag]);
+    return getBusGraffitiPlacements(doors, rearWallZ, axles);
+  }, [doors, rearWallZ, wheelPositions]);
+  const tagsKey = tags.map(({ message, side, z, width }) => `${message}:${side}:${z}:${width}`).join("|");
+
+  const batches = useMemo(() => {
+    if (!tagsKey) return [];
+    const byMessage = new Map<number, Array<{ side: number; z: number; width: number }>>();
+    for (const entry of tagsKey.split("|")) {
+      const [messageStr, sideStr, zStr, widthStr] = entry.split(":");
+      const message = Number(messageStr);
+      const item = { side: Number(sideStr), z: Number(zStr), width: Number(widthStr) };
+      const group = byMessage.get(message);
+      if (group) group.push(item);
+      else byMessage.set(message, [item]);
     }
     const transform = new THREE.Object3D();
     return [...byMessage].map(([message, instances]) => {
       const mesh = new THREE.InstancedMesh(resources.geometry, resources.materials[message], instances.length);
       mesh.name = `bus-side-slogan-${THEORY_SIGN_MESSAGES[message].id}`;
       instances.forEach(({ side, width, z }, index) => {
-        transform.position.set(side * 1.352, SIDE_LABEL_Y, z);
+        transform.position.set(side * 1.342, SIDE_LABEL_Y, z);
         transform.rotation.y = side * Math.PI / 2;
         transform.scale.set(width, Math.min(.78, width / 3), 1);
         transform.updateMatrix();
@@ -74,7 +82,7 @@ export default function BusGraffiti({ doors, rearWallZ, wheelPositions }: {
       mesh.computeBoundingSphere();
       return mesh;
     });
-  }, [doors, rearWallZ, wheelPositions, resources]);
+  }, [tagsKey, resources]);
 
   useEffect(() => () => batches.forEach(mesh => mesh.dispose()), [batches]);
 

@@ -53,18 +53,28 @@ export default function BusFront({
           <cylinderGeometry args={[FRONT_BADGE_RADIUS, FRONT_BADGE_RADIUS, 0.025, 32]} />
         </mesh>
         {/* Fond sombre rond puis logo complet, ajusté dans le diamètre intérieur. */}
-        <mesh position={[0, 0, -0.014]} rotation={[0, Math.PI, 0]}>
+        <mesh position={[0, 0, -0.017]} rotation={[0, Math.PI, 0]}>
           <circleGeometry args={[0.24, 32]} />
           <meshStandardMaterial
             color="#101214"
             roughness={0.2}
             metalness={0.1}
             side={THREE.DoubleSide}
+            polygonOffset
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-1}
           />
         </mesh>
-        <mesh position={[0, 0, -0.017]} rotation={[0, Math.PI, 0]}>
+        <mesh position={[0, 0, -0.022]} rotation={[0, Math.PI, 0]}>
           <planeGeometry args={[0.334, 0.334]} />
-          <meshStandardMaterial map={montCorvoTex} roughness={0.2} metalness={0.1} />
+          <meshStandardMaterial
+            map={montCorvoTex}
+            roughness={0.2}
+            metalness={0.1}
+            polygonOffset
+            polygonOffsetFactor={-2}
+            polygonOffsetUnits={-2}
+          />
         </mesh>
       </group>
       {/* Pare-chocs chromé massif */}
@@ -72,7 +82,7 @@ export default function BusFront({
       {/* Plaque d'immatriculation avant */}
       <mesh position={[0, 0.6, -6.21]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[0.85, 0.24]} />
-        <meshStandardMaterial map={licensePlateTex} roughness={0.3} />
+        <meshStandardMaterial map={licensePlateTex} roughness={0.3} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
       {/* Bandes jaunes sur le capot */}
       {[-1, 1].map((sx) => (
@@ -146,7 +156,7 @@ export default function BusFront({
         </mesh>
       ))}
       {[-0.95, -0.7, 0.7, 0.95].map((x) => (
-        <mesh key={`roof${x}`} material={mats.orange} position={[x, 3.14, -4.65]}>
+        <mesh key={`roof${x}`} material={mats.orange} position={[x, 3.21, -4.65]}>
           <boxGeometry args={[0.16, 0.1, 0.06]} />
         </mesh>
       ))}

@@ -1,8 +1,8 @@
 "use client";
 
-import { Component, useEffect, useRef, useState, type ReactNode } from "react";
+import { Component, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
-import { OrthographicCamera } from "@react-three/drei";
 import { createJourneyState } from "@/lib/bus-journey";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
@@ -63,18 +63,32 @@ function createPreviewJourney() {
 
 function PreviewCharacter({ avatarId, rotation }: { avatarId: PassengerAvatarId; rotation: number }) {
   const journey = useRef(createPreviewJourney());
-  const size = useThree(state => state.size);
+  const size = useThree((state) => state.size);
+  const get = useThree((state) => state.get);
+  const invalidate = useThree((state) => state.invalidate);
   const rig = getPassengerSkeleton(avatarId);
   const proportions = getPassengerProportions(avatarId);
   const height = rig.standingHipHeight + rig.neckAboveHip + rig.headAboveNeck + proportions.headHeight / 2 + 0.32;
-  return <>
-    <OrthographicCamera makeDefault position={[0, height / 2, 5]} zoom={size.height / (height * 1.15)} />
-    {/* Les personnages regardent vers -Z ; la caméra de l’aperçu est côté +Z. */}
+
+  useLayoutEffect(() => {
+    const cam = get().camera;
+    cam.position.set(0, height / 2, 5);
+    cam.lookAt(0, height / 2, 0);
+    if (cam instanceof THREE.OrthographicCamera) {
+      cam.zoom = size.height / (height * 1.15);
+      cam.updateProjectionMatrix();
+    }
+    cam.updateMatrixWorld();
+    invalidate();
+  }, [get, height, invalidate, size.height, size.width]);
+
+  return (
+    /* Les personnages regardent vers -Z ; la caméra de l’aperçu est côté +Z. */
     <group rotation={[0, Math.PI + rotation, 0]}>
-    <BoardingAvatar key={avatarId} journey={journey} avatarId={avatarId} passengerIndex={0} physicalSeatIndex={0}
-      partyOn={false} hornPulse={0} reducedMotion />
+      <BoardingAvatar key={avatarId} journey={journey} avatarId={avatarId} passengerIndex={0} physicalSeatIndex={0}
+        partyOn={false} hornPulse={0} reducedMotion />
     </group>
-  </>;
+  );
 }
 
 export default function AvatarPreview({
@@ -87,10 +101,16 @@ export default function AvatarPreview({
   onFallbackChange?: (active: boolean) => void;
 }) {
   const webGLSupported = useWebGLSupport();
+  const [contextLost, setContextLost] = useState(false);
   const onFallbackChangeRef = useRef(onFallbackChange);
+  const cleanupContextListenersRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     onFallbackChangeRef.current = onFallbackChange;
   }, [onFallbackChange]);
+  useEffect(() => () => {
+    cleanupContextListenersRef.current?.();
+    cleanupContextListenersRef.current = null;
+  }, []);
 
   if (webGLSupported === false) {
     return <FallbackNotice
@@ -103,14 +123,44 @@ export default function AvatarPreview({
   }
 
   return <PreviewBoundary onFallbackChange={onFallbackChange}>
-    <Canvas orthographic frameloop="demand" dpr={[1, 1.5]} camera={{ position: [0, 1, 5], zoom: 100 }}
-      gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
-      onCreated={() => onFallbackChangeRef.current?.(false)}
-      fallback={<p className="p-5 text-center text-sm text-[#d8e3ff]">Ton appareil ne permet pas l’aperçu 3D. Les flèches restent disponibles pour choisir.</p>}>
-      <ambientLight intensity={1.5} />
-      <directionalLight position={[3, 5, 4]} intensity={3} />
-      <directionalLight position={[-3, 2, -2]} intensity={1.2} color="#a9c8ff" />
-      <PreviewCharacter avatarId={avatarId} rotation={rotation} />
-    </Canvas>
+    <div className="relative h-full w-full">
+      <Canvas orthographic frameloop="demand" dpr={[1, 1.5]} camera={{ position: [0, 1, 5], zoom: 100 }}
+        gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
+        onCreated={({ gl, invalidate }) => {
+          cleanupContextListenersRef.current?.();
+          const canvas = gl.domElement;
+          const onLost = (event: Event) => {
+            event.preventDefault();
+            setContextLost(true);
+          };
+          const onRestored = () => {
+            gl.resetState();
+            setContextLost(false);
+            invalidate();
+          };
+          canvas.addEventListener("webglcontextlost", onLost, false);
+          canvas.addEventListener("webglcontextrestored", onRestored, false);
+          cleanupContextListenersRef.current = () => {
+            canvas.removeEventListener("webglcontextlost", onLost, false);
+            canvas.removeEventListener("webglcontextrestored", onRestored, false);
+          };
+          setContextLost(false);
+          onFallbackChangeRef.current?.(false);
+        }}
+        fallback={<p className="p-5 text-center text-sm text-[#d8e3ff]">Ton appareil ne permet pas l’aperçu 3D. Les flèches restent disponibles pour choisir.</p>}>
+        <ambientLight intensity={1.5} />
+        <directionalLight position={[3, 5, 4]} intensity={3} />
+        <directionalLight position={[-3, 2, -2]} intensity={1.2} color="#a9c8ff" />
+        <PreviewCharacter avatarId={avatarId} rotation={rotation} />
+      </Canvas>
+      {contextLost && (
+        <div className="absolute inset-0 bg-[#0c1b3a]">
+          <FallbackNotice
+            message="L’aperçu 3D a été suspendu par l’appareil. Les flèches restent disponibles pour choisir."
+            onFallbackChange={onFallbackChange}
+          />
+        </div>
+      )}
+    </div>
   </PreviewBoundary>;
 }

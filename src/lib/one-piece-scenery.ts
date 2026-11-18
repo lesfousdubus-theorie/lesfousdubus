@@ -11,6 +11,32 @@ export function setElbafWaterTime(time: number) {
   elbafFlowTime.value = time;
 }
 
+const TERRAIN_RELIEF = [1.1, 0.32, 0.55, 0.65, 1.05, 0.45, 0.64, 0.25];
+
+function smoothstep(start: number, end: number, value: number) {
+  const t = THREE.MathUtils.clamp((value - start) / (end - start), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+function sceneryTerrainHeight(zone: number, x: number, z: number) {
+  const wave = Math.sin(z * 0.11 + x * 0.21 + zone) * 0.5 + Math.sin(z * 0.23 - x * 0.13) * 0.27;
+  const shoulder = smoothstep(7, 17, Math.abs(x));
+  const shore = 1 - smoothstep(38, 48, Math.abs(x));
+  const canal = zone === 1 ? 1 - smoothstep(1.4, 3.5, Math.abs(Math.abs(x) - 22)) : 0;
+  const oasis = zone === 0 ? 1 - smoothstep(4.8, 9.2, Math.hypot((x + 28) / 1.2, z + 32)) : 0;
+  return 0.008 + shoulder * shore * Math.max(0, 0.35 + wave) * TERRAIN_RELIEF[zone] * (1 - canal) * (1 - oasis) - canal * 0.06;
+}
+
+function sampleMaxTerrainHeight(zone: number, x0: number, x1: number, z0: number, z1: number, step = 1.0) {
+  let max = 0.008;
+  for (let x = x0; x <= x1; x += step) {
+    for (let z = z0; z <= z1; z += step) {
+      max = Math.max(max, sceneryTerrainHeight(zone, x, z));
+    }
+  }
+  return Math.max(max, sceneryTerrainHeight(zone, x1, z1));
+}
+
 // Shared materials keep façade details in the same meshes without allocating
 // textures or lights for each destination.
 export const SCENERY_MATERIALS = {
@@ -106,7 +132,12 @@ class Builder {
     );
     const plain = geometry.index ? geometry.toNonIndexed() : geometry;
     if (plain !== geometry) geometry.dispose();
-    plain.deleteAttribute("uv");
+    for (const attr of Object.keys(plain.attributes)) {
+      if (attr !== "position" && attr !== "normal" && !(material === "elbafRainbow" && attr === "color")) {
+        plain.deleteAttribute(attr);
+      }
+    }
+    if (!plain.hasAttribute("normal")) plain.computeVertexNormals();
     plain.applyMatrix4(matrix);
     plain.computeBoundingBox();
     const bounds = plain.boundingBox!;
@@ -160,6 +191,15 @@ class Builder {
         const c = vertex(ring + 1, edge + 1), d = vertex(ring + 1, edge);
         vertices.push(...a, ...c, ...b, ...a, ...d, ...c);
       }
+    }
+    // Fermer le sommet au faîtage (ring 2) et le soffite sous ring 0 (-Y) contre le backface culling.
+    const ridgeTop: Point = [0, height, 0];
+    const soffitCenter: Point = [0, 0, 0];
+    for (let edge = 0; edge < 8; edge++) {
+      const topA = vertex(2, edge), topB = vertex(2, edge + 1);
+      vertices.push(...ridgeTop, ...topB, ...topA);
+      const botA = vertex(0, edge), botB = vertex(0, edge + 1);
+      vertices.push(...soffitCenter, ...botA, ...botB);
     }
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
@@ -227,9 +267,9 @@ function alabasta(b: Builder, lowPower: boolean) {
   }
   arch(b, -5.9, 10, 0, 2, 4.6);
   b.box("turquoise", [-6.2, 9.9, 0], [3.4, 0.16, 3.5]);
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 17; i++) {
     const x = -7.5 - i * 0.64, y = 9.5 - i * 0.59;
-    b.box(i % 3 ? "sandLight" : "cream", [x, y, 0], [0.7, 0.3, 4.1]);
+    b.box(i % 3 ? "sandLight" : "cream", [x, y - 0.14, 0], [0.7, 0.58, 4.1]);
     for (const side of [-1, 1]) b.box("sandstone", [x, y + 0.45, side * 2.4], [0.72, 0.8, 0.5]);
   }
   if (!lowPower) {
@@ -282,72 +322,73 @@ function venetianHouse(b: Builder, x: number, y: number, z: number, width: numbe
 }
 
 function waterSeven(b: Builder, lowPower: boolean) {
-  // The great fountain is deliberately taller than the surrounding roofline.
-  // Distinct pale retaining walls, turquoise ring-canals and falling water
-  // make the circular stepped silhouette visible from the cabin.
+  // La grande fontaine reste centrée dans wx <= 46 et dégagée du canal est (wx = 22, x_local = -11).
+  const cx = 2.2;
   for (let tier = 0; tier < 4; tier++) {
-    const radius = 18 - tier * 3.5, bottom = tier * 4.1;
-    b.cylinder("cream", [0, bottom + 1.8, 0], radius, radius + 0.7, 3.6, 24);
-    b.cylinder("water", [0, bottom + 3.65, 0], radius + 0.06, radius + 0.06, 0.18, 24);
-    b.ring("foam", [0, bottom + 3.77, 0], radius - 0.15, 0.16);
-    b.cylinder("turquoise", [0, bottom + 0.28, 0], radius + 0.6, radius + 0.6, 0.4, 24);
+    const radius = 10.0 - tier * 1.95, bottom = tier * 4.1;
+    b.cylinder("cream", [cx, bottom + 1.8, 0], radius, radius + 0.65, 3.6, 24);
+    b.cylinder("water", [cx, bottom + 3.65, 0], radius + 0.06, radius + 0.06, 0.18, 24);
+    b.ring("foam", [cx, bottom + 3.77, 0], radius - 0.15, 0.15);
+    b.cylinder("turquoise", [cx, bottom + 0.28, 0], radius + 0.55, radius + 0.55, 0.4, 24);
     const count = lowPower ? 6 : 10;
     for (let flow = 0; flow < count; flow++) {
       const angle = flow / count * Math.PI * 2;
       const r = radius + 0.1;
-      b.box("water", [Math.cos(angle) * r, bottom + 1.8, Math.sin(angle) * r], [0.18, 3.7, 1.6], [0, -angle, 0]);
-      if (!lowPower) b.box("foam", [Math.cos(angle) * (r + 0.08), bottom + 1.5, Math.sin(angle) * (r + 0.08)], [0.06, 2.7, 0.16], [0, -angle, 0]);
+      b.box("water", [cx + Math.cos(angle) * r, bottom + 1.8, Math.sin(angle) * r], [0.18, 3.7, 1.3], [0, -angle, 0]);
+      if (!lowPower) b.box("foam", [cx + Math.cos(angle) * (r + 0.08), bottom + 1.5, Math.sin(angle) * (r + 0.08)], [0.06, 2.7, 0.16], [0, -angle, 0]);
     }
   }
-  b.cylinder("cream", [0, 18, 0], 2.6, 4.2, 3.9, 16);
-  b.cylinder("water", [0, 20, 0], 2.7, 2.7, 0.2, 16);
-  b.cylinder("cream", [0, 21.3, 0], 1.0, 1.7, 2.5, 12);
-  b.sphere("water", [0, 22.9, 0], 1.2, [0.65, 1.4, 0.65]);
-  b.ring("foam", [0, 20.15, 0], 2.45, 0.14);
-  // A curved town nestles into the lower tiers; the west face remains open
-  // for the fountain cascade rather than hidden behind a solid city wall.
+  b.cylinder("cream", [cx, 18, 0], 2.2, 3.4, 3.9, 16);
+  b.cylinder("water", [cx, 20, 0], 2.3, 2.3, 0.2, 16);
+  b.cylinder("cream", [cx, 21.3, 0], 0.9, 1.5, 2.5, 12);
+  b.sphere("water", [cx, 22.9, 0], 1.1, [0.65, 1.4, 0.65]);
+  b.ring("foam", [cx, 20.15, 0], 2.05, 0.13);
   const houses: [number, number, number, number, number, MaterialKey][] = [
-    [-8.7, 3.8, -11.1, 3.2, 5.7, "coral"], [-2.5, 3.8, -14.6, 3.7, 7.3, "peach"],
-    [4.2, 3.8, -14.1, 4.2, 6.2, "cream"], [11.1, 3.8, -9.4, 3.5, 8.5, "blueHouse"],
-    [13.6, 3.8, 2, 3.5, 6.1, "coral"], [8.4, 3.8, 11.2, 4.1, 6.8, "peach"],
-    [-0.7, 3.8, 14.4, 3.6, 5.1, "blueHouse"], [-8.7, 3.8, 11.1, 3.3, 7.0, "coral"],
-    [5.2, 11.9, -5.1, 3.0, 6.1, "peach"], [6.7, 7.9, 7.2, 3.2, 6.8, "cream"],
+    [-2.8, 3.8, -7.2, 2.6, 5.2, "coral"], [1.5, 3.8, -9.2, 2.9, 6.4, "peach"],
+    [5.8, 3.8, -8.5, 3.1, 5.6, "cream"], [8.8, 3.8, -4.8, 2.7, 7.2, "blueHouse"],
+    [9.5, 3.8, 1.8, 2.7, 5.5, "coral"], [6.8, 3.8, 7.6, 3.0, 6.1, "peach"],
+    [1.2, 3.8, 9.2, 2.8, 4.8, "blueHouse"], [-3.2, 3.8, 7.2, 2.6, 6.2, "coral"],
+    [4.8, 11.9, -3.2, 2.4, 5.4, "peach"], [5.6, 7.9, 4.8, 2.6, 6.0, "cream"],
   ];
   houses.filter((_, i) => !lowPower || i % 2 === 0).forEach((house) => venetianHouse(b, ...house, lowPower));
-  // Galley-La's clock tower with paired clock faces and a copper dome.
-  b.cylinder("coral", [8.5, 11.5, -1.5], 1.5, 1.9, 14.5, 8);
-  b.cylinder("cream", [8.5, 18.9, -1.5], 2, 2, 0.5, 8);
-  b.dome("turquoise", [8.5, 19.2, -1.5], 2.05, [1, 1.1, 1]);
-  b.cylinder("gold", [8.5, 21.9, -1.5], 0, 0.14, 1.3, 6);
-  b.cylinder("cream", [6.93, 17.1, -1.5], 0.83, 0.83, 0.12, 16, [0, 0, Math.PI / 2]);
-  b.box("dark", [6.82, 17.28, -1.5], [0.08, 0.54, 0.08]);
-  b.box("dark", [6.81, 17.1, -1.27], [0.08, 0.08, 0.47]);
-  // Three visible arches below a pedestrian bridge over the front canal.
-  for (let step = 0; step < 13; step++) {
-    const z = -12.8 + step * 0.78;
-    const y = 1.25 + Math.sin(step / 12 * Math.PI) * 1.8;
-    b.box("cream", [-14.9, y, z], [3, 0.38, 0.84]);
+  // Tour de l'horloge Galley-La sur le haut de la fontaine.
+  b.cylinder("coral", [cx + 4.8, 11.5, -1.5], 1.4, 1.75, 14.5, 8);
+  b.cylinder("cream", [cx + 4.8, 18.9, -1.5], 1.85, 1.85, 0.5, 8);
+  b.dome("turquoise", [cx + 4.8, 19.2, -1.5], 1.9, [1, 1.1, 1]);
+  b.cylinder("gold", [cx + 4.8, 21.9, -1.5], 0, 0.14, 1.3, 6);
+  b.cylinder("cream", [cx + 3.35, 17.1, -1.5], 0.8, 0.8, 0.12, 16, [0, 0, Math.PI / 2]);
+  b.box("dark", [cx + 3.24, 17.28, -1.5], [0.08, 0.52, 0.08]);
+  b.box("dark", [cx + 3.23, 17.1, -1.27], [0.08, 0.08, 0.45]);
+  // Passerelle piétonne arquée enjambant perpendiculairement le canal (x_local = -11, wx = 22).
+  for (let step = 0; step <= 12; step++) {
+    const bx = -15.0 + step * (8.0 / 12);
+    const y = 0.55 + Math.sin(step / 12 * Math.PI) * 1.45;
+    b.box("cream", [bx, y, -8], [0.74, 0.36, 2.8]);
     for (const side of [-1, 1]) {
-      b.box("cream", [-14.9 + side * 1.45, y + 0.65, z], [0.22, 0.15, 0.85]);
-      if (step % 2 === 0) b.box("cream", [-14.9 + side * 1.45, y + 0.36, z], [0.18, 0.65, 0.18]);
+      b.box("cream", [bx, y + 0.65, -8 + side * 1.35], [0.75, 0.15, 0.22]);
+      if (step % 2 === 0) b.box("cream", [bx, y + 0.36, -8 + side * 1.35], [0.18, 0.65, 0.18]);
     }
   }
-  // Dock, Yagara Bull gondolas, Galley-La shipyard crane and warm canal lamps.
-  b.box("wood", [-16.8, 0.65, 7], [4.6, 0.22, 3.0]);
-  b.sphere("dark", [-18.2, 0.8, 12.2], 1, [0.85, 0.38, 3]);
-  b.sphere("wood", [-18.2, 1.0, 12.2], 1, [0.65, 0.14, 2.5]);
+  for (const bx of [-15.0, -7.0]) b.box("cream", [bx, 0.28, -8], [0.9, 0.56, 2.8]);
+  // Quai en bois sur pilotis ancrés au fond, Yagara Bull sur l'eau du canal et grue Galley-La.
+  b.box("wood", [-13.0, 0.65, 7.0], [2.4, 0.22, 6.0]);
+  for (const px of [-13.9, -12.1]) {
+    for (const pz of [4.4, 7.0, 9.6]) b.cylinder("wood", [px, 0.25, pz], 0.11, 0.13, 0.86, 6);
+  }
+  b.sphere("dark", [-10.6, 0.24, 11.2], 1, [0.75, 0.28, 2.5]);
+  b.sphere("wood", [-10.6, 0.38, 11.2], 1, [0.58, 0.12, 2.1]);
   if (!lowPower) {
-    // Yagara Bull avec auvent rayé et figure de proue turquoise dégagée du quai.
-    b.sphere("turquoise", [-18.2, 1.15, 9.2], 0.55, [0.8, 0.8, 1.1]);
-    b.box("coral", [-18.2, 1.68, 12.2], [1.1, 0.16, 2.2]);
-    for (const pz of [11.3, 13.1]) b.cylinder("wood", [-18.2, 1.32, pz], 0.06, 0.06, 0.72, 6);
-    // Grue navale de Galley-La sur le bord du quai, flèche orientée vers l'eau.
-    b.cylinder("metal", [-18.4, 3.45, 6.4], 0.24, 0.32, 5.4, 8);
-    b.box("metal", [-20.2, 6.0, 6.4], [4.4, 0.28, 0.3], [0, 0, -0.18]);
-    b.cylinder("gold", [-22.1, 5.2, 6.4], 0.05, 0.05, 2.2, 6);
-    b.box("wood", [-22.1, 3.9, 6.4], [1.4, 0.5, 1.1]);
-    // Lanternes chaudes sur le quai et aux abords du pont.
-    for (const [lx, ly, lz] of [[-18.7, 1.85, 5.8], [-18.7, 1.85, 8.2], [-16.2, 1.2, -13.3], [-16.2, 1.2, -2.9]]) {
+    // Yagara Bull amarré le long du quai dans le canal (wx ≈ 22.4).
+    b.sphere("turquoise", [-10.6, 0.56, 8.7], 0.48, [0.8, 0.8, 1.05]);
+    b.box("coral", [-10.6, 1.18, 11.2], [1.05, 0.14, 2.0]);
+    for (const pz of [10.4, 12.0]) b.cylinder("wood", [-10.6, 0.78, pz], 0.06, 0.06, 0.76, 6);
+    // Grue navale de Galley-La posée sur le quai, flèche orientée vers le canal (+X).
+    b.cylinder("metal", [-13.5, 3.0, 5.4], 0.22, 0.32, 6.0, 8);
+    b.box("metal", [-11.8, 5.85, 5.4], [4.0, 0.26, 0.28], [0, 0, 0.16]);
+    b.cylinder("gold", [-10.0, 4.85, 5.4], 0.05, 0.05, 2.4, 6);
+    b.box("wood", [-10.0, 3.45, 5.4], [1.3, 0.5, 1.0]);
+    // Lanternes chaudes ancrées sur le quai et aux entrées de la passerelle.
+    for (const [lx, ly, lz] of [[-13.9, 1.75, 4.4], [-13.9, 1.75, 9.6], [-15.0, 1.1, -9.8], [-7.0, 1.1, -9.8]]) {
       b.cylinder("dark", [lx, ly, lz], 0.07, 0.1, 2.2, 6);
       b.sphere("lamp", [lx, ly + 1.2, lz], 0.28);
     }
@@ -469,11 +510,15 @@ function wano(b: Builder, lowPower: boolean) {
       if (i % 2 === 0) b.box("vermilion", [x, y + 0.6, -10 + side * 1.55], [0.16, 1.3, 0.16]);
     }
   }
-  for (const z of [-12.2, -7.8]) b.cylinder("vermilion", [-15.7, 3.3, z], 0.28, 0.38, 6.2, 10);
+  for (const ax of [-16, -9]) {
+    b.box("rockLight", [ax, 0.4, -10], [0.9, 0.85, 3.2]);
+    b.box("rockLight", [ax + (ax < -12 ? -0.65 : 0.65), 0.2, -10], [0.65, 0.44, 3.1]);
+  }
+  for (const z of [-12.2, -7.8]) b.cylinder("vermilion", [-15.7, 3.2, z], 0.28, 0.38, 6.6, 10);
   b.box("vermilion", [-15.7, 5.9, -10], [0.55, 0.38, 6]);
   b.curve("jadeRoof", [[-15.7, 6.6, -13.4], [-15.7, 6.2, -10], [-15.7, 6.6, -6.6]], 0.28, 10);
   if (!lowPower) {
-    cherryTree(b, -9.8, 0.2, 11, 4.4, false);
+    cherryTree(b, -9.8, sceneryTerrainHeight(3, SET_PIECE_OFFSET_X - 9.8, 11) - 0.06, 11, 4.4, false);
     for (let i = 0; i < 5; i++) {
       const z = -7 + i * 3.5;
       b.cylinder("wood", [-11, 1.8, z], 0.09, 0.13, 3.6, 6);
@@ -610,17 +655,17 @@ function eggheadTube(b: Builder, points: Point[], radius: number, lowPower: bool
   b.curve("eggAqua", rail(-.88), .05, segments);
 }
 
-function eggheadPalm(b: Builder, x: number, z: number, height: number, lowPower: boolean) {
-  b.curve("peach", [[x, .15, z], [x + .22, height * .44, z - .13], [x + .65, height, z]], height * .064, 8);
+function eggheadPalm(b: Builder, x: number, z: number, height: number, lowPower: boolean, yBase = 0) {
+  b.curve("peach", [[x, yBase, z], [x + .22, yBase + height * .44, z - .13], [x + .65, yBase + height, z]], height * .064, 8);
   const leaves = lowPower ? 4 : 6;
   for (let i = 0; i < leaves; i++) {
     const a = i * Math.PI * 2 / leaves;
     const dx = Math.cos(a), dz = Math.sin(a);
     b.add(new THREE.SphereGeometry(1, 8, 5), i % 2 ? "leafLight" : "leaf",
-      [x + .65 + dx * height * .27, height + .1, z + dz * height * .27],
+      [x + .65 + dx * height * .27, yBase + height + .1, z + dz * height * .27],
       [0, -a, -.22], [height * .42, height * .044, height * .13]);
   }
-  b.sphere("eggOrange", [x + .64, height -.1, z], height * .08);
+  b.sphere("eggOrange", [x + .64, yBase + height - .1, z], height * .08);
 }
 
 const VEGAPUNK_LETTERS = {
@@ -747,7 +792,8 @@ function elbafLodge(b: Builder, x: number, y: number, z: number, size: number, l
   b.box("elbafCliff", [x, y + .1 * size, z], [depth * 1.04, size * .2, width * 1.04]);
   b.box("sandLight", [x, y + wall * .54, z], [depth, wall, width]);
   const shape = new THREE.Shape().moveTo(-width / 2, 0).lineTo(width / 2, 0).lineTo(0, rise).closePath();
-  const gable = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false }).translate(0, 0, -depth / 2);
+  const gableDepth = depth - 0.04;
+  const gable = new THREE.ExtrudeGeometry(shape, { depth: gableDepth, bevelEnabled: false }).translate(0, 0, -gableDepth / 2);
   b.add(gable, "elbafBark", [x, y + wall, z], [0, Math.PI / 2, 0]);
   const angle = Math.atan2(rise, span);
   for (const side of [-1, 1]) {
@@ -821,6 +867,9 @@ function elbafFalls(b: Builder, x: number, z: number, top: number, bottom: numbe
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
   geometry.computeVertexNormals();
   b.add(geometry, "elbafFalls", [0, 0, 0]);
+  if (bottom > 0.1 && bottom < 1.0) {
+    b.cylinder("elbafCliff", [x - 1.95, bottom / 2, z], width * .92, width * 1.05, bottom + .04, 12);
+  }
   b.sphere("water", [x - 1.95, bottom + .04, z], width * .95, [1.01, .052, .87]);
   for (const side of [-1, 0, 1]) {
     b.sphere("foam", [x - 2.03 - Math.abs(side) * .36, bottom + .13, z + side * width * .34],
@@ -930,7 +979,8 @@ function elbaf(b: Builder, lowPower: boolean) {
     .bezierCurveTo(-11, -1.45, -8.2, 2.4, -2.1, -2)
     .quadraticCurveTo(1.15, -.75, -.7, 1.65)
     .bezierCurveTo(-9, 3.5, -12.6, 4.25, -21, 3.04).closePath();
-  b.add(new THREE.ShapeGeometry(river, 14), "water", [0, .67, 0], [-Math.PI / 2, 0, 0]);
+  b.add(new THREE.ExtrudeGeometry(river, { depth: .72, bevelEnabled: false, curveSegments: 14 }),
+    "water", [0, -.02, 0], [-Math.PI / 2, 0, 0]);
   elbafStoneBridge(b, -9.7, -2.2, 5.85, 9.4);
 
   elbafTree(b, 8.1, 12, 17.6, 1, lowPower);
@@ -967,19 +1017,19 @@ function elbaf(b: Builder, lowPower: boolean) {
 }
 
 function eniesLobby(b: Builder, lowPower: boolean) {
-  // Gouffre circulaire de la cascade : anneau de falaise et rideau d'eau tombant dans l'abîme.
-  b.cylinder("dark", [-2, 0.12, 0], 11.2, 11.2, 0.2, 20);
+  // Gouffre circulaire de la cascade : anneau de falaise et rideau d'eau tombant dans l'abîme (au-dessus du relief <= 0.29 m).
+  b.cylinder("dark", [-2, 0.24, 0], 11.2, 11.2, 0.36, 20);
   const segments = lowPower ? 12 : 20;
   for (let i = 0; i < segments; i++) {
     const a = i / segments * Math.PI * 2;
     // Laisser une ouverture face au bus pour que la cascade reste lisible depuis le pont.
     if (Math.cos(a) < -0.68) continue;
     const x = -2 + Math.cos(a) * 12.6, z = Math.sin(a) * 12.6;
-    b.box("rock", [x, 1.4, z], [2.4, 2.8, 3.8], [0, -a, 0]);
-    b.box("water", [-2 + Math.cos(a) * 11.3, 1.35, Math.sin(a) * 11.3], [0.35, 2.7, 3.4], [0, -a, 0]);
-    b.box("foam", [-2 + Math.cos(a) * 11.0, 0.45, Math.sin(a) * 11.0], [0.65, 0.9, 3.5], [0, -a, 0]);
+    b.box("rock", [x, 1.65, z], [2.4, 3.3, 3.8], [0, -a, 0]);
+    b.box("water", [-2 + Math.cos(a) * 11.3, 1.6, Math.sin(a) * 11.3], [0.35, 3.0, 3.4], [0, -a, 0]);
+    b.box("foam", [-2 + Math.cos(a) * 11.0, 0.72, Math.sin(a) * 11.0], [0.65, 1.0, 3.5], [0, -a, 0]);
   }
-  b.ring("foam", [-2, 0.25, 0], 10.3, 0.35);
+  b.ring("foam", [-2, 0.50, 0], 10.3, 0.35);
 
   // Esplanade et pont d'accès côté bus menant à la Tour de la Justice.
   b.box("castle", [-11.5, 2.0, 0], [10.5, 1.1, 5.2]);
@@ -1031,10 +1081,10 @@ function eniesLobby(b: Builder, lowPower: boolean) {
     }
     b.cylinder("gold", [9.2, 35.0, gz], 0, 0.75, 2.8, 6);
     if (!lowPower) {
-      b.box("gold", [7.96, 23.5, gz], [0.16, 2.6, 0.35], [0, tilt, 0]);
-      b.box("gold", [7.96, 23.5, gz], [0.16, 0.35, 2.6], [0, tilt, 0]);
+      b.box("gold", [7.70, 23.5, gz], [0.18, 2.6, 0.35], [0, tilt, 0]);
+      b.box("gold", [7.70, 23.5, gz], [0.18, 0.35, 2.6], [0, tilt, 0]);
       for (const [dy, dz] of [[0, 0], [1.2, 0], [-1.2, 0], [0, 1.2], [0, -1.2]]) {
-        b.sphere("gold", [7.88, 23.5 + dy, gz + dz], 0.36);
+        b.sphere("gold", [7.66 + dz * Math.sin(tilt), 23.5 + dy, gz + dz * Math.cos(tilt)], 0.34);
       }
     }
   }
@@ -1065,21 +1115,24 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
       dune(b, side * (27 + (i % 2) * 9), -55 + i * 22, [8 + i % 3, 1.0 + i % 2 * 0.65, 5.5], i % 2 === 0);
     }
     if (side < 0) {
-      // An oasis and half-buried sandstone remains interrupt the desert.
-      b.sphere("turquoise", [-28, 0.14, -32], 1, [7.2, 0.15, 5.8]);
-      b.ring("sandLight", [-28, 0.16, -32], 5.7, 0.3);
+      // Oasis creusée avec bassin d'eau visible et margelle ancrée au sol.
+      b.add(new THREE.CylinderGeometry(5.2, 5.4, 0.24, 24), "turquoise", [-28, 0.14, -32], [0, 0, 0], [1.18, 1, 0.95]);
+      b.add(new THREE.TorusGeometry(5.25, 0.38, 6, 24), "sandLight", [-28, 0.24, -32], [Math.PI / 2, 0, 0], [1.18, 0.95, 0.72]);
       for (let i = 0; i < 4; i++) {
         b.cylinder("sandstone", [-32 + i * 2.6, 1.9 + i % 2, 35], 0.45, 0.6, 3.8 + i % 2 * 2, 7);
         b.box("sandLight", [-32 + i * 2.6, 3.9 + i % 2 * 2, 35], [1.4, 0.4, 1.2]);
       }
       b.box("sandstone", [-29, 5.9, 35], [6, 0.55, 1.1], [0, 0, 0.04]);
       if (!lowPower) {
-        // Palmiers de l'oasis, tente nomade et Ponéglyphe dégagé devant les ruines.
+        // Palmiers de l'oasis, tente nomade au sol et Ponéglyphe dégagé devant les ruines.
         for (const [px, pz] of [[-22.5, -28], [-33.5, -36]]) {
-          b.cylinder("wood", [px, 1.9, pz], 0.16, 0.24, 3.8, 7);
-          b.sphere("leaf", [px, 4.0, pz], 1.4, [1.2, 0.45, 1.2]);
+          b.cylinder("wood", [px, 2.05, pz], 0.16, 0.24, 4.1, 7);
+          b.sphere("leaf", [px, 4.15, pz], 1.4, [1.2, 0.45, 1.2]);
         }
-        b.roof("coral", [-23, 0.2, -21], 3.8, 3.2, 1.8);
+        const tentY = sceneryTerrainHeight(0, -23, -21) - 0.02;
+        b.box("sandLight", [-23, tentY + 0.22, -21], [3.4, 0.44, 2.8]);
+        b.box("dark", [-24.68, tentY + 0.44, -21], [0.1, 0.88, 1.0]);
+        b.roof("coral", [-23, tentY + 0.40, -21], 3.9, 3.3, 1.65);
         b.box("dark", [-28.1, 1.0, 32.8], [1.4, 2.0, 1.4]);
         b.box("gold", [-27.38, 1.1, 32.8], [0.06, 1.3, 0.9]);
       }
@@ -1087,8 +1140,8 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
   }
   if (zone === 1) {
     const x = side * 22;
-    b.box("water", [x, 0.13, 0], [3.5, 0.12, 132]);
-    for (const offset of [-2.1, 2.1]) b.box("cream", [x + offset, 0.2, 0], [0.45, 0.3, 132]);
+    b.box("water", [x, 0.13, 0], [3.5, 0.12, 144]);
+    for (const offset of [-2.1, 2.1]) b.box("cream", [x + offset, 0.2, 0], [0.45, 0.3, 144]);
     for (const z of [-44, 37]) {
       // Small arched bridges cross the canal, perpendicular to the route.
       for (let i = 0; i < 9; i++) {
@@ -1107,14 +1160,14 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
     if (side < 0) {
       const colors: MaterialKey[] = ["coral", "peach", "blueHouse"];
       for (let i = 0; i < (lowPower ? 2 : 4); i++) {
-        venetianHouse(b, -34 - (i % 2) * 2, 0.4, -43 + i * 29, 4.5, 5.5 + i % 2 * 2.4, colors[i % 3], lowPower);
+        venetianHouse(b, -34 - (i % 2) * 2, 0, -43 + i * 29, 4.5, 5.5 + i % 2 * 2.4, colors[i % 3], lowPower);
       }
-      // Sea-train railway hugs the far bank on timber piles.
+      // Sea-train railway hugs the far bank on timber piles, rails posés sans vide sur les traverses.
       for (const rx of [-43, -41.2]) b.box("dark", [rx, 1.2, 1], [0.14, 0.16, 116]);
       for (let i = 0; i < (lowPower ? 8 : 15); i++) {
         const z = -54 + i * (lowPower ? 15 : 8);
-        b.box("wood", [-42.1, 0.95, z], [3.4, 0.2, 0.6]);
-        if (i % 2 === 0) b.cylinder("wood", [-42.1, 0.2, z], 0.3, 0.4, 1.7, 6);
+        b.box("wood", [-42.1, 1.02, z], [3.4, 0.2, 0.6]);
+        if (i % 2 === 0) b.cylinder("wood", [-42.1, 0.24, z], 0.3, 0.4, 1.72, 6);
       }
       if (!lowPower) {
         // Locomotive du Puffing Tom et wagon posés sur les rails avec attelage.
@@ -1140,14 +1193,14 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
       b.curve("cloud", [[-29, 1.3, -54], [-35, 1.5, -28], [-26, 1.2, 5], [-35, 1.5, 44]], 1.4, 26);
       if (!lowPower) {
         for (const z of [-21, 26]) {
-          for (const x of [-40, -32]) b.cylinder("cream", [x, 3.5, z], 0.4, 0.6, 6, 8);
+          for (const x of [-40, -32]) b.cylinder("cream", [x, 3.25, z], 0.4, 0.6, 6.5, 8);
           b.box("cream", [-36, 6.5, z], [9.5, 0.6, 1.3]);
           b.roof("gold", [-36, 6.8, z], 10, 2.4, 1.2);
           b.sphere("lamp", [-36, 5.8, z], 0.38);
         }
         // Arbres-nuages célestes et petit Waver posé sur la route blanche.
         for (const [cx, cz] of [[-24, -40], [-25, 14]]) {
-          b.cylinder("cream", [cx, 1.7, cz], 0.2, 0.3, 3.2, 7);
+          b.cylinder("cream", [cx, 1.6, cz], 0.2, 0.3, 3.4, 7);
           b.sphere("cloud", [cx, 3.7, cz], 1.5, [1.2, 0.6, 1.1]);
         }
         b.sphere("cream", [-26.5, 2.85, -4], 0.7, [0.7, 0.35, 1.8]);
@@ -1156,34 +1209,40 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
     }
   }
   if (zone === 3) {
-    // Rice paddies are actual recessed colored plots with earthen banks.
+    // Rizières en terrasses calées sur la hauteur locale du relief.
     for (let i = 0; i < (lowPower ? 3 : 5); i++) {
       if (side < 0 && i === 2) continue;
       const z = -52 + i * 25;
-      b.box("leafLight", [side * 32, 0.2, z], [17, 0.12, 13]);
-      for (const offset of [-7, 7]) b.box("sandLight", [side * 32, 0.32, z + offset], [18, 0.28, 0.65]);
-      for (const offset of [-9, 9]) b.box("sandLight", [side * 32 + offset, 0.32, z], [0.65, 0.28, 14]);
+      const paddyY = sampleMaxTerrainHeight(3, side * 32 - 9.5, side * 32 + 9.5, z - 7.5, z + 7.5) + 0.08;
+      b.box("sandstone", [side * 32, paddyY / 2, z], [18.4, paddyY, 14.4]);
+      b.box("leafLight", [side * 32, paddyY + 0.04, z], [17, 0.12, 13]);
+      for (const offset of [-7, 7]) b.box("sandLight", [side * 32, paddyY + 0.14, z + offset], [18, 0.28, 0.65]);
+      for (const offset of [-9, 9]) b.box("sandLight", [side * 32 + offset, paddyY + 0.14, z], [0.65, 0.28, 14]);
       if (!lowPower) {
-        for (let row = 0; row < 5; row++) b.box("leaf", [side * 32 - 6 + row * 3, 0.35, z], [0.22, 0.3, 11]);
+        for (let row = 0; row < 5; row++) b.box("leaf", [side * 32 - 6 + row * 3, paddyY + 0.18, z], [0.22, 0.3, 11]);
         if (i % 2 === 0) {
-          b.cylinder("wood", [side * 30, 1.0, z], 0.08, 0.1, 1.8, 6);
-          b.cylinder("sandLight", [side * 30, 1.95, z], 0.1, 0.75, 0.45, 8);
+          b.cylinder("wood", [side * 30, paddyY + 0.85, z], 0.08, 0.1, 1.8, 6);
+          b.cylinder("sandLight", [side * 30, paddyY + 1.8, z], 0.1, 0.75, 0.45, 8);
         }
       }
     }
     if (side < 0) {
-      cherryTree(b, -28, 0.2, -14.5, 4.8, lowPower);
-      cherryTree(b, -34, 0.2, 33, 5.3, lowPower);
-      b.box("wood", [-29, 2.1, 4], [6.7, 4.2, 5]);
-      b.roof("jadeRoof", [-29, 4.2, 4], 8.1, 6.4, 1.8);
-      for (const z of [2.4, 4, 5.6]) b.box("lamp", [-32.4, 2.3, z], [0.09, 1.5, 0.6]);
+      const cherryAY = sceneryTerrainHeight(3, -28, -14.5) - 0.05;
+      const cherryBY = sceneryTerrainHeight(3, -34, 33) - 0.05;
+      cherryTree(b, -28, cherryAY, -14.5, 4.8, lowPower);
+      cherryTree(b, -34, cherryBY, 33, 5.3, lowPower);
+      const houseY = sceneryTerrainHeight(3, -29, 4) - 0.03;
+      b.box("wood", [-29, houseY + 2.1, 4], [6.7, 4.2, 5]);
+      b.roof("jadeRoof", [-29, houseY + 4.2, 4], 8.1, 6.4, 1.8);
+      for (const z of [2.4, 4, 5.6]) b.box("lamp", [-32.4, houseY + 2.3, z], [0.09, 1.5, 0.6]);
       if (!lowPower) {
-        for (const [px, pz] of [[-28, -14.5], [-34, 33]]) {
-          b.sphere("blossomLight", [px, 0.22, pz], 3.1, [1.2, 0.06, 1.1]);
+        for (const [px, py, pz] of [[-28, cherryAY, -14.5], [-34, cherryBY, 33]] as const) {
+          b.sphere("blossomLight", [px, py + 0.08, pz], 3.1, [1.2, 0.06, 1.1]);
         }
-        b.cylinder("rock", [-24, 0.9, 4], 0.22, 0.3, 1.6, 6);
-        b.box("lamp", [-24, 1.95, 4], [0.5, 0.55, 0.5]);
-        b.box("rock", [-24, 2.35, 4], [0.76, 0.24, 0.76]);
+        const lanternY = sceneryTerrainHeight(3, -24, 4) - 0.03;
+        b.cylinder("rock", [-24, lanternY + 0.8, 4], 0.22, 0.3, 1.6, 6);
+        b.box("lamp", [-24, lanternY + 1.85, 4], [0.5, 0.55, 0.5]);
+        b.box("rock", [-24, lanternY + 2.25, 4], [0.76, 0.24, 0.76]);
       }
     }
   }
@@ -1215,12 +1274,17 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
   }
   if (zone === 5) {
     const sidewalk = side * 13.2;
-    b.box("snow", [sidewalk, .15, 0], [3.7, .27, 132]);
-    b.box("eggMint", [sidewalk - side * 1.73, .3, 0], [.18, .12, 130]);
+    for (let i = 0; i < 22; i++) {
+      const z = -63 + i * 6;
+      const h = sampleMaxTerrainHeight(5, sidewalk - 1.9, sidewalk + 1.9, z - 3, z + 3) + 0.12;
+      b.box("snow", [sidewalk, h / 2, z], [3.7, h, 6.04]);
+      b.box("eggMint", [sidewalk - side * 1.73, h + 0.04, z], [0.18, 0.12, 6.04]);
+    }
     for (const z of [-49, -26, -5, 18, 38, 55]) {
-      b.cylinder("snow", [side * 17.4, .19, z], 1.73, 1.85, .38, 12);
-      b.cylinder("leafLight", [side * 17.4, .42, z], 1.57, 1.69, .12, 12);
-      eggheadPalm(b, side * 17.4, z, z === -26 || z === 18 ? 4.8 : 3.4, lowPower);
+      const h = sampleMaxTerrainHeight(5, side * 17.4 - 1.9, side * 17.4 + 1.9, z - 1.9, z + 1.9) + 0.34;
+      b.cylinder("snow", [side * 17.4, h / 2, z], 1.73, 1.85, h, 12);
+      b.cylinder("leafLight", [side * 17.4, h + 0.04, z], 1.57, 1.69, 0.12, 12);
+      eggheadPalm(b, side * 17.4, z, z === -26 || z === 18 ? 4.8 : 3.4, lowPower, h + 0.04);
     }
     if (side > 0) {
       eggheadTower(b, 19.7, 8.2, 2.37, 5.2, "snow", "eggOrange", lowPower);
@@ -1233,31 +1297,36 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
     }
   }
   if (zone === 6) {
-    // Chemin et clairières au niveau de la route, au pied des terrasses.
+    // Chemin et clairières calés sur le relief réel, au pied des terrasses.
     const pathX = side * 20;
-    b.box("sandLight", [pathX, .24, 0], [2.9, .34, 118]);
+    for (let i = 0; i < 24; i++) {
+      const z = -56.5 + i * 4.92;
+      const h = sampleMaxTerrainHeight(6, pathX - 1.5, pathX + 1.5, z - 2.6, z + 2.6) + 0.08;
+      b.box("sandLight", [pathX, h / 2, z], [2.9, h, 5.0]);
+    }
     for (const [z, height] of [[-53, 4.1], [-38, 5.6], [-13, 4.85], [11, 5.0], [29, 4.4], [50, 5.9]]) {
-      elbafPine(b, side * 23.6, .18, z, height);
+      elbafPine(b, side * 23.6, sceneryTerrainHeight(6, side * 23.6, z) - 0.04, z, height);
     }
     if (side < 0) {
       elbafTerrace(b, -33.4, -22, -.17, 3.1, 6.2, 8.2, lowPower);
       elbafTerrace(b, -34.9, 15, -.17, 4.1, 6.3, 8.8, lowPower);
       elbafLodge(b, -33.9, 3.27, -23, 3.25, lowPower, 1, "jadeRoof");
       elbafLodge(b, -35.1, 4.28, 16, 3.9, lowPower, 1);
-      elbafLodge(b, -27.1, .4, 25.7, 3.1, lowPower, 1);
+      elbafLodge(b, -27.1, sceneryTerrainHeight(6, -27.1, 25.7) - 0.04, 25.7, 3.1, lowPower, 1);
       elbafPine(b, -34.9, 4.19, 20.7, 4.85);
       elbafPine(b, -32.2, 3.25, -27.6, 3.9);
       elbafRopeBridge(b, -33.9, -14.2, 6.6, 3.2, 4.26, lowPower);
       if (!lowPower) {
         // Drakkar sur la grève.
-        b.sphere("wood", [-41.4, .65, 34], 1.32, [1.1, .55, 3.05]);
-        b.cylinder("elbafBark", [-41.4, 2.8, 34], .12, .16, 4.2, 8);
-        b.box("vermilion", [-41.4, 3.55, 34.25], [1.5, 1.75, .12]);
-        b.cylinder("oldGold", [-41.4, 1.5, 30.5], .1, .33, 1.25, 6, [.45, 0, 0]);
+        const drakkarY = sceneryTerrainHeight(6, -41.4, 34);
+        b.sphere("wood", [-41.4, drakkarY + 0.45, 34], 1.32, [1.1, .55, 3.05]);
+        b.cylinder("elbafBark", [-41.4, drakkarY + 2.6, 34], .12, .16, 4.2, 8);
+        b.box("vermilion", [-41.4, drakkarY + 3.35, 34.25], [1.5, 1.75, .12]);
+        b.cylinder("oldGold", [-41.4, drakkarY + 1.3, 30.5], .1, .33, 1.25, 6, [.45, 0, 0]);
       }
     } else {
-      elbafLodge(b, 17.2, .48, -43.3, 2.65, lowPower);
-      elbafLodge(b, 17.7, .48, 32.9, 2.92, lowPower, -1, "jadeRoof");
+      elbafLodge(b, 17.2, sceneryTerrainHeight(6, 17.2, -43.3) - 0.04, -43.3, 2.65, lowPower);
+      elbafLodge(b, 17.7, sceneryTerrainHeight(6, 17.7, 32.9) - 0.04, 32.9, 2.92, lowPower, -1, "jadeRoof");
     }
   }
   if (zone === 7) {

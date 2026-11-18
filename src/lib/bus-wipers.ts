@@ -4,8 +4,8 @@ export interface WiperMotion {
   cyclesPerSecond: number;
 }
 
-// Les deux balais sont couchés vers la gauche, au pied du pare-brise.
-export const WIPER_PARK_ANGLE = Math.PI / 2;
+// Les deux balais sont couchés vers la gauche, légèrement relevés au pied du pare-brise.
+export const WIPER_PARK_ANGLE = Math.PI / 2 - 0.1;
 const WIPER_FAR_ANGLE = -0.35;
 const FULL_TURN = Math.PI * 2;
 
