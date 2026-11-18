@@ -30,6 +30,7 @@ const {
 } = await load("src/lib/scene-performance.ts");
 const { getBusOccupancy } = await load("src/lib/bus-occupancy.ts");
 const { getBusCameraFar, getExteriorMaxDistance } = await load("src/lib/bus-camera.ts");
+const { getSeaCreatureDuration, sampleSeaCreaturePose } = await load("src/lib/sea-creature-motion.ts");
 
 // 1. Formatage des noms GPU WebGL2 / ANGLE
 assert.equal(
@@ -261,4 +262,40 @@ const customOcc = getBusOccupancy({
 assert.equal(customOcc.detailed.length, 14);
 assert.equal(customOcc.simplified.length, 12);
 
-console.log("Scene performance GPU classification, dynamic budgets, hysteresis and occupancy caps passed.");
+// 7. Physique des créatures marines (sortie de l'eau, saut balistique, plongeon, distance aux plages)
+for (const motion of ["breach", "surface", "rise"]) {
+  const duration = getSeaCreatureDuration(motion);
+  const sampleAt = (p) => sampleSeaCreaturePose({
+    motion,
+    p,
+    duration,
+    local: p * duration,
+    cycle: 0,
+    side: 1,
+    direction: -1,
+    worldZ: 0,
+    scroll: 100,
+    waterTime: p * duration,
+    busSpeed: 16,
+    reducedMotion: false,
+  });
+  const start = sampleAt(0);
+  const mid = sampleAt(0.43);
+  const end = sampleAt(1);
+  assert(start.height < -14, `${motion} starts submerged`);
+  assert(end.height < -14, `${motion} dives back deeply underwater without staying out`);
+  for (let step = 0; step <= 20; step++) {
+    const sample = sampleAt(step / 20);
+    assert(Math.abs(sample.x) >= 68, `${motion} stays clear of beaches`);
+  }
+  if (motion === "breach") {
+    const rising = sampleAt(0.28);
+    const diving = sampleAt(0.58);
+    assert(mid.height > 4 && mid.height < 6.5, "breach leaps naturally without floating in the sky");
+    assert(rising.pitch < -0.5, "breach points nose up on water exit");
+    assert(diving.pitch > 0.5, "breach points nose down on dive entry");
+    assert(mid.jointGain < rising.jointGain, "tail wiggle calms gracefully while airborne");
+  }
+}
+
+console.log("Scene performance GPU classification, dynamic budgets, hysteresis and sea creature physics passed.");

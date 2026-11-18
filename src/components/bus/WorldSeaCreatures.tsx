@@ -4,15 +4,23 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { createSeaCreatures, type SeaCreatureModel } from "@/lib/sea-creature-models";
+import {
+  SEA_CREATURE_PERIOD,
+  getSeaCreatureDuration,
+  getSeaCreatureSwimSpeed,
+  sampleSeaCreaturePose,
+} from "@/lib/sea-creature-motion";
 import { WORLD_SPEED, type WorldState } from "./constants";
-import { SEA_LEVEL } from "./WorldOcean";
+import { SEA_LEVEL, SEA_WAKE_COUNT } from "./WorldOcean";
 
-const PERIOD = 20;
-const SPRAY = 10;
-const SPRAY_DAY_COLOR = new THREE.Color("#bcebf7");
-const RING_INNER_DAY_COLOR = new THREE.Color("#d8f5fb");
-const RING_OUTER_DAY_COLOR = new THREE.Color("#a8e0f5");
+const SPRAY_HIGH = 18;
+const SPRAY_LOW = 7;
+const SPLASH_GRAVITY = 15.0;
+const SPRAY_DAY_COLOR = new THREE.Color("#d9f6fd");
+const RING_INNER_DAY_COLOR = new THREE.Color("#e8fbff");
+const RING_OUTER_DAY_COLOR = new THREE.Color("#9fe0f5");
 const NIGHT_FOAM_COLOR = new THREE.Color("#2c425e");
+
 const SLOTS = [
   { side: -1, z: 100, offset: 2.6, direction: -1 },
   { side: 1, z: 132, offset: 0.8, direction: -1 },
@@ -20,87 +28,255 @@ const SLOTS = [
   { side: 1, z: -52, offset: -9.3, direction: 1 },
 ];
 
-interface Effect {
+interface SplashGroup {
   group: THREE.Group;
   rings: THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>[];
   spray: THREE.InstancedMesh;
-  model: SeaCreatureModel | null;
+}
+
+interface EffectSlot {
+  exit: SplashGroup;
+  entry: SplashGroup;
+}
+
+interface BurstState {
+  active: boolean;
+  fired: boolean;
+  x: number;
+  z: number;
+  heading: number;
+  age: number;
+  life: number;
+  power: number;
+  scale: number;
+}
+
+interface SlotTrackState {
+  cycle: number;
+  waterZ: number;
+  prevLocal: number;
+  diveFired: boolean;
+  exit: BurstState;
+  entry: BurstState;
+}
+
+function fractHash(seed: number) {
+  const x = Math.sin(seed) * 43758.5453123;
+  return x - Math.floor(x);
+}
+
+function makeBurstState(): BurstState {
+  return { active: false, fired: false, x: 0, z: 0, heading: 0, age: 0, life: 2.2, power: 1, scale: 2.8 };
+}
+
+function makeSlotTrackState(): SlotTrackState {
+  return {
+    cycle: Number.NaN,
+    waterZ: 0,
+    prevLocal: 0,
+    diveFired: false,
+    exit: makeBurstState(),
+    entry: makeBurstState(),
+  };
+}
+
+function createSplashGroup(
+  name: string,
+  ripple: THREE.RingGeometry,
+  droplet: THREE.IcosahedronGeometry,
+  sprayMat: THREE.MeshBasicMaterial,
+  sprayCount: number,
+): SplashGroup {
+  const group = new THREE.Group();
+  group.name = name;
+  group.visible = false;
+  const rings = Array.from({ length: 4 }, (_, j) => {
+    const material = new THREE.MeshBasicMaterial({
+      color: j < 2 ? "#e8fbff" : "#9fe0f5",
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+      opacity: 0,
+      side: THREE.DoubleSide,
+    });
+    const ring = new THREE.Mesh(ripple, material);
+    ring.position.y = j * 0.008;
+    group.add(ring);
+    return ring;
+  });
+  const spray = new THREE.InstancedMesh(droplet, sprayMat, sprayCount);
+  spray.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  spray.frustumCulled = false;
+  group.add(spray);
+  return { group, rings, spray };
 }
 
 function makeEffects(count: number, lowPower: boolean) {
-  const ripple = new THREE.RingGeometry(.90, 1, lowPower ? 20 : 32).rotateX(-Math.PI / 2);
+  const ripple = new THREE.RingGeometry(0.84, 1, lowPower ? 20 : 32).rotateX(-Math.PI / 2);
   const droplet = new THREE.IcosahedronGeometry(1, 0);
-  const sprayMat = new THREE.MeshBasicMaterial({ color: "#bcebf7" });
-  const slots: Effect[] = Array.from({ length: count }, (_, i) => {
-    const group = new THREE.Group();
-    group.name = `sea-splash-${i}`;
-    group.visible = false;
-    const rings = Array.from({ length: 3 }, (_, j) => {
-      const material = new THREE.MeshBasicMaterial({
-        color: j ? "#a8e0f5" : "#d8f5fb", transparent: true, depthWrite: false,
-        toneMapped: false, opacity: 0, side: THREE.DoubleSide,
-      });
-      const ring = new THREE.Mesh(ripple, material);
-      ring.position.y = j * .008;
-      group.add(ring);
-      return ring;
-    });
-    const spray = new THREE.InstancedMesh(droplet, sprayMat, lowPower ? 4 : SPRAY);
-    spray.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    spray.frustumCulled = false;
-    group.add(spray);
-    return { group, rings, spray, model: null };
+  const sprayMat = new THREE.MeshBasicMaterial({
+    color: "#d9f6fd",
+    transparent: true,
+    opacity: 0.9,
+    depthWrite: false,
+    toneMapped: false,
   });
+  const sprayCount = lowPower ? SPRAY_LOW : SPRAY_HIGH;
+  const slots: EffectSlot[] = Array.from({ length: count }, (_, i) => ({
+    exit: createSplashGroup(`sea-exit-splash-${i}`, ripple, droplet, sprayMat, sprayCount),
+    entry: createSplashGroup(`sea-entry-splash-${i}`, ripple, droplet, sprayMat, sprayCount),
+  }));
   return { slots, ripple, droplet, sprayMat };
 }
 
-function animateWater(
-  effect: Effect,
+function animateBurst(
+  emitter: SplashGroup,
+  burst: BurstState,
   scratch: THREE.Object3D,
-  crossing: number,
-  strength: number,
-  model: SeaCreatureModel,
   daylight: number,
-  airborne: boolean,
-) {
-  const { group, rings, spray } = effect;
-  const showRings = !airborne && (model.motion !== "breach" || crossing > 0.01);
-  spray.visible = crossing > .06;
-  if (!showRings && !spray.visible) {
-    group.visible = false;
-    return;
+  seedSalt: number,
+): { radius: number; strength: number } {
+  if (!burst.active || burst.age >= burst.life) {
+    burst.active = false;
+    emitter.group.visible = false;
+    return { radius: 1, strength: 0 };
   }
-  group.visible = true;
-  group.rotation.y = model.group.rotation.y;
-  const wakeStrength = (model.motion === "breach" ? crossing : strength) * .64;
-  for (let index = 0; index < rings.length; index++) {
-    const ring = rings[index];
-    ring.visible = showRings;
-    if (!showRings) continue;
-    const pulse = Math.max(0, crossing - index * .29);
-    const burst = pulse * (1 - index * .20);
-    const size = model.scale * (.84 + index * .36) + burst * 5;
-    ring.position.z = -model.scale * (.36 + index * 1.33);
-    ring.scale.set(size * .83, 1, size * (1.18 + index * .19));
-    ring.material.color.copy(NIGHT_FOAM_COLOR).lerp(index ? RING_OUTER_DAY_COLOR : RING_INNER_DAY_COLOR, daylight);
-    ring.material.opacity = Math.min(.88, wakeStrength * (.53 - index * .13) + burst * .56);
+
+  const p = burst.age / burst.life;
+  emitter.group.visible = true;
+  emitter.group.position.set(burst.x, SEA_LEVEL + 0.03, burst.z);
+  emitter.group.rotation.y = burst.heading;
+
+  let outerRadius = burst.scale;
+  for (let j = 0; j < emitter.rings.length; j++) {
+    const ring = emitter.rings[j];
+    const delay = j * 0.14;
+    const ringAge = burst.age - delay;
+    if (ringAge <= 0) {
+      ring.visible = false;
+      continue;
+    }
+    const rp = Math.min(1, ringAge / (burst.life - delay));
+    ring.visible = rp < 1;
+    // La propagation des ondes circulaires croît en sqrt(t).
+    const radius = burst.scale * (0.85 + j * 0.25) + Math.sqrt(rp) * burst.power * (5.2 + j * 1.45);
+    if (j === 0) outerRadius = radius;
+    ring.position.z = 0;
+    ring.scale.set(radius * 0.92, 1, radius * 1.08);
+    ring.material.color
+      .copy(NIGHT_FOAM_COLOR)
+      .lerp(j < 2 ? RING_INNER_DAY_COLOR : RING_OUTER_DAY_COLOR, daylight);
+    const fadeIn = Math.min(1, ringAge / 0.14);
+    const fadeOut = Math.pow(Math.max(0, 1 - rp), 1.55);
+    ring.material.opacity = Math.min(0.88, fadeIn * fadeOut * (0.76 - j * 0.13) * Math.min(1.2, burst.power));
   }
-  if (!spray.visible) return;
-  for (let index = 0; index < spray.count; index++) {
-    const angle = index * 2.39996;
-    const spread = model.scale * (1.1 - crossing * .6) * (1 + index % 3 * .3);
-    const height = (1.55 + (index % 4) * .64) * crossing;
-    scratch.position.set(Math.cos(angle) * spread, height, Math.sin(angle) * spread);
-    scratch.scale.set(.10 + crossing * .10, .15 + crossing * .20, .10 + crossing * .10);
-    scratch.rotation.set(angle, 0, angle);
+
+  const sprayVisible = burst.age < 1.55;
+  emitter.spray.visible = sprayVisible;
+  if (sprayVisible) {
+    const count = emitter.spray.count;
+    const power = burst.power;
+    for (let i = 0; i < count; i++) {
+      const h1 = fractHash(i * 17.3 + seedSalt * 11.1);
+      const h2 = fractHash(i * 31.7 + seedSalt * 23.9);
+      const h3 = fractHash(i * 47.9 + seedSalt * 5.3);
+      const angle = i * 2.39996 + h1 * 0.45;
+      const vr = (1.6 + h2 * 3.8) * power;
+      const vy0 = (4.6 + h3 * 5.8) * power;
+      const t = burst.age + h1 * 0.05;
+      const y = vy0 * t - 0.5 * SPLASH_GRAVITY * t * t;
+      if (y <= 0.03) {
+        scratch.position.set(0, -1, 0);
+        scratch.scale.setScalar(0);
+        scratch.updateMatrix();
+        emitter.spray.setMatrixAt(i, scratch.matrix);
+        continue;
+      }
+      const r = burst.scale * (0.32 + h1 * 0.42) + vr * t;
+      const vyNow = vy0 - SPLASH_GRAVITY * t;
+      const baseSize = (0.09 + h2 * 0.09) * Math.max(0.85, burst.scale * 0.35);
+      const stretch = 1.15 + Math.min(1.9, Math.abs(vyNow) * 0.16);
+      scratch.position.set(Math.cos(angle) * r, y, Math.sin(angle) * r);
+      scratch.rotation.set(0, -angle, Math.atan2(vyNow, Math.max(0.8, vr)) - Math.PI / 2);
+      scratch.scale.set(baseSize, baseSize * stretch, baseSize);
+      scratch.updateMatrix();
+      emitter.spray.setMatrixAt(i, scratch.matrix);
+    }
+    emitter.spray.instanceMatrix.needsUpdate = true;
+  }
+
+  const fade = Math.pow(Math.max(0, 1 - p), 1.4);
+  return { radius: Math.max(outerRadius, burst.scale * 1.6), strength: Math.min(1, fade * burst.power * 0.9) };
+}
+
+function animateSurfaceWake(
+  emitter: SplashGroup,
+  scratch: THREE.Object3D,
+  x: number,
+  z: number,
+  heading: number,
+  scale: number,
+  localTime: number,
+  strength: number,
+  daylight: number,
+): { radius: number; strength: number } {
+  if (strength <= 0.04) {
+    emitter.group.visible = false;
+    return { radius: 1, strength: 0 };
+  }
+
+  emitter.group.visible = true;
+  emitter.group.position.set(x, SEA_LEVEL + 0.025, z);
+  emitter.group.rotation.y = heading;
+
+  let outerRadius = scale;
+  for (let j = 0; j < emitter.rings.length; j++) {
+    const ring = emitter.rings[j];
+    const phase = (localTime * 0.65 + j * 0.25) % 1;
+    ring.visible = true;
+    const size = scale * (0.85 + phase * 1.45);
+    if (j === 2) outerRadius = size;
+    ring.position.z = -scale * (0.25 + phase * 1.85);
+    ring.scale.set(size * (0.78 + phase * 0.22), 1, size * 1.18);
+    ring.material.color
+      .copy(NIGHT_FOAM_COLOR)
+      .lerp(j < 2 ? RING_INNER_DAY_COLOR : RING_OUTER_DAY_COLOR, daylight);
+    ring.material.opacity = Math.min(0.68, strength * (1 - phase) * 0.56);
+  }
+
+  emitter.spray.visible = true;
+  const count = emitter.spray.count;
+  for (let i = 0; i < count; i++) {
+    const cycleSpan = 0.72;
+    const t = (localTime * 1.15 + i * (cycleSpan / count)) % cycleSpan;
+    const h1 = fractHash(i * 19.1 + Math.floor((localTime * 1.15) / cycleSpan));
+    const side = i % 2 === 0 ? 1 : -1;
+    const lateral = scale * (0.55 + h1 * 0.45) * side + side * t * 2.2;
+    const back = scale * (0.35 - (i % 4) * 0.55) - t * 3.4;
+    const vy0 = 2.4 + h1 * 1.9;
+    const y = vy0 * t - 0.5 * SPLASH_GRAVITY * t * t;
+    if (y <= 0.02) {
+      scratch.position.set(0, -1, 0);
+      scratch.scale.setScalar(0);
+      scratch.updateMatrix();
+      emitter.spray.setMatrixAt(i, scratch.matrix);
+      continue;
+    }
+    const drop = (0.06 + h1 * 0.05) * strength;
+    scratch.position.set(lateral, y, back);
+    scratch.rotation.set(0, 0, 0);
+    scratch.scale.set(drop, drop * 1.4, drop);
     scratch.updateMatrix();
-    spray.setMatrixAt(index, scratch.matrix);
+    emitter.spray.setMatrixAt(i, scratch.matrix);
   }
-  spray.instanceMatrix.needsUpdate = true;
+  emitter.spray.instanceMatrix.needsUpdate = true;
+
+  return { radius: Math.max(outerRadius, scale * 2.2), strength: strength * 0.58 };
 }
 
 export default function WorldSeaCreatures({
   worldRef,
+  wakesRef,
   cabinCenterZ,
   reducedMotion,
   lowPower,
@@ -109,6 +285,7 @@ export default function WorldSeaCreatures({
   cullBehind,
 }: {
   worldRef: React.RefObject<WorldState>;
+  wakesRef?: React.RefObject<THREE.Vector4[]>;
   cabinCenterZ: number;
   reducedMotion: boolean;
   lowPower: boolean;
@@ -119,131 +296,313 @@ export default function WorldSeaCreatures({
   const limit = Math.max(1, Math.min(SLOTS.length, slotLimit ?? (lowPower ? 2 : SLOTS.length)));
   const maxAhead = cullAhead ?? 420;
   const maxBehind = cullBehind ?? 340;
-  const material = useMemo(() => new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: .79, emissive: "#182339", emissiveIntensity: .19 }), []);
+  const material = useMemo(
+    () => new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.79, emissive: "#182339", emissiveIntensity: 0.19 }),
+    [],
+  );
   const models = useMemo(() => createSeaCreatures(material, lowPower), [material, lowPower]);
   const effects = useMemo(() => makeEffects(limit, lowPower), [limit, lowPower]);
   const scratch = useMemo(() => new THREE.Object3D(), []);
   const firstFrame = useRef<number | null>(null);
-  const animation = useRef<{ models: SeaCreatureModel[]; slots: Effect[] }>(null);
-  const cycleAnchors = useRef(SLOTS.map(() => ({ cycle: Number.NaN, anchorScroll: 0, entryZ: 0 })));
+  const prevScroll = useRef<number | null>(null);
+  const needsEffectsReset = useRef(true);
+  const animation = useRef<{ models: SeaCreatureModel[]; slots: EffectSlot[] }>(null);
+  const trackStates = useRef<SlotTrackState[]>(SLOTS.map(() => makeSlotTrackState()));
 
   useLayoutEffect(() => {
+    trackStates.current = SLOTS.map(() => makeSlotTrackState());
+    prevScroll.current = null;
+    needsEffectsReset.current = true;
     animation.current = { models, slots: effects.slots };
-    return () => { animation.current = null; };
-  }, [models, effects]);
+    const wakes = wakesRef?.current;
+    return () => {
+      if (wakes) {
+        for (let i = 0; i < SEA_WAKE_COUNT; i++) wakes[i]?.set(0, 0, 1, 0);
+      }
+      animation.current = null;
+    };
+  }, [models, effects, wakesRef]);
 
   useEffect(() => () => material.dispose(), [material]);
   useEffect(() => () => {
-    for (const model of models) model.group.traverse(child => {
-      if (child instanceof THREE.Mesh) child.geometry.dispose();
-    });
+    for (const model of models) {
+      model.group.traverse((child) => {
+        if (child instanceof THREE.Mesh) child.geometry.dispose();
+      });
+    }
   }, [models]);
   useEffect(() => () => {
     effects.ripple.dispose();
     effects.droplet.dispose();
     effects.sprayMat.dispose();
-    effects.slots.forEach(effect => {
-      effect.spray.dispose();
-      effect.rings.forEach(ring => ring.material.dispose());
+    effects.slots.forEach((slotEffect) => {
+      for (const group of [slotEffect.exit, slotEffect.entry]) {
+        group.spray.dispose();
+        group.rings.forEach((ring) => ring.material.dispose());
+      }
     });
   }, [effects]);
 
   useFrame(({ clock }) => {
     if (!animation.current) return;
-    const { models, slots } = animation.current;
+    const { models: activeModels, slots } = animation.current;
+    // Garantie stricte : aucun modèle marin ne peut rester visible hors d'un créneau actif.
+    for (let i = 0; i < activeModels.length; i++) {
+      activeModels[i].group.visible = false;
+    }
+    if (needsEffectsReset.current) {
+      needsEffectsReset.current = false;
+      for (let i = 0; i < slots.length; i++) {
+        slots[i].exit.group.visible = false;
+        slots[i].entry.group.visible = false;
+      }
+    }
+
     firstFrame.current ??= clock.elapsedTime;
     const time = clock.elapsedTime - firstFrame.current;
     const world = worldRef.current;
     const scroll = world?.scroll ?? 0;
+    const dScroll = prevScroll.current === null ? 0 : Math.max(0, scroll - prevScroll.current);
+    prevScroll.current = scroll;
+
     const daylight = THREE.MathUtils.clamp(world?.daylight ?? 1, 0, 1);
     effects.sprayMat.color.copy(NIGHT_FOAM_COLOR).lerp(SPRAY_DAY_COLOR, daylight);
     const busSpeed = WORLD_SPEED * (world?.speedMultiplier ?? 1) * (world?.motionFactor ?? 1);
+    const wakes = wakesRef?.current;
+
+    for (let index = 0; index < SEA_WAKE_COUNT; index++) {
+      if (wakes && wakes[index]) wakes[index].set(0, 0, 1, 0);
+    }
+
     for (let index = 0; index < slots.length; index++) {
       const slot = SLOTS[index];
       const effect = slots[index];
-      const anchor = cycleAnchors.current[index];
+      const track = trackStates.current[index];
       const elapsed = time + slot.offset;
-      const cycle = Math.floor(elapsed / PERIOD);
-      const local = elapsed - cycle * PERIOD;
+      const cycle = Math.floor(elapsed / SEA_CREATURE_PERIOD);
+      const local = elapsed - cycle * SEA_CREATURE_PERIOD;
       const modelIndex = reducedMotion
         ? index
-        : ((cycle * slots.length + index) % models.length + models.length) % models.length;
-      const model = models[modelIndex];
-      const duration = model?.motion === "surface" ? 14.8 : model?.motion === "rise" ? 12.2 : 10.4;
+        : ((cycle * slots.length + index) % activeModels.length + activeModels.length) % activeModels.length;
+      const model = activeModels[modelIndex];
+      const duration = model ? getSeaCreatureDuration(model.motion) : 10.0;
       const active = reducedMotion ? index < 2 : elapsed >= 0 && local < duration && Boolean(model);
-      if (effect.model && (!active || effect.model !== model)) {
-        effect.model.group.visible = false;
-        effect.model = null;
+
+      if (track.exit.active) {
+        track.exit.z += dScroll;
       }
-      if (!active || !model) {
-        effect.group.visible = false;
-        continue;
-      }
-      const route = index % 2 ? Math.cos(cycle * 2.2) * 12 : Math.sin(cycle * 1.7) * 14;
-      if (anchor.cycle !== cycle) {
-        anchor.cycle = cycle;
-        anchor.anchorScroll = scroll - busSpeed * local;
-        anchor.entryZ = cabinCenterZ + (index % 2 ? -12 : 10) + route * 0.6 - duration * 0.5 * busSpeed;
-      }
-      const swimSpan = model.motion === "rise" ? 16 : 42;
-      const p = reducedMotion ? .46 : local / duration;
-      const z = reducedMotion
-        ? cabinCenterZ + (index === 0 ? 52 : -48)
-        : anchor.entryZ + (scroll - anchor.anchorScroll) + slot.direction * (p - .5) * swimSpan;
-      const group = model.group;
-      if (z < cabinCenterZ - maxAhead || z > cabinCenterZ + maxBehind) {
-        group.visible = false;
-        effect.group.visible = false;
-        continue;
-      }
-      effect.model = model;
-      group.visible = true;
-      const rise = THREE.MathUtils.smoothstep(p, 0, .29);
-      const dive = THREE.MathUtils.smoothstep(p, .68, 1);
-      const jumpTime = THREE.MathUtils.clamp((p - .20) / .57, 0, 1);
-      const arc = model.motion === "breach" && !reducedMotion ? Math.sin(Math.PI * jumpTime) ** 1.70 : 0;
-      const surface = reducedMotion
-        ? (model.motion === "surface" ? -1.4 : -.8)
-        : (model.motion === "surface" ? -1.4 : model.motion === "rise" ? -.8 : -2.4);
-      const height = surface - (1 - rise + dive) * 25 + arc * 10.8 + (reducedMotion ? 0 : Math.sin(local * 1.9) * .37);
-      // Les plages s'arrêtent à |x| = 52. Les créatures restent au large, nageoires comprises.
-      const x = slot.side * (72 + (1 - p) * 8 + Math.sin(p * Math.PI) * 4);
-      const heading = Math.atan2(-slot.side * (8 - Math.cos(p * Math.PI) * 12.56), slot.direction * swimSpan);
-      const pitch = reducedMotion ? 0 : model.motion === "breach" && jumpTime > 0 && jumpTime < 1
-        ? -Math.cos(Math.PI * jumpTime) * Math.sqrt(Math.max(0, arc)) * .65
-        : Math.sin(local * 1.24) * .065 + dive * .20 - (1 - rise) * .18;
-      group.position.set(x, SEA_LEVEL + height, z);
-      group.rotation.set(pitch, heading, reducedMotion ? 0 : Math.sin(local * 1.48) * .06, "YXZ");
-      group.scale.setScalar(model.scale);
-      for (const joint of model.joints) {
-        const angle = reducedMotion ? 0 : Math.sin(local * 2.22 + joint.offset) * joint.amplitude;
-        const rotation = joint.group.rotation;
-        rotation.set(joint.axis === "x" ? angle : rotation.x, joint.axis === "y" ? angle : rotation.y,
-          joint.axis === "z" ? angle : rotation.z);
+      if (track.entry.active) {
+        track.entry.z += dScroll;
       }
 
-      if (reducedMotion || p < .15 || p > .95) {
-        effect.group.visible = false;
+      if (!active || !model) {
+        // Laisse les ondes résiduelles d'impact se dissiper sur l'eau après le plongeon.
+        const stepOff = Math.max(0, local - track.prevLocal);
+        track.prevLocal = local;
+        if (track.exit.active) track.exit.age += stepOff;
+        if (track.entry.active) track.entry.age += stepOff;
+        const exitWake = animateBurst(effect.exit, track.exit, scratch, daylight, index * 3 + 1);
+        const entryWake = animateBurst(effect.entry, track.entry, scratch, daylight, index * 3 + 2);
+        if (wakes && wakes[index]) {
+          if (entryWake.strength > 0.01) {
+            wakes[index].set(track.entry.x, track.entry.z, entryWake.radius, entryWake.strength);
+          } else if (exitWake.strength > 0.01) {
+            wakes[index].set(track.exit.x, track.exit.z, exitWake.radius, exitWake.strength);
+          }
+        }
         continue;
       }
-      effect.group.position.set(x, SEA_LEVEL + .025, z);
-      const crossing = model.motion === "breach"
-        ? Math.max(
-          1 - Math.abs(p - .28) / .075,
-          1 - Math.abs(p - .69) / .075,
-        )
-        : Math.max(
-          1 - Math.abs(p - .24) / .085,
-          1 - Math.abs(p - .72) / .075,
+
+      const route = index % 2 ? Math.cos(cycle * 2.2) * 12 : Math.sin(cycle * 1.7) * 14;
+      const p = reducedMotion ? 0.46 : THREE.MathUtils.clamp(local / duration, 0, 1);
+
+      if (track.cycle !== cycle) {
+        track.cycle = cycle;
+        track.prevLocal = local;
+        track.diveFired = false;
+        track.exit = makeBurstState();
+        track.entry = makeBurstState();
+        const baseSwimSpeed = getSeaCreatureSwimSpeed(model.motion, p, busSpeed);
+        const netRelVz = busSpeed + slot.direction * baseSwimSpeed;
+        const focusAnchor = cabinCenterZ + (index % 2 ? -10 : 12) + route * 0.6;
+        track.waterZ = focusAnchor - (duration * 0.45 - local) * netRelVz;
+      }
+
+      const stepDt = reducedMotion ? 0 : Math.max(0, Math.min(0.15, local - track.prevLocal));
+      track.prevLocal = local;
+
+      const previewZ = reducedMotion
+        ? cabinCenterZ + (index === 0 ? 52 : -48)
+        : track.waterZ + dScroll;
+
+      const pose = sampleSeaCreaturePose({
+        motion: model.motion,
+        p,
+        duration,
+        local,
+        cycle,
+        side: slot.side,
+        direction: slot.direction,
+        worldZ: previewZ,
+        scroll,
+        waterTime: time,
+        busSpeed,
+        reducedMotion,
+      });
+
+      const z = reducedMotion
+        ? previewZ
+        : previewZ + slot.direction * pose.swimSpeed * stepDt;
+      track.waterZ = z;
+
+      const group = model.group;
+      if (z < cabinCenterZ - maxAhead || z > cabinCenterZ + maxBehind) {
+        effect.exit.group.visible = false;
+        effect.entry.group.visible = false;
+        continue;
+      }
+
+      group.visible = true;
+      group.position.set(pose.x, SEA_LEVEL + pose.height, z);
+      group.rotation.set(pose.pitch, pose.heading, pose.roll, "YXZ");
+      group.scale.setScalar(model.scale);
+
+      for (const joint of model.joints) {
+        const angle = reducedMotion
+          ? 0
+          : Math.sin(local * pose.jointFrequency + joint.offset) * joint.amplitude * pose.jointGain;
+        const rotation = joint.group.rotation;
+        rotation.set(
+          joint.axis === "x" ? angle : rotation.x,
+          joint.axis === "y" ? angle : rotation.y,
+          joint.axis === "z" ? angle : rotation.z,
         );
-      const airborne = model.motion === "breach" && height > 1.2 && crossing <= .02;
-      const surfacePresence = rise * (1 - dive) * THREE.MathUtils.smoothstep(height, -6, -1.8);
-      animateWater(effect, scratch, Math.max(0, crossing), surfacePresence, model, daylight, airborne);
+      }
+
+      if (reducedMotion) {
+        effect.exit.group.visible = false;
+        effect.entry.group.visible = false;
+        continue;
+      }
+
+      if (track.exit.active) track.exit.age += stepDt;
+      if (track.entry.active) track.entry.age += stepDt;
+
+      let chosenWake = { x: pose.x, z, radius: 1, strength: 0 };
+
+      if (model.motion === "breach") {
+        // Gerbe et onde de sortie quand la créature perce la surface vers le haut.
+        if (!track.exit.fired && p >= 0.22 && pose.vy > 0 && pose.height >= -1.45) {
+          track.exit = {
+            active: true,
+            fired: true,
+            x: pose.x,
+            z,
+            heading: pose.heading,
+            age: 0,
+            life: 2.25,
+            power: Math.min(1.45, Math.max(0.85, pose.vy / 8.5)) * (model.scale / 3.0),
+            scale: model.scale,
+          };
+        }
+        // Plongeon : onde puissante et gerbe verticale au retour dans l'océan.
+        if (!track.entry.fired && (track.exit.fired || p >= 0.45) && pose.vy < -1.0 && pose.height <= 0.45) {
+          track.entry = {
+            active: true,
+            fired: true,
+            x: pose.x,
+            z,
+            heading: pose.heading,
+            age: 0,
+            life: 2.55,
+            power: Math.min(1.75, Math.max(1.05, Math.abs(pose.vy) / 7.2)) * (model.scale / 2.85),
+            scale: model.scale * 1.08,
+          };
+        }
+
+        const exitWake = animateBurst(effect.exit, track.exit, scratch, daylight, index * 7 + cycle);
+        const entryWake = animateBurst(effect.entry, track.entry, scratch, daylight, index * 11 + cycle);
+
+        if (entryWake.strength >= exitWake.strength && entryWake.strength > 0.01) {
+          chosenWake = { x: track.entry.x, z: track.entry.z, ...entryWake };
+        } else if (exitWake.strength > 0.01) {
+          chosenWake = { x: track.exit.x, z: track.exit.z, ...exitWake };
+        }
+      } else {
+        // Émersion, sillage continu en surface puis remous de plongée.
+        if (!track.exit.fired && pose.vy > 0.3 && pose.height >= -2.1) {
+          track.exit = {
+            active: true,
+            fired: true,
+            x: pose.x,
+            z,
+            heading: pose.heading,
+            age: 0,
+            life: 2.0,
+            power: (model.motion === "rise" ? 1.15 : 0.85) * (model.scale / 3.0),
+            scale: model.scale,
+          };
+        }
+        if (!track.diveFired && p >= 0.70 && pose.vy < -0.8 && pose.height <= -0.95) {
+          track.diveFired = true;
+          track.entry = {
+            active: true,
+            fired: true,
+            x: pose.x,
+            z,
+            heading: pose.heading,
+            age: 0,
+            life: 2.1,
+            power: 0.95 * (model.scale / 3.0),
+            scale: model.scale,
+          };
+        }
+
+        const exitWake = animateBurst(effect.exit, track.exit, scratch, daylight, index * 7 + cycle);
+        let swimWake = { radius: 1, strength: 0 };
+        if (track.diveFired) {
+          swimWake = animateBurst(effect.entry, track.entry, scratch, daylight, index * 13 + cycle);
+          if (swimWake.strength > 0.01) {
+            chosenWake = { x: track.entry.x, z: track.entry.z, ...swimWake };
+          }
+        } else {
+          const surfacePresence = THREE.MathUtils.smoothstep(pose.height, -4.2, -1.2);
+          swimWake = animateSurfaceWake(
+            effect.entry,
+            scratch,
+            pose.x,
+            z,
+            pose.heading,
+            model.scale,
+            local,
+            surfacePresence,
+            daylight,
+          );
+          if (swimWake.strength >= exitWake.strength && swimWake.strength > 0.01) {
+            chosenWake = { x: pose.x, z, ...swimWake };
+          } else if (exitWake.strength > 0.01) {
+            chosenWake = { x: track.exit.x, z: track.exit.z, ...exitWake };
+          }
+        }
+      }
+
+      if (wakes && wakes[index] && chosenWake.strength > 0.01) {
+        wakes[index].set(chosenWake.x, chosenWake.z, chosenWake.radius, chosenWake.strength);
+      }
     }
   });
 
-  return <group name="world-sea-creatures">
-    {models.map(model => <primitive key={model.group.name} object={model.group} dispose={null} />)}
-    {effects.slots.map(effect => <primitive key={effect.group.name} object={effect.group} dispose={null} />)}
-  </group>;
+  return (
+    <group name="world-sea-creatures">
+      {models.map((model) => (
+        <primitive key={model.group.name} object={model.group} dispose={null} />
+      ))}
+      {effects.slots.map((slotEffect) => (
+        <group key={slotEffect.exit.group.name}>
+          <primitive object={slotEffect.exit.group} dispose={null} />
+          <primitive object={slotEffect.entry.group} dispose={null} />
+        </group>
+      ))}
+    </group>
+  );
 }
