@@ -10,7 +10,7 @@ export const ENTRY_CAMERA_TIME = ENTRY_SEATED_TIME;
 export const ENTRY_DURATION = 10.2;
 export const EXIT_WALK_START = 5.8;
 export const EXIT_WALK_END = 10.2;
-export const EXIT_DURATION = 12.6;
+export const EXIT_DURATION = 13.4;
 export const JOURNEY_MAX_DT = 0.25;
 export const PASSENGER_WALK_SPEED = 1.35;
 export const SEAT_APPROACH_DISTANCE = 0.55;
@@ -192,7 +192,7 @@ export function updateJourney(state: JourneyState, phase: Phase, time: number, s
     state.completed=time>=timing.entryDuration;
   } else if(phase==="exiting") {
     state.drive=1-ramp(time,0,ARRIVAL_STOP_TIME);
-    state.cameraBlend=1-ramp(time,3.3,5.5);
+    state.cameraBlend=1-ramp(time,1.0,4.6);
     state.doorOpen=time>=ARRIVAL_STOP_TIME && time<timing.exitWalkEnd+0.5;
     state.sitting=1-ramp(time,EXIT_WALK_START-0.6,EXIT_WALK_START);
     const progress=walkProgress((time-EXIT_WALK_START)/(timing.exitWalkEnd-EXIT_WALK_START));

@@ -266,7 +266,7 @@ export default function CameraRig({
         rt.active = true;
         rt.canInterrupt = true;
         rt.t = 0;
-        rt.duration = .65;
+        rt.duration = 0.9;
         rt.fromPos.copy(camera.position);
         rt.toPos.copy(overview.pos);
         rt.fromTarget.copy(pivot);
@@ -364,12 +364,14 @@ export default function CameraRig({
     rt.active = true;
     rt.canInterrupt = false;
     rt.t = 0;
-    rt.duration = reducedMotion ? 0.01 : 0.85;
     rt.toSeat = !next;
     rt.fromPos.copy(camera.position);
     rt.fromQ.copy(camera.quaternion);
     const destination = freeCamera.current ?? saved.current;
     rt.toPos.copy(next ? destination.pos : activeEyePos);
+    rt.duration = reducedMotion
+      ? 0.01
+      : THREE.MathUtils.clamp(rt.fromPos.distanceTo(rt.toPos) / 7, 1.8, 2.5);
     rt.toTarget.copy(next ? destination.target : activeTvTarget);
     rt.fromTarget.copy(pivot);
     if (next) rt.toQ.copy(destination.orientation);
@@ -618,7 +620,7 @@ export default function CameraRig({
           // Plan fixe face à la porte pendant que le passager entre dans le cadre et monte.
           cinematic.target.set(1.25, 1.25, trip.doorZ - .65);
           cinematic.pos.set(1.25 + 6.05 * setback, 2.8, trip.doorZ - 2.65 * setback);
-          const approach = ease(trip.elapsed / 1.15);
+          const approach = ease(trip.elapsed / 1.8);
           cam.position.lerpVectors(a.from, cinematic.pos, approach);
           cinematic.matrix.lookAt(cinematic.pos, cinematic.target, CAMERA_UP);
           cinematic.quaternion.setFromRotationMatrix(cinematic.matrix);
@@ -632,21 +634,21 @@ export default function CameraRig({
           cam.quaternion.slerpQuaternions(a.fromQ,a.toQ,trip.cameraBlend);
         }
       } else {
-        const focusY = characterId === "chopper" ? .7 : 1.05;
-        const watchZ = trip.position.z;
-        cinematic.target.set(trip.position.x * .72, trip.position.y + focusY, watchZ);
-        const side = 5.6 + THREE.MathUtils.clamp(trip.position.x, 0, 3.3) * .75;
-        cinematic.pos.set(cinematic.target.x + side * setback, cinematic.target.y + 1.45, watchZ - 2.65 * setback);
-        const outward = exitFromFreeView.current ? ease(trip.elapsed / 1.15) : 1 - trip.cameraBlend;
-        cinematic.matrix.lookAt(cinematic.pos,cinematic.target,CAMERA_UP);
+        // Plan fixe plus reculé dehors : la caméra reste immobile pendant toute la sortie du passager.
+        cinematic.target.set(1.85, 1.35, trip.doorZ - 0.35);
+        cinematic.pos.set(1.85 + 9.2 * setback, 3.6, trip.doorZ - 4.8 * setback);
+        const outward = exitFromFreeView.current ? ease(trip.elapsed / 2.2) : 1 - trip.cameraBlend;
+        cinematic.matrix.lookAt(cinematic.pos, cinematic.target, CAMERA_UP);
         cinematic.quaternion.setFromRotationMatrix(cinematic.matrix);
-        if(outward<1) {
-          cam.position.lerpVectors(a.from,cinematic.pos,outward);
-          cam.quaternion.slerpQuaternions(a.fromQ,cinematic.quaternion,outward);
+        if (outward < 1) {
+          cam.position.lerpVectors(a.from, cinematic.pos, outward);
+          cam.quaternion.slerpQuaternions(a.fromQ, cinematic.quaternion, outward);
         } else {
-          const departure=ease((trip.elapsed-trip.timing.exitWalkEnd-0.7)/1.7);
-          cam.position.lerpVectors(cinematic.pos,a.to,departure);
-          cam.quaternion.slerpQuaternions(cinematic.quaternion,a.toQ,departure);
+          const departStart = trip.timing.exitWalkEnd + 0.7;
+          const departSpan = Math.max(0.5, trip.timing.exitDuration - departStart);
+          const departure = ease((trip.elapsed - departStart) / departSpan);
+          cam.position.lerpVectors(cinematic.pos, a.to, departure);
+          cam.quaternion.slerpQuaternions(cinematic.quaternion, a.toQ, departure);
         }
       }
       if (trip.completed) {

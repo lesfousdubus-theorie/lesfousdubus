@@ -96,7 +96,6 @@ export default function BusExperience() {
   const [showTheoryAge, setShowTheoryAge] = useState(false);
   const [joining, setJoining] = useState(false);
   const [boardingFromSeat, setBoardingFromSeat] = useState(false);
-  const [hasExitedInSession, setHasExitedInSession] = useState(false);
   const [passengerProfiles, setPassengerProfiles] = useState<PassengerProfile[]>([]);
   const [currentPassengerSeatIndex, setCurrentPassengerSeatIndex] = useState<number | null>(null);
   const [currentPassengerEntryNumber, setCurrentPassengerEntryNumber] = useState<number | null>(null);
@@ -399,7 +398,7 @@ export default function BusExperience() {
     unlockAudio();
     emitBusAudioEvent("tvPrepare");
     setJoining(true);
-    setBoardingFromSeat(hasRegisteredSeat && !hasExitedInSession);
+    setBoardingFromSeat(false);
     setTvOn(true);
     transitionPhase("entering");
     if (hasRegisteredSeat) {
@@ -463,12 +462,7 @@ export default function BusExperience() {
         playStretch();
       }
       applyBusSnapshot(d);
-      // Une inscription déjà présente au chargement correspond au personnage
-      // que l'on voit assis depuis l'extérieur. Seule la caméra le rejoint.
-      // Après une sortie dans cette session, il doit en revanche remonter à pied.
-      if (d.added || d.seatIndex === null) {
-        setBoardingFromSeat(false);
-      }
+      setBoardingFromSeat(false);
       setRegistrationPending(false);
       setCurrentPassengerSeatIndex(d.seatIndex);
       setCurrentPassengerEntryNumber((previous) =>
@@ -546,7 +540,7 @@ export default function BusExperience() {
       enteringLockRef.current = false;
       setJoining(false);
     }
-  }, [applyBusSnapshot, dismissToast, hasExitedInSession, phase, sceneAvailable, showToast, restoreSavedProfile, handleOpenOnboardingModal, transitionPhase]);
+  }, [applyBusSnapshot, dismissToast, phase, sceneAvailable, showToast, restoreSavedProfile, handleOpenOnboardingModal, transitionPhase]);
 
   const handleSubmitOnboarding = useCallback((submission: OnboardingSubmission) => {
     const validated = validateOnboarding(submission);
@@ -578,7 +572,6 @@ export default function BusExperience() {
       clearProfile();
       setTvOn(false);
       setHasEntered(false);
-      setHasExitedInSession(true);
       setBoardingFromSeat(false);
       setCurrentPassengerSeatIndex(null);
       setCurrentPassengerEntryNumber(null);
@@ -596,7 +589,6 @@ export default function BusExperience() {
   // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
   const exitBus = useCallback(() => {
     if (phase !== "inside") return;
-    setHasExitedInSession(true);
     setBoardingFromSeat(false);
     dismissToast();
     transitionPhase("exiting");
@@ -705,7 +697,6 @@ export default function BusExperience() {
         hasEntered={hasEntered}
         boardingPending={joining}
         boardingFromSeat={boardingFromSeat}
-        visitorSeatedOutside={!hasExitedInSession && phase === "outside"}
         passengerProfiles={passengerProfiles}
         profileRevision={profileRevision}
         currentPassengerSeatIndex={currentPassengerSeatIndex}
