@@ -16,6 +16,13 @@ export function usePassengerHeadHeights() {
   return useSyncExternalStore(subscribe, () => headHeights, () => headHeights);
 }
 
+/** Enregistre la hauteur de tête mesurée pour un archétype et notifie les abonnés si nouvelle. */
+export function recordPassengerHeadHeight(id: string, top: number) {
+  if (!Number.isFinite(top) || headHeights.has(id)) return;
+  headHeights = new Map(headHeights).set(id, top);
+  listeners.forEach(listener => listener());
+}
+
 /** Mesure une fois le vrai sommet du modèle, cheveux et accessoires compris. */
 export function usePassengerHeadHeight(id: string, modelRef: RefObject<Object3D | null>, enabled = true) {
   useLayoutEffect(() => {
@@ -36,9 +43,7 @@ export function usePassengerHeadHeight(id: string, modelRef: RefObject<Object3D 
         top = Math.max(top, point.y);
       }
     });
-    if (!Number.isFinite(top)) return;
-    headHeights = new Map(headHeights).set(id, top);
-    listeners.forEach(listener => listener());
+    recordPassengerHeadHeight(id, top);
   }, [enabled, id, modelRef]);
 
   return useSyncExternalStore(subscribe, () => headHeights.get(id), () => undefined);

@@ -20,8 +20,8 @@ export default function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedM
       {/* Siège conducteur ergonomique avec appuie-tête et embase (Kamal) */}
       <group name="bus-driver-seat" position={DRIVER_SEAT_POSITIONS.kamal}>
         {/* Embase métallique fixée au plancher */}
-        <mesh material={mats.dark} position={[0, 0.77, 0]}>
-          <boxGeometry args={[0.22, 0.30, 0.22]} />
+        <mesh material={mats.dark} position={[0, 0.815, SEAT_CUSHION_Z]}>
+          <boxGeometry args={[0.22, 0.39, 0.22]} />
         </mesh>
         {/* Coussin d'assise abaissé */}
         <mesh material={mats.seat} position={[0, 1.05, SEAT_CUSHION_Z]}>
@@ -44,8 +44,8 @@ export default function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedM
       {/* Les deux navigateurs sont côte à côte, devant le vestibule. */}
       <group name="bus-guide-seat" position={DRIVER_SEAT_POSITIONS.kyta}>
         {/* Embase métallique fixée au plancher */}
-        <mesh material={mats.dark} position={[0, 0.77, 0]}>
-          <boxGeometry args={[0.22, 0.30, 0.22]} />
+        <mesh material={mats.dark} position={[0, 0.815, SEAT_CUSHION_Z]}>
+          <boxGeometry args={[0.22, 0.39, 0.22]} />
         </mesh>
         {/* Coussin d'assise abaissé */}
         <mesh material={mats.seat} position={[0, 1.05, SEAT_CUSHION_Z]}>
@@ -172,29 +172,32 @@ export default function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedM
         {/* Console centrale du bus */}
         <group position={[0, 0, -.30]}>
           {/* Bloc de console avancé vers l'habitacle */}
-          <mesh material={mats.dark} position={[0, 1.34, -4.04]}>
-            <boxGeometry args={[0.54, 0.58, 0.18]} />
+          <mesh material={mats.dark} position={[0, 1.355, -4.04]}>
+            <boxGeometry args={[0.54, 0.61, 0.18]} />
           </mesh>
           {/* Écran multimédia / GPS Laugh Tale */}
-          <mesh material={mats.dark} position={[0, 1.50, -3.94]}>
-            <boxGeometry args={[0.42, 0.22, 0.02]} />
+          <mesh material={mats.dark} position={[0, 1.48, -3.94]}>
+            <boxGeometry args={[0.42, 0.20, 0.02]} />
           </mesh>
-          <mesh position={[0, 1.50, -3.928]}>
-            <planeGeometry args={[0.38, 0.18]} />
+          <mesh position={[0, 1.48, -3.926]}>
+            <planeGeometry args={[0.38, 0.16]} />
             <meshStandardMaterial
               color="#072214"
               emissive="#10b981"
               emissiveIntensity={0.65}
               roughness={0.25}
+              polygonOffset
+              polygonOffsetFactor={-1}
+              polygonOffsetUnits={-1}
             />
           </mesh>
           {/* Double grille d'aération supérieure de climatisation */}
           {[-0.13, 0.13].map((vx) => (
-            <group key={`vent-${vx}`} position={[vx, 1.59, -4.08]}>
+            <group key={`vent-${vx}`} position={[vx, 1.615, -3.94]}>
               <mesh material={mats.dark}>
-                <boxGeometry args={[0.16, 0.06, 0.02]} />
+                <boxGeometry args={[0.16, 0.055, 0.02]} />
               </mesh>
-              <mesh material={mats.chrome} position={[0, 0, 0.005]}>
+              <mesh material={mats.chrome} position={[0, 0, 0.012]}>
                 <boxGeometry args={[0.14, 0.012, 0.01]} />
               </mesh>
             </group>
@@ -222,28 +225,28 @@ export default function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedM
               </mesh>
             </group>
           ))}
-          {/* Levier de boîte de vitesses automatique */}
-          <group position={[-0.18, 1.14, -3.96]}>
+          {/* Levier de boîte de vitesses automatique décalé vers l'arrière et le haut */}
+          <group position={[-0.20, 1.12, -3.88]}>
             <mesh material={mats.dark}>
-              <boxGeometry args={[0.10, 0.04, 0.14]} />
+              <boxGeometry args={[0.10, 0.04, 0.16]} />
             </mesh>
-            <mesh material={mats.chrome} position={[0, 0.08, 0]} rotation={[0.2, 0, 0]}>
-              <cylinderGeometry args={[0.012, 0.012, 0.14, 8]} />
+            <mesh material={mats.chrome} position={[0, 0.09, 0.045]} rotation={[0.25, 0, 0]}>
+              <cylinderGeometry args={[0.012, 0.012, 0.16, 8]} />
             </mesh>
-            <mesh material={mats.dark} position={[0, 0.15, 0.02]}>
-              <sphereGeometry args={[0.026, 12, 12]} />
+            <mesh material={mats.dark} position={[0, 0.17, 0.065]}>
+              <sphereGeometry args={[0.028, 12, 12]} />
             </mesh>
           </group>
         </group>
 
         {/* Côté passager avant : boîte à gants et barre de maintien */}
         <group position={[CREW_SEATS.kyta[0], 0, 0]}>
-          <mesh material={mats.dark} position={[0, 1.48, -4.42]}>
-            <boxGeometry args={[0.68, 0.18, 0.14]} />
+          <mesh material={mats.dark} position={[0, 1.41, -4.30]}>
+            <boxGeometry args={[0.68, 0.18, 0.04]} />
           </mesh>
           {/* Liseré chromé de boîte à gants */}
-          <mesh material={mats.chrome} position={[0, 1.48, -4.34]}>
-            <boxGeometry args={[0.64, 0.012, 0.01]} />
+          <mesh material={mats.chrome} position={[0, 1.41, -4.275]}>
+            <boxGeometry args={[0.64, 0.014, 0.012]} />
           </mesh>
           {/* Barre de maintien passager avant jaune */}
           <mesh name="bus-navigator-bar" material={mats.yellow} position={[0, NAVIGATOR_BAR.y, NAVIGATOR_BAR.z]} rotation={[0, 0, Math.PI / 2]}>
@@ -256,8 +259,16 @@ export default function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedM
           <mesh material={mats.dark}>
             <boxGeometry args={[0.55, 0.16, 0.03]} />
           </mesh>
-          <mesh material={mats.chrome} position={[0, 0, 0.016]}>
+          <mesh position={[0, 0, 0.019]}>
             <planeGeometry args={[0.52, 0.13]} />
+            <meshStandardMaterial
+              color="#f2f6ff"
+              metalness={0.45}
+              roughness={0.15}
+              polygonOffset
+              polygonOffsetFactor={-1}
+              polygonOffsetUnits={-1}
+            />
           </mesh>
         </group>
       </group>

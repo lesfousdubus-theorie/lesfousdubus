@@ -32,6 +32,7 @@ function makePartyCard(lines: readonly string[], index: number) {
   ctx.fillRect(260, 290, 120, 5);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
   return texture;
 }
 
@@ -54,7 +55,7 @@ export default function BusPartyTv({ cards, index, reducedMotion }: {
   useFrame((_, delta) => {
     if (!material.current || reducedMotion) return;
     // Le moteur redémarre son horloge après la fermeture d’une modale.
-    elapsed.current += delta;
+    elapsed.current += Math.min(delta, 0.1);
     const step = Math.floor(elapsed.current / SECONDS_PER_CARD);
     const next = cards[(initial + step) % cards.length];
     if (material.current.map !== next) material.current.map = next;

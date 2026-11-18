@@ -1,7 +1,7 @@
 "use client";
 
 import * as THREE from "three";
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { setSceneryParts } from "@/lib/world-visibility";
 
@@ -34,6 +34,7 @@ export type PropType =
 export interface PropDef {
   type: PropType;
   x: number;
+  y?: number;
   base: number;
   s: number;
   rot: number;
@@ -128,16 +129,21 @@ function LandmarkModel({ def }: { def: PropDef }) {
           <mesh material={MATS.gold} position={[0, 8.2, 0]} rotation={[0, Math.PI / 4, 0]}>
             <coneGeometry args={[1.8, 1.8, 4]} />
           </mesh>
-          {/* Portail d'entrée du temple et colonnes */}
-          <mesh material={MATS.black} position={[0, 1.2, 6.2]} rotation={[0, 0, 0]}>
-            <boxGeometry args={[2.2, 2.4, 0.3]} />
+          {/* Portail d'entrée encastré contre la pente de la pyramide */}
+          <mesh material={MATS.black} position={[0, 1.2, 5.45]}>
+            <boxGeometry args={[2.2, 2.4, 1.8]} />
           </mesh>
-          <mesh material={MATS.sandDark} position={[0, 2.5, 6.3]}>
-            <boxGeometry args={[3.2, 0.4, 0.5]} />
+          {[-1.32, 1.32].map((x) => (
+            <mesh key={`jamb-${x}`} material={MATS.sandDark} position={[x, 1.25, 5.4]}>
+              <boxGeometry args={[0.56, 2.5, 2.0]} />
+            </mesh>
+          ))}
+          <mesh material={MATS.sandDark} position={[0, 2.5, 5.4]}>
+            <boxGeometry args={[3.3, 0.44, 2.2]} />
           </mesh>
-          {[-1.5, 1.5].map((x) => (
-            <mesh key={x} material={MATS.sandDark} position={[x, 1.35, 6.55]}>
-              <cylinderGeometry args={[0.25, 0.34, 2.7, 6]} />
+          {[-1.42, 1.42].map((x) => (
+            <mesh key={x} material={MATS.sandDark} position={[x, 1.3, 6.4]}>
+              <cylinderGeometry args={[0.24, 0.32, 2.6, 6]} />
             </mesh>
           ))}
         </group>
@@ -195,6 +201,9 @@ function LandmarkModel({ def }: { def: PropDef }) {
           </mesh>
           <mesh material={MATS.cactus} position={[-0.85, 2.5, 0]}>
             <cylinderGeometry args={[0.2, 0.2, 1.1, 8]} />
+          </mesh>
+          <mesh material={MATS.cactus} position={[-0.85, 3.05, 0]}>
+            <sphereGeometry args={[0.2, 8, 8]} />
           </mesh>
         </group>
       );
@@ -314,9 +323,9 @@ function LandmarkModel({ def }: { def: PropDef }) {
           <mesh material={MATS.trunk} position={[0, 11.2, 0]}>
             <boxGeometry args={[6.8, 0.6, 0.6]} />
           </mesh>
-          {[-3.1, 3.1].map((x) => (
-            <mesh key={x} material={MATS.trunk} position={[x, 8.4, 0]}>
-              <boxGeometry args={[0.6, 5.8, 0.6]} />
+          {[-2.85, 2.85].map((x) => (
+            <mesh key={x} material={MATS.trunk} position={[x, 7.8, 0]}>
+              <boxGeometry args={[0.6, 7.0, 0.6]} />
             </mesh>
           ))}
         </group>
@@ -578,11 +587,11 @@ function LandmarkModel({ def }: { def: PropDef }) {
           <mesh material={MATS.rock} position={[0, 2.2, 0]} castShadow>
             <cylinderGeometry args={[0.75, 1.25, 4.4, 6]} />
           </mesh>
-          <mesh material={MATS.gold} position={[0, 2.35, 0.88]}>
-            <boxGeometry args={[0.28, 2.2, 0.08]} />
+          <mesh material={MATS.gold} position={[0, 2.35, 1.01]} rotation={[-0.113, 0, 0]}>
+            <boxGeometry args={[0.26, 2.2, 0.12]} />
           </mesh>
-          <mesh material={MATS.neonCyan} position={[0, 2.85, 0.86]}>
-            <boxGeometry args={[0.7, 0.2, 0.08]} />
+          <mesh material={MATS.neonCyan} position={[0, 2.85, 0.98]} rotation={[-0.113, 0, 0]}>
+            <boxGeometry args={[0.68, 0.2, 0.12]} />
           </mesh>
         </group>
       );
@@ -646,10 +655,10 @@ function LandmarkModel({ def }: { def: PropDef }) {
           <mesh material={MATS.rock} position={[0, 3.6, 0]} castShadow>
             <cylinderGeometry args={[3.0, 3.8, 7.2, 10]} />
           </mesh>
-          <mesh material={MATS.water} position={[0, 3.6, 3.15]}>
-            <boxGeometry args={[2.4, 7.0, 0.3]} />
+          <mesh material={MATS.water} position={[0, 3.6, 3.58]} rotation={[-0.115, 0, 0]}>
+            <boxGeometry args={[2.4, 7.1, 0.35]} />
           </mesh>
-          <mesh material={MATS.snow} position={[0, 0.55, 3.5]} scale={[1.4, 0.45, 0.9]}>
+          <mesh material={MATS.snow} position={[0, 0.55, 3.85]} scale={[1.4, 0.45, 0.9]}>
             <sphereGeometry args={[1.6, 10, 8]} />
           </mesh>
         </group>
@@ -712,14 +721,32 @@ function LandmarkModel({ def }: { def: PropDef }) {
   }
 }
 
+type MergedMeshBatch = {
+  geometry: THREE.BufferGeometry;
+  material: THREE.Material;
+  castShadow: boolean;
+  receiveShadow: boolean;
+};
+
 /** Les éléments fixes regroupent leurs pièces par matériau et par comportement d’ombre. */
-export function WorldLandmark({ def }: { def: PropDef }) {
-  const group = useRef<THREE.Group>(null);
+export function WorldLandmark({ def, onReady }: { def: PropDef; onReady?: () => void }) {
   const source = useRef<THREE.Group>(null);
+  const onReadyRef = useRef(onReady);
+  const disposedBatches = useRef(new WeakSet<MergedMeshBatch[]>());
+  const [mergedGeometry, setMergedGeometry] = useState<{ def: PropDef; batches: MergedMeshBatch[] } | null>(null);
+  const activeBatches = mergedGeometry?.def === def ? mergedGeometry.batches : null;
+
   useLayoutEffect(() => {
-    const root = group.current;
+    onReadyRef.current = onReady;
+  }, [onReady]);
+
+  useLayoutEffect(() => {
+    if (activeBatches) {
+      onReadyRef.current?.();
+      return;
+    }
     const original = source.current;
-    if (!root || !original) return;
+    if (!original) return;
     original.updateWorldMatrix(true, true);
     const inverse = original.matrixWorld.clone().invert();
     const batches = new Map<string, { material: THREE.Material; cast: boolean; receive: boolean; shapes: THREE.BufferGeometry[] }>();
@@ -730,36 +757,60 @@ export function WorldLandmark({ def }: { def: PropDef }) {
       const key = `${object.material.uuid}:${cast}:${receive}`;
       const batch = batches.get(key) ?? { material: object.material, cast, receive, shapes: [] as THREE.BufferGeometry[] };
       const geometry = object.geometry.index ? object.geometry.toNonIndexed() : object.geometry.clone();
-      geometry.deleteAttribute("uv");
+      for (const attr of Object.keys(geometry.attributes)) {
+        if (attr !== "position" && attr !== "normal") geometry.deleteAttribute(attr);
+      }
+      if (!geometry.hasAttribute("normal")) geometry.computeVertexNormals();
       geometry.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse, object.matrixWorld));
       geometry.computeBoundingBox();
       batch.shapes.push(geometry);
       batches.set(key, batch);
     });
 
-    const meshes: THREE.Mesh[] = [];
+    const nextBatches: MergedMeshBatch[] = [];
     for (const { material, cast, receive, shapes } of batches.values()) {
       const combined = mergeGeometries(shapes);
       if (combined) {
         setSceneryParts(combined, shapes);
-        const mesh = new THREE.Mesh(combined, material);
-        mesh.castShadow = cast;
-        mesh.receiveShadow = receive;
-        meshes.push(mesh);
+        nextBatches.push({ geometry: combined, material, castShadow: cast, receiveShadow: receive });
       }
       shapes.forEach(shape => shape.dispose());
     }
-    if (meshes.length !== batches.size || meshes.length === 0) {
-      meshes.forEach(mesh => mesh.geometry.dispose());
+    if (nextBatches.length === batches.size && nextBatches.length > 0) {
+      setMergedGeometry({ def, batches: nextBatches });
+    } else {
+      nextBatches.forEach(batch => batch.geometry.dispose());
+    }
+  }, [def, activeBatches]);
+
+  useEffect(() => {
+    if (!activeBatches) return;
+    const disposed = disposedBatches.current;
+    if (disposed.has(activeBatches)) {
+      setMergedGeometry(null);
       return;
     }
-    original.removeFromParent();
-    root.add(...meshes);
     return () => {
-      root.add(original);
-      root.remove(...meshes);
-      meshes.forEach(mesh => mesh.geometry.dispose());
+      disposed.add(activeBatches);
+      activeBatches.forEach(batch => batch.geometry.dispose());
     };
-  }, [def]);
-  return <group ref={group}><group ref={source}><LandmarkModel def={def} /></group></group>;
+  }, [activeBatches]);
+
+  if (activeBatches) {
+    return (
+      <>
+        {activeBatches.map((batch, index) => (
+          <mesh
+            key={`${batch.material.uuid}:${index}`}
+            geometry={batch.geometry}
+            material={batch.material}
+            castShadow={batch.castShadow}
+            receiveShadow={batch.receiveShadow}
+            dispose={null}
+          />
+        ))}
+      </>
+    );
+  }
+  return <group ref={source}><LandmarkModel def={def} /></group>;
 }

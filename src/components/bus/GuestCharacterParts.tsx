@@ -17,8 +17,8 @@ export function GuestHair({ id, material }: { id: string; material: THREE.Materi
     {[-1,1].map(side=><CharacterPart key={`fringe-${side}`} material={material} size={[.095,.034,.033]}
       position={[side*.058,.116,-.121]} rotation={[0,0,side*.17]} radius={.009}/>)}
     {vivi&&<>
-      <CharacterPart name="nakama-vivi-ponytail" material={material} size={[.075,.27,.064]} position={[0,-.014,.136]} radius={.015}/>
-      <CharacterPart material={identityMaterial("#deba48")} size={[.084,.036,.075]} position={[0,.086,.130]}/>
+      <CharacterPart name="nakama-vivi-ponytail" material={material} size={[.075,.25,.048]} position={[0,-.004,.122]} radius={.015}/>
+      <CharacterPart material={identityMaterial("#deba48")} size={[.084,.036,.058]} position={[0,.086,.118]}/>
     </>}
   </group>;
 }
@@ -71,13 +71,13 @@ function featherGeometry() {
 /** Cloaks stay joined to the torso; broad simple shapes carry the identity. */
 export function GuestTorsoExtras({ id, mats, front }: { id: string; mats: Mats; front: number }) {
   if (id === "doflamingo") return <group name="nakama-doflamingo-pink-coat">
-    <CharacterPart material={identityMaterial("#de6da4")} size={[.35,.43,.073]} position={[0,-.024,.120]} radius={.018}/>
+    <CharacterPart material={identityMaterial("#de6da4")} size={[.35,.43,.048]} position={[0,-.024,.100]} radius={.018}/>
     <mesh material={identityMaterial("#f38bb9")} geometry={featherGeometry()} dispose={null}/>
     {[-1,1].map(side=><CharacterPart key={side} material={identityMaterial("#f38bb9")} size={[.11,.13,.12]}
       position={[side*.135,.175,.055]} rotation={[0,0,side*.16]} radius={.025}/>)}
   </group>;
   if (id === "mihawk") return <group name="nakama-mihawk-coat-and-cross">
-    <CharacterPart material={mats.dark} size={[.33,.43,.068]} position={[0,-.024,.120]} radius={.018}/>
+    <CharacterPart material={mats.dark} size={[.33,.43,.048]} position={[0,-.024,.100]} radius={.018}/>
     <CharacterPart name="nakama-mihawk-cross" material={mats.gold} size={[.014,.080,.012]} position={[0,.074,front-.019]}/>
     <CharacterPart material={mats.gold} size={[.060,.014,.012]} position={[0,.085,front-.019]}/>
   </group>;

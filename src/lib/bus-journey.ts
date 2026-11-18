@@ -78,6 +78,7 @@ export function getPassengerWalkPath(seatZ: number, door: JourneyDoor = FRONT_DO
       cornerZ + radius * Math.sin(angle));
   });
   return [new THREE.Vector3(3.3,0,door.z), new THREE.Vector3(1.65,0,door.z),
+    new THREE.Vector3(1.58,0,door.z),
     new THREE.Vector3(1.5,0.29,door.z), new THREE.Vector3(1.24,0.29,door.z),
     new THREE.Vector3(1.18,0.46,door.z), new THREE.Vector3(0.92,0.46,door.z),
     new THREE.Vector3(0.80,0.63,door.z), new THREE.Vector3(0.6,0.63,door.z), new THREE.Vector3(0,0.64,door.z),
@@ -161,11 +162,10 @@ export function updateJourney(state: JourneyState, phase: Phase, time: number, s
   state.phase=phase; state.elapsed=time;
   state.walking=false; state.completed=false; state.avatarVisible=phase!=="outside";
   state.cameraBlend=0; state.sitting=1; state.heading=0; state.doorOpen=false;
-  const speedRatio=Math.min(Math.max(speed,0.1),1.2)/Math.max(speed,0.1);
   const path = paths.get(state)!;
   const timing = state.timing;
   if(phase==="entering") {
-    state.drive=(1-ramp(time,0,ARRIVAL_STOP_TIME))*speedRatio;
+    state.drive=1-ramp(time,0,ARRIVAL_STOP_TIME);
     state.doorOpen=!state.entryFromSeat && time>=ARRIVAL_STOP_TIME;
     state.sitting=state.entryFromSeat ? 1 : ramp(time,timing.entrySitStart,timing.entrySeatedTime);
     if(state.entryFromSeat) {
@@ -175,7 +175,7 @@ export function updateJourney(state: JourneyState, phase: Phase, time: number, s
       // Primitive de 1-smoothstep : même décélération que la route.
       const t=THREE.MathUtils.clamp(time/ARRIVAL_STOP_TIME,0,1);
       const remaining=0.5-(t-t*t*t+0.5*t*t*t*t);
-      state.position.set(3.3,0,state.doorZ-16*Math.min(speed,1.2)*ARRIVAL_STOP_TIME*remaining);
+      state.position.set(3.3,0,state.doorZ-16*Math.max(speed,0.1)*ARRIVAL_STOP_TIME*remaining);
       state.heading=Math.PI/2; state.sitting=0;
     } else {
       state.walking=time<timing.entrySitStart;
@@ -191,7 +191,7 @@ export function updateJourney(state: JourneyState, phase: Phase, time: number, s
     state.cameraBlend=ramp(time,timing.entryCameraTime,timing.entryDuration);
     state.completed=time>=timing.entryDuration;
   } else if(phase==="exiting") {
-    state.drive=(1-ramp(time,0,ARRIVAL_STOP_TIME))*speedRatio;
+    state.drive=1-ramp(time,0,ARRIVAL_STOP_TIME);
     state.cameraBlend=1-ramp(time,3.3,5.5);
     state.doorOpen=time>=ARRIVAL_STOP_TIME && time<timing.exitWalkEnd+0.5;
     state.sitting=1-ramp(time,EXIT_WALK_START-0.6,EXIT_WALK_START);
@@ -201,8 +201,11 @@ export function updateJourney(state: JourneyState, phase: Phase, time: number, s
     state.walking=time>=EXIT_WALK_START && time<timing.exitWalkEnd;
     if(time>=timing.exitWalkEnd) {
       state.position.set(3.3,0,state.doorZ); state.heading=Math.PI/2;
-      state.drive=ramp(time,timing.exitWalkEnd+0.7,timing.exitDuration);
-      state.position.z+=16*Math.min(speed,1.2)*Math.max(0,time-timing.exitWalkEnd-0.7)*state.drive*0.5;
+      const departStart = timing.exitWalkEnd + 0.7;
+      const departDuration = timing.exitDuration - departStart;
+      const u = THREE.MathUtils.clamp((time - departStart) / departDuration, 0, 1);
+      state.drive = ease(u);
+      state.position.z += 16 * Math.max(speed, 0.1) * departDuration * (u * u * u - 0.5 * u * u * u * u);
     }
     state.completed=time>=timing.exitDuration;
   } else {

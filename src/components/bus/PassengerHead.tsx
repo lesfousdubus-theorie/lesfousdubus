@@ -56,9 +56,7 @@ export default function PassengerHead({ archetype, mats, motion, index = 0, redu
       <CharacterPart material={mats.hair} size={[.047,.045,.027]} position={[0,-.126,front+.04]}/>
     </>}
     {nami?<NamiHair material={mats.hair}/>:['boa_hancock','vivi'].includes(archetype.id)?<GuestHair id={archetype.id} material={mats.hair}/>:<HairStyle style={archetype.hairStyle} mats={mats} id={archetype.id}/>}
-    {!skull&&<PassengerCostume archetype={archetype} face width={headWidth} height={headHeight-.002} front={front-.018}/>}
-    {archetype.id==="yamato"&&[-.125,.125].map(x=><CharacterPart key={x} material={mats.turquoise}
-      size={[.064,.115,.096]} position={[x,-.155,.055]}/>)}
+    {!skull&&!reindeer&&archetype.id!=="doflamingo"&&<PassengerCostume archetype={archetype} face width={headWidth} height={headHeight-.002} front={front-.018}/>}
     {archetype.id==="zoro"?<ZoroEarrings material={mats.gold}/>:['doflamingo','boa_hancock','mihawk','law'].includes(archetype.id)?
       <GuestHeadAccessory id={archetype.id} mats={mats} front={front}/>:<Accessory archetype={archetype} mats={mats} />}
   </group>;

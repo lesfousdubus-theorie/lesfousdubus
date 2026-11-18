@@ -36,7 +36,10 @@ class Sculpture {
   private add(geometry: THREE.BufferGeometry, paint: Paint, position: Point, size: Point = [1, 1, 1], rotation: Point = [0, 0, 0]) {
     const plain = geometry.index ? geometry.toNonIndexed() : geometry;
     if (geometry !== plain) geometry.dispose();
-    plain.deleteAttribute("uv");
+    for (const attr of Object.keys(plain.attributes)) {
+      if (attr !== "position" && attr !== "normal") plain.deleteAttribute(attr);
+    }
+    if (!plain.hasAttribute("normal")) plain.computeVertexNormals();
     const positions = plain.getAttribute("position");
     const colors = new Float32Array(positions.count * 3);
     const solid = typeof paint === "string" ? colorFor(paint) : null;
@@ -312,7 +315,9 @@ function surume(model: SeaCreatureModel, make: () => Sculpture) {
       arm.torus("#70a6ae",[cup * .077,.04 + cup * .14,.74 + cup * .57],.195 - cup * .021,.041,[Math.PI / 2 + .22,0,0]);
     }
     joint(model,arm,[Math.sin(a) * 1.43,-.34,Math.cos(a) * 1.52],"x",.27,i * .63);
-    model.joints[model.joints.length - 1].group.rotation.y = a;
+    const tentacle = model.joints[model.joints.length - 1].group;
+    tentacle.rotation.order = "YXZ";
+    tentacle.rotation.y = a;
   }
 }
 

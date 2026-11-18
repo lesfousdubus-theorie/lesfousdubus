@@ -33,6 +33,11 @@ export function PassengerTorso({ archetype, mats }: Props) {
       size={[.005,.087,.003]} position={[0,.086,front-.017]} rotation={[0,0,side*.60]} radius={.001}/>)}
     {archetype.id==="zoro"&&<CharacterPart name="nakama-zoro-chest-scar" material={identityMaterial("#b97861")}
       size={[.005,.175,.003]} position={[0,.031,front-.017]} rotation={[0,0,-.38]} radius={.001}/>}
+    {archetype.id==="franky"&&<>
+      <CharacterPart name="nakama-franky-chest-scar-top" material={identityMaterial("#d69177")} size={[.14,.005,.003]} position={[0,.079,front-.016]} radius={.001}/>
+      <CharacterPart name="nakama-franky-chest-scar-center" material={identityMaterial("#d69177")} size={[.005,.16,.003]} position={[0,-.007,front-.016]} radius={.001}/>
+      {[-.012,-.072].map((y,i)=><CharacterPart key={i} name={`nakama-franky-chest-scar-cross-${i}`} material={identityMaterial("#d69177")} size={[.092,.005,.003]} position={[0,y,front-.016]} radius={.001}/>)}
+    </>}
     {archetype.id==="robin"&&[-1,1].map(side=><CharacterPart key={side} material={mats.shirt}
       size={[.078,.35,.055]} position={[side*.104,.022,front+.008]} rotation={[0,0,side*.10]}/>)}
     {archetype.id==="chopper"&&<CharacterPart material={identityMaterial("#d29a5d")} size={[.09,.065,.025]} position={[0,.075,front]}/>}

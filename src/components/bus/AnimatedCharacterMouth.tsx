@@ -28,10 +28,15 @@ export default function AnimatedCharacterMouth({ id, index = 0, motion, reducedM
   const upperTeeth = useRef<THREE.Mesh>(null), lowerTeeth = useRef<THREE.Mesh>(null);
   const tongueMesh = useRef<THREE.Mesh>(null), jaw = useRef<THREE.Group>(null);
   const corners = useRef<Array<THREE.Mesh | null>>([]);
-  const target = useRef(createFacialExpression()), expression = useRef(createFacialExpression());
   const profile = getFacialProfile(id);
+  const target = useRef(createFacialExpression());
+  const expression = useRef({ ...createFacialExpression(), smile: profile.grin, teeth: profile.grin });
   const mouthShape = getCharacterShape([1, 1, .009], .16, 1);
   const teethShape = skull ? getSkullTeethGeometry() : mouthShape;
+  const restWidth = profile.width;
+  const restHeight = skull ? .025 : .008 + .009 * profile.grin;
+  const restToothHeight = Math.min(restHeight * .45, skull ? .016 : .010);
+  const restTeethVisible = skull || profile.grin > .12;
 
   useFrame(({ clock }, dt) => {
     sampleFacialExpression(target.current, clock.elapsedTime, index, id, motion?.current.activity ?? "idle", reducedMotion);
@@ -75,17 +80,22 @@ export default function AnimatedCharacterMouth({ id, index = 0, motion, reducedM
 
   return <group ref={root} name="character-expression" position={position}>
     <mesh ref={cavity} name="character-mouth-cavity" material={dark} geometry={mouthShape}
-      scale={[profile.width, skull ? .025 : .01, 1]} dispose={null}/>
+      scale={[restWidth, restHeight, 1]} dispose={null}/>
     <mesh ref={upperTeeth} name="character-mouth-teeth" material={teeth} geometry={teethShape}
-      position={[0, .004, -.006]} scale={[profile.width * .85, .008, 1]} dispose={null}/>
+      visible={restTeethVisible}
+      position={[0, restHeight * .5 - restToothHeight * .6, -.006]}
+      scale={[restWidth * .85, restToothHeight, 1]} dispose={null}/>
     {skull && <mesh ref={lowerTeeth} name="character-mouth-lower-teeth" material={teeth} geometry={teethShape}
-      position={[0, -.004, -.006]} scale={[profile.width * .85, .008, 1]} dispose={null}/>}
+      position={[0, -restHeight * .5 + restToothHeight * .6, -.006]}
+      scale={[restWidth * .85, restToothHeight, 1]} dispose={null}/>}
     {tongue && <mesh ref={tongueMesh} name="character-mouth-tongue" material={tongue} geometry={mouthShape}
-      position={[0, -.006, -.007]} scale={[profile.width * .4, .008, 1]} visible={false} dispose={null}/>}
+      position={[0, -.006, -.007]} scale={[restWidth * .4, .008, 1]} visible={false} dispose={null}/>}
     {!skull && [-1, 1].map((side, index) => <mesh key={side} ref={node => { corners.current[index] = node; }}
-      name="character-smile-corner" material={dark} geometry={mouthShape} position={[side * profile.width * .47, 0, 0]}
-      scale={[.008, .01, 1]} dispose={null}/>)}
-    {skull && skin && <group ref={jaw} name="character-skull-jaw" position={[0, -.035, .115]}>
+      name="character-smile-corner" material={dark} geometry={mouthShape}
+      position={[side * restWidth * .47, .006 * profile.grin, 0]}
+      rotation={[0, 0, side * -.25 * profile.grin]}
+      scale={[.008, .009 + profile.grin * .012, 1]} dispose={null}/>)}
+    {skull && skin && <group ref={jaw} name="character-skull-jaw" position={[0, -.035, .073]}>
       <CharacterPart material={skin} size={[.21, .045, .15]} radius={.015}/>
     </group>}
   </group>;

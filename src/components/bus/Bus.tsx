@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { TV_POSITION, type WorldState } from "./constants";
@@ -12,7 +12,7 @@ import BusPartyLights from "./BusPartyLights";
 import type { JourneyState } from "@/lib/bus-journey";
 import { BusTvFrame, BusTvPlayer } from "./BusTv";
 import { usePartyTvCards } from "./BusPartyTv";
-import { getRenderedRowIndices, getActiveTvIndex, getTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelPositions, BUS_FRONT_Z } from "@/lib/bus-layout";
+import { getRenderedRowIndices, getActiveTvIndex, getTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelPositions, BUS_FRONT_Z, type TvPosition } from "@/lib/bus-layout";
 import { getBusPhysicalRows } from "@/lib/bus-occupancy";
 import { advanceWiperAngle } from "@/lib/bus-wipers";
 import BusExterior from "./BusExterior";
@@ -48,6 +48,20 @@ interface BusProps {
   reducedMotion?: boolean;
   lowPower?: boolean;
   playbackSuspended?: boolean;
+}
+
+function getTvIndexForCameraZ(positions: TvPosition[], camZ: number, minDistance: number): number {
+  let bestIndex = 0;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  positions.forEach((position, index) => {
+    const distance = camZ - position[2];
+    if (distance < minDistance) return;
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestIndex = index;
+    }
+  });
+  return bestIndex;
 }
 
 export default function Bus({
@@ -102,10 +116,27 @@ export default function Bus({
   // Un seul vrai lecteur YouTube est conservé. La caméra intérieure regarde vers
   // l'avant du bus (Z décroissant) : un écran derrière la rangée serait invisible.
   // Les autres écrans restent des répéteurs visuels sans iframe supplémentaire.
-  const activeTvIndex = useMemo(() => {
+  const targetSeatedTvIndex = useMemo(() => {
     if (phase !== "inside" && phase !== "entering") return 0;
     return getActiveTvIndex(tvPositions, reservedRow);
   }, [phase, reservedRow, tvPositions]);
+  const [freeViewTvIndex, setFreeViewTvIndex] = useState(0);
+  const freeViewTvIndexRef = useRef(0);
+  const [seatedTvIndex, setSeatedTvIndex] = useState(() => targetSeatedTvIndex);
+  const seatedTvIndexRef = useRef(targetSeatedTvIndex);
+  const tvFocusNextCheckRef = useRef(0);
+  const tvCamScratch = useMemo(() => new THREE.Vector3(), []);
+  useEffect(() => {
+    tvFocusNextCheckRef.current = 0;
+  }, [phase, freeView, reservedRow, tvPositions]);
+
+  const activeTvIndex = tvPositions.length <= 1
+    ? 0
+    : phase === "inside"
+      ? (freeView
+        ? Math.min(freeViewTvIndex, tvPositions.length - 1)
+        : (reducedMotion ? targetSeatedTvIndex : Math.min(seatedTvIndex, tvPositions.length - 1)))
+      : targetSeatedTvIndex;
   const activeTvPosition = tvPositions[activeTvIndex] ?? tvPositions[0];
   const viewerZ = getSeatRowZ(reservedRow) + 0.15;
 
@@ -138,8 +169,8 @@ export default function Bus({
     prevRows.current = numRows;
   }, [numRows]);
 
-  // Position et orientation de base du chapeau (droit et centré sur le toit du bus)
-  const HAT_BASE_POS: [number, number, number] = useMemo(() => [0, 3.40, -3.55], []);
+  // Position et orientation de base du chapeau (posé sur le toit du bus)
+  const HAT_BASE_POS: [number, number, number] = useMemo(() => [0, 3.31, -3.55], []);
   const HAT_BASE_ROT: [number, number, number] = useMemo(() => [0, 0, 0], []);
 
   const { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex } = useBusResources();
@@ -200,6 +231,46 @@ export default function Bus({
       });
     }
 
+    // Suivi throttlé de la TV active selon la position réelle de la caméra en cabine
+    if (phase !== "inside") {
+      if (seatedTvIndexRef.current !== targetSeatedTvIndex) {
+        seatedTvIndexRef.current = targetSeatedTvIndex;
+        setSeatedTvIndex(targetSeatedTvIndex);
+      }
+      if (freeViewTvIndexRef.current !== targetSeatedTvIndex) {
+        freeViewTvIndexRef.current = targetSeatedTvIndex;
+        setFreeViewTvIndex(targetSeatedTvIndex);
+      }
+    } else if (tvPositions.length > 1 && group.current) {
+      const now = performance.now();
+      if (now >= tvFocusNextCheckRef.current) {
+        tvFocusNextCheckRef.current = now + 200;
+        const activeCam = visitCameraRef.current ?? state.camera;
+        group.current.updateMatrixWorld();
+        activeCam.getWorldPosition(tvCamScratch);
+        group.current.worldToLocal(tvCamScratch);
+        const camZ = tvCamScratch.z;
+        if (freeView) {
+          const nextFree = getTvIndexForCameraZ(tvPositions, camZ, 1.5);
+          if (nextFree !== freeViewTvIndexRef.current) {
+            freeViewTvIndexRef.current = nextFree;
+            setFreeViewTvIndex(nextFree);
+          }
+        } else {
+          const cur = Math.min(seatedTvIndexRef.current, tvPositions.length - 1);
+          const target = targetSeatedTvIndex;
+          const ready = cur === target
+            || (target > cur && camZ - tvPositions[target][2] >= 2.5)
+            || (target < cur && camZ - tvPositions[cur][2] < 2.5)
+            || Math.abs(camZ - viewerZ) < 0.25;
+          if (ready && cur !== target) {
+            seatedTvIndexRef.current = target;
+            setSeatedTvIndex(target);
+          }
+        }
+      }
+    }
+
   });
 
   return (
@@ -252,7 +323,6 @@ export default function Bus({
         reservedRow={reservedRow}
         reservedColumn={reservedColumn}
         avatarAboard={phase !== "outside" && !boardingPending}
-        activePassengerIndex={phase === "inside" || phase === "entering" ? currentPassengerSeatIndex : null}
         passengerProfiles={passengerProfiles}
         profileRevision={profileRevision}
         onPassengerSelect={onPassengerSelect}
@@ -271,13 +341,11 @@ export default function Bus({
       {/* ---------- TÉLÉVISIONS DU BUS ---------- */}
       {tvPositions.map((pos, idx) => (
         <BusTvFrame
-          key={`tv-unit-${idx}-${pos[2]}`}
+          key={`tv-unit-${idx}`}
           pos={pos}
           idx={idx}
           tvOn={tvOn && !partyOn}
           isActive={idx === activeTvIndex}
-          visible={exteriorView || idx === activeTvIndex || phase !== "inside"
-            || viewerZ <= pos[2] || viewerZ - pos[2] >= 2.5}
           mats={mats}
           tvOffTex={tvOffTex}
           posterTex={montCorvoTex}
@@ -288,6 +356,7 @@ export default function Bus({
       <BusTvPlayer
         pos={activeTvPosition}
         tvOn={tvOn}
+        partyOn={partyOn}
         onPlaybackChange={onVideoPlaybackChange}
         phase={phase}
         freeView={freeView}

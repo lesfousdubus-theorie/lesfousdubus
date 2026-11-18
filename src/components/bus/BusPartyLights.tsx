@@ -172,7 +172,9 @@ export default function BusPartyLights({
     if (stationCount > stationCapacity) {
       camera.getWorldPosition(cameraLocal);
       anchor.worldToLocal(cameraLocal);
-      const inCabin = Math.abs(cameraLocal.x) <= 1.7 && cameraLocal.y > 0.45 && cameraLocal.y < 3.5;
+      const inCabin = Math.abs(cameraLocal.x) <= 1.7
+        && cameraLocal.y > 0.45 && cameraLocal.y < 3.5
+        && cameraLocal.z >= BUS_FRONT_Z && cameraLocal.z <= rearZ;
       const viewZ = inCabin ? cameraLocal.z : focusZ;
       // Changer de fenêtre au plus tous les quatre projecteurs.
       visibleFocus = Math.round((viewZ - from) / (step * 4)) * 4;

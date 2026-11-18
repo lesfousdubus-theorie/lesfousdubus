@@ -12,20 +12,36 @@ export { SimplifiedPassengers } from "./SimplifiedPassengers";
 import { PassengerNeck, PassengerTorso } from "./PassengerAnatomy";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import type { SeatInfo } from "@/lib/bus-layout";
+import { getSeatRowZ } from "@/lib/bus-layout";
 import { getBusOccupancy } from "@/lib/bus-occupancy";
 import PassengerLowerBody from "./PassengerLowerBody";
 import { PassengerUpperArm, PassengerForearm } from "./PassengerIdentity";
 import PassengerSignatureProp from "./PassengerSignatureProp";
 import PassengerCardGame, { getPassengerCardActor, type PassengerCardActors } from "./PassengerCardGame";
 import { getPassengerCardPairs } from "@/lib/passenger-card-game";
-import { BODY_BEHIND_HIP } from "@/lib/passenger-gait";
+import { BODY_BEHIND_HIP, CABIN_FLOOR_Y } from "@/lib/passenger-gait";
 import { blendPassengerPose, createPassengerPose, getPassengerSignatureGain, getRegisteredPassengerPose, pruneRegisteredPassengerPoses, samplePassengerPose, type PassengerPoseRegistry } from "@/lib/passenger-motion";
 import { keepPassengerHandsApart } from "@/lib/passenger-space";
 import { DistantPassengerNames, getVisiblePassengerName, PassengerNameTag, useVisiblePassengerSummaries } from "./PassengerNameTags";
 import { getPassengerNameHeightFromHip, usePassengerHeadHeight, usePassengerHeadHeights } from "./usePassengerHeadHeight";
 
 function getSeatedPassengerNameHeight(id: string, crown: number) {
-  return .64 + getPassengerSkeleton(id).seatedHipHeight + getPassengerNameHeightFromHip(id, crown);
+  return CABIN_FLOOR_Y + getPassengerSkeleton(id).seatedHipHeight + getPassengerNameHeightFromHip(id, crown);
+}
+
+function getNakamaShortName(archetype: NakamaArchetype) {
+  return ["shanks", "buggy"].includes(archetype.id)
+    ? archetype.name.split(" ")[0]
+    : archetype.name.split(" ").at(-1) ?? archetype.name;
+}
+
+function getFallbackPassengerHeadTop(archetype: NakamaArchetype) {
+  const halfHead = getPassengerProportions(archetype.id).headHeight / 2;
+  if (archetype.id === "brook") return 0.45;
+  if (archetype.accessory === "reindeer_hat" || archetype.accessory === "top_hat") return 0.37;
+  if (archetype.accessory === "straw_hat" || archetype.accessory === "cowboy_hat"
+    || archetype.accessory === "white_cap" || archetype.accessory === "horns") return halfHead + 0.16;
+  return halfHead + 0.06;
 }
 
 const ARCHETYPE_MATS_CACHE = new Map<string, Record<string, THREE.Material>>();
@@ -103,19 +119,24 @@ interface PassengersProps {
   passengerProfiles?: PassengerProfile[];
   profileRevision?: number;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
-  activePassengerIndex?: number | null;
   lowPower?: boolean;
   reducedMotion?: boolean;
   excludedPassengerIndex?: number | null;
   avatarAboard?: boolean;
 }
 
-function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSeatRanges = [], hornPulse,
+function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices, vacantSeatRanges = [], hornPulse,
   partyOn = false, reservedRow = 3, reservedColumn = null, passengerProfiles = [], onPassengerSelect,
   profileRevision = 0, lowPower = false, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
   const camera = useThree(state => state.camera);
   const root = useRef<THREE.Group>(null), cameraPoint = useMemo(() => new THREE.Vector3(), []);
-  const [detailFocus, setDetailFocus] = useState(() => ({ x: camera.position.x, z: camera.position.z }));
+  const [detailFocus, setDetailFocus] = useState(() => {
+    const rearZ = getSeatRowZ(Math.max(0, numRows - 1)) + 4;
+    const outsidePerimeter = Math.abs(camera.position.x) > 14 || camera.position.z < -10 || camera.position.z > rearZ;
+    return outsidePerimeter
+      ? { x: 0, z: getSeatRowZ(reservedRow) }
+      : { x: Math.round(camera.position.x / 1.2) * 1.2, z: Math.round(camera.position.z / 1.5) * 1.5 };
+  });
   const lastFocus = useRef({ ...detailFocus, time: -Infinity });
   useFrame(({ camera }) => {
     const now = performance.now();
@@ -123,9 +144,10 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
     lastFocus.current.time = now;
     camera.getWorldPosition(cameraPoint);
     root.current.worldToLocal(cameraPoint);
-    const outsidePerimeter = Math.abs(cameraPoint.x) > 3.2 || cameraPoint.z < -8 || cameraPoint.z > 24;
+    const rearZ = getSeatRowZ(Math.max(0, numRows - 1)) + 4;
+    const outsidePerimeter = Math.abs(cameraPoint.x) > 14 || cameraPoint.z < -10 || cameraPoint.z > rearZ;
     const nextX = outsidePerimeter ? 0 : Math.round(cameraPoint.x / 1.2) * 1.2;
-    const nextZ = outsidePerimeter ? 0 : Math.round(cameraPoint.z / 1.5) * 1.5;
+    const nextZ = outsidePerimeter ? getSeatRowZ(reservedRow) : Math.round(cameraPoint.z / 1.5) * 1.5;
     if (Math.hypot(nextX - lastFocus.current.x, nextZ - lastFocus.current.z) <= 1.0) return;
     lastFocus.current = { x: nextX, z: nextZ, time: now };
     setDetailFocus({ x: nextX, z: nextZ });
@@ -148,10 +170,11 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
   const distantLabels = useMemo(() => simplified.flatMap(({ seat, index, passengerKind }) => {
     const profile = passengerKind === "visitor" ? profilesBySeatIndex.get(index) : undefined;
     const archetype = getNakamaArchetype(index, profile?.avatarId);
-    const name = passengerKind === "visitor" ? getVisiblePassengerName(profile?.displayName) : archetype.name;
-    const crown = headHeights.get(archetype.id);
-    if (!name || crown === undefined) return [];
-    return [{ index, name, x: seat.x, y: getSeatedPassengerNameHeight(archetype.id, crown), z: seat.z + .14 }];
+    const name = passengerKind === "visitor" ? getVisiblePassengerName(profile?.displayName) : getNakamaShortName(archetype);
+    const crown = headHeights.get(archetype.id) ?? getFallbackPassengerHeadTop(archetype);
+    if (!name) return [];
+    const skeleton = getPassengerSkeleton(archetype.id);
+    return [{ index, name, x: seat.x, y: getSeatedPassengerNameHeight(archetype.id, crown), z: seat.z + skeleton.seatedHipZ + BODY_BEHIND_HIP + 0.02 }];
   }), [headHeights, profilesBySeatIndex, simplified]);
   const detailedSeats = new Set(detailed.map(occupant => occupant.physicalSeatIndex));
   const poses=useMemo<PassengerPoseRegistry>(()=>new Map(),[]);
@@ -176,8 +199,7 @@ function Passengers({ passengerCount, seatCapacity, renderedRowIndices, vacantSe
         name={passengerKind === "nakama" ? `crew-nakama-${archetype.id}-${index}` : undefined}
         passengerKind={passengerKind} physicalSeatIndex={physicalSeatIndex}
         cardActors={cardActors} cardPairIndex={cardPairBySeat.get(physicalSeatIndex) ?? null}
-        label={passengerKind === "nakama" ? (["shanks", "buggy"].includes(archetype.id)
-          ? archetype.name.split(" ")[0] : archetype.name.split(" ").at(-1)) : getVisiblePassengerName(profilesBySeatIndex.get(index)?.displayName) ?? null}
+        label={passengerKind === "nakama" ? getNakamaShortName(archetype) : getVisiblePassengerName(profilesBySeatIndex.get(index)?.displayName) ?? null}
         hornPulse={hornPulse} partyOn={partyOn}
         peerSide={detailedSeats.has(physicalSeatIndex ^ 1) ? (seat.seatInRow % 2 === 0 ? 1 : -1) : 0}
         interactionPairIndex={Math.floor(physicalSeatIndex / 2)}
@@ -245,7 +267,7 @@ export function Passenger({
   const signatureProps = useRef<Array<THREE.Group|null>>([]);
   const targetPose = useRef(createPassengerPose());
   const currentPose = useRef(getRegisteredPassengerPose(poses,index));
-  const hovered = useRef(false);
+  const hoveredObjects = useRef(new Set<THREE.Object3D>());
 
   // Matériaux partagés et mis en cache par archetype
   const mats = useMemo(() => getArchetypeMaterials(archetype), [archetype]);
@@ -262,18 +284,18 @@ export function Passenger({
   const crown = usePassengerHeadHeight(archetype.id, headModel, !firstPerson);
 
   useEffect(() => () => {
-    if (hovered.current) {
-      hovered.current = false;
+    if (hoveredObjects.current.size > 0) {
+      hoveredObjects.current.clear();
       document.body.style.cursor = "auto";
     }
   }, []);
 
   useEffect(() => {
-    if (!interactive && hovered.current) {
-      hovered.current = false;
+    if ((!interactive || firstPerson) && hoveredObjects.current.size > 0) {
+      hoveredObjects.current.clear();
       document.body.style.cursor = "auto";
     }
-  }, [interactive]);
+  }, [firstPerson, interactive]);
 
   useLayoutEffect(() => {
     if (!cardActors || physicalSeatIndex === undefined || !group.current) return;
@@ -283,15 +305,17 @@ export function Passenger({
     return () => { if (cardActors.get(physicalSeatIndex) === actor) cardActors.delete(physicalSeatIndex); };
   }, [cardActors, physicalSeatIndex, archetype.id]);
 
+  const benchSide = seat.row < 0 || seat.seatInRow < 0 ? 0 : seat.seatInRow % 2 === 0 ? 1 : -1;
+
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime;
     const seed = index * 0.73;
 
     samplePassengerPose(targetPose.current,t,index,peerSide,proportions.torsoWidth,hornPulse>0?(performance.now()-hornPulse)/1000:Infinity,partyOn,reducedMotion,archetype.id,cardPairIndex,interactionPairIndex);
-    keepPassengerHandsApart(targetPose.current,archetype.id,seat.seatInRow%2===0?1:-1);
+    keepPassengerHandsApart(targetPose.current,archetype.id,benchSide,seat.x);
     blendPassengerPose(currentPose.current,targetPose.current,dt,reducedMotion);
     const pose=currentPose.current;
-    keepPassengerHandsApart(pose,archetype.id,seat.seatInRow%2===0?1:-1);
+    keepPassengerHandsApart(pose,archetype.id,benchSide,seat.x);
     if (group.current) {
       // Le bassin et les pieds restent sur leur siège/sol pendant la fête.
       group.current.position.y = 0;
@@ -310,7 +334,7 @@ export function Passenger({
     arms.current[1]?.rotation.set(pose.rightX,0,pose.rightZ);
     elbows.current[0]?.rotation.set(pose.leftElbowX,0,pose.leftElbowZ);
     elbows.current[1]?.rotation.set(pose.rightElbowX,0,pose.rightElbowZ);
-    if(heldProps.current)heldProps.current.visible=!pose.celebrating&&!pose.games&&pose.activity!=="check";
+    if(heldProps.current)heldProps.current.visible=!pose.celebrating&&!pose.games&&pose.activity!=="check"&&pose.activity!=="chat";
     const signatureGain = archetype.id==="foudubustv" ? 1 : pose.celebrating ? getPassengerSignatureGain(t,archetype.id,partyOn,reducedMotion) : 0;
     for(const prop of signatureProps.current)if(prop){prop.visible=signatureGain>.001;prop.scale.setScalar(signatureGain);}
     if (torsoGroup.current) {
@@ -327,16 +351,16 @@ export function Passenger({
       }
     : undefined;
   const handlePointerOver = interactive
-    ? (event: { stopPropagation: () => void }) => {
+    ? (event: { stopPropagation: () => void; object?: THREE.Object3D }) => {
         event.stopPropagation();
-        hovered.current = true;
+        if (event.object) hoveredObjects.current.add(event.object);
         document.body.style.cursor = "pointer";
       }
     : undefined;
   const handlePointerOut = interactive
-    ? () => {
-        if (hovered.current) {
-          hovered.current = false;
+    ? (event: { object?: THREE.Object3D }) => {
+        if (event.object) hoveredObjects.current.delete(event.object);
+        if (hoveredObjects.current.size === 0) {
           document.body.style.cursor = "auto";
         }
       }
@@ -353,13 +377,13 @@ export function Passenger({
       onPointerOut={onActivate ? handlePointerOut : undefined}
     >
       {!firstPerson && displayName && crown !== undefined && (
-        <PassengerNameTag name={displayName} position={[0, getSeatedPassengerNameHeight(archetype.id, crown), .14]}
+        <PassengerNameTag name={displayName} position={[0, getSeatedPassengerNameHeight(archetype.id, crown), skeleton.seatedHipZ + BODY_BEHIND_HIP + 0.02]}
           onClick={handleActivate}
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
         />
       )}
-      <group name="nakama-hips" position={[0, 0.64 + skeleton.seatedHipHeight, skeleton.seatedHipZ]}>
+      <group name="nakama-hips" position={[0, CABIN_FLOOR_Y + skeleton.seatedHipHeight, skeleton.seatedHipZ]}>
         <PassengerLowerBody mats={mats} archetype={archetype} kickPose={archetype.id==="sanji"?currentPose:undefined} />
 
         <group ref={upperBody} name="nakama-upper-body" position={[0, skeleton.torsoAboveHip, BODY_BEHIND_HIP]}>

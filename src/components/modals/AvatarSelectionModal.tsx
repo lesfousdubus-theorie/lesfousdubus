@@ -45,7 +45,7 @@ export function AvatarSelectionModal({
   const [rotation, setRotation] = useState(0);
   const dialogRef = useRef<HTMLElement>(null);
   const activeRosterButtonRef = useRef<HTMLButtonElement>(null);
-  const dragRef = useRef<{ x: number; rotation: number } | null>(null);
+  const dragRef = useRef<{ pointerId: number; x: number; rotation: number } | null>(null);
   const hasMountedRef = useRef(false);
   const close = () => { if (!saving) onClose(); };
   const handleKeyDown = useModalAccessibility(true, close, dialogRef);
@@ -101,25 +101,38 @@ export function AvatarSelectionModal({
           <div data-avatar-id={character.id} data-avatar-rotation={rotation.toFixed(3)}
             aria-hidden="true" className="h-[min(38dvh,19rem)] min-h-40 w-full cursor-grab touch-none overflow-hidden rounded-xl active:cursor-grabbing"
             onPointerDown={event => {
-              if (saving || event.button !== 0) return;
-              dragRef.current = { x: event.clientX, rotation };
-              event.currentTarget.setPointerCapture(event.pointerId);
+              if (saving || dragRef.current !== null || (event.pointerType === "mouse" && event.button !== 0)) return;
+              dragRef.current = { pointerId: event.pointerId, x: event.clientX, rotation };
+              try {
+                event.currentTarget.setPointerCapture(event.pointerId);
+              } catch {}
             }}
             onPointerMove={event => {
               const drag = dragRef.current;
-              if (drag) setRotation(drag.rotation + (event.clientX - drag.x) * 0.015);
+              if (!drag || drag.pointerId !== event.pointerId) return;
+              setRotation(drag.rotation + (event.clientX - drag.x) * 0.015);
             }}
             onPointerUp={event => {
+              if (dragRef.current?.pointerId !== event.pointerId) return;
               dragRef.current = null;
-              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                event.currentTarget.releasePointerCapture(event.pointerId);
-              }
+              try {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  event.currentTarget.releasePointerCapture(event.pointerId);
+                }
+              } catch {}
             }}
             onPointerCancel={event => {
+              if (dragRef.current?.pointerId !== event.pointerId) return;
               dragRef.current = null;
-              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                event.currentTarget.releasePointerCapture(event.pointerId);
-              }
+              try {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  event.currentTarget.releasePointerCapture(event.pointerId);
+                }
+              } catch {}
+            }}
+            onLostPointerCapture={event => {
+              if (dragRef.current?.pointerId !== event.pointerId) return;
+              dragRef.current = null;
             }}>
             <AvatarPreview avatarId={character.id} rotation={rotation} />
           </div>

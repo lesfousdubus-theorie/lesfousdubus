@@ -51,6 +51,7 @@ interface SceneProps {
   hasEntered?: boolean;
   boardingPending?: boolean;
   boardingFromSeat?: boolean;
+  visitorSeatedOutside?: boolean;
   passengerProfiles?: PassengerProfile[];
   profileRevision?: number;
   currentPassengerSeatIndex?: number | null;
@@ -158,7 +159,14 @@ function useSceneRuntimeState() {
       connection?: { saveData?: boolean; effectiveType?: string; addEventListener?: (type: string, listener: () => void) => void; removeEventListener?: (type: string, listener: () => void) => void };
     }).connection;
     const update = () => {
-      setState(readSceneRuntimeState());
+      setState((previous) => {
+        const next = readSceneRuntimeState();
+        return previous.hidden === next.hidden
+          && previous.lowPower === next.lowPower
+          && previous.reducedMotion === next.reducedMotion
+          ? previous
+          : next;
+      });
     };
     update();
     window.addEventListener("resize", update, { passive: true });
@@ -198,17 +206,23 @@ function useWebGLSupport() {
   return supported;
 }
 
+function getSceneBaseDpr(lowPower: boolean) {
+  if (typeof window === "undefined") return 1;
+  return Math.min(window.devicePixelRatio || 1, lowPower ? 1.5 : 2);
+}
+
 function AdaptiveDpr({ lowPower, onDprChange }: { lowPower: boolean; onDprChange: (value: number) => void }) {
   const setDpr = useThree((state) => state.setDpr);
-  const baseDpr = typeof window === "undefined" ? 1 : Math.min(window.devicePixelRatio || 1, lowPower ? 1.5 : 2);
-  const minimumDpr = Math.min(baseDpr, lowPower ? 1.15 : 1.5);
+  const get = useThree((state) => state.get);
+  const baseDpr = getSceneBaseDpr(lowPower);
+  const minimumDpr = Math.min(baseDpr, 1);
   const sampleRef = useRef(createDprSample(baseDpr));
 
   useEffect(() => {
     sampleRef.current = createDprSample(baseDpr);
-    setDpr(baseDpr);
+    if (get().viewport.dpr !== baseDpr) setDpr(baseDpr);
     onDprChange(baseDpr);
-  }, [baseDpr, setDpr, onDprChange]);
+  }, [baseDpr, get, setDpr, onDprChange]);
 
   useFrame((_, dt) => {
     const next = sampleSceneDpr(sampleRef.current, dt, baseDpr, minimumDpr);
@@ -218,30 +232,35 @@ function AdaptiveDpr({ lowPower, onDprChange }: { lowPower: boolean; onDprChange
   return null;
 }
 
-/** Budget de 60 images par seconde pour les écrans à rafraîchissement élevé. */
+/** Laisse 1 image par vSync jusqu'à ~95 Hz et plafonne les écrans 120/144 Hz+. */
 function CappedFrameLoop({ paused }: { paused: boolean }) {
   const advance = useThree((state) => state.advance);
   const clock = useThree((state) => state.clock);
 
   useEffect(() => {
     if (paused) return;
-    const frameInterval = 1000 / 60;
+    const minFrameInterval = 1000 / 95;
     let frame = 0;
     let origin: number | null = null;
     let lastTick: number | null = null;
-    let frameBudget = 0;
+    let sinceRender = minFrameInterval;
 
     const tick = (now: number) => {
       if (origin === null) origin = now - clock.elapsedTime * 1000;
       if (lastTick !== null) {
         const elapsed = now - lastTick;
-        frameBudget = elapsed > 100 ? frameInterval : frameBudget + elapsed;
+        if (elapsed > 100) {
+          // Recale l'horloge après un gel pour garder un dt sain dans sampleSceneDpr.
+          origin = now - (clock.elapsedTime * 1000 + 100);
+          sinceRender = minFrameInterval;
+        } else {
+          sinceRender += elapsed;
+        }
       }
       lastTick = now;
-      if (frameBudget >= frameInterval) {
+      if (sinceRender >= minFrameInterval) {
         advance((now - origin) / 1000);
-        // Pas de rattrapage en rafale après une pause ou une image lente.
-        frameBudget = Math.min(frameBudget - frameInterval, frameInterval - 0.001);
+        sinceRender = 0;
       }
       frame = requestAnimationFrame(tick);
     };
@@ -256,6 +275,7 @@ function CappedFrameLoop({ paused }: { paused: boolean }) {
 function WebGLContextGuard({ setLost }: { setLost: (lost: boolean) => void }) {
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
+  const advance = useThree((state) => state.advance);
 
   useEffect(() => {
     const canvas = gl.domElement;
@@ -267,6 +287,7 @@ function WebGLContextGuard({ setLost }: { setLost: (lost: boolean) => void }) {
       gl.resetState();
       setLost(false);
       invalidate();
+      advance(performance.now() / 1000);
     };
     canvas.addEventListener("webglcontextlost", onLost, false);
     canvas.addEventListener("webglcontextrestored", onRestored, false);
@@ -274,7 +295,16 @@ function WebGLContextGuard({ setLost }: { setLost: (lost: boolean) => void }) {
       canvas.removeEventListener("webglcontextlost", onLost, false);
       canvas.removeEventListener("webglcontextrestored", onRestored, false);
     };
-  }, [gl, invalidate, setLost]);
+  }, [advance, gl, invalidate, setLost]);
+
+  return null;
+}
+
+function SuspenseReady({ onReady }: { onReady: (ready: boolean) => void }) {
+  useEffect(() => {
+    onReady(true);
+    return () => onReady(false);
+  }, [onReady]);
 
   return null;
 }
@@ -303,6 +333,7 @@ export default function Scene({
   hasEntered = false,
   boardingPending = false,
   boardingFromSeat = false,
+  visitorSeatedOutside = false,
   passengerProfiles = [],
   profileRevision = 0,
   currentPassengerSeatIndex = null,
@@ -318,10 +349,11 @@ export default function Scene({
   const webGLSupported = useWebGLSupport();
   const [contextLost, setContextLost] = useState(false);
   const [canvasReady, setCanvasReady] = useState(false);
-  const [sceneDpr, setSceneDpr] = useState(1);
+  const [busReady, setBusReady] = useState(false);
+  const [sceneDpr, setSceneDpr] = useState(() => getSceneBaseDpr(lowPower));
   useEffect(() => {
-    onAvailabilityChange?.(canvasReady && !contextLost);
-  }, [canvasReady, contextLost, onAvailabilityChange]);
+    onAvailabilityChange?.(canvasReady && busReady && !contextLost);
+  }, [busReady, canvasReady, contextLost, onAvailabilityChange]);
   const renderPaused = hidden || contextLost || uiPaused;
   const playbackSuspended = hidden || contextLost;
   // Calcul géométrique de la cabine pour la caméra
@@ -362,7 +394,7 @@ export default function Scene({
       frameloop="never"
       dpr={sceneDpr}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.2, far: cameraFar }}
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      gl={{ antialias: !lowPower, alpha: false, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none", isolation: "isolate" }}
       onCreated={() => setCanvasReady(true)}
       fallback={<div aria-hidden={canvasReady}><SceneFallback onReadTheory={onReadTheory} /></div>}
@@ -373,9 +405,10 @@ export default function Scene({
       <AdaptiveDpr lowPower={lowPower} onDprChange={setSceneDpr} />
       <BoardingController phase={phase} journey={journey} worldRef={worldRef} seatZ={currentSeatZ-0.03} seatX={currentSeatX}
         numRows={numRows} boardingPending={boardingPending} boardingFromSeat={boardingFromSeat} reducedMotion={reducedMotion}/>
-      <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} />
-      <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} />
+      <DayNight worldRef={worldRef} modeOverride={modeOverride} lowPower={lowPower} reducedMotion={reducedMotion} cameraFar={cameraFar} cabinCenterZ={cabinCenterZ} cabinLength={cabinLength} />
+      <Weather worldRef={worldRef} lowPower={lowPower} reducedMotion={reducedMotion} cabinCenterZ={cabinCenterZ} cabinLength={cabinLength} />
       <Suspense fallback={null}>
+        <SuspenseReady onReady={setBusReady} />
         <Bus
           headlights={headlights}
           hornPulse={hornPulse}
@@ -399,15 +432,15 @@ export default function Scene({
           boardingPending={boardingPending}
           passengerProfiles={passengerProfiles}
           profileRevision={profileRevision}
-          currentPassengerSeatIndex={currentPassengerSeatIndex}
+          currentPassengerSeatIndex={phase === "outside" && visitorSeatedOutside ? null : currentPassengerSeatIndex}
           onPassengerSelect={onPassengerSelect}
           reducedMotion={reducedMotion}
           lowPower={lowPower}
           playbackSuspended={playbackSuspended}
         />
       </Suspense>
-      <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} profile={currentPassengerProfile} onSelect={phase !== "inside" || freeView ? onPassengerSelect : undefined} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion}/>
-      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={phase} cabinCenterZ={cabinCenterZ} />
+      <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} profile={currentPassengerProfile} onSelect={phase !== "inside" || freeView ? onPassengerSelect : undefined} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion} firstPerson={phase === "inside" && !freeView}/>
+      <World worldRef={worldRef} reducedMotion={reducedMotion} lowPower={lowPower} phase={phase} cabinCenterZ={cabinCenterZ} cabinLength={cabinLength} />
       <CameraRig
         letterShortcutsEnabled={letterShortcutsEnabled}
         resetViewToken={resetViewToken}

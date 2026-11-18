@@ -176,7 +176,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
     setPassengerOpenedFromList(false);
     setManifestSearchQuery("");
     setManifestOnlyWithComment(false);
-    setPassengerManifest([]); setSelectedPassenger(null); setShowPassengerList(false); setManifestLoading(false);
+    setPassengerManifest([]); setSelectedPassenger(null); setShowPassengerList(false); setShowMessages(false); setManifestLoading(false);
   }, []);
 
   return { showMessages, setShowMessages, selectedPassenger, passengerOpenedFromList, passengerCardLoading, passengerCardError,

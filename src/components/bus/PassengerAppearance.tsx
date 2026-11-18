@@ -43,8 +43,10 @@ export function HairStyle({ style, mats, id }: {
     </mesh>)}
     {style === "flowing" && <>
       <CharacterPart material={mats.hair} size={[0.23, 0.31, 0.075]} position={[0, -0.09, 0.10]} />
-      {[-0.125, 0.125].map(x => <CharacterPart key={x} material={mats.hair}
-        size={[0.065, 0.31, 0.095]} position={[x, -0.055, 0.055]} rotation={[0.07, 0, 0]} />)}
+      {[-0.125, 0.125].map(x => <group key={x} position={[x, -0.055, 0.055]} rotation={[0.07, 0, 0]}>
+        <CharacterPart material={mats.hair} size={[0.065, 0.31, 0.095]} />
+        {id === "yamato" && <CharacterPart material={mats.turquoise} size={[0.064, 0.115, 0.096]} position={[0, -0.10, 0]} />}
+      </group>)}
       {id==="nami"&&<CharacterPart material={mats.hair} size={[.18,.049,.045]} position={[-.039,.114,-.095]} rotation={[0,0,.18]}/>}
       {id==="robin"&&[-1,1].map(side=><CharacterPart key={side} material={mats.hair} size={[.087,.062,.044]} position={[side*.064,.118,-.086]} rotation={[0,0,side*.23]}/>)}
     </>}
@@ -268,9 +270,9 @@ export function NakamaProp({
     case "swords":
       // One sheath for Law/Shanks; Zoro keeps his three distinct katanas.
       return (
-        <group name={`nakama-${id??"zoro"}-waist-swords`} position={[.19,1.07,.13]} rotation={[-.18,.05,.14]}>
-          <CharacterPart name="nakama-sword-belt-strap" material={mats.dark} size={[.13,.020,.042]} position={[0,.060,0]}/>
-          {(id==="law"||id==="shanks"?[0]:[-.028,0,.028]).map((x,index)=><group key={x}
+        <group name={`nakama-${id??"zoro"}-waist-swords`} position={[.195,1.14,-.015]} rotation={[-Math.PI/2-.015,0,0]}>
+          <CharacterPart name="nakama-sword-belt-strap" material={mats.dark} size={[.09,.020,.042]} position={[-.02,-.06,0]}/>
+          {(id==="law"||id==="shanks"?[0]:[-.024,0,.024]).map((x,index)=><group key={x}
             name={`nakama-${id??"zoro"}-sheathed-sword`} position={[x,0,0]}>
             <CharacterPart material={id==="law"||id==="shanks"?mats.dark:index===0?mats.teeth:index===1?mats.red:mats.dark}
               size={[.025,.43,.029]} position={[0,-.060,0]} radius={.005}/>

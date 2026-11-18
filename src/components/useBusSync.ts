@@ -35,6 +35,7 @@ interface BusSyncOptions {
   phase: Phase;
   seatRow: number;
   setSeatRow: Dispatch<SetStateAction<number>>;
+  setSeatColumn?: Dispatch<SetStateAction<number | null>>;
   profileRevision: number;
   setPassengerProfiles: Dispatch<SetStateAction<PassengerProfile[]>>;
   seatCapacityRef: RefObject<number>;
@@ -52,7 +53,7 @@ interface BusSyncOptions {
 }
 
 export function useBusSync({
-  applyBusSnapshot, statsRetryToken, setStatsLoadError, phase, seatRow, setSeatRow,
+  applyBusSnapshot, statsRetryToken, setStatsLoadError, phase, seatRow, setSeatRow, setSeatColumn,
   profileRevision, setPassengerProfiles, seatCapacityRef, count, setCount, showToast,
   registrationPending, registrationRetryDelayRef, setCurrentPassengerSeatIndex,
   setCurrentPassengerEntryNumber, setRegistrationPending, restoreSavedProfile, clearLocalRegistrationOnly,
@@ -139,6 +140,9 @@ export function useBusSync({
         latestRegistrationRef.current = { seatIndex, displayName: normalizedName };
         setCurrentPassengerSeatIndex(seatIndex);
         setCurrentPassengerEntryNumber(entryNumber);
+        if (seatIndex !== null && new URLSearchParams(window.location.search).get("row") === null) {
+          setSeatRow(getRegisteredSeat(seatIndex).row);
+        }
         restoreSavedProfile(normalizedPassenger);
         if (normalizedPassenger) {
           const hasPublicData = Boolean(
@@ -185,6 +189,7 @@ export function useBusSync({
     setCurrentPassengerEntryNumber,
     setCurrentPassengerSeatIndex,
     setPassengerProfiles,
+    setSeatRow,
     statsRetryToken,
     visitorLookupPromiseRef,
   ]);
@@ -259,6 +264,7 @@ export function useBusSync({
                     };
                     setCurrentPassengerSeatIndex(nextSeat);
                     setSeatRow(getRegisteredSeat(nextSeat).row);
+                    setSeatColumn?.(null);
                   }
                   setCurrentPassengerEntryNumber(nextEntry);
                 }
@@ -321,7 +327,7 @@ export function useBusSync({
       document.removeEventListener("visibilitychange", refresh);
       window.removeEventListener("focus", refresh);
     };
-  }, [applyBusSnapshot, clearLocalRegistrationOnly, latestRegistrationRef, seatCapacityRef, setCount, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setSeatRow, showToast]);
+  }, [applyBusSnapshot, clearLocalRegistrationOnly, latestRegistrationRef, seatCapacityRef, setCount, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setSeatColumn, setSeatRow, showToast]);
 
   // Si l'entrée a échoué temporairement, elle est rejouée avec un délai progressif.
   // Les refus permanents ne déclenchent pas une boucle de requêtes.

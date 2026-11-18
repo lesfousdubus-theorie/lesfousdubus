@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { WorldLandmark, type PropDef, type PropType } from "./WorldLandmark";
 import WorldSetPiece, { WorldForeground } from "./WorldSetPiece";
@@ -86,13 +86,14 @@ function getTerrainWave(zone: number, x: number, z: number) {
   return Math.sin(z * .11 + x * .21 + zone) * .5 + Math.sin(z * .23 - x * .13) * .27;
 }
 
-function getTerrainHeight(zone: number, x: number, wave: number) {
+function getTerrainHeight(zone: number, x: number, wave: number, z = 0) {
   const shoulder = smoothstep(7, 17, Math.abs(x));
   const shore = 1 - smoothstep(38, 48, Math.abs(x));
   const relief = TERRAIN_RELIEF[zone];
-  // Les canaux de Water Seven passent sous leur surface d'eau fixe.
+  // Les canaux de Water Seven et la cuvette de l'oasis d'Alabasta passent sous leur surface d'eau fixe.
   const canal = zone === 1 ? 1 - smoothstep(1.4, 3.5, Math.abs(Math.abs(x) - 22)) : 0;
-  return .008 + shoulder * shore * Math.max(0, .35 + wave) * relief * (1 - canal) - canal * .06;
+  const oasis = zone === 0 ? 1 - smoothstep(4.8, 9.2, Math.hypot((x + 28) / 1.2, z + 32)) : 0;
+  return .008 + shoulder * shore * Math.max(0, .35 + wave) * relief * (1 - canal) * (1 - oasis) - canal * .06;
 }
 
 function makeTerrain(zone: number) {
@@ -108,7 +109,7 @@ function makeTerrain(zone: number) {
     const x = positions.getX(i);
     const z = positions.getZ(i);
     const wave = getTerrainWave(zone, x, z);
-    positions.setY(i, getTerrainHeight(zone, x, wave));
+    positions.setY(i, getTerrainHeight(zone, x, wave, z));
     color.copy(base).lerp(tint, THREE.MathUtils.clamp(0.22 + wave * 0.3, 0, 0.55));
     colors[i * 3] = color.r;
     colors[i * 3 + 1] = color.g;
@@ -136,6 +137,36 @@ function terrainSurfaceAt(geometry: THREE.BufferGeometry, x: number, z: number) 
     : c * (across + along - 1) + d * (1 - along) + b * (1 - across);
 }
 
+function getPropRadius(type: PropType, s: number, seed: number): number {
+  switch (type) {
+    case "palm": return 2.6 * s;
+    case "pyramid": return 10.8 * s;
+    case "ruins": return 3.6 * s;
+    case "cactus": return 1.2 * s;
+    case "building": return (3.6 + seed * 3.5) * 0.82 * s;
+    case "seaTrainPoles": return 5.45 * s;
+    case "cloud": return 5.1 * s;
+    case "giantJack": return 4.5 * s;
+    case "bell": return 4.6 * s;
+    case "sakura": return 3.2 * s;
+    case "pagoda": return 6.5 * s;
+    case "torii": return 4.2 * s;
+    case "lantern": return 1.0 * s;
+    case "drumMesa": return 9.3 * s;
+    case "pine": return 2.1 * s;
+    case "snowman": return 1.5 * s;
+    case "giantSword": return 3.6 * s;
+    case "vikingHall": return 6.8 * s;
+    case "runestone": return 1.35 * s;
+    case "drakkar": return 6.3 * s;
+    case "justicePillar": return 1.9 * s;
+    case "waterfallCliff": return 6.4 * s;
+    case "courthouse": return 6.2 * s;
+    case "rock":
+    default: return 1.5 * s;
+  }
+}
+
 function buildProps(): PropDef[] {
   const rnd = mulberry32(2026);
   const out: PropDef[] = [];
@@ -154,19 +185,51 @@ function buildProps(): PropDef[] {
         type === "vikingHall" ||
         type === "courthouse" ||
         type === "waterfallCliff";
-      const distance = type === "building"
-        ? 24 + rnd() * 18
-        : big ? 20 + rnd() * 24 : 7 + rnd() * 26;
-      const localZ = 10 + rnd() * (ZONE_LEN - 20);
-      // Préserver la silhouette du monument central en évitant les superpositions.
-      if (side > 0 && distance > 16 && localZ > 45 && localZ < 115) side = -1;
+      const s = big ? 1.0 + rnd() * 0.5 : 0.8 + rnd() * 0.5;
+      const rot = rnd() * Math.PI * 2;
+      const seed = rnd();
+      const radius = getPropRadius(type, s, seed);
+      const minDist = 5.5 + radius;
+      const maxDist = Math.max(minDist, 45.5 - radius);
+      let distance: number;
+      if (z === 1) {
+        const innerMax = 22 - radius - 2.6;
+        const outerMin = 22 + radius + 2.6;
+        const intervals: Array<[number, number]> = [];
+        if (innerMax >= minDist) intervals.push([minDist, innerMax]);
+        if (maxDist >= outerMin) intervals.push([outerMin, maxDist]);
+        if (intervals.length === 2) {
+          const pick = type === "building" ? intervals[1] : intervals[rnd() < 0.5 ? 0 : 1];
+          distance = pick[0] + rnd() * (pick[1] - pick[0]);
+        } else if (intervals.length === 1) {
+          distance = intervals[0][0] + rnd() * (intervals[0][1] - intervals[0][0]);
+        } else {
+          distance = THREE.MathUtils.clamp(22 + (rnd() > 0.5 ? 1 : -1) * (radius + 2.6), minDist, maxDist);
+        }
+      } else {
+        const span = Math.max(0, maxDist - minDist);
+        distance = minDist + rnd() * span;
+      }
+      const minZ = radius + 8;
+      const maxZ = Math.max(minZ, ZONE_LEN - radius - 8);
+      let localZ = minZ + rnd() * (maxZ - minZ);
+      // Préserver la silhouette du monument central et l'oasis d'Alabasta.
+      if (side > 0 && distance + radius > 16 && localZ + radius > 45 && localZ - radius < 115) side = -1;
+      if (z === 0 && side < 0 && Math.hypot((side * distance + 28) / 1.2, localZ - ZONE_LEN / 2 + 32) < 7.5 + radius) {
+        if (localZ + radius <= 45 || localZ - radius >= 115) side = 1;
+        else localZ = Math.min(maxZ, Math.max(minZ, localZ < ZONE_LEN / 2 ? 48 + 9 + radius : localZ));
+      }
+      const zLocal = localZ - ZONE_LEN / 2;
+      const x = side * distance;
+      const y = getTerrainHeight(z, x, getTerrainWave(z, x, zLocal), zLocal) - 0.03;
       out.push({
         type,
-        x: side * distance,
+        x,
+        y,
         base: z * ZONE_LEN + localZ,
-        s: big ? 1.0 + rnd() * 0.5 : 0.8 + rnd() * 0.5,
-        rot: rnd() * Math.PI * 2,
-        seed: rnd(),
+        s,
+        rot,
+        seed,
       });
     }
   }
@@ -179,9 +242,17 @@ interface WorldProps {
   lowPower?: boolean;
   phase?: Phase;
   cabinCenterZ?: number;
+  cabinLength?: number;
 }
 
-export default function World({ worldRef, reducedMotion = false, lowPower = false, phase = "outside", cabinCenterZ = 0 }: WorldProps) {
+export default function World({
+  worldRef,
+  reducedMotion = false,
+  lowPower = false,
+  phase = "outside",
+  cabinCenterZ = 0,
+  cabinLength = 9.2,
+}: WorldProps) {
   const allProps = useMemo(() => buildProps(), []);
   const terrains = useMemo(() => ZONES.map((_, index) => makeTerrain(index)), []);
 
@@ -201,13 +272,53 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
   const sceneBounds = useRef<SceneryBounds[][]>([]);
   const railBounds = useRef<SceneryBounds[]>([]);
   const visibility = useMemo(() => createSceneryVisibility(), []);
+
+  const bridgeLength = Math.max(1600, cabinLength + 1400);
+  const bridgeSegments = Math.ceil(bridgeLength / 20);
+  const markingCount = Math.ceil(bridgeLength / 960);
+  const markingOffsets = useMemo(
+    () => Array.from({ length: markingCount }, (_, index) => cabinCenterZ + (index - (markingCount - 1) / 2) * 960),
+    [cabinCenterZ, markingCount],
+  );
+  const dashSpan = Math.ceil(bridgeLength / 10) * 10;
+  const dashCount = dashSpan / 10;
+  const dashes = useMemo(() => Array.from({ length: dashCount }, (_, i) => i * 10), [dashCount]);
+
+  const refreshPropBounds = useCallback((index: number) => {
+    const group = propRefs.current[index];
+    propBounds.current[index] = group ? cacheSceneryBounds(group, group.position.z) : null;
+  }, []);
+
+  const refreshZoneBounds = useCallback((zone: number) => {
+    const z = zoneRefs.current[zone]?.position.z ?? 0;
+    const objects: THREE.Object3D[] = [];
+    const landmark = sceneryRefs.current[zone * 3];
+    if (landmark) {
+      landmark.traverse(child => {
+        if (child instanceof THREE.Mesh) objects.push(child);
+      });
+    }
+    for (const side of [1, 2]) {
+      const foreground = sceneryRefs.current[zone * 3 + side]?.children[0];
+      if (foreground) objects.push(...foreground.children);
+    }
+    sceneBounds.current[zone] = objects.map(object => cacheSceneryBounds(object, z));
+  }, []);
+
   useLayoutEffect(() => {
-    propBounds.current = propRefs.current.map(group => group && cacheSceneryBounds(group, group.position.z));
+    propBounds.current = props.map((_, i) => {
+      const group = propRefs.current[i];
+      return group ? cacheSceneryBounds(group, group.position.z) : null;
+    });
     sceneBounds.current = ZONES.map((_, zone) => {
       const z = zoneRefs.current[zone]?.position.z ?? 0;
       const objects: THREE.Object3D[] = [];
       const landmark = sceneryRefs.current[zone * 3];
-      if (landmark) objects.push(landmark);
+      if (landmark) {
+        landmark.traverse(child => {
+          if (child instanceof THREE.Mesh) objects.push(child);
+        });
+      }
       for (const side of [1, 2]) {
         const foreground = sceneryRefs.current[zone * 3 + side]?.children[0];
         if (foreground) objects.push(...foreground.children);
@@ -215,11 +326,11 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       return objects.map(object => cacheSceneryBounds(object, z));
     });
     railBounds.current = railRefs.current.flatMap(group => group ? [cacheSceneryBounds(group, 0)] : []);
-  }, [props, lowPower]);
+  }, [props, lowPower, cabinCenterZ, bridgeLength]);
+
   const dashRef = useRef<THREE.InstancedMesh>(null);
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
-  const activeWeatherKey = useRef("");
-  const dashes = useMemo(() => Array.from({ length: 80 }, (_, i) => i * 10), []);
+  const zoneZ = useRef<number[]>(new Array<number>(ZONES.length).fill(0));
 
   useFrame((state, dt) => {
     const frameDt = Math.min(dt, phase==="entering"||phase==="exiting"?0.25:0.1);
@@ -230,55 +341,61 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
     visibility.begin(state.camera);
     for (const rail of railBounds.current) visibility.update(rail, 0);
 
-    // Les limites détaillées ne sont testées qu'à proximité et devant la caméra.
-    for (let i = 0; i < props.length; i++) {
-      const g = propRefs.current[i];
-      if (!g) continue;
-      let z = (((props[i].base + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
-      if (z > 440) z -= LOOP;
-      g.position.z = z;
-      const bounds = propBounds.current[i];
-      if (bounds && z > -450 && z < 440) visibility.update(bounds, z);
-      else g.visible = false;
-    }
+    const loopStart = cabinCenterZ - LOOP / 2;
+    const loopEnd = cabinCenterZ + LOOP / 2;
 
-    // Une portion du premier plan peut disparaître sans retirer tout le décor de l'île.
+    // Boucler les 8 îles dans [cabinCenterZ - LOOP / 2, cabinCenterZ + LOOP / 2]
     for (let i = 0; i < ZONES.length; i++) {
       const g = zoneRefs.current[i];
       if (!g) continue;
       const center = i * ZONE_LEN + ZONE_LEN / 2;
-      let z = (((center + scroll) % LOOP) + LOOP) % LOOP + WINDOW_START;
-      if (z > 440) z -= LOOP;
+      let z = (((center + scroll + WINDOW_START - loopStart) % LOOP) + LOOP) % LOOP + loopStart;
+      if (z > loopEnd) z -= LOOP;
+      zoneZ.current[i] = z;
       g.position.z = z;
       const terrain = terrainRefs.current[i];
       const eye = state.camera.position;
       const localZ = eye.z - z;
-      if (terrain) terrain.visible = eye.y > 1.37 || eye.y >= terrainSurfaceAt(terrain.geometry, eye.x, localZ);
+      if (terrain) terrain.visible = eye.y > 1.37 || eye.y >= terrainSurfaceAt(terrain.geometry, eye.x, localZ) - 0.06;
       for (const block of sceneBounds.current[i] ?? []) visibility.update(block, z);
     }
 
-    // Défilement des lignes blanches du pont
+    // Les props suivent exactement le bouclage de leur île sur toute la fenêtre.
+    for (let i = 0; i < props.length; i++) {
+      const g = propRefs.current[i];
+      if (!g) continue;
+      const zoneIdx = Math.floor(props[i].base / ZONE_LEN);
+      const localOffset = props[i].base - (zoneIdx * ZONE_LEN + ZONE_LEN / 2);
+      const z = zoneZ.current[zoneIdx] + localOffset;
+      g.position.z = z;
+      const bounds = propBounds.current[i];
+      if (bounds) visibility.update(bounds, z);
+    }
+
+    // Défilement des lignes blanches du pont sur toute la portée dynamique
+    const dashStart = cabinCenterZ - dashSpan / 2;
     for (let i = 0; i < dashes.length; i++) {
-      const z = ((((dashes[i] + scroll) % 800) + 800) % 800) - 440;
+      const z = ((((dashes[i] + scroll - dashStart) % dashSpan) + dashSpan) % dashSpan) + dashStart;
       dashMatrix.makeTranslation(0, 0.052, z);
       dashRef.current?.setMatrixAt(i, dashMatrix);
     }
     if (dashRef.current) dashRef.current.instanceMatrix.needsUpdate = true;
 
-    // Calcul de la zone active
+    // Calcul de la zone active et fondu météorologique continu
     const baseAtBus = (((-WINDOW_START - scroll) % LOOP) + LOOP) % LOOP;
     if (worldRef.current) {
       const zone = Math.floor(baseAtBus / ZONE_LEN) % ZONES.length;
       const visit = Math.floor((-WINDOW_START - scroll) / LOOP);
-      const weather = weatherForLandscape(zone, visit);
-      const weatherKey = `${visit}:${zone}:${weather}`;
-      if (weatherKey !== activeWeatherKey.current) {
-        activeWeatherKey.current = weatherKey;
-        worldRef.current.weatherIntensity = 0;
+      const targetWeather = weatherForLandscape(zone, visit);
+      const currentWeather = worldRef.current.weather;
+      let targetIntensity = 0;
+      if (targetWeather === currentWeather) {
+        targetIntensity = targetWeather === "clear" ? 0 : targetWeather === "rain" ? 0.9 : 0.72;
+      } else if (worldRef.current.weatherIntensity <= 0.01) {
+        worldRef.current.weather = targetWeather;
+        targetIntensity = targetWeather === "clear" ? 0 : targetWeather === "rain" ? 0.9 : 0.72;
       }
       worldRef.current.zone = zone;
-      worldRef.current.weather = weather;
-      const targetIntensity = weather === "clear" ? 0 : weather === "rain" ? 0.9 : 0.72;
       worldRef.current.weatherIntensity +=
         (targetIntensity - worldRef.current.weatherIntensity) * Math.min(1, frameDt * 0.65);
     }
@@ -286,7 +403,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
 
   return (
     <group>
-      <WorldOcean reducedMotion={reducedMotion} />
+      <WorldOcean worldRef={worldRef} reducedMotion={reducedMotion} />
       <WorldSeaCreatures worldRef={worldRef} cabinCenterZ={cabinCenterZ} reducedMotion={reducedMotion} lowPower={lowPower} />
 
       {/* Îles des 8 mondes avec rivages et plages */}
@@ -304,10 +421,15 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
             <meshStandardMaterial color={zone.ground} roughness={0.9} />
           </mesh>
           <mesh ref={(el: THREE.Mesh | null) => { terrainRefs.current[i] = el; }} geometry={terrains[i]} receiveShadow>
-            <meshStandardMaterial vertexColors roughness={0.95} side={THREE.DoubleSide} />
+            <meshStandardMaterial vertexColors roughness={0.95} side={THREE.FrontSide} />
           </mesh>
           <group ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3] = element; }}>
-            <WorldSetPiece zone={i} lowPower={lowPower} reducedMotion={reducedMotion} />
+            <WorldSetPiece
+              zone={i}
+              lowPower={lowPower}
+              reducedMotion={reducedMotion}
+              onMeshesReady={() => refreshZoneBounds(i)}
+            />
           </group>
           {[-1, 1].map((side, part) => <group
             key={side}
@@ -316,7 +438,7 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
             <WorldForeground zone={i} side={side} lowPower={lowPower} />
           </group>)}
           {/* Plage / bordure d'île */}
-          <mesh position={[0, -0.44, 0]}>
+          <mesh position={[0, -0.44, 0]} receiveShadow>
             <boxGeometry args={[104, 0.32, ZONE_LEN - 8]} />
             <meshStandardMaterial color={zone.shore} roughness={0.95} />
           </mesh>
@@ -324,31 +446,35 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
       ))}
 
       {/* Pont maritime continu de Grand Line */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.024, -60]} receiveShadow>
-        <planeGeometry args={[7.4, 960]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.024, cabinCenterZ]} receiveShadow>
+        <planeGeometry args={[7.4, bridgeLength, 1, bridgeSegments]} />
         <meshStandardMaterial color="#2d3036" roughness={0.92} />
       </mesh>
 
       {/* Bandes de rive jaunes */}
       {[-3.5, 3.5].map((x) => (
-        <mesh key={x} name={`world-bridge-edge-marking-${x < 0 ? "left" : "right"}`} position={[x, 0.048, -60]}>
-          <boxGeometry args={BRIDGE_MARKING_BOX} />
-          <meshStandardMaterial color="#ffc107" roughness={0.8} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
-        </mesh>
+        <group key={x} name={`world-bridge-edge-marking-${x < 0 ? "left" : "right"}`}>
+          {markingOffsets.map((zOffset, seg) => (
+            <mesh key={seg} position={[x, 0.048, zOffset]}>
+              <boxGeometry args={BRIDGE_MARKING_BOX} />
+              <meshStandardMaterial color="#ffc107" roughness={0.8} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+            </mesh>
+          ))}
+        </group>
       ))}
 
       {/* Rambardes de sécurité chromées du pont maritime */}
       {[-3.85, 3.85].map((x, i) => (
         <group key={x} ref={(el: THREE.Group | null) => { railRefs.current[i] = el; }}>
-          <mesh position={[x, 0.42, -60]}>
-            <boxGeometry args={[0.1, 0.55, 960]} />
+          <mesh position={[x, 0.42, cabinCenterZ]}>
+            <boxGeometry args={[0.1, 0.55, bridgeLength, 1, 1, bridgeSegments]} />
             <meshStandardMaterial color="#969cb0" roughness={0.5} metalness={0.5} />
           </mesh>
         </group>
       ))}
 
       {/* Ligne médiane discontinue animée */}
-      <instancedMesh ref={dashRef} args={[undefined, undefined, dashes.length]} frustumCulled={false}>
+      <instancedMesh key={dashCount} ref={dashRef} args={[undefined, undefined, dashCount]} frustumCulled={false}>
         <boxGeometry args={[0.22, 0.02, 3.2]} />
         <meshStandardMaterial color="#ffffff" roughness={0.7} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </instancedMesh>
@@ -361,10 +487,10 @@ export default function World({ worldRef, reducedMotion = false, lowPower = fals
           ref={(el: THREE.Group | null) => {
             propRefs.current[i] = el;
           }}
-          position={[p.x, 0, 0]}
+          position={[p.x, p.y ?? 0, 0]}
           rotation={[0, p.rot, 0]}
         >
-          <WorldLandmark def={p} />
+          <WorldLandmark def={p} onReady={() => refreshPropBounds(i)} />
         </group>
       ))}
     </group>

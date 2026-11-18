@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { JOURNEY_MAX_DT, beginJourney, ease, updateJourney, type JourneyState } from "@/lib/bus-journey";
+import { ARRIVAL_STOP_TIME, JOURNEY_MAX_DT, beginJourney, ease, updateJourney, type JourneyState } from "@/lib/bus-journey";
 import { getNearestBusDoor } from "@/lib/bus-layout";
 import type { Phase, WorldState } from "./constants";
 
@@ -31,7 +31,8 @@ export default function BoardingController({phase,journey,worldRef,seatZ,seatX,n
       state.elapsed = 0;
       return;
     }
-    if (previous.current !== phase || state.phase !== phase) {
+    const door = getNearestBusDoor(seatZ, numRows);
+    if (previous.current !== phase || state.phase !== phase || state.waitingForSeat) {
       if (previous.current === "exiting" && phase === "outside") {
         departing.current = { active: true, time: 0, z: state.position.z, scroll: worldRef.current.scroll };
       }
@@ -44,16 +45,25 @@ export default function BoardingController({phase,journey,worldRef,seatZ,seatX,n
         state.cameraBlend = 0;
         state.completed = false;
       } else {
-        beginJourney(state, phase, seatZ, getNearestBusDoor(seatZ, numRows), seatX, boardingFromSeat);
-        updateJourney(state, phase, 0, seatZ, worldRef.current.speedMultiplier, undefined, seatX);
+        beginJourney(state, phase, seatZ, door, seatX, boardingFromSeat);
+        updateJourney(state, phase, 0, seatZ, worldRef.current.speedMultiplier, door, seatX);
       }
       previous.current = phase;
       elapsed.current = 0;
+    } else if (
+      phase === "entering"
+      && state.elapsed < ARRIVAL_STOP_TIME
+      && (Math.abs(state.seatZ - seatZ) > 1e-6 || Math.abs(state.seatX - seatX) > 1e-6 || Math.abs(state.doorZ - door.z) > 1e-6)
+    ) {
+      const preservedElapsed = elapsed.current;
+      beginJourney(state, phase, seatZ, door, seatX, boardingFromSeat);
+      updateJourney(state, phase, preservedElapsed, seatZ, worldRef.current.speedMultiplier, door, seatX);
     }
   }, [phase, boardingPending, boardingFromSeat, seatZ, seatX, numRows, worldRef]);
   useFrame((_,dt)=>{
     const state=stateRef.current.current;
     const cinematic=phase==="entering"||phase==="exiting";
+    const door=getNearestBusDoor(seatZ,numRows);
     // L'inscription attribue la vraie place de manière asynchrone. Attendre
     // cette réponse évite de faire apparaître l'avatar devant la mauvaise porte.
     if(phase==="entering" && boardingPending) {
@@ -72,13 +82,13 @@ export default function BoardingController({phase,journey,worldRef,seatZ,seatX,n
       if(previous.current==="exiting"&&phase==="outside")departing.current={active:true,time:0,z:state.position.z,scroll:worldRef.current.scroll};
       if(phase==="entering")departing.current.active=false;
       previous.current=phase; elapsed.current=0;
-      if(cinematic)beginJourney(state,phase,seatZ,getNearestBusDoor(seatZ,numRows),seatX,boardingFromSeat);
+      if(cinematic)beginJourney(state,phase,seatZ,door,seatX,boardingFromSeat);
       else state.waitingForSeat=false;
       if(!cinematic)resume.current=state.drive*2;
     }
     if(cinematic) elapsed.current+=Math.min(dt,JOURNEY_MAX_DT);
     if(reducedMotion&&cinematic&&elapsed.current>=0.6)elapsed.current=phase==="entering"?state.timing.entryDuration:state.timing.exitDuration;
-    updateJourney(state,phase,elapsed.current,seatZ,worldRef.current.speedMultiplier,undefined,seatX);
+    updateJourney(state,phase,elapsed.current,seatZ,worldRef.current.speedMultiplier,door,seatX);
     if(reducedMotion&&cinematic){state.avatarVisible=phase==="entering"&&state.entryFromSeat;state.drive=0;}
     if(!cinematic) {
       resume.current=Math.min(2,resume.current+Math.min(dt,JOURNEY_MAX_DT));

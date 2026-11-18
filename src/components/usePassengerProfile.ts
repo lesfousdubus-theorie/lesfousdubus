@@ -172,9 +172,6 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
           ...profiles.filter((profile) => profile.seatIndex !== data.passenger!.seatIndex),
           data.passenger!,
         ]);
-        if (profileModalMode === "name") {
-          setSeatRow(getRegisteredSeat(data.passenger.seatIndex).row);
-        }
       }
       setShowJoinModal(false);
       showToast(
@@ -190,7 +187,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       profileRequest.current = null;
       setProfileSaving(false);
     }
-  }, [applyBusSnapshot, joinComment, joinName, profileModalMode, savedProfile.comment, savedProfile.name, showToast, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles, setSeatRow]);
+  }, [applyBusSnapshot, joinComment, joinName, profileModalMode, savedProfile.comment, savedProfile.name, showToast, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles]);
 
   const removeProfileField = useCallback(async () => {
     if (profileMutationLock.current || profileModalMode !== "comment") return;

@@ -5,12 +5,46 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { DESTINATION_MESSAGE, GRAND_LINE_STOPS, LED_COLUMNS, LED_ROWS, encodeLedText, getLedOffset, getDestinationStartOffset, getRandomDestinationStart } from "@/lib/bus-destinations";
 
+const REDUCED_MOTION_STOP_LABELS: Record<string, string> = {
+  "Île de Gaimon": "Ile Gaimon",
+  "Syrup Village": "Syrup",
+  "Cactus Island": "Cactus Isl",
+  "Little Garden": "Ltl Garden",
+  "Long Ring Long Land": "Long Ring",
+  "Thriller Bark": "Thriller",
+  "Archipel Sabaody": "Sabaody",
+  "Île des Hommes-Poissons": "H-Poissons",
+  "Whole Cake Island": "Whole Cake",
+};
+
+function formatReducedMotionStop(stop: string): string {
+  if (stop.length <= 12) return stop;
+  const mapped = REDUCED_MOTION_STOP_LABELS[stop];
+  if (mapped) return mapped;
+  const words = stop.split(" ");
+  let result = "";
+  for (const word of words) {
+    const candidate = result ? `${result} ${word}` : word;
+    if (candidate.length > 12) break;
+    result = candidate;
+  }
+  return result || stop.slice(0, 12);
+}
+
 export default function BusDestination({ mats, reducedMotion }: { mats: Record<string, THREE.Material>; reducedMotion: boolean }) {
   const elapsed = useRef(0);
   const previous = useRef(-1);
   const [startingStop] = useState(getRandomDestinationStart);
   const startOffset = useMemo(() => getDestinationStartOffset(startingStop), [startingStop]);
-  const message = useMemo(() => encodeLedText(reducedMotion ? GRAND_LINE_STOPS[startingStop] : DESTINATION_MESSAGE), [reducedMotion, startingStop]);
+  const message = useMemo(
+    () => encodeLedText(reducedMotion ? formatReducedMotionStop(GRAND_LINE_STOPS[startingStop]) : DESTINATION_MESSAGE),
+    [reducedMotion, startingStop],
+  );
+  const staticPadding = useMemo(() => {
+    if (!reducedMotion) return 0;
+    const litColumns = Math.max(0, message.length - 1);
+    return Math.max(0, Math.floor((LED_COLUMNS - litColumns) / 2));
+  }, [message, reducedMotion]);
   const display = useMemo(() => {
     const cell = 8;
     const width = LED_COLUMNS * cell;
@@ -65,7 +99,9 @@ export default function BusDestination({ mats, reducedMotion }: { mats: Record<s
     const ctx = currentDisplay.context;
     ctx.drawImage(currentDisplay.baseCanvas, 0, 0);
     for (let x = 0; x < LED_COLUMNS; x++) {
-      const column = reducedMotion ? (message[x] ?? 0) : message[(x + offset) % message.length];
+      const column = reducedMotion
+        ? (x >= staticPadding ? (message[x - staticPadding] ?? 0) : 0)
+        : message[(x + offset) % message.length];
       if (!column) continue;
       for (let y = 0; y < LED_ROWS; y++) {
         if (column & (1 << y)) {
@@ -75,10 +111,10 @@ export default function BusDestination({ mats, reducedMotion }: { mats: Record<s
     }
     currentDisplay.texture.needsUpdate = true;
   });
-  return <group name="bus-led-destination" userData={{ startingStop, destination: GRAND_LINE_STOPS[startingStop] }} position={[0, 2.975, -4.665]} rotation={[0, Math.PI, 0]}>
+  return <group name="bus-led-destination" userData={{ startingStop, destination: GRAND_LINE_STOPS[startingStop] }} position={[0, 2.975, -4.655]} rotation={[0, Math.PI, 0]}>
     <mesh material={mats.dark}><boxGeometry args={[2.23, 0.35, 0.035]} /></mesh>
-    <mesh position={[0, 0, 0.019]}><planeGeometry args={[2.16, 0.27]} />
-      <meshBasicMaterial map={display.texture} toneMapped={false} />
+    <mesh position={[0, 0, 0.022]}><planeGeometry args={[2.16, 0.27]} />
+      <meshBasicMaterial map={display.texture} toneMapped={false} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
     </mesh>
   </group>;
 }

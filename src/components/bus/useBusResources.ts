@@ -68,14 +68,6 @@ export default function useBusResources() {
         color: "#18181c",
         roughness: 0.95,
       }),
-      glass: new THREE.MeshStandardMaterial({
-        color: "#9ec9ff",
-        transparent: true,
-        opacity: 0.32,
-        roughness: 0.04,
-        metalness: 0.05,
-        depthWrite: false,
-      }),
       windowGlass: new THREE.MeshStandardMaterial({
         color: "#9ec9ff", transparent: true, opacity: 0.22,
         roughness: 0.04, metalness: 0.05, depthWrite: false, side: THREE.DoubleSide,

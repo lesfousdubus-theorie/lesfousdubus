@@ -12,9 +12,36 @@ const EMPTY_NAMES = new Map<number, NameEntry | null>();
 const NAME_PAGE_SIZE = 80;
 const NAME_HEIGHT = 128;
 const MAX_NAME_WIDTH = 1024;
+const MAX_NAME_CACHE_SIZE = 256;
 const FONT = "900 64px ui-sans-serif, system-ui, sans-serif";
-const PASSENGER_NAME_TEXTURE_CACHE = new Map<string, { texture: THREE.CanvasTexture; aspect: number }>();
+type CachedNameTexture = { texture: THREE.CanvasTexture; aspect: number; refs: number };
+const PASSENGER_NAME_TEXTURE_CACHE = new Map<string, CachedNameTexture>();
 let passengerNameMeasureContext: CanvasRenderingContext2D | null = null;
+
+function evictUnusedPassengerNameTextures(maxSize = MAX_NAME_CACHE_SIZE, protectedKey?: string) {
+  if (PASSENGER_NAME_TEXTURE_CACHE.size <= maxSize) return;
+  for (const [key, entry] of PASSENGER_NAME_TEXTURE_CACHE) {
+    if (PASSENGER_NAME_TEXTURE_CACHE.size <= maxSize) break;
+    if (key === protectedKey || entry.refs > 0) continue;
+    entry.texture.dispose();
+    PASSENGER_NAME_TEXTURE_CACHE.delete(key);
+  }
+}
+
+export function retainPassengerNameTexture(displayName: string) {
+  const entry = PASSENGER_NAME_TEXTURE_CACHE.get(displayName);
+  if (!entry) return;
+  entry.refs += 1;
+  PASSENGER_NAME_TEXTURE_CACHE.delete(displayName);
+  PASSENGER_NAME_TEXTURE_CACHE.set(displayName, entry);
+}
+
+export function releasePassengerNameTexture(displayName: string) {
+  const entry = PASSENGER_NAME_TEXTURE_CACHE.get(displayName);
+  if (!entry) return;
+  entry.refs = Math.max(0, entry.refs - 1);
+  if (entry.refs === 0) evictUnusedPassengerNameTextures(MAX_NAME_CACHE_SIZE);
+}
 
 export function getVisiblePassengerName(value: string | null | undefined) {
   const name = value?.trim();
@@ -67,7 +94,11 @@ export function useVisiblePassengerSummaries(passengers: BusOccupant[], revision
 
 function makePassengerNameTexture(displayName: string) {
   const cached = PASSENGER_NAME_TEXTURE_CACHE.get(displayName);
-  if (cached) return cached;
+  if (cached) {
+    PASSENGER_NAME_TEXTURE_CACHE.delete(displayName);
+    PASSENGER_NAME_TEXTURE_CACHE.set(displayName, cached);
+    return cached;
+  }
 
   if (!passengerNameMeasureContext) {
     passengerNameMeasureContext = document.createElement("canvas").getContext("2d");
@@ -75,7 +106,7 @@ function makePassengerNameTexture(displayName: string) {
   const measureContext = passengerNameMeasureContext!;
   measureContext.font = FONT;
   const measuredWidth = Math.ceil(measureContext.measureText(displayName).width + 48);
-  const width = Math.min(MAX_NAME_WIDTH, Math.max(256, THREE.MathUtils.ceilPowerOfTwo(measuredWidth)));
+  const width = Math.min(MAX_NAME_WIDTH, Math.max(192, Math.ceil(measuredWidth / 16) * 16));
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = NAME_HEIGHT;
@@ -98,16 +129,9 @@ function makePassengerNameTexture(displayName: string) {
   texture.magFilter = THREE.LinearFilter;
   texture.anisotropy = 4;
 
-  const entry = { texture, aspect: width / NAME_HEIGHT };
-  if (PASSENGER_NAME_TEXTURE_CACHE.size >= 256) {
-    const oldestKey = PASSENGER_NAME_TEXTURE_CACHE.keys().next().value;
-    if (oldestKey !== undefined) {
-      const oldest = PASSENGER_NAME_TEXTURE_CACHE.get(oldestKey);
-      oldest?.texture.dispose();
-      PASSENGER_NAME_TEXTURE_CACHE.delete(oldestKey);
-    }
-  }
+  const entry = { texture, aspect: width / NAME_HEIGHT, refs: 0 };
   PASSENGER_NAME_TEXTURE_CACHE.set(displayName, entry);
+  evictUnusedPassengerNameTextures(MAX_NAME_CACHE_SIZE, displayName);
   return entry;
 }
 
@@ -141,6 +165,13 @@ export function DistantPassengerNames({
       document.body.style.cursor = "auto";
     }
   }, [onSelect]);
+
+  useEffect(() => {
+    if (hoveredIndex.current !== null && !labels.some(label => label.index === hoveredIndex.current)) {
+      hoveredIndex.current = null;
+      document.body.style.cursor = "auto";
+    }
+  }, [labels]);
 
   if (!labels.length) return null;
 
@@ -181,6 +212,10 @@ type TagProps = { name: string; position: [number, number, number] }
 
 export function PassengerNameTag({ name, position, ...handlers }: TagProps) {
   const { texture, aspect } = useMemo(() => makePassengerNameTexture(name), [name]);
+  useEffect(() => {
+    retainPassengerNameTexture(name);
+    return () => releasePassengerNameTexture(name);
+  }, [name]);
   return (
     <sprite
       name="nakama-name-label"

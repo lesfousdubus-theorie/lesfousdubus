@@ -4,9 +4,48 @@ import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { makeLabelTexture } from "@/lib/textures";
-import { ENTRY_SEAT_POSITION, SEAT_CUSHION_DEPTH, SEAT_CUSHION_Z, SEAT_BASE_DEPTH, type TvPosition } from "@/lib/bus-layout";
+import { BUS_FRONT_Z, ENTRY_SEAT_POSITION, SEAT_CUSHION_DEPTH, SEAT_CUSHION_Z, SEAT_BASE_DEPTH, type TvPosition } from "@/lib/bus-layout";
 import { CABIN_CEILING_Y, GRAB_HANDLE_X, GRAB_RAIL_BRIDGE_Y, GRAB_RAIL_Y, getGrabRailBridgeSpans, getGrabRailSpans, isGrabHandleClearOfTv } from "@/lib/bus-interior-geometry";
+import { WHEEL_ARCH_RADIUS, WHEEL_CENTER_Y } from "./BusBodyGeometry";
 import { CharacterPart } from "./CharacterShapes";
+
+const WHEELHOUSE_LAYERS: ReadonlyArray<{ xStart: number; xEnd: number; radius: number }> = [
+  { xStart: 1.14, xEnd: 1.2, radius: 0.57 },
+  { xStart: 1.2, xEnd: 1.235, radius: 0.59 },
+  { xStart: 1.235, xEnd: 1.258, radius: 0.66 },
+];
+
+function createWheelhouseGeometry(wheelPositions: [number, number][], rearWallZ: number): THREE.BufferGeometry {
+  const yBase = 0.56;
+  const parts: THREE.BufferGeometry[] = [];
+  for (const [x, z] of wheelPositions) {
+    const side = Math.sign(x);
+    const zMin = Math.max(BUS_FRONT_Z + 0.042, z - WHEEL_ARCH_RADIUS) - z;
+    const zMax = Math.min(rearWallZ - 0.042, z + WHEEL_ARCH_RADIUS) - z;
+    for (const { xStart, xEnd, radius } of WHEELHOUSE_LAYERS) {
+      const halfChord = Math.sqrt(radius * radius - (yBase - WHEEL_CENTER_Y) ** 2);
+      const left = Math.max(zMin, -halfChord);
+      const right = Math.min(zMax, halfChord);
+      if (right <= left) continue;
+      const yLeft = WHEEL_CENTER_Y + Math.sqrt(Math.max(0, radius * radius - left * left));
+      const startAngle = Math.acos(THREE.MathUtils.clamp(left / radius, -1, 1));
+      const endAngle = Math.acos(THREE.MathUtils.clamp(right / radius, -1, 1));
+      const shape = new THREE.Shape();
+      shape.moveTo(left, yBase);
+      if (yLeft > yBase + 1e-5) shape.lineTo(left, yLeft);
+      shape.absarc(0, WHEEL_CENTER_Y, radius, startAngle, endAngle, true);
+      shape.lineTo(right, yBase);
+      shape.closePath();
+      const geo = new THREE.ExtrudeGeometry(shape, { depth: xEnd - xStart, bevelEnabled: false, curveSegments: 24 });
+      geo.rotateY(-Math.PI / 2);
+      geo.translate(side > 0 ? xEnd : -xStart, 0, z);
+      parts.push(geo);
+    }
+  }
+  const merged = parts.length ? mergeGeometries(parts, false)! : new THREE.BufferGeometry();
+  parts.forEach((part) => part.dispose());
+  return merged;
+}
 
 interface Props {
   mats: Record<string, THREE.Material>;
@@ -73,6 +112,14 @@ export default function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearW
     return makeGrabRailBridges(from, to, getGrabRailBridgeSpans(from, to, tvPositions));
   }, [cabinCenterZ, cabinLength, tvPositions]);
   useEffect(() => () => grabRailBridges.geometry.dispose(), [grabRailBridges]);
+  const wheelKey = wheelPositions.map(([x, z]) => `${x}:${z}`).join(",");
+  const wheelhouseGeo = useMemo(() => {
+    const parsed = wheelKey
+      ? wheelKey.split(",").map((pair) => pair.split(":").map(Number) as [number, number])
+      : [];
+    return createWheelhouseGeometry(parsed, rearWallZ);
+  }, [wheelKey, rearWallZ]);
+  useEffect(() => () => wheelhouseGeo.dispose(), [wheelhouseGeo]);
   const exitTexture = useMemo(() => makeLabelTexture({ text: "ISSUE DE SECOURS", bg: "#087449", fg: "#ffffff", width: 512, height: 96, font: "bold 38px Arial, sans-serif" }), []);
   useEffect(() => () => exitTexture.dispose(), [exitTexture]);
 
@@ -88,9 +135,9 @@ export default function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearW
       </group>)}
     </group>
     {[-1, 1].map((side) => <group key={side}>
-      {/* Porte-bagages au-dessus des fenêtres, sans empiéter sur l'allée. */}
-      <mesh material={mats.interiorWall} position={[side * 1.055, 2.88, cabinCenterZ + 0.2]}>
-        <boxGeometry args={[0.32, 0.025, cabinLength - 1.1]} />
+      {/* Porte-bagages au-dessus des fenêtres, prolongé jusqu'à la paroi. */}
+      <mesh material={mats.interiorWall} position={[side * 1.07, 2.88, cabinCenterZ + 0.2]}>
+        <boxGeometry args={[0.35, 0.025, cabinLength - 1.1]} />
       </mesh>
       <mesh material={mats.chrome} position={[side * 0.89, 2.94, cabinCenterZ + 0.2]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.018, 0.018, cabinLength - 1.1, 8]} />
@@ -103,9 +150,12 @@ export default function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearW
       <mesh name="bus-grab-rail-bridge" material={mats.yellow} geometry={grabRailBridges.geometry}
         position={[side * GRAB_HANDLE_X, 0, 0]} dispose={null}
         userData={{ side, segments: grabRailBridges.segments, ceilingY: CABIN_CEILING_Y }} />
-      {detailZs.map((z) => <group key={z}>
-        <mesh material={mats.chrome} position={[side * 1.055, 2.96, z]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.014, 0.014, 0.32, 8]} />
+      {detailZs.map((z, i) => <group key={`detail-${i}`}>
+        <mesh material={mats.chrome} position={[side * 1.0675, 2.865, z]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.014, 0.014, 0.355, 8]} />
+        </mesh>
+        <mesh material={mats.chrome} position={[side * 0.89, 3.005, z]}>
+          <cylinderGeometry args={[0.014, 0.014, 0.28, 8]} />
         </mesh>
         {/* Chaque écran garde son espace libre, y compris les rappels arrière. */}
         {isGrabHandleClearOfTv(z, tvPositions) && <group name="bus-grab-handle" userData={{ z, side }}>
@@ -118,13 +168,11 @@ export default function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearW
         </group>}
       </group>)}
     </group>)}
-    {/* Les passages de roue sont fermés côté cabine, sous les fenêtres. */}
-    {wheelPositions.map(([x, z], index) => <mesh key={`wheelhouse-${index}`} material={mats.dark} position={[Math.sign(x) * 1.25, 0.55, z]} rotation={[0, 0, Math.PI / 2]}>
-      <cylinderGeometry args={[0.66, 0.66, 0.025, 24, 1, false, 0, Math.PI]} />
-    </mesh>)}
+    {/* Coffrages fermés des passages de roue couvrant |x| ∈ [1.14, 1.258] et y ∈ [0.56, 1.14+]. */}
+    <mesh name="bus-wheelhouses" material={mats.dark} geometry={wheelhouseGeo} dispose={null} />
     <mesh position={[0, 2.98, rearWallZ - 0.055]} rotation={[0, Math.PI, 0]}>
       <planeGeometry args={[1.14, 0.21]} />
-      <meshBasicMaterial map={exitTexture} />
+      <meshBasicMaterial map={exitTexture} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
     </mesh>
     {/* Extincteur entre le navigateur et la première rangée. */}
     <group position={[-1.12, 1.02, -2.15]}>

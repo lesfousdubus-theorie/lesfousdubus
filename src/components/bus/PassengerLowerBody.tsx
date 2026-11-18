@@ -10,15 +10,21 @@ import type { NakamaArchetype } from "./passenger-archetypes";
 import { identityMaterial, passengerCalfMaterial, PassengerFoot } from "./PassengerIdentity";
 import { getPassengerSkeleton } from "@/lib/passenger-proportions";
 
+const SEATED_ANKLE_OFFSET = 0.01;
+const SKIRT_CHARACTER_IDS = ["robin", "boa_hancock", "vivi"] as const;
+export function hasPassengerSkirt(id: string) {
+  return (SKIRT_CHARACTER_IDS as readonly string[]).includes(id);
+}
+
 let seatedShapes: ReturnType<typeof makeSeatedShapes> | undefined;
 function makeSeatedShapes() {
   return {
     legs: joinCharacterParts([-0.09, 0.09].flatMap(x => [
       { size: [0.13, 0.14, THIGH_LENGTH + 0.025] as [number, number, number], position: [x, 0, -THIGH_LENGTH / 2] as [number, number, number] },
-      { size: [0.12, SHIN_LENGTH + 0.02, 0.12] as [number, number, number], position: [x, -SHIN_LENGTH / 2, -THIGH_LENGTH] as [number, number, number] },
+      { size: [0.12, SHIN_LENGTH + 0.01, 0.12] as [number, number, number], position: [x, -(SHIN_LENGTH - SEATED_ANKLE_OFFSET) / 2, -THIGH_LENGTH] as [number, number, number] },
     ])),
-    shoes: joinCharacterParts([-0.09, 0.09].map(x => ({ size: [0.15, 0.1, 0.23], position: [x, -SHIN_LENGTH - 0.03, -THIGH_LENGTH - 0.035] }))),
-    soles: joinCharacterParts([-0.09, 0.09].map(x => ({ size: [0.154, 0.016, 0.234], position: [x, -SHIN_LENGTH - 0.072, -THIGH_LENGTH - 0.035] }))),
+    shoes: joinCharacterParts([-0.09, 0.09].map(x => ({ size: [0.15, 0.1, 0.23], position: [x, -SHIN_LENGTH + SEATED_ANKLE_OFFSET - 0.03, -THIGH_LENGTH - 0.035] }))),
+    soles: joinCharacterParts([-0.09, 0.09].map(x => ({ size: [0.154, 0.016, 0.234], position: [x, -SHIN_LENGTH + SEATED_ANKLE_OFFSET - 0.072, -THIGH_LENGTH - 0.035] }))),
   };
 }
 
@@ -66,30 +72,30 @@ export default function PassengerLowerBody({ mats, kickPose, archetype }: { mats
           {shorts&&archetype.id!=="franky"&&<CharacterPart material={mats.skin}
             size={[calfWidth,.135,.073]} position={[x,0,-THIGH_LENGTH+.02]}/>}
           <CharacterPart material={passengerCalfMaterial(archetype,mats)}
-            size={[calfWidth,SHIN_LENGTH+.02,calfWidth]} position={[x,-SHIN_LENGTH/2,-THIGH_LENGTH]}/>
+            size={[calfWidth,SHIN_LENGTH+.01,calfWidth]} position={[x,-(SHIN_LENGTH-SEATED_ANKLE_OFFSET)/2,-THIGH_LENGTH]}/>
           {archetype.id==="luffy"&&<CharacterPart material={identityMaterial("#f0e6d8")}
             size={[.139,.146,.026]} position={[x,0,-THIGH_LENGTH+.07]}/>}
         </group>)}
       </group>
       <group name="nakama-shoes">
-        {[-.09,.09].map(x=><group key={x} position={[x,-SHIN_LENGTH,-THIGH_LENGTH]}><PassengerFoot archetype={archetype} mats={mats}/></group>)}
+        {[-.09,.09].map(x=><group key={x} position={[x,-SHIN_LENGTH+SEATED_ANKLE_OFFSET,-THIGH_LENGTH]}><PassengerFoot archetype={archetype} mats={mats}/></group>)}
       </group>
-      {["robin","boa_hancock","vivi"].includes(archetype.id)&&<CharacterPart name="nakama-skirt" material={mats.pants} size={[.305,.19,.31]} position={[0,-.025,-.14]} radius={.025}/>}
+      {hasPassengerSkirt(archetype.id)&&<CharacterPart name="nakama-skirt" material={mats.pants} size={[.305,.19,.31]} position={[0,-.025,-.14]} radius={.025}/>}
     </>;
   }
   if(kickPose)return <>
     <PassengerPelvis material={mats.pants} archetype={archetype}/>
     <group name="nakama-seated-legs">
       {[-.09,.09].map(x=><CharacterPart key={x} material={mats.pants} size={[.13,.14,THIGH_LENGTH+.025]} position={[x,0,-THIGH_LENGTH/2]}/>)}
-      <CharacterPart material={mats.pants} size={[.12,SHIN_LENGTH+.02,.12]} position={[-.09,-SHIN_LENGTH/2,-THIGH_LENGTH]}/>
+      <CharacterPart material={mats.pants} size={[.12,SHIN_LENGTH+.01,.12]} position={[-.09,-(SHIN_LENGTH-SEATED_ANKLE_OFFSET)/2,-THIGH_LENGTH]}/>
       <group ref={knee} position={[.09,0,-THIGH_LENGTH]}>
-        <CharacterPart name="nakama-kicking-calf" material={mats.pants} size={[.12,SHIN_LENGTH+.02,.12]} position={[0,-SHIN_LENGTH/2,0]}/>
-        <group ref={foot} position={[0,-SHIN_LENGTH,0]}>
+        <CharacterPart name="nakama-kicking-calf" material={mats.pants} size={[.12,SHIN_LENGTH+.01,.12]} position={[0,-(SHIN_LENGTH-SEATED_ANKLE_OFFSET)/2,0]}/>
+        <group ref={foot} position={[0,-SHIN_LENGTH+SEATED_ANKLE_OFFSET,0]}>
           <CharacterPart name="nakama-shoes" material={mats.shoes} size={[.15,.1,.23]} position={[0,-.03,-.035]}/>
         </group>
       </group>
     </group>
-    <CharacterPart name="nakama-left-shoe" material={mats.shoes} size={[.15,.1,.23]} position={[-.09,-SHIN_LENGTH-.03,-THIGH_LENGTH-.035]}/>
+    <CharacterPart name="nakama-left-shoe" material={mats.shoes} size={[.15,.1,.23]} position={[-.09,-SHIN_LENGTH+SEATED_ANKLE_OFFSET-.03,-THIGH_LENGTH-.035]}/>
   </>;
   return <>
     <PassengerPelvis material={mats.pants} archetype={archetype}/>

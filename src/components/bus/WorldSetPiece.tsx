@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import type * as THREE from "three";
 import { createOnePieceScenery, createOnePieceForeground, setElbafWaterTime, SET_PIECE_OFFSET_X, type SceneryBatch } from "@/lib/one-piece-scenery";
 
 const NAMES = [
@@ -16,17 +17,45 @@ const NAMES = [
 ];
 
 /** A destination is baked into a handful of shared-material meshes. */
-export default function WorldSetPiece({ zone, lowPower = false, reducedMotion = false }:
-  { zone: number; lowPower?: boolean; reducedMotion?: boolean }) {
+export default function WorldSetPiece({
+  zone,
+  lowPower = false,
+  reducedMotion = false,
+  onMeshesReady,
+}: {
+  zone: number;
+  lowPower?: boolean;
+  reducedMotion?: boolean;
+  onMeshesReady?: (meshes: THREE.Mesh[]) => void;
+}) {
   const batches = useMemo(() => createOnePieceScenery(zone, lowPower), [zone, lowPower]);
+  const meshRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const onMeshesReadyRef = useRef(onMeshesReady);
   useEffect(() => () => batches.forEach(({ geometry }) => geometry.dispose()), [batches]);
+  useLayoutEffect(() => {
+    onMeshesReadyRef.current = onMeshesReady;
+  }, [onMeshesReady]);
+  useLayoutEffect(() => {
+    const meshes = meshRefs.current.slice(0, batches.length).filter((mesh): mesh is THREE.Mesh => Boolean(mesh));
+    onMeshesReadyRef.current?.(meshes);
+  }, [batches]);
   useFrame(({ clock }) => {
     if (zone === 6) setElbafWaterTime(reducedMotion ? 0 : clock.elapsedTime);
   });
 
   return <group name={`world-landmark-${NAMES[zone]}`} position={[SET_PIECE_OFFSET_X, 0, 0]}>
-    {batches.map(({ geometry, material }) => (
-      <mesh key={material.uuid} geometry={geometry} material={material} castShadow={!material.transparent} receiveShadow dispose={null} />
+    {batches.map(({ geometry, material }, index) => (
+      <mesh
+        key={material.uuid}
+        ref={(el: THREE.Mesh | null) => {
+          meshRefs.current[index] = el;
+        }}
+        geometry={geometry}
+        material={material}
+        castShadow={!material.transparent}
+        receiveShadow
+        dispose={null}
+      />
     ))}
   </group>;
 }
@@ -47,7 +76,7 @@ export function WorldForeground({ zone, side, lowPower = false }: { zone: number
     {sections.map(([section, meshes]) => (
       <group key={section ?? "span"} name={`world-foreground-part-${section}`}>
         {meshes.map(({ geometry, material }) => (
-          <mesh key={material.uuid} geometry={geometry} material={material} receiveShadow dispose={null} />
+          <mesh key={material.uuid} geometry={geometry} material={material} castShadow={!material.transparent} receiveShadow dispose={null} />
         ))}
       </group>
     ))}

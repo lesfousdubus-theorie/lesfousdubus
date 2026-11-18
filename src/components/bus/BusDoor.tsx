@@ -65,7 +65,7 @@ export default function BusDoor({ mats, phase, journey, reducedMotion, door = { 
     </mesh>
     {/* Ferme le puits des marches en roulant ; se range sous le plancher à l'ouverture. */}
     <mesh ref={landing} name="bus-entry-landing" material={mats.floor} position={[0.88, 0.58, 0]}>
-      <boxGeometry args={[0.94, 0.1, door.width - 0.1]} />
+      <boxGeometry args={[0.96, 0.1, door.width]} />
     </mesh>
 
     {/* Tiroirs horizontaux : sortent d'abord, puis descendent à plat. */}
@@ -80,9 +80,12 @@ export default function BusDoor({ mats, phase, journey, reducedMotion, door = { 
         <boxGeometry args={[0.009, 0.006, door.width - 0.22]} />
       </mesh>)}
     </group>)}
-    {/* Main courante à l'arrière du vestibule, hors du passage. */}
-    <mesh material={mats.yellow} position={[1.1, 1.53, rearZ + 0.1]}>
-      <cylinderGeometry args={[0.027, 0.027, 1.7, 10]} />
+    {/* Main courante à l'arrière du vestibule, du plancher au cadre haut. */}
+    <mesh material={mats.yellow} position={[1.1, 1.68, rearZ + 0.1]}>
+      <cylinderGeometry args={[0.027, 0.027, 2.08, 10]} />
+    </mesh>
+    <mesh material={mats.yellow} position={[1.17, 2.7, rearZ + 0.1]} rotation={[0, 0, Math.PI / 2]}>
+      <cylinderGeometry args={[0.022, 0.022, 0.14, 8]} />
     </mesh>
 
     <group onClick={(event) => {
@@ -119,7 +122,7 @@ function DoorLeaf({ direction, mats, door }: { direction: number; mats: Record<s
     {[door.bottom + 0.04, 1.42, door.top - 0.04].map((y) => <mesh key={y} material={mats.dark} position={[0.02, y, z]}>
       <boxGeometry args={[0.085, 0.055, width]} />
     </mesh>)}
-    <mesh material={mats.yellow} position={[0.042, 1.72, z]}><boxGeometry args={[0.018, 0.05, width - 0.06]} /></mesh>
+    <mesh material={mats.yellow} position={[0.036, 1.37, z]}><boxGeometry args={[0.018, 0.05, width - 0.06]} /></mesh>
     <mesh material={mats.chrome} position={[0.071, 1.34, direction * (width - 0.09)]}>
       <boxGeometry args={[0.03, 0.18, 0.022]} />
     </mesh>

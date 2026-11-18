@@ -13,9 +13,25 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import BusDestination from "./BusDestination";
 import BusGraffiti from "./BusGraffiti";
 import { BUS_DOOR, BUS_FRONT_Z, splitAtDoors, type BusDoorLayout } from "@/lib/bus-layout";
-import { createLowerBodyGeometry } from "./BusBodyGeometry";
+import { WHEEL_ARCH_RADIUS, createLowerBodyGeometry } from "./BusBodyGeometry";
 import { isWindowPillarClearOfDoor } from "@/lib/bus-interior-geometry";
 import type { JourneyState } from "@/lib/bus-journey";
+
+function splitAtWheels(spans: Array<[number, number]>, wheelZs: number[], margin = WHEEL_ARCH_RADIUS): Array<[number, number]> {
+  let current = spans;
+  for (const wheelZ of wheelZs) {
+    const front = wheelZ - margin;
+    const rear = wheelZ + margin;
+    current = current.flatMap(([from, to]): Array<[number, number]> => {
+      if (to <= front || from >= rear) return [[from, to]];
+      const out: Array<[number, number]> = [];
+      if (from < front) out.push([from, front]);
+      if (to > rear) out.push([rear, to]);
+      return out;
+    });
+  }
+  return current;
+}
 
 interface BusExteriorProps {
   headlights: boolean;
@@ -65,6 +81,18 @@ export default function BusExterior({
     return { side, geometry };
   }), [rearWallZ, wheelPositions, doors]);
   useEffect(() => () => sidePanels.forEach(({ geometry }) => geometry.dispose()), [sidePanels]);
+  const wheelZs = useMemo(
+    () => [...new Set(wheelPositions.map(([, z]) => z))].sort((a, b) => a - b),
+    [wheelPositions],
+  );
+  const leftOuterFloorSpans = useMemo(
+    () => splitAtWheels([[BUS_FRONT_Z, rearWallZ]], wheelZs),
+    [rearWallZ, wheelZs],
+  );
+  const rightOuterFloorSpans = useMemo(
+    () => splitAtWheels(splitAtDoors(BUS_FRONT_Z, rearWallZ, doors), wheelZs),
+    [rearWallZ, doors, wheelZs],
+  );
 
   return (
     <>
@@ -113,14 +141,14 @@ export default function BusExterior({
         <boxGeometry args={[2.5, 0.08, 0.04]} />
       </mesh>
       {/* Essuie-glaces */}
-      <group ref={leftWiper} position={[-0.48, 1.79, -4.66]} rotation={[0, 0, WIPER_PARK_ANGLE]}>
-        <mesh material={mats.dark} position={[0, 0.28, 0]}>
-          <boxGeometry args={[0.035, 0.56, 0.02]} />
+      <group ref={leftWiper} position={[-0.5, 1.79, -4.62]} rotation={[0, 0, WIPER_PARK_ANGLE]}>
+        <mesh material={mats.dark} position={[0, 0.22, 0]}>
+          <boxGeometry args={[0.035, 0.44, 0.02]} />
         </mesh>
       </group>
-      <group ref={rightWiper} position={[0.48, 1.79, -4.66]} rotation={[0, 0, WIPER_PARK_ANGLE]}>
-        <mesh material={mats.dark} position={[0, 0.28, 0]}>
-          <boxGeometry args={[0.035, 0.56, 0.02]} />
+      <group ref={rightWiper} position={[0.5, 1.79, -4.62]} rotation={[0, 0, WIPER_PARK_ANGLE]}>
+        <mesh material={mats.dark} position={[0, 0.22, 0]}>
+          <boxGeometry args={[0.035, 0.44, 0.02]} />
         </mesh>
       </group>
       {/* Girouette de destination lumineuse */}
@@ -131,6 +159,13 @@ export default function BusExterior({
       <group name="bus-rear-face" position={[0, 0, rearWallZ]}>
         <RoundedBox args={[2.6, 1.25, 0.08]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 1.125, 0]} />
         <RoundedBox args={[2.6, 0.45, 0.08]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 2.975, 0]} />
+        {/* Habillage intérieur du mur arrière (bas et bandeau haut) */}
+        <mesh material={mats.interiorWall} position={[0, 1.19, -0.045]}>
+          <boxGeometry args={[2.42, 1.1, 0.01]} />
+        </mesh>
+        <mesh material={mats.interiorWall} position={[0, 2.98, -0.045]}>
+          <boxGeometry args={[2.42, 0.38, 0.01]} />
+        </mesh>
         {[-1.255, 1.255].map((x) => <mesh key={x} material={mats.bodyDark} castShadow position={[x, 1.875, 0.02]}>
           <boxGeometry args={[0.09, 2.75, 0.12]} />
         </mesh>)}
@@ -138,30 +173,38 @@ export default function BusExterior({
           <planeGeometry args={[2.56, 1.04]} />
         </mesh>
         <RoundedBox args={[2.7, 0.28, 0.25]} radius={0.1} smoothness={2} bevelSegments={3} material={mats.chrome} castShadow position={[0, 0.65, 0.1]} />
-        {/* Plaque d'immatriculation arrière */}
-        <mesh position={[0, 0.65, 0.23]}>
-          <planeGeometry args={[0.85, 0.24]} />
-          <meshStandardMaterial map={licensePlateTex} roughness={0.3} />
+        {/* Support et plaque d'immatriculation arrière plaquée sur le pare-chocs */}
+        <mesh material={mats.dark} position={[0, 0.65, 0.206]}>
+          <boxGeometry args={[0.66, 0.21, 0.048]} />
         </mesh>
-        {/* Affiche à l'arrière du bus */}
-        <mesh position={[0, 2.3, 0.035]}>
+        <mesh position={[0, 0.65, 0.234]}>
+          <planeGeometry args={[0.64, 0.2]} />
+          <meshStandardMaterial map={licensePlateTex} roughness={0.3} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+        </mesh>
+        {/* Support opaque fin et affiche à l'arrière du bus */}
+        <mesh material={mats.bodyDark} position={[0, 2.3, 0.025]}>
+          <boxGeometry args={[1.84, 0.42, 0.014]} />
+        </mesh>
+        <mesh position={[0, 2.3, 0.036]}>
           <planeGeometry args={[1.8, 0.38]} />
-          <meshStandardMaterial map={sideLabel} roughness={0.3} />
+          <meshStandardMaterial map={sideLabel} roughness={0.3} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
         </mesh>
       </group>
 
       {/* ---------- Toit et plancher extensibles ---------- */}
       <RoundedBox args={[2.68, 0.22, cabinLength + 0.12]} radius={0.1} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 3.26, cabinCenterZ]} />
       <RoundedBox args={[2.3, 0.12, cabinLength - 0.3]} radius={0.05} smoothness={2} bevelSegments={3} material={mats.bodyDark} castShadow position={[0, 3.36, cabinCenterZ]} />
-      {/* Plancher et châssis découpés à droite pour le puits des marches. */}
-      <mesh material={mats.floor} castShadow position={[-0.45, 0.6, cabinCenterZ]}>
-        <boxGeometry args={[1.7, 0.08, cabinLength]} />
+      {/* Plancher et châssis découpés aux passages de roue et au puits des marches. */}
+      <mesh material={mats.floor} castShadow position={[-0.37, 0.6, cabinCenterZ]}>
+        <boxGeometry args={[1.54, 0.08, cabinLength]} />
       </mesh>
-      <mesh material={mats.dark} castShadow position={[-0.4, 0.4, cabinCenterZ - 0.6]}>
-        <boxGeometry args={[1.6, 0.3, cabinLength + 1.2]} />
+      <mesh material={mats.dark} castShadow position={[-0.37, 0.4, cabinCenterZ - 0.6]}>
+        <boxGeometry args={[1.54, 0.3, cabinLength + 1.2]} />
       </mesh>
-      <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors)} material={mats.floor} x={(BUS_DOOR.innerX + 1.3) / 2} y={0.6} width={1.3 - BUS_DOOR.innerX} height={0.08} castShadow />
-      <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z - 1.2, rearWallZ, doors)} material={mats.dark} x={0.8} y={0.4} width={0.8} height={0.3} castShadow />
+      <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors)} material={mats.floor} x={(BUS_DOOR.innerX + 1.14) / 2} y={0.6} width={1.14 - BUS_DOOR.innerX} height={0.08} castShadow />
+      <BusSpanMeshes spans={leftOuterFloorSpans} material={mats.floor} x={-1.22} y={0.6} width={0.16} height={0.08} castShadow />
+      <BusSpanMeshes spans={rightOuterFloorSpans} material={mats.floor} x={1.22} y={0.6} width={0.16} height={0.08} castShadow />
+      <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z - 1.2, rearWallZ, doors)} material={mats.dark} x={0.77} y={0.4} width={0.74} height={0.3} castShadow />
 
       {/* Ombre de contact au sol sous le bus : ancre solidement le bus au sol */}
       <mesh
@@ -226,7 +269,8 @@ function PillarInstances({ positions, doors, material }: { positions: number[]; 
     for (const x of [-1.3, 1.3]) {
       for (const z of positions) {
         if (x > 0 && !isWindowPillarClearOfDoor(z, doors)) continue;
-        matrix.makeTranslation(x, 2.25, z);
+        if (index >= 366) break;
+        matrix.makeTranslation(x, 2.255, z);
         ref.current.setMatrixAt(index++, matrix);
       }
     }
@@ -235,8 +279,8 @@ function PillarInstances({ positions, doors, material }: { positions: number[]; 
     ref.current.computeBoundingSphere();
   }, [positions, doors]);
   return (
-    <instancedMesh ref={ref} args={[undefined, undefined, Math.max(1, positions.length * 2)]} count={positions.length * 2} material={material}>
-      <boxGeometry args={[0.08, 1.02, 0.1]} />
+    <instancedMesh ref={ref} args={[undefined, undefined, 366]} material={material}>
+      <boxGeometry args={[0.08, 1.01, 0.1]} />
     </instancedMesh>
   );
 }
