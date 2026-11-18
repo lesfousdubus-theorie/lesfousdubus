@@ -14,10 +14,17 @@ import TheoryPanelContent, { type TheoryTab } from "./TheoryPanelContent";
 import { ModalCloseButton } from "../modals/ModalCloseButton";
 import { useModalAccessibility } from "../modals/useModalAccessibility";
 import {
+  DEFAULT_GRAPHICS_SETTINGS,
+  type GraphicsPresetPreference,
+  type GraphicsSettings,
+  type SceneGraphicsTelemetry,
+} from "@/lib/scene-performance";
+import {
   FastBoltIcon,
   HandshakeIcon,
   HelpCircleIcon,
   ScrollIcon,
+  SlidersIcon,
   TvIcon,
 } from "../ui/BusIcons";
 
@@ -25,11 +32,29 @@ interface TheoryModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   onVideoPlaybackChange?: (active: boolean) => void;
+  graphicsSettings?: GraphicsSettings;
+  graphicsTelemetry?: SceneGraphicsTelemetry | null;
+  onSelectGraphicsPreset?: (preset: GraphicsPresetPreference) => void;
+  onUpdateGraphicsSettings?: (patch: Partial<GraphicsSettings>) => void;
+  onResetGraphicsSettings?: () => void;
+  letterShortcutsEnabled?: boolean;
+  setLetterShortcutsEnabled?: (enabled: boolean) => void;
 }
 
-const THEORY_TABS: TheoryTab[] = ["thesis", "video", "faq", "participate"];
+const THEORY_TABS: TheoryTab[] = ["thesis", "video", "faq", "participate", "settings"];
 
-export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPlaybackChange }: TheoryModalProps) {
+export default function TheoryModal({
+  isOpen: externalIsOpen,
+  onClose,
+  onVideoPlaybackChange,
+  graphicsSettings = DEFAULT_GRAPHICS_SETTINGS,
+  graphicsTelemetry = null,
+  onSelectGraphicsPreset,
+  onUpdateGraphicsSettings,
+  onResetGraphicsSettings,
+  letterShortcutsEnabled,
+  setLetterShortcutsEnabled,
+}: TheoryModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TheoryTab>("thesis");
   const [videoMounted, setVideoMounted] = useState(activeTab === "video");
@@ -56,6 +81,8 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
     scrollPositions.current[activeTab] = contentRef.current?.scrollTop ?? 0;
     if (tab === "video") setVideoMounted(true);
     setActiveTab(tab);
+    const index = THEORY_TABS.indexOf(tab);
+    tabRefs.current[index]?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
   }, [activeTab]);
 
   const handleDialogKeyDown = useModalAccessibility(isOpen, handleClose, dialogRef, dialogTitleRef);
@@ -124,7 +151,7 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
             <ModalCloseButton onClick={handleClose} />
           </div>
 
-          <div role="tablist" aria-label="Sections de la théorie" className="grid shrink-0 grid-cols-4 items-center gap-1 border-b border-white/10 bg-[#040b18]/75 px-2 py-2 no-scrollbar min-[360px]:px-3 min-[360px]:py-2.5 sm:flex sm:gap-2 sm:px-7 lg:px-9">
+          <div role="tablist" aria-label="Sections de la théorie" className="flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-white/10 bg-[#040b18]/75 px-2 py-2 no-scrollbar min-[360px]:px-3 min-[360px]:py-2.5 sm:gap-2 sm:px-7 lg:px-9">
             <TabButton
               buttonRef={(element) => { tabRefs.current[0] = element; }}
               active={activeTab === "thesis"}
@@ -169,6 +196,17 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
               label="Participer au site"
               shortLabel="Participer"
             />
+            <TabButton
+              buttonRef={(element) => { tabRefs.current[4] = element; }}
+              active={activeTab === "settings"}
+              onClick={() => selectTab("settings")}
+              onKeyDown={(event) => handleTabKeyDown(event, 4)}
+              tabId="theory-tab-settings"
+              panelId="theory-panel-settings"
+              icon={<SlidersIcon className="hidden h-4 w-4 shrink-0 text-current sm:block" />}
+              label="Paramètres"
+              shortLabel="Paramètres"
+            />
           </div>
 
           <div
@@ -184,6 +222,13 @@ export default function TheoryModal({ isOpen: externalIsOpen, onClose, onVideoPl
                     videoActive={tab === "video" ? isOpen && activeTab === "video" : undefined}
                     videoMounted={tab === "video" ? videoMounted || activeTab === "video" : undefined}
                     onVideoPlaybackChange={onVideoPlaybackChange}
+                    graphicsSettings={graphicsSettings}
+                    graphicsTelemetry={graphicsTelemetry}
+                    onSelectGraphicsPreset={onSelectGraphicsPreset}
+                    onUpdateGraphicsSettings={onUpdateGraphicsSettings}
+                    onResetGraphicsSettings={onResetGraphicsSettings}
+                    letterShortcutsEnabled={letterShortcutsEnabled}
+                    setLetterShortcutsEnabled={setLetterShortcutsEnabled}
                   />
                 )}
               </div>
@@ -229,7 +274,7 @@ function TabButton({
       aria-controls={panelId}
       aria-label={label}
       tabIndex={active ? 0 : -1}
-      className={`flex min-h-11 min-w-0 flex-1 cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-1 py-2 text-[11px] font-black transition-[background-color,border-color,color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none min-[360px]:px-1.5 min-[360px]:text-xs sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
+      className={`flex min-h-11 shrink-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2.5 py-2 text-[11px] font-black transition-[background-color,border-color,color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none min-[360px]:px-3 min-[360px]:text-xs sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
         active
           ? "border-[#ffd23f] bg-[#ffd23f] text-[#091c5c] shadow-md shadow-[#ffd23f]/20"
           : "border-white/15 bg-[#0c1b3a]/70 text-[#dce7ff] hover:border-[#ffd23f]/45 hover:bg-[#0c1b3a] hover:text-white"

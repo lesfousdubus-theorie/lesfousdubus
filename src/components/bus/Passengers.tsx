@@ -120,6 +120,8 @@ interface PassengersProps {
   profileRevision?: number;
   onPassengerSelect?: (passenger: PassengerProfile) => void;
   lowPower?: boolean;
+  detailLimit?: number;
+  simplifiedLimit?: number;
   reducedMotion?: boolean;
   excludedPassengerIndex?: number | null;
   avatarAboard?: boolean;
@@ -127,7 +129,7 @@ interface PassengersProps {
 
 function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices, vacantSeatRanges = [], hornPulse,
   partyOn = false, reservedRow = 3, reservedColumn = null, passengerProfiles = [], onPassengerSelect,
-  profileRevision = 0, lowPower = false, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
+  profileRevision = 0, lowPower = false, detailLimit, simplifiedLimit, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
   const camera = useThree(state => state.camera);
   const root = useRef<THREE.Group>(null), cameraPoint = useMemo(() => new THREE.Vector3(), []);
   const [detailFocus, setDetailFocus] = useState(() => {
@@ -154,8 +156,8 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
   }, -3);
   const { detailed, simplified } = useMemo(() => getBusOccupancy({ passengerCount, seatCapacity,
     vacantSeatRanges, renderedRowIndices, reservedRow, reservedColumn, currentPassengerIndex: excludedPassengerIndex,
-    avatarAboard, lowPower, detailFocus }), [passengerCount, seatCapacity, vacantSeatRanges, renderedRowIndices,
-      reservedRow, reservedColumn, excludedPassengerIndex, avatarAboard, lowPower, detailFocus]);
+    avatarAboard, lowPower, detailLimit, simplifiedLimit, detailFocus }), [passengerCount, seatCapacity, vacantSeatRanges, renderedRowIndices,
+      reservedRow, reservedColumn, excludedPassengerIndex, avatarAboard, lowPower, detailLimit, simplifiedLimit, detailFocus]);
   const occupants = useMemo(() => [...detailed, ...simplified], [detailed, simplified]);
   const summaries = useVisiblePassengerSummaries(occupants, profileRevision);
   const profilesBySeatIndex = useMemo(() => {

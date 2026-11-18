@@ -223,6 +223,7 @@ function buildProps(): PropDef[] {
       const x = side * distance;
       const y = getTerrainHeight(z, x, getTerrainWave(z, x, zLocal), zLocal) - 0.03;
       out.push({
+        id: out.length,
         type,
         x,
         y,
@@ -240,6 +241,13 @@ interface WorldProps {
   worldRef: React.RefObject<WorldState>;
   reducedMotion?: boolean;
   lowPower?: boolean;
+  propFraction?: 0.5 | 0.75 | 1;
+  islandCullDistance?: number;
+  propCullDistance?: number;
+  bridgeLengthOverride?: number;
+  seaCreatureSlots?: number;
+  seaCreatureCullAhead?: number;
+  seaCreatureCullBehind?: number;
   phase?: Phase;
   cabinCenterZ?: number;
   cabinLength?: number;
@@ -249,6 +257,13 @@ export default function World({
   worldRef,
   reducedMotion = false,
   lowPower = false,
+  propFraction,
+  islandCullDistance,
+  propCullDistance,
+  bridgeLengthOverride,
+  seaCreatureSlots,
+  seaCreatureCullAhead,
+  seaCreatureCullBehind,
   phase = "outside",
   cabinCenterZ = 0,
   cabinLength = 9.2,
@@ -259,10 +274,12 @@ export default function World({
   useEffect(() => () => {
     terrains.forEach((terrain) => terrain.dispose());
   }, [terrains]);
-  const props = useMemo(
-    () => lowPower ? allProps.filter((_, index) => index % 2 === 0) : allProps,
-    [allProps, lowPower],
-  );
+  const resolvedPropFraction = propFraction ?? (lowPower ? 0.5 : 1);
+  const props = useMemo(() => {
+    if (resolvedPropFraction === 0.5) return allProps.filter((_, index) => index % 2 === 0);
+    if (resolvedPropFraction === 0.75) return allProps.filter((_, index) => index % 4 !== 3);
+    return allProps;
+  }, [allProps, resolvedPropFraction]);
   const propRefs = useRef<(THREE.Group | null)[]>([]);
   const zoneRefs = useRef<(THREE.Group | null)[]>([]);
   const terrainRefs = useRef<(THREE.Mesh | null)[]>([]);
@@ -273,7 +290,7 @@ export default function World({
   const railBounds = useRef<SceneryBounds[]>([]);
   const visibility = useMemo(() => createSceneryVisibility(), []);
 
-  const bridgeLength = Math.max(1600, cabinLength + 1400);
+  const bridgeLength = Math.max(960, bridgeLengthOverride ?? Math.max(1600, cabinLength + 1400));
   const bridgeSegments = Math.ceil(bridgeLength / 20);
   const markingCount = Math.ceil(bridgeLength / 960);
   const markingOffsets = useMemo(
@@ -306,6 +323,7 @@ export default function World({
   }, []);
 
   useLayoutEffect(() => {
+    propRefs.current.length = props.length;
     propBounds.current = props.map((_, i) => {
       const group = propRefs.current[i];
       return group ? cacheSceneryBounds(group, group.position.z) : null;
@@ -353,8 +371,14 @@ export default function World({
       if (z > loopEnd) z -= LOOP;
       zoneZ.current[i] = z;
       g.position.z = z;
-      const terrain = terrainRefs.current[i];
       const eye = state.camera.position;
+      const dzEdge = Math.max(0, Math.abs(z - eye.z) - ZONE_LEN / 2);
+      if (islandCullDistance !== undefined && dzEdge > islandCullDistance) {
+        g.visible = false;
+        continue;
+      }
+      g.visible = true;
+      const terrain = terrainRefs.current[i];
       const localZ = eye.z - z;
       if (terrain) terrain.visible = eye.y > 1.37 || eye.y >= terrainSurfaceAt(terrain.geometry, eye.x, localZ) - 0.06;
       for (const block of sceneBounds.current[i] ?? []) visibility.update(block, z);
@@ -368,8 +392,16 @@ export default function World({
       const localOffset = props[i].base - (zoneIdx * ZONE_LEN + ZONE_LEN / 2);
       const z = zoneZ.current[zoneIdx] + localOffset;
       g.position.z = z;
+      const eye = state.camera.position;
+      const dx = props[i].x - eye.x;
+      const dz = z - eye.z;
+      if (propCullDistance !== undefined && dx * dx + dz * dz > propCullDistance * propCullDistance) {
+        g.visible = false;
+        continue;
+      }
       const bounds = propBounds.current[i];
       if (bounds) visibility.update(bounds, z);
+      else g.visible = true;
     }
 
     // Défilement des lignes blanches du pont sur toute la portée dynamique
@@ -404,7 +436,15 @@ export default function World({
   return (
     <group>
       <WorldOcean worldRef={worldRef} reducedMotion={reducedMotion} />
-      <WorldSeaCreatures worldRef={worldRef} cabinCenterZ={cabinCenterZ} reducedMotion={reducedMotion} lowPower={lowPower} />
+      <WorldSeaCreatures
+        worldRef={worldRef}
+        cabinCenterZ={cabinCenterZ}
+        reducedMotion={reducedMotion}
+        lowPower={lowPower}
+        slotLimit={seaCreatureSlots}
+        cullAhead={seaCreatureCullAhead}
+        cullBehind={seaCreatureCullBehind}
+      />
 
       {/* Îles des 8 mondes avec rivages et plages */}
       {ZONES.map((zone, i) => (
@@ -482,8 +522,8 @@ export default function World({
       {/* Décors 3D enrichis des mondes */}
       {props.map((p, i) => (
         <group
-          key={i}
-          name={`world-prop-${p.type}-${i}`}
+          key={p.id ?? i}
+          name={`world-prop-${p.type}-${p.id ?? i}`}
           ref={(el: THREE.Group | null) => {
             propRefs.current[i] = el;
           }}

@@ -9,6 +9,8 @@ import { WORLD_SPEED, type WorldState } from "./constants";
 interface WeatherProps {
   worldRef: React.RefObject<WorldState>;
   lowPower?: boolean;
+  rainCount?: number;
+  snowCount?: number;
   reducedMotion?: boolean;
   cabinCenterZ?: number;
   cabinLength?: number;
@@ -43,6 +45,8 @@ function wrapRange(value: number, span: number) {
 export default function Weather({
   worldRef,
   lowPower = false,
+  rainCount,
+  snowCount,
   reducedMotion = false,
   cabinCenterZ = 0,
   cabinLength = 9.2,
@@ -56,9 +60,11 @@ export default function Weather({
   const densityScale = Math.min(2.5, areaZ / AREA.z);
   const busMinZ = BUS_FRONT_Z - 0.3;
   const busMaxZ = BUS_FRONT_Z + cabinLength + 0.3;
+  const baseRainCount = Math.max(0, rainCount ?? (lowPower ? 180 : 420));
+  const baseSnowCount = Math.max(0, snowCount ?? (lowPower ? 220 : 520));
 
   const rainGeometry = useMemo(() => {
-    const count = Math.round((lowPower ? 180 : 420) * densityScale);
+    const count = Math.round(baseRainCount * densityScale);
     const positions = new Float32Array(count * 6);
     for (let i = 0; i < count; i++) {
       const x = (seededValue(i, 1) - 0.5) * AREA.x * 2;
@@ -79,10 +85,10 @@ export default function Weather({
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     return geometry;
-  }, [lowPower, areaZ, densityScale, cabinCenterZ, busMinZ, busMaxZ]);
+  }, [baseRainCount, areaZ, densityScale, cabinCenterZ, busMinZ, busMaxZ]);
 
   const snowGeometry = useMemo(() => {
-    const count = Math.round((lowPower ? 220 : 520) * densityScale);
+    const count = Math.round(baseSnowCount * densityScale);
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const x = (seededValue(i, 4) - 0.5) * AREA.x * 2;
@@ -98,7 +104,7 @@ export default function Weather({
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     return geometry;
-  }, [lowPower, areaZ, densityScale, cabinCenterZ, busMinZ, busMaxZ]);
+  }, [baseSnowCount, areaZ, densityScale, cabinCenterZ, busMinZ, busMaxZ]);
 
   useEffect(() => () => {
     rainGeometry.dispose();

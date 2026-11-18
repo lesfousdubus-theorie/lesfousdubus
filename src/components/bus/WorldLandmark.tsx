@@ -32,6 +32,7 @@ export type PropType =
   | "courthouse";
 
 export interface PropDef {
+  id?: number;
   type: PropType;
   x: number;
   y?: number;

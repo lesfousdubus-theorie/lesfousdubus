@@ -27,6 +27,7 @@ import { AvatarSelectionModal } from "./modals/AvatarSelectionModal";
 import { ManagePlaceModal } from "./modals/ManagePlaceModal";
 import type { OnboardingSubmission } from "./modals/OnboardingModal";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
+import type { SceneGraphicsTelemetry } from "@/lib/scene-performance";
 
 const Scene = dynamic(() => import("./bus/Scene"), { ssr: false });
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
@@ -41,6 +42,7 @@ export default function BusExperience() {
   const [resetViewToken, setResetViewToken] = useState(0);
   const [freeView, setFreeView] = useState(false);
   const [sceneAvailable, setSceneAvailable] = useState(false);
+  const [graphicsTelemetry, setGraphicsTelemetry] = useState<SceneGraphicsTelemetry | null>(null);
   const [bgmPlaying, setBgmPlaying] = useState(false);
   const [theoryVideoPlaying, setTheoryVideoPlaying] = useState(false);
   const [busVideoPlaying, setBusVideoPlaying] = useState(false);
@@ -675,6 +677,8 @@ export default function BusExperience() {
       </div>
       <Scene
         letterShortcutsEnabled={preferences.letterShortcutsEnabled}
+        graphicsSettings={preferences.graphicsSettings}
+        onTelemetryChange={setGraphicsTelemetry}
         phase={phase}
         freeView={phase === "inside" && freeView}
         headlights={headlights}
@@ -778,11 +782,23 @@ export default function BusExperience() {
       />
 
       {/* Modal interactif complet de la théorie des Fous du Bus */}
-      <BusHelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} {...preferences} />
+      <BusHelpModal
+        isOpen={showHelp}
+        onClose={() => setShowHelp(false)}
+        letterShortcutsEnabled={preferences.letterShortcutsEnabled}
+        setLetterShortcutsEnabled={preferences.setLetterShortcutsEnabled}
+      />
       <TheoryModal
         isOpen={showTheoryModal}
         onVideoPlaybackChange={setTheoryVideoPlaying}
         onClose={() => setShowTheoryModal(false)}
+        graphicsSettings={preferences.graphicsSettings}
+        graphicsTelemetry={graphicsTelemetry}
+        onSelectGraphicsPreset={preferences.selectGraphicsPreset}
+        onUpdateGraphicsSettings={preferences.updateGraphicsSettings}
+        onResetGraphicsSettings={preferences.resetGraphicsSettings}
+        letterShortcutsEnabled={preferences.letterShortcutsEnabled}
+        setLetterShortcutsEnabled={preferences.setLetterShortcutsEnabled}
       />
       {showPlaceModal && (
         <ManagePlaceModal
