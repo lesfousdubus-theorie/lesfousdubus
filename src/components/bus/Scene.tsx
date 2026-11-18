@@ -3,7 +3,7 @@
 import PartyMusicClock from "./PartyMusicClock";
 import { Component, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import type { Camera } from "three";
+import { BasicShadowMap, PCFShadowMap, type Camera } from "three";
 import Bus from "./Bus";
 import World from "./World";
 import DayNight from "./DayNight";
@@ -597,6 +597,10 @@ export default function Scene({
       gl={{ antialias: profile.antialias, alpha: false, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none", isolation: "isolate" }}
       onCreated={({ gl }) => {
+        if (profile.canvasShadows !== false) {
+          gl.shadowMap.enabled = true;
+          gl.shadowMap.type = profile.canvasShadows === "basic" ? BasicShadowMap : PCFShadowMap;
+        }
         setCanvasReady(true);
         const context = gl.getContext();
         if (context) {

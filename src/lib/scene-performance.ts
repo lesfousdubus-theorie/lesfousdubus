@@ -94,7 +94,7 @@ export interface ResolvedGraphicsProfile {
   minDpr: number;
   maxDpr: number;
   antialias: boolean;
-  canvasShadows: false | "basic" | "soft";
+  canvasShadows: false | "basic" | "percentage";
   shadowMapSize: 1024 | 2048;
   lowPower: boolean;
   propFraction: 0.5 | 0.75 | 1;
@@ -428,12 +428,13 @@ const DRAW_DISTANCE_TABLE: Record<Exclude<DrawDistancePreference, "auto">, {
 };
 
 const SHADOW_TABLE: Record<Exclude<ShadowQualityPreference, "auto">, {
-  canvasShadows: false | "basic" | "soft";
+  canvasShadows: false | "basic" | "percentage";
   shadowMapSize: 1024 | 2048;
 }> = {
   off: { canvasShadows: false, shadowMapSize: 1024 },
-  standard: { canvasShadows: "soft", shadowMapSize: 2048 },
-  high: { canvasShadows: "soft", shadowMapSize: 2048 },
+  // Three.js >=0.182 déprécie PCFSoftShadowMap (retombe en Basic sans filtre) : "percentage" active PCFShadowMap filtré
+  standard: { canvasShadows: "percentage", shadowMapSize: 2048 },
+  high: { canvasShadows: "percentage", shadowMapSize: 2048 },
 };
 
 const WORLD_DENSITY_TABLE: Record<Exclude<WorldDensityPreference, "auto">, {
@@ -774,12 +775,12 @@ export function getShadowCameraFraming(
     shadowMapSize: 1024 | 2048;
   },
   out: ShadowCameraFraming = {
-    halfWidth: 76,
-    halfDepth: 88,
-    centerZ: -22,
-    sunDistance: 123,
+    halfWidth: 66,
+    halfDepth: 80,
+    centerZ: -20,
+    sunDistance: 112,
     near: 1,
-    far: 320,
+    far: 300,
     normalBias: 0.009,
   },
 ): ShadowCameraFraming {
@@ -787,8 +788,8 @@ export function getShadowCameraFraming(
   const clampedBusZ = Math.max(-42, Math.min(36, cabinCenterZ));
   const cameraDistance = Math.hypot(cameraX, Math.max(0, cameraY - 2), cameraZ - clampedBusZ);
   const highRes = shadowMapSize >= 2048;
-  const baseHalfWidth = highRes ? 76 : 64;
-  const baseHalfDepth = highRes ? 88 : 72;
+  const baseHalfWidth = highRes ? 66 : 56;
+  const baseHalfDepth = highRes ? 80 : 68;
   const maxHalfWidth = Math.min(160, Math.max(baseHalfWidth, fogFar * 0.32));
   const maxHalfDepth = Math.min(185, Math.max(baseHalfDepth, fogFar * 0.36));
   const zoomExpand = Math.max(0, cameraDistance - 45);
