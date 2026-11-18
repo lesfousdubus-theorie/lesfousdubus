@@ -626,7 +626,11 @@ assert.equal(wrapped.slot, 0);
 assert.equal(wrapped.visit, 1);
 assert.equal(wrapped.zone, orderA[0], "loop wraps back seamlessly after visiting all 8 islands");
 
-// 12. Cadrage dynamique de la caméra d'ombres (large devant le bus et extensible au dézoom)
+// 12. Cadrage dynamique de la caméra d'ombres (courbes nettes, portée avant et extension au dézoom)
+assert(
+  resolveGraphicsProfile({ ...DEFAULT_GRAPHICS_SETTINGS }, "medium", 2).canvasShadows === "soft",
+  "medium tier uses filtered soft shadows",
+);
 const closeShadow = getShadowCameraFraming({
   cabinCenterZ: 0,
   cabinLength: 9.2,
@@ -636,7 +640,10 @@ const closeShadow = getShadowCameraFraming({
   fogFar: 480,
   shadowMapSize: 2048,
 });
-assert(closeShadow.halfWidth >= 100 && closeShadow.halfDepth >= 160, "shadow box covers islands and road far ahead");
+assert(
+  closeShadow.halfWidth >= 70 && closeShadow.halfDepth >= 80 && closeShadow.normalBias <= 0.016,
+  "shadow box stays crisp around bus while covering islands ahead",
+);
 assert(closeShadow.centerZ < 0, "shadow focus shifts forward along the route");
 
 const zoomedOutShadow = getShadowCameraFraming({
