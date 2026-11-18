@@ -763,7 +763,7 @@ export interface ShadowCameraFraming {
   normalBias: number;
 }
 
-/** Dimensionne la caméra d'ombres selon la résolution active et le dézoom pour garder des courbes nettes sans coupure proche. */
+/** Dimensionne la caméra d'ombres pour couvrir au moins un paysage d'avance et s'élargir au dézoom sans pixéliser. */
 export function getShadowCameraFraming(
   options: {
     cabinCenterZ: number;
@@ -772,45 +772,45 @@ export function getShadowCameraFraming(
     cameraY: number;
     cameraZ: number;
     fogFar: number;
-    shadowMapSize: 1024 | 2048;
+    shadowMapSize: 1024 | 2048 | 4096;
   },
   out: ShadowCameraFraming = {
-    halfWidth: 66,
-    halfDepth: 80,
-    centerZ: -20,
-    sunDistance: 112,
+    halfWidth: 105,
+    halfDepth: 185,
+    centerZ: -115,
+    sunDistance: 268,
     near: 1,
-    far: 300,
-    normalBias: 0.009,
+    far: 750,
+    normalBias: 0.014,
   },
 ): ShadowCameraFraming {
   const { cabinCenterZ, cabinLength, cameraX, cameraY, cameraZ, fogFar, shadowMapSize } = options;
   const clampedBusZ = Math.max(-42, Math.min(36, cabinCenterZ));
   const cameraDistance = Math.hypot(cameraX, Math.max(0, cameraY - 2), cameraZ - clampedBusZ);
   const highRes = shadowMapSize >= 2048;
-  const baseHalfWidth = highRes ? 66 : 56;
-  const baseHalfDepth = highRes ? 80 : 68;
-  const maxHalfWidth = Math.min(160, Math.max(baseHalfWidth, fogFar * 0.32));
-  const maxHalfDepth = Math.min(185, Math.max(baseHalfDepth, fogFar * 0.36));
+  const baseHalfWidth = highRes ? 105 : 88;
+  const baseHalfDepth = highRes ? 185 : 155;
+  const maxHalfWidth = Math.min(240, Math.max(baseHalfWidth, fogFar * 0.45));
+  const maxHalfDepth = Math.min(340, Math.max(baseHalfDepth, fogFar * 0.65));
   const zoomExpand = Math.max(0, cameraDistance - 45);
-  const halfWidth = Math.min(maxHalfWidth, baseHalfWidth + zoomExpand * 0.72);
-  const halfDepth = Math.min(maxHalfDepth, baseHalfDepth + zoomExpand * 0.85 + Math.max(0, cabinLength - 18) * 0.25);
+  const halfWidth = Math.min(maxHalfWidth, baseHalfWidth + zoomExpand * 0.8);
+  const halfDepth = Math.min(maxHalfDepth, baseHalfDepth + zoomExpand * 0.95 + Math.max(0, cabinLength - 18) * 0.25);
 
-  const zoomBlend = Math.max(0, Math.min(0.65, (cameraDistance - 40) / 150));
-  const minCamZ = -fogFar * 0.4;
+  const zoomBlend = Math.max(0, Math.min(0.6, (cameraDistance - 45) / 160));
+  const minCamZ = -fogFar * 0.45;
   const maxCamZ = Math.max(fogFar * 0.4, cabinCenterZ + cabinLength * 0.3);
   const clampedCamZ = Math.max(minCamZ, Math.min(maxCamZ, cameraZ));
-  const busFocusZ = clampedBusZ - Math.min(26, halfDepth * 0.25);
+  const busFocusZ = Math.min(18, clampedBusZ) - Math.min(115, halfDepth * 0.62);
   const centerZ = busFocusZ + (clampedCamZ - busFocusZ) * zoomBlend;
   const maxSpan = Math.max(halfWidth, halfDepth);
-  const sunDistance = Math.max(110, maxSpan * 1.4);
+  const sunDistance = Math.max(180, maxSpan * 1.45);
 
   out.halfWidth = halfWidth;
   out.halfDepth = halfDepth;
   out.centerZ = centerZ;
   out.sunDistance = sunDistance;
   out.near = 1;
-  out.far = Math.max(320, sunDistance * 2.4);
-  out.normalBias = Math.max(0.007, Math.min(0.015, maxSpan * 0.0001));
+  out.far = Math.max(520, sunDistance * 2.8);
+  out.normalBias = Math.max(0.011, Math.min(0.022, maxSpan * 0.000075));
   return out;
 }

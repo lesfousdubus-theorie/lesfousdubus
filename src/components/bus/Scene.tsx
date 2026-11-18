@@ -647,6 +647,7 @@ export default function Scene({
         shadowsEnabled={profile.canvasShadows !== false}
         shadowMapSize={profile.shadowMapSize}
         shadowsType={profile.canvasShadows}
+        shadowsQuality={profile.shadows}
         starCount={profile.starCount}
         cabinCenterZ={cabinCenterZ}
         cabinLength={cabinLength}
