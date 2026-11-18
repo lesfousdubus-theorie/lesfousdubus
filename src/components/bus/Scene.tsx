@@ -51,7 +51,6 @@ interface SceneProps {
   hasEntered?: boolean;
   boardingPending?: boolean;
   boardingFromSeat?: boolean;
-  visitorSeatedOutside?: boolean;
   passengerProfiles?: PassengerProfile[];
   profileRevision?: number;
   currentPassengerSeatIndex?: number | null;
@@ -333,7 +332,6 @@ export default function Scene({
   hasEntered = false,
   boardingPending = false,
   boardingFromSeat = false,
-  visitorSeatedOutside = false,
   passengerProfiles = [],
   profileRevision = 0,
   currentPassengerSeatIndex = null,
@@ -432,7 +430,7 @@ export default function Scene({
           boardingPending={boardingPending}
           passengerProfiles={passengerProfiles}
           profileRevision={profileRevision}
-          currentPassengerSeatIndex={phase === "outside" && visitorSeatedOutside ? null : currentPassengerSeatIndex}
+          currentPassengerSeatIndex={currentPassengerSeatIndex}
           onPassengerSelect={onPassengerSelect}
           reducedMotion={reducedMotion}
           lowPower={lowPower}
