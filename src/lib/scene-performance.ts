@@ -211,8 +211,8 @@ export function formatGpuLabel(renderer: string | null | undefined): string {
 
 const SOFTWARE_RENDERER_RE = /swiftshader|llvmpipe|softpipe|software|basic render driver|gdi generic/i;
 const WEAK_GPU_RE = /mali-4|mali-t|mali-g3|mali-g5[12]|adreno\s*(?:[2345]\d{2}|61\d)|powervr|videocore|hd graphics\s*[23456]\d{2}|uhd graphics\s*6\d{2}|celeron|pentium|atom|geforce\s*(?:gt\s*[2-7]\d{2}|mx\s*[12]\d{2})/i;
-const ULTRA_FLAGSHIP_MOBILE_GPU_RE = /adreno\s*(?:7[45]\d|8\d{2})|immortalis|xclipse\s*9[4-9]\d|mali-g(?:715|72\d|92\d)/i;
-const HIGH_END_MOBILE_GPU_RE = /adreno\s*(?:6[456]\d|7[123]\d)|xclipse|mali-g(?:6[18]\d?|7[6789]|710)|maleoon|apple gpu/i;
+const ULTRA_FLAGSHIP_MOBILE_GPU_RE = /adreno\s*(?:7[45]\d|8\d{2})|immortalis|xclipse\s*9[24]\d|mali-g(?:71[05]|72\d|92\d)/i;
+const HIGH_END_MOBILE_GPU_RE = /adreno\s*(?:6[456]\d|7[123]\d)|xclipse|mali-g(?:6[18]\d?|7[6789])|maleoon|apple gpu/i;
 const ULTRA_DESKTOP_GPU_RE = /(?:geforce\s+)?rtx\s*(?:20[789]\d|30[789]\d|40[6789]\d|50\d{2}|a[456]\d{3}|[456]\d{3}\s*ada)|(?:radeon\s+)?rx\s*(?:6[789]\d{2}|7[789]\d{2}|90[6789]\d)|radeon\s+pro\s+(?:w[67]\d{3}|v\d{3})|navi2[12]|navi3[123]|navi4\d|gfx1[12]\d{2}|arc\s*(?:a7\d{2}|b[57]\d{2})|apple\s+m[1-9]\s*(?:pro|max|ultra)|apple\s+m[3-9]\b/i;
 const HIGH_GPU_RE = /(?:geforce\s+)?(?:rtx|gtx\s*(?:10[678]\d|16[56]\d|9[78]\d))|(?:radeon\s+)?rx\s*(?:4[789]\d|5[789]\d|5[567]\d{2}|6[456]\d{2}|7[56]\d{2})|radeon\s*(?:780m|880m|890m|vega\s*(?:56|64)|vii)|arc\s*(?:a[357]\d{2}|b[57]\d{2}|1[34]0[vt])|nvidia\s+(?:quadro|t\d{3,4}|a\d{3,4})|navi\d+|gfx10\d{2}|apple\s+m[1-9]\b/i;
 const MODERN_INTEGRATED_GPU_RE = /iris|arc\s*graphics|uhd graphics\s*7\d{2}|uhd graphics\b|radeon\s*(?:6[168]0m|7[46]0m|vega|graphics)|gtx\s*(?:9[56]\d)/i;
@@ -226,6 +226,7 @@ export function classifyGpuHardware(input: GpuHardwareClassificationInput = {}):
   const deviceMemory = input.deviceMemory ?? 8;
   const coarsePointer = Boolean(input.coarsePointer);
   const shortSide = input.shortSide ?? 900;
+  const devicePixelRatio = input.devicePixelRatio ?? 1;
   const constrainedNetwork = Boolean(input.constrainedNetwork);
 
   const mobileDevice = coarsePointer && shortSide < 900;
@@ -243,8 +244,9 @@ export function classifyGpuHardware(input: GpuHardwareClassificationInput = {}):
   if (
     constrainedNetwork
     || softwareRenderer
-    || maxTextureSize < 4096
-    || hardwareConcurrency <= 2
+    || maxTextureSize < 2048
+    || hardwareConcurrency <= 1
+    || (hardwareConcurrency <= 2 && deviceMemory <= 4)
     || deviceMemory <= 2
   ) {
     recommendedTier = "low";
@@ -272,16 +274,15 @@ export function classifyGpuHardware(input: GpuHardwareClassificationInput = {}):
         recommendedTier = "medium";
         canPromoteTier = true;
       }
-    } else if (hardwareConcurrency <= 4 && deviceMemory <= 4) {
+    } else if (hardwareConcurrency <= 4 && deviceMemory <= 4 && devicePixelRatio < 2) {
       recommendedTier = "low";
       canPromoteTier = false;
     } else if (
-      maxTextureSize >= 8192
-      && maxSamples >= 4
-      && hardwareConcurrency >= 8
+      hardwareConcurrency >= 8
       && deviceMemory >= 8
+      && maxTextureSize >= 8192
     ) {
-      // Téléphone puissant dont le navigateur masque le nom exact du GPU (Chrome Android / Firefox / WebKit).
+      // Téléphone puissant dont le navigateur masque le nom exact du GPU (Firefox Android / Chrome / WebKit).
       recommendedTier = "high";
       canPromoteTier = true;
     } else {
@@ -682,10 +683,10 @@ export function sampleScenePerformance(
       ? TIER_ORDER.indexOf(monitor.demotedCeiling)
       : TIER_ORDER.length - 1;
 
-    if (dprAtFloorBefore && (fps < 24 || fps < 36)) {
-      monitor.slowTierSamples = fps < 36 ? monitor.slowTierSamples + 1 : 0;
+    if (dprAtFloorBefore && fps < 36) {
+      monitor.slowTierSamples += 1;
       monitor.fastTierSamples = 0;
-      if (currentIndex > 0 && (fps < 24 || monitor.slowTierSamples >= 2)) {
+      if (currentIndex > 0 && monitor.slowTierSamples >= 2) {
         const nextTier = TIER_ORDER[currentIndex - 1];
         monitor.tier = nextTier;
         monitor.demotedCeiling = nextTier;

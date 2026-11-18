@@ -368,14 +368,14 @@ function PerformanceDirector({
   return null;
 }
 
-/** Laisse 1 image par vSync jusqu'à ~95 Hz et plafonne les écrans 120/144 Hz+. */
+/** Laisse 1 image par vSync jusqu'à 90 Hz sans sauter sur gigue et plafonne les écrans 120/144 Hz+. */
 function CappedFrameLoop({ paused }: { paused: boolean }) {
   const advance = useThree((state) => state.advance);
   const clock = useThree((state) => state.clock);
 
   useEffect(() => {
     if (paused) return;
-    const minFrameInterval = 1000 / 95;
+    const minFrameInterval = 1000 / 106;
     let frame = 0;
     let origin: number | null = null;
     let lastTick: number | null = null;

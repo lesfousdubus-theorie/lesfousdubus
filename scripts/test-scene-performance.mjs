@@ -139,6 +139,43 @@ const iphoneClamped = classifyGpuHardware({
 assert.equal(iphoneClamped.recommendedTier, "medium");
 assert.equal(iphoneClamped.canPromoteTier, true);
 
+// Firefox Android (Pixel 7) : deviceMemory absent (-> 8), parfois GPU masqué ("Mozilla") et 2 cœurs/2048px sous anti-pistage
+const firefoxPixel7 = classifyGpuHardware({
+  coarsePointer: true,
+  shortSide: 412,
+  hardwareConcurrency: 8,
+  deviceMemory: 8,
+  maxSamples: 0,
+  maxTextureSize: 8192,
+  devicePixelRatio: 2.625,
+  renderer: "Mozilla",
+});
+assert.equal(firefoxPixel7.recommendedTier, "high");
+assert.equal(firefoxPixel7.canPromoteTier, true);
+
+const firefoxRfpPixel7 = classifyGpuHardware({
+  coarsePointer: true,
+  shortSide: 412,
+  hardwareConcurrency: 2,
+  deviceMemory: 8,
+  maxSamples: 0,
+  maxTextureSize: 2048,
+  devicePixelRatio: 2.625,
+  renderer: "Mozilla",
+});
+assert.equal(firefoxRfpPixel7.recommendedTier, "medium");
+assert.equal(firefoxRfpPixel7.canPromoteTier, true);
+
+const firefoxMaliPixel7 = classifyGpuHardware({
+  coarsePointer: true,
+  shortSide: 412,
+  hardwareConcurrency: 8,
+  deviceMemory: 8,
+  renderer: "Mali-G710",
+});
+assert.equal(firefoxMaliPixel7.recommendedTier, "high");
+assert.equal(firefoxMaliPixel7.canPromoteTier, true);
+
 for (const highRenderer of ["Apple M2", "NVIDIA GeForce RTX 3060"]) {
   const info = classifyGpuHardware({ renderer: highRenderer, hardwareConcurrency: 8, deviceMemory: 16 });
   assert.equal(info.recommendedTier, "high");
