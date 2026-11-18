@@ -93,8 +93,51 @@ const flagshipMobile = classifyGpuHardware({
   deviceMemory: 8,
   renderer: "Adreno (TM) 740",
 });
-assert.equal(flagshipMobile.recommendedTier, "medium");
+assert.equal(flagshipMobile.recommendedTier, "high");
 assert.equal(flagshipMobile.canPromoteTier, true);
+
+const maskedAndroidPhone = classifyGpuHardware({
+  coarsePointer: true,
+  shortSide: 412,
+  hardwareConcurrency: 8,
+  deviceMemory: 4,
+  renderer: "ANGLE (Qualcomm, Vulkan 1.3.251 Driver 0.0, OpenGL ES 3.2)",
+});
+assert.equal(maskedAndroidPhone.recommendedTier, "medium");
+assert.equal(maskedAndroidPhone.canPromoteTier, true);
+
+const maskedHighPhone = classifyGpuHardware({
+  coarsePointer: true,
+  shortSide: 412,
+  hardwareConcurrency: 8,
+  deviceMemory: 8,
+  maxTextureSize: 16384,
+  maxSamples: 4,
+  renderer: null,
+});
+assert.equal(maskedHighPhone.recommendedTier, "high");
+assert.equal(maskedHighPhone.canPromoteTier, true);
+
+for (const strongPhone of [
+  { renderer: "Apple GPU", hardwareConcurrency: 6, deviceMemory: 8 },
+  { renderer: "Samsung Xclipse 940", hardwareConcurrency: 8, deviceMemory: 8 },
+  { renderer: "Mali-G715", hardwareConcurrency: 8, deviceMemory: 8 },
+]) {
+  const info = classifyGpuHardware({ coarsePointer: true, shortSide: 393, ...strongPhone });
+  assert.equal(info.recommendedTier, "high");
+  assert.equal(info.canPromoteTier, true);
+}
+
+const iphoneClamped = classifyGpuHardware({
+  coarsePointer: true,
+  shortSide: 390,
+  hardwareConcurrency: 4,
+  deviceMemory: 8,
+  maxTextureSize: 4096,
+  renderer: "Apple GPU",
+});
+assert.equal(iphoneClamped.recommendedTier, "medium");
+assert.equal(iphoneClamped.canPromoteTier, true);
 
 for (const highRenderer of ["Apple M2", "NVIDIA GeForce RTX 3060"]) {
   const info = classifyGpuHardware({ renderer: highRenderer, hardwareConcurrency: 8, deviceMemory: 16 });

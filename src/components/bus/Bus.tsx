@@ -173,8 +173,8 @@ export default function Bus({
     prevRows.current = numRows;
   }, [numRows]);
 
-  // Position et orientation de base du chapeau (posé sur le toit du bus)
-  const HAT_BASE_POS: [number, number, number] = useMemo(() => [0, 3.31, -3.55], []);
+  // Position et orientation de base du chapeau (posé au-dessus du toit et de son rehaussement y=3.42)
+  const HAT_BASE_POS: [number, number, number] = useMemo(() => [0, 3.395, -3.55], []);
   const HAT_BASE_ROT: [number, number, number] = useMemo(() => [0, 0, 0], []);
 
   const { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex } = useBusResources();
