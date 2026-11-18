@@ -641,8 +641,11 @@ const closeShadow = getShadowCameraFraming({
   shadowMapSize: 2048,
 });
 assert(
-  closeShadow.halfWidth >= 64 && closeShadow.halfDepth >= 76 && closeShadow.normalBias <= 0.016,
-  "shadow box stays crisp around bus while covering islands ahead",
+  closeShadow.halfWidth >= 100
+    && closeShadow.halfDepth >= 180
+    && closeShadow.centerZ - closeShadow.halfDepth <= -280
+    && closeShadow.normalBias <= 0.025,
+  "shadow box covers at least one full landscape ahead without inflating normalBias",
 );
 assert(closeShadow.centerZ < 0, "shadow focus shifts forward along the route");
 

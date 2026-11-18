@@ -17,6 +17,7 @@ interface Props {
   shadowsEnabled?: boolean;
   shadowMapSize?: 1024 | 2048;
   shadowsType?: false | "basic" | "percentage" | "soft";
+  shadowsQuality?: "off" | "standard" | "high";
   starCount?: number;
   cabinCenterZ?: number;
   cabinLength?: number;
@@ -48,6 +49,7 @@ export default function DayNight({
   shadowsEnabled,
   shadowMapSize,
   shadowsType,
+  shadowsQuality,
   starCount,
   cabinCenterZ = 0,
   cabinLength = 9.2,
@@ -62,7 +64,8 @@ export default function DayNight({
   const starsRef = useRef<THREE.Points>(null);
   const appliedShadowRef = useRef<{
     enabled: boolean;
-    mapSize: 1024 | 2048;
+    width: number;
+    height: number;
     type: false | "basic" | "percentage" | "soft" | undefined;
   } | null>(null);
   const sunTarget = useMemo(() => {
@@ -80,13 +83,13 @@ export default function DayNight({
   const lightColor = useMemo(() => new THREE.Color(), []);
   const sunPosition = useMemo(() => new THREE.Vector3(), []);
   const shadowFraming = useMemo<ShadowCameraFraming>(() => ({
-    halfWidth: 66,
-    halfDepth: 80,
-    centerZ: -20,
-    sunDistance: 112,
+    halfWidth: 105,
+    halfDepth: 185,
+    centerZ: -115,
+    sunDistance: 268,
     near: 1,
-    far: 300,
-    normalBias: 0.009,
+    far: 750,
+    normalBias: 0.014,
   }), []);
 
   const resolvedFogNear = fogNear ?? 120;
@@ -124,6 +127,13 @@ export default function DayNight({
 
   useFrame((state, dt) => {
     const targetGlShadowType = shadowsType === "basic" ? THREE.BasicShadowMap : THREE.PCFShadowMap;
+    const maxGpuTex = state.gl.capabilities.maxTextureSize || 2048;
+    const targetMapW = resolvedShadowMapSize >= 2048 && shadowsQuality === "high" && maxGpuTex >= 4096
+      ? 4096
+      : resolvedShadowMapSize;
+    const targetMapH = resolvedShadowMapSize >= 2048 && maxGpuTex >= 4096
+      ? 4096
+      : resolvedShadowMapSize;
     const glShadowChanged =
       state.gl.shadowMap.enabled !== resolvedShadowsEnabled
       || state.gl.shadowMap.type !== targetGlShadowType;
@@ -134,7 +144,8 @@ export default function DayNight({
         !prevShadow
         || glShadowChanged
         || prevShadow.enabled !== resolvedShadowsEnabled
-        || prevShadow.mapSize !== resolvedShadowMapSize
+        || prevShadow.width !== targetMapW
+        || prevShadow.height !== targetMapH
         || prevShadow.type !== shadowsType
       )
     ) {
@@ -143,10 +154,10 @@ export default function DayNight({
       sun.current.castShadow = resolvedShadowsEnabled;
       if (
         glShadowChanged
-        || sun.current.shadow.mapSize.width !== resolvedShadowMapSize
-        || sun.current.shadow.mapSize.height !== resolvedShadowMapSize
+        || sun.current.shadow.mapSize.width !== targetMapW
+        || sun.current.shadow.mapSize.height !== targetMapH
       ) {
-        sun.current.shadow.mapSize.set(resolvedShadowMapSize, resolvedShadowMapSize);
+        sun.current.shadow.mapSize.set(targetMapW, targetMapH);
         sun.current.shadow.map?.dispose();
         sun.current.shadow.map = null;
       }
@@ -165,7 +176,8 @@ export default function DayNight({
       state.gl.shadowMap.needsUpdate = true;
       appliedShadowRef.current = {
         enabled: resolvedShadowsEnabled,
-        mapSize: resolvedShadowMapSize,
+        width: targetMapW,
+        height: targetMapH,
         type: shadowsType,
       };
     }
@@ -262,10 +274,13 @@ export default function DayNight({
       sun.current.target = sunTarget;
       const shadowCam = sun.current.shadow.camera;
       if (
-        Math.abs(shadowCam.right - framing.halfWidth) > 0.5
+        shadowCam.up.z > -0.9
+        || Math.abs(shadowCam.right - framing.halfWidth) > 0.5
         || Math.abs(shadowCam.top - framing.halfDepth) > 0.5
         || Math.abs(shadowCam.far - framing.far) > 1
       ) {
+        // Aligne la boîte d'ombres sur l'axe de la route (-Z) même quand le soleil rase à l'est/ouest
+        shadowCam.up.set(0, 0, -1);
         shadowCam.left = -framing.halfWidth;
         shadowCam.right = framing.halfWidth;
         shadowCam.top = framing.halfDepth;
@@ -312,15 +327,15 @@ export default function DayNight({
         castShadow={resolvedShadowsEnabled}
         shadow-mapSize-width={resolvedShadowMapSize}
         shadow-mapSize-height={resolvedShadowMapSize}
-        shadow-camera-left={-66}
-        shadow-camera-right={66}
-        shadow-camera-top={80}
-        shadow-camera-bottom={-80}
+        shadow-camera-left={-105}
+        shadow-camera-right={105}
+        shadow-camera-top={185}
+        shadow-camera-bottom={-185}
         shadow-camera-near={1}
-        shadow-camera-far={300}
-        shadow-radius={2}
-        shadow-bias={-0.00015}
-        shadow-normalBias={0.009}
+        shadow-camera-far={750}
+        shadow-radius={1.8}
+        shadow-bias={-0.00018}
+        shadow-normalBias={0.014}
       />
       <group ref={celestial}>
         <mesh ref={sunMesh} renderOrder={-1}>
