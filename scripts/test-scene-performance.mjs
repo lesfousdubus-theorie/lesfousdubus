@@ -176,6 +176,42 @@ const firefoxMaliPixel7 = classifyGpuHardware({
 assert.equal(firefoxMaliPixel7.recommendedTier, "high");
 assert.equal(firefoxMaliPixel7.canPromoteTier, true);
 
+// Firefox SanitizeRenderer (", or similar") sur Pixel 7 Pro / Android / Desktop
+const firefoxSanitizedPixel7Pro = classifyGpuHardware({
+  coarsePointer: true,
+  shortSide: 412,
+  hardwareConcurrency: 8,
+  deviceMemory: 8,
+  maxTextureSize: 8192,
+  devicePixelRatio: 2.625,
+  renderer: "Mali-T760, or similar",
+});
+assert.equal(firefoxSanitizedPixel7Pro.recommendedTier, "high");
+assert.equal(firefoxSanitizedPixel7Pro.canPromoteTier, true);
+assert.equal(firefoxSanitizedPixel7Pro.gpuLabel, "Mali-T760 (ou similaire)");
+
+const firefoxSanitizedAdreno = classifyGpuHardware({
+  coarsePointer: true,
+  shortSide: 412,
+  hardwareConcurrency: 8,
+  deviceMemory: 8,
+  maxTextureSize: 8192,
+  devicePixelRatio: 2,
+  renderer: "Adreno (TM) 530, or similar",
+});
+assert.equal(firefoxSanitizedAdreno.recommendedTier, "high");
+assert.equal(firefoxSanitizedAdreno.canPromoteTier, true);
+
+const firefoxSanitizedDesktop = classifyGpuHardware({
+  coarsePointer: false,
+  shortSide: 1080,
+  hardwareConcurrency: 16,
+  deviceMemory: 8,
+  renderer: "GeForce GTX 980, or similar",
+});
+assert.equal(firefoxSanitizedDesktop.recommendedTier, "high");
+assert.equal(firefoxSanitizedDesktop.canPromoteTier, true);
+
 for (const highRenderer of ["Apple M2", "NVIDIA GeForce RTX 3060"]) {
   const info = classifyGpuHardware({ renderer: highRenderer, hardwareConcurrency: 8, deviceMemory: 16 });
   assert.equal(info.recommendedTier, "high");

@@ -202,6 +202,7 @@ export function formatGpuLabel(renderer: string | null | undefined): string {
       match.toLowerCase() === "(tm)" || match.toLowerCase() === "(r)" ? match : "",
     )
     .replace(/\s+\/\s*(?:PCIe|SSE\d|OPENGL)[^,]*$/i, "")
+    .replace(/,?\s*\bor similar\b/gi, " (ou similaire)")
     .replace(/\s{2,}/g, " ")
     .replace(/^[,\s-]+|[,\s-]+$/g, "");
 
@@ -236,7 +237,9 @@ export function classifyGpuHardware(input: GpuHardwareClassificationInput = {}):
     .replace(/\s+/g, " ")
     .trim();
   const softwareRenderer = normalized.length > 0 && SOFTWARE_RENDERER_RE.test(normalized);
-  const genericRenderer = normalized.length === 0 || GENERIC_GPU_NAMES.test(gpuLabel);
+  // Firefox (SanitizeRenderer) remplace de nombreux GPU récents par un modèle générique suivi de ", or similar".
+  const sanitizedBucket = /\bor similar\b/i.test(renderer ?? "");
+  const genericRenderer = normalized.length === 0 || GENERIC_GPU_NAMES.test(gpuLabel) || sanitizedBucket;
 
   let recommendedTier: GraphicsQualityTier = "medium";
   let canPromoteTier = true;
@@ -251,9 +254,28 @@ export function classifyGpuHardware(input: GpuHardwareClassificationInput = {}):
   ) {
     recommendedTier = "low";
     canPromoteTier = false;
-  } else if (WEAK_GPU_RE.test(normalized)) {
+  } else if (!sanitizedBucket && WEAK_GPU_RE.test(normalized)) {
     recommendedTier = "low";
     canPromoteTier = false;
+  } else if (sanitizedBucket) {
+    if (mobileDevice) {
+      if (hardwareConcurrency <= 4 && deviceMemory <= 4 && devicePixelRatio < 2) {
+        recommendedTier = "low";
+        canPromoteTier = false;
+      } else if (hardwareConcurrency >= 8 && deviceMemory >= 8 && maxTextureSize >= 8192 && devicePixelRatio >= 2) {
+        recommendedTier = "high";
+        canPromoteTier = true;
+      } else {
+        recommendedTier = "medium";
+        canPromoteTier = true;
+      }
+    } else if (/geforce|radeon|apple m/i.test(normalized) && hardwareConcurrency >= 8 && deviceMemory >= 8) {
+      recommendedTier = "high";
+      canPromoteTier = true;
+    } else {
+      recommendedTier = "medium";
+      canPromoteTier = true;
+    }
   } else if (mobileDevice) {
     if (ULTRA_FLAGSHIP_MOBILE_GPU_RE.test(normalized)) {
       if (hardwareConcurrency >= 6) {
