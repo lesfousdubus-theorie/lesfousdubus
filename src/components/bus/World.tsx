@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import * as THREE from "three";
 import { WorldLandmark, type PropDef, type PropType } from "./WorldLandmark";
 import WorldSetPiece, { WorldForeground } from "./WorldSetPiece";
-import WorldOcean from "./WorldOcean";
+import WorldOcean, { SEA_WAKE_COUNT } from "./WorldOcean";
 import WorldSeaCreatures from "./WorldSeaCreatures";
 import { useFrame } from "@react-three/fiber";
 import { WORLD_SPEED, type Phase, type WorldState } from "./constants";
@@ -349,6 +349,9 @@ export default function World({
   const dashRef = useRef<THREE.InstancedMesh>(null);
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
   const zoneZ = useRef<number[]>(new Array<number>(ZONES.length).fill(0));
+  const seaWakesRef = useRef<THREE.Vector4[]>(
+    Array.from({ length: SEA_WAKE_COUNT }, () => new THREE.Vector4(0, 0, 1, 0)),
+  );
 
   useFrame((state, dt) => {
     const frameDt = Math.min(dt, phase==="entering"||phase==="exiting"?0.25:0.1);
@@ -435,9 +438,10 @@ export default function World({
 
   return (
     <group>
-      <WorldOcean worldRef={worldRef} reducedMotion={reducedMotion} />
+      <WorldOcean worldRef={worldRef} wakesRef={seaWakesRef} reducedMotion={reducedMotion} />
       <WorldSeaCreatures
         worldRef={worldRef}
+        wakesRef={seaWakesRef}
         cabinCenterZ={cabinCenterZ}
         reducedMotion={reducedMotion}
         lowPower={lowPower}
