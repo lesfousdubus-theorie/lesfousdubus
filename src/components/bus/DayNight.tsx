@@ -80,13 +80,13 @@ export default function DayNight({
   const lightColor = useMemo(() => new THREE.Color(), []);
   const sunPosition = useMemo(() => new THREE.Vector3(), []);
   const shadowFraming = useMemo<ShadowCameraFraming>(() => ({
-    halfWidth: 105,
-    halfDepth: 165,
-    centerZ: -36,
-    sunDistance: 222,
+    halfWidth: 76,
+    halfDepth: 88,
+    centerZ: -22,
+    sunDistance: 123,
     near: 1,
-    far: 580,
-    normalBias: 0.046,
+    far: 320,
+    normalBias: 0.009,
   }), []);
 
   const resolvedFogNear = fogNear ?? 120;
@@ -238,9 +238,12 @@ export default function DayNight({
     }, shadowFraming);
     sunTarget.position.set(0, 1.2, framing.centerZ);
     sunTarget.updateMatrixWorld();
+    // Garde un angle d'ombre assez haut au crépuscule pour éviter l'étirement diagonal crénelé
+    const shadowLightY = Math.max(lightY, 0.52);
+    const shadowHorizScale = 0.85 + 0.15 * Math.min(1, Math.max(0, (lightY - 0.16) / 0.36));
     sunPosition.set(
-      lightX * framing.sunDistance,
-      lightY * framing.sunDistance,
+      lightX * shadowHorizScale * framing.sunDistance,
+      shadowLightY * framing.sunDistance,
       framing.centerZ - framing.sunDistance * 0.42,
     );
     lightColor.copy(MOON_LIGHT).lerp(SUN_LIGHT, smoothstep(0.05, 0.45, daylight)).lerp(DUSK_LIGHT, duskGlow * 0.65);
@@ -301,14 +304,14 @@ export default function DayNight({
         castShadow={resolvedShadowsEnabled}
         shadow-mapSize-width={resolvedShadowMapSize}
         shadow-mapSize-height={resolvedShadowMapSize}
-        shadow-camera-left={-105}
-        shadow-camera-right={105}
-        shadow-camera-top={165}
-        shadow-camera-bottom={-165}
+        shadow-camera-left={-76}
+        shadow-camera-right={76}
+        shadow-camera-top={88}
+        shadow-camera-bottom={-88}
         shadow-camera-near={1}
-        shadow-camera-far={580}
-        shadow-bias={-0.00025}
-        shadow-normalBias={0.046}
+        shadow-camera-far={320}
+        shadow-bias={-0.00012}
+        shadow-normalBias={0.009}
       />
       <group ref={celestial}>
         <mesh ref={sunMesh} renderOrder={-1}>
