@@ -206,11 +206,11 @@ export function formatGpuLabel(renderer: string | null | undefined): string {
 }
 
 const SOFTWARE_RENDERER_RE = /swiftshader|llvmpipe|softpipe|software|basic render driver|gdi generic/i;
-const WEAK_GPU_RE = /mali-4|mali-t|mali-g3|mali-g5[12]|adreno\s*\(tm\)\s*[2345]|adreno\s*\(tm\)\s*61\d|powervr|videocore|hd graphics\s*[23456]\d{2}|uhd graphics\s*6\d{2}|celeron|pentium|atom/i;
-const HIGH_END_MOBILE_GPU_RE = /adreno\s*\(tm\)\s*(?:7[345]\d|8\d{2})|immortalis|apple gpu/i;
-const ULTRA_DESKTOP_GPU_RE = /geforce rtx\s*(?:208\d|30[789]\d|40[789]\d|50[789]\d)|radeon rx\s*(?:6[789]\d{2}|7[789]\d{2}|907\d)|apple m[1-9]\s*(?:pro|max|ultra)/i;
-const HIGH_GPU_RE = /geforce\s*(?:rtx|gtx\s*(?:10[78]\d|166\d))|radeon rx\s*(?:5[67]\d{2}|66\d{2}|76\d{2})|radeon\s*(?:780m|880m|890m)|arc\s*[ab][57]\d{2}|apple m[1-9]\b/i;
-const MODERN_INTEGRATED_GPU_RE = /iris|uhd graphics\s*7\d{2}|uhd graphics\b|radeon\s*(?:6[16]0m|7[46]0m|vega|graphics)|gtx\s*(?:9\d{2}|10[56]\d|165\d)/i;
+const WEAK_GPU_RE = /mali-4|mali-t|mali-g3|mali-g5[12]|adreno\s*(?:[2345]\d{2}|61\d)|powervr|videocore|hd graphics\s*[23456]\d{2}|uhd graphics\s*6\d{2}|celeron|pentium|atom|geforce\s*(?:gt\s*[2-7]\d{2}|mx\s*[12]\d{2})/i;
+const HIGH_END_MOBILE_GPU_RE = /adreno\s*(?:7[345]\d|8\d{2})|immortalis|apple gpu/i;
+const ULTRA_DESKTOP_GPU_RE = /(?:geforce\s+)?rtx\s*(?:20[789]\d|30[789]\d|40[6789]\d|50\d{2}|a[456]\d{3}|[456]\d{3}\s*ada)|(?:radeon\s+)?rx\s*(?:6[789]\d{2}|7[789]\d{2}|90[6789]\d)|radeon\s+pro\s+(?:w[67]\d{3}|v\d{3})|navi2[12]|navi3[123]|navi4\d|gfx1[12]\d{2}|arc\s*(?:a7\d{2}|b[57]\d{2})|apple\s+m[1-9]\s*(?:pro|max|ultra)|apple\s+m[3-9]\b/i;
+const HIGH_GPU_RE = /(?:geforce\s+)?(?:rtx|gtx\s*(?:10[678]\d|16[56]\d|9[78]\d))|(?:radeon\s+)?rx\s*(?:4[789]\d|5[789]\d|5[567]\d{2}|6[456]\d{2}|7[56]\d{2})|radeon\s*(?:780m|880m|890m|vega\s*(?:56|64)|vii)|arc\s*(?:a[357]\d{2}|b[57]\d{2}|1[34]0[vt])|nvidia\s+(?:quadro|t\d{3,4}|a\d{3,4})|navi\d+|gfx10\d{2}|apple\s+m[1-9]\b/i;
+const MODERN_INTEGRATED_GPU_RE = /iris|arc\s*graphics|uhd graphics\s*7\d{2}|uhd graphics\b|radeon\s*(?:6[168]0m|7[46]0m|vega|graphics)|gtx\s*(?:9[56]\d)/i;
 
 /** Classe la puce graphique WebGL2 et les indices matériels en un palier initial recommandé. */
 export function classifyGpuHardware(input: GpuHardwareClassificationInput = {}): GpuHardwareInfo {
@@ -225,7 +225,10 @@ export function classifyGpuHardware(input: GpuHardwareClassificationInput = {}):
 
   const mobileDevice = coarsePointer && shortSide < 900;
   const gpuLabel = formatGpuLabel(renderer);
-  const normalized = `${renderer ?? ""} ${gpuLabel}`.trim();
+  const normalized = `${renderer ?? ""} ${gpuLabel}`
+    .replace(/\((?:r|tm|c)\)/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   const softwareRenderer = normalized.length > 0 && SOFTWARE_RENDERER_RE.test(normalized);
   const genericRenderer = normalized.length === 0 || GENERIC_GPU_NAMES.test(gpuLabel);
 
@@ -255,7 +258,10 @@ export function classifyGpuHardware(input: GpuHardwareClassificationInput = {}):
       recommendedTier = "medium";
       canPromoteTier = false;
     }
-  } else if (ULTRA_DESKTOP_GPU_RE.test(normalized)) {
+  } else if (
+    ULTRA_DESKTOP_GPU_RE.test(normalized)
+    || (/apple gpu/i.test(normalized) && !coarsePointer && hardwareConcurrency >= 12)
+  ) {
     recommendedTier = "ultra";
     canPromoteTier = false;
   } else if (
@@ -265,13 +271,25 @@ export function classifyGpuHardware(input: GpuHardwareClassificationInput = {}):
     recommendedTier = "high";
     canPromoteTier = true;
   } else if (MODERN_INTEGRATED_GPU_RE.test(normalized)) {
-    recommendedTier = hardwareConcurrency <= 4 && deviceMemory <= 4 ? "low" : "medium";
-    canPromoteTier = false;
-  } else if (genericRenderer) {
-    if (hardwareConcurrency <= 4 || deviceMemory <= 4) {
+    if (hardwareConcurrency <= 4 && deviceMemory <= 4) {
       recommendedTier = "low";
       canPromoteTier = true;
-    } else if (!coarsePointer && hardwareConcurrency >= 8 && deviceMemory >= 8) {
+    } else if (!coarsePointer && hardwareConcurrency >= 12 && deviceMemory >= 8) {
+      recommendedTier = "high";
+      canPromoteTier = true;
+    } else {
+      recommendedTier = "medium";
+      canPromoteTier = true;
+    }
+  } else if (genericRenderer || !coarsePointer) {
+    if (hardwareConcurrency <= 4 && deviceMemory <= 4) {
+      recommendedTier = "low";
+      canPromoteTier = true;
+    } else if (
+      !coarsePointer
+      && ((hardwareConcurrency >= 6 && deviceMemory >= 8)
+        || (maxTextureSize >= 8192 && maxSamples >= 4 && hardwareConcurrency >= 6 && deviceMemory >= 6))
+    ) {
       recommendedTier = "high";
       canPromoteTier = true;
     } else {
@@ -379,7 +397,7 @@ const WORLD_DENSITY_TABLE: Record<Exclude<WorldDensityPreference, "auto">, {
     lowPower: true,
     propFraction: 0.5,
     detailedPassengerLimit: 2,
-    simplifiedPassengerLimit: 96,
+    simplifiedPassengerLimit: 120,
     seaCreatureSlots: 2,
     starCount: 700,
     rainCount: 180,
@@ -389,7 +407,7 @@ const WORLD_DENSITY_TABLE: Record<Exclude<WorldDensityPreference, "auto">, {
     lowPower: false,
     propFraction: 0.75,
     detailedPassengerLimit: 5,
-    simplifiedPassengerLimit: 140,
+    simplifiedPassengerLimit: 200,
     seaCreatureSlots: 3,
     starCount: 1200,
     rainCount: 300,
@@ -399,7 +417,7 @@ const WORLD_DENSITY_TABLE: Record<Exclude<WorldDensityPreference, "auto">, {
     lowPower: false,
     propFraction: 1,
     detailedPassengerLimit: 8,
-    simplifiedPassengerLimit: 160,
+    simplifiedPassengerLimit: 280,
     seaCreatureSlots: 4,
     starCount: 1800,
     rainCount: 420,
@@ -409,7 +427,7 @@ const WORLD_DENSITY_TABLE: Record<Exclude<WorldDensityPreference, "auto">, {
     lowPower: false,
     propFraction: 1,
     detailedPassengerLimit: 14,
-    simplifiedPassengerLimit: 240,
+    simplifiedPassengerLimit: 380,
     seaCreatureSlots: 4,
     starCount: 2600,
     rainCount: 600,
@@ -608,12 +626,12 @@ export function sampleScenePerformance(
 
   // 1. Ajuster d'abord la résolution interne (DPR).
   monitor.slowDprSamples = fps < 46 ? monitor.slowDprSamples + 1 : 0;
-  monitor.fastDprSamples = fps > 57 ? monitor.fastDprSamples + 1 : 0;
+  monitor.fastDprSamples = fps >= 54.5 ? monitor.fastDprSamples + 1 : 0;
   const dprAtFloorBefore = monitor.dpr <= config.minDpr + 0.08;
   let nextDpr = monitor.dpr;
   if (monitor.dprCooldown === 0 && (fps < 25 || monitor.slowDprSamples >= 2)) {
     nextDpr = Math.max(config.minDpr, monitor.dpr - (fps < 25 ? 0.25 : 0.15));
-  } else if (monitor.dprCooldown === 0 && monitor.fastDprSamples >= 4) {
+  } else if (monitor.dprCooldown === 0 && monitor.fastDprSamples >= 3) {
     nextDpr = Math.min(config.maxDpr, monitor.dpr + 0.1);
   }
 
@@ -650,12 +668,12 @@ export function sampleScenePerformance(
     } else if (
       monitor.canPromoteTier
       && monitor.dpr >= config.maxDpr - 0.04
-      && fps >= 57.5
+      && fps >= 54.5
     ) {
       monitor.slowTierSamples = 0;
       monitor.fastTierSamples += 1;
       const maxAllowedIndex = Math.min(recommendedIndex + 1, ceilingIndex, TIER_ORDER.length - 1);
-      if (currentIndex < maxAllowedIndex && monitor.fastTierSamples >= 5) {
+      if (currentIndex < maxAllowedIndex && monitor.fastTierSamples >= 3) {
         monitor.tier = TIER_ORDER[currentIndex + 1];
         monitor.slowTierSamples = 0;
         monitor.fastTierSamples = 0;
@@ -665,7 +683,7 @@ export function sampleScenePerformance(
       }
     } else {
       monitor.slowTierSamples = 0;
-      if (fps < 57.5) monitor.fastTierSamples = 0;
+      if (fps < 54.5) monitor.fastTierSamples = 0;
     }
   } else {
     monitor.slowTierSamples = 0;

@@ -113,13 +113,26 @@ export function getBusOccupancy({ passengerCount, seatCapacity, vacantSeatRanges
   const detailed = detailedVisitors;
   const detailedIds = new Set(detailedVisitors.map(occupant => occupant.index));
   const distant = candidates.filter(occupant => !detailedIds.has(occupant.index));
-  const simplified = resolvedSimplifiedLimit === 0
-    ? []
-    : distant.length <= resolvedSimplifiedLimit
-      ? distant
-      : resolvedSimplifiedLimit === 1
-        ? [distant[0]]
-        : Array.from({ length: resolvedSimplifiedLimit }, (_, sample) =>
-          distant[Math.floor(sample * (distant.length - 1) / (resolvedSimplifiedLimit - 1))]);
+  const simplified = (() => {
+    if (resolvedSimplifiedLimit === 0) return [];
+    if (distant.length <= resolvedSimplifiedLimit) return distant;
+    // Préserver 100 % des sièges proches/moyens autour de la caméra évite qu'un pas
+    // de caméra ne décime les rangées voisines par rééchantillonnage global.
+    const byDistance = [...distant].sort((left, right) =>
+      distance(left) - distance(right) || left.index - right.index);
+    const nearQuota = Math.min(distant.length, Math.max(1, Math.floor(resolvedSimplifiedLimit * 0.78)));
+    const nearPool = byDistance.slice(0, nearQuota);
+    const farPool = byDistance.slice(nearQuota).sort((left, right) => left.index - right.index);
+    const farQuota = resolvedSimplifiedLimit - nearPool.length;
+    const farSampled = farQuota <= 0 || !farPool.length
+      ? []
+      : farQuota >= farPool.length
+        ? farPool
+        : farQuota === 1
+          ? [farPool[0]]
+          : Array.from({ length: farQuota }, (_, sample) =>
+            farPool[Math.floor(sample * (farPool.length - 1) / (farQuota - 1))]);
+    return [...nearPool, ...farSampled].sort((left, right) => left.index - right.index);
+  })();
   return { detailed, simplified, avatar, detailLimit: resolvedDetailLimit, occupiedCount, visitorRows, numRows };
 }

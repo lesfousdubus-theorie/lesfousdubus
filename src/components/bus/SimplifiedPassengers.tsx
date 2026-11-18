@@ -27,15 +27,16 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
       pose: getRegisteredPassengerPose(poses,index), target: createPassengerPose() };
   }), [passengers, profilesBySeatIndex,poses]);
   const ids=useMemo(()=>profiles.map(profile=>profile.archetype.id),[profiles]);
-  const occupantsKey = useMemo(() => passengers.map((p, i) => `${p.index}:${ids[i]}`).join(","), [passengers, ids]);
+  const occupantsKey = useMemo(() => passengers.map((p, i) => `${p.index}:${p.physicalSeatIndex}:${ids[i]}`).join(","), [passengers, ids]);
+  const capacity = Math.max(160, Math.ceil(passengers.length / 64) * 64);
   const listeners=useMemo(()=>new Set<()=>void>(),[]);
   const matrices = useMemo(() => ({
-    bodies: Array.from({ length: 160 }, () => new THREE.Matrix4()),
-    heads: Array.from({ length: 160 }, () => new THREE.Matrix4()),
-    arms: Array.from({ length: 320 }, () => new THREE.Matrix4()),
-    forearms: Array.from({ length: 320 }, () => new THREE.Matrix4()),
-    hands: Array.from({ length: 320 }, () => new THREE.Matrix4()),
-  }), []);
+    bodies: Array.from({ length: capacity }, () => new THREE.Matrix4()),
+    heads: Array.from({ length: capacity }, () => new THREE.Matrix4()),
+    arms: Array.from({ length: capacity * 2 }, () => new THREE.Matrix4()),
+    forearms: Array.from({ length: capacity * 2 }, () => new THREE.Matrix4()),
+    hands: Array.from({ length: capacity * 2 }, () => new THREE.Matrix4()),
+  }), [capacity]);
   const drivers=useMemo(()=>({...matrices,revision,celebration,listeners}),[matrices,listeners]);
   const scratch = useMemo(() => ({ body: new THREE.Matrix4(), shoulder: new THREE.Matrix4(), elbow: new THREE.Matrix4(),
     local: new THREE.Object3D(), matrix: new THREE.Matrix4() }), []);
@@ -111,5 +112,7 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
     writeMatrices();
   },-2);
   if (!passengers.length) return null;
-  return <PassengerIdentityInstances ids={ids} passengers={passengers} drivers={drivers} partyOn={partyOn} reducedMotion={reducedMotion}/>;
+  return <PassengerIdentityInstances ids={ids} passengers={passengers} drivers={drivers} capacity={capacity}
+    profilesBySeatIndex={profilesBySeatIndex} hornPulse={hornPulse} poses={poses}
+    partyOn={partyOn} reducedMotion={reducedMotion}/>;
 }
