@@ -79,17 +79,24 @@ function normalize(v: Vec3): Vec3 {
   return [v[0] / length, v[1] / length, v[2] / length];
 }
 
-/** Graine une grappe bornée de lignes autour de la coque (O(1)). */
+/** Graine une grappe bornée de lignes sur les flancs et le toit (O(1)). */
 export function createSpeedLineSeeds(rng: () => number, count: number): SpeedLineSeed[] {
   const seeds: SpeedLineSeed[] = [];
   for (let i = 0; i < count; i++) {
+    // Lignes à côté du bus (flancs) et au-dessus du toit, jamais dessous.
+    const band = rng();
+    const angle = band < 0.42
+      ? (rng() - 0.5) * 1.7 // flanc droit : ±~49°
+      : band < 0.84
+        ? Math.PI + (rng() - 0.5) * 1.7 // flanc gauche
+        : Math.PI / 2 + (rng() - 0.5) * 0.9; // toit : ±~26°
     seeds.push({
-      angle: rng() * Math.PI * 2,
+      angle,
       // Plus dense près de la coque, quelques lignes lointaines.
       radius: 1.8 + Math.pow(rng(), 1.35) * 4.5,
       phase: rng(),
       length: 0.8 + rng() * rng() * 3.5,
-      width: 0.02 + rng() * 0.025,
+      width: 0.012 + rng() * 0.016,
       speedFactor: 0.7 + rng() * 0.8,
       paletteIndex: rng() < 0.5 ? 0 : 1,
     });
@@ -98,12 +105,16 @@ export function createSpeedLineSeeds(rng: () => number, count: number): SpeedLin
 }
 
 /**
- * Fenêtre de défilement qui suit la caméra : les lignes restent denses
- * autour du point de vue, quelle que soit la longueur du bus.
- * Plus d'espace devant la caméra (les lignes arrivent de l'avant).
+ * Fenêtre de défilement qui suit la caméra mais reste collée à la coque :
+ * les lignes défilent le long du bus, jamais dans le vide devant le nez.
+ * Sur un bus plus court que la fenêtre, elle couvre toute la carrosserie.
  */
-export function getSpeedLinesWindow(cameraZ: number): { start: number; span: number } {
-  return { start: cameraZ - 8, span: SPEED_LINES_WINDOW_SPAN };
+export function getSpeedLinesWindow(cameraZ: number, frontZ: number, rearZ: number): { start: number; span: number } {
+  const span = SPEED_LINES_WINDOW_SPAN;
+  const minStart = frontZ - 1.2;
+  const maxStart = rearZ + 0.5 - span;
+  const start = maxStart < minStart ? minStart : clamp(cameraZ - 8, minStart, maxStart);
+  return { start, span };
 }
 
 /** Point de fuite devant la fenêtre : les lignes convergent vers lui. */
@@ -126,7 +137,7 @@ export function getSpeedLinePosition(
   const progress = ((seed.phase + travel) % 1 + 1) % 1;
   const z = windowStart + progress * span;
   const x = Math.cos(seed.angle) * seed.radius;
-  const y = SPEED_LINES_AXIS_Y + Math.sin(seed.angle) * seed.radius * 0.82;
+  const y = clamp(SPEED_LINES_AXIS_Y + Math.sin(seed.angle) * seed.radius * 0.82, 0.35, 6);
   return { position: [x, y, z], progress };
 }
 
