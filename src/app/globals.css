@@ -1,20 +1,152 @@
 @import "tailwindcss";
 
 :root {
-  --bus-bg-void: #020617;
-  --bus-surface-primary: #07142b;
-  --bus-surface-elevated: #0c1b3a;
-  --bus-surface-header-start: #10265c;
-  --bus-surface-inset: #040b18;
-  --bus-accent-gold: #ffd23f;
-  --bus-accent-gold-hover: #ffe271;
-  --bus-accent-gold-shadow: #b8860b;
-  --bus-ink-on-gold: #091c5c;
-  --bus-active-blue: #1636c9;
-  --bus-active-blue-hover: #1d44e6;
+  --bus-bg-void: #030617;
+  --bus-surface-primary: #070b24;
+  --bus-surface-elevated: #0e1438;
+  --bus-surface-header-start: #181f54;
+  --bus-surface-inset: #04071c;
+  --bus-btn-grad-start: #7a3aec;
+  --bus-btn-grad-mid: #6141e8;
+  --bus-btn-grad-end: #464be6;
+  --bus-btn-border: #947eef;
+  --bus-btn-border-hover: #bcb0fa;
+  --bus-accent: #a995f7;
+  --bus-accent-strong: #c4b5fd;
+  --bus-active-indigo: #583be3;
+  --bus-active-indigo-hover: #674ae9;
   --bus-text-primary: #ffffff;
-  --bus-text-secondary: #dce7ff;
-  --bus-text-muted: #b6c7eb;
+  --bus-text-secondary: #dfe5ff;
+  --bus-text-muted: #a3aed9;
+}
+
+@layer components {
+  /* Bouton principal fidèle à la D.A : dégradé violet -> indigo, bordure lavande fine, fixe, sans halo. */
+  .bus-btn-primary {
+    border: 1px solid #947eef;
+    background-color: #6141e8;
+    background-image: linear-gradient(90deg, #7a3aec 0%, #6141e8 50%, #464be6 100%);
+    color: #ffffff;
+    box-shadow: none;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
+  }
+
+  .bus-btn-primary:hover:not(:disabled):not([aria-disabled="true"]) {
+    border-color: #c2b6fb;
+    background-color: #6e50ec;
+    background-image: linear-gradient(90deg, #884cef 0%, #6e50ec 50%, #5459ea 100%);
+    color: #ffffff;
+  }
+
+  /* État actif / sélectionné pour les commandes à bascule, onglets et filtres. */
+  .bus-btn-active {
+    border: 1px solid #b4a4f8;
+    background-color: #583be3;
+    background-image: linear-gradient(90deg, #6e35dc 0%, #583be3 50%, #4045de 100%);
+    color: #ffffff;
+    box-shadow: none;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
+  }
+
+  .bus-btn-active:hover:not(:disabled):not([aria-disabled="true"]) {
+    border-color: #d0c5fc;
+    background-color: #6649ea;
+    background-image: linear-gradient(90deg, #7d43e8 0%, #6649ea 50%, #4e53e6 100%);
+    color: #ffffff;
+  }
+
+  /* Bouton secondaire / case sombre à bordure violette discrète, fixe, sans halo. */
+  .bus-btn-secondary {
+    border: 1px solid rgba(148, 126, 239, 0.38);
+    background-color: rgba(8, 12, 38, 0.94);
+    color: #ffffff;
+    box-shadow: none;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
+  }
+
+  .bus-btn-secondary:hover:not(:disabled):not([aria-disabled="true"]) {
+    border-color: rgba(188, 176, 250, 0.78);
+    background-color: rgba(24, 31, 82, 0.96);
+    color: #ffffff;
+  }
+
+  /* Variante tonale (ex. Sortir, actions contextuelles secondaires). */
+  .bus-btn-tonal {
+    border: 1px solid rgba(157, 138, 245, 0.52);
+    background-color: rgba(31, 26, 86, 0.94);
+    color: #ede9fe;
+    box-shadow: none;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
+  }
+
+  .bus-btn-tonal:hover:not(:disabled):not([aria-disabled="true"]) {
+    border-color: #c2b6fb;
+    background-color: rgba(49, 41, 124, 0.96);
+    color: #ffffff;
+  }
+
+  /* Bouton destructif sobre, sans relief ni halo. */
+  .bus-btn-danger {
+    border: 1px solid rgba(251, 113, 133, 0.55);
+    background-color: #881337;
+    background-image: linear-gradient(90deg, #9f1239 0%, #7f1d1d 100%);
+    color: #ffffff;
+    box-shadow: none;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
+  }
+
+  .bus-btn-danger:hover:not(:disabled):not([aria-disabled="true"]) {
+    border-color: rgba(253, 164, 175, 0.8);
+    background-color: #9f1239;
+    background-image: linear-gradient(90deg, #b91c47 0%, #991b1b 100%);
+    color: #ffffff;
+  }
+
+  /* Cases, panneaux et cartes du site. */
+  .bus-case {
+    border: 1px solid rgba(148, 126, 239, 0.36);
+    background-color: rgba(7, 11, 36, 0.95);
+  }
+
+  .bus-case-solid {
+    border: 1px solid rgba(148, 126, 239, 0.38);
+    background-color: #070b24;
+  }
+
+  .bus-case-elevated {
+    border: 1px solid rgba(148, 126, 239, 0.24);
+    background-color: #0e1438;
+  }
+
+  .bus-case-highlight {
+    border: 1px solid rgba(148, 126, 239, 0.4);
+    background-color: #121845;
+    background-image: linear-gradient(135deg, rgba(34, 29, 96, 0.92) 0%, rgba(14, 20, 56, 0.96) 100%);
+  }
+
+  .bus-case-header {
+    border-bottom: 1px solid rgba(148, 126, 239, 0.22);
+    background-color: #0d1238;
+    background-image: linear-gradient(90deg, #181f54 0%, #070b24 100%);
+  }
+
+  .bus-case-inset {
+    border: 1px solid rgba(148, 126, 239, 0.28);
+    background-color: #04071c;
+  }
+
+  .bus-icon-badge {
+    border: 1px solid rgba(148, 126, 239, 0.42);
+    background-color: rgba(97, 65, 232, 0.2);
+    color: #c4b5fd;
+  }
+
+  .bus-pill-badge {
+    border: 1px solid rgba(180, 164, 248, 0.55);
+    background-color: #6141e8;
+    background-image: linear-gradient(90deg, #7a3aec 0%, #464be6 100%);
+    color: #ffffff;
+  }
 }
 
 html,
@@ -27,8 +159,8 @@ body {
 }
 
 ::selection {
-  background-color: #ffd23f;
-  color: #091c5c;
+  background-color: #6141e8;
+  color: #ffffff;
 }
 
 .no-scrollbar {
@@ -53,26 +185,9 @@ body {
   .bus-loading-wheel-spin { animation: none; }
 }
 
-@keyframes hud-control-in-flow {
-  from {
-    opacity: 0;
-    transform: translateY(0.25rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(-0.75rem) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes theory-modal-in {
@@ -572,12 +687,12 @@ body {
 }
 
 .messages-wall-header {
-  background: rgb(12 27 58 / 94%);
-  border-bottom: 1px solid rgb(255 255 255 / 14%);
+  background: rgb(7 11 36 / 95%);
+  border-bottom: 1px solid rgb(148 126 239 / 28%);
 }
 
 .messages-wall-stage {
-  background: radial-gradient(ellipse at 50% 45%, rgb(7 20 43 / 9%), rgb(7 20 43 / 34%));
+  background: radial-gradient(ellipse at 50% 45%, rgb(7 11 36 / 12%), rgb(4 7 28 / 45%));
 }
 
 .messages-wall-track {
@@ -603,17 +718,23 @@ body {
   overflow: hidden;
   padding: .625rem .75rem;
   cursor: pointer;
-  border: 1px solid rgb(255 210 63 / 48%);
+  border: 1px solid rgb(148 126 239 / 42%);
   border-radius: .875rem;
-  background: rgb(12 27 58 / 94%);
+  background: rgb(11 16 48 / 95%);
   color: #fff;
   text-align: left;
-  box-shadow: 0 8px 22px rgb(2 6 23 / 38%);
+  box-shadow: none;
+  transition: background-color 140ms ease, border-color 140ms ease;
 }
 
 .message-bubble:hover,
-.message-bubble:focus-visible { z-index: 2147483647 !important; opacity: 1 !important; border-color: #ffd23f; }
-.message-bubble:focus-visible { outline: 2px solid #ffd23f; outline-offset: 2px; }
+.message-bubble:focus-visible {
+  z-index: 2147483647 !important;
+  opacity: 1 !important;
+  border-color: #b4a4f8;
+  background: rgb(22 29 78 / 97%);
+}
+.message-bubble:focus-visible { outline: 2px solid #947eef; outline-offset: 2px; }
 
 .message-bubble-preview {
   display: -webkit-box;
@@ -631,7 +752,7 @@ body {
   flex: none;
   overflow: hidden;
   margin-top: .34rem;
-  color: #ffd23f;
+  color: #c4b5fd;
   font-size: .75rem;
   font-weight: 700;
   line-height: 1.25;
@@ -647,18 +768,24 @@ body {
   align-items: center;
   justify-content: center;
   gap: .3rem;
-  padding: 0 .55rem;
-  border: 1px solid rgb(220 231 255 / 32%);
+  padding: 0 .65rem;
+  border: 1px solid rgb(148 126 239 / 40%);
   border-radius: .65rem;
-  background: #10265c;
+  background: #0e1438;
   color: #fff;
   font-size: .78rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: none;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
-.messages-wall-control:hover { border-color: #ffd23f; color: #ffd23f; }
-.messages-wall-control:focus-visible { outline: 2px solid #ffd23f; outline-offset: 2px; }
-.messages-wall-control:disabled { color: #b6c7eb; cursor: default; opacity: .45; }
+.messages-wall-control:hover:not(:disabled) {
+  border-color: #b4a4f8;
+  background: #1b235c;
+  color: #ffffff;
+}
+.messages-wall-control:focus-visible { outline: 2px solid #947eef; outline-offset: 2px; }
+.messages-wall-control:disabled { color: #a3aed9; cursor: default; opacity: .45; }
 .messages-wall-state {
   position: absolute;
   inset: 0;
@@ -670,28 +797,29 @@ body {
 }
 .messages-wall-state > * {
   padding: .65rem 1rem;
+  border: 1px solid rgb(148 126 239 / 36%);
   border-radius: .875rem;
-  background: rgb(12 27 58 / 94%);
+  background: rgb(11 16 48 / 95%);
 }
 .messages-wall-state button { pointer-events: auto; }
 
-.messages-wall-reading { background: rgb(7 20 43 / 87%); }
+.messages-wall-reading { background: rgb(4 7 28 / 88%); }
 .messages-reader {
   display: flex;
   flex-direction: column;
   max-height: 100%;
   overflow: hidden;
   padding: .75rem 1rem 1rem;
-  border: 1px solid rgb(255 210 63 / 45%);
+  border: 1px solid rgb(148 126 239 / 44%);
   border-radius: .875rem;
-  background: #0c1b3a;
+  background: #0e1438;
 }
 .messages-reader-copy {
   user-select: text;
   overflow-wrap: anywhere;
   overscroll-behavior: contain;
 }
-.messages-reader-copy:focus-visible { outline: 2px solid #ffd23f; outline-offset: -2px; }
+.messages-reader-copy:focus-visible { outline: 2px solid #947eef; outline-offset: -2px; }
 
 @media (min-width: 640px) and (min-height: 450px) {
   .message-bubble { padding: .875rem 1rem; }

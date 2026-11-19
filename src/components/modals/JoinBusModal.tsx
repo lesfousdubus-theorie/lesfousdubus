@@ -49,7 +49,7 @@ export function JoinBusModal({
 
   return createPortal(
     <div
-      className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#020617]/80 backdrop-blur-sm"
+      className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#030617]/80 backdrop-blur-sm"
       role="presentation"
       onKeyDown={handleKeyDown}
       onMouseDown={(event) => {
@@ -63,13 +63,13 @@ export function JoinBusModal({
         aria-modal="true"
         aria-labelledby="join-bus-title"
         aria-busy={joining}
-        className="bus-modal-card my-auto flex w-full max-w-[34rem] flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/45 bg-[#07142b] text-white shadow-[0_28px_80px_rgba(0,0,0,0.7)] focus:outline-none"
+        className="bus-modal-card bus-case-solid my-auto flex w-full max-w-[34rem] flex-col overflow-hidden rounded-2xl text-white shadow-[0_24px_64px_rgba(2,4,18,0.7)] focus:outline-none"
       >
-        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-white/10 bg-gradient-to-r from-[#10265c] to-[#07142b] px-4 py-4 sm:px-6 sm:py-5">
+        <header className="bus-case-header flex shrink-0 items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex min-w-0 flex-1 items-center gap-3.5">
             <span
               aria-hidden="true"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#ffd23f]/35 bg-[#ffd23f]/12 text-[#ffd23f]"
+              className="bus-icon-badge grid h-10 w-10 shrink-0 place-items-center rounded-xl"
             >
               {mode === "name" ? <UserBadgeIcon className="h-5 w-5" /> : <CommentBubbleIcon className="h-5 w-5" />}
             </span>
@@ -98,7 +98,7 @@ export function JoinBusModal({
             <div>
               <label htmlFor="join-bus-name" className="mb-2 flex items-center justify-between gap-3 text-sm font-black text-white">
                 <span>Nom</span>
-                <span className="text-xs font-semibold text-[#ffd23f]">24 caractères max.</span>
+                <span className="text-xs font-semibold text-[#c4b5fd]">24 caractères max.</span>
               </label>
               <input
                 ref={mode === "name" ? initialFocusRef as RefObject<HTMLInputElement> : undefined}
@@ -113,9 +113,9 @@ export function JoinBusModal({
                   onNameChange(chars.length > 24 ? chars.slice(0, 24).join("") : event.target.value);
                 }}
                 placeholder="Ex. NakamaBasque"
-                className="w-full select-text rounded-xl border border-white/25 bg-[#040b18]/85 px-4 py-3 text-base text-white outline-none transition-colors placeholder:text-[#b6c7eb]/70 focus:border-[#ffd23f] focus:ring-2 focus:ring-[#ffd23f]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
+                className="bus-case-inset w-full select-text rounded-xl px-4 py-3 text-base text-white outline-none transition-colors placeholder:text-[#a3aed9]/70 focus:border-[#947eef] focus:ring-2 focus:ring-[#947eef]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
               />
-              <p aria-hidden="true" className="mt-1.5 text-right text-xs font-semibold tabular-nums text-[#b6c7eb]">
+              <p aria-hidden="true" className="mt-1.5 text-right text-xs font-semibold tabular-nums text-[#a3aed9]">
                 {Array.from(name).length}/24
               </p>
             </div>
@@ -123,7 +123,7 @@ export function JoinBusModal({
             <div>
               <label htmlFor="join-bus-comment" className="mb-2 flex items-center justify-between gap-3 text-sm font-black text-white">
                 <span>Ton message</span>
-                <span className="text-xs font-semibold text-[#ffd23f]">180 caractères max.</span>
+                <span className="text-xs font-semibold text-[#c4b5fd]">180 caractères max.</span>
               </label>
               <textarea
                 ref={mode === "comment" ? initialFocusRef as RefObject<HTMLTextAreaElement> : undefined}
@@ -139,9 +139,9 @@ export function JoinBusModal({
                   onCommentChange(chars.length > 180 ? chars.slice(0, 180).join("") : event.target.value);
                 }}
                 placeholder="Ex. Trop bien, vive la théorie !"
-                className="w-full resize-none select-text rounded-xl border border-white/25 bg-[#040b18]/85 px-4 py-3 text-base leading-relaxed text-white outline-none transition-colors placeholder:text-[#b6c7eb]/70 focus:border-[#ffd23f] focus:ring-2 focus:ring-[#ffd23f]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
+                className="bus-case-inset w-full resize-none select-text rounded-xl px-4 py-3 text-base leading-relaxed text-white outline-none transition-colors placeholder:text-[#a3aed9]/70 focus:border-[#947eef] focus:ring-2 focus:ring-[#947eef]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
               />
-              <p aria-hidden="true" className="mt-1.5 text-right text-xs font-semibold tabular-nums text-[#b6c7eb]">
+              <p aria-hidden="true" className="mt-1.5 text-right text-xs font-semibold tabular-nums text-[#a3aed9]">
                 {Array.from(comment).length}/180
               </p>
             </div>
@@ -157,7 +157,7 @@ export function JoinBusModal({
             <button
               type="submit"
               aria-disabled={joining}
-              className="flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#ffd23f] px-5 py-3 text-base font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a] active:translate-y-1 active:shadow-none aria-disabled:cursor-wait aria-disabled:opacity-80"
+              className="bus-btn-primary flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] aria-disabled:cursor-wait aria-disabled:opacity-80"
             >
               {mode === "name" ? <UserBadgeIcon className="h-5 w-5 shrink-0" /> : <CommentBubbleIcon className="h-5 w-5 shrink-0" />}
               {joining ? "Enregistrement…" : "Enregistrer"}
@@ -167,7 +167,7 @@ export function JoinBusModal({
                 type="button"
                 aria-disabled={joining}
                 onClick={() => { if (!joining) onRemove(); }}
-                className="min-h-12 cursor-pointer rounded-xl border border-red-300/45 bg-red-950/35 px-4 py-3 text-sm font-black text-red-100 transition hover:border-red-200 hover:bg-red-900/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a] aria-disabled:cursor-wait aria-disabled:opacity-80"
+                className="min-h-12 cursor-pointer rounded-xl border border-red-400/45 bg-red-950/40 px-4 py-3 text-sm font-semibold text-red-100 transition-colors hover:border-red-300 hover:bg-red-900/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] aria-disabled:cursor-wait aria-disabled:opacity-80"
               >
                 Retirer mon commentaire
               </button>

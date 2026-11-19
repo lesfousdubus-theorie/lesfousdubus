@@ -82,18 +82,18 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
   return (
     <div className="absolute inset-0 bg-gradient-to-b from-[#79c2ff] to-[#174f91] text-center text-white">
       <div className="bus-scene-fallback absolute inset-x-3 bottom-3 top-52 grid place-items-center overflow-y-auto sm:top-52 lg:top-40">
-      <div role="status" className="max-w-md rounded-2xl border border-[#ffd23f]/45 bg-[#07142b] p-5 shadow-2xl">
-        <div className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-2xl border border-[#ffd23f]/35 bg-[#ffd23f]/10" aria-hidden="true">
-          <BusFrontIcon className="h-9 w-9 text-[#ffd23f]" />
+      <div role="status" className="bus-case-solid max-w-md rounded-2xl p-5">
+        <div className="bus-icon-badge mx-auto mb-3 grid h-16 w-16 place-items-center rounded-2xl" aria-hidden="true">
+          <BusFrontIcon className="h-9 w-9" />
         </div>
-        <p className="text-lg font-black">Le bus reste au dépôt</p>
-        <p className="mt-2 text-sm text-[#dce7ff]">{reason}</p>
+        <p className="text-lg font-black text-white">Le bus reste au dépôt</p>
+        <p className="mt-2 text-sm text-[#dfe5ff]">{reason}</p>
         <div className="mt-4 flex flex-wrap justify-center gap-x-2 gap-y-2.5">
         {onReadTheory && (
           <button
             type="button"
             onClick={onReadTheory}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#ffd23f] px-4 py-2 font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+            className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-5 py-2.5 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
           >
             Lire la théorie
           </button>
@@ -102,14 +102,14 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
           href={THEORY_VIDEO_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-white/30 bg-[#0c1b3a] px-4 py-2 font-bold text-white transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+          className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-4 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
         >
           Voir la vidéo
           <ExternalArrowIcon />
         </a>
         <button
           type="button"
-          className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 bg-[#0c1b3a] px-4 py-2 font-bold text-white transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+          className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl px-4 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
           onClick={() => window.location.reload()}
         >
           Réessayer
