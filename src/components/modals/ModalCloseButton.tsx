@@ -9,7 +9,7 @@ export function ModalCloseButton({ onClick, disabled = false }: { onClick: () =>
       onClick={onClick}
       disabled={disabled}
       aria-label="Fermer la fenêtre"
-      className="grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full border border-white/20 bg-white/10 text-white transition-[background-color,border-color,color,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:scale-[1.03] hover:border-[#ffd23f] hover:bg-[#ffd23f]/15 hover:text-[#ffd23f] focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transform-none motion-reduce:transition-none"
+      className="bus-secondary bus-shape-circle grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full border border-white/20 bg-white/10 text-white transition-[background-color,border-color,color,transform] duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:scale-[1.03] hover:border-[#a78bfa] hover:bg-[#a78bfa]/15 hover:text-[#a78bfa] focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1433] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transform-none motion-reduce:transition-none"
     >
       <CloseIcon className="block h-4 w-4" />
     </button>

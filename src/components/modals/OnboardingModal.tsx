@@ -14,7 +14,7 @@ import { BusFrontIcon, ChevronLeftIcon, ChevronRightIcon, EnterBusIcon, UserBadg
 const AvatarPreview = dynamic(() => import("../bus/AvatarPreview"), {
   ssr: false,
   loading: () => (
-    <p role="status" className="grid h-full place-items-center text-sm text-[#dce7ff]">
+    <p role="status" className="grid h-full place-items-center text-sm text-[#e2e8ff]">
       Chargement du personnage…
     </p>
   ),
@@ -151,7 +151,7 @@ export function OnboardingModal({
   return createPortal(
     <div
       role="presentation"
-      className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#020617]/80 backdrop-blur-sm"
+      className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#050a1b]/80 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (canClose && event.target === event.currentTarget) close();
       }}
@@ -172,18 +172,18 @@ export function OnboardingModal({
         aria-modal="true"
         aria-labelledby="onboarding-title"
         aria-busy={saving}
-        className="bus-modal-card my-auto flex w-full max-w-[34rem] flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/45 bg-[#07142b] text-white shadow-[0_28px_80px_rgba(0,0,0,0.7)] focus:outline-none"
+        className="bus-panel bus-modal-card my-auto flex w-full max-w-[34rem] flex-col overflow-hidden rounded-2xl border border-[#a78bfa]/45 bg-[#0b1433] text-white shadow-[0_28px_80px_rgba(0,0,0,0.7)] focus:outline-none"
       >
-        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-white/10 bg-gradient-to-r from-[#10265c] to-[#07142b] px-4 py-4 sm:px-6 sm:py-5">
+        <header className="bus-panel-header flex shrink-0 items-start justify-between gap-4 border-b border-white/10 bg-gradient-to-r from-[#1e2e70] to-[#0b1433] px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex min-w-0 flex-1 items-start gap-3.5">
             <span
               aria-hidden="true"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#ffd23f]/35 bg-[#ffd23f]/12 text-[#ffd23f]"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#a78bfa]/35 bg-[#a78bfa]/12 text-[#a78bfa]"
             >
               <BusFrontIcon className="h-5 w-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#ffd23f]">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#a78bfa]">
                 {reason === "missing-name" ? "Place enregistrée" : "Embarquement"}
               </p>
               <h2 id="onboarding-title" className="mt-0.5 text-xl font-black leading-tight sm:text-2xl">
@@ -211,7 +211,7 @@ export function OnboardingModal({
           <div>
             <label htmlFor="onboarding-name" className="mb-1.5 flex items-center justify-between gap-2 text-sm font-black text-white">
               <span>Nom</span>
-              <span className="text-xs font-semibold text-[#ffd23f]">Obligatoire · 24 caractères max.</span>
+              <span className="text-xs font-semibold text-[#a78bfa]">Obligatoire · 24 caractères max.</span>
             </label>
             <input
               ref={initialFocusRef}
@@ -230,9 +230,9 @@ export function OnboardingModal({
                 onClearError();
               }}
               placeholder="Ex. NakamaBasque"
-              className="w-full select-text rounded-xl border border-white/25 bg-[#040b18]/85 px-3.5 py-2.5 text-base text-white outline-none transition-colors placeholder:text-[#b6c7eb]/70 focus:border-[#ffd23f] focus:ring-2 focus:ring-[#ffd23f]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
+              className="w-full select-text rounded-xl border border-white/25 bg-[#070e26]/85 px-3.5 py-2.5 text-base text-white outline-none transition-colors placeholder:text-[#b6c1ee]/70 focus:border-[#a78bfa] focus:ring-2 focus:ring-[#a78bfa]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
             />
-            <p aria-hidden="true" className="mt-1 text-right text-xs font-semibold tabular-nums text-[#b6c7eb]">
+            <p aria-hidden="true" className="mt-1 text-right text-xs font-semibold tabular-nums text-[#b6c1ee]">
               {Array.from(name).length}/24
             </p>
           </div>
@@ -240,7 +240,7 @@ export function OnboardingModal({
           <div>
             <label htmlFor="onboarding-comment" className="mb-1.5 flex items-center justify-between gap-2 text-sm font-black text-white">
               <span>Message</span>
-              <span className="text-xs font-semibold text-[#b6c7eb]">Facultatif · 180 caractères max.</span>
+              <span className="text-xs font-semibold text-[#b6c1ee]">Facultatif · 180 caractères max.</span>
             </label>
             <textarea
               ref={commentRef}
@@ -259,20 +259,20 @@ export function OnboardingModal({
                 onClearError();
               }}
               placeholder="Ex. Trop bien, vive la théorie !"
-              className="w-full resize-none select-text rounded-xl border border-white/25 bg-[#040b18]/85 px-3.5 py-2.5 text-base leading-relaxed text-white outline-none transition-colors placeholder:text-[#b6c7eb]/70 focus:border-[#ffd23f] focus:ring-2 focus:ring-[#ffd23f]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60 sm:text-sm"
+              className="w-full resize-none select-text rounded-xl border border-white/25 bg-[#070e26]/85 px-3.5 py-2.5 text-base leading-relaxed text-white outline-none transition-colors placeholder:text-[#b6c1ee]/70 focus:border-[#a78bfa] focus:ring-2 focus:ring-[#a78bfa]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60 sm:text-sm"
             />
-            <p aria-hidden="true" className="mt-1 text-right text-xs font-semibold tabular-nums text-[#b6c7eb]">
+            <p aria-hidden="true" className="mt-1 text-right text-xs font-semibold tabular-nums text-[#b6c1ee]">
               {Array.from(comment).length}/180
             </p>
           </div>
 
-          <div className="rounded-xl border border-white/15 bg-[#0c1b3a] p-3.5">
+          <div className="rounded-xl border border-white/15 bg-[#141f4b] p-3.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-[#b6c7eb]">
-                  Personnage <span className="font-semibold text-[#b6c7eb]">(facultatif)</span>
+                <p className="text-xs font-bold uppercase tracking-wide text-[#b6c1ee]">
+                  Personnage <span className="font-semibold text-[#b6c1ee]">(facultatif)</span>
                 </p>
-                <p className="mt-0.5 truncate text-sm font-black text-[#ffd23f]">
+                <p className="mt-0.5 truncate text-sm font-black text-[#a78bfa]">
                   {selectedAvatarId ? activeCharacter.name : "Automatique (selon ta place)"}
                 </p>
               </div>
@@ -282,7 +282,7 @@ export function OnboardingModal({
                 onClick={togglePicker}
                 aria-expanded={showPicker}
                 aria-controls="onboarding-character-picker"
-                className="inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-white/30 bg-[#0c1b3a] px-3.5 text-xs font-bold text-white transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a] aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:text-sm"
+                className="bus-secondary inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-white/30 bg-[#141f4b] px-3.5 text-xs font-bold text-white transition-colors hover:border-[#a78bfa]/70 hover:text-[#a78bfa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141f4b] aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:text-sm"
               >
                 {showPicker ? "Masquer l’aperçu" : selectedAvatarId ? "Changer" : "Choisir mon personnage"}
               </button>
@@ -290,7 +290,7 @@ export function OnboardingModal({
 
             {showPicker && (
               <div id="onboarding-character-picker" className="mt-3 min-w-0 border-t border-white/10 pt-3">
-                <div className="relative rounded-xl border border-white/15 bg-[#07142b]/85">
+                <div className="relative rounded-xl border border-white/15 bg-[#0b1433]/85">
                   <div
                     data-avatar-id={activeCharacter.id}
                     data-avatar-rotation={rotation.toFixed(3)}
@@ -340,15 +340,15 @@ export function OnboardingModal({
                       onClick={() => changeCharacter(direction)}
                       aria-disabled={saving}
                       aria-label={direction < 0 ? "Personnage précédent" : "Personnage suivant"}
-                      className={`absolute top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/30 bg-[#07142b]/90 text-[#ffd23f] shadow-lg transition-colors hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a] aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${direction < 0 ? "left-2" : "right-2"}`}
+                      className={`bus-secondary bus-shape-circle absolute top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/30 bg-[#0b1433]/90 text-[#a78bfa] shadow-lg transition-colors hover:border-[#a78bfa]/70 hover:bg-[#141f4b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141f4b] aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${direction < 0 ? "left-2" : "right-2"}`}
                     >
                       {direction < 0 ? <ChevronLeftIcon className="h-5 w-5" /> : <ChevronRightIcon className="h-5 w-5" />}
                     </button>
                   ))}
                 </div>
                 <div className="mt-2.5 flex items-center justify-between gap-2" aria-live="polite" aria-atomic="true">
-                  <span className="text-sm font-black text-[#ffd23f]">{activeCharacter.name}</span>
-                  <span className="text-xs font-semibold tabular-nums text-[#b6c7eb]">
+                  <span className="text-sm font-black text-[#a78bfa]">{activeCharacter.name}</span>
+                  <span className="text-xs font-semibold tabular-nums text-[#b6c1ee]">
                     {resolvedIndex + 1} / {NAKAMA_ROSTER.length}
                   </span>
                 </div>
@@ -367,10 +367,10 @@ export function OnboardingModal({
                         aria-pressed={selected}
                         aria-disabled={saving}
                         onClick={() => selectCharacter(item.id)}
-                        className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a] aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${
+                        className={`bus-secondary inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141f4b] aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${
                           selected
-                            ? "border-[#ffd23f] bg-[#ffd23f] text-[#091c5c]"
-                            : "border-white/20 bg-[#07142b] text-[#dce7ff] hover:border-[#ffd23f]/65 hover:text-white"
+                            ? "border-[#a78bfa] bus-gradient text-[#ffffff]"
+                            : "border-white/20 bg-[#0b1433] text-[#e2e8ff] hover:border-[#a78bfa]/65 hover:text-white"
                         }`}
                       >
                         <span
@@ -383,7 +383,7 @@ export function OnboardingModal({
                     );
                   })}
                 </div>
-                <label className="mt-2 flex items-center gap-3 text-xs font-semibold text-[#dce7ff]">
+                <label className="mt-2 flex items-center gap-3 text-xs font-semibold text-[#e2e8ff]">
                   <span>Faire tourner</span>
                   <input
                     type="range"
@@ -395,7 +395,7 @@ export function OnboardingModal({
                     onChange={(event) => setRotation((Number(event.target.value) * Math.PI) / 180)}
                     aria-label="Rotation du personnage"
                     aria-valuetext={`${rotationDegrees} degrés`}
-                    className="h-6 min-w-0 flex-1 cursor-pointer accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-6 min-w-0 flex-1 cursor-pointer accent-[#a78bfa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141f4b] disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </label>
                 {!hasLockedDbAvatar && selectedAvatarId !== null && (
@@ -408,7 +408,7 @@ export function OnboardingModal({
                       setShowPicker(false);
                       onDraftChange?.({ displayName: name, comment, avatarId: null });
                     }}
-                    className="mt-2.5 min-h-11 w-full cursor-pointer rounded-xl border border-white/30 bg-[#0c1b3a] px-3 text-xs font-bold text-white transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a] aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
+                    className="bus-secondary mt-2.5 min-h-11 w-full cursor-pointer rounded-xl border border-white/30 bg-[#141f4b] px-3 text-xs font-bold text-white transition-colors hover:border-[#a78bfa]/70 hover:text-[#a78bfa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141f4b] aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
                   >
                     Laisser le choix automatique
                   </button>
@@ -426,7 +426,7 @@ export function OnboardingModal({
           <button
             type="submit"
             aria-disabled={saving}
-            className="flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#ffd23f] px-5 py-3 text-base font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a] active:translate-y-1 active:shadow-none aria-disabled:cursor-wait aria-disabled:opacity-80"
+            className="flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bus-gradient px-5 py-3 text-base font-black text-[#ffffff] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141f4b] active:translate-y-1 active:shadow-none aria-disabled:cursor-wait aria-disabled:opacity-80"
           >
             {reason === "missing-name" ? <UserBadgeIcon className="h-5 w-5 shrink-0" /> : <EnterBusIcon className="h-5 w-5 shrink-0" />}
             {saving

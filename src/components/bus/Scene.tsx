@@ -80,20 +80,20 @@ interface SceneProps {
 
 function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil.", onReadTheory }: { reason?: string; onReadTheory?: () => void }) {
   return (
-    <div className="absolute inset-0 bg-gradient-to-b from-[#79c2ff] to-[#174f91] text-center text-white">
+    <div className="absolute inset-0 bg-gradient-to-b from-[#4b63c8] to-[#101a44] text-center text-white">
       <div className="bus-scene-fallback absolute inset-x-3 bottom-3 top-52 grid place-items-center overflow-y-auto sm:top-52 lg:top-40">
-      <div role="status" className="max-w-md rounded-2xl border border-[#ffd23f]/45 bg-[#07142b] p-5 shadow-2xl">
-        <div className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-2xl border border-[#ffd23f]/35 bg-[#ffd23f]/10" aria-hidden="true">
-          <BusFrontIcon className="h-9 w-9 text-[#ffd23f]" />
+      <div role="status" className="bus-panel max-w-md rounded-2xl border border-[#a78bfa]/45 bg-[#0b1433] p-5 shadow-2xl">
+        <div className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-2xl border border-[#a78bfa]/35 bg-[#a78bfa]/10" aria-hidden="true">
+          <BusFrontIcon className="h-9 w-9 text-[#a78bfa]" />
         </div>
         <p className="text-lg font-black">Le bus reste au dépôt</p>
-        <p className="mt-2 text-sm text-[#dce7ff]">{reason}</p>
+        <p className="mt-2 text-sm text-[#e2e8ff]">{reason}</p>
         <div className="mt-4 flex flex-wrap justify-center gap-x-2 gap-y-2.5">
         {onReadTheory && (
           <button
             type="button"
             onClick={onReadTheory}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#ffd23f] px-4 py-2 font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bus-gradient px-4 py-2 font-black text-[#ffffff] transition active:translate-y-1 active:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1433]"
           >
             Lire la théorie
           </button>
@@ -102,14 +102,14 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
           href={THEORY_VIDEO_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-white/30 bg-[#0c1b3a] px-4 py-2 font-bold text-white transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+          className="bus-secondary inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-white/30 bg-[#141f4b] px-4 py-2 font-bold text-white transition-colors hover:border-[#a78bfa]/70 hover:text-[#a78bfa] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1433]"
         >
           Voir la vidéo
           <ExternalArrowIcon />
         </a>
         <button
           type="button"
-          className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 bg-[#0c1b3a] px-4 py-2 font-bold text-white transition-colors hover:border-[#ffd23f]/70 hover:text-[#ffd23f] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+          className="bus-secondary inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 bg-[#141f4b] px-4 py-2 font-bold text-white transition-colors hover:border-[#a78bfa]/70 hover:text-[#a78bfa] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1433]"
           onClick={() => window.location.reload()}
         >
           Réessayer

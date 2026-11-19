@@ -63,7 +63,7 @@ function makeDriverNameTexture(name: string) {
   ctx.fill();
 
   ctx.lineWidth = 3.5;
-  ctx.strokeStyle = "rgba(255, 210, 63, 0.85)"; // Liseré doré subtil
+  ctx.strokeStyle = "rgba(139, 92, 246, 0.85)"; // Liseré violet subtil
   ctx.stroke();
   ctx.restore();
 

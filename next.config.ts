@@ -4,7 +4,8 @@ const isDev = process.env.NODE_ENV !== "production";
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "X-Frame-Options", value: "DENY" },
+  // Le serveur de développement est affiché dans un aperçu embarqué.
+  ...(isDev ? [] : [{ key: "X-Frame-Options", value: "DENY" }]),
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
@@ -20,7 +21,7 @@ const securityHeaders = [
       "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
       "media-src 'self' data: blob:",
       "worker-src 'self' blob:",
-      "frame-ancestors 'none'",
+      ...(isDev ? [] : ["frame-ancestors 'none'"]),
       "object-src 'none'",
       "base-uri 'self'",
     ].join("; "),
@@ -31,6 +32,8 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   agentRules: false,
   poweredByHeader: false,
+  // Hôte de l'aperçu live du bac à sable (développement uniquement).
+  allowedDevOrigins: ["*.e2b.app"],
   experimental: {
     // Un build incrémental a mêlé l'ancien CSS global au JavaScript à jour.
     turbopackFileSystemCacheForBuild: false,

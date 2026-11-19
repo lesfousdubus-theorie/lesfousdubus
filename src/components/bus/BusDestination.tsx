@@ -72,11 +72,11 @@ export default function BusDestination({ mats, reducedMotion }: { mats: Record<s
     const dotCtx = litDot.getContext("2d")!;
     dotCtx.beginPath();
     dotCtx.arc(4, 4, 3.2, 0, Math.PI * 2);
-    dotCtx.fillStyle = "#a96b16";
+    dotCtx.fillStyle = "#5533a8";
     dotCtx.fill();
     dotCtx.beginPath();
     dotCtx.arc(4, 4, 2.35, 0, Math.PI * 2);
-    dotCtx.fillStyle = "#ffd46a";
+    dotCtx.fillStyle = "#c4a5ff";
     dotCtx.fill();
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;

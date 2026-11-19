@@ -9,9 +9,11 @@ import {
 } from "@/lib/textures";
 import { createStrawHatGeometry } from "./StrawHatGeometry";
 
-const BLUE = "#154ddb";
-const DARK_BLUE = "#0a2a85";
-const YELLOW = "#ffbf18";
+// Palette de la D.A : bleu → violet, comme le bouton « Lire la théorie ».
+const BLUE = "#2f5bff";
+const DARK_BLUE = "#1b2b8f";
+const ACCENT = "#8b5cf6";
+const LABEL_INK = "#d8c8ff";
 const DARK = "#12141a";
 
 /** Owns generated bus resources. Drei retains ownership of its two cached image textures. */
@@ -50,8 +52,9 @@ export default function useBusResources() {
         metalness: 0.35,
         roughness: 0.35,
       }),
+      // Clé conservée pour les géométries existantes, mais la couleur est violette.
       yellow: new THREE.MeshStandardMaterial({
-        color: YELLOW,
+        color: ACCENT,
         metalness: 0.15,
         roughness: 0.35,
       }),
@@ -133,7 +136,7 @@ export default function useBusResources() {
         text: "LES FOUS DU BUS",
         sub: "GRAND LINE EXPRESS",
         bg: BLUE,
-        fg: YELLOW,
+        fg: LABEL_INK,
       }),
     [],
   );

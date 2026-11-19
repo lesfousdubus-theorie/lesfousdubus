@@ -23,14 +23,15 @@ interface Props {
   cabinLength?: number;
 }
 
-const DAY_SKY = new THREE.Color("#79c2ff");
-const DUSK_SKY = new THREE.Color("#ff9a5c");
+// Ciel et lumière dans la même famille bleu → violet que l'interface.
+const DAY_SKY = new THREE.Color("#4b63c8");
+const DUSK_SKY = new THREE.Color("#8b4fda");
 const NIGHT_SKY = new THREE.Color("#060b26");
-const DAY_FOG = new THREE.Color("#bfe3ff");
+const DAY_FOG = new THREE.Color("#8b9bd8");
 const NIGHT_FOG = new THREE.Color("#0a1030");
-const DUSK_FOG = new THREE.Color("#ffb88a");
-const MOON_LIGHT = new THREE.Color("#9fb4ff");
-const DUSK_LIGHT = new THREE.Color("#ffcf9a");
+const DUSK_FOG = new THREE.Color("#9d7bff");
+const MOON_LIGHT = new THREE.Color("#b8a8ff");
+const DUSK_LIGHT = new THREE.Color("#d9c8ff");
 const SUN_LIGHT = new THREE.Color("#ffffff");
 
 function smoothstep(a: number, b: number, x: number) {
@@ -316,7 +317,7 @@ export default function DayNight({
 
   return (
     <>
-      <fog attach="fog" args={["#bfe3ff", 120, 450]} />
+      <fog attach="fog" args={["#8b9bd8", 120, 450]} />
       <ambientLight ref={ambient} intensity={0.5} />
       <hemisphereLight ref={hemi} args={["#bde3ff", "#5a4a30", 0.6]} />
       <primitive object={sunTarget} />

@@ -82,7 +82,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#07142b",
+  themeColor: "#0b1433",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -98,7 +98,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="dns-prefetch" href="//img.youtube.com" />
         <link rel="dns-prefetch" href="//i.ytimg.com" />
       </head>
-      <body className="h-full overflow-hidden overscroll-none bg-[#79c2ff] text-white antialiased">
+      <body className="h-full overflow-hidden overscroll-none bg-[#101a44] text-white antialiased">
         {children}
       </body>
     </html>

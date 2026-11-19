@@ -7,12 +7,13 @@ import type { BusDoorLayout } from "@/lib/bus-layout";
 import { makeGraffitiTexture } from "@/lib/textures";
 import { SIDE_LABEL_Y } from "./BusBodyGeometry";
 
+// Tags dans la famille bleu → violet de la D.A, avec quelques accents froids.
 const PALETTES = [
-  { color: "#fff1a8", stroke: "#071952", accent: "#ef3340" },
-  { color: "#ffdc4a", stroke: "#34145f", accent: "#22d3ee" },
-  { color: "#f7d6e0", stroke: "#3b0a2a", accent: "#ff9f1c" },
-  { color: "#baf7d0", stroke: "#053d33", accent: "#ff6b35" },
-  { color: "#bde7ff", stroke: "#071f5c", accent: "#ff4da6" },
+  { color: "#dcd2ff", stroke: "#1b1a5c", accent: "#5b8cff" },
+  { color: "#b7a8ff", stroke: "#24125c", accent: "#22d3ee" },
+  { color: "#e5d9ff", stroke: "#2a1250", accent: "#a855f7" },
+  { color: "#bfe0ff", stroke: "#10265c", accent: "#8b5cf6" },
+  { color: "#c9c2ff", stroke: "#17143f", accent: "#f472b6" },
 ];
 
 export default function BusGraffiti({ doors, rearWallZ, wheelPositions }: {

@@ -192,19 +192,19 @@ export default function SyncedTheoryVideo({
   return (
     <div
       data-theory-video
-      className="relative mt-4 grid min-h-[200px] w-full place-items-center overflow-hidden rounded-xl border border-white/15 bg-[#040b18] sm:aspect-video"
+      className="relative mt-4 grid min-h-[200px] w-full place-items-center overflow-hidden rounded-xl border border-white/15 bg-[#070e26] sm:aspect-video"
     >
       <div ref={mountRef} className="aspect-video max-h-full w-full" />
       {!ready && !failed && !autoplayBlocked && (
         <div
           aria-live="polite"
-          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-[#040b18]/80 px-4 text-center"
+          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-[#070e26]/80 px-4 text-center"
         >
           <span
             aria-hidden="true"
-            className="h-6 w-6 animate-spin rounded-full border-2 border-[#ffd23f]/30 border-t-[#ffd23f] motion-reduce:animate-none"
+            className="h-6 w-6 animate-spin rounded-full border-2 border-[#a78bfa]/30 border-t-[#a78bfa] motion-reduce:animate-none"
           />
-          <span className="text-xs font-medium text-[#b6c7eb]">
+          <span className="text-xs font-medium text-[#b6c1ee]">
             Chargement du lecteur YouTube…
           </span>
         </div>
@@ -212,15 +212,15 @@ export default function SyncedTheoryVideo({
       {failed && (
         <div
           role="alert"
-          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#020617]/90 p-4 text-center"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#050a1b]/90 p-4 text-center"
         >
-          <p className="text-xs font-semibold text-[#dce7ff] sm:text-sm">
+          <p className="text-xs font-semibold text-[#e2e8ff] sm:text-sm">
             Le lecteur vidéo n’a pas pu se charger.
           </p>
           <button
             type="button"
             onClick={retry}
-            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl bg-[#ffd23f] px-4 py-2.5 text-xs font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#040b18] active:translate-y-1 active:shadow-none motion-reduce:transform-none motion-reduce:transition-none sm:px-5 sm:text-sm"
+            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl bus-gradient px-4 py-2.5 text-xs font-black text-[#ffffff] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070e26] active:translate-y-1 active:shadow-none motion-reduce:transform-none motion-reduce:transition-none sm:px-5 sm:text-sm"
           >
             Réessayer le lecteur
           </button>
@@ -230,9 +230,9 @@ export default function SyncedTheoryVideo({
         <button
           type="button"
           onClick={resume}
-          className="group absolute inset-0 grid cursor-pointer place-items-center bg-[#020617]/85 p-4 text-center transition-colors hover:bg-[#020617]/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffd23f] motion-reduce:transition-none"
+          className="group absolute inset-0 grid cursor-pointer place-items-center bg-[#050a1b]/85 p-4 text-center transition-colors hover:bg-[#050a1b]/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#a78bfa] motion-reduce:transition-none"
         >
-          <span className="inline-flex min-h-11 items-center justify-center gap-2.5 rounded-xl bg-[#ffd23f] px-5 py-3 text-sm font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition group-hover:bg-[#ffe271] group-active:translate-y-1 group-active:shadow-none motion-reduce:transform-none motion-reduce:transition-none sm:text-base">
+          <span className="inline-flex min-h-11 items-center justify-center gap-2.5 rounded-xl bus-gradient px-5 py-3 text-sm font-black text-[#ffffff] transition group- group-active:translate-y-1 group-active:shadow-none motion-reduce:transform-none motion-reduce:transition-none sm:text-base">
             <PlayIcon className="h-4 w-4 shrink-0" />
             <span>Reprendre la vidéo</span>
           </span>

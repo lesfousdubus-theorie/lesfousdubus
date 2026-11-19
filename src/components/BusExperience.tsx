@@ -671,7 +671,7 @@ export default function BusExperience() {
   }, [busy, overlayOpen]);
 
   return (
-    <div data-party={partyOn ? "true" : "false"} data-party-dancing={partyDancing ? "true" : "false"} data-phase={phase} data-view={phase === "inside" && freeView ? "free" : "seat"} data-scene-available={sceneAvailable} data-tv-on={tvOn ? "true" : "false"} className="bus-app fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
+    <div data-party={partyOn ? "true" : "false"} data-party-dancing={partyDancing ? "true" : "false"} data-phase={phase} data-view={phase === "inside" && freeView ? "free" : "seat"} data-scene-available={sceneAvailable} data-tv-on={tvOn ? "true" : "false"} className="bus-app fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#101a44] text-white">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {toast ? [toast.badge, toast.text, toast.sub].filter(Boolean).join(". ") : ""}
       </div>

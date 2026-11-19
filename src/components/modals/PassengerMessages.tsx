@@ -112,7 +112,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
             onClick={() => setOrdered((previous) => !previous)}
             className="messages-wall-control shrink-0"
           >
-            {ordered ? <ShuffleIcon className="h-3.5 w-3.5 text-[#ffd23f]" /> : <ListOrderedIcon className="h-3.5 w-3.5 text-[#ffd23f]" />}
+            {ordered ? <ShuffleIcon className="h-3.5 w-3.5 text-[#a78bfa]" /> : <ListOrderedIcon className="h-3.5 w-3.5 text-[#a78bfa]" />}
             <span>{ordered ? "En vrac" : "Ordonner"}</span>
           </button>
           {!ordered && (
@@ -154,13 +154,13 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
                   type="button"
                   key={message.seatIndex}
                   onClick={(event) => readMessage(message, event.currentTarget)}
-                  className="flex cursor-pointer flex-col justify-between gap-2 rounded-2xl border border-[#ffd23f]/45 bg-[#0c1b3a]/95 p-3.5 text-left text-white shadow-[0_8px_22px_rgba(2,6,23,0.38)] transition hover:border-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+                  className="bus-panel bus-secondary flex cursor-pointer flex-col justify-between gap-2 rounded-2xl border border-[#a78bfa]/45 bg-[#141f4b]/95 p-3.5 text-left text-white shadow-[0_8px_22px_rgba(2,6,23,0.38)] transition hover:border-[#a78bfa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1433]"
                 >
                   <span className="whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-white">
                     {message.comment}
                   </span>
-                  <span className="flex items-center justify-between gap-2 text-xs font-bold text-[#ffd23f]">
-                    <span className="text-[#b6c7eb]">Place n°{message.seatIndex + 1}</span>
+                  <span className="flex items-center justify-between gap-2 text-xs font-bold text-[#a78bfa]">
+                    <span className="text-[#b6c1ee]">Place n°{message.seatIndex + 1}</span>
                     <span className="truncate">— {message.displayName}</span>
                   </span>
                 </button>
@@ -184,7 +184,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
           <div className="messages-wall-reading absolute inset-0 z-30 grid min-h-0 place-items-center p-3 sm:p-6">
             <div className="messages-reader min-h-0 w-full max-w-[35rem] text-left">
               <div className="flex shrink-0 items-center justify-between gap-2">
-                <p className="break-words text-sm font-bold text-[#ffd23f]">{reading.displayName}</p>
+                <p className="break-words text-sm font-bold text-[#a78bfa]">{reading.displayName}</p>
                 <button ref={closeMessageRef} type="button" onClick={closeMessage} className="messages-wall-control shrink-0">Fermer</button>
               </div>
               <blockquote tabIndex={0} className="messages-reader-copy mt-2 min-h-0 overflow-y-auto whitespace-pre-wrap break-words leading-relaxed sm:text-lg">{reading.comment}</blockquote>

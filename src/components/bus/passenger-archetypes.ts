@@ -145,7 +145,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   {
     id: "jinbe",
     name: "Jinbe",
-    skinColor: "#38bdf8", // Homme-poisson bleu azur
+    skinColor: "#8ab6ff", // Homme-poisson bleu azur
     hairColor: "#09090b",
     hairStyle: "topknot",
     shirtColor: "#f59e0b", // Gi traditionnel soleil doré
