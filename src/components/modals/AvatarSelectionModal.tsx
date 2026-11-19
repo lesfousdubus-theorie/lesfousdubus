@@ -165,7 +165,7 @@ export function AvatarSelectionModal({
                   setIndex(itemIndex);
                   setRotation(0);
                 }}
-                className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-2xl px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${
+                className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${
                   selected ? "bus-btn-active" : "bus-btn-secondary"
                 }`}
               >
@@ -200,7 +200,7 @@ export function AvatarSelectionModal({
               if (onClear) onClear();
               else onChoose(null);
             }}
-            className="bus-btn-secondary mt-2.5 min-h-11 w-full cursor-pointer rounded-2xl px-3 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
+            className="bus-btn-secondary mt-2.5 min-h-11 w-full cursor-pointer rounded-full px-3 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
           >
             Laisser le choix automatique
           </button>

@@ -176,7 +176,7 @@ export default function GlobalError({
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a
                 href="/"
-                className="ge-btn-secondary bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[1.125rem] px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
+                className="ge-btn-secondary bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
               >
                 Retourner à l’accueil
               </a>

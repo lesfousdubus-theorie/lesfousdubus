@@ -282,7 +282,7 @@ export function OnboardingModal({
                 onClick={togglePicker}
                 aria-expanded={showPicker}
                 aria-controls="onboarding-character-picker"
-                className="bus-btn-secondary inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-2xl px-3.5 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:text-sm"
+                className="bus-btn-secondary inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-full px-3.5 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:text-sm"
               >
                 {showPicker ? "Masquer l’aperçu" : selectedAvatarId ? "Changer" : "Choisir mon personnage"}
               </button>
@@ -367,7 +367,7 @@ export function OnboardingModal({
                         aria-pressed={selected}
                         aria-disabled={saving}
                         onClick={() => selectCharacter(item.id)}
-                        className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-2xl px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${
+                        className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${
                           selected ? "bus-btn-active" : "bus-btn-secondary"
                         }`}
                       >
@@ -406,7 +406,7 @@ export function OnboardingModal({
                       setShowPicker(false);
                       onDraftChange?.({ displayName: name, comment, avatarId: null });
                     }}
-                    className="bus-btn-secondary mt-2.5 min-h-11 w-full cursor-pointer rounded-2xl px-3 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
+                    className="bus-btn-secondary mt-2.5 min-h-11 w-full cursor-pointer rounded-full px-3 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
                   >
                     Laisser le choix automatique
                   </button>

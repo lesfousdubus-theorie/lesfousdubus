@@ -181,7 +181,7 @@ export default function TheorySettingsPanel({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => onSelectPreset(option.value)}
-                className={`min-h-11 cursor-pointer rounded-2xl px-3 py-2 text-xs font-semibold focus-visible:outline-none sm:text-sm ${
+                className={`min-h-11 cursor-pointer rounded-full px-3 py-2 text-xs font-semibold focus-visible:outline-none sm:text-sm ${
                   selected ? "bus-btn-active" : "bus-btn-secondary"
                 }`}
               >
@@ -288,7 +288,7 @@ export default function TheorySettingsPanel({
             type="button"
             disabled={isDefault}
             onClick={onResetGraphics}
-            className={`inline-flex min-h-11 items-center justify-center rounded-2xl px-4 py-2 text-xs font-semibold focus-visible:outline-none sm:text-sm ${
+            className={`inline-flex min-h-11 items-center justify-center rounded-full px-4 py-2 text-xs font-semibold focus-visible:outline-none sm:text-sm ${
               isDefault
                 ? "cursor-not-allowed border border-white/15 bg-[#04071c]/75 text-[#9aa6d6]"
                 : "bus-btn-tonal cursor-pointer"

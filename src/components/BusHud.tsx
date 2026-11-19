@@ -332,7 +332,7 @@ export function BusHud({
             )}
           </div>
           <button ref={immersiveButtonRef} type="button" onClick={() => { setMusicDetailsState({ open: false, phase, epoch: phaseEpoch }); closeMobileMenu(); setImmersiveRestoreVisible(true); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif" title="Mode immersif"
-            className="bus-immersive-toggle bus-btn-secondary pointer-events-auto inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-[1.125rem] px-2.5 text-[11px] font-semibold focus-visible:outline-none disabled:opacity-60 sm:gap-2 sm:px-3.5 sm:text-xs cursor-pointer">
+            className="bus-immersive-toggle bus-btn-secondary pointer-events-auto inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-2.5 text-[11px] font-semibold focus-visible:outline-none disabled:opacity-60 sm:gap-2 sm:px-3.5 sm:text-xs cursor-pointer">
             <FullscreenExpandIcon className="h-4 w-4 shrink-0" />
             <span className="bus-landscape-hide">Mode immersif</span>
           </button>
@@ -340,7 +340,7 @@ export function BusHud({
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
         <div className="bus-top-stats bus-case bus-glass pointer-events-auto absolute right-2 top-2 flex min-h-11 items-stretch gap-0.5 rounded-[1.25rem] p-0.5 backdrop-blur-md min-[375px]:p-1 sm:left-auto sm:right-4 sm:top-4 sm:min-h-14 sm:gap-1 sm:p-1">
-          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} title="Voir la liste des passagers" className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-2xl px-2 py-1 text-left leading-tight transition-colors hover:bg-[#6141e8]/20 focus-visible:outline-none min-[375px]:gap-1.5 min-[375px]:px-2.5 sm:gap-2.5 sm:px-3 sm:py-2 cursor-pointer">
+          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} title="Voir la liste des passagers" className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-full px-2 py-1 text-left leading-tight transition-colors hover:bg-[#6141e8]/20 focus-visible:outline-none min-[375px]:gap-1.5 min-[375px]:px-2.5 sm:gap-2.5 sm:px-3 sm:py-2 cursor-pointer">
             <span aria-hidden="true" className="hidden text-[#c4b5fd] min-[400px]:inline-flex min-[400px]:items-center">
               <BusFrontIcon className="h-4 w-4 shrink-0 sm:h-6 sm:w-6" />
             </span>
@@ -366,13 +366,13 @@ export function BusHud({
                 setStatsRetryToken((value) => value + 1);
               }}
               title="Réessayer de charger le compteur des passagers"
-              className="bus-btn-tonal flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-2xl px-2 py-1 text-xs font-semibold focus-visible:outline-none cursor-pointer"
+              className="bus-btn-tonal flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full px-2 py-1 text-xs font-semibold focus-visible:outline-none cursor-pointer"
             >
               <span>Réessayer</span>
             </button>
           )}
           <div className="my-1 w-px bg-[#947eef]/25" aria-hidden="true" />
-          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-h-11 min-w-0 flex-none rounded-2xl px-2 py-1 text-left leading-tight transition-colors hover:bg-[#6141e8]/20 focus-visible:outline-none min-[375px]:px-2.5 sm:px-3 sm:py-2 cursor-pointer" title="Voir le compteur précis depuis le 26 mai 2024">
+          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-h-11 min-w-0 flex-none rounded-full px-2 py-1 text-left leading-tight transition-colors hover:bg-[#6141e8]/20 focus-visible:outline-none min-[375px]:px-2.5 sm:px-3 sm:py-2 cursor-pointer" title="Voir le compteur précis depuis le 26 mai 2024">
             <span className="block text-[10px] font-bold uppercase tracking-[0.04em] text-[#c4b5fd] sm:text-xs">
               <span className="hud-label-short sm:hidden"><span className="hidden min-[375px]:inline">La </span>théorie</span><span className="hud-label-long hidden sm:inline">La théorie existe depuis</span>
             </span>
@@ -398,7 +398,7 @@ export function BusHud({
                 aria-label={manualDayNight === null
                   ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
                   : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
-                className={`bus-glass flex h-11 items-center gap-1.5 rounded-[1.125rem] px-3 text-xs font-semibold focus-visible:outline-none sm:px-3.5 sm:text-sm cursor-pointer ${
+                className={`bus-glass flex h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold focus-visible:outline-none sm:px-3.5 sm:text-sm cursor-pointer ${
                   manualDayNight !== null ? "bus-btn-active" : "bus-btn-secondary"
                 }`}
               >
@@ -419,7 +419,7 @@ export function BusHud({
                 aria-pressed={bgmPlaying || partyOn}
                 aria-label={partyOn ? "Musique de fête active — arrêter avec le bouton Fête" : bgmPlaying ? "Couper la musique de fond" : "Activer la musique de fond (Life in Pieces — Le Mont Corvo)"}
                 title={partyOn ? "Party At Baratie — utilise Fête pour arrêter la musique" : musicSuspendedByTv ? "Musique en pause pendant la vidéo/TV — cliquer pour couper" : bgmPlaying ? "Couper la musique de fond (Life in Pieces)" : "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)"}
-                className={`bus-glass flex h-11 items-center gap-1.5 rounded-[1.125rem] px-3 text-xs font-semibold focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 sm:px-3.5 sm:text-sm cursor-pointer ${
+                className={`bus-glass flex h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 sm:px-3.5 sm:text-sm cursor-pointer ${
                   bgmPlaying || partyOn ? "bus-btn-active" : "bus-btn-secondary"
                 }`}
               >
@@ -596,7 +596,7 @@ export function BusHud({
               aria-label={manualDayNight === null
                 ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
                 : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
-              className={`bus-mobile-day-night bus-glass pointer-events-auto flex h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-[1.125rem] px-2.5 text-xs font-semibold focus-visible:outline-none cursor-pointer ${
+              className={`bus-mobile-day-night bus-glass pointer-events-auto flex h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-semibold focus-visible:outline-none cursor-pointer ${
                 manualDayNight !== null ? "bus-btn-active" : "bus-btn-secondary"
               }`}
             >
@@ -881,7 +881,7 @@ export function BusHud({
         )}
         {immersive && !hidden && <button ref={restoreButtonRef} type="button" onClick={restoreControls} aria-label="Quitter le mode immersif et afficher les commandes"
           data-visible={immersiveRestoreVisible}
-          className={`bus-immersive-restore bus-btn-secondary fixed z-[2147483647] inline-flex min-h-11 items-center gap-2 rounded-[1.125rem] px-4 text-sm font-semibold focus-visible:outline-none cursor-pointer ${
+          className={`bus-immersive-restore bus-btn-secondary fixed z-[2147483647] inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold focus-visible:outline-none cursor-pointer ${
             immersiveRestoreVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
           style={{ right: "calc(1rem + env(safe-area-inset-right))", top: "calc(1rem + env(safe-area-inset-top))" }}>
@@ -964,7 +964,7 @@ function MobileMenuToggleButton({
         if (disabled) return;
         onToggle();
       }}
-      className={`pointer-events-auto relative z-10 flex min-h-11 min-w-0 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-[1.125rem] py-2 text-xs font-semibold touch-manipulation focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
+      className={`pointer-events-auto relative z-10 flex min-h-11 min-w-0 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full py-2 text-xs font-semibold touch-manipulation focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
         variant === "exterior" ? "px-3 min-[360px]:px-3.5" : "px-2.5 min-[360px]:px-3.5"
       } ${open ? "bus-btn-active" : "bus-btn-secondary"}`}
     >
@@ -1004,7 +1004,7 @@ function HudButton({
   showMobileIcon?: boolean;
   className?: string;
 }) {
-  const shape = primary || exit ? "rounded-full" : "rounded-[1.125rem]";
+  const shape = primary || exit ? "rounded-full" : "rounded-full";
   const base =
     `pointer-events-auto flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap ${shape} py-2 text-xs md:text-sm font-semibold focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer`;
   const look = primary

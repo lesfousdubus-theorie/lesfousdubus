@@ -102,14 +102,14 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
           href={THEORY_VIDEO_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-[1.125rem] px-4 py-2 font-semibold focus-visible:outline-none"
+          className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-full px-4 py-2 font-semibold focus-visible:outline-none"
         >
           Voir la vidéo
           <ExternalArrowIcon />
         </a>
         <button
           type="button"
-          className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[1.125rem] px-4 py-2 font-semibold focus-visible:outline-none"
+          className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-4 py-2 font-semibold focus-visible:outline-none"
           onClick={() => window.location.reload()}
         >
           Réessayer
