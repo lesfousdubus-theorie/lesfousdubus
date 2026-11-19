@@ -82,44 +82,55 @@ const GLOBAL_ERROR_FALLBACK_CSS = `@layer base {
     min-height: 2.75rem;
     align-items: center;
     justify-content: center;
-    border-radius: 0.75rem;
     padding: 0.75rem 1.5rem;
     font-family: inherit;
     font-size: 0.875rem;
+    font-weight: 900;
     line-height: 1.25rem;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+    border: 1px solid rgba(206, 213, 255, 0.42) !important;
+    border-radius: 9999px !important;
+    background-color: transparent !important;
+    background-image: linear-gradient(100deg, #2f5bff 0%, #5a4bf2 52%, #9a3ff0 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 22px rgba(79, 70, 229, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+    text-shadow: 0 1px 2px rgba(24, 16, 82, 0.30);
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    translate: none !important;
+    scale: none !important;
+    rotate: none !important;
   }
-  .ge-btn-primary {
-    border: 0;
-    background-color: #ffd23f;
-    font-weight: 900;
-    color: #091c5c;
-    box-shadow: 0 5px 0 #b8860b;
+  .ge-btn-primary *,
+  .ge-btn-secondary * {
+    color: #ffffff !important;
+    animation: none !important;
+    transition: none !important;
   }
-  .ge-btn-primary:hover { background-color: #ffe271; }
-  .ge-btn-primary:active {
-    box-shadow: none;
-    transform: translateY(0.25rem);
-  }
-  .ge-btn-secondary {
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background-color: #0c1b3a;
-    font-weight: 700;
-    color: #ffffff;
-  }
+  .ge-btn-primary:hover,
   .ge-btn-secondary:hover {
-    border-color: rgba(255, 210, 63, 0.7);
-    color: #ffd23f;
+    filter: brightness(1.09) saturate(1.05);
+    color: #ffffff !important;
+    border-color: rgba(226, 232, 255, 0.65) !important;
+    box-shadow: 0 10px 26px rgba(99, 70, 240, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.38) !important;
+    transform: none !important;
+    translate: none !important;
+    scale: none !important;
   }
+  .ge-btn-primary:active,
+  .ge-btn-secondary:active {
+    filter: brightness(0.97);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+    transform: none !important;
+    translate: none !important;
+    scale: none !important;
+  }
+  .ge-btn-primary:focus-visible,
   .ge-btn-secondary:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px #07142b, 0 0 0 4px #ffd23f;
-  }
-  .ge-btn-primary:focus-visible {
-    outline: none;
-    box-shadow: 0 5px 0 #b8860b, 0 0 0 2px #07142b, 0 0 0 4px #ffd23f;
+    outline: 2px solid #c9b8ff;
+    outline-offset: 2px;
   }
   @media (min-width: 640px) {
     .ge-shell { padding: 1.5rem; }

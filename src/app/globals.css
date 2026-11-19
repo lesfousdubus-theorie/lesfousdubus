@@ -707,3 +707,190 @@ body {
   .message-bubble-preview { font-size: .8rem; }
   .message-bubble-author { margin-top: .2rem; font-size: .67rem; }
 }
+
+/* --------------------------------------------------------------------------
+   Direction artistique des boutons uniquement.
+   Dégradé bleu → violet de la maquette, texte blanc, léger halo et liseré clair.
+   Aucune animation et aucun déplacement : le survol ne change que des couleurs
+   et des ombres, de façon instantanée. La forme varie un peu selon le rôle.
+   -------------------------------------------------------------------------- */
+
+/* Cible tous les boutons, sauf les liens texte, les cartes de liste et le voile
+   plein écran du lecteur vidéo. Les liens sont ciblés seulement quand ils ont
+   déjà une apparence de bouton. */
+:where(
+  button:not([class*="underline"]):not([class~="min-h-14"]):not([class~="message-bubble"]):not([class~="absolute"][class~="inset-0"]),
+  a[class*="bg-[#"]:not([class*="underline"]):not([class~="min-h-14"]),
+  a[class~="bg-white/10"]:not([class*="underline"]),
+  a[class~="bg-red-700"]:not([class*="underline"]),
+  a[class~="ge-btn-primary"],
+  a[class~="ge-btn-secondary"],
+  [role="tab"]:not([class*="underline"])
+) {
+  isolation: isolate;
+  border: 1px solid rgba(206, 213, 255, 0.42) !important;
+  border-radius: 999px !important;
+  background-color: transparent !important;
+  background-image: linear-gradient(100deg, #2f5bff 0%, #5a4bf2 52%, #9a3ff0 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  text-shadow: 0 1px 2px rgba(24, 16, 82, 0.30);
+  box-shadow:
+    0 8px 22px rgba(79, 70, 229, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  rotate: none !important;
+}
+
+/* Le texte et les icônes à l'intérieur des boutons passent en blanc également. */
+:where(
+  button:not([class*="underline"]):not([class~="min-h-14"]):not([class~="message-bubble"]):not([class~="absolute"][class~="inset-0"]),
+  a[class*="bg-[#"]:not([class*="underline"]):not([class~="min-h-14"]),
+  a[class~="bg-white/10"]:not([class*="underline"]),
+  a[class~="bg-red-700"]:not([class*="underline"]),
+  a[class~="ge-btn-primary"],
+  a[class~="ge-btn-secondary"],
+  [role="tab"]:not([class*="underline"])
+) :where(*, *::before, *::after) {
+  color: #ffffff !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Sécurité supplémentaire : même un bouton non ciblé ci-dessus reste immobile
+   et sans animation ni transition. */
+:where(button, button:hover, button:active, button:focus-visible) {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  rotate: none !important;
+}
+:where(button, button::before, button::after, button *, button *::before, button *::after) {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Boutons icône : cercle. */
+:where(button, a):where(
+  [class~="h-11"][class~="w-11"],
+  [class~="h-9"][class~="w-9"],
+  [class~="h-10"][class~="w-10"]
+) {
+  border-radius: 999px !important;
+}
+
+/* Onglets de la modale théorie : silhouette légèrement différente. */
+:where(button, a)[role="tab"] {
+  border-radius: 1rem 1rem 0.5rem 0.5rem !important;
+}
+
+/* Sorties et actions de suppression : petit ticket violet → magenta. */
+:where(button, a):where(
+  [class~="border-[#ffd23f]/55"],
+  [class~="bg-red-700"],
+  [class~="bg-red-950/35"],
+  [class*="bg-red-"]
+) {
+  border-radius: 18px 7px 18px 7px !important;
+  border-color: rgba(255, 214, 240, 0.42) !important;
+  background-image: linear-gradient(100deg, #6d3bf5 0%, #a63bd8 55%, #d93f7c 100%) !important;
+}
+
+/* L'onglet ou le réglage actif reste reconnaissable, sans animation. */
+:where(button, a):where([aria-selected="true"], [aria-pressed="true"], [aria-checked="true"]) {
+  border-color: rgba(255, 255, 255, 0.78) !important;
+  box-shadow:
+    0 10px 26px rgba(99, 70, 240, 0.40),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38) !important;
+}
+
+/* Survol : simple éclaircissement + halo un peu plus présent. Rien ne bouge. */
+:where(
+  button:not([class*="underline"]):not([class~="min-h-14"]):not([class~="message-bubble"]):not([class~="absolute"][class~="inset-0"]),
+  a[class*="bg-[#"]:not([class*="underline"]):not([class~="min-h-14"]),
+  a[class~="bg-white/10"]:not([class*="underline"]),
+  a[class~="bg-red-700"]:not([class*="underline"]),
+  a[class~="ge-btn-primary"],
+  a[class~="ge-btn-secondary"],
+  [role="tab"]:not([class*="underline"])
+):hover {
+  filter: brightness(1.09) saturate(1.05);
+  color: #ffffff !important;
+  border-color: rgba(226, 232, 255, 0.65) !important;
+  box-shadow:
+    0 10px 26px rgba(99, 70, 240, 0.40),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38) !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+}
+
+/* Appui : aucun enfoncement ni déplacement. */
+:where(
+  button:not([class*="underline"]):not([class~="min-h-14"]):not([class~="message-bubble"]):not([class~="absolute"][class~="inset-0"]),
+  a[class*="bg-[#"]:not([class*="underline"]):not([class~="min-h-14"]),
+  a[class~="bg-white/10"]:not([class*="underline"]),
+  a[class~="bg-red-700"]:not([class*="underline"]),
+  a[class~="ge-btn-primary"],
+  a[class~="ge-btn-secondary"],
+  [role="tab"]:not([class*="underline"])
+):active {
+  filter: brightness(0.97);
+  box-shadow:
+    0 6px 16px rgba(79, 70, 229, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+}
+
+:where(
+  button:not([class*="underline"]):not([class~="min-h-14"]):not([class~="message-bubble"]):not([class~="absolute"][class~="inset-0"]),
+  a[class*="bg-[#"]:not([class*="underline"]):not([class~="min-h-14"]),
+  a[class~="bg-white/10"]:not([class*="underline"]),
+  a[class~="bg-red-700"]:not([class*="underline"]),
+  a[class~="ge-btn-primary"],
+  a[class~="ge-btn-secondary"],
+  [role="tab"]:not([class*="underline"])
+):focus-visible {
+  outline: 2px solid #c9b8ff;
+  outline-offset: 2px;
+}
+
+:where(
+  button:not([class*="underline"]):not([class~="min-h-14"]):not([class~="message-bubble"]):not([class~="absolute"][class~="inset-0"]),
+  a[class*="bg-[#"]:not([class*="underline"]):not([class~="min-h-14"]),
+  a[class~="bg-white/10"]:not([class*="underline"]),
+  a[class~="bg-red-700"]:not([class*="underline"]),
+  a[class~="ge-btn-primary"],
+  a[class~="ge-btn-secondary"],
+  [role="tab"]:not([class*="underline"])
+):is(:disabled, [aria-disabled="true"]) {
+  filter: saturate(0.6);
+  opacity: 0.6;
+}
+
+/* Le voile du lecteur vidéo reste sombre ; seule sa pastille d'action change. */
+button[class~="absolute"][class~="inset-0"] > span {
+  border: 1px solid rgba(206, 213, 255, 0.42);
+  border-radius: 999px;
+  background-color: transparent;
+  background-image: linear-gradient(100deg, #2f5bff 0%, #5a4bf2 52%, #9a3ff0 100%);
+  color: #ffffff;
+  font-weight: 900;
+  box-shadow:
+    0 8px 22px rgba(79, 70, 229, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  text-shadow: 0 1px 2px rgba(24, 16, 82, 0.30);
+}
+button[class~="absolute"][class~="inset-0"] > span * {
+  color: #ffffff;
+}
