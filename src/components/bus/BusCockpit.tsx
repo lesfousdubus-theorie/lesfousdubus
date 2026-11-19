@@ -152,7 +152,7 @@ export default function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedM
             <mesh material={mats.dark} rotation={[Math.PI / 2, 0, 0]}>
               <cylinderGeometry args={[0.065, 0.065, 0.032, 18]} />
             </mesh>
-            {/* Bouton de klaxon violet au centre du volant */}
+            {/* Bouton de klaxon One Piece doré au centre du volant */}
             <mesh material={mats.yellow} position={[0, 0, 0.018]} rotation={[Math.PI / 2, 0, 0]}>
               <cylinderGeometry args={[0.042, 0.042, 0.015, 18]} />
             </mesh>
@@ -248,7 +248,7 @@ export default function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedM
           <mesh material={mats.chrome} position={[0, 1.41, -4.275]}>
             <boxGeometry args={[0.64, 0.014, 0.012]} />
           </mesh>
-          {/* Barre de maintien passager avant violette */}
+          {/* Barre de maintien passager avant jaune */}
           <mesh name="bus-navigator-bar" material={mats.yellow} position={[0, NAVIGATOR_BAR.y, NAVIGATOR_BAR.z]} rotation={[0, 0, Math.PI / 2]}>
             <cylinderGeometry args={[NAVIGATOR_BAR.radius, NAVIGATOR_BAR.radius, NAVIGATOR_BAR.width, 10]} />
           </mesh>

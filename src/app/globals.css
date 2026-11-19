@@ -1,27 +1,20 @@
 @import "tailwindcss";
 
-/* Direction artistique : bleu -> violet sur bleu nuit, grain léger.
-   Le bouton de référence « Lire la théorie » donne la palette à tout le site. */
 :root {
-  --bus-bg-void: #050a1b;
-  --bus-surface-primary: #0b1433;
-  --bus-surface-elevated: #141f4b;
-  --bus-surface-header-start: #1e2e70;
-  --bus-surface-inset: #070e26;
-  --bus-grad-start: #2f5bff;
-  --bus-grad-mid: #5a4bf2;
-  --bus-grad-end: #9a3ff0;
-  --bus-gradient: linear-gradient(100deg, var(--bus-grad-start) 0%, var(--bus-grad-mid) 52%, var(--bus-grad-end) 100%);
-  --bus-gradient-border: linear-gradient(115deg, rgba(83, 105, 255, 0.62), rgba(167, 139, 250, 0.50), rgba(255, 255, 255, 0.12));
-  --bus-accent: #a78bfa;
-  --bus-accent-hover: #c9b8ff;
-  --bus-ink-on-gradient: #ffffff;
-  --bus-active-blue: #4b46e8;
-  --bus-active-blue-hover: #6a5cf5;
+  --bus-bg-void: #020617;
+  --bus-surface-primary: #07142b;
+  --bus-surface-elevated: #0c1b3a;
+  --bus-surface-header-start: #10265c;
+  --bus-surface-inset: #040b18;
+  --bus-accent-gold: #ffd23f;
+  --bus-accent-gold-hover: #ffe271;
+  --bus-accent-gold-shadow: #b8860b;
+  --bus-ink-on-gold: #091c5c;
+  --bus-active-blue: #1636c9;
+  --bus-active-blue-hover: #1d44e6;
   --bus-text-primary: #ffffff;
-  --bus-text-secondary: #e2e8ff;
-  --bus-text-muted: #b6c1ee;
-  --bus-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");
+  --bus-text-secondary: #dce7ff;
+  --bus-text-muted: #b6c7eb;
 }
 
 html,
@@ -31,18 +24,11 @@ body {
   overflow: hidden;
   overscroll-behavior: none;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background-color: var(--bus-bg-void);
-  background-image:
-    var(--bus-noise),
-    radial-gradient(ellipse at 18% 12%, rgba(47, 91, 255, 0.18), transparent 58%),
-    radial-gradient(ellipse at 82% 88%, rgba(154, 63, 240, 0.14), transparent 58%);
-  background-blend-mode: soft-light, normal, normal;
-  background-size: 180px 180px, auto, auto;
 }
 
 ::selection {
-  background-color: var(--bus-grad-mid);
-  color: #ffffff;
+  background-color: #ffd23f;
+  color: #091c5c;
 }
 
 .no-scrollbar {
@@ -586,12 +572,12 @@ body {
 }
 
 .messages-wall-header {
-  background: rgb(14 23 58 / 94%);
+  background: rgb(12 27 58 / 94%);
   border-bottom: 1px solid rgb(255 255 255 / 14%);
 }
 
 .messages-wall-stage {
-  background: radial-gradient(ellipse at 50% 45%, rgba(47, 91, 255, 0.10), rgba(5, 10, 27, 0.34));
+  background: radial-gradient(ellipse at 50% 45%, rgb(7 20 43 / 9%), rgb(7 20 43 / 34%));
 }
 
 .messages-wall-track {
@@ -617,17 +603,17 @@ body {
   overflow: hidden;
   padding: .625rem .75rem;
   cursor: pointer;
-  border: 1px solid rgb(167 139 250 / 48%);
+  border: 1px solid rgb(255 210 63 / 48%);
   border-radius: .875rem;
-  background: rgb(14 23 58 / 94%);
+  background: rgb(12 27 58 / 94%);
   color: #fff;
   text-align: left;
   box-shadow: 0 8px 22px rgb(2 6 23 / 38%);
 }
 
 .message-bubble:hover,
-.message-bubble:focus-visible { z-index: 2147483647 !important; opacity: 1 !important; border-color: #c9b8ff; }
-.message-bubble:focus-visible { outline: 2px solid #c9b8ff; outline-offset: 2px; }
+.message-bubble:focus-visible { z-index: 2147483647 !important; opacity: 1 !important; border-color: #ffd23f; }
+.message-bubble:focus-visible { outline: 2px solid #ffd23f; outline-offset: 2px; }
 
 .message-bubble-preview {
   display: -webkit-box;
@@ -645,7 +631,7 @@ body {
   flex: none;
   overflow: hidden;
   margin-top: .34rem;
-  color: #c9b8ff;
+  color: #ffd23f;
   font-size: .75rem;
   font-weight: 700;
   line-height: 1.25;
@@ -664,15 +650,15 @@ body {
   padding: 0 .55rem;
   border: 1px solid rgb(220 231 255 / 32%);
   border-radius: .65rem;
-  background: #1e2e70;
+  background: #10265c;
   color: #fff;
   font-size: .78rem;
   font-weight: 700;
   cursor: pointer;
 }
-.messages-wall-control:hover { border-color: #c9b8ff; color: #c9b8ff; }
-.messages-wall-control:focus-visible { outline: 2px solid #c9b8ff; outline-offset: 2px; }
-.messages-wall-control:disabled { color: #b6c1ee; cursor: default; opacity: .45; }
+.messages-wall-control:hover { border-color: #ffd23f; color: #ffd23f; }
+.messages-wall-control:focus-visible { outline: 2px solid #ffd23f; outline-offset: 2px; }
+.messages-wall-control:disabled { color: #b6c7eb; cursor: default; opacity: .45; }
 .messages-wall-state {
   position: absolute;
   inset: 0;
@@ -685,27 +671,27 @@ body {
 .messages-wall-state > * {
   padding: .65rem 1rem;
   border-radius: .875rem;
-  background: rgb(14 23 58 / 94%);
+  background: rgb(12 27 58 / 94%);
 }
 .messages-wall-state button { pointer-events: auto; }
 
-.messages-wall-reading { background: rgba(5, 10, 27, 0.87); }
+.messages-wall-reading { background: rgb(7 20 43 / 87%); }
 .messages-reader {
   display: flex;
   flex-direction: column;
   max-height: 100%;
   overflow: hidden;
   padding: .75rem 1rem 1rem;
-  border: 1px solid rgb(167 139 250 / 45%);
+  border: 1px solid rgb(255 210 63 / 45%);
   border-radius: .875rem;
-  background: #141f4b;
+  background: #0c1b3a;
 }
 .messages-reader-copy {
   user-select: text;
   overflow-wrap: anywhere;
   overscroll-behavior: contain;
 }
-.messages-reader-copy:focus-visible { outline: 2px solid #c9b8ff; outline-offset: -2px; }
+.messages-reader-copy:focus-visible { outline: 2px solid #ffd23f; outline-offset: -2px; }
 
 @media (min-width: 640px) and (min-height: 450px) {
   .message-bubble { padding: .875rem 1rem; }
@@ -720,270 +706,4 @@ body {
   .message-bubble { padding: .35rem .5rem; }
   .message-bubble-preview { font-size: .8rem; }
   .message-bubble-author { margin-top: .2rem; font-size: .67rem; }
-}
-
-/* --------------------------------------------------------------------------
-   Design system — dégradé bleu → violet
-   Le comprimé « Lire la théorie » est la référence : dégradé, texte blanc,
-   liseré clair et halo. Les autres boutons gardent ce dégradé mais changent
-   légèrement de silhouette selon leur rôle (comprimé, squircle, rond, ticket).
-   -------------------------------------------------------------------------- */
-
-.bus-app {
-  background-color: #101a44 !important;
-  background-image:
-    radial-gradient(ellipse at 20% 15%, rgba(47, 91, 255, 0.22), transparent 60%),
-    radial-gradient(ellipse at 80% 85%, rgba(154, 63, 240, 0.18), transparent 60%) !important;
-}
-
-.bus-standalone {
-  background-color: transparent !important;
-  background-image:
-    var(--bus-noise),
-    radial-gradient(ellipse at 18% 12%, rgba(47, 91, 255, 0.30), transparent 58%),
-    radial-gradient(ellipse at 82% 88%, rgba(154, 63, 240, 0.24), transparent 58%),
-    linear-gradient(160deg, #0c1640, #050a1b 72%) !important;
-  background-blend-mode: soft-light, normal, normal, normal;
-  background-size: 180px 180px, auto, auto, auto;
-}
-
-.bus-modal-backdrop,
-.theory-modal-backdrop {
-  background-color: transparent !important;
-  background-image:
-    var(--bus-noise),
-    radial-gradient(ellipse at 18% 12%, rgba(47, 91, 255, 0.26), transparent 58%),
-    radial-gradient(ellipse at 82% 88%, rgba(154, 63, 240, 0.22), transparent 58%),
-    linear-gradient(160deg, rgba(5, 10, 27, 0.92), rgba(5, 10, 27, 0.96)) !important;
-  background-blend-mode: soft-light, normal, normal, normal;
-  background-size: 180px 180px, auto, auto, auto;
-}
-
-/* Surfaces : bleu nuit avec liseré dégradé et halo discret. */
-.bus-panel,
-.bus-modal-card,
-.theory-modal-window,
-.bus-title-copy,
-.bus-top-stats,
-.bus-toast-content,
-.bus-speed,
-.bus-row-nav > div,
-.bus-mobile-speed,
-.message-bubble,
-.messages-reader {
-  border: 1px solid transparent !important;
-  background:
-    linear-gradient(158deg, rgba(20, 31, 75, 0.96), rgba(8, 14, 38, 0.98)) padding-box,
-    linear-gradient(125deg, rgba(83, 105, 255, 0.55), rgba(167, 139, 250, 0.45), rgba(255, 255, 255, 0.10)) border-box !important;
-  box-shadow:
-    0 24px 70px rgba(2, 6, 23, 0.65),
-    0 0 50px rgba(91, 75, 243, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
-  color: var(--bus-text-primary);
-}
-
-.bus-panel,
-.bus-modal-card,
-.theory-modal-window {
-  border-radius: 1.5rem !important;
-}
-
-.bus-panel-header {
-  background-image: linear-gradient(100deg, #20367e 0%, #3a2b8c 55%, #0b1433 100%) !important;
-  border-bottom: 1px solid rgba(167, 139, 250, 0.22) !important;
-}
-
-.bus-glass {
-  background-color: rgba(11, 20, 51, 0.92) !important;
-  border-color: rgba(167, 139, 250, 0.30) !important;
-}
-
-/* 1. Bouton signature : dégradé plein, comprimé, texte blanc, halo. */
-.bus-gradient {
-  background-color: transparent !important;
-  background-image: var(--bus-gradient) !important;
-  color: #ffffff !important;
-}
-
-.bus-gradient:is(button, a, [role="button"], [role="tab"], [role="link"]) {
-  position: relative;
-  isolation: isolate;
-  border: 1px solid rgba(206, 213, 255, 0.42) !important;
-  border-radius: 999px !important;
-  box-shadow:
-    0 10px 28px rgba(79, 70, 229, 0.36),
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
-    0 1px 0 rgba(255, 255, 255, 0.32) inset !important;
-  text-shadow: 0 1px 2px rgba(24, 16, 82, 0.35);
-  transition: transform 180ms cubic-bezier(.25, 1, .5, 1), filter 180ms ease, box-shadow 180ms ease;
-}
-
-.bus-gradient:is(button, a, [role="button"], [role="tab"], [role="link"]):hover {
-  filter: brightness(1.12) saturate(1.06);
-  transform: translateY(-2px);
-  box-shadow:
-    0 16px 36px rgba(99, 70, 240, 0.48),
-    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
-    0 1px 0 rgba(255, 255, 255, 0.40) inset !important;
-}
-
-.bus-gradient:is(button, a, [role="button"], [role="tab"], [role="link"]):active {
-  transform: translateY(1px) scale(0.985);
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
-}
-
-.bus-gradient:is(button, a, [role="button"], [role="tab"], [role="link"]):focus-visible {
-  outline: 2px solid #c9b8ff;
-  outline-offset: 2px;
-}
-
-.bus-gradient:is(button, a):disabled,
-.bus-gradient:is(button, a)[aria-disabled="true"] {
-  filter: saturate(0.6);
-  opacity: 0.62;
-  transform: none !important;
-}
-
-button[aria-pressed="true"].bus-gradient,
-button[aria-expanded="true"].bus-gradient,
-.bus-gradient.bus-toggle-on {
-  box-shadow:
-    0 10px 28px rgba(79, 70, 229, 0.36),
-    inset 0 0 0 2px rgba(255, 255, 255, 0.58),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32) !important;
-}
-
-/* 2. Bouton secondaire : fond nuit, liseré dégradé, silhouette plus carrée. */
-.bus-secondary:not(.bus-gradient) {
-  border: 1px solid transparent !important;
-  border-radius: 1.15rem !important;
-  background:
-    linear-gradient(rgba(13, 21, 52, 0.94), rgba(8, 14, 38, 0.96)) padding-box,
-    var(--bus-gradient-border) border-box !important;
-  color: #ffffff !important;
-  box-shadow: 0 8px 22px rgba(3, 7, 23, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
-  transition: transform 180ms cubic-bezier(.25, 1, .5, 1), filter 180ms ease, box-shadow 180ms ease;
-}
-
-.bus-secondary:not(.bus-gradient):hover {
-  filter: brightness(1.16);
-  transform: translateY(-2px);
-  background:
-    linear-gradient(rgba(21, 32, 82, 0.96), rgba(11, 18, 48, 0.98)) padding-box,
-    linear-gradient(115deg, rgba(83, 105, 255, 0.85), rgba(167, 139, 250, 0.75), rgba(255, 255, 255, 0.22)) border-box !important;
-  box-shadow: 0 12px 28px rgba(67, 55, 190, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
-}
-
-.bus-secondary:not(.bus-gradient):active {
-  transform: translateY(1px) scale(0.985);
-}
-
-.bus-secondary:not(.bus-gradient):focus-visible {
-  outline: 2px solid #c9b8ff;
-  outline-offset: 2px;
-}
-
-.bus-secondary:not(.bus-gradient):disabled,
-.bus-secondary:not(.bus-gradient)[aria-disabled="true"] {
-  transform: none !important;
-  filter: saturate(0.6);
-  opacity: 0.62;
-}
-
-/* 3. Variations de forme selon la fonction du bouton. */
-.bus-shape-pill,
-.bus-gradient.bus-shape-pill {
-  border-radius: 999px !important;
-}
-
-.bus-shape-circle,
-.bus-gradient.bus-shape-circle,
-.bus-secondary.bus-shape-circle {
-  border-radius: 999px !important;
-}
-
-.bus-shape-ticket,
-.bus-gradient.bus-shape-ticket,
-.bus-secondary.bus-shape-ticket {
-  border-radius: 20px 8px 20px 8px !important;
-}
-
-.bus-shape-tab,
-.bus-gradient.bus-shape-tab,
-.bus-secondary.bus-shape-tab {
-  border-radius: 1rem 1rem 0.55rem 0.55rem !important;
-}
-
-.bus-gradient.bus-shape-tab {
-  box-shadow:
-    0 8px 22px rgba(79, 70, 229, 0.36),
-    inset 0 -3px 0 rgba(255, 255, 255, 0.38),
-    inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
-}
-
-/* 4. Actions destructives : même famille, dégradé tirant vers le magenta. */
-.bus-danger,
-.bus-danger.bus-gradient {
-  background-image: linear-gradient(100deg, #6d3bf5 0%, #a63bd8 55%, #d93f7c 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 214, 240, 0.42) !important;
-  border-radius: 20px 8px 20px 8px !important;
-  box-shadow: 0 10px 28px rgba(168, 55, 170, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
-}
-
-.bus-danger:hover { filter: brightness(1.1); transform: translateY(-2px); }
-.bus-danger:focus-visible { outline: 2px solid #f0b6ff; outline-offset: 2px; }
-
-/* 5. Détails de cohérence. */
-.bus-title-copy h1 span:first-child {
-  background-image: linear-gradient(90deg, #9db4ff, #c9a8ff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent !important;
-}
-
-.bus-title-copy > p {
-  color: #c9b8ff !important;
-}
-
-.bus-hud-button { transition: transform 180ms cubic-bezier(.25, 1, .5, 1), filter 180ms ease, box-shadow 180ms ease; }
-
-:where(button, a, input, textarea, select, [tabindex]):focus-visible {
-  outline-color: #c9b8ff;
-}
-
-.bus-modal-card :is(input, textarea, select):focus,
-.theory-modal-window :is(input, textarea, select):focus,
-.bus-standalone :is(input, textarea, select):focus {
-  border-color: #8b7cff !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
-}
-
-.bus-modal-card :is(input, textarea, select, input[type="range"]),
-.theory-modal-window :is(input, textarea, select, input[type="range"]),
-.bus-standalone :is(input, textarea, select, input[type="range"]) {
-  accent-color: #8b5cf6;
-}
-
-.bus-modal-card ::-webkit-scrollbar-thumb,
-.theory-modal-window ::-webkit-scrollbar-thumb,
-.bus-standalone ::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(139, 92, 246, 0.45);
-}
-
-.message-bubble:hover,
-.message-bubble:focus-visible {
-  border-color: #c9b8ff !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bus-gradient,
-  .bus-secondary,
-  .bus-danger,
-  .bus-hud-button {
-    transition: none !important;
-    transform: none !important;
-    filter: none !important;
-  }
 }

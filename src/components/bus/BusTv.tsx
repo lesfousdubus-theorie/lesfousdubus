@@ -480,9 +480,9 @@ export function BusTvPlayer({
           data-bus-tv-overlay=""
           style={{ pointerEvents: "none" }}
           onPointerDown={(e) => e.stopPropagation()}
-          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#0b1433] px-6 py-4 text-center text-white sm:gap-4"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#07142b] px-6 py-4 text-center text-white sm:gap-4"
         >
-          <p className="max-w-[440px] text-base font-bold leading-snug text-[#e2e8ff] sm:text-xl">
+          <p className="max-w-[440px] text-base font-bold leading-snug text-[#dce7ff] sm:text-xl">
             {playerStatus === "blocked"
               ? "La lecture automatique a été bloquée."
               : "Le lecteur vidéo ne répond pas."}
@@ -493,7 +493,7 @@ export function BusTvPlayer({
             onPointerDown={(e) => e.stopPropagation()}
             onClick={handleActivate}
             aria-label={playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
-            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bus-gradient px-6 py-2.5 text-lg font-black text-[#0b1433] shadow-lg transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1433] sm:px-7 sm:py-3 sm:text-2xl"
+            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-[#ffd23f] px-6 py-2.5 text-lg font-black text-[#07142b] shadow-lg transition hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] sm:px-7 sm:py-3 sm:text-2xl"
           >
             {playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
           </button>
@@ -504,7 +504,7 @@ export function BusTvPlayer({
               rel="noopener noreferrer"
               style={{ pointerEvents: interactive ? "auto" : "none" }}
               onPointerDown={(e) => e.stopPropagation()}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg px-3 py-1.5 text-base font-bold underline underline-offset-4 hover:text-[#a78bfa] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1433] sm:text-xl"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg px-3 py-1.5 text-base font-bold underline underline-offset-4 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] sm:text-xl"
             >
               Voir la vidéo sur YouTube
             </a>

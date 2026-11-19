@@ -26,7 +26,7 @@ export function makeLabelTexture({
   width = 1024,
   height = 160,
   bg = "#0b1f6b",
-  fg = "#a78bfa",
+  fg = "#ffd23f",
   font = "bold 92px Impact, 'Arial Black', sans-serif",
   sub,
   border = true,
@@ -92,7 +92,7 @@ export function makeLicensePlateTexture(text = "MUGI-56"): THREE.CanvasTexture {
   // Bande bleue européenne / Grand Line à gauche
   c.fillStyle = "#0c359e";
   c.fillRect(8, 8, 54, h - 16);
-  c.fillStyle = "#a78bfa";
+  c.fillStyle = "#ffd23f";
   c.font = "bold 24px Arial, sans-serif";
   c.textAlign = "center";
   c.fillText("GL", 35, 95);
@@ -184,7 +184,7 @@ export function makeDashboardTexture(): THREE.CanvasTexture {
       const innerR = isMajor ? r - 20 : r - 12;
       const outerR = r - 6;
 
-      c.strokeStyle = isRed ? "#ef4444" : isMajor ? "#8ab6ff" : "#94a3b8";
+      c.strokeStyle = isRed ? "#ef4444" : isMajor ? "#38bdf8" : "#94a3b8";
       c.lineWidth = isMajor ? 3 : 1.5;
       c.beginPath();
       c.moveTo(cx + Math.cos(a) * innerR, cy + Math.sin(a) * innerR);
@@ -217,7 +217,7 @@ export function makeDashboardTexture(): THREE.CanvasTexture {
     c.shadowBlur = 0;
 
     // Moyeu de l'aiguille
-    c.fillStyle = "#a78bfa";
+    c.fillStyle = "#ffcc00";
     c.beginPath();
     c.arc(cx, cy, 7, 0, Math.PI * 2);
     c.fill();
@@ -226,7 +226,7 @@ export function makeDashboardTexture(): THREE.CanvasTexture {
     c.stroke();
 
     // Titre et unité
-    c.fillStyle = "#8ab6ff";
+    c.fillStyle = "#38bdf8";
     c.font = "bold 15px system-ui, sans-serif";
     c.textAlign = "center";
     c.textBaseline = "middle";
@@ -315,7 +315,7 @@ export function makeDashboardTexture(): THREE.CanvasTexture {
 
   // Voyants au-dessus des compteurs
   drawLed(430, 230, "#22c55e", true, "◄ CLIGN");
-  drawLed(485, 230, "#8ab6ff", true, "PHARES");
+  drawLed(485, 230, "#38bdf8", true, "PHARES");
   drawLed(540, 230, "#eab308", true, "MOTEUR");
   drawLed(595, 230, "#22c55e", true, "CLIGN ►");
 
@@ -407,7 +407,7 @@ export function makeGraffitiTexture({
   text,
   width = 1536,
   height = 512,
-  color = "#dcd2ff",
+  color = "#fff3b0",
   stroke = "#06164a",
   accent = "#e52b38",
   angle = -0.035,

@@ -84,7 +84,7 @@ export default function BusFront({
         <planeGeometry args={[0.85, 0.24]} />
         <meshStandardMaterial map={licensePlateTex} roughness={0.3} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
-      {/* Bandes violettes sur le capot */}
+      {/* Bandes jaunes sur le capot */}
       {[-1, 1].map((sx) => (
         <mesh key={sx} material={mats.yellow} position={[sx * 1.205, 1.2, -5.3]}>
           <boxGeometry args={[0.02, 0.14, 1.2]} />

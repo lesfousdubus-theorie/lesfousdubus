@@ -72,7 +72,7 @@ export function getArchetypeMaterials(archetype: NakamaArchetype): Record<string
       roughness: 0.85,
     }),
     accessory: new THREE.MeshStandardMaterial({
-      color: archetype.accessoryColor ?? "#a78bfa",
+      color: archetype.accessoryColor ?? "#ffd23f",
       roughness: 0.4,
     }),
     accessorySub: new THREE.MeshStandardMaterial({
@@ -80,7 +80,7 @@ export function getArchetypeMaterials(archetype: NakamaArchetype): Record<string
       roughness: 0.4,
     }),
     gold: new THREE.MeshStandardMaterial({
-      color: "#a78bfa",
+      color: "#ffd23f",
       metalness: 0.85,
       roughness: 0.25,
     }),

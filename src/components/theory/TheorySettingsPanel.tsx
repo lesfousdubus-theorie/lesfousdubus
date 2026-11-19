@@ -113,22 +113,22 @@ export default function TheorySettingsPanel({
   return (
     <div className="mx-auto max-w-[960px] space-y-5">
       {/* En-tête & diagnostic matériel */}
-      <section className="rounded-2xl border border-[#a78bfa]/40 bg-gradient-to-br from-[#1e2e70]/90 to-[#141f4b] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.35)] sm:p-6">
+      <section className="rounded-2xl border border-[#ffd23f]/40 bg-gradient-to-br from-[#10265c]/90 to-[#0c1b3a] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.35)] sm:p-6">
         <div className="flex flex-wrap items-start gap-3.5 sm:gap-4">
           <span
             aria-hidden="true"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#a78bfa]/40 bg-[#a78bfa]/12 text-[#a78bfa]"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#ffd23f]/40 bg-[#ffd23f]/12 text-[#ffd23f]"
           >
             <SlidersIcon className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#a78bfa]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#ffd23f]">
               Rendu 3D &amp; confort
             </p>
             <h3 className="mt-0.5 text-xl font-black text-white sm:text-2xl">
               Paramètres d’affichage
             </h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-[#e2e8ff]">
+            <p className="mt-1.5 text-sm leading-relaxed text-[#dce7ff]">
               Par défaut, la scène détecte automatiquement la puissance du processeur graphique et
               ajuste la portée 3D comme la finesse des pixels. Tu peux ajuster chaque réglage
               ci-dessous à tout moment.
@@ -161,12 +161,12 @@ export default function TheorySettingsPanel({
       </section>
 
       {/* Section 1 : Qualité globale */}
-      <section className="rounded-2xl border border-white/15 bg-[#141f4b] p-4 sm:p-6">
+      <section className="rounded-2xl border border-white/15 bg-[#0c1b3a] p-4 sm:p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h4 className="text-base font-black text-white sm:text-lg">
             Qualité globale
           </h4>
-          <span className="text-xs font-bold text-[#a78bfa]">
+          <span className="text-xs font-bold text-[#ffd23f]">
             {graphicsSettings.preset === "auto"
               ? `Auto (recommandé : ${TIER_LABELS[recommendedTier]})`
               : `Mode ${TIER_LABELS[graphicsSettings.preset]}`}
@@ -181,10 +181,10 @@ export default function TheorySettingsPanel({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => onSelectPreset(option.value)}
-                className={`bus-secondary min-h-11 cursor-pointer rounded-xl border px-3 py-2 text-xs font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141f4b] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none sm:text-sm ${
+                className={`min-h-11 cursor-pointer rounded-xl border px-3 py-2 text-xs font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none sm:text-sm ${
                   selected
-                    ? "border-[#a78bfa] bus-gradient text-[#ffffff] shadow-md shadow-[#a78bfa]/20"
-                    : "border-white/15 bg-[#070e26] text-[#e2e8ff] hover:border-[#a78bfa]/50 hover:text-white"
+                    ? "border-[#ffd23f] bg-[#ffd23f] text-[#091c5c] shadow-md shadow-[#ffd23f]/20"
+                    : "border-white/15 bg-[#040b18] text-[#dce7ff] hover:border-[#ffd23f]/50 hover:text-white"
                 }`}
               >
                 {option.label}
@@ -192,14 +192,14 @@ export default function TheorySettingsPanel({
             );
           })}
         </div>
-        <p className="mt-3 text-xs leading-relaxed text-[#b6c1ee] sm:text-sm">
+        <p className="mt-3 text-xs leading-relaxed text-[#b6c7eb] sm:text-sm">
           {PRESET_DESCRIPTIONS[graphicsSettings.preset]}
           {hasCustomOverrides && " Des options détaillées personnalisées restent prioritaires ci-dessous."}
         </p>
       </section>
 
       {/* Section 2 : Réglages détaillés 3D */}
-      <section className="rounded-2xl border border-white/15 bg-[#141f4b] p-4 sm:p-6">
+      <section className="rounded-2xl border border-white/15 bg-[#0c1b3a] p-4 sm:p-6">
         <h4 className="text-base font-black text-white sm:text-lg">
           Réglages détaillés 3D
         </h4>
@@ -240,41 +240,41 @@ export default function TheorySettingsPanel({
       </section>
 
       {/* Section 3 : Fluidité & Confort */}
-      <section className="rounded-2xl border border-white/15 bg-[#141f4b] p-4 sm:p-6">
+      <section className="rounded-2xl border border-white/15 bg-[#0c1b3a] p-4 sm:p-6">
         <h4 className="text-base font-black text-white sm:text-lg">
           Fluidité &amp; confort
         </h4>
         <div className="mt-3 space-y-3">
-          <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-white/15 bg-[#070e26]/75 p-3.5 text-sm leading-relaxed transition hover:border-[#a78bfa]/45">
+          <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-white/15 bg-[#040b18]/75 p-3.5 text-sm leading-relaxed transition hover:border-[#ffd23f]/45">
             <input
               type="checkbox"
               checked={graphicsSettings.adaptiveFps}
               onChange={(event) => onUpdateGraphics({ adaptiveFps: event.target.checked })}
-              className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#a78bfa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070e26]"
+              className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#040b18]"
             />
             <span className="min-w-0">
               <span className="block font-bold text-white">
                 Ajustement automatique selon les FPS
               </span>
-              <span className="mt-0.5 block text-xs leading-relaxed text-[#e2e8ff] sm:text-sm">
+              <span className="mt-0.5 block text-xs leading-relaxed text-[#dce7ff] sm:text-sm">
                 Baisse progressivement la finesse des pixels — puis le palier 3D en mode Automatique — si l’ordinateur ralentit sous 46 FPS.
               </span>
             </span>
           </label>
 
           {setLetterShortcutsEnabled && (
-            <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-white/15 bg-[#070e26]/75 p-3.5 text-sm leading-relaxed transition hover:border-[#a78bfa]/45">
+            <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-white/15 bg-[#040b18]/75 p-3.5 text-sm leading-relaxed transition hover:border-[#ffd23f]/45">
               <input
                 type="checkbox"
                 checked={letterShortcutsEnabled}
                 onChange={(event) => setLetterShortcutsEnabled(event.target.checked)}
-                className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#a78bfa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070e26]"
+                className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#040b18]"
               />
               <span className="min-w-0">
                 <span className="block font-bold text-white">
                   Activer les raccourcis clavier à une lettre
                 </span>
-                <span className="mt-0.5 block text-xs leading-relaxed text-[#e2e8ff] sm:text-sm">
+                <span className="mt-0.5 block text-xs leading-relaxed text-[#dce7ff] sm:text-sm">
                   Touches rapides : H (klaxon), L (phares), B (boost), Q/A et D (regarder à gauche et à droite à ta place).
                 </span>
               </span>
@@ -283,17 +283,17 @@ export default function TheorySettingsPanel({
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
-          <p className="text-xs text-[#b6c1ee]">
+          <p className="text-xs text-[#b6c7eb]">
             Tes préférences d’affichage sont conservées automatiquement dans ce navigateur.
           </p>
           <button
             type="button"
             disabled={isDefault}
             onClick={onResetGraphics}
-            className={`bus-secondary inline-flex min-h-11 items-center justify-center rounded-xl border px-4 py-2 text-xs font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#141f4b] sm:text-sm ${
+            className={`inline-flex min-h-11 items-center justify-center rounded-xl border px-4 py-2 text-xs font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a] sm:text-sm ${
               isDefault
-                ? "cursor-not-allowed border-white/10 bg-[#070e26]/50 text-[#b6c1ee]/50"
-                : "cursor-pointer border-[#a78bfa]/45 bg-[#070e26] text-[#a78bfa] hover:border-[#a78bfa] hover:text-[#ffffff]"
+                ? "cursor-not-allowed border-white/10 bg-[#040b18]/50 text-[#b6c7eb]/50"
+                : "cursor-pointer border-[#ffd23f]/45 bg-[#040b18] text-[#ffd23f] hover:border-[#ffd23f] hover:bg-[#ffd23f] hover:text-[#091c5c]"
             }`}
           >
             Réinitialiser par défaut (Auto)
@@ -306,10 +306,10 @@ export default function TheorySettingsPanel({
 
 function DiagnosticCard({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="rounded-xl border border-white/12 bg-[#070e26]/80 px-3.5 py-3">
-      <dt className="text-[11px] font-bold uppercase tracking-wider text-[#b6c1ee]">{label}</dt>
+    <div className="rounded-xl border border-white/12 bg-[#040b18]/80 px-3.5 py-3">
+      <dt className="text-[11px] font-bold uppercase tracking-wider text-[#b6c7eb]">{label}</dt>
       <dd className="mt-1 truncate text-sm font-black text-white" title={value}>{value}</dd>
-      <dd className="mt-0.5 text-xs font-medium text-[#a78bfa]">{hint}</dd>
+      <dd className="mt-0.5 text-xs font-medium text-[#ffd23f]">{hint}</dd>
     </div>
   );
 }
@@ -334,17 +334,17 @@ function SettingGroup<T extends string>({
     <div
       role="group"
       aria-labelledby={headingId}
-      className="rounded-xl border border-white/12 bg-[#070e26]/75 p-3.5 sm:p-4"
+      className="rounded-xl border border-white/12 bg-[#040b18]/75 p-3.5 sm:p-4"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h5 id={headingId} className="text-sm font-black text-white">
           {title}
         </h5>
-        <span className="text-xs font-semibold text-[#a78bfa]">
+        <span className="text-xs font-semibold text-[#ffd23f]">
           {value === "auto" ? `Auto · ${activeAutoLabel}` : optionLabel(options, value)}
         </span>
       </div>
-      <p className="mt-1 text-xs leading-relaxed text-[#b6c1ee]">{description}</p>
+      <p className="mt-1 text-xs leading-relaxed text-[#b6c7eb]">{description}</p>
       <div className="mt-3 flex flex-wrap gap-1.5">
         {options.map((option) => {
           const selected = value === option.value;
@@ -354,10 +354,10 @@ function SettingGroup<T extends string>({
               type="button"
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
-              className={`bus-secondary min-h-11 flex-1 cursor-pointer rounded-lg border px-2.5 py-2 text-xs font-bold whitespace-nowrap transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070e26] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
+              className={`min-h-11 flex-1 cursor-pointer rounded-lg border px-2.5 py-2 text-xs font-bold whitespace-nowrap transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#040b18] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
                 selected
-                  ? "border-[#a78bfa] bus-gradient font-black text-[#ffffff]"
-                  : "border-white/15 bg-[#141f4b] text-[#e2e8ff] hover:border-[#a78bfa]/50 hover:text-white"
+                  ? "border-[#ffd23f] bg-[#ffd23f] font-black text-[#091c5c]"
+                  : "border-white/15 bg-[#0c1b3a] text-[#dce7ff] hover:border-[#ffd23f]/50 hover:text-white"
               }`}
             >
               {option.label}

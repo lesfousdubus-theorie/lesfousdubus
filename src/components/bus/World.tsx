@@ -25,30 +25,28 @@ const TERRAIN_DEPTH = ZONE_LEN - 16;
 const TERRAIN_COLUMNS = 28;
 const TERRAIN_ROWS = 36;
 
-// Toutes les escales restent dans la famille bleu → violet de la D.A,
-// avec assez de nuances pour que chaque monde garde son identité.
 export const ZONES = [
-  { name: "Alabasta", subtitle: "Royaume des sables", ground: "#5a5496", shore: "#413d78" },
-  { name: "Water Seven", subtitle: "La cité de l'eau", ground: "#4b6cc0", shore: "#35509b" },
-  { name: "Skypiea", subtitle: "L'île céleste", ground: "#8891d8", shore: "#6c76c0" },
-  { name: "Pays des Wa", subtitle: "Terre des samouraïs", ground: "#4c6a9e", shore: "#3b5687" },
-  { name: "Île de Drum", subtitle: "Royaume des neiges", ground: "#a8b6e8", shore: "#8e9dd6" },
-  { name: "Egghead", subtitle: "L'île du futur", ground: "#5f5fae", shore: "#4b4b96" },
-  { name: "Elbaf", subtitle: "Royaume des géants", ground: "#465a9a", shore: "#35477e" },
-  { name: "Enies Lobby", subtitle: "L'île judiciaire", ground: "#5b6bb0", shore: "#475793" },
+  { name: "Alabasta", subtitle: "Royaume des sables", ground: "#e5bd6a", shore: "#d8a84e" },
+  { name: "Water Seven", subtitle: "La cité de l'eau", ground: "#9ec5d4", shore: "#6da3ba" },
+  { name: "Skypiea", subtitle: "L'île céleste", ground: "#f5f3ec", shore: "#e4e1d6" },
+  { name: "Pays des Wa", subtitle: "Terre des samouraïs", ground: "#5da854", shore: "#86c878" },
+  { name: "Île de Drum", subtitle: "Royaume des neiges", ground: "#ebf2fa", shore: "#dbe5f2" },
+  { name: "Egghead", subtitle: "L'île du futur", ground: "#83cfa3", shore: "#80cfda" },
+  { name: "Elbaf", subtitle: "Royaume des géants", ground: "#76a951", shore: "#9a8664" },
+  { name: "Enies Lobby", subtitle: "L'île judiciaire", ground: "#8fa5b5", shore: "#c6f0ed" },
 ] as const;
 
 const LOOP = ZONE_LEN * ZONES.length;
 
 const TINT_COLORS = [
-  "#b9a8ff",
-  "#9fb3ff",
-  "#c9d2ff",
-  "#8fa8ff",
-  "#cdd8ff",
-  "#a99cff",
-  "#8d9cff",
-  "#aeb9e8",
+  "#f6d38a",
+  "#d7e1d6",
+  "#ffffff",
+  "#a4cf77",
+  "#ffffff",
+  "#bfe89b",
+  "#a6cf65",
+  "#c9d6e0",
 ] as const;
 
 const ZONE_PROPS: Record<number, PropType[]> = {
@@ -507,13 +505,13 @@ export default function World({
         <meshStandardMaterial color="#2d3036" roughness={0.92} />
       </mesh>
 
-      {/* Bandes de rive violettes */}
+      {/* Bandes de rive jaunes */}
       {[-3.5, 3.5].map((x) => (
         <group key={x} name={`world-bridge-edge-marking-${x < 0 ? "left" : "right"}`}>
           {markingOffsets.map((zOffset, seg) => (
             <mesh key={seg} position={[x, 0.048, zOffset]}>
               <boxGeometry args={BRIDGE_MARKING_BOX} />
-              <meshStandardMaterial color="#a78bfa" roughness={0.8} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+              <meshStandardMaterial color="#ffc107" roughness={0.8} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
             </mesh>
           ))}
         </group>

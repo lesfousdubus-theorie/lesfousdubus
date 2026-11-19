@@ -102,7 +102,7 @@ export default function WorldOcean({
 
   return <mesh ref={surface} name="world-ocean" rotation={[-Math.PI / 2, 0, 0]} receiveShadow frustumCulled={false}>
     <circleGeometry args={[1, SEGMENTS]} />
-    <meshStandardMaterial color="#25357f" roughness={0.34} metalness={0.20} emissive="#0a1640" emissiveIntensity={0.1}
+    <meshStandardMaterial color="#165ea3" roughness={0.34} metalness={0.20} emissive="#06274d" emissiveIntensity={0.1}
       onBeforeCompile={customize} />
   </mesh>;
 }

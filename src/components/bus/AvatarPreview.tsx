@@ -119,7 +119,7 @@ export default function AvatarPreview({
     />;
   }
   if (webGLSupported === null) {
-    return <p role="status" className="grid h-full place-items-center text-sm text-[#e2e8ff]">Chargement du personnage…</p>;
+    return <p role="status" className="grid h-full place-items-center text-sm text-[#dce7ff]">Chargement du personnage…</p>;
   }
 
   return <PreviewBoundary onFallbackChange={onFallbackChange}>
@@ -154,7 +154,7 @@ export default function AvatarPreview({
         <PreviewCharacter avatarId={avatarId} rotation={rotation} />
       </Canvas>
       {contextLost && (
-        <div className="absolute inset-0 bg-[#141f4b]">
+        <div className="absolute inset-0 bg-[#0c1b3a]">
           <FallbackNotice
             message="L’aperçu 3D a été suspendu par l’appareil. Les flèches restent disponibles pour choisir."
             onFallbackChange={onFallbackChange}

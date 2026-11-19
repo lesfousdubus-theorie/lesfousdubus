@@ -190,9 +190,9 @@ export default function MusicPlaybackControls({
     <div ref={panelRef} id={id} role="region" aria-label="Progression de la musique"
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
-      className="bus-panel pointer-events-auto fixed z-50 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-[#a78bfa]/45 bg-[#0b1433]/95 px-4 py-2.5 text-white shadow-[0_8px_28px_rgba(0,0,0,0.55)] backdrop-blur-md">
-      <p className="truncate text-sm font-bold text-[#a78bfa]" title={playback.title}>{playback.title}</p>
-      <p role="status" className="mt-0.5 text-xs leading-5 text-[#b6c1ee]">{status}</p>
+      className="pointer-events-auto fixed z-50 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-[#ffd23f]/45 bg-[#07142b]/95 px-4 py-2.5 text-white shadow-[0_8px_28px_rgba(0,0,0,0.55)] backdrop-blur-md">
+      <p className="truncate text-sm font-bold text-[#ffd23f]" title={playback.title}>{playback.title}</p>
+      <p role="status" className="mt-0.5 text-xs leading-5 text-[#b6c7eb]">{status}</p>
       <input type="range" min={0} max={playback.duration || 1} step={0.1}
         disabled={!seekEnabled} value={Math.min(elapsed, playback.duration || 0)}
         aria-label={`Position dans ${playback.title}`}
@@ -211,13 +211,13 @@ export default function MusicPlaybackControls({
         onPointerCancel={finishSeekDrag}
         onKeyUp={settleDraft}
         onBlur={finishSeekDrag}
-        className="pointer-events-auto mt-1 h-11 w-full cursor-pointer touch-pan-x rounded-lg accent-[#a78bfa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1433] disabled:cursor-wait disabled:opacity-50" />
-      <div className="-mt-1 flex justify-between text-xs font-semibold tabular-nums text-[#b6c1ee]" aria-hidden="true">
+        className="pointer-events-auto mt-1 h-11 w-full cursor-pointer touch-pan-x rounded-lg accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] disabled:cursor-wait disabled:opacity-50" />
+      <div className="-mt-1 flex justify-between text-xs font-semibold tabular-nums text-[#b6c7eb]" aria-hidden="true">
         <span>{formatTime(elapsed)}</span><span>{playback.duration ? formatTime(playback.duration) : "—:—"}</span>
       </div>
       {onVolumeChange && (
         <div className="mt-1.5 flex items-center gap-2 border-t border-white/15 pt-1.5">
-          <span className="flex shrink-0 items-center text-[#b6c1ee]" aria-hidden="true">
+          <span className="flex shrink-0 items-center text-[#b6c7eb]" aria-hidden="true">
             {resolvedVolume === 0 ? <VolumeOffIcon /> : resolvedVolume < 35 ? <VolumeLowIcon /> : <VolumeHighIcon />}
           </span>
           <input
@@ -229,9 +229,9 @@ export default function MusicPlaybackControls({
             onChange={event => onVolumeChange(Number(event.target.value))}
             aria-label="Volume de la musique"
             aria-valuetext={`${resolvedVolume}%`}
-            className="pointer-events-auto h-10 min-w-0 flex-1 cursor-pointer touch-pan-x rounded-lg accent-[#a78bfa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1433]"
+            className="pointer-events-auto h-10 min-w-0 flex-1 cursor-pointer touch-pan-x rounded-lg accent-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
           />
-          <span className="w-9 shrink-0 text-right text-xs font-semibold tabular-nums text-[#b6c1ee]" aria-hidden="true">
+          <span className="w-9 shrink-0 text-right text-xs font-semibold tabular-nums text-[#b6c7eb]" aria-hidden="true">
             {resolvedVolume}%
           </span>
         </div>
@@ -246,15 +246,15 @@ export default function MusicPlaybackControls({
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
       title={`${playback.title} · ${status} · afficher la progression`}
-      className={`bus-secondary bus-shape-circle bus-glass pointer-events-auto relative z-10 flex h-11 w-11 items-center justify-center gap-2 rounded-full border shadow-lg touch-manipulation transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1433] active:scale-95 cursor-pointer ${compact ? "bus-icon-button" : "lg:w-auto lg:max-w-[165px] lg:justify-start lg:px-3.5"} ${
+      className={`bus-glass pointer-events-auto relative z-10 flex h-11 w-11 items-center justify-center gap-2 rounded-full border shadow-lg touch-manipulation transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-95 cursor-pointer ${compact ? "bus-icon-button" : "lg:w-auto lg:max-w-[165px] lg:justify-start lg:px-3.5"} ${
         open
-          ? "border-[#a78bfa] bus-gradient text-white shadow-[0_0_15px_rgba(139, 92, 246, 0.35)]"
-          : "border-white/35 bg-[#0b1433]/95 text-white hover:border-[#a78bfa]/70 hover:bg-[#141f4b]/95 hover:text-[#a78bfa]"
+          ? "border-[#ffd23f] bg-[#1636c9] text-white shadow-[0_0_15px_rgba(255,210,63,0.35)] hover:bg-[#1d44e6]"
+          : "border-white/35 bg-[#07142b]/95 text-white hover:border-[#ffd23f]/70 hover:bg-[#0c1b3a]/95 hover:text-[#ffd23f]"
       }`}>
       <EqualizerDetailsIcon />
       {!compact && <span className="hidden min-w-0 text-left lg:block">
         <span className="block truncate text-xs font-bold">{playback.title}</span>
-        <span className={`block text-[10px] tabular-nums ${open ? "text-[#e2e8ff]" : "text-[#b6c1ee]"}`}>{formatTime(playback.elapsed)} / {playback.duration ? formatTime(playback.duration) : "—:—"}</span>
+        <span className={`block text-[10px] tabular-nums ${open ? "text-[#dce7ff]" : "text-[#b6c7eb]"}`}>{formatTime(playback.elapsed)} / {playback.duration ? formatTime(playback.duration) : "—:—"}</span>
       </span>}
     </button>}
     {panel ? (portalTarget ? createPortal(panel, portalTarget) : panel) : null}

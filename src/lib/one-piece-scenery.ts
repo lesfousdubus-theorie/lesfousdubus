@@ -40,10 +40,9 @@ function sampleMaxTerrainHeight(zone: number, x0: number, x1: number, z0: number
 // Shared materials keep façade details in the same meshes without allocating
 // textures or lights for each destination.
 export const SCENERY_MATERIALS = {
-  // Pierre et sable d'Alabasta dans les tons bleu/violet de la D.A.
-  sandstone: new THREE.MeshStandardMaterial({ color: "#4d4a8f", roughness: 1 }),
-  sandLight: new THREE.MeshStandardMaterial({ color: "#8a7fd6", roughness: 0.94 }),
-  cream: new THREE.MeshStandardMaterial({ color: "#d8ccff", roughness: 0.91 }),
+  sandstone: new THREE.MeshStandardMaterial({ color: "#c9894d", roughness: 1 }),
+  sandLight: new THREE.MeshStandardMaterial({ color: "#f3d49a", roughness: 0.94 }),
+  cream: new THREE.MeshStandardMaterial({ color: "#fff0ca", roughness: 0.91 }),
   turquoise: new THREE.MeshStandardMaterial({ color: "#358f9f", roughness: 0.62 }),
   water: new THREE.MeshStandardMaterial({ color: "#43bdd7", roughness: 0.25, metalness: 0.08 }),
   foam: new THREE.MeshStandardMaterial({ color: "#c6f0ed", roughness: 0.75 }),
@@ -56,8 +55,8 @@ export const SCENERY_MATERIALS = {
   cloudShade: new THREE.MeshStandardMaterial({ color: "#d5e5e5", roughness: 1 }),
   leaf: new THREE.MeshStandardMaterial({ color: "#5b9c54", roughness: 0.95 }),
   leafLight: new THREE.MeshStandardMaterial({ color: "#b5d884", roughness: 0.95 }),
-  gold: new THREE.MeshStandardMaterial({ color: "#a78bfa", metalness: 0.55, roughness: 0.36 }),
-  oldGold: new THREE.MeshStandardMaterial({ color: "#7c5cc9", metalness: 0.34, roughness: 0.58 }),
+  gold: new THREE.MeshStandardMaterial({ color: "#efbd42", metalness: 0.55, roughness: 0.36 }),
+  oldGold: new THREE.MeshStandardMaterial({ color: "#ac7e35", metalness: 0.34, roughness: 0.58 }),
   wood: new THREE.MeshStandardMaterial({ color: "#694245", roughness: 0.95 }),
   vermilion: new THREE.MeshStandardMaterial({ color: "#a64c51", roughness: 0.91 }),
   jadeRoof: new THREE.MeshStandardMaterial({ color: "#346b6f", roughness: 0.8 }),
@@ -68,7 +67,7 @@ export const SCENERY_MATERIALS = {
   snow: new THREE.MeshStandardMaterial({ color: "#f4faff", roughness: 1 }),
   castle: new THREE.MeshStandardMaterial({ color: "#d5deef", roughness: 0.91 }),
   pine: new THREE.MeshStandardMaterial({ color: "#34666c", roughness: 1 }),
-  lamp: new THREE.MeshStandardMaterial({ color: "#d8ccff", emissive: "#8b5cf6", emissiveIntensity: 0.45, roughness: 0.8 }),
+  lamp: new THREE.MeshStandardMaterial({ color: "#ffda8d", emissive: "#f39b38", emissiveIntensity: 0.45, roughness: 0.8 }),
   neonCyan: new THREE.MeshStandardMaterial({ color: "#8ff6ff", emissive: "#1cd4ff", emissiveIntensity: 0.75, roughness: 0.35 }),
   metal: new THREE.MeshStandardMaterial({ color: "#8d9db0", metalness: 0.62, roughness: 0.38 }),
   foliageDeep: new THREE.MeshStandardMaterial({ color: "#2d6f43", roughness: 0.94 }),

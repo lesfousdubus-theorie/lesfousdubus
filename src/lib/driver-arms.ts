@@ -13,7 +13,7 @@ export const DRIVER_SEAT_POSITIONS = {
 } satisfies Record<"kamal" | "kyta", [number, number, number]>;
 export const STEERING_WHEEL = { radius: .23, tilt: -.65, y: 1.62, z: -4.07 } as const;
 export const DRIVER_HAND_SIZE: [number, number, number] = [.10, .08, .105];
-// La main tournée à plat pose sa demi-épaisseur au-dessus du cylindre violet.
+// La main tournée à plat pose sa demi-épaisseur au-dessus du cylindre jaune.
 export const NAVIGATOR_BAR = { radius: .018, width: .60, y: 1.68, z: -4.27, handOffset: .20,
   handY: 1.68 + .018 + DRIVER_HAND_SIZE[2] / 2 + .001 } as const;
 export const DRIVER_DASHBOARD = {
