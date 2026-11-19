@@ -14,7 +14,7 @@
     "deploy": "npm run deploy:preflight && npm run build && npm run db:migrate:remote && opennextjs-cloudflare deploy",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "start": "next start",
-    "test": "node scripts/test-local-setup.mjs && node scripts/test-bus-audio.mjs && node scripts/test-bus-shortcuts.mjs && node scripts/test-bus-camera.mjs && node scripts/test-scene-performance.mjs && node scripts/test-tv-layout.mjs && node scripts/test-bus-occupancy.mjs && node scripts/test-server-security.mjs && npm run test:seo",
+    "test": "node scripts/test-local-setup.mjs && node scripts/test-bus-audio.mjs && node scripts/test-bus-shortcuts.mjs && node scripts/test-bus-camera.mjs && node scripts/test-scene-performance.mjs && node scripts/test-tv-layout.mjs && node scripts/test-bus-occupancy.mjs && node scripts/test-bus-speed-lines.mjs && node scripts/test-server-security.mjs && npm run test:seo",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:seo": "npm run content:check && node scripts/test-seo.mjs",

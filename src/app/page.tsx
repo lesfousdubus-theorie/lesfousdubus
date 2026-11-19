@@ -19,15 +19,15 @@ export default function HomePage() {
 
       {/* Version de secours pour navigateurs sans JavaScript */}
       <noscript>
-        <div className="fixed inset-0 z-[400] grid place-items-center overflow-y-auto overscroll-contain bg-[#07142b] p-4 text-white sm:p-6">
-          <div className="my-auto w-full max-w-xl rounded-2xl border border-[#ffd23f]/45 bg-[#0c1b3a] p-5 shadow-[0_24px_64px_rgba(2,6,23,0.65)] sm:p-8">
-            <span className="inline-flex rounded-full border border-[#ffd23f]/45 bg-[#07142b] px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#ffd23f]">
+        <div className="fixed inset-0 z-[400] grid place-items-center overflow-y-auto overscroll-contain bg-[#04071c] p-4 text-white sm:p-6">
+          <div className="bus-case-elevated my-auto w-full max-w-xl rounded-2xl p-5 sm:p-8">
+            <span className="bus-icon-badge inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest">
               Sans JavaScript
             </span>
-            <h1 className="mt-4 text-xl font-black leading-tight text-[#ffd23f] sm:text-2xl">
+            <h1 className="mt-4 text-xl font-black leading-tight text-white sm:text-2xl">
               La Théorie des Fous du Bus — Le Siècle Oublié est le Présent
             </h1>
-            <p className="mt-3 text-sm leading-relaxed text-[#dce7ff] sm:text-base">{CENTRAL_THESIS.overview}</p>
+            <p className="mt-3 text-sm leading-relaxed text-[#dfe5ff] sm:text-base">{CENTRAL_THESIS.overview}</p>
             <p className="mt-4 text-sm font-bold leading-relaxed text-white sm:text-base">
               Active JavaScript pour vivre l’expérience interactive du bus sur Grand Line !
             </p>
@@ -36,7 +36,7 @@ export default function HomePage() {
                 href={THEORY_VIDEO_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#ffd23f] px-6 py-3 text-center text-sm font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] motion-reduce:transform-none motion-reduce:transition-none sm:text-base"
+                className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-center text-sm font-semibold focus-visible:outline-none sm:text-base"
               >
                 Regarder la vidéo sur YouTube
               </a>
