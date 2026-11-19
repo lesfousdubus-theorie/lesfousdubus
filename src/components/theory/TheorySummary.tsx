@@ -69,7 +69,7 @@ export default function TheorySummary() {
                 const behavior = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
                 document.getElementById(`modal-${group.id}`)?.scrollIntoView({ behavior, block: "start" });
               }}
-              className="inline-flex min-h-11 cursor-pointer items-center rounded-sm font-medium text-[#dfe5ff] underline decoration-[#947eef]/50 underline-offset-4 transition-colors hover:text-[#c4b5fd] hover:decoration-[#c4b5fd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] motion-reduce:transition-none"
+              className="inline-flex min-h-11 cursor-pointer items-center rounded-sm font-medium text-[#dfe5ff] underline decoration-[#947eef]/50 underline-offset-4 transition-colors hover:text-[#c4b5fd] hover:decoration-[#c4b5fd] focus-visible:outline-none motion-reduce:transition-none"
             >
               {group.title}
             </a>
@@ -79,7 +79,7 @@ export default function TheorySummary() {
           type="button"
           onClick={toggleAll}
           aria-pressed={allExpanded}
-          className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center self-start rounded-2xl px-4 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] sm:self-center ${
+          className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center self-start rounded-2xl px-4 py-2 text-xs font-semibold focus-visible:outline-none sm:self-center ${
             allExpanded ? "bus-btn-active" : "bus-btn-secondary"
           }`}
         >
@@ -121,7 +121,7 @@ export default function TheorySummary() {
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-sm font-medium text-[#c4b5fd] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] motion-reduce:transition-none"
+              className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-sm font-medium text-[#c4b5fd] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none motion-reduce:transition-none"
             >
               <span>{source.label}</span>
               <ExternalArrowIcon className="h-3.5 w-3.5 shrink-0" />
@@ -137,9 +137,9 @@ function PointCard({ section, onToggle }: { section: TheoryPoint; onToggle: () =
   return (
     <details
       onToggle={onToggle}
-      className="bus-case-elevated group rounded-xl p-4 transition-colors hover:border-[#947eef]/55 [&[open]]:border-[#947eef]/65 [&[open]]:bg-[#161d52]/85 motion-reduce:transition-none sm:p-5"
+      className="bus-case-elevated group rounded-xl p-4 transition-colors [&[open]]:border-[#947eef]/65 [&[open]]:bg-[#161d52]/85 motion-reduce:transition-none sm:p-5"
     >
-      <summary className="flex min-h-11 cursor-pointer list-none items-start gap-3 rounded-lg select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-11 cursor-pointer list-none items-start gap-3 rounded-lg select-none focus-visible:outline-none [&::-webkit-details-marker]:hidden">
         <span aria-hidden="true" className="bus-case-inset grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg transition-colors group-open:border-[#947eef]/55 group-open:bg-[#070b24] motion-reduce:transition-none">
           {section.icon}
         </span>
@@ -159,7 +159,7 @@ function PointCard({ section, onToggle }: { section: TheoryPoint; onToggle: () =
                 aria-label={source.label + " : " + section.title}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-sm text-xs font-semibold text-[#c4b5fd] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] motion-reduce:transition-none"
+                className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-sm text-xs font-semibold text-[#c4b5fd] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none motion-reduce:transition-none"
               >
                 <span>{source.label}</span>
                 <ExternalArrowIcon className="h-3.5 w-3.5 shrink-0" />

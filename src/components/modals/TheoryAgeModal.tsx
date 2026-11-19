@@ -68,7 +68,7 @@ function TheoryAgeModalDialog({ onClose }: { onClose: () => void }) {
               href={THEORY_FIRST_VIDEO_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="bus-btn-primary inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#121845]"
+              className="bus-btn-primary inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold focus-visible:outline-none"
             >
               <span>Voir la première vidéo</span>
               <ExternalArrowIcon className="h-4 w-4 shrink-0" />

@@ -212,7 +212,7 @@ export default function TheoryModal({
           <div
             ref={contentRef}
             tabIndex={0}
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,rgba(122,58,236,0.08),transparent_32rem)] px-3 py-4 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#947eef] min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10"
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,rgba(122,58,236,0.08),transparent_32rem)] px-3 py-4 text-sm leading-relaxed focus-visible:outline-none min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10"
           >
             {THEORY_TABS.map((tab) => (
               <div key={tab} role="tabpanel" id={`theory-panel-${tab}`} aria-labelledby={`theory-tab-${tab}`} hidden={tab !== activeTab}>
@@ -274,7 +274,7 @@ function TabButton({
       aria-controls={panelId}
       aria-label={label}
       tabIndex={active ? 0 : -1}
-      className={`flex min-h-11 shrink-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-2xl px-2.5 py-2 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c] motion-reduce:transition-none min-[360px]:px-3 min-[360px]:text-xs sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
+      className={`flex min-h-11 shrink-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-2xl px-2.5 py-2 text-[11px] font-semibold focus-visible:outline-none motion-reduce:transition-none min-[360px]:px-3 min-[360px]:text-xs sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
         active ? "bus-btn-active" : "bus-btn-secondary"
       }`}
     >

@@ -149,7 +149,7 @@ export function PassengerListModal({
           }}
           className="relative min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5"
         >
-          <button type="button" onClick={onOpenMessages} className="bus-btn-primary mb-4 flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]">
+          <button type="button" onClick={onOpenMessages} className="bus-btn-primary mb-4 flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold focus-visible:outline-none">
             Voir les messages <span aria-hidden="true">→</span>
           </button>
           <div aria-label="Équipage permanent" className="mb-3 grid gap-2 sm:grid-cols-2">
@@ -166,7 +166,7 @@ export function PassengerListModal({
                       href={member.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-0.5 inline-flex cursor-pointer items-center gap-1 rounded-sm text-xs font-bold leading-tight text-[#c4b5fd] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438]"
+                      className="mt-0.5 inline-flex cursor-pointer items-center gap-1 rounded-sm text-xs font-bold leading-tight text-[#c4b5fd] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none"
                     >
                       <span>{member.handle}</span>
                       <ExternalArrowIcon className="h-3.5 w-3.5 shrink-0" />
@@ -198,14 +198,14 @@ export function PassengerListModal({
                     value={activeSearchQuery}
                     onChange={(event) => setActiveSearchQuery(event.target.value)}
                     placeholder="Rechercher un nom ou n° de place…"
-                    className="bus-case-inset min-h-11 w-full rounded-xl py-2 pl-10 pr-11 text-base text-white placeholder:text-[#8995c4] transition-colors focus:border-[#947eef] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] sm:text-sm"
+                    className="bus-case-inset min-h-11 w-full rounded-xl py-2 pl-10 pr-11 text-base text-white placeholder:text-[#8995c4] transition-colors focus:border-[#947eef] focus:outline-none sm:text-sm"
                   />
                   {activeSearchQuery && (
                     <button
                       type="button"
                       onClick={() => setActiveSearchQuery("")}
                       aria-label="Effacer la recherche"
-                      className="absolute inset-y-0 right-0 grid w-11 cursor-pointer place-items-center rounded-r-xl text-[#a3aed9] transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c]"
+                      className="absolute inset-y-0 right-0 grid w-11 cursor-pointer place-items-center rounded-r-xl text-[#a3aed9] transition-colors hover:text-white focus-visible:outline-none"
                     >
                       <CloseIcon className="h-4 w-4" />
                     </button>
@@ -215,7 +215,7 @@ export function PassengerListModal({
                   type="button"
                   aria-pressed={activeOnlyWithComment}
                   onClick={() => setActiveOnlyWithComment(!activeOnlyWithComment)}
-                  className={`min-h-11 cursor-pointer rounded-2xl px-3.5 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] ${
+                  className={`min-h-11 cursor-pointer rounded-2xl px-3.5 py-2 text-xs font-semibold focus-visible:outline-none ${
                     activeOnlyWithComment ? "bus-btn-active" : "bus-btn-secondary"
                   }`}
                 >
@@ -225,7 +225,7 @@ export function PassengerListModal({
                   <button
                     type="button"
                     onClick={jumpToMySeat}
-                    className="bus-btn-tonal min-h-11 cursor-pointer rounded-2xl px-3.5 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+                    className="bus-btn-tonal min-h-11 cursor-pointer rounded-2xl px-3.5 py-2 text-xs font-semibold focus-visible:outline-none"
                   >
                     Ma place
                   </button>
@@ -237,7 +237,7 @@ export function PassengerListModal({
                     onClick={() => {
                       if (!loading) onRefresh();
                     }}
-                    className="bus-btn-secondary min-h-11 cursor-pointer rounded-2xl px-3.5 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] aria-disabled:cursor-wait aria-disabled:opacity-60"
+                    className="bus-btn-secondary min-h-11 cursor-pointer rounded-2xl px-3.5 py-2 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-60"
                   >
                     Actualiser
                   </button>
@@ -258,7 +258,7 @@ export function PassengerListModal({
                   type="button"
                   data-passenger-seat={passenger.seatIndex}
                   onClick={() => onPassengerClick(passenger)}
-                  className={`group flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-left transition-colors hover:border-[#b4a4f8] hover:bg-[#192058] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] ${rowClass}`}
+                  className={`group flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-left transition-colors hover:bg-[#192058] focus-visible:outline-none ${rowClass}`}
                 >
                   <span aria-hidden="true" className="bus-icon-badge grid h-8 w-8 shrink-0 place-items-center rounded-full">
                     <PersonIcon className="h-4 w-4" />
@@ -310,13 +310,13 @@ export function PassengerListModal({
           {error && (
             <div className="mt-3 rounded-2xl border border-red-400/40 bg-red-950/50 p-4 text-center">
               <p role="alert" className="text-sm font-bold text-red-100">{error}</p>
-              <button type="button" onClick={onRetry} className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-2xl px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]">
+              <button type="button" onClick={onRetry} className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-2xl px-4 py-2 text-sm font-semibold focus-visible:outline-none">
                 Réessayer
               </button>
             </div>
           )}
           {!loading && !error && hasMore && (
-            <button type="button" onClick={onLoadMore} className="bus-btn-secondary mt-4 min-h-11 w-full cursor-pointer rounded-2xl px-4 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]">
+            <button type="button" onClick={onLoadMore} className="bus-btn-secondary mt-4 min-h-11 w-full cursor-pointer rounded-2xl px-4 py-2.5 text-sm font-semibold focus-visible:outline-none">
               Afficher plus de passagers
             </button>
           )}
@@ -333,7 +333,7 @@ export function PassengerListModal({
                     setActiveSearchQuery("");
                     setActiveOnlyWithComment(false);
                   }}
-                  className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-2xl px-4 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+                  className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-2xl px-4 py-2 text-xs font-semibold focus-visible:outline-none"
                 >
                   Réinitialiser les filtres
                 </button>

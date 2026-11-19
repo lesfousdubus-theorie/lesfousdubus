@@ -82,7 +82,7 @@ export function PassengerCard({
             <button
               type="button"
               onClick={onBack}
-              className="bus-btn-secondary mb-4 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-2xl px-3.5 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+              className="bus-btn-secondary mb-4 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-2xl px-3.5 py-2 text-sm font-semibold focus-visible:outline-none"
             >
               ← Retour aux passagers
             </button>
@@ -102,7 +102,7 @@ export function PassengerCard({
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-2xl px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438]"
+                  className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-2xl px-4 py-2 text-sm font-semibold focus-visible:outline-none"
                 >
                   Réessayer
                 </button>
@@ -123,7 +123,7 @@ export function PassengerCard({
             <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
               <a
                 href={getPassengerReportHref(passenger)}
-                className="inline-flex min-h-11 cursor-pointer items-center rounded-md px-1 text-xs font-semibold text-[#a3aed9] underline underline-offset-4 transition-colors hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+                className="inline-flex min-h-11 cursor-pointer items-center rounded-md px-1 text-xs font-semibold text-[#a3aed9] underline underline-offset-4 transition-colors hover:text-red-300 focus-visible:outline-none"
               >
                 Signaler ce contenu
               </a>

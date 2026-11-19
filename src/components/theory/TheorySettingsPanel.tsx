@@ -181,7 +181,7 @@ export default function TheorySettingsPanel({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => onSelectPreset(option.value)}
-                className={`min-h-11 cursor-pointer rounded-2xl px-3 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-sm ${
+                className={`min-h-11 cursor-pointer rounded-2xl px-3 py-2 text-xs font-semibold focus-visible:outline-none sm:text-sm ${
                   selected ? "bus-btn-active" : "bus-btn-secondary"
                 }`}
               >
@@ -243,12 +243,12 @@ export default function TheorySettingsPanel({
           Fluidité &amp; confort
         </h4>
         <div className="mt-3 space-y-3">
-          <label className="bus-case-inset flex min-h-11 cursor-pointer items-start gap-3 rounded-xl p-3.5 text-sm leading-relaxed transition-colors hover:border-[#947eef]/55">
+          <label className="bus-case-inset flex min-h-11 cursor-pointer items-start gap-3 rounded-xl p-3.5 text-sm leading-relaxed transition-colors">
             <input
               type="checkbox"
               checked={graphicsSettings.adaptiveFps}
               onChange={(event) => onUpdateGraphics({ adaptiveFps: event.target.checked })}
-              className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#7a3aec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c]"
+              className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#7a3aec] focus-visible:outline-none"
             />
             <span className="min-w-0">
               <span className="block font-bold text-white">
@@ -261,12 +261,12 @@ export default function TheorySettingsPanel({
           </label>
 
           {setLetterShortcutsEnabled && (
-            <label className="bus-case-inset flex min-h-11 cursor-pointer items-start gap-3 rounded-xl p-3.5 text-sm leading-relaxed transition-colors hover:border-[#947eef]/55">
+            <label className="bus-case-inset flex min-h-11 cursor-pointer items-start gap-3 rounded-xl p-3.5 text-sm leading-relaxed transition-colors">
               <input
                 type="checkbox"
                 checked={letterShortcutsEnabled}
                 onChange={(event) => setLetterShortcutsEnabled(event.target.checked)}
-                className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#7a3aec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c]"
+                className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#7a3aec] focus-visible:outline-none"
               />
               <span className="min-w-0">
                 <span className="block font-bold text-white">
@@ -288,7 +288,7 @@ export default function TheorySettingsPanel({
             type="button"
             disabled={isDefault}
             onClick={onResetGraphics}
-            className={`inline-flex min-h-11 items-center justify-center rounded-2xl px-4 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-sm ${
+            className={`inline-flex min-h-11 items-center justify-center rounded-2xl px-4 py-2 text-xs font-semibold focus-visible:outline-none sm:text-sm ${
               isDefault
                 ? "cursor-not-allowed border border-white/15 bg-[#04071c]/75 text-[#9aa6d6]"
                 : "bus-btn-tonal cursor-pointer"
@@ -352,7 +352,7 @@ function SettingGroup<T extends string>({
               type="button"
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
-              className={`min-h-11 flex-1 cursor-pointer rounded-[0.875rem] px-2.5 py-2 text-xs font-semibold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c] ${
+              className={`min-h-11 flex-1 cursor-pointer rounded-[0.875rem] px-2.5 py-2 text-xs font-semibold whitespace-nowrap focus-visible:outline-none ${
                 selected ? "bus-btn-active" : "bus-btn-secondary"
               }`}
             >

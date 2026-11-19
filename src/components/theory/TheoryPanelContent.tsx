@@ -77,7 +77,7 @@ export default function TheoryPanelContent({
                 href={THEORY_VIDEO_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#121845] sm:text-sm"
+                className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold focus-visible:outline-none sm:text-sm"
               >
                 <TvIcon className="h-4 w-4 shrink-0" />
                 <span>Regarder sur YouTube</span>
@@ -94,9 +94,9 @@ export default function TheoryPanelContent({
           {THEORY_FAQ.map((faq, idx) => (
             <details
               key={idx}
-              className="bus-case-elevated group rounded-xl p-4 transition-colors hover:border-[#947eef]/55 [&[open]]:border-[#947eef]/65 [&[open]]:bg-[#161d52]/85 motion-reduce:transition-none sm:p-5"
+              className="bus-case-elevated group rounded-xl p-4 transition-colors [&[open]]:border-[#947eef]/65 [&[open]]:bg-[#161d52]/85 motion-reduce:transition-none sm:p-5"
             >
-              <summary className="flex min-h-11 cursor-pointer list-none items-start justify-between gap-2 rounded-lg py-2.5 text-sm font-bold leading-snug text-white select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-base [&::-webkit-details-marker]:hidden">
+              <summary className="flex min-h-11 cursor-pointer list-none items-start justify-between gap-2 rounded-lg py-2.5 text-sm font-bold leading-snug text-white select-none focus-visible:outline-none sm:text-base [&::-webkit-details-marker]:hidden">
                 <span className="shrink-0 font-black text-[#c4b5fd]">Q :</span>
                 <span className="flex-1 text-white transition-colors group-open:text-[#c4b5fd] motion-reduce:transition-none">
                   {faq.question}
@@ -136,7 +136,7 @@ export default function TheoryPanelContent({
               href="https://github.com/lesfousdubus-theorie/lesfousdubus"
               target="_blank"
               rel="noopener noreferrer"
-              className="bus-btn-primary mt-6 inline-flex min-h-12 cursor-pointer items-center justify-center gap-2.5 rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#121845]"
+              className="bus-btn-primary mt-6 inline-flex min-h-12 cursor-pointer items-center justify-center gap-2.5 rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none"
             >
               <GitHubIcon className="h-5 w-5 shrink-0" />
               <span>Ouvrir le projet sur GitHub</span>

@@ -157,7 +157,7 @@ export function JoinBusModal({
             <button
               type="submit"
               aria-disabled={joining}
-              className="bus-btn-primary flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] aria-disabled:cursor-wait aria-disabled:opacity-80"
+              className="bus-btn-primary flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80"
             >
               {mode === "name" ? <UserBadgeIcon className="h-5 w-5 shrink-0" /> : <CommentBubbleIcon className="h-5 w-5 shrink-0" />}
               {joining ? "Enregistrement…" : "Enregistrer"}
@@ -167,7 +167,7 @@ export function JoinBusModal({
                 type="button"
                 aria-disabled={joining}
                 onClick={() => { if (!joining) onRemove(); }}
-                className="min-h-12 cursor-pointer rounded-2xl border border-red-400/45 bg-red-950/40 px-4 py-3 text-sm font-semibold text-red-100 transition-colors hover:border-red-300 hover:bg-red-900/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] aria-disabled:cursor-wait aria-disabled:opacity-80"
+                className="min-h-12 cursor-pointer rounded-2xl border border-red-400/45 bg-red-950/40 px-4 py-3 text-sm font-semibold text-red-100 transition-colors hover:bg-red-900/55 focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80"
               >
                 Retirer mon commentaire
               </button>

@@ -493,7 +493,7 @@ export function BusTvPlayer({
             onPointerDown={(e) => e.stopPropagation()}
             onClick={handleActivate}
             aria-label={playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
-            className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-2.5 text-lg font-semibold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] sm:px-7 sm:py-3 sm:text-2xl"
+            className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-2.5 text-lg font-semibold focus-visible:outline-none sm:px-7 sm:py-3 sm:text-2xl"
           >
             {playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
           </button>
@@ -504,7 +504,7 @@ export function BusTvPlayer({
               rel="noopener noreferrer"
               style={{ pointerEvents: interactive ? "auto" : "none" }}
               onPointerDown={(e) => e.stopPropagation()}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg px-3 py-1.5 text-base font-semibold text-[#c4b5fd] underline underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] sm:text-xl"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg px-3 py-1.5 text-base font-semibold text-[#c4b5fd] underline underline-offset-4 hover:text-white focus-visible:outline-none sm:text-xl"
             >
               Voir la vidéo sur YouTube
             </a>
