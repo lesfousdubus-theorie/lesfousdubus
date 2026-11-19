@@ -290,7 +290,7 @@ export default function TheorySettingsPanel({
             onClick={onResetGraphics}
             className={`inline-flex min-h-11 items-center justify-center rounded-2xl px-4 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-sm ${
               isDefault
-                ? "cursor-not-allowed border border-white/10 bg-[#04071c]/50 text-[#a3aed9]/50"
+                ? "cursor-not-allowed border border-white/15 bg-[#04071c]/75 text-[#9aa6d6]"
                 : "bus-btn-tonal cursor-pointer"
             }`}
           >

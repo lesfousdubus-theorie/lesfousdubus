@@ -6,82 +6,82 @@
   --bus-surface-elevated: #0e1438;
   --bus-surface-header-start: #181f54;
   --bus-surface-inset: #04071c;
-  --bus-btn-grad-start: #7a3aec;
-  --bus-btn-grad-mid: #6141e8;
-  --bus-btn-grad-end: #464be6;
-  --bus-btn-border: #947eef;
-  --bus-btn-border-hover: #bcb0fa;
+  --bus-btn-grad-start: #6b2cde;
+  --bus-btn-grad-mid: #5334da;
+  --bus-btn-grad-end: #3a3ed6;
+  --bus-btn-border: #9d88f4;
+  --bus-btn-border-hover: #cfc4fc;
   --bus-accent: #a995f7;
   --bus-accent-strong: #c4b5fd;
-  --bus-active-indigo: #583be3;
-  --bus-active-indigo-hover: #674ae9;
+  --bus-active-indigo: #472dc8;
+  --bus-active-indigo-hover: #5136d4;
   --bus-text-primary: #ffffff;
   --bus-text-secondary: #dfe5ff;
-  --bus-text-muted: #a3aed9;
+  --bus-text-muted: #b4bfe8;
 }
 
 @layer components {
-  /* Bouton principal fidèle à la D.A : dégradé violet -> indigo, bordure lavande fine, fixe, sans halo. */
+  /* Bouton principal fidèle à la D.A : dégradé violet -> indigo à haut contraste (AA/AAA), bordure lavande fine, fixe, sans halo. */
   .bus-btn-primary {
-    border: 1px solid #947eef;
-    background-color: #6141e8;
-    background-image: linear-gradient(90deg, #7a3aec 0%, #6141e8 50%, #464be6 100%);
+    border: 1px solid #9d88f4;
+    background-color: #5334da;
+    background-image: linear-gradient(90deg, #6b2cde 0%, #5334da 50%, #3a3ed6 100%);
     color: #ffffff;
     box-shadow: none;
     transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
   }
 
   .bus-btn-primary:hover:not(:disabled):not([aria-disabled="true"]) {
-    border-color: #c2b6fb;
-    background-color: #6e50ec;
-    background-image: linear-gradient(90deg, #884cef 0%, #6e50ec 50%, #5459ea 100%);
+    border-color: #cfc4fc;
+    background-color: #5e3ee4;
+    background-image: linear-gradient(90deg, #7737e8 0%, #5e3ee4 50%, #4448e0 100%);
     color: #ffffff;
   }
 
-  /* État actif / sélectionné pour les commandes à bascule, onglets et filtres. */
+  /* État actif / sélectionné pour les commandes à bascule, onglets et filtres (contraste AAA >= 7:1). */
   .bus-btn-active {
-    border: 1px solid #b4a4f8;
-    background-color: #583be3;
-    background-image: linear-gradient(90deg, #6e35dc 0%, #583be3 50%, #4045de 100%);
+    border: 1px solid #bdb0fa;
+    background-color: #472dc8;
+    background-image: linear-gradient(90deg, #5c26cc 0%, #472dc8 50%, #3337c4 100%);
     color: #ffffff;
     box-shadow: none;
     transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
   }
 
   .bus-btn-active:hover:not(:disabled):not([aria-disabled="true"]) {
-    border-color: #d0c5fc;
-    background-color: #6649ea;
-    background-image: linear-gradient(90deg, #7d43e8 0%, #6649ea 50%, #4e53e6 100%);
+    border-color: #d6ccfd;
+    background-color: #5136d4;
+    background-image: linear-gradient(90deg, #682fd8 0%, #5136d4 50%, #3b3fd0 100%);
     color: #ffffff;
   }
 
-  /* Bouton secondaire / case sombre à bordure violette discrète, fixe, sans halo. */
+  /* Bouton secondaire / case sombre à bordure violette discrète, fixe, sans halo (contraste AAA > 14:1). */
   .bus-btn-secondary {
-    border: 1px solid rgba(148, 126, 239, 0.38);
-    background-color: rgba(8, 12, 38, 0.94);
+    border: 1px solid rgba(157, 136, 244, 0.42);
+    background-color: rgba(8, 12, 38, 0.95);
     color: #ffffff;
     box-shadow: none;
     transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
   }
 
   .bus-btn-secondary:hover:not(:disabled):not([aria-disabled="true"]) {
-    border-color: rgba(188, 176, 250, 0.78);
-    background-color: rgba(24, 31, 82, 0.96);
+    border-color: rgba(207, 196, 252, 0.82);
+    background-color: rgba(22, 29, 78, 0.97);
     color: #ffffff;
   }
 
-  /* Variante tonale (ex. Sortir, actions contextuelles secondaires). */
+  /* Variante tonale (ex. Sortir, actions contextuelles secondaires, contraste AAA > 12:1). */
   .bus-btn-tonal {
-    border: 1px solid rgba(157, 138, 245, 0.52);
-    background-color: rgba(31, 26, 86, 0.94);
-    color: #ede9fe;
+    border: 1px solid rgba(168, 150, 248, 0.56);
+    background-color: rgba(28, 23, 82, 0.95);
+    color: #ffffff;
     box-shadow: none;
     transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
   }
 
   .bus-btn-tonal:hover:not(:disabled):not([aria-disabled="true"]) {
-    border-color: #c2b6fb;
-    background-color: rgba(49, 41, 124, 0.96);
+    border-color: #cfc4fc;
+    background-color: rgba(42, 34, 114, 0.97);
     color: #ffffff;
   }
 
@@ -142,9 +142,9 @@
   }
 
   .bus-pill-badge {
-    border: 1px solid rgba(180, 164, 248, 0.55);
-    background-color: #6141e8;
-    background-image: linear-gradient(90deg, #7a3aec 0%, #464be6 100%);
+    border: 1px solid rgba(189, 176, 250, 0.6);
+    background-color: #4d2fd2;
+    background-image: linear-gradient(90deg, #6427d6 0%, #3539ce 100%);
     color: #ffffff;
   }
 }
