@@ -119,7 +119,7 @@ export default function TheoryModal({
       aria-modal="true"
       aria-labelledby="theory-modal-title"
       tabIndex={-1}
-      className="theory-modal-backdrop pointer-events-auto fixed inset-0 z-[999999] flex items-center justify-center bg-[#020617]/85 backdrop-blur-md"
+      className="theory-modal-backdrop pointer-events-auto fixed inset-0 z-[999999] flex items-center justify-center bg-[#030617]/85 backdrop-blur-md"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
@@ -128,22 +128,22 @@ export default function TheoryModal({
       onTouchMove={(e) => e.stopPropagation()}
     >
       <div
-        className="theory-modal-window relative flex h-[calc(100dvh-0.5rem)] w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-[#ffd23f]/45 bg-[#07142b] text-white shadow-[0_28px_80px_rgba(0,0,0,0.75)] select-text min-[360px]:h-[calc(100dvh-1rem)] min-[360px]:rounded-2xl sm:h-[min(92dvh,900px)]"
+        className="theory-modal-window bus-case-solid relative flex h-[calc(100dvh-0.5rem)] w-full max-w-6xl flex-col overflow-hidden rounded-xl text-white shadow-[0_24px_64px_rgba(2,4,18,0.75)] select-text min-[360px]:h-[calc(100dvh-1rem)] min-[360px]:rounded-2xl sm:h-[min(92dvh,900px)]"
         onWheel={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex min-h-[64px] shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-gradient-to-r from-[#10265c] to-[#07142b] px-3 py-2.5 min-[360px]:gap-4 min-[360px]:px-4 min-[360px]:py-3 sm:min-h-[76px] sm:px-7 sm:py-4 lg:px-9">
+          <div className="bus-case-header flex min-h-[64px] shrink-0 items-center justify-between gap-2 px-3 py-2.5 min-[360px]:gap-4 min-[360px]:px-4 min-[360px]:py-3 sm:min-h-[76px] sm:px-7 sm:py-4 lg:px-9">
             <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#ffd23f]/35 bg-[#ffd23f]/12 text-[#ffd23f] sm:h-11 sm:w-11" aria-hidden="true">
+              <span className="bus-icon-badge grid h-10 w-10 shrink-0 place-items-center rounded-xl sm:h-11 sm:w-11" aria-hidden="true">
                 <ScrollIcon className="h-5 w-5 sm:h-6 sm:w-6" />
               </span>
               <div className="min-w-0">
-                <h2 ref={dialogTitleRef} tabIndex={-1} id="theory-modal-title" className="text-sm font-black leading-tight uppercase tracking-[0.025em] text-[#ffd23f] focus:outline-none sm:text-xl sm:tracking-[0.04em] lg:text-2xl">
+                <h2 ref={dialogTitleRef} tabIndex={-1} id="theory-modal-title" className="text-sm font-black leading-tight uppercase tracking-[0.025em] text-[#c4b5fd] focus:outline-none sm:text-xl sm:tracking-[0.04em] lg:text-2xl">
                   La Théorie des Fous du Bus
                 </h2>
-                <p className="mt-1 text-xs font-semibold leading-snug text-[#dce7ff] sm:uppercase sm:tracking-[0.1em]">
+                <p className="mt-1 text-xs font-semibold leading-snug text-[#dfe5ff] sm:uppercase sm:tracking-[0.1em]">
                   Le Siècle Oublié est le Présent
                 </p>
               </div>
@@ -151,7 +151,7 @@ export default function TheoryModal({
             <ModalCloseButton onClick={handleClose} />
           </div>
 
-          <div role="tablist" aria-label="Sections de la théorie" className="flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-white/10 bg-[#040b18]/75 px-2 py-2 no-scrollbar min-[360px]:px-3 min-[360px]:py-2.5 sm:gap-2 sm:px-7 lg:px-9">
+          <div role="tablist" aria-label="Sections de la théorie" className="flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-[#947eef]/20 bg-[#04071c]/85 px-2 py-2 no-scrollbar min-[360px]:px-3 min-[360px]:py-2.5 sm:gap-2 sm:px-7 lg:px-9">
             <TabButton
               buttonRef={(element) => { tabRefs.current[0] = element; }}
               active={activeTab === "thesis"}
@@ -212,7 +212,7 @@ export default function TheoryModal({
           <div
             ref={contentRef}
             tabIndex={0}
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,rgba(255,210,63,0.05),transparent_32rem)] px-3 py-4 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffd23f] min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10"
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,rgba(122,58,236,0.08),transparent_32rem)] px-3 py-4 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#947eef] min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10"
           >
             {THEORY_TABS.map((tab) => (
               <div key={tab} role="tabpanel" id={`theory-panel-${tab}`} aria-labelledby={`theory-tab-${tab}`} hidden={tab !== activeTab}>
@@ -274,10 +274,8 @@ function TabButton({
       aria-controls={panelId}
       aria-label={label}
       tabIndex={active ? 0 : -1}
-      className={`flex min-h-11 shrink-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2.5 py-2 text-[11px] font-black transition-[background-color,border-color,color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none min-[360px]:px-3 min-[360px]:text-xs sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
-        active
-          ? "border-[#ffd23f] bg-[#ffd23f] text-[#091c5c] shadow-md shadow-[#ffd23f]/20"
-          : "border-white/15 bg-[#0c1b3a]/70 text-[#dce7ff] hover:border-[#ffd23f]/45 hover:bg-[#0c1b3a] hover:text-white"
+      className={`flex min-h-11 shrink-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c] motion-reduce:transition-none min-[360px]:px-3 min-[360px]:text-xs sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
+        active ? "bus-btn-active" : "bus-btn-secondary"
       }`}
     >
       {icon}

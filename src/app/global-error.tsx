@@ -7,7 +7,7 @@ const GLOBAL_ERROR_FALLBACK_CSS = `@layer base {
   html, body {
     margin: 0;
     height: 100%;
-    background-color: #07142b;
+    background-color: #04071c;
     color: #ffffff;
     font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -20,7 +20,7 @@ const GLOBAL_ERROR_FALLBACK_CSS = `@layer base {
     place-items: center;
     overflow-y: auto;
     overscroll-behavior: contain;
-    background-color: #07142b;
+    background-color: #04071c;
     padding: 1rem;
     color: #ffffff;
   }
@@ -29,24 +29,23 @@ const GLOBAL_ERROR_FALLBACK_CSS = `@layer base {
     width: 100%;
     max-width: 28rem;
     border-radius: 1rem;
-    border: 1px solid rgba(255, 210, 63, 0.45);
-    background-color: #0c1b3a;
+    border: 1px solid rgba(148, 126, 239, 0.36);
+    background-color: #0e1438;
     padding: 1.5rem;
     text-align: center;
-    box-shadow: 0 24px 64px rgba(2, 6, 23, 0.65);
   }
   .ge-badge {
     display: inline-flex;
     border-radius: 9999px;
-    border: 1px solid rgba(255, 210, 63, 0.45);
-    background-color: #07142b;
+    border: 1px solid rgba(148, 126, 239, 0.42);
+    background-color: rgba(97, 65, 232, 0.2);
     padding: 0.25rem 0.75rem;
     font-size: 0.75rem;
     line-height: 1rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #ffd23f;
+    color: #c4b5fd;
   }
   .ge-title {
     margin: 1rem 0 0;
@@ -60,13 +59,13 @@ const GLOBAL_ERROR_FALLBACK_CSS = `@layer base {
     margin: 0.75rem 0 0;
     font-size: 0.875rem;
     line-height: 1.625;
-    color: #dce7ff;
+    color: #dfe5ff;
   }
   .ge-muted {
     margin: 0.625rem 0 0;
     font-size: 0.75rem;
     line-height: 1.5;
-    color: #b6c7eb;
+    color: #a3aed9;
   }
   .ge-actions {
     margin-top: 1.75rem;
@@ -82,44 +81,41 @@ const GLOBAL_ERROR_FALLBACK_CSS = `@layer base {
     min-height: 2.75rem;
     align-items: center;
     justify-content: center;
-    border-radius: 0.75rem;
     padding: 0.75rem 1.5rem;
     font-family: inherit;
     font-size: 0.875rem;
     line-height: 1.25rem;
+    font-weight: 600;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+    box-shadow: none;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
   }
   .ge-btn-primary {
-    border: 0;
-    background-color: #ffd23f;
-    font-weight: 900;
-    color: #091c5c;
-    box-shadow: 0 5px 0 #b8860b;
+    border-radius: 9999px;
+    border: 1px solid #947eef;
+    background-color: #6141e8;
+    background-image: linear-gradient(90deg, #7a3aec 0%, #6141e8 50%, #464be6 100%);
+    color: #ffffff;
   }
-  .ge-btn-primary:hover { background-color: #ffe271; }
-  .ge-btn-primary:active {
-    box-shadow: none;
-    transform: translateY(0.25rem);
+  .ge-btn-primary:hover {
+    border-color: #c2b6fb;
+    background-image: linear-gradient(90deg, #884cef 0%, #6e50ec 50%, #5459ea 100%);
   }
   .ge-btn-secondary {
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background-color: #0c1b3a;
-    font-weight: 700;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(148, 126, 239, 0.38);
+    background-color: rgba(8, 12, 38, 0.94);
     color: #ffffff;
   }
   .ge-btn-secondary:hover {
-    border-color: rgba(255, 210, 63, 0.7);
-    color: #ffd23f;
+    border-color: rgba(188, 176, 250, 0.78);
+    background-color: rgba(24, 31, 82, 0.96);
   }
+  .ge-btn-primary:focus-visible,
   .ge-btn-secondary:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px #07142b, 0 0 0 4px #ffd23f;
-  }
-  .ge-btn-primary:focus-visible {
-    outline: none;
-    box-shadow: 0 5px 0 #b8860b, 0 0 0 2px #07142b, 0 0 0 4px #ffd23f;
+    box-shadow: 0 0 0 2px #0e1438, 0 0 0 4px #947eef;
   }
   @media (min-width: 640px) {
     .ge-shell { padding: 1.5rem; }
@@ -131,7 +127,6 @@ const GLOBAL_ERROR_FALLBACK_CSS = `@layer base {
   @media (prefers-reduced-motion: reduce) {
     .ge-btn-primary, .ge-btn-secondary {
       transition: none;
-      transform: none;
     }
   }
 }`;
@@ -154,33 +149,33 @@ export default function GlobalError({
         <title>Erreur critique | Les Fous du Bus</title>
         <style>{GLOBAL_ERROR_FALLBACK_CSS}</style>
       </head>
-      <body className="m-0 bg-[#07142b] text-white antialiased">
-        <div className="ge-shell fixed inset-0 z-50 grid place-items-center overflow-y-auto overscroll-contain bg-[#07142b] p-4 text-white sm:p-6">
-          <main className="ge-card my-auto w-full max-w-md rounded-2xl border border-[#ffd23f]/45 bg-[#0c1b3a] p-6 text-center shadow-[0_24px_64px_rgba(2,6,23,0.65)] sm:p-8">
-            <span className="ge-badge inline-flex rounded-full border border-[#ffd23f]/45 bg-[#07142b] px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#ffd23f]">
+      <body className="m-0 bg-[#04071c] text-white antialiased">
+        <div className="ge-shell fixed inset-0 z-50 grid place-items-center overflow-y-auto overscroll-contain bg-[#04071c] p-4 text-white sm:p-6">
+          <main className="ge-card bus-case-elevated my-auto w-full max-w-md rounded-2xl p-6 text-center sm:p-8">
+            <span className="ge-badge bus-icon-badge inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest">
               Erreur critique
             </span>
             <h1 className="ge-title mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl">
               Impossible de charger le bus
             </h1>
-            <p className="ge-body mt-3 text-sm leading-relaxed text-[#dce7ff] sm:text-base">
+            <p className="ge-body mt-3 text-sm leading-relaxed text-[#dfe5ff] sm:text-base">
               Une erreur critique est survenue lors de l’embarquement sur le bus. Tu peux retenter l’expérience ou revenir à l’accueil.
             </p>
-            <p className="ge-muted mt-2.5 text-xs leading-relaxed text-[#b6c7eb]">
+            <p className="ge-muted mt-2.5 text-xs leading-relaxed text-[#a3aed9]">
               {error.digest ? `Référence : ${error.digest}` : "Si le problème persiste, recharge simplement l’onglet."}
             </p>
             <div className="ge-actions mt-7 flex flex-wrap items-center justify-center gap-3.5">
               <button
                 type="button"
                 onClick={() => reset()}
-                className="ge-btn-primary inline-flex min-h-11 items-center justify-center rounded-xl bg-[#ffd23f] px-6 py-3 text-sm font-black text-[#091c5c] shadow-[0_5px_0_#b8860b] transition hover:bg-[#ffe271] active:translate-y-1 active:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] motion-reduce:transform-none motion-reduce:transition-none sm:text-base"
+                className="ge-btn-primary bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-base"
               >
                 Réessayer
               </button>
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a
                 href="/"
-                className="ge-btn-secondary inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 bg-[#0c1b3a] px-6 py-3 text-sm font-bold text-white transition hover:border-[#ffd23f]/70 hover:text-[#ffd23f] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] motion-reduce:transition-none sm:text-base"
+                className="ge-btn-secondary bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-base"
               >
                 Retourner à l’accueil
               </a>

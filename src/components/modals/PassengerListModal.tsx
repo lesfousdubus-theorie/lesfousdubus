@@ -126,15 +126,15 @@ export function PassengerListModal({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#020617]/80 backdrop-blur-sm" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="passenger-list-title" className="bus-modal-card bus-passenger-list my-auto flex w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-[#ffd23f]/45 bg-[#07142b] text-white shadow-[0_28px_80px_rgba(0,0,0,0.7)] focus:outline-none">
-        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-white/10 bg-gradient-to-r from-[#10265c] to-[#07142b] px-5 py-4 sm:px-6">
+    <div className="bus-modal-backdrop fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto bg-[#030617]/80 backdrop-blur-sm" onKeyDown={handleKeyDown} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="passenger-list-title" className="bus-modal-card bus-passenger-list bus-case-solid my-auto flex w-full max-w-xl flex-col overflow-hidden rounded-2xl text-white shadow-[0_24px_64px_rgba(2,4,18,0.7)] focus:outline-none">
+        <header className="bus-case-header flex shrink-0 items-center justify-between gap-4 px-5 py-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-3.5">
-            <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#ffd23f]/35 bg-[#ffd23f]/12 text-[#ffd23f]">
+            <span aria-hidden="true" className="bus-icon-badge grid h-10 w-10 shrink-0 place-items-center rounded-xl">
               <BusFrontIcon className="h-5 w-5" />
             </span>
             <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#ffd23f]">Le convoi</p>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#c4b5fd]">Le convoi</p>
               <h2 ref={titleRef} tabIndex={-1} id="passenger-list-title" className="mt-0.5 text-xl font-black focus:outline-none sm:text-2xl">
                 {count === null ? "Passagers" : `${countPeopleOnBoard(count).toLocaleString("fr-FR")} passagers`}
               </h2>
@@ -149,24 +149,24 @@ export function PassengerListModal({
           }}
           className="relative min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5"
         >
-          <button type="button" onClick={onOpenMessages} className="mb-4 flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#ffd23f]/60 bg-[#ffd23f] px-4 py-2 text-sm font-black text-[#07142b] transition hover:bg-[#ffe271] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+          <button type="button" onClick={onOpenMessages} className="bus-btn-primary mb-4 flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]">
             Voir les messages <span aria-hidden="true">→</span>
           </button>
           <div aria-label="Équipage permanent" className="mb-3 grid gap-2 sm:grid-cols-2">
             {BUS_CREW.map((member) => (
-              <div key={member.name} className="flex min-h-16 items-center gap-3 rounded-2xl border border-[#ffd23f]/40 bg-[#0c1b3a] px-3.5 py-2.5">
-                <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#ffd23f]/35 bg-[#ffd23f]/15 text-[#ffd23f]">
+              <div key={member.name} className="bus-case-highlight flex min-h-16 items-center gap-3 rounded-2xl px-3.5 py-2.5">
+                <span aria-hidden="true" className="bus-icon-badge grid h-9 w-9 shrink-0 place-items-center rounded-full">
                   <BusFrontIcon className="h-4 w-4" />
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-black text-white">{member.name}</span>
-                  <span className="block text-xs font-semibold text-[#ffd23f]">{member.role}</span>
+                  <span className="block text-xs font-semibold text-[#c4b5fd]">{member.role}</span>
                   {"url" in member && (
                     <a
                       href={member.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-0.5 inline-flex cursor-pointer items-center gap-1 rounded-sm text-xs font-bold leading-tight text-[#ffd23f] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a]"
+                      className="mt-0.5 inline-flex cursor-pointer items-center gap-1 rounded-sm text-xs font-bold leading-tight text-[#c4b5fd] underline underline-offset-4 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438]"
                     >
                       <span>{member.handle}</span>
                       <ExternalArrowIcon className="h-3.5 w-3.5 shrink-0" />
@@ -178,8 +178,8 @@ export function PassengerListModal({
           </div>
           {loading && passengers.length === 0 ? (
             <div role="status" aria-live="polite" aria-atomic="true" className="grid min-h-32 place-items-center p-6">
-              <div className="flex flex-col items-center gap-3 text-center text-sm font-bold text-[#b6c7eb]">
-                <span aria-hidden="true" className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-[#ffd23f] motion-reduce:animate-none" />
+              <div className="flex flex-col items-center gap-3 text-center text-sm font-bold text-[#a3aed9]">
+                <span aria-hidden="true" className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-[#947eef] motion-reduce:animate-none" />
                 Chargement des passagers…
               </div>
             </div>
@@ -191,21 +191,21 @@ export function PassengerListModal({
                   <label htmlFor="passenger-list-search" className="sr-only">
                     Rechercher un passager par nom ou numéro de place
                   </label>
-                  <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#b6c7eb]" />
+                  <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a3aed9]" />
                   <input
                     id="passenger-list-search"
                     type="search"
                     value={activeSearchQuery}
                     onChange={(event) => setActiveSearchQuery(event.target.value)}
                     placeholder="Rechercher un nom ou n° de place…"
-                    className="min-h-11 w-full rounded-xl border border-white/20 bg-[#0c1b3a] py-2 pl-10 pr-11 text-base text-white placeholder:text-[#8ea5d4] transition-colors focus:border-[#ffd23f] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] sm:text-sm"
+                    className="bus-case-inset min-h-11 w-full rounded-xl py-2 pl-10 pr-11 text-base text-white placeholder:text-[#8995c4] transition-colors focus:border-[#947eef] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] sm:text-sm"
                   />
                   {activeSearchQuery && (
                     <button
                       type="button"
                       onClick={() => setActiveSearchQuery("")}
                       aria-label="Effacer la recherche"
-                      className="absolute inset-y-0 right-0 grid w-11 cursor-pointer place-items-center rounded-r-xl text-[#b6c7eb] transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1b3a]"
+                      className="absolute inset-y-0 right-0 grid w-11 cursor-pointer place-items-center rounded-r-xl text-[#a3aed9] transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c]"
                     >
                       <CloseIcon className="h-4 w-4" />
                     </button>
@@ -215,10 +215,8 @@ export function PassengerListModal({
                   type="button"
                   aria-pressed={activeOnlyWithComment}
                   onClick={() => setActiveOnlyWithComment(!activeOnlyWithComment)}
-                  className={`min-h-11 cursor-pointer rounded-xl border px-3.5 py-2 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] ${
-                    activeOnlyWithComment
-                      ? "border-[#ffd23f] bg-[#ffd23f]/15 text-[#ffd23f]"
-                      : "border-white/20 bg-[#0c1b3a] text-[#dce7ff] hover:border-[#ffd23f]/65"
+                  className={`min-h-11 cursor-pointer rounded-lg px-3.5 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] ${
+                    activeOnlyWithComment ? "bus-btn-active" : "bus-btn-secondary"
                   }`}
                 >
                   Avec message
@@ -227,7 +225,7 @@ export function PassengerListModal({
                   <button
                     type="button"
                     onClick={jumpToMySeat}
-                    className="min-h-11 cursor-pointer rounded-xl border border-[#ffd23f]/50 bg-[#ffd23f]/12 px-3.5 py-2 text-xs font-bold text-[#ffd23f] transition hover:bg-[#ffd23f]/22 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+                    className="bus-btn-tonal min-h-11 cursor-pointer rounded-lg px-3.5 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
                   >
                     Ma place
                   </button>
@@ -239,7 +237,7 @@ export function PassengerListModal({
                     onClick={() => {
                       if (!loading) onRefresh();
                     }}
-                    className="min-h-11 cursor-pointer rounded-xl border border-white/20 bg-[#0c1b3a] px-3.5 py-2 text-xs font-bold text-[#dce7ff] transition hover:border-[#ffd23f]/65 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] aria-disabled:cursor-wait aria-disabled:opacity-60"
+                    className="bus-btn-secondary min-h-11 cursor-pointer rounded-lg px-3.5 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] aria-disabled:cursor-wait aria-disabled:opacity-60"
                   >
                     Actualiser
                   </button>
@@ -252,80 +250,80 @@ export function PassengerListModal({
               const placeNumber = passenger.entryNumber ?? passenger.seatIndex + 1;
               const isCurrentSeat = currentSeatIndex !== null && currentSeatIndex !== undefined && passenger.seatIndex === currentSeatIndex;
               const rowClass = isCurrentSeat
-                ? "border-[#ffd23f] bg-[#132959]"
-                : "border-white/15 bg-[#0c1b3a]";
+                ? "border-[#947eef] bg-[#1b2260]"
+                : "border-[#947eef]/22 bg-[#0e1438]";
               return passenger.displayName || passenger.hasComment ? (
                 <button
                   key={passenger.seatIndex}
                   type="button"
                   data-passenger-seat={passenger.seatIndex}
                   onClick={() => onPassengerClick(passenger)}
-                  className={`group flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-left transition hover:border-[#ffd23f]/65 hover:bg-[#10265c]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b] ${rowClass}`}
+                  className={`group flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-left transition-colors hover:border-[#b4a4f8] hover:bg-[#192058] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] ${rowClass}`}
                 >
-                  <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#ffd23f]/30 bg-[#ffd23f]/15 text-[#ffd23f]">
+                  <span aria-hidden="true" className="bus-icon-badge grid h-8 w-8 shrink-0 place-items-center rounded-full">
                     <PersonIcon className="h-4 w-4" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
                       <span className="block truncate text-sm font-black text-white">{passenger.displayName ?? "Anonyme"}</span>
                       {isCurrentSeat && (
-                        <span className="shrink-0 rounded-full border border-[#ffd23f]/45 bg-[#ffd23f]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#ffd23f]">
+                        <span className="bus-pill-badge shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
                           Moi
                         </span>
                       )}
                     </span>
-                    <span className="block text-xs font-semibold text-[#b6c7eb]">Place n° {placeNumber.toLocaleString("fr-FR")}{passenger.hasComment ? " · Message" : ""}</span>
+                    <span className="block text-xs font-semibold text-[#a3aed9]">Place n° {placeNumber.toLocaleString("fr-FR")}{passenger.hasComment ? " · Message" : ""}</span>
                   </span>
-                  <ChevronRightIcon className="h-4 w-4 shrink-0 text-[#b6c7eb] transition-transform group-hover:translate-x-0.5 group-hover:text-[#ffd23f]" />
+                  <ChevronRightIcon className="h-4 w-4 shrink-0 text-[#a3aed9] transition-colors group-hover:text-[#c4b5fd]" />
                 </button>
               ) : (
                 <div
                   key={passenger.seatIndex}
                   tabIndex={isCurrentSeat ? -1 : undefined}
                   data-passenger-seat={passenger.seatIndex}
-                  className={`flex min-h-14 items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-[#dce7ff] focus:outline-none ${isCurrentSeat ? "border-[#ffd23f] bg-[#132959]" : "border-white/15 bg-[#0c1b3a]/75"}`}
+                  className={`flex min-h-14 items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-[#dfe5ff] focus:outline-none ${isCurrentSeat ? "border-[#947eef] bg-[#1b2260]" : "border-[#947eef]/18 bg-[#0e1438]/75"}`}
                 >
-                  <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 text-[#b6c7eb]">
+                  <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 text-[#a3aed9]">
                     <PersonIcon className="h-4 w-4" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
-                      <span className="block truncate text-sm font-bold text-[#dce7ff]">Anonyme</span>
+                      <span className="block truncate text-sm font-bold text-[#dfe5ff]">Anonyme</span>
                       {isCurrentSeat && (
-                        <span className="shrink-0 rounded-full border border-[#ffd23f]/45 bg-[#ffd23f]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#ffd23f]">
+                        <span className="bus-pill-badge shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
                           Moi
                         </span>
                       )}
                     </span>
-                    <span className="block text-xs font-semibold text-[#b6c7eb]">Place n° {placeNumber.toLocaleString("fr-FR")}</span>
+                    <span className="block text-xs font-semibold text-[#a3aed9]">Place n° {placeNumber.toLocaleString("fr-FR")}</span>
                   </span>
                 </div>
               );
             })}
           </div>
           {loading && passengers.length > 0 && (
-            <div role="status" aria-live="polite" aria-atomic="true" className="flex min-h-20 items-center justify-center gap-3 text-sm font-bold text-[#b6c7eb]">
-              <span aria-hidden="true" className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-[#ffd23f] motion-reduce:animate-none" />
+            <div role="status" aria-live="polite" aria-atomic="true" className="flex min-h-20 items-center justify-center gap-3 text-sm font-bold text-[#a3aed9]">
+              <span aria-hidden="true" className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-[#947eef] motion-reduce:animate-none" />
               Chargement des passagers…
             </div>
           )}
           {error && (
             <div className="mt-3 rounded-2xl border border-red-400/40 bg-red-950/50 p-4 text-center">
               <p role="alert" className="text-sm font-bold text-red-100">{error}</p>
-              <button type="button" onClick={onRetry} className="mt-3 min-h-11 cursor-pointer rounded-xl border border-white/30 bg-[#0c1b3a] px-4 py-2 text-sm font-bold text-white transition hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]">
+              <button type="button" onClick={onRetry} className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-xl px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]">
                 Réessayer
               </button>
             </div>
           )}
           {!loading && !error && hasMore && (
-            <button type="button" onClick={onLoadMore} className="mt-4 min-h-11 w-full cursor-pointer rounded-xl border border-white/30 bg-[#0c1b3a] px-4 py-2.5 text-sm font-black text-white transition hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]">
+            <button type="button" onClick={onLoadMore} className="bus-btn-secondary mt-4 min-h-11 w-full cursor-pointer rounded-xl px-4 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]">
               Afficher plus de passagers
             </button>
           )}
-          {!loading && !error && passengers.length === 0 && <p className="p-8 text-center text-sm text-[#b6c7eb]">L’équipage attend les prochains passagers.</p>}
+          {!loading && !error && passengers.length === 0 && <p className="p-8 text-center text-sm text-[#a3aed9]">L’équipage attend les prochains passagers.</p>}
           {!error && passengers.length > 0 && filteredPassengers.length === 0 && (
             <div className="p-6 text-center">
-              <p className="text-sm text-[#b6c7eb]">
+              <p className="text-sm text-[#a3aed9]">
                 Aucun passager chargé ne correspond à ce filtre.
               </p>
               {hasActiveFilter && (
@@ -335,7 +333,7 @@ export function PassengerListModal({
                     setActiveSearchQuery("");
                     setActiveOnlyWithComment(false);
                   }}
-                  className="mt-3 min-h-11 cursor-pointer rounded-xl border border-white/25 bg-[#0c1b3a] px-4 py-2 text-xs font-bold text-white transition hover:border-[#ffd23f]/70 hover:text-[#ffd23f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07142b]"
+                  className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-xl px-4 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
                 >
                   Réinitialiser les filtres
                 </button>
