@@ -154,7 +154,7 @@ export default function AvatarPreview({
         <PreviewCharacter avatarId={avatarId} rotation={rotation} />
       </Canvas>
       {contextLost && (
-        <div className="absolute inset-0 bg-[#0c1b3a]">
+        <div className="absolute inset-0 bg-[#0e1438]">
           <FallbackNotice
             message="L’aperçu 3D a été suspendu par l’appareil. Les flèches restent disponibles pour choisir."
             onFallbackChange={onFallbackChange}
