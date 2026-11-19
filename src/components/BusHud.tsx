@@ -403,9 +403,9 @@ export function BusHud({
                 }`}
               >
                 {isNight ? (
-                  <MoonIcon className="h-4 w-4 shrink-0 text-[#c4b5fd]" />
+                  <MoonIcon className={`h-4 w-4 shrink-0 ${manualDayNight !== null ? "text-white" : "text-[#dcd3ff]"}`} />
                 ) : (
-                  <SunIcon className="h-4 w-4 shrink-0 text-[#c4b5fd]" />
+                  <SunIcon className={`h-4 w-4 shrink-0 ${manualDayNight !== null ? "text-white" : "text-[#dcd3ff]"}`} />
                 )}
                 <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
               </button>
@@ -601,9 +601,9 @@ export function BusHud({
               }`}
             >
               {isNight ? (
-                <MoonIcon className="h-4 w-4 shrink-0 text-[#c4b5fd]" />
+                <MoonIcon className={`h-4 w-4 shrink-0 ${manualDayNight !== null ? "text-white" : "text-[#dcd3ff]"}`} />
               ) : (
-                <SunIcon className="h-4 w-4 shrink-0 text-[#c4b5fd]" />
+                <SunIcon className={`h-4 w-4 shrink-0 ${manualDayNight !== null ? "text-white" : "text-[#dcd3ff]"}`} />
               )}
               <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
             </button>
@@ -643,7 +643,7 @@ export function BusHud({
                 onClick={accelerateBus}
                 disabled={speedMultiplier >= 3.0}
                 aria-label="Accélérer le bus"
-                className="grid h-9 w-10 shrink-0 place-items-center rounded-full text-[#c4b5fd] transition-colors hover:bg-[#6141e8]/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
+                className="grid h-9 w-10 shrink-0 place-items-center rounded-full text-[#dcd3ff] transition-colors hover:bg-[#6141e8]/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
                 title="Accélérer le bus"
               >
                 <FastBoltIcon className="h-4 w-4 shrink-0" />
@@ -871,7 +871,7 @@ export function BusHud({
                   }}
                   aria-label="Fermer la notification"
                   title="Fermer la notification"
-                  className="grid h-11 w-11 shrink-0 place-items-center self-center rounded-full text-[#dfe5ff] transition-colors hover:bg-[#6141e8]/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer"
+                  className="grid h-11 w-11 shrink-0 place-items-center self-center rounded-full text-white transition-colors hover:bg-[#6141e8]/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer"
                 >
                   <CloseIcon className="h-4 w-4 shrink-0" />
                 </button>

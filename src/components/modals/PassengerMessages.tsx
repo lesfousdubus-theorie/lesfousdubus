@@ -112,7 +112,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
             onClick={() => setOrdered((previous) => !previous)}
             className="messages-wall-control shrink-0"
           >
-            {ordered ? <ShuffleIcon className="h-3.5 w-3.5 text-[#c4b5fd]" /> : <ListOrderedIcon className="h-3.5 w-3.5 text-[#c4b5fd]" />}
+            {ordered ? <ShuffleIcon className="h-3.5 w-3.5 text-[#dcd3ff]" /> : <ListOrderedIcon className="h-3.5 w-3.5 text-[#dcd3ff]" />}
             <span>{ordered ? "En vrac" : "Ordonner"}</span>
           </button>
           {!ordered && (
@@ -159,8 +159,8 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
                   <span className="whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-white">
                     {message.comment}
                   </span>
-                  <span className="flex items-center justify-between gap-2 text-xs font-bold text-[#c4b5fd]">
-                    <span className="text-[#a3aed9]">Place n°{message.seatIndex + 1}</span>
+                  <span className="flex items-center justify-between gap-2 text-xs font-bold text-[#dcd3ff]">
+                    <span className="text-[#c7d2fe]">Place n°{message.seatIndex + 1}</span>
                     <span className="truncate">— {message.displayName}</span>
                   </span>
                 </button>

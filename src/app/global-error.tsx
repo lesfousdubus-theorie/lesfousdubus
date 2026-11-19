@@ -93,24 +93,25 @@ const GLOBAL_ERROR_FALLBACK_CSS = `@layer base {
   }
   .ge-btn-primary {
     border-radius: 9999px;
-    border: 1px solid #947eef;
-    background-color: #6141e8;
-    background-image: linear-gradient(90deg, #7a3aec 0%, #6141e8 50%, #464be6 100%);
+    border: 1px solid #9d88f4;
+    background-color: #5334da;
+    background-image: linear-gradient(90deg, #6b2cde 0%, #5334da 50%, #3a3ed6 100%);
     color: #ffffff;
   }
   .ge-btn-primary:hover {
-    border-color: #c2b6fb;
-    background-image: linear-gradient(90deg, #884cef 0%, #6e50ec 50%, #5459ea 100%);
+    border-color: #cfc4fc;
+    background-color: #5e3ee4;
+    background-image: linear-gradient(90deg, #7737e8 0%, #5e3ee4 50%, #4448e0 100%);
   }
   .ge-btn-secondary {
     border-radius: 1.125rem;
-    border: 1px solid rgba(148, 126, 239, 0.38);
-    background-color: rgba(8, 12, 38, 0.94);
+    border: 1px solid rgba(157, 136, 244, 0.42);
+    background-color: rgba(8, 12, 38, 0.95);
     color: #ffffff;
   }
   .ge-btn-secondary:hover {
-    border-color: rgba(188, 176, 250, 0.78);
-    background-color: rgba(24, 31, 82, 0.96);
+    border-color: rgba(207, 196, 252, 0.82);
+    background-color: rgba(22, 29, 78, 0.97);
   }
   .ge-btn-primary:focus-visible,
   .ge-btn-secondary:focus-visible {

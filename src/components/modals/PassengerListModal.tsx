@@ -272,9 +272,9 @@ export function PassengerListModal({
                         </span>
                       )}
                     </span>
-                    <span className="block text-xs font-semibold text-[#a3aed9]">Place n° {placeNumber.toLocaleString("fr-FR")}{passenger.hasComment ? " · Message" : ""}</span>
+                    <span className="block text-xs font-semibold text-[#c7d2fe]">Place n° {placeNumber.toLocaleString("fr-FR")}{passenger.hasComment ? " · Message" : ""}</span>
                   </span>
-                  <ChevronRightIcon className="h-4 w-4 shrink-0 text-[#a3aed9] transition-colors group-hover:text-[#c4b5fd]" />
+                  <ChevronRightIcon className="h-4 w-4 shrink-0 text-[#c7d2fe] transition-colors group-hover:text-white" />
                 </button>
               ) : (
                 <div

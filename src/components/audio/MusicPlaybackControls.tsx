@@ -252,7 +252,7 @@ export default function MusicPlaybackControls({
       <EqualizerDetailsIcon />
       {!compact && <span className="hidden min-w-0 text-left lg:block">
         <span className="block truncate text-xs font-semibold">{playback.title}</span>
-        <span className={`block text-[10px] tabular-nums ${open ? "text-[#dfe5ff]" : "text-[#a3aed9]"}`}>{formatTime(playback.elapsed)} / {playback.duration ? formatTime(playback.duration) : "—:—"}</span>
+        <span className={`block text-[10px] tabular-nums ${open ? "text-white" : "text-[#d6deff]"}`}>{formatTime(playback.elapsed)} / {playback.duration ? formatTime(playback.duration) : "—:—"}</span>
       </span>}
     </button>}
     {panel ? (portalTarget ? createPortal(panel, portalTarget) : panel) : null}
