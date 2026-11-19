@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { BUS_FRONT_Z } from "@/lib/bus-layout";
 import {
   createSpeedLineSeeds,
   getSpeedLineDirection,
@@ -24,8 +25,9 @@ import type { WorldState } from "./constants";
  * comme dans les cases de manga quand un personnage file à toute vitesse).
  *
  * Chaque ligne est un fin boîtier orienté du point de fuite vers sa position,
- * qui défile vers l'arrière (+Z, vent relatif) et boucle dans une fenêtre
- * qui suit la caméra — densité constante même sur un bus de 100M places.
+ * qui défile vers l'arrière (+Z, vent relatif) le long des flancs et du toit,
+ * jamais dans le vide devant le nez. La fenêtre suit la caméra en restant
+ * collée à la coque — densité constante même sur un bus de 100M places.
  * Budget O(1) : 2 draw calls (cœur blanc + aura violet/bleu), 80–160 lignes.
  */
 
@@ -107,7 +109,7 @@ export default function BusSpeedLines({
 
     camera.getWorldPosition(cameraLocal);
     anchor.worldToLocal(cameraLocal);
-    const window = getSpeedLinesWindow(cameraLocal.z);
+    const window = getSpeedLinesWindow(cameraLocal.z, BUS_FRONT_Z, rearZ);
     const vanishingPoint = getSpeedLinesVanishingPoint(window.start);
 
     const seeds = seedsRef.current;
@@ -131,7 +133,7 @@ export default function BusSpeedLines({
       const palette = SPEED_LINES_PALETTES[seed.paletteIndex % SPEED_LINES_PALETTES.length];
       color.set(palette[Math.floor(seed.phase * palette.length) % palette.length]).multiplyScalar(fade);
       aura.setColorAt(i, color);
-      dummy.scale.set(seed.width * 3.4, seed.width * 3.4, seed.length * 0.94);
+      dummy.scale.set(seed.width * 2.8, seed.width * 2.8, seed.length * 0.94);
       dummy.updateMatrix();
       aura.setMatrixAt(i, dummy.matrix);
     }

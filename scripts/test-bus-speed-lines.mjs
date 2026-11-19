@@ -42,24 +42,32 @@ const rngA = mulberry32(42);
 const rngB = mulberry32(42);
 for (let i = 0; i < 10; i++) assert.equal(rngA(), rngB(), "mulberry32 reproductible");
 
-// --- Graines bornées autour de la coque ---
+// --- Graines bornées sur les flancs et le toit (jamais dessous) ---
 const rng = mulberry32(7);
 const seeds = createSpeedLineSeeds(rng, 160);
 assert.equal(seeds.length, 160, "nombre de lignes respecté");
 for (const seed of seeds) {
-  assert(seed.angle >= 0 && seed.angle < Math.PI * 2, "angle 0..2π");
+  assert(Math.sin(seed.angle) > -0.8, `pas de ligne sous la coque (sin=${Math.sin(seed.angle)})`);
   assert(seed.radius >= 1.8 && seed.radius <= 6.3, `rayon borné (${seed.radius})`);
   assert(seed.phase >= 0 && seed.phase < 1, "phase 0..1");
   assert(seed.length >= 0.8 && seed.length <= 4.3, `longueur bornée (${seed.length})`);
-  assert(seed.width >= 0.02 && seed.width <= 0.045, `épaisseur bornée (${seed.width})`);
+  assert(seed.width >= 0.012 && seed.width <= 0.028, `épaisseur fine bornée (${seed.width})`);
   assert(seed.speedFactor >= 0.7 && seed.speedFactor <= 1.5, "vitesse relative bornée");
   assert(seed.paletteIndex === 0 || seed.paletteIndex === 1, "palette valide");
 }
 
-// --- Fenêtre qui suit la caméra ---
-const window = getSpeedLinesWindow(-12.5);
-assert.equal(window.span, SPEED_LINES_WINDOW_SPAN);
-assert.equal(window.start, -20.5, "fenêtre décalée vers l'avant");
+// --- Fenêtre collée à la coque, qui suit la caméra ---
+const FRONT_Z = -4.6;
+const shortWindow = getSpeedLinesWindow(-12.5, FRONT_Z, 5.65);
+assert.equal(shortWindow.span, SPEED_LINES_WINDOW_SPAN);
+assert.equal(shortWindow.start, FRONT_Z - 1.2, "bus court : fenêtre dès le nez, pas dans le vide devant");
+const longFront = getSpeedLinesWindow(-12.5, FRONT_Z, 200);
+assert.equal(longFront.start, FRONT_Z - 1.2, "caméra devant : fenêtre au nez du bus");
+const longMid = getSpeedLinesWindow(100, FRONT_Z, 200);
+assert.equal(longMid.start, 92, "caméra au milieu : fenêtre autour de la caméra");
+const longRear = getSpeedLinesWindow(300, FRONT_Z, 200);
+assert.equal(longRear.start, 200.5 - SPEED_LINES_WINDOW_SPAN, "caméra derrière : fenêtre à l'arrière");
+const window = longMid;
 const vp = getSpeedLinesVanishingPoint(window.start);
 assert.equal(vp[0], 0);
 assert.equal(vp[1], SPEED_LINES_AXIS_Y);
