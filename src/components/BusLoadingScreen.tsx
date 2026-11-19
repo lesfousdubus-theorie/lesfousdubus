@@ -54,7 +54,7 @@ export default function BusLoadingScreen({ failed = false }: { failed?: boolean 
               <button
                 type="button"
                 onClick={() => window.location.reload()}
-                className="bus-btn-primary mt-6 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-base"
+                className="bus-btn-primary mt-6 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
               >
                 Réessayer le chargement
               </button>

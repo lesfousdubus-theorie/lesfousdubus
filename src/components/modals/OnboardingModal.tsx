@@ -282,7 +282,7 @@ export function OnboardingModal({
                 onClick={togglePicker}
                 aria-expanded={showPicker}
                 aria-controls="onboarding-character-picker"
-                className="bus-btn-secondary inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-2xl px-3.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:text-sm"
+                className="bus-btn-secondary inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-2xl px-3.5 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:text-sm"
               >
                 {showPicker ? "Masquer l’aperçu" : selectedAvatarId ? "Changer" : "Choisir mon personnage"}
               </button>
@@ -340,7 +340,7 @@ export function OnboardingModal({
                       onClick={() => changeCharacter(direction)}
                       aria-disabled={saving}
                       aria-label={direction < 0 ? "Personnage précédent" : "Personnage suivant"}
-                      className={`bus-btn-secondary absolute top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c] aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${direction < 0 ? "left-2" : "right-2"}`}
+                      className={`bus-btn-secondary absolute top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full text-white focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${direction < 0 ? "left-2" : "right-2"}`}
                     >
                       {direction < 0 ? <ChevronLeftIcon className="h-5 w-5" /> : <ChevronRightIcon className="h-5 w-5" />}
                     </button>
@@ -367,7 +367,7 @@ export function OnboardingModal({
                         aria-pressed={selected}
                         aria-disabled={saving}
                         onClick={() => selectCharacter(item.id)}
-                        className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-2xl px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${
+                        className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-2xl px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${
                           selected ? "bus-btn-active" : "bus-btn-secondary"
                         }`}
                       >
@@ -393,7 +393,7 @@ export function OnboardingModal({
                     onChange={(event) => setRotation((Number(event.target.value) * Math.PI) / 180)}
                     aria-label="Rotation du personnage"
                     aria-valuetext={`${rotationDegrees} degrés`}
-                    className="h-6 min-w-0 flex-1 cursor-pointer accent-[#7a3aec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-6 min-w-0 flex-1 cursor-pointer accent-[#7a3aec] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </label>
                 {!hasLockedDbAvatar && selectedAvatarId !== null && (
@@ -406,7 +406,7 @@ export function OnboardingModal({
                       setShowPicker(false);
                       onDraftChange?.({ displayName: name, comment, avatarId: null });
                     }}
-                    className="bus-btn-secondary mt-2.5 min-h-11 w-full cursor-pointer rounded-2xl px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
+                    className="bus-btn-secondary mt-2.5 min-h-11 w-full cursor-pointer rounded-2xl px-3 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
                   >
                     Laisser le choix automatique
                   </button>
@@ -424,7 +424,7 @@ export function OnboardingModal({
           <button
             type="submit"
             aria-disabled={saving}
-            className="bus-btn-primary flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] aria-disabled:cursor-wait aria-disabled:opacity-80"
+            className="bus-btn-primary flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80"
           >
             {reason === "missing-name" ? <UserBadgeIcon className="h-5 w-5 shrink-0" /> : <EnterBusIcon className="h-5 w-5 shrink-0" />}
             {saving

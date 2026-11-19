@@ -27,7 +27,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/"
-          className="bus-btn-primary mt-7 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-base"
+          className="bus-btn-primary mt-7 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
         >
           Retourner au bus
         </Link>

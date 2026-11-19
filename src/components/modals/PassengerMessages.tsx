@@ -154,7 +154,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
                   type="button"
                   key={message.seatIndex}
                   onClick={(event) => readMessage(message, event.currentTarget)}
-                  className="flex cursor-pointer flex-col justify-between gap-2 rounded-2xl border border-[#947eef]/38 bg-[#0e1438]/95 p-3.5 text-left text-white transition-colors hover:border-[#b4a4f8] hover:bg-[#182058] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+                  className="flex cursor-pointer flex-col justify-between gap-2 rounded-2xl border border-[#947eef]/38 bg-[#0e1438]/95 p-3.5 text-left text-white transition-colors hover:bg-[#182058] focus-visible:outline-none"
                 >
                   <span className="whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-white">
                     {message.comment}

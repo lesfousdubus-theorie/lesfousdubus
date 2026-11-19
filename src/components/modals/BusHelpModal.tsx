@@ -61,8 +61,8 @@ export function BusHelpModal({ isOpen, onClose, letterShortcutsEnabled, setLette
             <legend className="sr-only">Confort et raccourcis</legend>
             <p aria-hidden="true" className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-[#c4b5fd]">Confort et raccourcis</p>
             <div className="space-y-3">
-              <label className="bus-case-elevated flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl p-3.5 text-sm leading-relaxed transition-colors hover:border-[#947eef]/55">
-                <input type="checkbox" checked={letterShortcutsEnabled} onChange={(event) => setLetterShortcutsEnabled(event.target.checked)} className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#7a3aec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438]" />
+              <label className="bus-case-elevated flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl p-3.5 text-sm leading-relaxed transition-colors">
+                <input type="checkbox" checked={letterShortcutsEnabled} onChange={(event) => setLetterShortcutsEnabled(event.target.checked)} className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#7a3aec] focus-visible:outline-none" />
                 <span className="min-w-0">
                   <span className="block font-bold text-white">Activer les raccourcis à une lettre</span>
                   <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[#dfe5ff]">

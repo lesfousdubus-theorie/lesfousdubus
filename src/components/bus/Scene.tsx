@@ -93,7 +93,7 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
           <button
             type="button"
             onClick={onReadTheory}
-            className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-5 py-2.5 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+            className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-5 py-2.5 font-semibold focus-visible:outline-none"
           >
             Lire la théorie
           </button>
@@ -102,14 +102,14 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
           href={THEORY_VIDEO_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-[1.125rem] px-4 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+          className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-[1.125rem] px-4 py-2 font-semibold focus-visible:outline-none"
         >
           Voir la vidéo
           <ExternalArrowIcon />
         </a>
         <button
           type="button"
-          className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[1.125rem] px-4 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+          className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[1.125rem] px-4 py-2 font-semibold focus-visible:outline-none"
           onClick={() => window.location.reload()}
         >
           Réessayer

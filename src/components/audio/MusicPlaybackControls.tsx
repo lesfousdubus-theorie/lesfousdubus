@@ -211,7 +211,7 @@ export default function MusicPlaybackControls({
         onPointerCancel={finishSeekDrag}
         onKeyUp={settleDraft}
         onBlur={finishSeekDrag}
-        className="pointer-events-auto mt-1 h-11 w-full cursor-pointer touch-pan-x rounded-lg accent-[#7a3aec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-wait disabled:opacity-50" />
+        className="pointer-events-auto mt-1 h-11 w-full cursor-pointer touch-pan-x rounded-lg accent-[#7a3aec] focus-visible:outline-none disabled:cursor-wait disabled:opacity-50" />
       <div className="-mt-1 flex justify-between text-xs font-semibold tabular-nums text-[#a3aed9]" aria-hidden="true">
         <span>{formatTime(elapsed)}</span><span>{playback.duration ? formatTime(playback.duration) : "—:—"}</span>
       </div>
@@ -229,7 +229,7 @@ export default function MusicPlaybackControls({
             onChange={event => onVolumeChange(Number(event.target.value))}
             aria-label="Volume de la musique"
             aria-valuetext={`${resolvedVolume}%`}
-            className="pointer-events-auto h-10 min-w-0 flex-1 cursor-pointer touch-pan-x rounded-lg accent-[#7a3aec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+            className="pointer-events-auto h-10 min-w-0 flex-1 cursor-pointer touch-pan-x rounded-lg accent-[#7a3aec] focus-visible:outline-none"
           />
           <span className="w-9 shrink-0 text-right text-xs font-semibold tabular-nums text-[#a3aed9]" aria-hidden="true">
             {resolvedVolume}%
@@ -246,7 +246,7 @@ export default function MusicPlaybackControls({
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
       title={`${playback.title} · ${status} · afficher la progression`}
-      className={`bus-glass pointer-events-auto relative z-10 flex h-11 w-11 items-center justify-center gap-2 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer ${compact ? "bus-icon-button rounded-full" : "rounded-full lg:w-auto lg:max-w-[165px] lg:justify-start lg:rounded-[1.125rem] lg:px-3.5"} ${
+      className={`bus-glass pointer-events-auto relative z-10 flex h-11 w-11 items-center justify-center gap-2 touch-manipulation focus-visible:outline-none cursor-pointer ${compact ? "bus-icon-button rounded-full" : "rounded-full lg:w-auto lg:max-w-[165px] lg:justify-start lg:rounded-[1.125rem] lg:px-3.5"} ${
         open ? "bus-btn-active" : "bus-btn-secondary"
       }`}>
       <EqualizerDetailsIcon />

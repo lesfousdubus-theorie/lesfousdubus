@@ -220,7 +220,7 @@ export default function SyncedTheoryVideo({
           <button
             type="button"
             onClick={retry}
-            className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-5 py-2.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c] sm:px-6 sm:text-sm"
+            className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-5 py-2.5 text-xs font-semibold focus-visible:outline-none sm:px-6 sm:text-sm"
           >
             Réessayer le lecteur
           </button>
@@ -230,7 +230,7 @@ export default function SyncedTheoryVideo({
         <button
           type="button"
           onClick={resume}
-          className="group absolute inset-0 grid cursor-pointer place-items-center bg-[#030617]/85 p-4 text-center transition-colors hover:bg-[#030617]/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#947eef] motion-reduce:transition-none"
+          className="group absolute inset-0 grid cursor-pointer place-items-center bg-[#030617]/85 p-4 text-center transition-colors hover:bg-[#030617]/75 focus-visible:outline-none motion-reduce:transition-none"
         >
           <span className="bus-btn-primary inline-flex min-h-11 items-center justify-center gap-2.5 rounded-full px-5 py-3 text-sm font-semibold sm:text-base">
             <PlayIcon className="h-4 w-4 shrink-0" />
