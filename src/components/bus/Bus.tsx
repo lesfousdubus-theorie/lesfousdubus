@@ -9,6 +9,7 @@ import Passengers from "./Passengers";
 import BusRelayPassenger from "./BusRelayPassenger";
 import BusConfetti from "./BusConfetti";
 import BusPartyLights from "./BusPartyLights";
+import BusSpeedLightning from "./BusSpeedLightning";
 import type { JourneyState } from "@/lib/bus-journey";
 import { BusTvFrame, BusTvPlayer } from "./BusTv";
 import { usePartyTvCards } from "./BusPartyTv";
@@ -341,6 +342,8 @@ export default function Bus({
       <BusRelayPassenger hornPulse={hornPulse} reducedMotion={reducedMotion} partyOn={partyDancing} />
       {partyOn&&<BusConfetti focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion} dancing={partyDancing}/>}
       {partyDancing&&<BusPartyLights worldRef={worldRef} focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion}/>}
+      {/* Éclairs manga dès la vitesse x2 (extérieur uniquement) */}
+      <BusSpeedLightning worldRef={worldRef} focusZ={viewerZ} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion} visible={exteriorView || phase !== "inside"} />
       <BusCockpit mats={mats} dashTex={dashTex} hornPulse={hornPulse}
         partyOn={partyDancing} reducedMotion={reducedMotion} />
 
