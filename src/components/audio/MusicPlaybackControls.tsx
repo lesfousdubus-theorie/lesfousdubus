@@ -246,7 +246,7 @@ export default function MusicPlaybackControls({
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
       title={`${playback.title} · ${status} · afficher la progression`}
-      className={`bus-glass pointer-events-auto relative z-10 flex h-11 w-11 items-center justify-center gap-2 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer ${compact ? "bus-icon-button rounded-full" : "rounded-full lg:w-auto lg:max-w-[165px] lg:justify-start lg:rounded-xl lg:px-3.5"} ${
+      className={`bus-glass pointer-events-auto relative z-10 flex h-11 w-11 items-center justify-center gap-2 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer ${compact ? "bus-icon-button rounded-full" : "rounded-full lg:w-auto lg:max-w-[165px] lg:justify-start lg:rounded-[1.125rem] lg:px-3.5"} ${
         open ? "bus-btn-active" : "bus-btn-secondary"
       }`}>
       <EqualizerDetailsIcon />

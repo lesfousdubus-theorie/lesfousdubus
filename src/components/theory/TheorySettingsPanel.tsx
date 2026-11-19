@@ -181,7 +181,7 @@ export default function TheorySettingsPanel({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => onSelectPreset(option.value)}
-                className={`min-h-11 cursor-pointer rounded-xl px-3 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-sm ${
+                className={`min-h-11 cursor-pointer rounded-2xl px-3 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-sm ${
                   selected ? "bus-btn-active" : "bus-btn-secondary"
                 }`}
               >
@@ -288,7 +288,7 @@ export default function TheorySettingsPanel({
             type="button"
             disabled={isDefault}
             onClick={onResetGraphics}
-            className={`inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-sm ${
+            className={`inline-flex min-h-11 items-center justify-center rounded-2xl px-4 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-sm ${
               isDefault
                 ? "cursor-not-allowed border border-white/10 bg-[#04071c]/50 text-[#a3aed9]/50"
                 : "bus-btn-tonal cursor-pointer"
@@ -352,7 +352,7 @@ function SettingGroup<T extends string>({
               type="button"
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
-              className={`min-h-11 flex-1 cursor-pointer rounded-lg px-2.5 py-2 text-xs font-semibold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c] ${
+              className={`min-h-11 flex-1 cursor-pointer rounded-[0.875rem] px-2.5 py-2 text-xs font-semibold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04071c] ${
                 selected ? "bus-btn-active" : "bus-btn-secondary"
               }`}
             >

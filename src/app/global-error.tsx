@@ -103,7 +103,7 @@ const GLOBAL_ERROR_FALLBACK_CSS = `@layer base {
     background-image: linear-gradient(90deg, #884cef 0%, #6e50ec 50%, #5459ea 100%);
   }
   .ge-btn-secondary {
-    border-radius: 0.75rem;
+    border-radius: 1.125rem;
     border: 1px solid rgba(148, 126, 239, 0.38);
     background-color: rgba(8, 12, 38, 0.94);
     color: #ffffff;
@@ -175,7 +175,7 @@ export default function GlobalError({
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a
                 href="/"
-                className="ge-btn-secondary bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-base"
+                className="ge-btn-secondary bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[1.125rem] px-6 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438] sm:text-base"
               >
                 Retourner à l’accueil
               </a>

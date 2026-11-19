@@ -719,7 +719,7 @@ body {
   padding: .625rem .75rem;
   cursor: pointer;
   border: 1px solid rgb(148 126 239 / 42%);
-  border-radius: .875rem;
+  border-radius: 1rem;
   background: rgb(11 16 48 / 95%);
   color: #fff;
   text-align: left;
@@ -768,9 +768,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: .3rem;
-  padding: 0 .65rem;
+  padding: 0 .7rem;
   border: 1px solid rgb(148 126 239 / 40%);
-  border-radius: .65rem;
+  border-radius: .875rem;
   background: #0e1438;
   color: #fff;
   font-size: .78rem;

@@ -82,7 +82,7 @@ export function PassengerCard({
             <button
               type="button"
               onClick={onBack}
-              className="bus-btn-secondary mb-4 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+              className="bus-btn-secondary mb-4 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-2xl px-3.5 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
             >
               ← Retour aux passagers
             </button>
@@ -102,7 +102,7 @@ export function PassengerCard({
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-xl px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438]"
+                  className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-2xl px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1438]"
                 >
                   Réessayer
                 </button>

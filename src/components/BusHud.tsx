@@ -332,15 +332,15 @@ export function BusHud({
             )}
           </div>
           <button ref={immersiveButtonRef} type="button" onClick={() => { setMusicDetailsState({ open: false, phase, epoch: phaseEpoch }); closeMobileMenu(); setImmersiveRestoreVisible(true); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif" title="Mode immersif"
-            className="bus-immersive-toggle bus-btn-secondary pointer-events-auto inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-xl px-2.5 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:opacity-60 sm:gap-2 sm:px-3.5 sm:text-xs cursor-pointer">
+            className="bus-immersive-toggle bus-btn-secondary pointer-events-auto inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-[1.125rem] px-2.5 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:opacity-60 sm:gap-2 sm:px-3.5 sm:text-xs cursor-pointer">
             <FullscreenExpandIcon className="h-4 w-4 shrink-0" />
             <span className="bus-landscape-hide">Mode immersif</span>
           </button>
         </div>
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
-        <div className="bus-top-stats bus-case bus-glass pointer-events-auto absolute right-2 top-2 flex min-h-11 items-stretch gap-0.5 rounded-2xl p-0.5 backdrop-blur-md min-[375px]:p-1 sm:left-auto sm:right-4 sm:top-4 sm:min-h-14 sm:gap-1 sm:p-1">
-          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} title="Voir la liste des passagers" className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-xl px-2 py-1 text-left leading-tight transition-colors hover:bg-[#6141e8]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] min-[375px]:gap-1.5 min-[375px]:px-2.5 sm:gap-2.5 sm:px-3 sm:py-2 cursor-pointer">
+        <div className="bus-top-stats bus-case bus-glass pointer-events-auto absolute right-2 top-2 flex min-h-11 items-stretch gap-0.5 rounded-[1.25rem] p-0.5 backdrop-blur-md min-[375px]:p-1 sm:left-auto sm:right-4 sm:top-4 sm:min-h-14 sm:gap-1 sm:p-1">
+          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} title="Voir la liste des passagers" className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-2xl px-2 py-1 text-left leading-tight transition-colors hover:bg-[#6141e8]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] min-[375px]:gap-1.5 min-[375px]:px-2.5 sm:gap-2.5 sm:px-3 sm:py-2 cursor-pointer">
             <span aria-hidden="true" className="hidden text-[#c4b5fd] min-[400px]:inline-flex min-[400px]:items-center">
               <BusFrontIcon className="h-4 w-4 shrink-0 sm:h-6 sm:w-6" />
             </span>
@@ -366,13 +366,13 @@ export function BusHud({
                 setStatsRetryToken((value) => value + 1);
               }}
               title="Réessayer de charger le compteur des passagers"
-              className="bus-btn-tonal flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl px-2 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer"
+              className="bus-btn-tonal flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-2xl px-2 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer"
             >
               <span>Réessayer</span>
             </button>
           )}
           <div className="my-1 w-px bg-[#947eef]/25" aria-hidden="true" />
-          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-h-11 min-w-0 flex-none rounded-xl px-2 py-1 text-left leading-tight transition-colors hover:bg-[#6141e8]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] min-[375px]:px-2.5 sm:px-3 sm:py-2 cursor-pointer" title="Voir le compteur précis depuis le 26 mai 2024">
+          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-h-11 min-w-0 flex-none rounded-2xl px-2 py-1 text-left leading-tight transition-colors hover:bg-[#6141e8]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] min-[375px]:px-2.5 sm:px-3 sm:py-2 cursor-pointer" title="Voir le compteur précis depuis le 26 mai 2024">
             <span className="block text-[10px] font-bold uppercase tracking-[0.04em] text-[#c4b5fd] sm:text-xs">
               <span className="hud-label-short sm:hidden"><span className="hidden min-[375px]:inline">La </span>théorie</span><span className="hud-label-long hidden sm:inline">La théorie existe depuis</span>
             </span>
@@ -398,7 +398,7 @@ export function BusHud({
                 aria-label={manualDayNight === null
                   ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
                   : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
-                className={`bus-glass flex h-11 items-center gap-1.5 rounded-xl px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] sm:px-3.5 sm:text-sm cursor-pointer ${
+                className={`bus-glass flex h-11 items-center gap-1.5 rounded-[1.125rem] px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] sm:px-3.5 sm:text-sm cursor-pointer ${
                   manualDayNight !== null ? "bus-btn-active" : "bus-btn-secondary"
                 }`}
               >
@@ -419,7 +419,7 @@ export function BusHud({
                 aria-pressed={bgmPlaying || partyOn}
                 aria-label={partyOn ? "Musique de fête active — arrêter avec le bouton Fête" : bgmPlaying ? "Couper la musique de fond" : "Activer la musique de fond (Life in Pieces — Le Mont Corvo)"}
                 title={partyOn ? "Party At Baratie — utilise Fête pour arrêter la musique" : musicSuspendedByTv ? "Musique en pause pendant la vidéo/TV — cliquer pour couper" : bgmPlaying ? "Couper la musique de fond (Life in Pieces)" : "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)"}
-                className={`bus-glass flex h-11 items-center gap-1.5 rounded-xl px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-60 sm:px-3.5 sm:text-sm cursor-pointer ${
+                className={`bus-glass flex h-11 items-center gap-1.5 rounded-[1.125rem] px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-60 sm:px-3.5 sm:text-sm cursor-pointer ${
                   bgmPlaying || partyOn ? "bus-btn-active" : "bus-btn-secondary"
                 }`}
               >
@@ -434,7 +434,7 @@ export function BusHud({
                 )}
                 <span>Musique</span>
                 {bgmPlaying && !musicSuspendedByTv && (
-                  <span className="bus-music-badge hidden rounded border border-white/30 bg-white/15 px-1 py-0.5 text-[10px] font-bold uppercase text-white md:inline">
+                  <span className="bus-music-badge hidden rounded-md border border-white/30 bg-white/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white md:inline">
                     ON
                   </span>
                 )}
@@ -451,13 +451,13 @@ export function BusHud({
             </div>
 
             {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
-            <div className="bus-speed bus-case bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex h-11 items-center gap-1 rounded-2xl px-1.5 text-xs backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-2 sm:text-sm">
+            <div className="bus-speed bus-case bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex h-11 items-center gap-1 rounded-full px-1.5 text-xs backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-2 sm:text-sm">
               <button
                 type="button"
                 onClick={decelerateBus}
                 disabled={speedMultiplier <= 0.3}
                 aria-label="Ralentir le bus"
-                className="group relative flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-xl border border-transparent bg-white/[0.07] px-2 text-xs font-semibold text-white transition-colors hover:border-[#947eef]/55 hover:bg-[#6141e8]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-45 sm:w-[90px] sm:flex-none sm:px-2.5 cursor-pointer"
+                className="group relative flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-full border border-transparent bg-white/[0.07] px-2 text-xs font-semibold text-white transition-colors hover:border-[#947eef]/55 hover:bg-[#6141e8]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-45 sm:w-[90px] sm:flex-none sm:px-2.5 cursor-pointer"
                 title="Ralentir le bus (Touche - ou Flèche Bas)"
               >
                 <SlowSpeedIcon className="relative h-4 w-4 shrink-0" />
@@ -477,7 +477,7 @@ export function BusHud({
                   {speedMultiplier.toFixed(1)}x
                 </span>
                 {speedMultiplier >= 2.0 && (
-                  <span className="bus-pill-badge rounded px-1 py-0.5 text-[10px] font-bold uppercase">
+                  <span className="bus-pill-badge rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase">
                     Boost
                   </span>
                 )}
@@ -488,7 +488,7 @@ export function BusHud({
                 onClick={accelerateBus}
                 disabled={speedMultiplier >= 3.0}
                 aria-label="Accélérer le bus"
-                className="bus-btn-tonal relative flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-xl px-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-45 sm:w-[90px] sm:flex-none sm:px-2.5 cursor-pointer"
+                className="bus-btn-tonal relative flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-45 sm:w-[90px] sm:flex-none sm:px-2.5 cursor-pointer"
                 title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
               >
                 <FastBoltIcon className="relative h-4 w-4 shrink-0" />
@@ -501,7 +501,7 @@ export function BusHud({
         {/* Navigation unifiée entre les rangées et les colonnes quand on est à l'intérieur */}
         {phase === "inside" && (
           <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] sm:right-4 sm:top-[6.25rem]">
-            <div className="bus-case bus-glass flex flex-col gap-1 rounded-2xl p-1.5 backdrop-blur-md">
+            <div className="bus-case bus-glass flex flex-col gap-1 rounded-[1.25rem] p-1.5 backdrop-blur-md">
               {/* Déplacement dans l'allée */}
               <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1">
                 <button
@@ -509,7 +509,7 @@ export function BusHud({
                   onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
                   disabled={seatRow <= 0}
                   aria-label="Rangée précédente"
-                  className="grid h-10 w-11 place-items-center rounded-lg border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#b4a4f8] hover:bg-[#1a2258] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#b4a4f8] hover:bg-[#1a2258] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   title={seatRow <= 0 ? "Première rangée atteinte" : "Rangée précédente"}
                 >
                   <ChevronLeftIcon className="h-4 w-4 shrink-0" />
@@ -525,7 +525,7 @@ export function BusHud({
                   onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
                   disabled={seatRow >= numRows - 1}
                   aria-label="Rangée suivante"
-                  className="grid h-10 w-11 place-items-center rounded-lg border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#b4a4f8] hover:bg-[#1a2258] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#b4a4f8] hover:bg-[#1a2258] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   title={seatRow >= numRows - 1 ? "Dernière rangée atteinte" : "Rangée suivante"}
                 >
                   <ChevronRightIcon className="h-4 w-4 shrink-0" />
@@ -539,7 +539,7 @@ export function BusHud({
                   onClick={() => setSeatColumn(Math.max(0, seatColumn - 1))}
                   disabled={seatColumn <= 0}
                   aria-label="Colonne à gauche"
-                  className="grid h-10 w-11 place-items-center rounded-lg border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#b4a4f8] hover:bg-[#1a2258] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#b4a4f8] hover:bg-[#1a2258] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   title={seatColumn <= 0 ? "Déjà dans la colonne la plus à gauche" : "Colonne à gauche"}
                 >
                   <ChevronLeftIcon className="h-4 w-4 shrink-0" />
@@ -555,7 +555,7 @@ export function BusHud({
                   onClick={() => setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1))}
                   disabled={seatColumn >= seatCountInRow - 1}
                   aria-label="Colonne à droite"
-                  className="grid h-10 w-11 place-items-center rounded-lg border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#b4a4f8] hover:bg-[#1a2258] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#b4a4f8] hover:bg-[#1a2258] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   title={seatColumn >= seatCountInRow - 1 ? "Déjà dans la colonne la plus à droite" : "Colonne à droite"}
                 >
                   <ChevronRightIcon className="h-4 w-4 shrink-0" />
@@ -596,7 +596,7 @@ export function BusHud({
               aria-label={manualDayNight === null
                 ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
                 : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
-              className={`bus-mobile-day-night bus-glass pointer-events-auto flex h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-xl px-2.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer ${
+              className={`bus-mobile-day-night bus-glass pointer-events-auto flex h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-[1.125rem] px-2.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer ${
                 manualDayNight !== null ? "bus-btn-active" : "bus-btn-secondary"
               }`}
             >
@@ -617,13 +617,13 @@ export function BusHud({
             >
               <CrosshairResetIcon className="h-5 w-5 shrink-0" />
             </button>
-            <div className="bus-mobile-speed bus-case bus-glass pointer-events-auto flex h-11 shrink-0 items-center gap-0.5 rounded-2xl px-1 text-xs">
+            <div className="bus-mobile-speed bus-case bus-glass pointer-events-auto flex h-11 shrink-0 items-center gap-0.5 rounded-full px-1 text-xs">
               <button
                 type="button"
                 onClick={decelerateBus}
                 disabled={speedMultiplier <= 0.3}
                 aria-label="Ralentir le bus"
-                className="grid h-9 w-10 shrink-0 place-items-center rounded-xl text-white transition-colors hover:bg-[#6141e8]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
+                className="grid h-9 w-10 shrink-0 place-items-center rounded-full text-white transition-colors hover:bg-[#6141e8]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
                 title="Ralentir le bus"
               >
                 <SlowSpeedIcon className="h-4 w-4 shrink-0" />
@@ -633,7 +633,7 @@ export function BusHud({
                   {speedMultiplier.toFixed(1)}x
                 </span>
                 {speedMultiplier >= 2.0 && (
-                  <span className="bus-pill-badge rounded px-1 py-0.5 text-[10px] font-bold uppercase">
+                  <span className="bus-pill-badge rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase">
                     Boost
                   </span>
                 )}
@@ -643,7 +643,7 @@ export function BusHud({
                 onClick={accelerateBus}
                 disabled={speedMultiplier >= 3.0}
                 aria-label="Accélérer le bus"
-                className="grid h-9 w-10 shrink-0 place-items-center rounded-xl text-[#c4b5fd] transition-colors hover:bg-[#6141e8]/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
+                className="grid h-9 w-10 shrink-0 place-items-center rounded-full text-[#c4b5fd] transition-colors hover:bg-[#6141e8]/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
                 title="Accélérer le bus"
               >
                 <FastBoltIcon className="h-4 w-4 shrink-0" />
@@ -871,7 +871,7 @@ export function BusHud({
                   }}
                   aria-label="Fermer la notification"
                   title="Fermer la notification"
-                  className="grid h-11 w-11 shrink-0 place-items-center self-center rounded-xl text-[#dfe5ff] transition-colors hover:bg-[#6141e8]/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer"
+                  className="grid h-11 w-11 shrink-0 place-items-center self-center rounded-full text-[#dfe5ff] transition-colors hover:bg-[#6141e8]/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer"
                 >
                   <CloseIcon className="h-4 w-4 shrink-0" />
                 </button>
@@ -881,7 +881,7 @@ export function BusHud({
         )}
         {immersive && !hidden && <button ref={restoreButtonRef} type="button" onClick={restoreControls} aria-label="Quitter le mode immersif et afficher les commandes"
           data-visible={immersiveRestoreVisible}
-          className={`bus-immersive-restore bus-btn-secondary fixed z-[2147483647] inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer ${
+          className={`bus-immersive-restore bus-btn-secondary fixed z-[2147483647] inline-flex min-h-11 items-center gap-2 rounded-[1.125rem] px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] cursor-pointer ${
             immersiveRestoreVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
           style={{ right: "calc(1rem + env(safe-area-inset-right))", top: "calc(1rem + env(safe-area-inset-top))" }}>
@@ -964,7 +964,7 @@ function MobileMenuToggleButton({
         if (disabled) return;
         onToggle();
       }}
-      className={`pointer-events-auto relative z-10 flex min-h-11 min-w-0 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-xl py-2 text-xs font-semibold touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
+      className={`pointer-events-auto relative z-10 flex min-h-11 min-w-0 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-[1.125rem] py-2 text-xs font-semibold touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
         variant === "exterior" ? "px-3 min-[360px]:px-3.5" : "px-2.5 min-[360px]:px-3.5"
       } ${open ? "bus-btn-active" : "bus-btn-secondary"}`}
     >
@@ -1004,7 +1004,7 @@ function HudButton({
   showMobileIcon?: boolean;
   className?: string;
 }) {
-  const shape = primary || exit ? "rounded-full" : "rounded-xl";
+  const shape = primary || exit ? "rounded-full" : "rounded-[1.125rem]";
   const base =
     `pointer-events-auto flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap ${shape} py-2 text-xs md:text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer`;
   const look = primary

@@ -90,8 +90,8 @@ export function ManagePlaceModal({
               </p>
               {error && <p role="alert" className="mt-4 rounded-xl border border-red-400/50 bg-red-950/60 px-3.5 py-2.5 text-sm font-bold text-red-100">{error}</p>}
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <button type="button" onClick={close} disabled={deleting} className="bus-btn-secondary min-h-12 cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-60">Annuler</button>
-                <button type="button" onClick={() => void remove()} disabled={deleting} className="bus-btn-danger min-h-12 cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-wait disabled:opacity-60">{deleting ? "Suppression…" : "Confirmer la suppression"}</button>
+                <button type="button" onClick={close} disabled={deleting} className="bus-btn-secondary min-h-12 cursor-pointer rounded-2xl px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-not-allowed disabled:opacity-60">Annuler</button>
+                <button type="button" onClick={() => void remove()} disabled={deleting} className="bus-btn-danger min-h-12 cursor-pointer rounded-full px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24] disabled:cursor-wait disabled:opacity-60">{deleting ? "Suppression…" : "Confirmer la suppression"}</button>
               </div>
             </div>
           ) : (
@@ -113,7 +113,7 @@ export function ManagePlaceModal({
                     <button
                       type="button"
                       onClick={onEditName}
-                      className="bus-btn-secondary flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+                      className="bus-btn-secondary flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
                     >
                       <UserBadgeIcon className="h-4 w-4 shrink-0" />
                       <span>Modifier mon nom</span>
@@ -123,7 +123,7 @@ export function ManagePlaceModal({
                     <button
                       type="button"
                       onClick={onEditComment}
-                      className="bus-btn-secondary flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
+                      className="bus-btn-secondary flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#947eef] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070b24]"
                     >
                       <CommentBubbleIcon className="h-4 w-4 shrink-0" />
                       <span>{hasComment ? "Modifier mon commentaire" : "Mettre un commentaire"}</span>
