@@ -274,7 +274,7 @@ function TabButton({
       aria-controls={panelId}
       aria-label={label}
       tabIndex={active ? 0 : -1}
-      className={`flex min-h-11 shrink-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-2xl px-2.5 py-2 text-[11px] font-semibold focus-visible:outline-none motion-reduce:transition-none min-[360px]:px-3 min-[360px]:text-xs sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
+      className={`flex min-h-11 shrink-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-2 text-[11px] font-semibold focus-visible:outline-none motion-reduce:transition-none min-[360px]:px-3 min-[360px]:text-xs sm:flex-none sm:gap-2 sm:px-4 sm:text-sm ${
         active ? "bus-btn-active" : "bus-btn-secondary"
       }`}
     >

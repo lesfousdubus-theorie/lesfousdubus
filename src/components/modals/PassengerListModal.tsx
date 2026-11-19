@@ -215,7 +215,7 @@ export function PassengerListModal({
                   type="button"
                   aria-pressed={activeOnlyWithComment}
                   onClick={() => setActiveOnlyWithComment(!activeOnlyWithComment)}
-                  className={`min-h-11 cursor-pointer rounded-2xl px-3.5 py-2 text-xs font-semibold focus-visible:outline-none ${
+                  className={`min-h-11 cursor-pointer rounded-full px-3.5 py-2 text-xs font-semibold focus-visible:outline-none ${
                     activeOnlyWithComment ? "bus-btn-active" : "bus-btn-secondary"
                   }`}
                 >
@@ -225,7 +225,7 @@ export function PassengerListModal({
                   <button
                     type="button"
                     onClick={jumpToMySeat}
-                    className="bus-btn-tonal min-h-11 cursor-pointer rounded-2xl px-3.5 py-2 text-xs font-semibold focus-visible:outline-none"
+                    className="bus-btn-tonal min-h-11 cursor-pointer rounded-full px-3.5 py-2 text-xs font-semibold focus-visible:outline-none"
                   >
                     Ma place
                   </button>
@@ -237,7 +237,7 @@ export function PassengerListModal({
                     onClick={() => {
                       if (!loading) onRefresh();
                     }}
-                    className="bus-btn-secondary min-h-11 cursor-pointer rounded-2xl px-3.5 py-2 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-60"
+                    className="bus-btn-secondary min-h-11 cursor-pointer rounded-full px-3.5 py-2 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-60"
                   >
                     Actualiser
                   </button>
@@ -310,13 +310,13 @@ export function PassengerListModal({
           {error && (
             <div className="mt-3 rounded-2xl border border-red-400/40 bg-red-950/50 p-4 text-center">
               <p role="alert" className="text-sm font-bold text-red-100">{error}</p>
-              <button type="button" onClick={onRetry} className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-2xl px-4 py-2 text-sm font-semibold focus-visible:outline-none">
+              <button type="button" onClick={onRetry} className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold focus-visible:outline-none">
                 Réessayer
               </button>
             </div>
           )}
           {!loading && !error && hasMore && (
-            <button type="button" onClick={onLoadMore} className="bus-btn-secondary mt-4 min-h-11 w-full cursor-pointer rounded-2xl px-4 py-2.5 text-sm font-semibold focus-visible:outline-none">
+            <button type="button" onClick={onLoadMore} className="bus-btn-secondary mt-4 min-h-11 w-full cursor-pointer rounded-full px-4 py-2.5 text-sm font-semibold focus-visible:outline-none">
               Afficher plus de passagers
             </button>
           )}
@@ -333,7 +333,7 @@ export function PassengerListModal({
                     setActiveSearchQuery("");
                     setActiveOnlyWithComment(false);
                   }}
-                  className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-2xl px-4 py-2 text-xs font-semibold focus-visible:outline-none"
+                  className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-full px-4 py-2 text-xs font-semibold focus-visible:outline-none"
                 >
                   Réinitialiser les filtres
                 </button>

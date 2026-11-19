@@ -167,7 +167,7 @@ export function JoinBusModal({
                 type="button"
                 aria-disabled={joining}
                 onClick={() => { if (!joining) onRemove(); }}
-                className="min-h-12 cursor-pointer rounded-2xl border border-red-400/45 bg-red-950/40 px-4 py-3 text-sm font-semibold text-red-100 transition-colors hover:bg-red-900/55 focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80"
+                className="min-h-12 cursor-pointer rounded-full border border-red-400/45 bg-red-950/40 px-4 py-3 text-sm font-semibold text-red-100 transition-colors hover:bg-red-900/55 focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80"
               >
                 Retirer mon commentaire
               </button>

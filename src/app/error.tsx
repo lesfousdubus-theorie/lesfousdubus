@@ -39,7 +39,7 @@ export default function ErrorPage({
           </button>
           <Link
             href="/"
-            className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[1.125rem] px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
+            className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
           >
             Retourner à l’accueil
           </Link>
