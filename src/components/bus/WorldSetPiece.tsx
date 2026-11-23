@@ -60,7 +60,17 @@ export default function WorldSetPiece({
   </group>;
 }
 
-export function WorldForeground({ zone, side, lowPower = false }: { zone: number; side: number; lowPower?: boolean }) {
+export function WorldForeground({
+  zone,
+  side,
+  lowPower = false,
+  onMeshesReady,
+}: {
+  zone: number;
+  side: number;
+  lowPower?: boolean;
+  onMeshesReady?: () => void;
+}) {
   const batches = useMemo(() => createOnePieceForeground(zone, side, lowPower), [zone, side, lowPower]);
   const sections = useMemo(() => {
     const groups = new Map<number | null, SceneryBatch[]>();
@@ -70,6 +80,13 @@ export function WorldForeground({ zone, side, lowPower = false }: { zone: number
       groups.set(batch.section, group);
     }
     return [...groups];
+  }, [batches]);
+  const onMeshesReadyRef = useRef(onMeshesReady);
+  useLayoutEffect(() => {
+    onMeshesReadyRef.current = onMeshesReady;
+  }, [onMeshesReady]);
+  useLayoutEffect(() => {
+    onMeshesReadyRef.current?.();
   }, [batches]);
   useEffect(() => () => batches.forEach(({ geometry }) => geometry.dispose()), [batches]);
   return <group name={`world-foreground-${zone}-${side}`}>

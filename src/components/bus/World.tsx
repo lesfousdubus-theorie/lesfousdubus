@@ -313,13 +313,17 @@ export default function World({
     if (resolvedPropFraction === 0.75) return allProps.filter((_, index) => index % 4 !== 3);
     return allProps;
   }, [allProps, resolvedPropFraction]);
-  const [zoneStage, setZoneStage] = useState(1);
-  const [propLimit, setPropLimit] = useState(8);
-  const frameCounterRef = useRef(0);
-  const mountedZones = useMemo(
-    () => new Set<number>(initialZoneLoadOrder.slice(0, zoneStage)),
-    [initialZoneLoadOrder, zoneStage],
-  );
+  // Découpage fin : 4 micro-étapes par île (0: terrain, 1: monument, 2: avant-plan ouest, 3: avant-plan est).
+  // Au départ (subStage = 2), seule l'île la plus proche a son terrain et son monument.
+  const [zoneSubStage, setZoneSubStage] = useState(2);
+  const [seaCreaturesReady, setSeaCreaturesReady] = useState(false);
+  const [propLimit, setPropLimit] = useState(2);
+  const nextLoadAtRef = useRef(0);
+  const zoneStageFor = useCallback((zone: number) => {
+    const rank = initialZoneLoadOrder.indexOf(zone);
+    if (rank < 0) return 0;
+    return Math.max(0, Math.min(4, zoneSubStage - rank * 4));
+  }, [initialZoneLoadOrder, zoneSubStage]);
   const visibleProps = useMemo(
     () => props.slice(0, propLimit),
     [props, propLimit],
@@ -368,31 +372,16 @@ export default function World({
 
   useLayoutEffect(() => {
     propRefs.current.length = props.length;
-    propBounds.current = props.map((_, i) => {
-      const group = propRefs.current[i];
-      return group ? cacheSceneryBounds(group, group.position.z) : null;
-    });
-    sceneBounds.current = ZONES.map((_, zone) => {
-      const z = zoneRefs.current[zone]?.position.z ?? 0;
-      const objects: THREE.Object3D[] = [];
-      const landmark = sceneryRefs.current[zone * 3];
-      if (landmark) {
-        landmark.traverse(child => {
-          if (child instanceof THREE.Mesh) objects.push(child);
-        });
-      }
-      for (const side of [1, 2]) {
-        const foreground = sceneryRefs.current[zone * 3 + side]?.children[0];
-        if (foreground) objects.push(...foreground.children);
-      }
-      return objects.map(object => cacheSceneryBounds(object, z));
-    });
-    railBounds.current = railRefs.current.flatMap(group => group ? [cacheSceneryBounds(group, 0)] : []);
+    propBounds.current.length = props.length;
     if (worldRef.current) {
       const initial = getActiveZoneLoopState(worldRef.current.scroll, zoneOrder, ZONE_LEN);
       worldRef.current.zone = initial.zone;
     }
-  }, [props, lowPower, cabinCenterZ, bridgeLength, worldRef, zoneOrder]);
+  }, [props, lowPower, worldRef, zoneOrder]);
+
+  useLayoutEffect(() => {
+    railBounds.current = railRefs.current.flatMap(group => group ? [cacheSceneryBounds(group, 0)] : []);
+  }, [cabinCenterZ, bridgeLength]);
 
   const dashRef = useRef<THREE.InstancedMesh>(null);
   const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
@@ -402,12 +391,20 @@ export default function World({
   );
 
   useFrame((state, dt) => {
-    frameCounterRef.current += 1;
-    if (zoneStage < ZONES.length && frameCounterRef.current % 3 === 0) {
-      setZoneStage((prev) => Math.min(ZONES.length, prev + 1));
-    }
-    if (propLimit < props.length && frameCounterRef.current % 2 === 0) {
-      setPropLimit((prev) => Math.min(props.length, prev + 6));
+    const now = performance.now();
+    // N'avancer d'une seule micro-étape que si la frame précédente était fluide,
+    // en laissant le bus défiler librement entre deux apparitions.
+    if (dt < 0.045 && now >= nextLoadAtRef.current) {
+      if (zoneSubStage < ZONES.length * 4) {
+        setZoneSubStage((prev) => Math.min(ZONES.length * 4, prev + 1));
+        nextLoadAtRef.current = now + 70;
+      } else if (!seaCreaturesReady) {
+        setSeaCreaturesReady(true);
+        nextLoadAtRef.current = now + 100;
+      } else if (propLimit < props.length) {
+        setPropLimit((prev) => Math.min(props.length, prev + 2));
+        nextLoadAtRef.current = now + 35;
+      }
     }
 
     const frameDt = Math.min(dt, phase==="entering"||phase==="exiting"?0.25:0.1);
@@ -491,7 +488,7 @@ export default function World({
   return (
     <group>
       <WorldOcean worldRef={worldRef} wakesRef={seaWakesRef} reducedMotion={reducedMotion} />
-      {zoneStage >= 3 && (
+      {seaCreaturesReady && (
         <WorldSeaCreatures
           worldRef={worldRef}
           wakesRef={seaWakesRef}
@@ -506,7 +503,7 @@ export default function World({
 
       {/* Îles des 8 mondes avec apparition progressive des reliefs et décors */}
       {ZONES.map((zone, i) => {
-        const mounted = mountedZones.has(i);
+        const stage = zoneStageFor(i);
         return (
           <group
             key={zone.name}
@@ -520,30 +517,37 @@ export default function World({
               <boxGeometry args={[96, 0.6, ZONE_LEN - 16]} />
               <meshStandardMaterial color={zone.ground} roughness={0.9} />
             </mesh>
-            {mounted && (
-              <>
-                <IslandTerrain
-                  zone={i}
-                  terrainRef={(el: THREE.Mesh | null) => {
-                    terrainRefs.current[i] = el;
-                  }}
-                />
-                <group ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3] = element; }}>
-                  <WorldSetPiece
-                    zone={i}
-                    lowPower={lowPower}
-                    reducedMotion={reducedMotion}
-                    onMeshesReady={() => refreshZoneBounds(i)}
-                  />
-                </group>
-                {[-1, 1].map((side, part) => <group
-                  key={side}
-                  ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3 + part + 1] = element; }}
-                >
-                  <WorldForeground zone={i} side={side} lowPower={lowPower} />
-                </group>)}
-              </>
+            {stage >= 1 && (
+              <IslandTerrain
+                zone={i}
+                terrainRef={(el: THREE.Mesh | null) => {
+                  terrainRefs.current[i] = el;
+                }}
+              />
             )}
+            {stage >= 2 && (
+              <group ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3] = element; }}>
+                <WorldSetPiece
+                  zone={i}
+                  lowPower={lowPower}
+                  reducedMotion={reducedMotion}
+                  onMeshesReady={() => refreshZoneBounds(i)}
+                />
+              </group>
+            )}
+            {[-1, 1].map((side, part) => stage >= 3 + part ? (
+              <group
+                key={side}
+                ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3 + part + 1] = element; }}
+              >
+                <WorldForeground
+                  zone={i}
+                  side={side}
+                  lowPower={lowPower}
+                  onMeshesReady={() => refreshZoneBounds(i)}
+                />
+              </group>
+            ) : null)}
             {/* Plage / bordure d'île */}
             <mesh position={[0, -0.44, 0]} receiveShadow>
               <boxGeometry args={[104, 0.32, ZONE_LEN - 8]} />

@@ -1,7 +1,7 @@
 "use client";
 
 import * as THREE from "three";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { setSceneryParts } from "@/lib/world-visibility";
 
@@ -729,20 +729,35 @@ type MergedMeshBatch = {
   receiveShadow: boolean;
 };
 
+const LANDMARK_GEOMETRY_CACHE = new Map<string, MergedMeshBatch[]>();
+
+function getLandmarkCacheKey(def: PropDef): string {
+  if (def.type === "building" || def.type === "cloud") {
+    return `${def.type}:${Math.round(def.seed * 20)}`;
+  }
+  return def.type;
+}
+
 /** Les éléments fixes regroupent leurs pièces par matériau et par comportement d’ombre. */
 export function WorldLandmark({ def, onReady }: { def: PropDef; onReady?: () => void }) {
   const source = useRef<THREE.Group>(null);
   const onReadyRef = useRef(onReady);
-  const disposedBatches = useRef(new WeakSet<MergedMeshBatch[]>());
-  const [mergedGeometry, setMergedGeometry] = useState<{ def: PropDef; batches: MergedMeshBatch[] } | null>(null);
-  const activeBatches = mergedGeometry?.def === def ? mergedGeometry.batches : null;
+  const cacheKey = getLandmarkCacheKey(def);
+  const unitDef = useMemo(() => ({ ...def, s: 1 }), [def]);
+  const [merged, setMerged] = useState<{ key: string; batches: MergedMeshBatch[] } | null>(() => {
+    const cached = LANDMARK_GEOMETRY_CACHE.get(cacheKey);
+    return cached ? { key: cacheKey, batches: cached } : null;
+  });
+  const activeBatches = LANDMARK_GEOMETRY_CACHE.get(cacheKey)
+    ?? (merged?.key === cacheKey ? merged.batches : null);
 
   useLayoutEffect(() => {
     onReadyRef.current = onReady;
   }, [onReady]);
 
   useLayoutEffect(() => {
-    if (activeBatches) {
+    const cached = LANDMARK_GEOMETRY_CACHE.get(cacheKey);
+    if (cached) {
       onReadyRef.current?.();
       return;
     }
@@ -778,28 +793,16 @@ export function WorldLandmark({ def, onReady }: { def: PropDef; onReady?: () => 
       shapes.forEach(shape => shape.dispose());
     }
     if (nextBatches.length === batches.size && nextBatches.length > 0) {
-      setMergedGeometry({ def, batches: nextBatches });
+      LANDMARK_GEOMETRY_CACHE.set(cacheKey, nextBatches);
+      setMerged({ key: cacheKey, batches: nextBatches });
     } else {
       nextBatches.forEach(batch => batch.geometry.dispose());
     }
-  }, [def, activeBatches]);
-
-  useEffect(() => {
-    if (!activeBatches) return;
-    const disposed = disposedBatches.current;
-    if (disposed.has(activeBatches)) {
-      setMergedGeometry(null);
-      return;
-    }
-    return () => {
-      disposed.add(activeBatches);
-      activeBatches.forEach(batch => batch.geometry.dispose());
-    };
-  }, [activeBatches]);
+  }, [cacheKey, activeBatches]);
 
   if (activeBatches) {
     return (
-      <>
+      <group scale={def.s}>
         {activeBatches.map((batch, index) => (
           <mesh
             key={`${batch.material.uuid}:${index}`}
@@ -810,8 +813,8 @@ export function WorldLandmark({ def, onReady }: { def: PropDef; onReady?: () => 
             dispose={null}
           />
         ))}
-      </>
+      </group>
     );
   }
-  return <group ref={source}><LandmarkModel def={def} /></group>;
+  return <group ref={source} scale={def.s}><LandmarkModel def={unitDef} /></group>;
 }
