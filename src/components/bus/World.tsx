@@ -233,6 +233,16 @@ function buildProps(worldSeed = 2026): PropDef[] {
   return out;
 }
 
+function IslandTerrain({ zone, terrainRef }: { zone: number; terrainRef: (el: THREE.Mesh | null) => void }) {
+  const geometry = useMemo(() => makeTerrain(zone), [zone]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  return (
+    <mesh ref={terrainRef} geometry={geometry} receiveShadow>
+      <meshStandardMaterial vertexColors roughness={0.95} side={THREE.FrontSide} />
+    </mesh>
+  );
+}
+
 interface WorldProps {
   worldRef: React.RefObject<WorldState>;
   reducedMotion?: boolean;
@@ -278,18 +288,42 @@ export default function World({
     });
     return slots;
   }, [zoneOrder]);
-  const allProps = useMemo(() => buildProps(worldSeed), [worldSeed]);
-  const terrains = useMemo(() => ZONES.map((_, index) => makeTerrain(index)), []);
+  const initialZoneLoadOrder = useMemo(() => {
+    const loopStart = cabinCenterZ - LOOP / 2;
+    const loopEnd = cabinCenterZ + LOOP / 2;
+    return Array.from({ length: ZONES.length }, (_, i) => i).sort((a, b) => {
+      const za = Math.abs(getZoneSlotCenterZ(slotByZone[a], 0, ZONE_LEN, LOOP, loopStart, loopEnd) - cabinCenterZ);
+      const zb = Math.abs(getZoneSlotCenterZ(slotByZone[b], 0, ZONE_LEN, LOOP, loopStart, loopEnd) - cabinCenterZ);
+      return za - zb;
+    });
+  }, [slotByZone, cabinCenterZ]);
+  const allProps = useMemo(() => {
+    const raw = buildProps(worldSeed);
+    const rank = new Map<number, number>(initialZoneLoadOrder.map((z, idx) => [z, idx]));
+    return [...raw].sort((a, b) => {
+      const za = rank.get(Math.floor(a.base / ZONE_LEN)) ?? 99;
+      const zb = rank.get(Math.floor(b.base / ZONE_LEN)) ?? 99;
+      return za - zb;
+    });
+  }, [worldSeed, initialZoneLoadOrder]);
 
-  useEffect(() => () => {
-    terrains.forEach((terrain) => terrain.dispose());
-  }, [terrains]);
   const resolvedPropFraction = propFraction ?? (lowPower ? 0.5 : 1);
   const props = useMemo(() => {
     if (resolvedPropFraction === 0.5) return allProps.filter((_, index) => index % 2 === 0);
     if (resolvedPropFraction === 0.75) return allProps.filter((_, index) => index % 4 !== 3);
     return allProps;
   }, [allProps, resolvedPropFraction]);
+  const [zoneStage, setZoneStage] = useState(1);
+  const [propLimit, setPropLimit] = useState(8);
+  const frameCounterRef = useRef(0);
+  const mountedZones = useMemo(
+    () => new Set<number>(initialZoneLoadOrder.slice(0, zoneStage)),
+    [initialZoneLoadOrder, zoneStage],
+  );
+  const visibleProps = useMemo(
+    () => props.slice(0, propLimit),
+    [props, propLimit],
+  );
   const propRefs = useRef<(THREE.Group | null)[]>([]);
   const zoneRefs = useRef<(THREE.Group | null)[]>([]);
   const terrainRefs = useRef<(THREE.Mesh | null)[]>([]);
@@ -368,6 +402,14 @@ export default function World({
   );
 
   useFrame((state, dt) => {
+    frameCounterRef.current += 1;
+    if (zoneStage < ZONES.length && frameCounterRef.current % 3 === 0) {
+      setZoneStage((prev) => Math.min(ZONES.length, prev + 1));
+    }
+    if (propLimit < props.length && frameCounterRef.current % 2 === 0) {
+      setPropLimit((prev) => Math.min(props.length, prev + 6));
+    }
+
     const frameDt = Math.min(dt, phase==="entering"||phase==="exiting"?0.25:0.1);
     const mult = (worldRef.current?.speedMultiplier ?? 1.0) * (worldRef.current.motionFactor ?? 1);
     const scroll = (worldRef.current?.scroll ?? 0) + frameDt * WORLD_SPEED * mult;
@@ -400,15 +442,15 @@ export default function World({
     }
 
     // Les props suivent exactement le bouclage de leur île sur toute la fenêtre.
-    for (let i = 0; i < props.length; i++) {
+    for (let i = 0; i < visibleProps.length; i++) {
       const g = propRefs.current[i];
       if (!g) continue;
-      const zoneIdx = Math.floor(props[i].base / ZONE_LEN);
-      const localOffset = props[i].base - (zoneIdx * ZONE_LEN + ZONE_LEN / 2);
+      const zoneIdx = Math.floor(visibleProps[i].base / ZONE_LEN);
+      const localOffset = visibleProps[i].base - (zoneIdx * ZONE_LEN + ZONE_LEN / 2);
       const z = zoneZ.current[zoneIdx] + localOffset;
       g.position.z = z;
       const eye = state.camera.position;
-      const dx = props[i].x - eye.x;
+      const dx = visibleProps[i].x - eye.x;
       const dz = z - eye.z;
       if (propCullDistance !== undefined && dx * dx + dz * dz > propCullDistance * propCullDistance) {
         g.visible = false;
@@ -449,55 +491,67 @@ export default function World({
   return (
     <group>
       <WorldOcean worldRef={worldRef} wakesRef={seaWakesRef} reducedMotion={reducedMotion} />
-      <WorldSeaCreatures
-        worldRef={worldRef}
-        wakesRef={seaWakesRef}
-        cabinCenterZ={cabinCenterZ}
-        reducedMotion={reducedMotion}
-        lowPower={lowPower}
-        slotLimit={seaCreatureSlots}
-        cullAhead={seaCreatureCullAhead}
-        cullBehind={seaCreatureCullBehind}
-      />
+      {zoneStage >= 3 && (
+        <WorldSeaCreatures
+          worldRef={worldRef}
+          wakesRef={seaWakesRef}
+          cabinCenterZ={cabinCenterZ}
+          reducedMotion={reducedMotion}
+          lowPower={lowPower}
+          slotLimit={seaCreatureSlots}
+          cullAhead={seaCreatureCullAhead}
+          cullBehind={seaCreatureCullBehind}
+        />
+      )}
 
-      {/* Îles des 8 mondes avec rivages et plages */}
-      {ZONES.map((zone, i) => (
-        <group
-          key={zone.name}
-          name={`world-island-${i}`}
-          ref={(el: THREE.Group | null) => {
-            zoneRefs.current[i] = el;
-          }}
-        >
-          {/* Terre principale */}
-          <mesh position={[0, -0.34, 0]} receiveShadow>
-            <boxGeometry args={[96, 0.6, ZONE_LEN - 16]} />
-            <meshStandardMaterial color={zone.ground} roughness={0.9} />
-          </mesh>
-          <mesh ref={(el: THREE.Mesh | null) => { terrainRefs.current[i] = el; }} geometry={terrains[i]} receiveShadow>
-            <meshStandardMaterial vertexColors roughness={0.95} side={THREE.FrontSide} />
-          </mesh>
-          <group ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3] = element; }}>
-            <WorldSetPiece
-              zone={i}
-              lowPower={lowPower}
-              reducedMotion={reducedMotion}
-              onMeshesReady={() => refreshZoneBounds(i)}
-            />
-          </group>
-          {[-1, 1].map((side, part) => <group
-            key={side}
-            ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3 + part + 1] = element; }}
+      {/* Îles des 8 mondes avec apparition progressive des reliefs et décors */}
+      {ZONES.map((zone, i) => {
+        const mounted = mountedZones.has(i);
+        return (
+          <group
+            key={zone.name}
+            name={`world-island-${i}`}
+            ref={(el: THREE.Group | null) => {
+              zoneRefs.current[i] = el;
+            }}
           >
-            <WorldForeground zone={i} side={side} lowPower={lowPower} />
-          </group>)}
-          {/* Plage / bordure d'île */}
-          <mesh position={[0, -0.44, 0]} receiveShadow>
-            <boxGeometry args={[104, 0.32, ZONE_LEN - 8]} />
-            <meshStandardMaterial color={zone.shore} roughness={0.95} />
-          </mesh>
-        </group>
-      ))}
+            {/* Terre principale */}
+            <mesh position={[0, -0.34, 0]} receiveShadow>
+              <boxGeometry args={[96, 0.6, ZONE_LEN - 16]} />
+              <meshStandardMaterial color={zone.ground} roughness={0.9} />
+            </mesh>
+            {mounted && (
+              <>
+                <IslandTerrain
+                  zone={i}
+                  terrainRef={(el: THREE.Mesh | null) => {
+                    terrainRefs.current[i] = el;
+                  }}
+                />
+                <group ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3] = element; }}>
+                  <WorldSetPiece
+                    zone={i}
+                    lowPower={lowPower}
+                    reducedMotion={reducedMotion}
+                    onMeshesReady={() => refreshZoneBounds(i)}
+                  />
+                </group>
+                {[-1, 1].map((side, part) => <group
+                  key={side}
+                  ref={(element: THREE.Group | null) => { sceneryRefs.current[i * 3 + part + 1] = element; }}
+                >
+                  <WorldForeground zone={i} side={side} lowPower={lowPower} />
+                </group>)}
+              </>
+            )}
+            {/* Plage / bordure d'île */}
+            <mesh position={[0, -0.44, 0]} receiveShadow>
+              <boxGeometry args={[104, 0.32, ZONE_LEN - 8]} />
+              <meshStandardMaterial color={zone.shore} roughness={0.95} />
+            </mesh>
+          </group>
+        );
+      })}
 
       {/* Pont maritime continu de Grand Line */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.024, cabinCenterZ]} receiveShadow>
@@ -534,7 +588,7 @@ export default function World({
       </instancedMesh>
 
       {/* Décors 3D enrichis des mondes */}
-      {props.map((p, i) => (
+      {visibleProps.map((p, i) => (
         <group
           key={p.id ?? i}
           name={`world-prop-${p.type}-${p.id ?? i}`}

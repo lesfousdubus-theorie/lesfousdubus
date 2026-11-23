@@ -379,8 +379,15 @@ export function BusTvPlayer({
   }, [applyDesiredPlayback, clearStartTimer, failPlayer, mountElement, reportPlayback, shouldPlay, stopVolumeRamp, stopWarmup]);
 
   useEffect(() => {
-    connectPlayer();
-    return stopPlayer;
+    if (desiredRef.current.hasEntered) {
+      connectPlayer();
+      return stopPlayer;
+    }
+    const timer = window.setTimeout(connectPlayer, 2200);
+    return () => {
+      window.clearTimeout(timer);
+      stopPlayer();
+    };
   }, [connectPlayer, stopPlayer]);
 
   useEffect(() => onBusAudioEvent("partyFocus", active => {

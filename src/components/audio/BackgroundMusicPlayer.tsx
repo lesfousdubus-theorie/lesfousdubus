@@ -295,8 +295,11 @@ export default function BackgroundMusicPlayer({
 
   useEffect(() => {
     const slots = Object.values(slotsRef.current);
-    slots.forEach(connectSlot);
+    const bgTimer = window.setTimeout(() => connectSlot(slotsRef.current.background), 3200);
+    const partyTimer = window.setTimeout(() => connectSlot(slotsRef.current.party), 5500);
     return () => {
+      window.clearTimeout(bgTimer);
+      window.clearTimeout(partyTimer);
       clearStartTimer(); clearFade(); reportDance(false);
       for (const slot of slots) {
         stopWarmup(slot);

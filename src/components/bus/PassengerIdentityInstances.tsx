@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { bakePassengerIdentity, bakedPassengerIdentities, type IdentityPart, type IdentityRole } from "@/lib/baked-passenger";
@@ -166,7 +166,25 @@ export default function PassengerIdentityInstances({ ids, passengers, drivers, c
     });
     return [...result];
   }, [ids]);
-  return <>{groups.map(([id, indices]) => <IdentityGroup key={id} id={id} indices={indices}
-    passengers={passengers} drivers={drivers} capacity={capacity} profilesBySeatIndex={profilesBySeatIndex}
-    hornPulse={hornPulse} poses={poses} partyOn={partyOn} reducedMotion={reducedMotion} />)}</>;
+  const [unlockedUnbaked, setUnlockedUnbaked] = useState(1);
+  const unbakedCount = useMemo(
+    () => groups.reduce((count, [id]) => count + (bakedPassengerIdentities.has(id) ? 0 : 1), 0),
+    [groups],
+  );
+  useEffect(() => {
+    if (unlockedUnbaked >= unbakedCount) return;
+    const frame = requestAnimationFrame(() => setUnlockedUnbaked((n) => n + 1));
+    return () => cancelAnimationFrame(frame);
+  }, [unbakedCount, unlockedUnbaked]);
+
+  let unbakedSeen = 0;
+  return <>{groups.map(([id, indices]) => {
+    if (!bakedPassengerIdentities.has(id)) {
+      unbakedSeen += 1;
+      if (unbakedSeen > unlockedUnbaked) return null;
+    }
+    return <IdentityGroup key={id} id={id} indices={indices}
+      passengers={passengers} drivers={drivers} capacity={capacity} profilesBySeatIndex={profilesBySeatIndex}
+      hornPulse={hornPulse} poses={poses} partyOn={partyOn} reducedMotion={reducedMotion} />;
+  })}</>;
 }
