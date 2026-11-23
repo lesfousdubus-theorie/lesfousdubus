@@ -181,12 +181,33 @@ export default function Bus({
   const { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex } = useBusResources();
   const partyCards = usePartyTvCards(partyOn);
 
+  // Montage progressif des sous-ensembles du bus sur des frames fluides
+  // pour éviter de compiler et téléverser toute la scène en une seule frame.
+  const [mountStage, setMountStage] = useState(() => (phase === "entering" || phase === "inside" ? 3 : 0));
+  const mountStageRef = useRef(phase === "entering" || phase === "inside" ? 3 : 0);
+  const mountNextAtRef = useRef(0);
+  const effectiveMountStage = phase === "entering" || phase === "inside" ? 3 : mountStage;
+
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
   const rightTarget = useRef<THREE.Object3D>(null);
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime;
     const frameDt = Math.min(dt, 0.1);
+
+    if (mountStageRef.current < 3) {
+      if (phase === "entering" || phase === "inside") {
+        mountStageRef.current = 3;
+        setMountStage(3);
+      } else if (dt < 0.045) {
+        const now = performance.now();
+        if (now >= mountNextAtRef.current) {
+          mountNextAtRef.current = now + 55;
+          mountStageRef.current += 1;
+          setMountStage(mountStageRef.current);
+        }
+      }
+    }
 
     const mult = (worldRef.current?.speedMultiplier ?? 1.0)*(worldRef.current.motionFactor??1);
     bouncePhase.current = (bouncePhase.current + frameDt * 8.5 * mult) % (Math.PI * 2);
@@ -312,43 +333,53 @@ export default function Bus({
         contactShadowTex={contactShadowTex}
       />
 
-      <BusCabinInterior mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ}
-        rearWallZ={rearWallZ} rows={renderedRowIndices} wheelPositions={wheelPositions}
-        tvPositions={tvPositions} doors={doors} worldRef={worldRef} />
+      {effectiveMountStage >= 1 && (
+        <BusCabinInterior mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ}
+          rearWallZ={rearWallZ} rows={renderedRowIndices} wheelPositions={wheelPositions}
+          tvPositions={tvPositions} doors={doors} worldRef={worldRef} />
+      )}
 
       {/* PASSAGERS NAKAMA ASSIS DANS LE BUS */}
-      <Passengers
-        passengerCount={passengerCount}
-        seatCapacity={seatCapacity}
-        numRows={numRows}
-        renderedRowIndices={renderedRowIndices}
-        vacantSeatRanges={vacantSeatRanges}
-        hornPulse={hornPulse}
-        partyOn={partyDancing}
-        reservedRow={reservedRow}
-        reservedColumn={reservedColumn}
-        avatarAboard={phase !== "outside" && !boardingPending}
-        passengerProfiles={passengerProfiles}
-        profileRevision={profileRevision}
-        onPassengerSelect={onPassengerSelect}
-        lowPower={lowPower}
-        detailLimit={detailedPassengerLimit}
-        simplifiedLimit={simplifiedPassengerLimit}
-        reducedMotion={reducedMotion}
-        excludedPassengerIndex={currentPassengerSeatIndex}
-      />
+      {effectiveMountStage >= 3 && (
+        <Passengers
+          passengerCount={passengerCount}
+          seatCapacity={seatCapacity}
+          numRows={numRows}
+          renderedRowIndices={renderedRowIndices}
+          vacantSeatRanges={vacantSeatRanges}
+          hornPulse={hornPulse}
+          partyOn={partyDancing}
+          reservedRow={reservedRow}
+          reservedColumn={reservedColumn}
+          avatarAboard={phase !== "outside" && !boardingPending}
+          passengerProfiles={passengerProfiles}
+          profileRevision={profileRevision}
+          onPassengerSelect={onPassengerSelect}
+          lowPower={lowPower}
+          detailLimit={detailedPassengerLimit}
+          simplifiedLimit={simplifiedPassengerLimit}
+          reducedMotion={reducedMotion}
+          excludedPassengerIndex={currentPassengerSeatIndex}
+        />
+      )}
 
       {/* ---------- POSTE DE CONDUITE & TABLEAU DE BORD COMPLET DU BUS ---------- */}
-      <BusRelayPassenger hornPulse={hornPulse} reducedMotion={reducedMotion} partyOn={partyDancing} />
-      {partyOn&&<BusConfetti focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion} dancing={partyDancing}/>}
-      {partyDancing&&<BusPartyLights worldRef={worldRef} focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion}/>}
+      {effectiveMountStage >= 2 && (
+        <BusRelayPassenger hornPulse={hornPulse} reducedMotion={reducedMotion} partyOn={partyDancing} />
+      )}
+      {effectiveMountStage >= 3 && partyOn && <BusConfetti focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion} dancing={partyDancing}/>}
+      {effectiveMountStage >= 3 && partyDancing && <BusPartyLights worldRef={worldRef} focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion}/>}
       {/* Lignes de vitesse manga dès la vitesse x2 (extérieur uniquement) */}
-      <BusSpeedLines worldRef={worldRef} focusZ={viewerZ} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion} visible={exteriorView || phase !== "inside"} />
-      <BusCockpit mats={mats} dashTex={dashTex} hornPulse={hornPulse}
-        partyOn={partyDancing} reducedMotion={reducedMotion} />
+      {effectiveMountStage >= 3 && (
+        <BusSpeedLines worldRef={worldRef} focusZ={viewerZ} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion} visible={exteriorView || phase !== "inside"} />
+      )}
+      {effectiveMountStage >= 2 && (
+        <BusCockpit mats={mats} dashTex={dashTex} hornPulse={hornPulse}
+          partyOn={partyDancing} reducedMotion={reducedMotion} />
+      )}
 
       {/* ---------- TÉLÉVISIONS DU BUS ---------- */}
-      {tvPositions.map((pos, idx) => (
+      {effectiveMountStage >= 1 && tvPositions.map((pos, idx) => (
         <BusTvFrame
           key={`tv-unit-${idx}`}
           pos={pos}
@@ -362,21 +393,23 @@ export default function Bus({
           reducedMotion={reducedMotion}
         />
       ))}
-      <BusTvPlayer
-        pos={activeTvPosition}
-        tvOn={tvOn}
-        partyOn={partyOn}
-        onPlaybackChange={onVideoPlaybackChange}
-        phase={phase}
-        freeView={freeView}
-        busGroup={group}
-        visitCameraRef={visitCameraRef}
-        rearWallZ={rearWallZ}
-        hasEntered={hasEntered}
-        journey={journey}
-        isMutedForFullscreen={isMutedForFullscreen}
-        playbackSuspended={playbackSuspended}
-      />
+      {effectiveMountStage >= 1 && (
+        <BusTvPlayer
+          pos={activeTvPosition}
+          tvOn={tvOn}
+          partyOn={partyOn}
+          onPlaybackChange={onVideoPlaybackChange}
+          phase={phase}
+          freeView={freeView}
+          busGroup={group}
+          visitCameraRef={visitCameraRef}
+          rearWallZ={rearWallZ}
+          hasEntered={hasEntered}
+          journey={journey}
+          isMutedForFullscreen={isMutedForFullscreen}
+          playbackSuspended={playbackSuspended}
+        />
+      )}
     </group>
   );
 }

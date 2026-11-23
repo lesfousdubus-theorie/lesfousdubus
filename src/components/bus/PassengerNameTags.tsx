@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ThreeElements } from "@react-three/fiber";
+import { useFrame, type ThreeElements } from "@react-three/fiber";
 import * as THREE from "three";
 import { fetchJson } from "@/lib/client/bus-api";
 import type { BusOccupant } from "@/lib/bus-occupancy";
@@ -10,10 +10,10 @@ import type { PassengerProfile } from "@/types/passenger";
 type NameEntry = Pick<PassengerProfile, "seatIndex" | "avatarId"> & { displayName: string | null };
 const EMPTY_NAMES = new Map<number, NameEntry | null>();
 const NAME_PAGE_SIZE = 80;
-const NAME_HEIGHT = 128;
-const MAX_NAME_WIDTH = 1024;
+const NAME_HEIGHT = 96;
+const MAX_NAME_WIDTH = 768;
 const MAX_NAME_CACHE_SIZE = 256;
-const FONT = "900 64px ui-sans-serif, system-ui, sans-serif";
+const FONT = "900 48px ui-sans-serif, system-ui, sans-serif";
 type CachedNameTexture = { texture: THREE.CanvasTexture; aspect: number; refs: number };
 const PASSENGER_NAME_TEXTURE_CACHE = new Map<string, CachedNameTexture>();
 let passengerNameMeasureContext: CanvasRenderingContext2D | null = null;
@@ -105,8 +105,8 @@ function makePassengerNameTexture(displayName: string) {
   }
   const measureContext = passengerNameMeasureContext!;
   measureContext.font = FONT;
-  const measuredWidth = Math.ceil(measureContext.measureText(displayName).width + 48);
-  const width = Math.min(MAX_NAME_WIDTH, Math.max(192, Math.ceil(measuredWidth / 16) * 16));
+  const measuredWidth = Math.ceil(measureContext.measureText(displayName).width + 36);
+  const width = Math.min(MAX_NAME_WIDTH, Math.max(144, Math.ceil(measuredWidth / 16) * 16));
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = NAME_HEIGHT;
@@ -118,16 +118,16 @@ function makePassengerNameTexture(displayName: string) {
   context.textBaseline = "middle";
   context.lineJoin = "round";
   context.strokeStyle = "rgba(2, 6, 23, 0.96)";
-  context.lineWidth = 12;
-  context.strokeText(displayName, width / 2, NAME_HEIGHT / 2 + 2, width - 36);
+  context.lineWidth = 9;
+  context.strokeText(displayName, width / 2, NAME_HEIGHT / 2 + 2, width - 28);
   context.fillStyle = "#ffffff";
-  context.fillText(displayName, width / 2, NAME_HEIGHT / 2 + 2, width - 36);
+  context.fillText(displayName, width / 2, NAME_HEIGHT / 2 + 2, width - 28);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
-  texture.anisotropy = 4;
+  texture.anisotropy = 2;
 
   const entry = { texture, aspect: width / NAME_HEIGHT, refs: 0 };
   PASSENGER_NAME_TEXTURE_CACHE.set(displayName, entry);
@@ -151,6 +151,28 @@ export function DistantPassengerNames({
   onSelect?: (passenger: PassengerProfile) => void;
 }) {
   const hoveredIndex = useRef<number | null>(null);
+  const [mountedCount, setMountedCount] = useState(4);
+  const mountedCountRef = useRef(4);
+  const labelsCountRef = useRef(0);
+  const nextAtRef = useRef(0);
+
+  useEffect(() => {
+    labelsCountRef.current = labels.length;
+  }, [labels.length]);
+
+  useFrame((_, dt) => {
+    if (mountedCountRef.current >= labelsCountRef.current || dt > 0.045) return;
+    const now = performance.now();
+    if (now < nextAtRef.current) return;
+    nextAtRef.current = now + 35;
+    mountedCountRef.current += 4;
+    setMountedCount(mountedCountRef.current);
+  });
+
+  const visibleLabels = useMemo(
+    () => labels.slice(0, mountedCount),
+    [labels, mountedCount],
+  );
 
   useEffect(() => () => {
     if (hoveredIndex.current !== null) {
@@ -177,7 +199,7 @@ export function DistantPassengerNames({
 
   return (
     <group name="bus-distant-name-labels" userData={{ labels }}>
-      {labels.map((label) => (
+      {visibleLabels.map((label) => (
         <PassengerNameTag
           key={label.index}
           name={label.name}

@@ -11,7 +11,7 @@ import type { BusOccupant } from "@/lib/bus-occupancy";
 import type { PassengerPoseRegistry } from "@/lib/passenger-motion";
 import type { PassengerProfile } from "@/types/passenger";
 import { Passenger } from "./Passengers";
-import { getNakamaArchetype, NAKAMA_ROSTER } from "./passenger-archetypes";
+import { NAKAMA_ROSTER } from "./passenger-archetypes";
 
 export interface IdentityDrivers {
   bodies: THREE.Matrix4[];
@@ -50,7 +50,7 @@ interface IdentityInstancesProps {
 }
 
 /** Même tête, mêmes cheveux et même tenue à distance. Seule l'expression est figée. */
-function IdentityGroup({ id, indices, passengers, drivers, capacity, profilesBySeatIndex, hornPulse, poses, partyOn, reducedMotion }:
+function IdentityGroup({ id, indices, passengers, drivers, capacity, partyOn, reducedMotion }:
   IdentityInstancesProps & { id: string; indices: number[] }) {
   const clock = useThree(state => state.clock);
   const [parts, setParts] = useState(() => bakedPassengerIdentities.get(id));
@@ -125,26 +125,6 @@ function IdentityGroup({ id, indices, passengers, drivers, capacity, profilesByS
   if (!parts) {
     return <group name={`bus-distant-fallback-${id}`} userData={{ archetypeId: id }}>
       <Prototype id={id} onReady={setParts} />
-      {indices.map(at => {
-        const occupant = passengers[at];
-        if (!occupant) return null;
-        const profile = occupant.passengerKind === "visitor" ? profilesBySeatIndex?.get(occupant.index) : undefined;
-        const archetype = getNakamaArchetype(occupant.index, profile?.avatarId);
-        return <Passenger
-          key={`${occupant.passengerKind}-${occupant.index}`}
-          seat={occupant.seat}
-          index={occupant.index}
-          archetype={archetype}
-          poses={poses}
-          passengerKind={occupant.passengerKind}
-          physicalSeatIndex={occupant.physicalSeatIndex}
-          label={null}
-          hornPulse={hornPulse}
-          partyOn={partyOn}
-          reducedMotion={reducedMotion}
-          profile={profile}
-        />;
-      })}
     </group>;
   }
   return <group name={`bus-distant-identity-${id}`} userData={{ archetypeId: id }}>
@@ -167,15 +147,24 @@ export default function PassengerIdentityInstances({ ids, passengers, drivers, c
     return [...result];
   }, [ids]);
   const [unlockedUnbaked, setUnlockedUnbaked] = useState(1);
+  const unlockedUnbakedRef = useRef(1);
   const unbakedCount = useMemo(
     () => groups.reduce((count, [id]) => count + (bakedPassengerIdentities.has(id) ? 0 : 1), 0),
     [groups],
   );
+  const unbakedCountRef = useRef(unbakedCount);
+  const nextBakeAtRef = useRef(0);
   useEffect(() => {
-    if (unlockedUnbaked >= unbakedCount) return;
-    const frame = requestAnimationFrame(() => setUnlockedUnbaked((n) => n + 1));
-    return () => cancelAnimationFrame(frame);
-  }, [unbakedCount, unlockedUnbaked]);
+    unbakedCountRef.current = unbakedCount;
+  }, [unbakedCount]);
+  useFrame((_, dt) => {
+    if (unlockedUnbakedRef.current >= unbakedCountRef.current || dt > 0.045) return;
+    const now = performance.now();
+    if (now < nextBakeAtRef.current) return;
+    nextBakeAtRef.current = now + 45;
+    unlockedUnbakedRef.current += 1;
+    setUnlockedUnbaked(unlockedUnbakedRef.current);
+  });
 
   let unbakedSeen = 0;
   return <>{groups.map(([id, indices]) => {

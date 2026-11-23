@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { useTexture } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import {
   makeDashboardTexture, makeLabelTexture,
   makeLicensePlateTexture, makeTvOffTexture, makeBusContactShadowTexture,
@@ -14,29 +14,45 @@ const DARK_BLUE = "#0a2a85";
 const YELLOW = "#ffbf18";
 const DARK = "#12141a";
 
-/** Owns generated bus resources. Drei retains ownership of its two cached image textures. */
-export default function useBusResources() {
-  // Texture paille WebP optimisée pour le petit chapeau à l'écran
-  const strawMap = useTexture("/textures/straw.webp", (tex) => {
-    if (!Array.isArray(tex)) {
-      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(1, 1);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      tex.anisotropy = 16;
-    }
-  });
+function createPlaceholderTexture(r: number, g: number, b: number, a = 255): THREE.DataTexture {
+  const tex = new THREE.DataTexture(new Uint8Array([r, g, b, a]), 1, 1, THREE.RGBAFormat);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  return tex;
+}
 
-  // Logo officiel Le Mont Corvo
-  const montCorvoTex = useTexture("/textures/montcorvo.png", (tex) => {
-    if (!Array.isArray(tex)) {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      tex.anisotropy = 16;
+function createPlaceholderCanvasTexture(fillStyle: string | null): THREE.CanvasTexture {
+  if (typeof document === "undefined") {
+    return new THREE.CanvasTexture({} as HTMLCanvasElement);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+  if (fillStyle) {
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.fillStyle = fillStyle;
+      ctx.fillRect(0, 0, 1, 1);
     }
-  });
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  return tex;
+}
+
+/** Owns generated and asynchronously loaded bus resources without blocking Suspense. */
+export default function useBusResources() {
+  const strawPlaceholder = useMemo(() => createPlaceholderTexture(214, 178, 96), []);
+  const montCorvoPlaceholder = useMemo(() => createPlaceholderTexture(14, 24, 48), []);
+  const sideLabelPlaceholder = useMemo(() => createPlaceholderCanvasTexture(BLUE), []);
+  const tvOffPlaceholder = useMemo(() => createPlaceholderCanvasTexture("#0c101c"), []);
+  const dashPlaceholder = useMemo(() => createPlaceholderCanvasTexture("#141822"), []);
+  const platePlaceholder = useMemo(() => createPlaceholderCanvasTexture("#ecf0f6"), []);
+  const shadowPlaceholder = useMemo(() => createPlaceholderCanvasTexture(null), []);
 
   const mats = useMemo(() => {
     return {
@@ -91,7 +107,7 @@ export default function useBusResources() {
         roughness: 0.75,
       }),
       straw: new THREE.MeshStandardMaterial({
-        map: strawMap,
+        map: strawPlaceholder,
         color: "#fff5d2",
         roughness: 0.78,
         metalness: 0.02,
@@ -119,7 +135,7 @@ export default function useBusResources() {
         emissiveIntensity: 1.8,
       }),
     };
-  }, [strawMap]);
+  }, [strawPlaceholder]);
 
   useEffect(() => () => {
     Object.values(mats).forEach((material) => material.dispose());
@@ -127,40 +143,134 @@ export default function useBusResources() {
 
   const { hatGeo, ribbonGeo } = useMemo(() => createStrawHatGeometry(), []);
 
-  const sideLabel = useMemo(
-    () =>
-      makeLabelTexture({
-        text: "LES FOUS DU BUS",
-        sub: "GRAND LINE EXPRESS",
-        bg: BLUE,
-        fg: YELLOW,
-      }),
-    [],
-  );
+  const [montCorvoTex, setMontCorvoTex] = useState<THREE.Texture>(() => montCorvoPlaceholder);
+  const [sideLabel, setSideLabel] = useState<THREE.CanvasTexture>(() => sideLabelPlaceholder);
+  const [tvOffTex, setTvOffTex] = useState<THREE.CanvasTexture>(() => tvOffPlaceholder);
+  const [dashTex, setDashTex] = useState<THREE.CanvasTexture>(() => dashPlaceholder);
+  const [licensePlateTex, setLicensePlateTex] = useState<THREE.CanvasTexture>(() => platePlaceholder);
+  const [contactShadowTex, setContactShadowTex] = useState<THREE.CanvasTexture>(() => shadowPlaceholder);
 
-  const tvOffTex = useMemo(() => makeTvOffTexture(), []);
-  const dashTex = useMemo(() => makeDashboardTexture(), []);
-  const licensePlateTex = useMemo(() => makeLicensePlateTexture(), []);
-  const contactShadowTex = useMemo(() => makeBusContactShadowTexture(), []);
+  const stageRef = useRef(0);
+  const nextAtRef = useRef(0);
+  const ownedTexturesRef = useRef<THREE.Texture[]>([]);
 
-  useEffect(() => () => {
-    hatGeo.dispose();
-    ribbonGeo.dispose();
-    sideLabel.dispose();
-    tvOffTex.dispose();
-    dashTex.dispose();
-    licensePlateTex.dispose();
-    contactShadowTex.dispose();
+  useFrame((_, dt) => {
+    if (stageRef.current >= 5 || dt > 0.045) return;
+    const now = performance.now();
+    if (now < nextAtRef.current) return;
+    nextAtRef.current = now + 45;
+    stageRef.current += 1;
+
+    switch (stageRef.current) {
+      case 1: {
+        const tex = makeBusContactShadowTexture();
+        ownedTexturesRef.current.push(tex);
+        setContactShadowTex(tex);
+        break;
+      }
+      case 2: {
+        const tex = makeLabelTexture({
+          text: "LES FOUS DU BUS",
+          sub: "GRAND LINE EXPRESS",
+          bg: BLUE,
+          fg: YELLOW,
+        });
+        ownedTexturesRef.current.push(tex);
+        setSideLabel(tex);
+        break;
+      }
+      case 3: {
+        const tex = makeLicensePlateTexture();
+        ownedTexturesRef.current.push(tex);
+        setLicensePlateTex(tex);
+        break;
+      }
+      case 4: {
+        const tex = makeDashboardTexture();
+        ownedTexturesRef.current.push(tex);
+        setDashTex(tex);
+        break;
+      }
+      case 5: {
+        const tex = makeTvOffTexture();
+        ownedTexturesRef.current.push(tex);
+        setTvOffTex(tex);
+        break;
+      }
+    }
+  });
+
+  useEffect(() => {
+    let active = true;
+    const loader = new THREE.TextureLoader();
+    const loaded: THREE.Texture[] = [];
+
+    const strawTimer = window.setTimeout(() => {
+      loader.load("/textures/straw.webp", (tex) => {
+        if (!active) {
+          tex.dispose();
+          return;
+        }
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(1, 1);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.anisotropy = 4;
+        loaded.push(tex);
+        mats.straw.map = tex;
+        mats.straw.needsUpdate = true;
+      });
+    }, 180);
+
+    const corvoTimer = window.setTimeout(() => {
+      loader.load("/textures/montcorvo.png", (tex) => {
+        if (!active) {
+          tex.dispose();
+          return;
+        }
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.anisotropy = 4;
+        loaded.push(tex);
+        setMontCorvoTex(tex);
+      });
+    }, 320);
+
+    return () => {
+      active = false;
+      window.clearTimeout(strawTimer);
+      window.clearTimeout(corvoTimer);
+      loaded.forEach((tex) => tex.dispose());
+    };
+  }, [mats]);
+
+  useEffect(() => {
+    const owned = ownedTexturesRef.current;
+    return () => {
+      hatGeo.dispose();
+      ribbonGeo.dispose();
+      strawPlaceholder.dispose();
+      montCorvoPlaceholder.dispose();
+      sideLabelPlaceholder.dispose();
+      tvOffPlaceholder.dispose();
+      dashPlaceholder.dispose();
+      platePlaceholder.dispose();
+      shadowPlaceholder.dispose();
+      owned.forEach((tex) => tex.dispose());
+    };
   }, [
     hatGeo,
     ribbonGeo,
-    sideLabel,
-    tvOffTex,
-    dashTex,
-    licensePlateTex,
-    contactShadowTex,
+    strawPlaceholder,
+    montCorvoPlaceholder,
+    sideLabelPlaceholder,
+    tvOffPlaceholder,
+    dashPlaceholder,
+    platePlaceholder,
+    shadowPlaceholder,
   ]);
-
 
   return { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex };
 }
