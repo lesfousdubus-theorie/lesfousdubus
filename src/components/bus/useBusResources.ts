@@ -155,10 +155,10 @@ export default function useBusResources() {
   const ownedTexturesRef = useRef<THREE.Texture[]>([]);
 
   useFrame((_, dt) => {
-    if (stageRef.current >= 5 || dt > 0.045) return;
+    if (stageRef.current >= 5) return;
     const now = performance.now();
     if (now < nextAtRef.current) return;
-    nextAtRef.current = now + 45;
+    nextAtRef.current = now + (dt > 0.05 ? 55 : 25);
     stageRef.current += 1;
 
     switch (stageRef.current) {
@@ -175,24 +175,28 @@ export default function useBusResources() {
           bg: BLUE,
           fg: YELLOW,
         });
+        tex.anisotropy = 4;
         ownedTexturesRef.current.push(tex);
         setSideLabel(tex);
         break;
       }
       case 3: {
         const tex = makeLicensePlateTexture();
+        tex.anisotropy = 4;
         ownedTexturesRef.current.push(tex);
         setLicensePlateTex(tex);
         break;
       }
       case 4: {
         const tex = makeDashboardTexture();
+        tex.anisotropy = 4;
         ownedTexturesRef.current.push(tex);
         setDashTex(tex);
         break;
       }
       case 5: {
         const tex = makeTvOffTexture();
+        tex.anisotropy = 4;
         ownedTexturesRef.current.push(tex);
         setTvOffTex(tex);
         break;
@@ -219,7 +223,6 @@ export default function useBusResources() {
         tex.anisotropy = 4;
         loaded.push(tex);
         mats.straw.map = tex;
-        mats.straw.needsUpdate = true;
       });
     }, 180);
 

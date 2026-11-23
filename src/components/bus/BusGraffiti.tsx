@@ -15,101 +15,112 @@ const PALETTES = [
   { color: "#bde7ff", stroke: "#071f5c", accent: "#ff4da6" },
 ];
 
+function BusGraffitiGroup({
+  message,
+  geometry,
+  instances,
+}: {
+  message: number;
+  geometry: THREE.PlaneGeometry;
+  instances: Array<{ side: number; z: number; width: number }>;
+}) {
+  const material = useMemo(() => {
+    const { lines } = THEORY_SIGN_MESSAGES[message];
+    const map = makeGraffitiTexture({
+      text: lines.join("\n"),
+      width: 1024,
+      height: 342,
+      ...PALETTES[message % PALETTES.length],
+      angle: message % 2 === 0 ? -0.035 : 0.045,
+      decorationWidthScale: 0.76,
+    });
+    map.anisotropy = 4;
+    return new THREE.MeshStandardMaterial({
+      map,
+      transparent: true,
+      alphaTest: 0.03,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+      roughness: 0.45,
+    });
+  }, [message]);
+
+  useEffect(() => () => {
+    material.map?.dispose();
+    material.dispose();
+  }, [material]);
+
+  const mesh = useMemo(() => {
+    const transform = new THREE.Object3D();
+    const instanced = new THREE.InstancedMesh(geometry, material, instances.length);
+    instanced.name = `bus-side-slogan-${THEORY_SIGN_MESSAGES[message].id}`;
+    instances.forEach(({ side, width, z }, index) => {
+      transform.position.set(side * 1.342, SIDE_LABEL_Y, z);
+      transform.rotation.y = side * Math.PI / 2;
+      transform.scale.set(width, Math.min(0.78, width / 3), 1);
+      transform.updateMatrix();
+      instanced.setMatrixAt(index, transform.matrix);
+    });
+    instanced.computeBoundingSphere();
+    return instanced;
+  }, [geometry, instances, material, message]);
+
+  useEffect(() => () => { mesh.dispose(); }, [mesh]);
+
+  return <primitive object={mesh} raycast={() => null} />;
+}
+
 export default function BusGraffiti({ doors, rearWallZ, wheelPositions }: {
   doors: BusDoorLayout[];
   rearWallZ: number;
   wheelPositions: [number, number][];
 }) {
   const geometry = useMemo(() => new THREE.PlaneGeometry(1, 1), []);
-  const [materials, setMaterials] = useState<THREE.MeshStandardMaterial[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    let frame = 0;
-    let nextIndex = 0;
-    const created: THREE.MeshStandardMaterial[] = [];
-
-    const createNext = () => {
-      if (cancelled || nextIndex >= THEORY_SIGN_MESSAGES.length) return;
-      const index = nextIndex;
-      const { lines } = THEORY_SIGN_MESSAGES[index];
-      const material = new THREE.MeshStandardMaterial({
-        map: makeGraffitiTexture({
-          text: lines.join("\n"),
-          width: 1024,
-          height: 342,
-          ...PALETTES[index % PALETTES.length],
-          angle: index % 2 === 0 ? -.035 : .045,
-          decorationWidthScale: .76,
-        }),
-        transparent: true,
-        alphaTest: .03,
-        depthWrite: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -2,
-        polygonOffsetUnits: -2,
-        roughness: .45,
-      });
-      created.push(material);
-      nextIndex += 1;
-      setMaterials([...created]);
-      if (nextIndex < THEORY_SIGN_MESSAGES.length) {
-        frame = requestAnimationFrame(createNext);
-      }
-    };
-
-    frame = requestAnimationFrame(createNext);
-    return () => {
-      cancelled = true;
-      cancelAnimationFrame(frame);
-      geometry.dispose();
-      for (const material of created) {
-        material.map?.dispose();
-        material.dispose();
-      }
-    };
-  }, [geometry]);
+  useEffect(() => () => { geometry.dispose(); }, [geometry]);
 
   // One instanced batch per slogan, even when the bus spans many doors.
   const tags = useMemo(() => {
     const axles = [...new Set(wheelPositions.map(([, z]) => z))];
     return getBusGraffitiPlacements(doors, rearWallZ, axles);
   }, [doors, rearWallZ, wheelPositions]);
-  const tagsKey = tags.map(({ message, side, z, width }) => `${message}:${side}:${z}:${width}`).join("|");
 
-  const batches = useMemo(() => {
-    if (!tagsKey || materials.length === 0) return [];
+  const grouped = useMemo(() => {
     const byMessage = new Map<number, Array<{ side: number; z: number; width: number }>>();
-    for (const entry of tagsKey.split("|")) {
-      const [messageStr, sideStr, zStr, widthStr] = entry.split(":");
-      const message = Number(messageStr);
-      if (message >= materials.length) continue;
-      const item = { side: Number(sideStr), z: Number(zStr), width: Number(widthStr) };
+    for (const { message, side, z, width } of tags) {
       const group = byMessage.get(message);
-      if (group) group.push(item);
-      else byMessage.set(message, [item]);
+      if (group) group.push({ side, z, width });
+      else byMessage.set(message, [{ side, z, width }]);
     }
-    const transform = new THREE.Object3D();
-    return [...byMessage].flatMap(([message, instances]) => {
-      const material = materials[message];
-      if (!material) return [];
-      const mesh = new THREE.InstancedMesh(geometry, material, instances.length);
-      mesh.name = `bus-side-slogan-${THEORY_SIGN_MESSAGES[message].id}`;
-      instances.forEach(({ side, width, z }, index) => {
-        transform.position.set(side * 1.342, SIDE_LABEL_Y, z);
-        transform.rotation.y = side * Math.PI / 2;
-        transform.scale.set(width, Math.min(.78, width / 3), 1);
-        transform.updateMatrix();
-        mesh.setMatrixAt(index, transform.matrix);
-      });
-      mesh.computeBoundingSphere();
-      return [mesh];
-    });
-  }, [tagsKey, geometry, materials]);
+    return [...byMessage];
+  }, [tags]);
 
-  useEffect(() => () => batches.forEach(mesh => mesh.dispose()), [batches]);
+  const [mountedCount, setMountedCount] = useState(1);
 
-  return <group name="bus-theory-graffiti">{batches.map(mesh =>
-    <primitive key={mesh.name} object={mesh} raycast={() => null} />,
-  )}</group>;
+  useEffect(() => {
+    if (mountedCount >= grouped.length) return;
+    const timer = window.setTimeout(() => {
+      setMountedCount((prev) => Math.min(grouped.length, prev + 1));
+    }, 45);
+    return () => window.clearTimeout(timer);
+  }, [grouped.length, mountedCount]);
+
+  const visibleGroups = useMemo(
+    () => grouped.slice(0, mountedCount),
+    [grouped, mountedCount],
+  );
+
+  return (
+    <group name="bus-theory-graffiti">
+      {visibleGroups.map(([message, instances]) => (
+        <BusGraffitiGroup
+          key={message}
+          message={message}
+          geometry={geometry}
+          instances={instances}
+        />
+      ))}
+    </group>
+  );
 }

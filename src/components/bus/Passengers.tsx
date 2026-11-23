@@ -157,10 +157,9 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
     const now = performance.now();
     if (
       detailedBudgetRef.current < detailedCountRef.current
-      && dt < 0.045
       && now >= detailedNextAtRef.current
     ) {
-      detailedNextAtRef.current = now + 45;
+      detailedNextAtRef.current = now + (dt > 0.05 ? 60 : 30);
       detailedBudgetRef.current += 1;
       setDetailedBudget(detailedBudgetRef.current);
     }

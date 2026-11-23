@@ -161,11 +161,11 @@ export function DistantPassengerNames({
   }, [labels.length]);
 
   useFrame((_, dt) => {
-    if (mountedCountRef.current >= labelsCountRef.current || dt > 0.045) return;
+    if (mountedCountRef.current >= labelsCountRef.current) return;
     const now = performance.now();
     if (now < nextAtRef.current) return;
-    nextAtRef.current = now + 35;
-    mountedCountRef.current += 4;
+    nextAtRef.current = now + (dt > 0.05 ? 50 : 25);
+    mountedCountRef.current += 6;
     setMountedCount(mountedCountRef.current);
   });
 

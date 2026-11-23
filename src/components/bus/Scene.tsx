@@ -5,6 +5,7 @@ import { Component, Suspense, useEffect, useMemo, useRef, useState, type ErrorIn
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { BasicShadowMap, PCFShadowMap, type Camera } from "three";
 import Bus from "./Bus";
+import ShaderPrewarmer from "./ShaderPrewarmer";
 import World from "./World";
 import DayNight from "./DayNight";
 import Weather from "./Weather";
@@ -489,6 +490,7 @@ export default function Scene({
   const [contextLost, setContextLost] = useState(false);
   const [canvasReady, setCanvasReady] = useState(false);
   const [busReady, setBusReady] = useState(false);
+  const [shadersReady, setShadersReady] = useState(false);
 
   const effectiveGpuParams = canvasGpuParams ?? webGLProbe.params;
   const hardware = useMemo(() => classifyGpuHardware({
@@ -693,7 +695,9 @@ export default function Scene({
           detailedPassengerLimit={profile.detailedPassengerLimit}
           simplifiedPassengerLimit={profile.simplifiedPassengerLimit}
           playbackSuspended={playbackSuspended}
+          shadersReady={shadersReady}
         />
+        <ShaderPrewarmer onReady={() => setShadersReady(true)} />
       </Suspense>
       <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} profile={currentPassengerProfile} onSelect={phase !== "inside" || freeView ? onPassengerSelect : undefined} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion} firstPerson={phase === "inside" && !freeView}/>
       <World

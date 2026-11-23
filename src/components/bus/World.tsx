@@ -317,7 +317,7 @@ export default function World({
   // Au départ (subStage = 2), seule l'île la plus proche a son terrain et son monument.
   const [zoneSubStage, setZoneSubStage] = useState(2);
   const [seaCreaturesReady, setSeaCreaturesReady] = useState(false);
-  const [propLimit, setPropLimit] = useState(2);
+  const [propLimit, setPropLimit] = useState(4);
   const nextLoadAtRef = useRef(0);
   const zoneStageFor = useCallback((zone: number) => {
     const rank = initialZoneLoadOrder.indexOf(zone);
@@ -336,6 +336,8 @@ export default function World({
   const propBounds = useRef<(SceneryBounds | null)[]>([]);
   const sceneBounds = useRef<SceneryBounds[][]>([]);
   const railBounds = useRef<SceneryBounds[]>([]);
+  const dirtyZonesRef = useRef<Set<number>>(new Set());
+  const dirtyPropsRef = useRef<Set<number>>(new Set());
   const visibility = useMemo(() => createSceneryVisibility(), []);
 
   const bridgeLength = Math.max(960, bridgeLengthOverride ?? Math.max(1600, cabinLength + 1400));
@@ -370,14 +372,37 @@ export default function World({
     sceneBounds.current[zone] = objects.map(object => cacheSceneryBounds(object, z));
   }, []);
 
+  const flushDirtyBounds = useCallback(() => {
+    if (dirtyZonesRef.current.size > 0) {
+      for (const zone of dirtyZonesRef.current) {
+        refreshZoneBounds(zone);
+      }
+      dirtyZonesRef.current.clear();
+    }
+    if (dirtyPropsRef.current.size > 0) {
+      for (const index of dirtyPropsRef.current) {
+        refreshPropBounds(index);
+      }
+      dirtyPropsRef.current.clear();
+    }
+  }, [refreshPropBounds, refreshZoneBounds]);
+
   useLayoutEffect(() => {
     propRefs.current.length = props.length;
-    propBounds.current.length = props.length;
+    propBounds.current = new Array(props.length).fill(null);
+    dirtyPropsRef.current.clear();
+    for (let i = 0; i < props.length; i++) {
+      if (propRefs.current[i]) dirtyPropsRef.current.add(i);
+    }
     if (worldRef.current) {
       const initial = getActiveZoneLoopState(worldRef.current.scroll, zoneOrder, ZONE_LEN);
       worldRef.current.zone = initial.zone;
     }
   }, [props, lowPower, worldRef, zoneOrder]);
+
+  useLayoutEffect(() => {
+    flushDirtyBounds();
+  }, [flushDirtyBounds, zoneSubStage, visibleProps.length, props, lowPower]);
 
   useLayoutEffect(() => {
     railBounds.current = railRefs.current.flatMap(group => group ? [cacheSceneryBounds(group, 0)] : []);
@@ -392,20 +417,23 @@ export default function World({
 
   useFrame((state, dt) => {
     const now = performance.now();
-    // N'avancer d'une seule micro-étape que si la frame précédente était fluide,
-    // en laissant le bus défiler librement entre deux apparitions.
-    if (dt < 0.045 && now >= nextLoadAtRef.current) {
+    // Charger tous les îlots et décors rapidement à l'arrivée sur des frames distinctes
+    // sans bloquer si la cadence baisse ni laisser de décors absents lors du mouvement de caméra.
+    if (now >= nextLoadAtRef.current) {
+      const slowFrame = dt > 0.05;
       if (zoneSubStage < ZONES.length * 4) {
         setZoneSubStage((prev) => Math.min(ZONES.length * 4, prev + 1));
-        nextLoadAtRef.current = now + 70;
+        nextLoadAtRef.current = now + (slowFrame ? 45 : 20);
       } else if (!seaCreaturesReady) {
         setSeaCreaturesReady(true);
-        nextLoadAtRef.current = now + 100;
+        nextLoadAtRef.current = now + (slowFrame ? 60 : 30);
       } else if (propLimit < props.length) {
-        setPropLimit((prev) => Math.min(props.length, prev + 2));
-        nextLoadAtRef.current = now + 35;
+        setPropLimit((prev) => Math.min(props.length, prev + 6));
+        nextLoadAtRef.current = now + (slowFrame ? 45 : 18);
       }
     }
+
+    flushDirtyBounds();
 
     const frameDt = Math.min(dt, phase==="entering"||phase==="exiting"?0.25:0.1);
     const mult = (worldRef.current?.speedMultiplier ?? 1.0) * (worldRef.current.motionFactor ?? 1);
@@ -531,7 +559,7 @@ export default function World({
                   zone={i}
                   lowPower={lowPower}
                   reducedMotion={reducedMotion}
-                  onMeshesReady={() => refreshZoneBounds(i)}
+                  onMeshesReady={() => dirtyZonesRef.current.add(i)}
                 />
               </group>
             )}
@@ -544,7 +572,7 @@ export default function World({
                   zone={i}
                   side={side}
                   lowPower={lowPower}
-                  onMeshesReady={() => refreshZoneBounds(i)}
+                  onMeshesReady={() => dirtyZonesRef.current.add(i)}
                 />
               </group>
             ) : null)}
@@ -602,7 +630,7 @@ export default function World({
           position={[p.x, p.y ?? 0, 0]}
           rotation={[0, p.rot, 0]}
         >
-          <WorldLandmark def={p} onReady={() => refreshPropBounds(i)} />
+          <WorldLandmark def={p} onReady={() => dirtyPropsRef.current.add(i)} />
         </group>
       ))}
     </group>

@@ -1,17 +1,12 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef, type RefObject } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
-import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUniformsLib.js";
 import { BUS_FRONT_Z, SEAT_CUSHION_DEPTH, SEAT_CUSHION_Z, SEAT_BASE_DEPTH, getSeatCountInRow, getSeatRowZ, type BusDoorLayout, type TvPosition } from "@/lib/bus-layout";
 import { getInteriorRailSpans, INTERIOR_RAIL_X, INTERIOR_RAIL_DEPTH } from "@/lib/bus-interior-geometry";
 import BusCabinDetails from "./BusCabinDetails";
 import BusSpanMeshes from "./BusSpanMeshes";
 import type { BusMaterials } from "./useBusResources";
-import type { WorldState } from "./constants";
-
-RectAreaLightUniformsLib.init();
 
 interface Props {
   mats: BusMaterials;
@@ -22,17 +17,12 @@ interface Props {
   wheelPositions: [number, number][];
   tvPositions: TvPosition[];
   doors: BusDoorLayout[];
-  worldRef: RefObject<WorldState>;
 }
 
 /** Cabin fixtures stay in the vehicle's existing coordinate system: no wrapper group. */
 export default function BusCabinInterior({ mats, cabinLength, cabinCenterZ, rearWallZ, rows,
-  wheelPositions, tvPositions, doors, worldRef }: Props) {
+  wheelPositions, tvPositions, doors }: Props) {
   const rowZs = useMemo(() => rows.map(getSeatRowZ), [rows]);
-  const ceilingLight = useRef<THREE.RectAreaLight>(null);
-  useFrame(() => {
-    if (ceilingLight.current) ceilingLight.current.intensity = THREE.MathUtils.lerp(2.15, 0.85, worldRef.current.daylight);
-  });
   return <>
       {/* ---------- INTÉRIEUR DU BUS ---------- */}
       <BusCabinDetails mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ} rearWallZ={rearWallZ} rowZs={rowZs} wheelPositions={wheelPositions} tvPositions={tvPositions} />
@@ -59,10 +49,6 @@ export default function BusCabinInterior({ mats, cabinLength, cabinCenterZ, rear
           <boxGeometry args={[0.14, 0.03, cabinLength - 1.4]} />
         </mesh>
       ))}
-
-      {/* Toute la rampe diffuse vers le bas, sans sources ponctuelles au-dessus des essieux. */}
-      <rectAreaLight ref={ceilingLight} name="bus-cabin-ceiling-light" position={[0, 3.1, cabinCenterZ]}
-        rotation={[-Math.PI / 2, 0, 0]} color="#fff4db" intensity={0.85} width={1.14} height={cabinLength - 0.12} />
 
       {/* Les sièges gardent leur quantité exacte mais partagent quatre draw calls. */}
       <SeatInstances rows={rows} seatMaterial={mats.seat} frameMaterial={mats.seatFrame} />

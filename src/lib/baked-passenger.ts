@@ -8,6 +8,7 @@ export const bakedPassengerIdentities = new Map<string, IdentityPart[]>();
 const solidMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .72 });
 const metalMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .25, metalness: .8 });
 const basicMaterial = new THREE.MeshBasicMaterial({ vertexColors: true });
+export const PASSENGER_INSTANCED_MATERIALS = [solidMaterial, metalMaterial, basicMaterial] as const;
 
 /** Regroupe les vrais volumes du modèle, en conservant les textures de costume.
  * Les couleurs unies partagent un matériau par sommets, donc un seul draw par rôle. */

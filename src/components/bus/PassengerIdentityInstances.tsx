@@ -158,10 +158,10 @@ export default function PassengerIdentityInstances({ ids, passengers, drivers, c
     unbakedCountRef.current = unbakedCount;
   }, [unbakedCount]);
   useFrame((_, dt) => {
-    if (unlockedUnbakedRef.current >= unbakedCountRef.current || dt > 0.045) return;
+    if (unlockedUnbakedRef.current >= unbakedCountRef.current) return;
     const now = performance.now();
     if (now < nextBakeAtRef.current) return;
-    nextBakeAtRef.current = now + 45;
+    nextBakeAtRef.current = now + (dt > 0.05 ? 55 : 25);
     unlockedUnbakedRef.current += 1;
     setUnlockedUnbaked(unlockedUnbakedRef.current);
   });

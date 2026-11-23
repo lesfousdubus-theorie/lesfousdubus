@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import type * as THREE from "three";
 import { createOnePieceScenery, createOnePieceForeground, setElbafWaterTime, SET_PIECE_OFFSET_X, type SceneryBatch } from "@/lib/one-piece-scenery";
@@ -29,6 +29,14 @@ export default function WorldSetPiece({
   onMeshesReady?: (meshes: THREE.Mesh[]) => void;
 }) {
   const batches = useMemo(() => createOnePieceScenery(zone, lowPower), [zone, lowPower]);
+  const [progress, setProgress] = useState(() => ({ batches, count: 4 }));
+  const visibleCount = progress.batches === batches ? progress.count : 4;
+  const progressRef = useRef({ batches, count: 4 });
+  const nextAtRef = useRef(0);
+  const mountedBatches = useMemo(
+    () => batches.slice(0, visibleCount),
+    [batches, visibleCount],
+  );
   const meshRefs = useRef<(THREE.Mesh | null)[]>([]);
   const onMeshesReadyRef = useRef(onMeshesReady);
   useEffect(() => () => batches.forEach(({ geometry }) => geometry.dispose()), [batches]);
@@ -36,15 +44,28 @@ export default function WorldSetPiece({
     onMeshesReadyRef.current = onMeshesReady;
   }, [onMeshesReady]);
   useLayoutEffect(() => {
-    const meshes = meshRefs.current.slice(0, batches.length).filter((mesh): mesh is THREE.Mesh => Boolean(mesh));
+    const meshes = meshRefs.current.slice(0, mountedBatches.length).filter((mesh): mesh is THREE.Mesh => Boolean(mesh));
     onMeshesReadyRef.current?.(meshes);
-  }, [batches]);
-  useFrame(({ clock }) => {
+  }, [mountedBatches]);
+  useFrame(({ clock }, dt) => {
     if (zone === 6) setElbafWaterTime(reducedMotion ? 0 : clock.elapsedTime);
+    if (progressRef.current.batches !== batches) {
+      progressRef.current = { batches, count: 4 };
+    }
+    if (progressRef.current.count >= batches.length) return;
+    const now = performance.now();
+    if (now < nextAtRef.current) return;
+    nextAtRef.current = now + (dt > 0.05 ? 36 : 16);
+    const next = {
+      batches,
+      count: Math.min(batches.length, progressRef.current.count + 4),
+    };
+    progressRef.current = next;
+    setProgress(next);
   });
 
   return <group name={`world-landmark-${NAMES[zone]}`} position={[SET_PIECE_OFFSET_X, 0, 0]}>
-    {batches.map(({ geometry, material }, index) => (
+    {mountedBatches.map(({ geometry, material }, index) => (
       <mesh
         key={material.uuid}
         ref={(el: THREE.Mesh | null) => {
@@ -81,16 +102,39 @@ export function WorldForeground({
     }
     return [...groups];
   }, [batches]);
+  const [progress, setProgress] = useState(() => ({ sections, count: 2 }));
+  const visibleCount = progress.sections === sections ? progress.count : 2;
+  const progressRef = useRef({ sections, count: 2 });
+  const nextAtRef = useRef(0);
+  const mountedSections = useMemo(
+    () => sections.slice(0, visibleCount),
+    [sections, visibleCount],
+  );
   const onMeshesReadyRef = useRef(onMeshesReady);
   useLayoutEffect(() => {
     onMeshesReadyRef.current = onMeshesReady;
   }, [onMeshesReady]);
   useLayoutEffect(() => {
     onMeshesReadyRef.current?.();
-  }, [batches]);
+  }, [mountedSections]);
+  useFrame((_, dt) => {
+    if (progressRef.current.sections !== sections) {
+      progressRef.current = { sections, count: 2 };
+    }
+    if (progressRef.current.count >= sections.length) return;
+    const now = performance.now();
+    if (now < nextAtRef.current) return;
+    nextAtRef.current = now + (dt > 0.05 ? 36 : 16);
+    const next = {
+      sections,
+      count: Math.min(sections.length, progressRef.current.count + 2),
+    };
+    progressRef.current = next;
+    setProgress(next);
+  });
   useEffect(() => () => batches.forEach(({ geometry }) => geometry.dispose()), [batches]);
   return <group name={`world-foreground-${zone}-${side}`}>
-    {sections.map(([section, meshes]) => (
+    {mountedSections.map(([section, meshes]) => (
       <group key={section ?? "span"} name={`world-foreground-part-${section}`}>
         {meshes.map(({ geometry, material }) => (
           <mesh key={material.uuid} geometry={geometry} material={material} castShadow={!material.transparent} receiveShadow dispose={null} />

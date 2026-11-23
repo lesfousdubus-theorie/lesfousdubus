@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUniformsLib.js";
 import { TV_POSITION, type WorldState } from "./constants";
 import type { PassengerProfile } from "@/types/passenger";
 import Passengers from "./Passengers";
@@ -20,6 +21,8 @@ import BusExterior from "./BusExterior";
 import BusCabinInterior from "./BusCabinInterior";
 import BusCockpit from "./BusCockpit";
 import useBusResources from "./useBusResources";
+
+RectAreaLightUniformsLib.init();
 
 interface BusProps {
   headlights: boolean;
@@ -51,6 +54,7 @@ interface BusProps {
   detailedPassengerLimit?: number;
   simplifiedPassengerLimit?: number;
   playbackSuspended?: boolean;
+  shadersReady?: boolean;
 }
 
 function getTvIndexForCameraZ(positions: TvPosition[], camZ: number, minDistance: number): number {
@@ -97,6 +101,7 @@ export default function Bus({
   detailedPassengerLimit,
   simplifiedPassengerLimit,
   playbackSuspended = false,
+  shadersReady = true,
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
   const hat = useRef<THREE.Group>(null);
@@ -181,11 +186,12 @@ export default function Bus({
   const { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex } = useBusResources();
   const partyCards = usePartyTvCards(partyOn);
 
-  // Montage progressif des sous-ensembles du bus sur des frames fluides
-  // pour éviter de compiler et téléverser toute la scène en une seule frame.
+  // Montage progressif des sous-ensembles du bus sur des frames distinctes
+  // sans jamais recompiler les lumières globales ni bloquer à bas FPS.
   const [mountStage, setMountStage] = useState(() => (phase === "entering" || phase === "inside" ? 3 : 0));
   const mountStageRef = useRef(phase === "entering" || phase === "inside" ? 3 : 0);
   const mountNextAtRef = useRef(0);
+  const ceilingLightRef = useRef<THREE.RectAreaLight>(null);
   const effectiveMountStage = phase === "entering" || phase === "inside" ? 3 : mountStage;
 
   // Cibles fixes pour les projecteurs de phares
@@ -195,14 +201,18 @@ export default function Bus({
     const t = state.clock.elapsedTime;
     const frameDt = Math.min(dt, 0.1);
 
+    if (ceilingLightRef.current) {
+      ceilingLightRef.current.intensity = THREE.MathUtils.lerp(2.15, 0.85, worldRef.current.daylight);
+    }
+
     if (mountStageRef.current < 3) {
       if (phase === "entering" || phase === "inside") {
         mountStageRef.current = 3;
         setMountStage(3);
-      } else if (dt < 0.045) {
+      } else if (shadersReady) {
         const now = performance.now();
         if (now >= mountNextAtRef.current) {
-          mountNextAtRef.current = now + 55;
+          mountNextAtRef.current = now + (dt > 0.05 ? 60 : 30);
           mountStageRef.current += 1;
           setMountStage(mountStageRef.current);
         }
@@ -333,10 +343,14 @@ export default function Bus({
         contactShadowTex={contactShadowTex}
       />
 
+      {/* Toute la rampe reste présente dès la frame 0 pour garder le nombre de lumières constant. */}
+      <rectAreaLight ref={ceilingLightRef} name="bus-cabin-ceiling-light" position={[0, 3.1, cabinCenterZ]}
+        rotation={[-Math.PI / 2, 0, 0]} color="#fff4db" intensity={0.85} width={1.14} height={cabinLength - 0.12} />
+
       {effectiveMountStage >= 1 && (
         <BusCabinInterior mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ}
           rearWallZ={rearWallZ} rows={renderedRowIndices} wheelPositions={wheelPositions}
-          tvPositions={tvPositions} doors={doors} worldRef={worldRef} />
+          tvPositions={tvPositions} doors={doors} />
       )}
 
       {/* PASSAGERS NAKAMA ASSIS DANS LE BUS */}
