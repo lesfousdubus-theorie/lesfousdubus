@@ -51,13 +51,16 @@ export default function Weather({
   cabinCenterZ = 0,
   cabinLength = 9.2,
 }: WeatherProps) {
+  const groupRef = useRef<THREE.Group>(null);
   const rainRef = useRef<THREE.LineSegments>(null);
   const rainMaterialRef = useRef<THREE.LineBasicMaterial>(null);
   const snowRef = useRef<THREE.Points>(null);
   const snowMaterialRef = useRef<THREE.PointsMaterial>(null);
 
-  const areaZ = Math.max(AREA.z, cabinLength / 2 + 60);
-  const densityScale = Math.min(2.5, areaZ / AREA.z);
+  // Enveloppe météo locale bornée autour de la caméra/du bus pour qu'il ne neige jamais
+  // au loin dans le vide quand le bus fait plusieurs kilomètres.
+  const areaZ = Math.min(90, Math.max(AREA.z, cabinLength / 2 + 40));
+  const densityScale = Math.min(2.2, areaZ / AREA.z);
   const busMinZ = BUS_FRONT_Z - 0.3;
   const busMaxZ = BUS_FRONT_Z + cabinLength + 0.3;
   const baseRainCount = Math.max(0, rainCount ?? (lowPower ? 180 : 420));
@@ -135,6 +138,9 @@ export default function Weather({
     if (rainRef.current) rainRef.current.visible = rainOpacity > 0.01;
     if (snowRef.current) snowRef.current.visible = snowOpacity > 0.01;
 
+    const activeCenterZ = THREE.MathUtils.clamp(state.camera.position.z, busMinZ - 20, busMaxZ + 20);
+    if (groupRef.current) groupRef.current.position.z = activeCenterZ;
+
     if (rainRef.current && rainOpacity > 0.01) {
       const positions = rainRef.current.geometry.attributes.position as THREE.BufferAttribute;
       const streakDz = reducedMotion ? 0.08 : (busSpeed / RAIN_FALL_SPEED) * -RAIN_STREAK_DY;
@@ -144,7 +150,7 @@ export default function Weather({
         let y = positions.getY(i) - frameDt * RAIN_FALL_SPEED;
         const z = reducedMotion ? positions.getZ(i) : wrapRange(positions.getZ(i) + frameDt * busSpeed, areaZ);
         if (y < 0) y += AREA.y;
-        if (isInsideBusClearance(x, y + RAIN_STREAK_DY, z, cabinCenterZ, busMinZ, busMaxZ)) {
+        if (isInsideBusClearance(x, y + RAIN_STREAK_DY, z, activeCenterZ, busMinZ, busMaxZ)) {
           y = minRoofY + seededValue(i, 13) * (AREA.y - minRoofY);
         }
         positions.setXYZ(i, x, y, z);
@@ -164,7 +170,7 @@ export default function Weather({
         if (!reducedMotion) {
           x = wrapRange(x + Math.sin(time * 0.7 + i) * frameDt * 0.12, AREA.x);
         }
-        if (isInsideBusClearance(x, y, z, cabinCenterZ, busMinZ, busMaxZ)) {
+        if (isInsideBusClearance(x, y, z, activeCenterZ, busMinZ, busMaxZ)) {
           y = BUS_CLEAR_LOCAL_Y + seededValue(i, 14) * (AREA.y - BUS_CLEAR_LOCAL_Y);
         }
         positions.setXYZ(i, x, y, z);
@@ -174,7 +180,7 @@ export default function Weather({
   });
 
   return (
-    <group position={[0, GROUP_Y, cabinCenterZ]}>
+    <group ref={groupRef} position={[0, GROUP_Y, cabinCenterZ]}>
       <lineSegments ref={rainRef} geometry={rainGeometry} frustumCulled={false} renderOrder={20}>
         <lineBasicMaterial
           ref={rainMaterialRef}

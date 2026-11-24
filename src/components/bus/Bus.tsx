@@ -14,7 +14,7 @@ import BusSpeedLines from "./BusSpeedLines";
 import type { JourneyState } from "@/lib/bus-journey";
 import { BusTvFrame, BusTvPlayer } from "./BusTv";
 import { usePartyTvCards } from "./BusPartyTv";
-import { getRenderedRowIndices, getActiveTvIndex, getTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelPositions, BUS_FRONT_Z, type TvPosition } from "@/lib/bus-layout";
+import { getRenderedRowIndices, getActiveTvIndex, getTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelPositions, BUS_FRONT_Z, FIRST_SEAT_Z, type TvPosition } from "@/lib/bus-layout";
 import { getBusPhysicalRows } from "@/lib/bus-occupancy";
 import { advanceWiperAngle } from "@/lib/bus-wipers";
 import BusExterior from "./BusExterior";
@@ -115,10 +115,13 @@ export default function Bus({
   const numRows = getBusPhysicalRows(seatCapacity);
   const doors = useMemo(() => getBusDoors(numRows), [numRows]);
 
-  // Position Z de chaque rangée de sièges
+  // Position Z de chaque rangée de sièges (suit dynamiquement la caméra sur les très longs bus)
+  const [cameraFocusRow, setCameraFocusRow] = useState(reservedRow);
+  const cameraFocusRowRef = useRef(reservedRow);
+  const activeFocusRow = numRows > 180 && (phase === "outside" || freeView) ? cameraFocusRow : reservedRow;
   const renderedRowIndices = useMemo(
-    () => getRenderedRowIndices(numRows, reservedRow),
-    [numRows, reservedRow],
+    () => getRenderedRowIndices(numRows, activeFocusRow),
+    [numRows, activeFocusRow],
   );
 
   // Une TV principale réelle et au maximum 8 rappels visuels légers dans les très longs bus.
@@ -274,6 +277,19 @@ export default function Bus({
         const w = wheels.current[i];
         // Le support tourne Y local vers -X monde : +Y fait rouler vers -Z.
         if (w) w.rotation.y = angle;
+      }
+    }
+
+    // Streaming dynamique des rangées autour de la caméra pour les bus très longs (> 180 rangées).
+    if (numRows > 180 && (phase === "outside" || freeView)) {
+      const approxRow = THREE.MathUtils.clamp(
+        Math.round((state.camera.position.z - FIRST_SEAT_Z) / 1.25),
+        0,
+        numRows - 1,
+      );
+      if (Math.abs(approxRow - cameraFocusRowRef.current) >= 12) {
+        cameraFocusRowRef.current = approxRow;
+        setCameraFocusRow(approxRow);
       }
     }
 

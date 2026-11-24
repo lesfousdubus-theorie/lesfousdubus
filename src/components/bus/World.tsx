@@ -289,14 +289,15 @@ export default function World({
     return slots;
   }, [zoneOrder]);
   const initialZoneLoadOrder = useMemo(() => {
-    const loopStart = cabinCenterZ - LOOP / 2;
-    const loopEnd = cabinCenterZ + LOOP / 2;
+    const initialCenter = cabinLength > LOOP * 0.45 ? 0 : cabinCenterZ;
+    const loopStart = initialCenter - LOOP / 2;
+    const loopEnd = initialCenter + LOOP / 2;
     return Array.from({ length: ZONES.length }, (_, i) => i).sort((a, b) => {
-      const za = Math.abs(getZoneSlotCenterZ(slotByZone[a], 0, ZONE_LEN, LOOP, loopStart, loopEnd) - cabinCenterZ);
-      const zb = Math.abs(getZoneSlotCenterZ(slotByZone[b], 0, ZONE_LEN, LOOP, loopStart, loopEnd) - cabinCenterZ);
+      const za = Math.abs(getZoneSlotCenterZ(slotByZone[a], 0, ZONE_LEN, LOOP, loopStart, loopEnd) - initialCenter);
+      const zb = Math.abs(getZoneSlotCenterZ(slotByZone[b], 0, ZONE_LEN, LOOP, loopStart, loopEnd) - initialCenter);
       return za - zb;
     });
-  }, [slotByZone, cabinCenterZ]);
+  }, [slotByZone, cabinCenterZ, cabinLength]);
   const allProps = useMemo(() => {
     const raw = buildProps(worldSeed);
     const rank = new Map<number, number>(initialZoneLoadOrder.map((z, idx) => [z, idx]));
@@ -454,8 +455,16 @@ export default function World({
     visibility.begin(state.camera);
     for (const rail of railBounds.current) visibility.update(rail, 0);
 
-    const loopStart = cabinCenterZ - LOOP / 2;
-    const loopEnd = cabinCenterZ + LOOP / 2;
+    // Sur un bus très long (ex. 20 000 passagers), on centre la boucle des îles et
+    // des pointillés de route autour de la caméra (bornée au bus) pour ne jamais
+    // laisser l'avant du bus ou la zone explorée sans paysages.
+    const busStartZ = cabinCenterZ - cabinLength / 2;
+    const busEndZ = cabinCenterZ + cabinLength / 2;
+    const sceneryCenterZ = cabinLength > LOOP * 0.45
+      ? THREE.MathUtils.clamp(state.camera.position.z, busStartZ - 30, busEndZ + 30)
+      : cabinCenterZ;
+    const loopStart = sceneryCenterZ - LOOP / 2;
+    const loopEnd = sceneryCenterZ + LOOP / 2;
 
     // Boucler les 8 îles dans un ordre aléatoire sans répétition avant la fin du tour
     for (let i = 0; i < ZONES.length; i++) {
@@ -498,7 +507,7 @@ export default function World({
     }
 
     // Défilement des lignes blanches du pont sur toute la portée dynamique
-    const dashStart = cabinCenterZ - dashSpan / 2;
+    const dashStart = sceneryCenterZ - dashSpan / 2;
     for (let i = 0; i < dashes.length; i++) {
       const z = ((((dashes[i] + scroll - dashStart) % dashSpan) + dashSpan) % dashSpan) + dashStart;
       dashMatrix.makeTranslation(0, 0.052, z);

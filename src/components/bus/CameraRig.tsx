@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { DEFAULT_CAMERA_POS, DEFAULT_TARGET, SEAT_EYE, TV_POSITION, type Phase } from "./constants";
 import { getExteriorMaxDistance, getOverviewDistance, wheelZoomRatio } from "@/lib/bus-camera";
+import { BUS_FRONT_Z } from "@/lib/bus-layout";
 import { isBusViewportInput, useBusExploration } from "./useBusExploration";
 import { ease, type JourneyState } from "@/lib/bus-journey";
 import { getPassengerSkeleton } from "@/lib/passenger-proportions";
@@ -137,18 +138,22 @@ export default function CameraRig({
   const activeTvTarget = useMemo(() => new THREE.Vector3(0, TV_POSITION.y, tvTargetZ), [tvTargetZ]);
 
   const aspect = size.width / Math.max(1, size.height) || 1;
+  // Quand le bus devient immense (ex. 20 000 passagers), on cadre toujours l'avant du bus
+  // et le début du convoi au lieu de reculer à plusieurs kilomètres au milieu du vide.
+  const framedLength = Math.min(cabinLength, 42);
+  const framedCenterZ = cabinLength > 42 ? BUS_FRONT_Z + framedLength / 2 : cabinCenterZ;
   const overview = useMemo(() => {
-    const target = new THREE.Vector3(0, 1.9, cabinCenterZ);
+    const target = new THREE.Vector3(0, 1.9, framedCenterZ);
     const camParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("cam") : null;
     const offset = camParam === "side"
       ? new THREE.Vector3(11, 1.9, 0)
       : camParam === "front"
         ? new THREE.Vector3(0, 1.7, -12)
         : DEFAULT_EXTERIOR_OFFSET;
-    const pos = offset.clone().setLength(getOverviewDistance(cabinLength, aspect, offset)).add(target);
+    const pos = offset.clone().setLength(getOverviewDistance(framedLength, aspect, offset)).add(target);
     const orientation = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(pos, target, CAMERA_UP));
     return { pos, target, orientation };
-  }, [aspect, cabinCenterZ, cabinLength]);
+  }, [aspect, framedCenterZ, framedLength]);
 
   const canExplore = useCallback((start: boolean) => {
     if (phaseRef.current !== "outside" && !freeViewRef.current) return false;
@@ -173,7 +178,7 @@ export default function CameraRig({
     const backdrop = backdropCamera.current ?? new THREE.PerspectiveCamera(55, 1, 0.1);
     backdropCamera.current = backdrop;
     const aspect = size.width / Math.max(1, size.height);
-    const halfLength = cabinLength / 2;
+    const halfLength = framedLength / 2;
     const offsetLength = DEFAULT_EXTERIOR_OFFSET.length();
     // Le bout le plus proche reste dans le cadre même avec une longue caisse en portrait.
     const nearEnd = halfLength * Math.abs(DEFAULT_EXTERIOR_OFFSET.z) / offsetLength;
@@ -181,7 +186,7 @@ export default function CameraRig({
     const halfHeight = 2.4 + nearEnd * DEFAULT_EXTERIOR_OFFSET.y / offsetLength;
     const halfFrustumHeight = Math.tan(THREE.MathUtils.degToRad(backdrop.fov / 2));
     const distance = nearEnd + Math.max(halfWidth / Math.max(0.1, aspect), halfHeight) / (0.84 * halfFrustumHeight);
-    const target = new THREE.Vector3(0, DEFAULT_TARGET.y, cabinCenterZ);
+    const target = new THREE.Vector3(0, DEFAULT_TARGET.y, framedCenterZ);
     backdrop.aspect = aspect || 1;
     backdrop.far = cameraFar;
     backdrop.position.copy(DEFAULT_EXTERIOR_OFFSET)
@@ -189,7 +194,7 @@ export default function CameraRig({
     backdrop.lookAt(target);
     backdrop.updateProjectionMatrix();
     backdrop.updateMatrixWorld();
-  }, [cameraFar, cabinLength, cabinCenterZ, messagesBackdrop, size.width, size.height]);
+  }, [cameraFar, framedLength, framedCenterZ, messagesBackdrop, size.width, size.height]);
 
   useLayoutEffect(() => {
     if (!messagesBackdrop || !backdropCamera.current) return;
