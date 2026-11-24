@@ -237,69 +237,118 @@ function palaceTower(b: Builder, x: number, y: number, z: number, height: number
   arch(b, x - radius * 0.94, y + height * 0.52, z, radius * 0.58, radius * 1.4);
 }
 
+function oasisPalm(b: Builder, x: number, y: number, z: number, height: number, lowPower: boolean) {
+  b.cylinder("wood", [x, y + height / 2, z], 0.14, 0.24, height, 7, [0.06, 0, 0.08]);
+  const topX = x + height * 0.04;
+  const topY = y + height;
+  const fronds = lowPower ? 5 : 7;
+  for (let i = 0; i < fronds; i++) {
+    const a = (i / fronds) * Math.PI * 2;
+    b.box(
+      i % 2 ? "leaf" : "leafLight",
+      [topX + Math.cos(a) * 0.95, topY + 0.15, z + Math.sin(a) * 0.95],
+      [1.75, 0.12, 0.42],
+      [0, -a, -0.32],
+    );
+  }
+}
+
 function alabasta(b: Builder, lowPower: boolean) {
-  // Wide terraced mesa and a blue-domed palace, with a ceremonial stair
-  // descending toward the bus. The cliff has actual irregular rock ribs.
-  b.cylinder("sandstone", [0, 4.2, 0], 15.4, 17.5, 8.4, 14);
-  b.cylinder("sandLight", [0, 8.4, 0], 15.8, 15.6, 0.65, 14);
-  for (let i = 0; i < 14; i++) {
-    const angle = i / 14 * Math.PI * 2;
-    const x = Math.cos(angle) * 15.3, z = Math.sin(angle) * 15.3;
-    b.cylinder(i % 3 ? "sandstone" : "sandLight", [x, 3.8, z], 0.6, 1.3, 7.6 + Math.sin(i * 3) * 0.7, 5);
+  // ALABASTA — Plateau d'Alubarna, Palais Royal des Nefertari, Tour de l'Horloge et grand escalier cérémoniel.
+  // 1. Plateau rocheux en grès chaud avec contreforts sculptés.
+  b.cylinder("sandstone", [0, 4.2, 0], 15.4, 17.6, 8.4, 16);
+  b.cylinder("sandLight", [0, 8.45, 0], 15.9, 15.6, 0.65, 16);
+  for (let i = 0; i < 16; i++) {
+    const angle = (i / 16) * Math.PI * 2;
+    const x = Math.cos(angle) * 15.4, z = Math.sin(angle) * 15.4;
+    b.cylinder(i % 3 ? "sandstone" : "sandLight", [x, 3.85, z], 0.65, 1.35, 7.7 + Math.sin(i * 3) * 0.65, 6);
   }
-  b.cylinder("cream", [0, 9.15, 0], 12.7, 13.6, 1.0, 14);
-  b.box("sandLight", [0, 12.8, 0], [11.5, 6.8, 12]);
-  b.box("cream", [-0.1, 16.2, 0], [12.4, 0.65, 12.8]);
-  b.box("cream", [-1.3, 17.7, 0], [7, 3.0, 8]);
-  b.dome("turquoise", [-1.3, 19.25, 0], 4.2, [1, 1.25, 1]);
-  b.cylinder("gold", [-1.3, 24.7, 0], 0, 0.25, 1.5, 6);
-  b.sphere("gold", [-1.3, 25.5, 0], 0.35);
+
+  // 2. Palais Royal d'Alubarna (marbre crème, coupoles turquoise royales, incrustations géométriques et or).
+  b.cylinder("cream", [0, 9.2, 0], 12.8, 13.7, 1.0, 16);
+  b.box("sandLight", [0, 12.9, 0], [11.6, 6.8, 12.2]);
+  b.box("cream", [-0.1, 16.35, 0], [12.5, 0.65, 13.0]);
+  b.box("turquoise", [-0.1, 16.8, 0], [12.1, 0.25, 12.6]);
+  // Pavillon supérieur et grande coupole turquoise royale avec flèche dorée.
+  b.box("cream", [-1.2, 18.0, 0], [7.2, 3.0, 8.2]);
+  b.dome("turquoise", [-1.2, 19.55, 0], 4.35, [1, 1.28, 1]);
+  b.ring("gold", [-1.2, 19.65, 0], 4.3, 0.14);
+  b.cylinder("gold", [-1.2, 25.4, 0], 0, 0.24, 1.8, 8);
+  b.sphere("gold", [-1.2, 26.35, 0], 0.36);
+
+  // 4 minarets à coupoles turquoise + ailes latérales du palais.
   for (const side of [-1, 1]) {
-    palaceTower(b, -2.5, 9.5, side * 8.2, 7.7, 1.55);
-    palaceTower(b, 6.5, 9.5, side * 6.5, 10.0, 1.35);
-    b.box("cream", [-1.2, 11.2, side * 10.9], [9, 3.0, 3.2]);
-    b.dome("turquoise", [-2, 12.8, side * 10.9], 1.65, [1.2, 0.8, 1]);
-    for (let z = -4; z <= 4; z += 2) arch(b, -5.88, 10.0, z, 0.8, 2.5);
+    palaceTower(b, -2.5, 9.6, side * 8.2, 7.9, 1.55);
+    palaceTower(b, 6.4, 9.6, side * 6.6, 10.4, 1.38);
+    b.box("cream", [-1.2, 11.3, side * 10.9], [9.2, 3.2, 3.3]);
+    b.dome("turquoise", [-2.0, 12.95, side * 10.9], 1.7, [1.2, 0.88, 1]);
+    b.cylinder("gold", [-2.0, 14.6, side * 10.9], 0, 0.1, 0.65, 6);
   }
-  // Blue façade reliefs echo Alubarna's long geometric vertical inlays.
-  for (const z of [-4.6, -3.1, 3.1, 4.6]) {
-    b.box("turquoise", [-5.79, 14.05, z], [0.12, 3.9, 0.45]);
-    b.box("gold", [-5.9, 15.6, z], [0.14, 0.45, 0.7], [0, 0, 0.1]);
+  // Arches de façade (une seule fois, dégagées du portail central z = 0 pour éviter tout z-fighting).
+  for (const z of [-4.2, -2.2, 2.2, 4.2]) {
+    arch(b, -5.88, 10.0, z, 0.85, 2.6);
+    if (!lowPower) b.box("lamp", [-5.94, 10.95, z], [0.05, 1.25, 0.48]);
   }
-  arch(b, -5.9, 10, 0, 2, 4.6);
-  b.box("turquoise", [-6.2, 9.9, 0], [3.4, 0.16, 3.5]);
-  for (let i = 0; i < 17; i++) {
-    const x = -7.5 - i * 0.64, y = 9.5 - i * 0.59;
-    b.box(i % 3 ? "sandLight" : "cream", [x, y - 0.14, 0], [0.7, 0.58, 4.1]);
-    for (const side of [-1, 1]) b.box("sandstone", [x, y + 0.45, side * 2.4], [0.72, 0.8, 0.5]);
+  // Incrustations géométriques turquoise et or caractéristiques d'Alubarna.
+  for (const z of [-4.8, -3.2, 3.2, 4.8]) {
+    b.box("turquoise", [-5.84, 14.15, z], [0.14, 3.9, 0.46]);
+    b.box("gold", [-5.94, 15.75, z], [0.16, 0.45, 0.72], [0, 0, 0.1]);
   }
+  // Grand portail royal central + tapis turquoise.
+  arch(b, -5.92, 10.0, 0, 2.2, 4.8);
+  b.box("turquoise", [-6.2, 9.85, 0], [3.5, 0.18, 3.6]);
+
+  // 3. Grand escalier cérémoniel plein (rampe en pierre ancrée sans vide sous les marches).
+  for (let i = 0; i < 16; i++) {
+    const x = -7.6 - i * 0.62;
+    const topY = 9.4 - i * 0.56;
+    const stepH = Math.max(0.45, topY);
+    b.box(i % 3 ? "sandLight" : "cream", [x, stepH / 2, 0], [0.7, stepH, 4.2]);
+    for (const side of [-1, 1]) {
+      b.box("sandstone", [x, topY + 0.42, side * 2.35], [0.72, 0.85, 0.48]);
+    }
+  }
+
   if (!lowPower) {
-    // Low city walls and rooftop awnings make the palace read as a kingdom.
-    for (let i = 0; i < 5; i++) {
-      const a = -Math.PI * 0.28 + i * Math.PI * 0.14;
-      const x = Math.cos(a) * 11.6 + 0.5, z = Math.sin(a) * 11.6;
-      b.box(i % 2 ? "cream" : "peach", [x, 10.0, z], [2.7, 1.8 + i % 2, 2.5]);
-      b.box("sandLight", [x, 11.0 + (i % 2) * 0.5, z], [3, 0.2, 2.8]);
-      b.box(i % 2 ? "turquoise" : "coral", [x - 1.4, 10.2, z], [0.9, 0.14, 2.2], [0, 0, 0.28]);
+    // Quartier d'Alubarna ceinturant le plateau : maisons blanches/ocre à dômes et auvents de souk.
+    for (let i = 0; i < 7; i++) {
+      const a = -Math.PI * 0.42 + i * Math.PI * 0.14;
+      const hx = Math.cos(a) * 12.2 + 0.4, hz = Math.sin(a) * 12.2;
+      const hh = 2.0 + (i % 3) * 0.6;
+      b.box(i % 2 ? "cream" : "peach", [hx, 8.75 + hh / 2, hz], [2.7, hh, 2.5]);
+      b.box("sandLight", [hx, 8.75 + hh + 0.1, hz], [3.0, 0.22, 2.8]);
+      if (i % 2 === 0) b.dome("cream", [hx, 8.75 + hh + 0.2, hz], 0.95, [1, 0.75, 1]);
+      b.box(i % 2 ? "turquoise" : "coral", [hx - 1.4, 9.6, hz], [0.95, 0.14, 2.2], [0, 0, 0.28]);
     }
+    // Rempart crénelé blanc tout autour du plateau d'Alubarna.
     for (let i = 0; i < 24; i++) {
-      const a = i / 24 * Math.PI * 2;
-      b.box("cream", [Math.cos(a) * 13.1, 10, Math.sin(a) * 13.1], [0.7, 0.85, 0.7]);
+      const a = (i / 24) * Math.PI * 2;
+      b.box("cream", [Math.cos(a) * 13.6, 9.15, Math.sin(a) * 13.6], [0.72, 0.9, 0.72]);
     }
-    // Obélisques au pied et au sommet du grand escalier royal d'Alubarna, plus braseros dorés.
+    // Obélisques ancrés au pied (y = 0) et sur le plateau (y = 8.75, sans flottement !) + braseros royaux.
     for (const side of [-1, 1]) {
       b.cylinder("sandstone", [-18.2, 2.2, side * 3.8], 0.35, 0.6, 4.4, 4);
-      b.cylinder("gold", [-18.2, 4.75, side * 3.8], 0, 0.35, 0.7, 4);
-      b.cylinder("sandstone", [-9.6, 11.6, side * 3.4], 0.28, 0.45, 3.8, 4);
-      b.cylinder("gold", [-9.6, 13.8, side * 3.4], 0, 0.28, 0.6, 4);
-      b.cylinder("sandstone", [-8.0, 9.9, side * 2.5], 0.45, 0.55, 1.0, 8);
-      b.sphere("lamp", [-8.0, 10.65, side * 2.5], 0.42);
+      b.cylinder("gold", [-18.2, 4.75, side * 3.8], 0, 0.35, 0.72, 4);
+      b.cylinder("sandstone", [-9.6, 10.65, side * 3.5], 0.28, 0.45, 3.8, 4);
+      b.cylinder("gold", [-9.6, 12.85, side * 3.5], 0, 0.28, 0.62, 4);
+      b.cylinder("sandstone", [-8.0, 9.65, side * 2.5], 0.44, 0.54, 1.1, 8);
+      b.sphere("lamp", [-8.0, 10.45, side * 2.5], 0.42);
     }
-    // Tour de l'horloge d'Alubarna sur le côté ouest de la place, dégagée de la falaise.
-    b.box("cream", [-17.2, 4.8, -9.8], [2.6, 9.6, 2.6]);
-    b.dome("turquoise", [-17.2, 9.8, -9.8], 1.5, [1, 1.2, 1]);
-    b.cylinder("gold", [-17.2, 11.9, -9.8], 0, 0.14, 1.0, 6);
-    b.cylinder("sandLight", [-18.55, 7.6, -9.8], 0.75, 0.75, 0.12, 12, [0, 0, Math.PI / 2]);
+    // 4. La célèbre Tour de l'Horloge d'Alubarna (h = 17.5 m), bien visible sur la place ouest !
+    const cx = -16.8, cz = -10.4;
+    b.box("sandstone", [cx, 0.9, cz], [3.8, 1.8, 3.8]);
+    b.box("cream", [cx, 7.6, cz], [3.0, 11.8, 3.0]);
+    b.box("turquoise", [cx, 13.5, cz], [3.2, 0.4, 3.2]);
+    b.box("sandLight", [cx, 13.9, cz], [3.4, 0.38, 3.4]);
+    b.dome("turquoise", [cx, 14.15, cz], 1.72, [1, 1.22, 1]);
+    b.cylinder("gold", [cx, 16.9, cz], 0, 0.16, 1.5, 8);
+    // Cadran doré de l'horloge + aiguilles orientés vers le bus (-X).
+    b.cylinder("cream", [cx - 1.55, 11.2, cz], 0.95, 0.95, 0.14, 16, [0, 0, Math.PI / 2]);
+    b.ring("gold", [cx - 1.62, 11.2, cz], 0.95, 0.08, [0, Math.PI / 2, 0]);
+    b.box("dark", [cx - 1.65, 11.42, cz], [0.08, 0.56, 0.08]);
+    b.box("dark", [cx - 1.66, 11.2, cz + 0.26], [0.08, 0.08, 0.5]);
+    arch(b, cx - 1.52, 2.0, cz, 1.1, 2.5, "cream");
+    b.box("lamp", [cx - 1.56, 7.2, cz], [0.06, 1.4, 0.72]);
   }
 }
 
@@ -1583,26 +1632,49 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
       dune(b, side * (27 + (i % 2) * 9), -55 + i * 22, [8 + i % 3, 1.0 + i % 2 * 0.65, 5.5], i % 2 === 0);
     }
     if (side < 0) {
-      // Oasis creusée avec bassin d'eau visible et margelle ancrée au sol.
-      b.add(new THREE.CylinderGeometry(5.2, 5.4, 0.24, 24), "turquoise", [-28, 0.14, -32], [0, 0, 0], [1.18, 1, 0.95]);
-      b.add(new THREE.TorusGeometry(5.25, 0.38, 6, 24), "sandLight", [-28, 0.24, -32], [Math.PI / 2, 0, 0], [1.18, 0.95, 0.72]);
-      for (let i = 0; i < 4; i++) {
-        b.cylinder("sandstone", [-32 + i * 2.6, 1.9 + i % 2, 35], 0.45, 0.6, 3.8 + i % 2 * 2, 7);
-        b.box("sandLight", [-32 + i * 2.6, 3.9 + i % 2 * 2, 35], [1.4, 0.4, 1.2]);
-      }
-      b.box("sandstone", [-29, 5.9, 35], [6, 0.55, 1.1], [0, 0, 0.04]);
+      // Oasis de Yuba / Nanohana : bassin turquoise, écume, vrais palmiers à palmes et tentes de bazar.
+      b.add(new THREE.CylinderGeometry(5.3, 5.5, 0.24, 24), "water", [-28, 0.14, -32], [0, 0, 0], [1.2, 1, 0.96]);
+      b.add(new THREE.TorusGeometry(5.35, 0.4, 6, 24), "sandLight", [-28, 0.24, -32], [Math.PI / 2, 0, 0], [1.2, 0.96, 0.72]);
       if (!lowPower) {
-        // Palmiers de l'oasis, tente nomade au sol et Ponéglyphe dégagé devant les ruines.
-        for (const [px, pz] of [[-22.5, -28], [-33.5, -36]]) {
-          b.cylinder("wood", [px, 2.05, pz], 0.16, 0.24, 4.1, 7);
-          b.sphere("leaf", [px, 4.15, pz], 1.4, [1.2, 0.45, 1.2]);
+        b.add(new THREE.TorusGeometry(4.85, 0.12, 5, 24), "foam", [-28, 0.27, -32], [Math.PI / 2, 0, 0], [1.2, 0.96, 1]);
+      }
+      // Ruines antiques de Sandora : colonnade alignée portant solidement son linteau + Ponéglyphe.
+      const ruinBaseY = sampleMaxTerrainHeight(0, -34, -22, 33, 37, 2) - 0.1;
+      b.box("sandstone", [-28.1, ruinBaseY / 2 + 0.18, 35], [10.6, ruinBaseY + 0.36, 3.2]);
+      for (let i = 0; i < 4; i++) {
+        const rx = -32 + i * 2.6;
+        const colH = i < 3 ? 4.8 : 2.9;
+        b.cylinder("sandstone", [rx, ruinBaseY + 0.36 + colH / 2, 35], 0.42, 0.54, colH, 8);
+        b.box("sandLight", [rx, ruinBaseY + 0.36 + colH + 0.18, 35], [1.3, 0.36, 1.2]);
+      }
+      b.box("sandstone", [-29.4, ruinBaseY + 5.75, 35], [6.6, 0.58, 1.15]);
+      if (!lowPower) {
+        // 5 palmiers d'oasis à vraies palmes vertes.
+        for (const [px, pz, ph] of [
+          [-22.2, -28.5, 4.4],
+          [-23.0, -35.8, 3.8],
+          [-33.8, -35.5, 4.6],
+          [-34.2, -28.8, 4.0],
+          [-28.5, -38.2, 4.2],
+        ]) {
+          oasisPalm(b, px, sceneryTerrainHeight(0, px, pz) - 0.05, pz, ph, false);
         }
-        const tentY = sceneryTerrainHeight(0, -23, -21) - 0.02;
-        b.box("sandLight", [-23, tentY + 0.22, -21], [3.4, 0.44, 2.8]);
-        b.box("dark", [-24.68, tentY + 0.44, -21], [0.1, 0.88, 1.0]);
-        b.roof("coral", [-23, tentY + 0.40, -21], 3.9, 3.3, 1.65);
-        b.box("dark", [-28.1, 1.0, 32.8], [1.4, 2.0, 1.4]);
-        b.box("gold", [-27.38, 1.1, 32.8], [0.06, 1.3, 0.9]);
+        // Tentes de bazar d'Alabasta (corail & turquoise) + pavillon blanc à coupole.
+        for (const [tx, tz, roofCol] of [[-23, -21, "coral"], [-31, -18, "turquoise"]] as Array<[number, number, MaterialKey]>) {
+          const tentY = sceneryTerrainHeight(0, tx, tz) - 0.02;
+          b.box("sandLight", [tx, tentY + 0.32, tz], [3.6, 0.64, 3.0]);
+          b.box("dark", [tx + 1.82, tentY + 0.52, tz], [0.08, 0.95, 1.1]);
+          b.roof(roofCol, [tx, tentY + 0.62, tz], 4.2, 3.5, 1.7);
+          b.sphere("lamp", [tx + 2.0, tentY + 1.4, tz + 1.3], 0.22);
+        }
+        // Ponéglyphe royal d'Alabasta encadré de deux braseros devant les ruines.
+        const poneY = sceneryTerrainHeight(0, -28.1, 32.2) - 0.02;
+        b.box("dark", [-28.1, poneY + 1.05, 32.2], [1.5, 2.1, 1.5]);
+        b.box("gold", [-27.32, poneY + 1.12, 32.2], [0.06, 1.35, 0.95]);
+        for (const bz of [30.2, 34.2]) {
+          b.cylinder("sandstone", [-26.2, poneY + 0.55, bz], 0.26, 0.34, 1.1, 6);
+          b.sphere("lamp", [-26.2, poneY + 1.25, bz], 0.26);
+        }
       }
     }
   }

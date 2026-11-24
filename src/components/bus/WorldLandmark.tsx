@@ -147,9 +147,14 @@ function LandmarkModel({ def }: { def: PropDef }) {
             <boxGeometry args={[3.3, 0.44, 2.2]} />
           </mesh>
           {[-1.42, 1.42].map((x) => (
-            <mesh key={x} material={MATS.sandDark} position={[x, 1.3, 6.4]}>
-              <cylinderGeometry args={[0.24, 0.32, 2.6, 6]} />
-            </mesh>
+            <group key={x}>
+              <mesh material={MATS.sandDark} position={[x, 1.3, 6.4]}>
+                <cylinderGeometry args={[0.24, 0.32, 2.6, 6]} />
+              </mesh>
+              <mesh material={MATS.lanternLight} position={[x, 2.75, 6.4]}>
+                <sphereGeometry args={[0.24, 8, 8]} />
+              </mesh>
+            </group>
           ))}
         </group>
       );
@@ -157,20 +162,27 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "ruins":
       return (
         <group scale={s * 1.1}>
+          {/* Socle en grès ancré dans le désert */}
+          <mesh material={MATS.sandDark} position={[0, 0.22, 0]} receiveShadow>
+            <boxGeometry args={[7.2, 0.44, 2.2]} />
+          </mesh>
           {/* Colonnes antiques d'Alabasta */}
           {[-2.5, 0, 2.5].map((x, i) => (
-            <group key={i} position={[x, 0, 0]}>
+            <group key={i} position={[x, 0.2, 0]}>
               <mesh material={MATS.sand} position={[0, 2.2, 0]} castShadow>
-                <cylinderGeometry args={[0.35, 0.4, 4.4, 12]} />
+                <cylinderGeometry args={[0.35, 0.42, 4.4, 12]} />
               </mesh>
               <mesh material={MATS.sandDark} position={[0, 4.5, 0]}>
-                <boxGeometry args={[1.0, 0.3, 1.0]} />
+                <boxGeometry args={[1.05, 0.32, 1.05]} />
               </mesh>
             </group>
           ))}
-          {/* Linteau en ruine */}
-          <mesh material={MATS.sandDark} position={[0, 4.8, 0]} castShadow>
-            <boxGeometry args={[6.4, 0.4, 0.8]} />
+          {/* Linteau en ruine + brasero doré */}
+          <mesh material={MATS.sandDark} position={[0, 5.0, 0]} castShadow>
+            <boxGeometry args={[6.5, 0.44, 0.88]} />
+          </mesh>
+          <mesh material={MATS.lanternLight} position={[0, 1.15, 0.72]}>
+            <sphereGeometry args={[0.26, 8, 8]} />
           </mesh>
         </group>
       );
