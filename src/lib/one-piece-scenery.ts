@@ -737,69 +737,172 @@ function cherryTree(b: Builder, x: number, y: number, z: number, size: number, l
   b.sphere("blossomLight", [x, y + size * 1.85, z], size * 0.77, [1.2, 0.55, 1]);
 }
 
-function wano(b: Builder, lowPower: boolean) {
-  // The Flower Capital's castle rises from a curved, living tree-rock,
-  // with an asymmetric crown of blossoms rather than a plain red cylinder.
-  b.cylinder("rockLight", [0, 1.8, 0], 11, 13, 3.6, 10);
-  b.cylinder("leaf", [0, 3.8, 0], 11.3, 11.5, 0.5, 10);
-  b.curve("wood", [[0, 2, 0], [1.5, 7, 1], [-1, 13, 0], [0, 18, 0]], 3.7, 20);
-  for (let i = 0; i < 5; i++) {
-    const a = i / 5 * Math.PI * 2;
-    b.curve("wood", [[Math.cos(a) * 10, 3, Math.sin(a) * 8], [Math.cos(a) * 6, 4.1, Math.sin(a) * 5], [0, 9, 0]], 0.65, 12);
-  }
-  for (const side of [-1, 1]) {
-    b.curve("wood", [[0, 9, 0], [side * 6, 12.5, 0], [side * 10, 13.7, side * 3]], 1.1, 12);
-    cherryTree(b, side * 9, 12.7, side * 3, 4.3, lowPower);
-  }
-  b.box("rockLight", [0, 17.3, 0], [9.4, 2, 8.5]);
-  b.box("cream", [0, 18.4, 0], [9.8, 0.45, 9]);
-  for (let tier = 0; tier < 4; tier++) {
-    const y = 18.6 + tier * 2.8, width = 8.8 - tier * 1.55, depth = 7.8 - tier * 1.25;
-    b.box("cream", [0, y + 1.15, 0], [width, 2.3, depth]);
-    b.box("vermilion", [-width / 2 - 0.06, y + 0.3, 0], [0.2, 0.26, depth + 0.3]);
-    for (const side of [-1, 1]) {
-      b.box("vermilion", [-width / 2 - 0.08, y + 1.15, side * depth * 0.38], [0.22, 2.4, 0.22]);
-      b.box("dark", [-width / 2 - 0.03, y + 1.27, side * depth * 0.17], [0.14, 1.15, 0.7]);
-      b.box("gold", [-width / 2 - 0.12, y + 1.27, side * depth * 0.17], [0.16, 0.08, 0.8]);
-    }
-    b.roof("jadeRoof", [0, y + 2.35, 0], width + 3.8, depth + 3.3, 1.65);
-    b.box("gold", [0, y + 4.05, 0], [0.16, 0.16, depth * 0.55]);
-  }
-  // Paired curling roof finials, deliberately visible against the sky.
-  for (const side of [-1, 1]) b.curve("gold", [[0, 30.8, side * 1.5], [0, 31.8, side * 2.1], [0, 32.3, side * 1.5]], 0.2, 9);
-  // Vermilion bridge and a torii on the approach, both outside the road.
-  for (let i = 0; i < 11; i++) {
-    const x = -16 + i * 0.7, y = 0.8 + Math.sin(i / 10 * Math.PI) * 1.25;
-    b.box("wood", [x, y, -10], [0.76, 0.22, 3.1]);
-    for (const side of [-1, 1]) {
-      b.box("vermilion", [x, y + 1.1, -10 + side * 1.55], [0.74, 0.16, 0.18]);
-      if (i % 2 === 0) b.box("vermilion", [x, y + 0.6, -10 + side * 1.55], [0.16, 1.3, 0.16]);
-    }
-  }
-  for (const ax of [-16, -9]) {
-    b.box("rockLight", [ax, 0.4, -10], [0.9, 0.85, 3.2]);
-    b.box("rockLight", [ax + (ax < -12 ? -0.65 : 0.65), 0.2, -10], [0.65, 0.44, 3.1]);
-  }
-  for (const z of [-12.2, -7.8]) b.cylinder("vermilion", [-15.7, 3.2, z], 0.28, 0.38, 6.6, 10);
-  b.box("vermilion", [-15.7, 5.9, -10], [0.55, 0.38, 6]);
-  b.curve("jadeRoof", [[-15.7, 6.6, -13.4], [-15.7, 6.2, -10], [-15.7, 6.6, -6.6]], 0.28, 10);
+function machiyaHouse(
+  b: Builder,
+  x: number,
+  y: number,
+  z: number,
+  w: number,
+  h: number,
+  d: number,
+  facingX: 1 | -1,
+  lowPower: boolean,
+) {
+  // Maison traditionnelle de la Capitale des Fleurs (bois sombre, enduit crème, toit jade, shoji lumineux face au bus).
+  b.box("rockLight", [x, y + 0.25, z], [w + 0.3, 0.5, d + 0.3]);
+  b.box("wood", [x, y + h * 0.32, z], [w, h * 0.58, d]);
+  b.box("cream", [x, y + h * 0.78, z], [w * 0.96, h * 0.42, d * 0.96]);
+  b.roof("jadeRoof", [x, y + h, z], w + 1.2, d + 1.2, 1.35);
+  b.box("gold", [x, y + h + 1.36, z], [0.14, 0.14, d * 0.52]);
+  const fx = x + facingX * (w / 2 + 0.05);
+  // Fenêtres shoji chaudes + auvent vermillon orientés vers le bus.
+  b.box("lamp", [fx, y + h * 0.42, z], [0.08, h * 0.38, d * 0.58]);
+  b.box("vermilion", [fx + facingX * 0.22, y + h * 0.66, z], [0.55, 0.12, d * 0.78], [0, 0, facingX * -0.22]);
   if (!lowPower) {
-    cherryTree(b, -9.8, sceneryTerrainHeight(3, SET_PIECE_OFFSET_X - 9.8, 11) - 0.06, 11, 4.4, false);
-    for (let i = 0; i < 5; i++) {
-      const z = -7 + i * 3.5;
-      b.cylinder("wood", [-11, 1.8, z], 0.09, 0.13, 3.6, 6);
-      b.sphere("lamp", [-11, 3.6, z], 0.45, [0.85, 1.15, 0.85]);
-      b.cylinder("vermilion", [-11, 4.08, z], 0.25, 0.25, 0.11, 8);
+    b.box("lamp", [fx, y + h * 0.82, z], [0.08, h * 0.22, d * 0.42]);
+    // Petites lanternes rouges chochin suspendues sous l'auvent.
+    for (const lz of [-d * 0.32, d * 0.32]) {
+      b.sphere("vermilion", [fx + facingX * 0.32, y + h * 0.52, z + lz], 0.22, [0.85, 1.15, 0.85]);
     }
-    // Maisons de la Capitale des Fleurs dégagées du rocher et bannières ancrées sur la terrasse.
-    for (const [hx, hz] of [[-7.5, -14.8], [-5.5, 14.2], [-14.8, 1.5]]) {
-      b.box("wood", [hx, 1.5, hz], [3.6, 3.0, 3.4]);
-      b.roof("jadeRoof", [hx, 3.0, hz], 4.8, 4.5, 1.35);
-      b.box("lamp", [hx - 1.85, 1.7, hz], [0.08, 1.2, 1.6]);
+  }
+}
+
+function wano(b: Builder, lowPower: boolean) {
+  // WANO KUNI — La Capitale des Fleurs (Hana no Miyako), le Château du Shogun sur son cerisier-rocher géant,
+  // et le majestueux Mont Fuji enneigé en arrière-plan (palette ukiyo-e : vermillon, jade, crème, or et sakura rose).
+
+  // 1. Le Mont Fuji de Wano (Fuji-yama) en arrière-plan nord-est, couronné de neige et entouré de nuages ukiyo-e.
+  const fx = 6.8, fz = -10.5;
+  b.cylinder("dark", [fx, 9.5, fz], 3.4, 12.2, 19.0, 16);
+  b.cylinder("rock", [fx, 22.8, fz], 1.5, 4.1, 8.2, 16);
+  b.cylinder("snow", [fx, 28.4, fz], 1.15, 2.55, 4.2, 16);
+  b.dome("snow", [fx, 30.45, fz], 1.18, [1, 0.35, 1]);
+  // Nuages blancs stylisés ukiyo-e flottant à mi-pente du Mont Fuji.
+  if (!lowPower) {
+    for (const [cx, cy, cz, sx, sz] of [
+      [fx - 6.8, 17.5, fz + 3.2, 3.8, 1.9],
+      [fx + 4.8, 19.2, fz + 4.0, 3.2, 1.8],
+      [fx - 2.5, 22.8, fz + 3.8, 2.8, 1.5],
+    ]) {
+      b.sphere("cloud", [cx, cy, cz], 1.0, [sx, 0.72, sz]);
     }
+  }
+
+  // 2. Douves turquoise et colline-forteresse ishigaki au pied du Château du Shogun.
+  const cx = -1.6;
+  b.cylinder("water", [cx, 0.16, 1.0], 12.4, 12.6, 0.28, 20);
+  b.ring("foam", [cx, 0.34, 1.0], 11.8, 0.2);
+  // Remparts en pierre en pente (ishigaki) + pelouse verte.
+  b.cylinder("rock", [cx, 1.9, 1.0], 9.4, 11.4, 3.8, 12);
+  b.cylinder("rockLight", [cx, 3.9, 1.0], 9.7, 9.5, 0.35, 12);
+  b.cylinder("elbafGrass", [cx, 4.2, 1.0], 9.3, 9.5, 0.38, 12);
+
+  // 3. Arbre-rocher Sakura géant portant le Château du Shogun + 4 grandes branches fleuries.
+  b.curve("wood", [[cx, 3.2, 1.0], [cx + 1.2, 8.0, 1.8], [cx - 0.8, 13.5, 0.6], [cx, 17.8, 1.0]], 4.0, 18);
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    b.curve(
+      "wood",
+      [
+        [cx + Math.cos(a) * 8.6, 3.8, 1.0 + Math.sin(a) * 7.8],
+        [cx + Math.cos(a) * 5.2, 5.2, 1.0 + Math.sin(a) * 4.8],
+        [cx, 9.5, 1.0],
+      ],
+      0.78,
+      10,
+    );
+  }
+  const branchSpecs: Array<[number, number, number, number]> = [
+    [-8.2, 13.8, -2.5, 4.8],
+    [8.0, 14.2, 3.8, 4.6],
+    [-6.2, 15.2, 6.2, 4.2],
+    [5.8, 13.2, -5.8, 4.0],
+  ];
+  for (const [bx, by, bz, size] of branchSpecs.filter((_, i) => !lowPower || i < 2)) {
+    b.curve("wood", [[cx, 10.5, 1.0], [cx + bx * 0.55, by - 0.8, 1.0 + bz * 0.55], [cx + bx, by, 1.0 + bz]], 1.05, 10);
+    cherryTree(b, cx + bx, by - 1.1, 1.0 + bz, size, lowPower);
+  }
+
+  // 4. Château du Shogun (4 étages féodaux : rempart ishigaki, murs crème, piliers vermillon, toits jade et Shachihoko d'or).
+  b.box("rock", [cx, 17.5, 1.0], [9.8, 2.2, 9.0]);
+  b.box("cream", [cx, 18.7, 1.0], [10.2, 0.45, 9.4]);
+  for (let tier = 0; tier < 4; tier++) {
+    const y = 18.9 + tier * 2.85;
+    const width = 9.0 - tier * 1.55;
+    const depth = 8.0 - tier * 1.25;
+    b.box("cream", [cx, y + 1.15, 1.0], [width, 2.35, depth]);
+    // Balcon vermillon ceinturant chaque étage.
+    b.box("vermilion", [cx, y + 0.28, 1.0], [width + 0.35, 0.24, depth + 0.35]);
     for (const side of [-1, 1]) {
-      b.cylinder("vermilion", [-4.6, 20.1, side * 4.1], 0.07, 0.09, 3.2, 6);
-      b.box("gold", [-4.6, 21.0, side * 4.5], [0.1, 1.3, 0.75]);
+      // Piliers vermillon et fenêtres shoji lumineuses face au bus (-X).
+      b.box("vermilion", [cx - width / 2 - 0.08, y + 1.18, 1.0 + side * depth * 0.38], [0.22, 2.4, 0.22]);
+      b.box("lamp", [cx - width / 2 - 0.04, y + 1.28, 1.0 + side * depth * 0.17], [0.12, 1.1, 0.72]);
+      b.box("gold", [cx - width / 2 - 0.12, y + 1.28, 1.0 + side * depth * 0.17], [0.14, 0.08, 0.82]);
+      // Fenêtres lumineuses aussi sur les côtés nord/sud.
+      if (!lowPower) {
+        b.box("lamp", [cx, y + 1.28, 1.0 + side * (depth / 2 + 0.04)], [width * 0.36, 1.0, 0.1]);
+      }
+    }
+    b.roof("jadeRoof", [cx, y + 2.35, 1.0], width + 4.0, depth + 3.5, 1.7);
+    b.box("gold", [cx, y + 4.1, 1.0], [0.18, 0.18, depth * 0.58]);
+  }
+  // Shachihoko dorés emblématiques au sommet du donjon.
+  for (const side of [-1, 1]) {
+    b.curve("gold", [[cx, 31.3, 1.0 + side * 1.4], [cx, 32.5, 1.0 + side * 2.1], [cx, 33.1, 1.0 + side * 1.3]], 0.22, 10);
+  }
+
+  // 5. Pont arqué vermillon (Taiko-bashi) au-dessus d'un ruisseau fleuri + Grand Torii vermillon.
+  b.box("water", [-12.5, 0.14, -9.5], [4.2, 0.14, 14.0]);
+  for (let i = 0; i < 11; i++) {
+    const x = -16.2 + i * 0.72, y = 0.78 + Math.sin((i / 10) * Math.PI) * 1.35;
+    b.box("wood", [x, y, -9.5], [0.78, 0.22, 3.2]);
+    for (const side of [-1, 1]) {
+      b.box("vermilion", [x, y + 1.08, -9.5 + side * 1.56], [0.76, 0.16, 0.18]);
+      if (i % 2 === 0) {
+        b.box("vermilion", [x, y + 0.58, -9.5 + side * 1.56], [0.16, 1.28, 0.16]);
+        if (!lowPower && (i === 0 || i === 10)) b.sphere("gold", [x, y + 1.26, -9.5 + side * 1.56], 0.15);
+      }
+    }
+  }
+  for (const ax of [-16.2, -9.0]) {
+    b.box("rockLight", [ax, 0.4, -9.5], [0.95, 0.85, 3.3]);
+  }
+  // Grand Torii vermillon à l'entrée du pont.
+  for (const z of [-11.8, -7.2]) {
+    b.cylinder("rock", [-16.0, 0.4, z], 0.42, 0.5, 0.8, 8);
+    b.cylinder("vermilion", [-16.0, 3.4, z], 0.28, 0.38, 6.4, 10);
+  }
+  b.box("vermilion", [-16.0, 5.8, -9.5], [0.52, 0.36, 5.8]);
+  b.box("gold", [-16.12, 6.25, -9.5], [0.22, 0.85, 0.65]);
+  b.curve("jadeRoof", [[-16.0, 6.75, -13.2], [-16.0, 6.3, -9.5], [-16.0, 6.75, -5.8]], 0.3, 12);
+
+  // 6. Quartier animé de la Capitale des Fleurs (maisons machiya, lanternes de festival et cerisiers en fleurs).
+  if (!lowPower) {
+    cherryTree(b, -10.5, sceneryTerrainHeight(3, SET_PIECE_OFFSET_X - 10.5, 13.5) - 0.06, 13.5, 4.8, false);
+    cherryTree(b, -9.5, sceneryTerrainHeight(3, SET_PIECE_OFFSET_X - 9.5, -16.5) - 0.06, -16.5, 4.4, false);
+    // Allée de lanternes chaudes du Festival du Feu.
+    for (let i = 0; i < 6; i++) {
+      const z = -6.0 + i * 3.4;
+      b.cylinder("wood", [-13.2, 1.85, z], 0.09, 0.13, 3.7, 6);
+      b.sphere("lamp", [-13.2, 3.65, z], 0.42, [0.85, 1.15, 0.85]);
+      b.cylinder("vermilion", [-13.2, 4.1, z], 0.24, 0.24, 0.12, 8);
+    }
+    // 5 maisons traditionnelles machiya de la Capitale des Fleurs.
+    const town: Array<[number, number, number, number, number]> = [
+      [-14.6, 2.2, 3.8, 3.4, 3.6],
+      [-14.4, 8.2, 3.6, 4.2, 3.8],
+      [-7.2, -16.8, 4.2, 3.6, 3.8],
+      [-5.2, 16.0, 4.4, 3.8, 4.0],
+      [2.8, 16.5, 4.0, 3.4, 3.6],
+    ];
+    for (const [hx, hz, hw, hh, hd] of town) {
+      const hy = sceneryTerrainHeight(3, SET_PIECE_OFFSET_X + hx, hz) - 0.06;
+      machiyaHouse(b, hx, hy, hz, hw, hh, hd, -1, false);
+    }
+    // Étendards dorés sur la terrasse du château.
+    for (const side of [-1, 1]) {
+      b.cylinder("vermilion", [cx - 4.7, 20.4, 1.0 + side * 4.2], 0.07, 0.09, 3.2, 6);
+      b.box("gold", [cx - 4.7, 21.3, 1.0 + side * 4.6], [0.1, 1.35, 0.78]);
     }
   }
 }
@@ -1654,22 +1757,35 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
       }
     }
     if (side < 0) {
-      const cherryAY = sceneryTerrainHeight(3, -28, -14.5) - 0.05;
-      const cherryBY = sceneryTerrainHeight(3, -34, 33) - 0.05;
-      cherryTree(b, -28, cherryAY, -14.5, 4.8, lowPower);
-      cherryTree(b, -34, cherryBY, 33, 5.3, lowPower);
-      const houseY = sceneryTerrainHeight(3, -29, 4) - 0.03;
-      b.box("wood", [-29, houseY + 2.1, 4], [6.7, 4.2, 5]);
-      b.roof("jadeRoof", [-29, houseY + 4.2, 4], 8.1, 6.4, 1.8);
-      for (const z of [2.4, 4, 5.6]) b.box("lamp", [-32.4, houseY + 2.3, z], [0.09, 1.5, 0.6]);
+      const cherryAY = sceneryTerrainHeight(3, -27.5, -15) - 0.05;
+      const cherryBY = sceneryTerrainHeight(3, -33.5, 33) - 0.05;
+      cherryTree(b, -27.5, cherryAY, -15, 5.0, lowPower);
+      cherryTree(b, -33.5, cherryBY, 33, 5.4, lowPower);
+      // Maison de thé d'O-Tsuru et quartier machiya orientés face au bus (+X) avec fenêtres shoji lumineuses.
+      const houseY = sceneryTerrainHeight(3, -29, 4) - 0.04;
+      machiyaHouse(b, -29, houseY, 4, 6.6, 4.4, 5.4, 1, lowPower);
       if (!lowPower) {
-        for (const [px, py, pz] of [[-28, cherryAY, -14.5], [-34, cherryBY, 33]] as const) {
-          b.sphere("blossomLight", [px, py + 0.08, pz], 3.1, [1.2, 0.06, 1.1]);
+        const house2Y = sceneryTerrainHeight(3, -30.5, 16) - 0.04;
+        machiyaHouse(b, -30.5, house2Y, 16, 4.8, 3.8, 4.4, 1, false);
+        // Grand Torii vermillon bordant le chemin de la Capitale des Fleurs côté ouest.
+        const toriiY = sceneryTerrainHeight(3, -22.5, -4) - 0.04;
+        for (const tz of [-6.0, -2.0]) {
+          b.cylinder("rock", [-22.5, toriiY + 0.35, tz], 0.38, 0.46, 0.7, 8);
+          b.cylinder("vermilion", [-22.5, toriiY + 3.0, tz], 0.24, 0.34, 5.6, 10);
         }
-        const lanternY = sceneryTerrainHeight(3, -24, 4) - 0.03;
-        b.cylinder("rock", [-24, lanternY + 0.8, 4], 0.22, 0.3, 1.6, 6);
-        b.box("lamp", [-24, lanternY + 1.85, 4], [0.5, 0.55, 0.5]);
-        b.box("rock", [-24, lanternY + 2.25, 4], [0.76, 0.24, 0.76]);
+        b.box("vermilion", [-22.5, toriiY + 5.1, -4], [0.46, 0.34, 5.2]);
+        b.box("gold", [-22.38, toriiY + 5.5, -4], [0.2, 0.72, 0.56]);
+        b.curve("jadeRoof", [[-22.5, toriiY + 5.95, -7.2], [-22.5, toriiY + 5.55, -4], [-22.5, toriiY + 5.95, -0.8]], 0.26, 10);
+        // Tapis de pétales de sakura roses sous les cerisiers et lanternes Toro en pierre.
+        for (const [px, py, pz] of [[-27.5, cherryAY, -15], [-33.5, cherryBY, 33]] as const) {
+          b.sphere("blossomLight", [px, py + 0.08, pz], 3.3, [1.25, 0.06, 1.15]);
+        }
+        for (const lz of [-8, 4, 16]) {
+          const lanternY = sceneryTerrainHeight(3, -23.5, lz) - 0.03;
+          b.cylinder("rock", [-23.5, lanternY + 0.8, lz], 0.22, 0.3, 1.6, 6);
+          b.box("lamp", [-23.5, lanternY + 1.85, lz], [0.5, 0.55, 0.5]);
+          b.box("rock", [-23.5, lanternY + 2.25, lz], [0.78, 0.24, 0.78]);
+        }
       }
     }
   }

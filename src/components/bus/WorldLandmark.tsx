@@ -471,26 +471,36 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "sakura":
       return (
         <group scale={s * 1.1}>
-          {/* Cerisier en fleurs du Pays des Wa */}
+          {/* Cerisier en fleurs du Pays des Wa avec tapis de pétales */}
+          <mesh material={MATS.pinkSakura} position={[0, 0.05, 0]} scale={[1.25, 0.05, 1.15]}>
+            <sphereGeometry args={[2.1, 12, 8]} />
+          </mesh>
           <mesh material={MATS.trunk} position={[0, 1.6, 0]} rotation={[0, 0, 0.07]} castShadow>
-            <cylinderGeometry args={[0.25, 0.42, 3.2, 10]} />
+            <cylinderGeometry args={[0.25, 0.44, 3.2, 10]} />
+          </mesh>
+          {/* Branche latérale supportant la lanterne */}
+          <mesh material={MATS.trunk} position={[0.62, 2.75, 0]} rotation={[0, 0, -0.95]}>
+            <cylinderGeometry args={[0.08, 0.14, 1.45, 6]} />
           </mesh>
           {/* Nuages de fleurs roses */}
-          <mesh material={MATS.pinkSakura} position={[0, 3.8, 0]} castShadow>
-            <sphereGeometry args={[2.0, 14, 14]} />
+          <mesh material={MATS.pinkSakura} position={[0, 3.85, 0]} castShadow>
+            <sphereGeometry args={[2.05, 14, 14]} />
           </mesh>
-          <mesh material={MATS.pinkDeep} position={[1.4, 3.2, 0.5]} castShadow>
-            <sphereGeometry args={[1.4, 12, 12]} />
+          <mesh material={MATS.pinkDeep} position={[1.45, 3.25, 0.5]} castShadow>
+            <sphereGeometry args={[1.42, 12, 12]} />
           </mesh>
-          <mesh material={MATS.pinkSakura} position={[-1.3, 3.4, -0.4]} castShadow>
-            <sphereGeometry args={[1.5, 12, 12]} />
+          <mesh material={MATS.pinkSakura} position={[-1.35, 3.45, -0.4]} castShadow>
+            <sphereGeometry args={[1.55, 12, 12]} />
           </mesh>
-          <mesh material={MATS.pinkDeep} position={[0, 4.8, 0]}>
-            <sphereGeometry args={[1.2, 10, 10]} />
+          <mesh material={MATS.pinkDeep} position={[0, 4.9, 0]}>
+            <sphereGeometry args={[1.25, 10, 10]} />
           </mesh>
-          {/* Petite lanterne rouge suspendue */}
-          <mesh material={MATS.redWood} position={[0.9, 2.4, 0]}>
-            <cylinderGeometry args={[0.14, 0.14, 0.35, 8]} />
+          {/* Lanterne chochin lumineuse suspendue à la branche */}
+          <mesh material={MATS.lanternLight} position={[1.05, 2.42, 0]}>
+            <sphereGeometry args={[0.22, 8, 8]} />
+          </mesh>
+          <mesh material={MATS.redWood} position={[1.05, 2.66, 0]}>
+            <cylinderGeometry args={[0.14, 0.14, 0.08, 8]} />
           </mesh>
         </group>
       );
@@ -498,41 +508,50 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "pagoda":
       return (
         <group scale={s * 1.25}>
-          {/* Socle en pierre de la pagode */}
-          <mesh material={MATS.rock} position={[0, 0.25, 0]} receiveShadow>
-            <boxGeometry args={[6.0, 0.5, 6.0]} />
+          {/* Socle en pierre ishigaki de la pagode */}
+          <mesh material={MATS.rock} position={[0, 0.32, 0]} receiveShadow>
+            <boxGeometry args={[6.2, 0.64, 6.2]} />
           </mesh>
-          {/* Pagode traditionnelle à 3 étages de Wano */}
+          {/* Pagode traditionnelle de Wano : enduit crème, piliers vermillon, toits vert jade et shoji lumineux 4 faces */}
           {[0, 1, 2].map((i) => {
             const w = 5.2 - i * 1.1;
-            const winW = w * 0.42;
+            const winW = w * 0.44;
             return (
-              <group key={i} position={[0, 0.4 + i * 3.4, 0]}>
-                <mesh material={MATS.redWood} position={[0, 1.5, 0]} castShadow>
+              <group key={i} position={[0, 0.5 + i * 3.35, 0]}>
+                <mesh material={MATS.wallPastelA} position={[0, 1.5, 0]} castShadow>
                   <boxGeometry args={[w, 3.0, w]} />
                 </mesh>
-                {/* Fenêtres shoji éclairées sur les façades */}
+                <mesh material={MATS.redWood} position={[0, 0.22, 0]}>
+                  <boxGeometry args={[w + 0.25, 0.24, w + 0.25]} />
+                </mesh>
+                {/* Fenêtres shoji éclairées sur les 4 faces (visibles depuis le bus) */}
                 <mesh material={MATS.lanternLight} position={[0, 1.5, w / 2 + 0.03]}>
                   <boxGeometry args={[winW, 1.05, 0.06]} />
                 </mesh>
                 <mesh material={MATS.lanternLight} position={[0, 1.5, -w / 2 - 0.03]}>
                   <boxGeometry args={[winW, 1.05, 0.06]} />
                 </mesh>
-                {/* Toit incurvé traditionnel */}
+                <mesh material={MATS.lanternLight} position={[w / 2 + 0.03, 1.5, 0]}>
+                  <boxGeometry args={[0.06, 1.05, winW]} />
+                </mesh>
+                <mesh material={MATS.lanternLight} position={[-w / 2 - 0.03, 1.5, 0]}>
+                  <boxGeometry args={[0.06, 1.05, winW]} />
+                </mesh>
+                {/* Toit incurvé vert jade canonique de Wano */}
                 <mesh
-                  material={MATS.darkRoof}
-                  position={[0, 3.2, 0]}
+                  material={MATS.jadeRoof}
+                  position={[0, 3.18, 0]}
                   rotation={[0, Math.PI / 4, 0]}
                   castShadow
                 >
-                  <coneGeometry args={[(6.8 - i * 1.2) * 0.76, 1.5, 4]} />
+                  <coneGeometry args={[(6.8 - i * 1.2) * 0.76, 1.48, 4]} />
                 </mesh>
               </group>
             );
           })}
           {/* Flèche d'or au sommet */}
           <mesh material={MATS.gold} position={[0, 11.6, 0]}>
-            <coneGeometry args={[0.3, 2.0, 8]} />
+            <coneGeometry args={[0.28, 2.0, 8]} />
           </mesh>
         </group>
       );
