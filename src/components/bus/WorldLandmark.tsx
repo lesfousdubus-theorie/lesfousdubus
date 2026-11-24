@@ -773,14 +773,26 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "justicePillar":
       return (
         <group scale={s * 1.15}>
-          <mesh material={MATS.marble} position={[0, 0.5, 0]} castShadow>
-            <boxGeometry args={[2.2, 1.0, 2.2]} />
+          {/* Socle à gradins en marbre judiciaire */}
+          <mesh material={MATS.marble} position={[0, 0.35, 0]} castShadow>
+            <boxGeometry args={[2.5, 0.7, 2.5]} />
           </mesh>
-          <mesh material={MATS.snow} position={[0, 3.5, 0]} castShadow>
-            <cylinderGeometry args={[0.62, 0.72, 5.2, 12]} />
+          <mesh material={MATS.snow} position={[0, 0.88, 0]}>
+            <boxGeometry args={[1.95, 0.36, 1.95]} />
           </mesh>
-          <mesh material={MATS.marble} position={[0, 6.2, 0]}>
-            <boxGeometry args={[2.0, 0.55, 2.0]} />
+          {/* Fût de colonne néoclassique + bague dorée */}
+          <mesh material={MATS.snow} position={[0, 3.65, 0]} castShadow>
+            <cylinderGeometry args={[0.58, 0.7, 5.2, 12]} />
+          </mesh>
+          <mesh material={MATS.gold} position={[0, 5.95, 0]}>
+            <cylinderGeometry args={[0.72, 0.72, 0.2, 12]} />
+          </mesh>
+          {/* Chapiteau et brasero lumineux au sommet */}
+          <mesh material={MATS.marble} position={[0, 6.32, 0]}>
+            <boxGeometry args={[2.1, 0.52, 2.1]} />
+          </mesh>
+          <mesh material={MATS.lanternLight} position={[0, 6.82, 0]}>
+            <sphereGeometry args={[0.38, 10, 8]} />
           </mesh>
         </group>
       );
@@ -788,14 +800,29 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "waterfallCliff":
       return (
         <group scale={s * 1.2}>
-          <mesh material={MATS.rock} position={[0, 3.6, 0]} castShadow>
-            <cylinderGeometry args={[3.0, 3.8, 7.2, 10]} />
+          {/* Falaise rocheuse stratifiée bordant le gouffre d'Enies Lobby */}
+          <mesh material={MATS.rock} position={[0, 3.4, 0]} castShadow>
+            <cylinderGeometry args={[2.9, 3.9, 6.8, 10]} />
           </mesh>
-          <mesh material={MATS.water} position={[0, 3.6, 3.58]} rotation={[-0.115, 0, 0]}>
-            <boxGeometry args={[2.4, 7.1, 0.35]} />
+          <mesh material={MATS.marble} position={[0, 6.9, 0]}>
+            <cylinderGeometry args={[3.05, 2.95, 0.4, 10]} />
           </mesh>
-          <mesh material={MATS.snow} position={[0, 0.55, 3.85]} scale={[1.4, 0.45, 0.9]}>
-            <sphereGeometry args={[1.6, 10, 8]} />
+          {/* Bassin supérieur et rideau de cascade en chute libre */}
+          <mesh material={MATS.water} position={[0, 7.12, 0.25]}>
+            <cylinderGeometry args={[2.3, 2.3, 0.14, 10]} />
+          </mesh>
+          <mesh material={MATS.water} position={[0, 3.6, 3.35]} rotation={[-0.14, 0, 0]}>
+            <boxGeometry args={[2.3, 7.1, 0.36]} />
+          </mesh>
+          <mesh material={MATS.snow} position={[0, 3.2, 3.55]} rotation={[-0.14, 0, 0]}>
+            <boxGeometry args={[0.65, 6.0, 0.14]} />
+          </mesh>
+          {/* Nuages d'écume et de brume au pied de la chute */}
+          <mesh material={MATS.snow} position={[0, 0.55, 3.75]} scale={[1.55, 0.48, 1.0]}>
+            <sphereGeometry args={[1.65, 10, 8]} />
+          </mesh>
+          <mesh material={MATS.snow} position={[1.1, 0.45, 3.5]} scale={[1.0, 0.4, 0.9]}>
+            <sphereGeometry args={[1.1, 8, 8]} />
           </mesh>
         </group>
       );
@@ -803,35 +830,48 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "courthouse":
       return (
         <group scale={s * 1.2}>
-          <mesh material={MATS.snow} position={[0, 0.25, 0.2]} receiveShadow>
-            <boxGeometry args={[7.0, 0.5, 6.0]} />
+          <mesh material={MATS.snow} position={[0, 0.3, 0.1]} receiveShadow>
+            <boxGeometry args={[7.2, 0.6, 6.2]} />
           </mesh>
-          <mesh material={MATS.marble} position={[0, 2.8, 0]} castShadow>
-            <boxGeometry args={[6.2, 5.2, 5.0]} />
+          <mesh material={MATS.marble} position={[0, 3.0, 0]} castShadow>
+            <boxGeometry args={[6.4, 5.4, 5.2]} />
           </mesh>
-          <mesh material={MATS.darkRoof} position={[0, 6.3, 0]} rotation={[0, Math.PI / 4, 0]}>
-            <coneGeometry args={[5.1, 2.0, 4]} />
+          <mesh material={MATS.snow} position={[0, 5.8, 0]}>
+            <boxGeometry args={[6.9, 0.36, 5.7]} />
           </mesh>
-          {[-2.3, -1.2, 1.2, 2.3].map((x) => (
-            <mesh key={x} material={MATS.snow} position={[x, 2.8, 2.65]}>
-              <cylinderGeometry args={[0.26, 0.32, 4.8, 8]} />
+          <mesh material={MATS.darkRoof} position={[0, 6.95, 0]} rotation={[0, Math.PI / 4, 0]}>
+            <coneGeometry args={[5.2, 2.0, 4]} />
+          </mesh>
+          {[-2.3, -1.15, 1.15, 2.3].map((x) => (
+            <mesh key={x} material={MATS.snow} position={[x, 3.0, 2.75]}>
+              <cylinderGeometry args={[0.25, 0.3, 4.9, 8]} />
             </mesh>
           ))}
-          {/* Portail central dégagé et fenêtres latérales du palais de justice */}
-          <mesh material={MATS.black} position={[0, 1.4, 2.53]}>
-            <boxGeometry args={[1.35, 2.2, 0.08]} />
+          {/* Portail central et fenêtres lumineuses sur les faces visibles (+Z et ±X face au bus) */}
+          <mesh material={MATS.black} position={[0, 1.6, 2.63]}>
+            <boxGeometry args={[1.35, 2.3, 0.08]} />
           </mesh>
           {[-1.75, 1.75].map((x) => (
-            <mesh key={x} material={MATS.lanternLight} position={[x, 3.2, 2.53]}>
-              <boxGeometry args={[0.55, 0.95, 0.06]} />
+            <mesh key={x} material={MATS.lanternLight} position={[x, 3.4, 2.63]}>
+              <boxGeometry args={[0.55, 1.05, 0.06]} />
             </mesh>
           ))}
-          {/* Emblème à 5 points du Gouvernement Mondial centré sous le toit */}
-          <mesh material={MATS.gold} position={[0, 4.45, 2.56]}>
-            <boxGeometry args={[1.25, 0.14, 0.08]} />
+          {[-1.4, 0, 1.4].map((fz, i) => (
+            <group key={i}>
+              <mesh material={i === 1 ? MATS.black : MATS.lanternLight} position={[-3.23, 3.2, fz]}>
+                <boxGeometry args={[0.06, 1.15, 0.62]} />
+              </mesh>
+              <mesh material={i === 1 ? MATS.black : MATS.lanternLight} position={[3.23, 3.2, fz]}>
+                <boxGeometry args={[0.06, 1.15, 0.62]} />
+              </mesh>
+            </group>
+          ))}
+          {/* Emblème doré à 5 points du Gouvernement Mondial centré sous le toit */}
+          <mesh material={MATS.gold} position={[0, 4.65, 2.66]}>
+            <boxGeometry args={[1.3, 0.14, 0.08]} />
           </mesh>
-          <mesh material={MATS.gold} position={[0, 4.45, 2.56]}>
-            <boxGeometry args={[0.14, 1.25, 0.08]} />
+          <mesh material={MATS.gold} position={[0, 4.65, 2.66]}>
+            <boxGeometry args={[0.14, 1.3, 0.08]} />
           </mesh>
           {[
             [0, 4.45],

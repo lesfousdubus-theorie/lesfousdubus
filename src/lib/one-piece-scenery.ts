@@ -1281,79 +1281,147 @@ function elbaf(b: Builder, lowPower: boolean) {
   }
 }
 
+function worldGovEmblem(b: Builder, x: number, y: number, z: number, scale: number, rotY = 0) {
+  const s = scale;
+  const sin = Math.sin(rotY), cos = Math.cos(rotY);
+  b.box("gold", [x, y, z], [0.12 * s, 0.16 * s, 1.9 * s], [0, rotY, 0]);
+  b.box("gold", [x, y, z], [0.12 * s, 1.35 * s, 0.16 * s], [0, rotY, 0]);
+  for (const [dy, dz] of [[0, 0], [0.64 * s, 0], [-0.64 * s, 0], [0, 0.92 * s], [0, -0.92 * s]]) {
+    b.sphere("gold", [x + dz * sin, y + dy, z + dz * cos], 0.19 * s);
+  }
+}
+
 function eniesLobby(b: Builder, lowPower: boolean) {
-  // Gouffre circulaire de la cascade : anneau de falaise et rideau d'eau tombant dans l'abîme (au-dessus du relief <= 0.29 m).
-  b.cylinder("dark", [-2, 0.24, 0], 11.2, 11.2, 0.36, 20);
+  // 1. Gouffre océanique sans fond : abîme sombre encadré par une falaise en demi-cercle
+  // et un rideau de cascades écumantes dégagé des Portes de la Justice (x <= 7.5).
+  const chasmX = -3.8;
+  b.cylinder("dark", [chasmX, 0.18, 0], 10.6, 10.6, 0.28, 24);
+  b.ring("foam", [chasmX, 0.38, 0], 10.0, 0.42);
   const segments = lowPower ? 12 : 20;
   for (let i = 0; i < segments; i++) {
-    const a = i / segments * Math.PI * 2;
-    // Laisser une ouverture face au bus pour que la cascade reste lisible depuis le pont.
-    if (Math.cos(a) < -0.68) continue;
-    const x = -2 + Math.cos(a) * 12.6, z = Math.sin(a) * 12.6;
-    b.box("rock", [x, 1.65, z], [2.4, 3.3, 3.8], [0, -a, 0]);
-    b.box("water", [-2 + Math.cos(a) * 11.3, 1.6, Math.sin(a) * 11.3], [0.35, 3.0, 3.4], [0, -a, 0]);
-    b.box("foam", [-2 + Math.cos(a) * 11.0, 0.72, Math.sin(a) * 11.0], [0.65, 1.0, 3.5], [0, -a, 0]);
-  }
-  b.ring("foam", [-2, 0.50, 0], 10.3, 0.35);
-
-  // Esplanade et pont d'accès côté bus menant à la Tour de la Justice.
-  b.box("castle", [-11.5, 2.0, 0], [10.5, 1.1, 5.2]);
-  for (const px of [-15, -11.5, -8]) {
-    for (const pz of [-2.1, 2.1]) b.cylinder("rockLight", [px, 1.0, pz], 0.45, 0.55, 2.0, 8);
+    const a = (i / segments) * Math.PI * 2;
+    const ca = Math.cos(a), sa = Math.sin(a);
+    // Ouverture face au bus (-X) pour lire le gouffre et ouverture vers les Portes (+X) pour éviter tout clipping.
+    if (ca < -0.62 || (ca > 0.72 && Math.abs(sa) < 0.65)) continue;
+    const rx = chasmX + ca * 11.4, rz = sa * 11.4;
+    b.box("rock", [rx, 1.75, rz], [2.2, 3.5, 3.7], [0, -a, 0]);
+    b.box("rockLight", [rx, 3.55, rz], [2.4, 0.35, 3.8], [0, -a, 0]);
+    b.box("water", [chasmX + ca * 10.2, 1.8, sa * 10.2], [0.36, 3.5, 3.4], [0, -a, 0.08]);
+    if (!lowPower) {
+      b.box("foam", [chasmX + ca * 9.95, 1.4, sa * 9.95], [0.22, 2.4, 0.55], [0, -a, 0.08]);
+      b.sphere("foam", [chasmX + ca * 9.8, 0.45, sa * 9.8], 0.75, [1.0, 0.45, 1.35]);
+    }
   }
 
-  // Tour de la Justice ancrée sur son socle, colonnade dégagée du portail et tours latérales.
-  b.box("rockLight", [-4.5, 1.0, 0], [8.4, 2.0, 14.2]);
-  b.box("castle", [-4.5, 7.0, 0], [7.8, 10.4, 13.6]);
-  b.box("cream", [-4.5, 12.4, 0], [8.4, 0.6, 14.2]);
-  b.roof("dark", [-4.5, 12.7, 0], 8.8, 14.4, 2.4);
-  for (const z of [-6.0, -4.1, -2.2, 2.2, 4.1, 6.0]) {
-    b.cylinder("cream", [-8.55, 7.05, z], 0.38, 0.45, 10.1, 10);
-  }
-  arch(b, -8.45, 2.5, 0, 2.6, 5.4, "castle");
-  b.box("dark", [-8.48, 10.6, 0], [0.2, 1.5, 3.4]);
-  b.box("gold", [-8.58, 10.6, 0], [0.1, 0.16, 1.9]);
-  b.box("gold", [-8.58, 10.6, 0], [0.1, 1.05, 0.16]);
+  // 2. Pont de l'Hésitation (viaduc monumental en pierre reliant la route à la Tour de la Justice).
+  b.box("castle", [-12.4, 2.15, 0], [9.2, 0.95, 5.4]);
+  b.box("cream", [-12.4, 2.7, 0], [9.4, 0.2, 5.7]);
   for (const side of [-1, 1]) {
-    b.box("castle", [-3.8, 9.05, side * 8.4], [4.4, 18.1, 4.4]);
-    b.roof("dark", [-3.8, 18.1, side * 8.4], 5.2, 5.2, 2.6);
-    arch(b, -6.05, 13.8, side * 8.4, 1.2, 2.6, "castle");
+    b.box("cream", [-12.4, 3.15, side * 2.65], [9.2, 0.65, 0.32]);
+  }
+  for (const px of [-16.2, -12.8, -9.4]) {
+    for (const pz of [-2.2, 2.2]) {
+      b.cylinder("rockLight", [px, 1.05, pz], 0.48, 0.62, 2.1, 8);
+    }
   }
   if (!lowPower) {
-    // Emblème des 5 points du Gouvernement Mondial et bannières sur le pont.
-    for (const [dy, dz] of [[0, 0], [0.52, 0], [-0.52, 0], [0, 0.92], [0, -0.92]]) {
-      b.sphere("gold", [-8.62, 10.6 + dy, dz], 0.16);
-    }
-    for (const px of [-15.2, -12.0]) {
+    // Étendards du Gouvernement Mondial et braseros lumineux bordant le Pont de l'Hésitation.
+    for (const px of [-15.8, -12.6, -9.6]) {
       for (const side of [-1, 1]) {
-        b.cylinder("metal", [px, 3.6, side * 2.4], 0.06, 0.08, 2.2, 6);
-        b.box("blueHouse", [px, 3.9, side * 2.4], [0.08, 1.2, 0.55]);
-        b.sphere("lamp", [px, 4.85, side * 2.4], 0.22);
+        b.cylinder("metal", [px, 4.35, side * 2.65], 0.06, 0.09, 2.4, 6);
+        b.box("blueHouse", [px, 4.55, side * 2.65], [0.1, 1.25, 0.62]);
+        b.box("gold", [px, 4.55, side * 2.65], [0.14, 0.22, 0.22]);
+        b.sphere("lamp", [px, 5.65, side * 2.65], 0.24);
       }
     }
-    for (const side of [-1, 1]) b.sphere("lamp", [-3.8, 20.9, side * 8.4], 0.45);
   }
 
-  // La monumentale Porte de la Justice en arrière-plan, entrouverte vers la mer.
-  for (const side of [-1, 1]) {
-    const gz = side * 6.8;
-    const tilt = side * -0.14;
-    b.box("castle", [9.2, 16.5, gz], [2.4, 33, 10.5], [0, tilt, 0]);
-    b.box("metal", [9.2, 33.2, gz], [2.8, 1.1, 11.2], [0, tilt, 0]);
-    b.box("dark", [8.0, 16.5, gz], [0.3, 30, 0.9], [0, tilt, 0]);
-    for (const h of [6, 13, 20, 27]) {
-      b.box("metal", [9.2, h, gz], [2.65, 0.65, 10.7], [0, tilt, 0]);
-    }
-    b.cylinder("gold", [9.2, 35.0, gz], 0, 0.75, 2.8, 6);
-    if (!lowPower) {
-      b.box("gold", [7.70, 23.5, gz], [0.18, 2.6, 0.35], [0, tilt, 0]);
-      b.box("gold", [7.70, 23.5, gz], [0.18, 0.35, 2.6], [0, tilt, 0]);
-      for (const [dy, dz] of [[0, 0], [1.2, 0], [-1.2, 0], [0, 1.2], [0, -1.2]]) {
-        b.sphere("gold", [7.66 + dz * Math.sin(tilt), 23.5 + dy, gz + dz * Math.cos(tilt)], 0.34);
+  // 3. Tour de la Justice (Palais central néoclassique + coupole + tours de garde jumelles).
+  const tx = -4.2;
+  // Socle massif à gradins ancré dans l'îlot central.
+  b.box("rockLight", [tx, 1.1, 0], [8.8, 2.2, 14.8]);
+  b.box("cream", [tx, 2.35, 0], [8.4, 0.4, 14.4]);
+  // Corps principal du tribunal.
+  b.box("castle", [tx, 7.6, 0], [7.8, 10.6, 13.6]);
+  b.box("cream", [tx, 13.1, 0], [8.5, 0.65, 14.4]);
+  b.roof("dark", [tx, 13.45, 0], 8.9, 14.8, 2.6);
+  // Coupole judiciaire centrale couronnant la Tour de la Justice.
+  b.cylinder("cream", [tx, 16.4, 0], 2.5, 2.8, 1.6, 14);
+  b.dome("dark", [tx, 17.2, 0], 2.55, [1, 1.1, 1]);
+  b.cylinder("gold", [tx, 20.4, 0], 0, 0.16, 1.6, 8);
+
+  // Colonnade monumentale face au bus (-X) avec chapiteaux et grand portail.
+  for (const z of [-6.0, -4.2, -2.4, 2.4, 4.2, 6.0]) {
+    b.cylinder("cream", [tx - 4.15, 7.6, z], 0.36, 0.44, 10.2, 10);
+    b.box("sandLight", [tx - 4.15, 12.75, z], [0.95, 0.32, 0.95]);
+  }
+  arch(b, tx - 3.95, 2.55, 0, 2.9, 5.8, "castle");
+  // Fronton sombre + grand emblème doré à 5 points du Gouvernement Mondial.
+  b.box("dark", [tx - 4.02, 10.9, 0], [0.24, 1.9, 4.2]);
+  worldGovEmblem(b, tx - 4.16, 10.9, 0, 1.15);
+
+  // Fenêtres lumineuses sur la façade et les côtés du tribunal.
+  if (!lowPower) {
+    for (const fy of [4.8, 8.2]) {
+      for (const fz of [-5.1, -3.3, 3.3, 5.1]) {
+        b.box("lamp", [tx - 3.92, fy, fz], [0.08, 1.35, 0.72]);
+      }
+      for (const fx of [-6.2, -4.2, -2.2]) {
+        for (const side of [-1, 1]) {
+          b.box("lamp", [fx, fy, side * 6.84], [0.75, 1.35, 0.08]);
+        }
       }
     }
   }
-  b.box("dark", [10.8, 16.5, 0], [0.8, 32, 3.2]);
+
+  // Tours de garde jumelles encadrant le palais (nord & sud) + drapeau du Gouvernement Mondial.
+  for (const side of [-1, 1]) {
+    const tz = side * 8.6;
+    b.box("rockLight", [tx + 0.5, 1.2, tz], [5.2, 2.4, 5.2]);
+    b.box("castle", [tx + 0.5, 10.6, tz], [4.5, 17.6, 4.5]);
+    b.box("cream", [tx + 0.5, 19.55, tz], [5.0, 0.48, 5.0]);
+    b.roof("dark", [tx + 0.5, 19.8, tz], 5.4, 5.4, 2.8);
+    arch(b, tx - 1.78, 14.5, tz, 1.25, 2.8, "castle");
+    if (!lowPower) {
+      b.box("lamp", [tx - 1.82, 15.6, tz], [0.08, 1.6, 0.85]);
+      b.box("lamp", [tx - 1.82, 10.2, tz], [0.08, 1.4, 0.75]);
+      b.sphere("lamp", [tx + 0.5, 22.8, tz], 0.48);
+    }
+  }
+  // Mât et bannière emblématique du Gouvernement Mondial sur la tour nord.
+  if (!lowPower) {
+    b.cylinder("metal", [tx - 1.6, 22.2, -8.6], 0.07, 0.1, 5.2, 6);
+    b.box("cream", [tx - 1.6, 23.6, -10.1], [0.12, 1.9, 3.0]);
+    worldGovEmblem(b, tx - 1.68, 23.6, -10.1, 0.65);
+  }
+
+  // 4. Colossal Portes de la Justice en arrière-plan (h = 35 m), entrouvertes sur la mer brumeuse.
+  // Plus aucun bloc noir parasite dans l'ouverture : uniquement l'écume marine tourbillonnant au seuil !
+  b.sphere("foam", [9.6, 0.55, 0], 1.8, [1.6, 0.35, 2.2]);
+  for (const side of [-1, 1]) {
+    const gz = side * 7.2;
+    const tilt = side * -0.15;
+    const sinT = Math.sin(tilt), cosT = Math.cos(tilt);
+    // Grand vantail en pierre-acier.
+    b.box("castle", [9.6, 17.5, gz], [2.6, 35, 10.8], [0, tilt, 0]);
+    // Pilier-charnière massif sur le bord extérieur.
+    b.box("rockLight", [9.6 - side * 5.2 * sinT, 17.5, gz + side * 5.2 * cosT], [3.4, 35.6, 2.2], [0, tilt, 0]);
+    // Couronnement supérieur monumental + flèche dorée.
+    b.box("cream", [9.6, 35.3, gz], [3.2, 1.2, 11.6], [0, tilt, 0]);
+    b.box("metal", [9.6, 36.2, gz], [3.0, 0.7, 11.2], [0, tilt, 0]);
+    b.cylinder("gold", [9.6, 38.0, gz], 0, 0.8, 3.0, 8);
+    // Nervures verticales et traverses métalliques rivetées.
+    b.box("dark", [8.25, 17.5, gz], [0.3, 32, 0.95], [0, tilt, 0]);
+    for (const h of [5.5, 12.5, 19.5, 26.5, 32.5]) {
+      b.box("metal", [9.6, h, gz], [2.85, 0.72, 11.0], [0, tilt, 0]);
+    }
+    // Écume au pied de chaque vantail.
+    b.box("foam", [9.2, 0.45, gz], [3.6, 0.65, 11.2], [0, tilt, 0]);
+    if (!lowPower) {
+      // Grand emblème doré à 5 points du Gouvernement Mondial sur chaque porte.
+      worldGovEmblem(b, 8.12, 23.2, gz, 1.85, tilt);
+    }
+  }
 }
 
 const BUILDERS = [alabasta, waterSeven, skypiea, wano, drum, egghead, elbaf, eniesLobby];
@@ -1657,31 +1725,71 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
     }
   }
   if (zone === 7) {
-    // Enies Lobby : colonnades judiciaires et bordure de cascade écumante.
+    // Enies Lobby : promenade judiciaire à colonnades continues, bannières du Gouvernement Mondial et brume de cascade.
     const x = side * 22;
-    b.box("castle", [x, 0.22, 0], [2.4, 0.34, 130]);
-    for (let i = 0; i < (lowPower ? 5 : 9); i++) {
-      const z = -56 + i * (lowPower ? 28 : 14);
-      b.cylinder("cream", [x, 2.3, z], 0.35, 0.42, 4.2, 8);
-      b.box("castle", [x, 4.5, z], [1.2, 0.35, 1.2]);
-      if (!lowPower && i % 2 === 0) b.sphere("lamp", [x, 4.92, z], 0.28);
+    b.box("castle", [x, 0.24, 0], [2.8, 0.42, 134]);
+    b.box("cream", [x, 0.5, 0], [3.0, 0.12, 134]);
+    // Entablement supérieur reliant les colonnes sur les deux tronçons (dégagé devant le Pont de l'Hésitation côté est).
+    const segments: Array<[number, number]> = side > 0 ? [[-60, -14], [14, 60]] : [[-60, 60]];
+    for (const [zStart, zEnd] of segments) {
+      const len = zEnd - zStart;
+      const zMid = (zStart + zEnd) / 2;
+      b.box("castle", [x, 4.75, zMid], [1.35, 0.48, len]);
+      b.box("cream", [x, 5.06, zMid], [1.55, 0.16, len + 0.4]);
+    }
+    const step = lowPower ? 24 : 12;
+    for (let z = -58; z <= 58; z += step) {
+      if (side > 0 && Math.abs(z) < 13) continue;
+      b.box("rockLight", [x, 0.72, z], [1.25, 0.42, 1.25]);
+      b.cylinder("cream", [x, 2.7, z], 0.36, 0.44, 3.8, 8);
+      b.box("sandLight", [x, 4.55, z], [1.15, 0.24, 1.15]);
+      if (!lowPower && Math.abs(z) % 24 < 6) {
+        b.sphere("lamp", [x, 5.45, z], 0.28);
+        b.box("blueHouse", [x - side * 0.78, 3.4, z], [0.1, 1.5, 0.65]);
+        b.box("gold", [x - side * 0.82, 3.4, z], [0.08, 0.25, 0.25]);
+      }
     }
     if (side < 0) {
-      for (const z of [-35, 25]) {
-        b.box("castle", [-34, 2.8, z], [7.5, 5.6, 11]);
-        b.roof("dark", [-34, 5.6, z], 8.4, 11.8, 2.0);
-        for (const cz of [-3, 0, 3]) b.cylinder("cream", [-30.1, 2.8, z + cz], 0.34, 0.38, 5.2, 8);
+      // 2 Palais annexes judiciaires néoclassiques avec colonnades, fenêtres éclairées et emblème doré face au bus (+X).
+      for (const z of [-36, 26]) {
+        b.box("rockLight", [-34, 0.45, z], [8.4, 0.9, 12.2]);
+        b.box("castle", [-34, 3.55, z], [7.6, 5.6, 11.2]);
+        b.box("cream", [-34, 6.45, z], [8.2, 0.38, 11.8]);
+        b.roof("dark", [-34, 6.65, z], 8.6, 12.2, 2.2);
+        for (const cz of [-4.2, -1.8, 1.8, 4.2]) {
+          b.cylinder("cream", [-29.9, 3.5, z + cz], 0.32, 0.38, 5.4, 8);
+        }
+        b.box("dark", [-30.16, 2.2, z], [0.12, 2.8, 2.0]);
+        if (!lowPower) {
+          for (const fz of [-3.2, 3.2]) b.box("lamp", [-30.16, 4.2, z + fz], [0.08, 1.2, 0.85]);
+          worldGovEmblem(b, -30.05, 5.45, z, 0.72);
+        }
       }
-      // Ligne du Sea Train sur pilotis arrivant vers l'île judiciaire.
-      for (const rx of [-43, -41.2]) b.box("metal", [rx, 1.15, 0], [0.14, 0.16, 120]);
-      for (let i = 0; i < (lowPower ? 8 : 15); i++) {
-        const z = -54 + i * (lowPower ? 15 : 8);
-        b.box("wood", [-42.1, 0.92, z], [3.2, 0.2, 0.55]);
-        if (i % 2 === 0) b.cylinder("rock", [-42.1, 0.42, z], 0.28, 0.38, 0.85, 6);
+      // Viaduc du Sea Train sur piliers en pierre arrivant vers l'île judiciaire.
+      for (const rx of [-43, -41.2]) b.box("metal", [rx, 1.18, 0], [0.14, 0.16, 122]);
+      for (let i = 0; i < (lowPower ? 8 : 16); i++) {
+        const z = -56 + i * (lowPower ? 15 : 7.5);
+        b.box("wood", [-42.1, 0.96, z], [3.3, 0.22, 0.58]);
+        if (i % 2 === 0) {
+          b.cylinder("rock", [-43.1, 0.42, z], 0.24, 0.32, 0.96, 6);
+          b.cylinder("rock", [-41.1, 0.42, z], 0.24, 0.32, 0.96, 6);
+        }
       }
       if (!lowPower) {
-        b.box("vermilion", [-42.1, 1.98, -5], [2.0, 1.5, 5.2]);
-        b.sphere("lamp", [-42.1, 2.05, -7.8], 0.3);
+        // Le Rocketman (prototype rouge du Train des Mers) fonçant vers Enies Lobby !
+        b.box("vermilion", [-42.1, 2.06, -6], [2.2, 1.58, 5.6]);
+        b.cylinder("vermilion", [-42.1, 2.48, -9.0], 0.86, 0.92, 2.8, 12, [Math.PI / 2, 0, 0]);
+        b.box("metal", [-42.1, 1.62, -10.6], [2.1, 0.78, 1.2], [0.35, 0, 0]);
+        b.cylinder("dark", [-42.1, 3.65, -9.2], 0.36, 0.26, 1.35, 8);
+        b.sphere("cloud", [-42.1, 4.8, -8.4], 0.9, [1.0, 0.72, 1.3]);
+        b.sphere("cloud", [-42.1, 5.55, -6.5], 1.15, [1.05, 0.72, 1.45]);
+        b.sphere("lamp", [-42.1, 2.48, -10.5], 0.34);
+        b.box("lamp", [-42.1, 2.38, -4.8], [2.24, 0.56, 1.5]);
+        // Wagon blindé attelé derrière le Rocketman.
+        b.box("metal", [-42.1, 1.58, -2.2], [0.55, 0.24, 1.4]);
+        b.box("dark", [-42.1, 2.04, 0.8], [2.1, 1.5, 4.8]);
+        b.box("vermilion", [-42.1, 2.86, 0.8], [2.2, 0.2, 4.95]);
+        for (const fz of [-1.2, 0.8, 2.8]) b.box("lamp", [-42.1, 2.15, fz], [2.16, 0.5, 0.75]);
       }
     }
   }
