@@ -97,7 +97,17 @@ export default function MusicPlaybackControls({
         clearDraftTimer();
         setDraft(null);
       }
-      setPlayback(next);
+      setPlayback((prev) => (
+        prev.track === next.track
+        && prev.title === next.title
+        && prev.requested === next.requested
+        && prev.ready === next.ready
+        && prev.state === next.state
+        && prev.elapsed === next.elapsed
+        && prev.duration === next.duration
+          ? prev
+          : next
+      ));
     });
     emitBusAudioEvent("musicSnapshot");
     return () => {

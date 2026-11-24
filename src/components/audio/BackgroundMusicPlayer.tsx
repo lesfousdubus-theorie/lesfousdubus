@@ -63,13 +63,22 @@ export default function BackgroundMusicPlayer({
   const startTimerRef = useRef<number | null>(null);
   const danceGateRef = useRef(createPartyDanceGate());
   const dancingRef = useRef(false);
+  const lastPublishedRef = useRef<{
+    track: BusMusicTrack;
+    title: string;
+    requested: boolean;
+    ready: boolean;
+    state: "loading" | "playing" | "paused" | "suspended" | "error";
+    elapsed: number;
+    duration: number;
+  } | null>(null);
 
   const shouldPlay = useCallback((slot: MusicSlot) =>
     slot.track === (desiredPartyRef.current ? "party" : "background") &&
     (desiredPlayingRef.current || desiredPartyRef.current) &&
     !desiredSuspendedRef.current && !busAudioFocusRef.current, []);
 
-  const publishPlayback = useCallback(() => {
+  const publishPlayback = useCallback((force = false) => {
     const slot = slotsRef.current[desiredPartyRef.current ? "party" : "background"];
     const requested = desiredPlayingRef.current || desiredPartyRef.current;
     let elapsed = 0, duration = 0, state = -1;
@@ -81,13 +90,29 @@ export default function BackgroundMusicPlayer({
     } catch { /* A late poll can overlap iframe teardown. */ }
     duration = Number.isFinite(duration) && duration > 0 ? duration : 0;
     elapsed = Number.isFinite(elapsed) ? Math.max(0, Math.min(elapsed, duration || elapsed)) : 0;
-    emitBusAudioEvent("musicPlayback", {
+    const next = {
       track: slot.track, title: slot.title, requested, ready: slot.ready,
-      state: slot.error ? "error" : !slot.ready ? "loading"
+      state: (slot.error ? "error" : !slot.ready ? "loading"
         : requested && (desiredSuspendedRef.current || busAudioFocusRef.current) ? "suspended"
-        : requested ? state === 1 ? "playing" : "loading" : "paused",
+        : requested ? state === 1 ? "playing" : "loading" : "paused") as "loading" | "playing" | "paused" | "suspended" | "error",
       elapsed: slot.warming ? 0 : elapsed, duration,
-    });
+    };
+    const prev = lastPublishedRef.current;
+    if (
+      !force
+      && prev
+      && prev.track === next.track
+      && prev.title === next.title
+      && prev.requested === next.requested
+      && prev.ready === next.ready
+      && prev.state === next.state
+      && Math.abs(prev.elapsed - next.elapsed) < 0.05
+      && Math.abs(prev.duration - next.duration) < 0.05
+    ) {
+      return;
+    }
+    lastPublishedRef.current = next;
+    emitBusAudioEvent("musicPlayback", next);
   }, []);
 
   const reportDance = useCallback((dancing: boolean) => {
@@ -96,6 +121,7 @@ export default function BackgroundMusicPlayer({
     emitBusAudioEvent("partyDance", dancing);
   }, []);
   const updateDance = useCallback(() => {
+    if (!desiredPartyRef.current && !dancingRef.current) return;
     const slot = slotsRef.current.party;
     try {
       reportDance(Boolean(slot.ready && slot.player && samplePartyDanceGate(danceGateRef.current,
@@ -328,10 +354,10 @@ export default function BackgroundMusicPlayer({
 
   useEffect(() => {
     const danceTimer = window.setInterval(updateDance, 50);
-    const snapshotTimer = window.setInterval(publishPlayback, 250);
+    const snapshotTimer = window.setInterval(() => publishPlayback(false), 250);
     return () => { window.clearInterval(danceTimer); window.clearInterval(snapshotTimer); };
   }, [updateDance, publishPlayback]);
-  useEffect(() => onBusAudioEvent("musicSnapshot", publishPlayback), [publishPlayback]);
+  useEffect(() => onBusAudioEvent("musicSnapshot", () => publishPlayback(true)), [publishPlayback]);
   useEffect(() => onBusAudioEvent("musicSeek", detail => {
     const slot = slotsRef.current[desiredPartyRef.current ? "party" : "background"];
     if (detail.track !== slot.track || !Number.isFinite(detail.seconds) || !slot.ready || !slot.player) return;

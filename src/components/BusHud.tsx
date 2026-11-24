@@ -206,7 +206,9 @@ export function BusHud({
   };
 
   useEffect(() => {
-    const unsubscribe = onBusAudioEvent("musicPlayback", setMusicPlayback);
+    const unsubscribe = onBusAudioEvent("musicPlayback", (next) => {
+      setMusicPlayback((prev) => (prev.track === next.track && prev.state === next.state ? prev : next));
+    });
     emitBusAudioEvent("musicSnapshot");
     return unsubscribe;
   }, []);
