@@ -557,7 +557,6 @@ body {
     display: none !important;
   }
 
-  .bus-music-badge { display: none !important; }
   .bus-toast-content { padding: 0.45rem 0.65rem !important; font-size: 0.875rem; }
   .bus-toast-content .bus-toast-title { font-size: 0.875rem; }
   .bus-touch-hint { bottom: calc(3.625rem + env(safe-area-inset-bottom)) !important; }

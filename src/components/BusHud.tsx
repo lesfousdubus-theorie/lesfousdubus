@@ -542,11 +542,6 @@ export function BusHud({
                   <MusicNoteIcon className="h-4 w-4 shrink-0" />
                 )}
                 <span>{pickLocale(locale, "Musique", "Music")}</span>
-                {bgmPlaying && !musicSuspendedByTv && (
-                  <span className="bus-music-badge hidden rounded-md border border-white/30 bg-white/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white md:inline">
-                    ON
-                  </span>
-                )}
               </button>
 
               <MusicPlaybackControls
