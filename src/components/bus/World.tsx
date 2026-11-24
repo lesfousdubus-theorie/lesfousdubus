@@ -348,7 +348,7 @@ export default function World({
     () => Array.from({ length: markingCount }, (_, index) => cabinCenterZ + (index - (markingCount - 1) / 2) * 960),
     [cabinCenterZ, markingCount],
   );
-  const dashSpan = Math.ceil(bridgeLength / 10) * 10;
+  const dashSpan = Math.min(Math.ceil(bridgeLength / 10) * 10, 1200);
   const dashCount = dashSpan / 10;
   const dashes = useMemo(() => Array.from({ length: dashCount }, (_, i) => i * 10), [dashCount]);
 

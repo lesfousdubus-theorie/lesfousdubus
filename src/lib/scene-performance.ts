@@ -541,12 +541,17 @@ export function getSceneGeometryBudgets(
 ): SceneGeometryBudgets {
   const fogNear = Math.max(profile.fogNear, Math.round(cabinLength * 0.55));
   const fogFar = Math.max(profile.fogFar, Math.round(cabinLength * 1.5 + 160));
+  const bridgePadding = cabinLength > 600
+    ? Math.max(960, Math.min(fogFar * 2, 1600))
+    : Math.max(520, fogFar * 2);
   return {
     fogNear,
     fogFar,
     islandCullDistance: Math.max(profile.islandCullDistance, fogFar + 15),
-    propCullDistance: Math.max(profile.propCullDistance, fogFar - 10),
-    bridgeLength: Math.max(profile.bridgeBaseLength, cabinLength + Math.max(520, fogFar * 2)),
+    // Les petits props détaillés restent bornés à la portée locale de la caméra :
+    // les îles lointaines restent visibles en basse complexité sans saturer le GPU.
+    propCullDistance: Math.min(Math.max(profile.propCullDistance, 380), 620),
+    bridgeLength: Math.max(profile.bridgeBaseLength, cabinLength + bridgePadding),
     cameraFar: Math.max(profile.baseCameraFar, fogFar + 260, exteriorMaxDistance + cabinLength + 100),
   };
 }

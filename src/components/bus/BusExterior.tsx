@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from "react";
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
 import { RoundedBox } from "@react-three/drei";
 import { WIPER_PARK_ANGLE } from "@/lib/bus-wipers";
@@ -65,7 +65,7 @@ interface BusExteriorProps {
   contactShadowTex: THREE.Texture;
 }
 
-export default function BusExterior({
+const BusExterior = memo(function BusExterior({
   headlights, phase, journey, mats, cabinLength, cabinCenterZ, rearWallZ, doors, numRows, focusZ, lowPower,
   pillars, wheelPositions, wheels, leftWiper, rightWiper, leftTarget, rightTarget,
   sideLabel, reducedMotion, freeView, licensePlateTex, montCorvoTex, hatGeo, ribbonGeo, hat,
@@ -258,7 +258,9 @@ export default function BusExterior({
 
     </>
   );
-}
+});
+
+export default BusExterior;
 
 function PillarInstances({ positions, doors, material }: { positions: number[]; doors: BusDoorLayout[]; material: THREE.Material }) {
   const ref = useRef<THREE.InstancedMesh>(null);

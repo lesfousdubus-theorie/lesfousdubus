@@ -287,7 +287,7 @@ export default function Bus({
         0,
         numRows - 1,
       );
-      if (Math.abs(approxRow - cameraFocusRowRef.current) >= 12) {
+      if (Math.abs(approxRow - cameraFocusRowRef.current) >= 24) {
         cameraFocusRowRef.current = approxRow;
         setCameraFocusRow(approxRow);
       }

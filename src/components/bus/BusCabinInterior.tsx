@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { memo, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { BUS_FRONT_Z, SEAT_CUSHION_DEPTH, SEAT_CUSHION_Z, SEAT_BASE_DEPTH, getSeatCountInRow, getSeatRowZ, type BusDoorLayout, type TvPosition } from "@/lib/bus-layout";
 import { getInteriorRailSpans, INTERIOR_RAIL_X, INTERIOR_RAIL_DEPTH } from "@/lib/bus-interior-geometry";
@@ -20,9 +20,11 @@ interface Props {
 }
 
 /** Cabin fixtures stay in the vehicle's existing coordinate system: no wrapper group. */
-export default function BusCabinInterior({ mats, cabinLength, cabinCenterZ, rearWallZ, rows,
+const BusCabinInterior = memo(function BusCabinInterior({ mats, cabinLength, cabinCenterZ, rearWallZ, rows,
   wheelPositions, tvPositions, doors }: Props) {
   const rowZs = useMemo(() => rows.map(getSeatRowZ), [rows]);
+  const leftRailSpans = useMemo(() => getInteriorRailSpans(BUS_FRONT_Z + 0.05, rearWallZ - 0.05, false, doors), [rearWallZ, doors]);
+  const rightRailSpans = useMemo(() => getInteriorRailSpans(BUS_FRONT_Z + 0.05, rearWallZ - 0.05, true, doors), [rearWallZ, doors]);
   return <>
       {/* ---------- INTÉRIEUR DU BUS ---------- */}
       <BusCabinDetails mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ} rearWallZ={rearWallZ} rowZs={rowZs} wheelPositions={wheelPositions} tvPositions={tvPositions} />
@@ -33,15 +35,18 @@ export default function BusCabinInterior({ mats, cabinLength, cabinCenterZ, rear
 
       {/* Bandeaux intérieurs continus : ils habillent proprement le raccord entre
           le plafond et les vitres, sans faces bleues superposées ni interstices. */}
-      {[-1, 1].map((sx) => (
+      {[-1, 1].map((sx) => {
+        const railSpans = sx > 0 ? rightRailSpans : leftRailSpans;
+        return (
         <group key={`window-headliner-${sx}`}>
           <mesh material={mats.interiorWall} position={[sx * 1.248, 2.98, cabinCenterZ]}>
             <boxGeometry args={[0.012, 0.4, cabinLength - 0.12]} />
           </mesh>
-          <BusSpanMeshes spans={getInteriorRailSpans(BUS_FRONT_Z + 0.05, rearWallZ - 0.05, sx > 0, doors)} name="bus-interior-window-top-rail" material={mats.bodyDark} x={sx * INTERIOR_RAIL_X} y={2.74} width={INTERIOR_RAIL_DEPTH} height={0.072} />
-          <BusSpanMeshes spans={getInteriorRailSpans(BUS_FRONT_Z + 0.05, rearWallZ - 0.05, sx > 0, doors)} name="bus-interior-window-bottom-rail" material={mats.bodyDark} x={sx * INTERIOR_RAIL_X} y={1.74} width={INTERIOR_RAIL_DEPTH} height={0.072} />
+          <BusSpanMeshes spans={railSpans} name="bus-interior-window-top-rail" material={mats.bodyDark} x={sx * INTERIOR_RAIL_X} y={2.74} width={INTERIOR_RAIL_DEPTH} height={0.072} />
+          <BusSpanMeshes spans={railSpans} name="bus-interior-window-bottom-rail" material={mats.bodyDark} x={sx * INTERIOR_RAIL_X} y={1.74} width={INTERIOR_RAIL_DEPTH} height={0.072} />
         </group>
-      ))}
+        );
+      })}
 
       {/* Néons de plafond lumineux continus */}
       {[-0.5, 0.5].map((x) => (
@@ -54,7 +59,9 @@ export default function BusCabinInterior({ mats, cabinLength, cabinCenterZ, rear
       <SeatInstances rows={rows} seatMaterial={mats.seat} frameMaterial={mats.seatFrame} />
 
   </>;
-}
+});
+
+export default BusCabinInterior;
 
 function SeatInstances({
   rows,

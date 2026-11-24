@@ -212,9 +212,22 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
     visibleRowRange: effectiveVisibleRowRange, preserveVisibleSeats: true }), [passengerCount, seatCapacity,
       vacantSeatRanges, renderedRowIndices, reservedRow, reservedColumn, excludedPassengerIndex, avatarAboard,
       lowPower, detailLimit, simplifiedLimit, detailFocus, effectiveVisibleRowRange]);
+  const prevDetailedIdsRef = useRef<Set<number>>(new Set());
   useEffect(() => {
     detailedCountRef.current = detailed.length;
-  }, [detailed.length]);
+    const prev = prevDetailedIdsRef.current;
+    let newlyEntered = 0;
+    for (let i = 0; i < detailed.length; i++) {
+      if (!prev.has(detailed[i].index)) newlyEntered += 1;
+    }
+    prevDetailedIdsRef.current = new Set(detailed.map((occupant) => occupant.index));
+    // Quand la caméra arrive sur une nouvelle section du bus, on monte les personnages
+    // détaillés progressivement (les versions simplifiées restent déjà affichées) pour éviter tout freeze.
+    if (newlyEntered >= 4) {
+      detailedBudgetRef.current = Math.min(detailedBudgetRef.current, 2);
+      setDetailedBudget(detailedBudgetRef.current);
+    }
+  }, [detailed]);
   const mountedDetailed = useMemo(
     () => detailed.slice(0, detailedBudget),
     [detailed, detailedBudget],
