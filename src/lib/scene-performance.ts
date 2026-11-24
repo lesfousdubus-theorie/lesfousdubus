@@ -548,9 +548,8 @@ export function getSceneGeometryBudgets(
     fogNear,
     fogFar,
     islandCullDistance: Math.max(profile.islandCullDistance, fogFar + 15),
-    // Les petits props détaillés restent bornés à la portée locale de la caméra :
-    // les îles lointaines restent visibles en basse complexité sans saturer le GPU.
-    propCullDistance: Math.min(Math.max(profile.propCullDistance, 380), 620),
+    // Garde tous les éléments proches/moyens visibles au dézoom ; seuls les props vraiment lointains sont masqués.
+    propCullDistance: Math.max(profile.propCullDistance, 950),
     bridgeLength: Math.max(profile.bridgeBaseLength, cabinLength + bridgePadding),
     cameraFar: Math.max(profile.baseCameraFar, fogFar + 260, exteriorMaxDistance + cabinLength + 100),
   };

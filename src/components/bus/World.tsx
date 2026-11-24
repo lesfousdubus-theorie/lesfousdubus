@@ -8,7 +8,6 @@ import WorldOcean, { SEA_WAKE_COUNT } from "./WorldOcean";
 import WorldSeaCreatures from "./WorldSeaCreatures";
 import { useFrame } from "@react-three/fiber";
 import { WORLD_SPEED, type Phase, type WorldState } from "./constants";
-import { BRIDGE_MARKING_BOX } from "@/lib/world-geometry";
 import { cacheSceneryBounds, createSceneryVisibility, type SceneryBounds } from "@/lib/world-visibility";
 import {
   createRandomSeed,
@@ -342,15 +341,26 @@ export default function World({
   const visibility = useMemo(() => createSceneryVisibility(), []);
 
   const bridgeLength = Math.max(960, bridgeLengthOverride ?? Math.max(1600, cabinLength + 1400));
-  const bridgeSegments = Math.ceil(bridgeLength / 20);
-  const markingCount = Math.ceil(bridgeLength / 960);
-  const markingOffsets = useMemo(
-    () => Array.from({ length: markingCount }, (_, index) => cabinCenterZ + (index - (markingCount - 1) / 2) * 960),
-    [cabinCenterZ, markingCount],
-  );
-  const dashSpan = Math.min(Math.ceil(bridgeLength / 10) * 10, 1200);
+  const roadStartZ = cabinCenterZ - cabinLength / 2 - 280;
+  const roadEndZ = cabinCenterZ + cabinLength / 2 + 280;
+  const roadLength = cabinLength > LOOP * 0.45 ? Math.max(LOOP, roadEndZ - roadStartZ) : bridgeLength;
+  const roadCenterZ = cabinLength > LOOP * 0.45 ? (roadStartZ + roadEndZ) / 2 : cabinCenterZ;
+  const bridgeSegments = Math.min(200, Math.max(24, Math.ceil(roadLength / 40)));
+  const dashSpan = Math.min(Math.ceil(roadLength / 10) * 10, 1200);
   const dashCount = dashSpan / 10;
   const dashes = useMemo(() => Array.from({ length: dashCount }, (_, i) => i * 10), [dashCount]);
+
+  // Tuiles d'îles simplifiées (LOD lointain en 3 InstancedMesh) pour prolonger les paysages
+  // sur toute la longueur des bus géants (ex. 20 000 passagers) sans surcharger le GPU.
+  const distantGroundRef = useRef<THREE.InstancedMesh>(null);
+  const distantShoreRef = useRef<THREE.InstancedMesh>(null);
+  const distantLandmarkRef = useRef<THREE.InstancedMesh>(null);
+  const distantTileCapacity = Math.max(1, Math.ceil(roadLength / ZONE_LEN) + 4);
+  const distantMatrix = useMemo(() => new THREE.Matrix4(), []);
+  const distantPos = useMemo(() => new THREE.Vector3(), []);
+  const distantQuat = useMemo(() => new THREE.Quaternion(), []);
+  const distantScale = useMemo(() => new THREE.Vector3(), []);
+  const distantColor = useMemo(() => new THREE.Color(), []);
 
   const refreshPropBounds = useCallback((index: number) => {
     const group = propRefs.current[index];
@@ -515,6 +525,54 @@ export default function World({
     }
     if (dashRef.current) dashRef.current.instanceMatrix.needsUpdate = true;
 
+    // Tuiles d'îles simplifiées (LOD lointain) prolongeant les paysages derrière et devant sur toute la route.
+    if (distantGroundRef.current && distantShoreRef.current && distantLandmarkRef.current) {
+      const spanMin = roadCenterZ - roadLength / 2;
+      const spanMax = roadCenterZ + roadLength / 2;
+      const firstIndex = Math.floor((spanMin - scroll) / ZONE_LEN);
+      const lastIndex = Math.ceil((spanMax - scroll) / ZONE_LEN);
+      let tileCount = 0;
+      for (let tileIdx = firstIndex; tileIdx <= lastIndex && tileCount < distantTileCapacity; tileIdx++) {
+        const z = tileIdx * ZONE_LEN + scroll;
+        // Ne pas chevaucher les 8 îles détaillées autour de la caméra.
+        if (z > loopStart - ZONE_LEN * 0.45 && z < loopEnd + ZONE_LEN * 0.45) continue;
+        if (z < spanMin - ZONE_LEN * 0.5 || z > spanMax + ZONE_LEN * 0.5) continue;
+        const slot = ((tileIdx % ZONES.length) + ZONES.length) % ZONES.length;
+        const zoneIdx = zoneOrder[slot] ?? 0;
+        const zone = ZONES[zoneIdx];
+
+        distantMatrix.makeTranslation(0, -0.34, z);
+        distantGroundRef.current.setMatrixAt(tileCount, distantMatrix);
+        distantColor.set(zone.ground);
+        distantGroundRef.current.setColorAt(tileCount, distantColor);
+
+        distantMatrix.makeTranslation(0, -0.44, z);
+        distantShoreRef.current.setMatrixAt(tileCount, distantMatrix);
+        distantColor.set(zone.shore);
+        distantShoreRef.current.setColorAt(tileCount, distantColor);
+
+        // Silhouette basse complexité du monument principal de l'île (coût quasi nul).
+        const h = zoneIdx === 6 ? 26 : zoneIdx === 7 ? 24 : zoneIdx === 1 || zoneIdx === 3 || zoneIdx === 4 ? 20 : 16;
+        distantPos.set(33, h / 2, z);
+        distantScale.set(14, h, 14);
+        distantMatrix.compose(distantPos, distantQuat, distantScale);
+        distantLandmarkRef.current.setMatrixAt(tileCount, distantMatrix);
+        distantColor.set(TINT_COLORS[zoneIdx] ?? "#ffffff");
+        distantLandmarkRef.current.setColorAt(tileCount, distantColor);
+
+        tileCount += 1;
+      }
+      distantGroundRef.current.count = tileCount;
+      distantShoreRef.current.count = tileCount;
+      distantLandmarkRef.current.count = tileCount;
+      distantGroundRef.current.instanceMatrix.needsUpdate = true;
+      distantShoreRef.current.instanceMatrix.needsUpdate = true;
+      distantLandmarkRef.current.instanceMatrix.needsUpdate = true;
+      if (distantGroundRef.current.instanceColor) distantGroundRef.current.instanceColor.needsUpdate = true;
+      if (distantShoreRef.current.instanceColor) distantShoreRef.current.instanceColor.needsUpdate = true;
+      if (distantLandmarkRef.current.instanceColor) distantLandmarkRef.current.instanceColor.needsUpdate = true;
+    }
+
     // Calcul de la zone active et fondu météorologique continu
     if (worldRef.current) {
       const { zone, visit } = getActiveZoneLoopState(scroll, zoneOrder, ZONE_LEN);
@@ -605,29 +663,41 @@ export default function World({
         );
       })}
 
-      {/* Pont maritime continu de Grand Line */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.024, cabinCenterZ]} receiveShadow>
-        <planeGeometry args={[7.4, bridgeLength, 1, bridgeSegments]} />
+      {/* Tuiles d'îles simplifiées (LOD lointain) prolongeant les paysages à perte de vue le long des très longs bus */}
+      <instancedMesh key={`dg-${distantTileCapacity}`} ref={distantGroundRef} args={[undefined, undefined, distantTileCapacity]} count={0} frustumCulled={false}>
+        <boxGeometry args={[96, 0.6, ZONE_LEN - 16]} />
+        <meshStandardMaterial roughness={0.92} />
+      </instancedMesh>
+      <instancedMesh key={`ds-${distantTileCapacity}`} ref={distantShoreRef} args={[undefined, undefined, distantTileCapacity]} count={0} frustumCulled={false}>
+        <boxGeometry args={[104, 0.32, ZONE_LEN - 8]} />
+        <meshStandardMaterial roughness={0.95} />
+      </instancedMesh>
+      <instancedMesh key={`dl-${distantTileCapacity}`} ref={distantLandmarkRef} args={[undefined, undefined, distantTileCapacity]} count={0} frustumCulled={false}>
+        <cylinderGeometry args={[0.55, 0.9, 1, 6]} />
+        <meshStandardMaterial roughness={0.9} />
+      </instancedMesh>
+
+      {/* Pont maritime continu de Grand Line, aligné exactement sur la portée des paysages */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.024, roadCenterZ]} receiveShadow>
+        <planeGeometry args={[7.4, roadLength, 1, bridgeSegments]} />
         <meshStandardMaterial color="#2d3036" roughness={0.92} />
       </mesh>
 
-      {/* Bandes de rive jaunes */}
+      {/* Bandes de rive jaunes (même longueur exacte que la chaussée, zéro dépassement) */}
       {[-3.5, 3.5].map((x) => (
         <group key={x} name={`world-bridge-edge-marking-${x < 0 ? "left" : "right"}`}>
-          {markingOffsets.map((zOffset, seg) => (
-            <mesh key={seg} position={[x, 0.048, zOffset]}>
-              <boxGeometry args={BRIDGE_MARKING_BOX} />
-              <meshStandardMaterial color="#ffc107" roughness={0.8} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
-            </mesh>
-          ))}
+          <mesh position={[x, 0.048, roadCenterZ]}>
+            <boxGeometry args={[0.22, 0.02, roadLength]} />
+            <meshStandardMaterial color="#ffc107" roughness={0.8} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+          </mesh>
         </group>
       ))}
 
       {/* Rambardes de sécurité chromées du pont maritime */}
       {[-3.85, 3.85].map((x, i) => (
         <group key={x} ref={(el: THREE.Group | null) => { railRefs.current[i] = el; }}>
-          <mesh position={[x, 0.42, cabinCenterZ]}>
-            <boxGeometry args={[0.1, 0.55, bridgeLength, 1, 1, bridgeSegments]} />
+          <mesh position={[x, 0.42, roadCenterZ]}>
+            <boxGeometry args={[0.1, 0.55, roadLength, 1, 1, bridgeSegments]} />
             <meshStandardMaterial color="#969cb0" roughness={0.5} metalness={0.5} />
           </mesh>
         </group>
