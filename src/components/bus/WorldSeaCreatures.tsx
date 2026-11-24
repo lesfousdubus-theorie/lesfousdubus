@@ -56,8 +56,21 @@ interface SlotTrackState {
   waterZ: number;
   prevLocal: number;
   diveFired: boolean;
+  jointPhase: number;
+  poseInit: boolean;
+  smoothY: number;
+  smoothHeading: number;
+  smoothPitch: number;
+  smoothRoll: number;
   exit: BurstState;
   entry: BurstState;
+}
+
+function lerpAngle(current: number, target: number, alpha: number) {
+  let diff = (target - current) % (Math.PI * 2);
+  if (diff > Math.PI) diff -= Math.PI * 2;
+  if (diff < -Math.PI) diff += Math.PI * 2;
+  return current + diff * alpha;
 }
 
 function fractHash(seed: number) {
@@ -75,6 +88,12 @@ function makeSlotTrackState(): SlotTrackState {
     waterZ: 0,
     prevLocal: 0,
     diveFired: false,
+    jointPhase: 0,
+    poseInit: false,
+    smoothY: -18,
+    smoothHeading: 0,
+    smoothPitch: 0,
+    smoothRoll: 0,
     exit: makeBurstState(),
     entry: makeBurstState(),
   };
@@ -420,6 +439,8 @@ export default function WorldSeaCreatures({
         track.cycle = cycle;
         track.prevLocal = local;
         track.diveFired = false;
+        track.jointPhase = local * 2.4;
+        track.poseInit = false;
         track.exit = makeBurstState();
         track.entry = makeBurstState();
         const baseSwimSpeed = getSeaCreatureSwimSpeed(model.motion, p, busSpeed);
@@ -428,7 +449,7 @@ export default function WorldSeaCreatures({
         track.waterZ = focusAnchor - (duration * 0.45 - local) * netRelVz;
       }
 
-      const stepDt = reducedMotion ? 0 : Math.max(0, Math.min(0.15, local - track.prevLocal));
+      const stepDt = reducedMotion ? 0 : Math.max(0, Math.min(0.1, local - track.prevLocal));
       track.prevLocal = local;
 
       const previewZ = reducedMotion
@@ -462,15 +483,40 @@ export default function WorldSeaCreatures({
         continue;
       }
 
+      // Enfoncement doux sous l'eau près des limites d'affichage pour éviter tout pop-in / pop-out brutal.
+      const aheadFade = THREE.MathUtils.smoothstep(z, cabinCenterZ - maxAhead, cabinCenterZ - maxAhead + 42);
+      const behindFade = 1 - THREE.MathUtils.smoothstep(z, cabinCenterZ + maxBehind - 42, cabinCenterZ + maxBehind);
+      const horizonSink = (1 - aheadFade * behindFade) * 18.0;
+      const targetY = SEA_LEVEL + pose.height - horizonSink;
+
+      if (!track.poseInit || reducedMotion) {
+        track.poseInit = true;
+        track.smoothY = targetY;
+        track.smoothHeading = pose.heading;
+        track.smoothPitch = pose.pitch;
+        track.smoothRoll = pose.roll;
+      } else {
+        // Amortissement organique des rotations et de la hauteur pour un mouvement fluide et massif.
+        const posAlpha = 1 - Math.exp(-stepDt * 14);
+        const rotAlpha = 1 - Math.exp(-stepDt * 9.5);
+        track.smoothY += (targetY - track.smoothY) * posAlpha;
+        track.smoothHeading = lerpAngle(track.smoothHeading, pose.heading, rotAlpha);
+        track.smoothPitch += (pose.pitch - track.smoothPitch) * rotAlpha;
+        track.smoothRoll += (pose.roll - track.smoothRoll) * rotAlpha;
+      }
+
+      // Intégration continue de la phase d'ondulation (empêche tout saut brutal des nageoires/queues).
+      track.jointPhase += stepDt * pose.jointFrequency;
+
       group.visible = true;
-      group.position.set(pose.x, SEA_LEVEL + pose.height, z);
-      group.rotation.set(pose.pitch, pose.heading, pose.roll, "YXZ");
+      group.position.set(pose.x, track.smoothY, z);
+      group.rotation.set(track.smoothPitch, track.smoothHeading, track.smoothRoll, "YXZ");
       group.scale.setScalar(model.scale);
 
       for (const joint of model.joints) {
         const angle = reducedMotion
           ? 0
-          : Math.sin(local * pose.jointFrequency + joint.offset) * joint.amplitude * pose.jointGain;
+          : Math.sin(track.jointPhase + joint.offset) * joint.amplitude * pose.jointGain;
         const rotation = joint.group.rotation;
         rotation.set(
           joint.axis === "x" ? angle : rotation.x,

@@ -69,37 +69,32 @@ function sampleRawHeight(
   }
 
   if (motion === "rise") {
-    const P_UP = 0.26;
+    const P_UP = 0.28;
     const P_DOWN = 0.72;
     const depth = -19.0;
-    const settleY = -0.75 + swell * 0.65;
-    if (p < P_UP) {
-      const s = THREE.MathUtils.clamp(p / P_UP, 0, 1);
-      const smooth = s * s * (3 - 2 * s);
-      // Légère poussée au-dessus de la ligne d'eau puis retour par flottabilité.
-      const heave = Math.sin(s * Math.PI) * 1.9;
-      return THREE.MathUtils.lerp(depth, settleY + 0.9, smooth) + heave * (1 - s * 0.45);
-    }
-    if (p <= P_DOWN) {
-      const u = THREE.MathUtils.clamp((p - P_UP) / (P_DOWN - P_UP), 0, 1);
-      const dampedBob = Math.exp(-u * 3.8) * Math.cos(u * Math.PI * 3.2) * 0.95;
-      const swayBob = Math.sin(local * 1.45) * 0.26;
-      return settleY + dampedBob + swayBob;
-    }
-    const s = THREE.MathUtils.clamp((p - P_DOWN) / (1 - P_DOWN), 0, 1);
-    const smooth = s * s * (3 - 2 * s);
-    return THREE.MathUtils.lerp(settleY, depth, smooth);
+    const settleY = -0.75 + swell * 0.62;
+    // Courbe C1-continue sans aucun saut à P_UP ni P_DOWN :
+    // montée progressive avec léger élan de flottabilité, flottement doux, puis plongée fluide.
+    const riseEnv = THREE.MathUtils.smoothstep(p, 0, P_UP);
+    const diveEnv = 1 - THREE.MathUtils.smoothstep(p, P_DOWN, 1);
+    const presence = riseEnv * diveEnv;
+    const heaveWindow = Math.sin(THREE.MathUtils.clamp((p - 0.14) / 0.28, 0, 1) * Math.PI);
+    const heave = heaveWindow * heaveWindow * 1.15;
+    const bobWindow = THREE.MathUtils.smoothstep(p, 0.20, 0.34) * (1 - THREE.MathUtils.smoothstep(p, 0.62, 0.76));
+    const swayBob = Math.sin(local * 1.4) * 0.28 + Math.cos(local * 0.85) * 0.14;
+    return THREE.MathUtils.lerp(depth, settleY + heave + swayBob * bobWindow, presence);
   }
 
   // "surface"
   const P_UP = 0.24;
-  const P_DOWN = 0.72;
+  const P_DOWN = 0.74;
   const depth = -17.0;
-  const surfaceY = -1.25;
-  const cruiseWave = Math.sin(Math.max(0, p - 0.14) * Math.PI * 3.5) * 0.42 + swell * 0.78;
+  const surfaceY = -1.2;
   const rise = THREE.MathUtils.smoothstep(p, 0, P_UP);
   const keep = 1 - THREE.MathUtils.smoothstep(p, P_DOWN, 1);
-  return THREE.MathUtils.lerp(depth, surfaceY + cruiseWave, rise * keep);
+  const presence = rise * keep;
+  const cruiseWave = (Math.sin(local * 1.55) * 0.38 + swell * 0.72) * presence;
+  return THREE.MathUtils.lerp(depth, surfaceY + cruiseWave, presence);
 }
 
 function sampleLateralX(
@@ -118,7 +113,8 @@ function sampleLateralX(
 }
 
 export function getSeaCreatureSwimSpeed(motion: SeaCreatureMotion, p: number, busSpeed: number): number {
-  const slowGuard = busSpeed < 7 ? 0.72 : 1;
+  // Transition continue (sans palier brusque à busSpeed = 7) pour éviter tout à-coup de vitesse ou de tangage.
+  const slowGuard = THREE.MathUtils.lerp(0.72, 1, THREE.MathUtils.smoothstep(busSpeed, 4, 10));
   if (motion === "breach") {
     return (5.6 + Math.sin(THREE.MathUtils.clamp(p, 0, 1) * Math.PI) * 2.8) * slowGuard;
   }
@@ -144,13 +140,14 @@ export function sampleSeaCreaturePose(options: {
   reducedMotion: boolean;
 }): SeaCreaturePoseSample {
   const { motion, p, duration, local, cycle, side, direction, worldZ, scroll, waterTime, busSpeed, reducedMotion } = options;
-  const dp = 0.002;
+  const dp = 0.0025;
   const dtStep = dp * duration;
 
   const x = sampleLateralX(motion, p, side, cycle, reducedMotion);
   const swell = reducedMotion ? 0 : sampleOceanSwell(x, worldZ, scroll, waterTime);
   const height = sampleRawHeight(motion, p, duration, local, swell, reducedMotion);
 
+  const swimSpeed = getSeaCreatureSwimSpeed(motion, p, busSpeed);
   const pPrev = Math.max(0, p - dp);
   const pNext = Math.min(1, p + dp);
   const spanDt = Math.max(1e-4, (pNext - pPrev) * duration);
@@ -158,13 +155,13 @@ export function sampleSeaCreaturePose(options: {
   const xNext = sampleLateralX(motion, pNext, side, cycle, reducedMotion);
   const vx = (xNext - xPrev) / spanDt;
 
-  const swellPrev = reducedMotion ? 0 : sampleOceanSwell(xPrev, worldZ - direction * 0.1, scroll, waterTime - dtStep);
-  const swellNext = reducedMotion ? 0 : sampleOceanSwell(xNext, worldZ + direction * 0.1, scroll, waterTime + dtStep);
+  const dzStep = direction * swimSpeed * dtStep;
+  const swellPrev = reducedMotion ? 0 : sampleOceanSwell(xPrev, worldZ - dzStep, scroll, waterTime - dtStep);
+  const swellNext = reducedMotion ? 0 : sampleOceanSwell(xNext, worldZ + dzStep, scroll, waterTime + dtStep);
   const yPrev = sampleRawHeight(motion, pPrev, duration, pPrev * duration, swellPrev, reducedMotion);
   const yNext = sampleRawHeight(motion, pNext, duration, pNext * duration, swellNext, reducedMotion);
   const vy = reducedMotion ? 0 : (yNext - yPrev) / spanDt;
 
-  const swimSpeed = getSeaCreatureSwimSpeed(motion, p, busSpeed);
   const vz = direction * swimSpeed;
   const horizontalSpeed = Math.hypot(vx, vz);
 
@@ -173,17 +170,19 @@ export function sampleSeaCreaturePose(options: {
     : Math.atan2(vx, vz);
   const pitch = reducedMotion
     ? 0
-    : -Math.atan2(vy, Math.max(3.2, horizontalSpeed));
+    : -Math.atan2(vy, Math.max(3.6, horizontalSpeed));
 
   const airborneMix = THREE.MathUtils.smoothstep(height, -0.35, 0.9);
-  const turnBank = THREE.MathUtils.clamp((-vx * direction) * 0.07, -0.24, 0.24);
+  const turnBank = THREE.MathUtils.clamp((-vx * direction) * 0.065, -0.22, 0.22);
   const jumpBank = motion === "breach" ? Math.sin(THREE.MathUtils.clamp((p - 0.28) / 0.30, 0, 1) * Math.PI) * 0.22 * side : 0;
-  const waveRoll = motion === "surface" ? Math.sin(local * 1.48) * 0.08 + swell * 0.12 : Math.sin(local * 1.35) * 0.05;
+  const waveRoll = motion === "surface" ? Math.sin(local * 1.48) * 0.075 + swell * 0.11 : Math.sin(local * 1.32) * 0.05;
   const roll = reducedMotion ? 0 : turnBank + jumpBank + waveRoll * (1 - airborneMix * 0.7);
 
-  const effortBoost = vy > 0 && height < 0 ? Math.min(0.45, vy * 0.05) : 0;
-  const jointFrequency = 2.45 + effortBoost * 2.2;
-  const jointGain = THREE.MathUtils.lerp(1 + effortBoost, 0.24, airborneMix);
+  // Transition continue de l'effort de nage (pas de coupure nette à height = 0 ni vy = 0).
+  const underwaterMix = 1 - THREE.MathUtils.smoothstep(height, -1.2, 0.5);
+  const riseEffort = THREE.MathUtils.smoothstep(vy, 0, 9.0) * 0.45 * underwaterMix;
+  const jointFrequency = 2.4 + riseEffort * 2.1;
+  const jointGain = THREE.MathUtils.lerp(1 + riseEffort, 0.24, airborneMix);
 
   return {
     x,
