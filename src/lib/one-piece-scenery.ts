@@ -1341,18 +1341,58 @@ function elbafCastle(b: Builder, x: number, y: number, z: number, lowPower: bool
   b.box("castle", [x, y + 2.05, z], [5.65, 4.1, 7.9]);
   b.box("cream", [x, y + 4.18, z], [5.95, .39, 8.2]);
   arch(b, x - 2.86, y + .15, z, 1.57, 2.8, "castle");
+  if (!lowPower) {
+    // Fenêtres lumineuses et boucliers nordiques dorés sur la façade d'Aurust Castle.
+    for (const fz of [-2.4, 2.4]) {
+      b.box("lamp", [x - 2.86, y + 2.35, z + fz], [.08, 1.15, .62]);
+      b.cylinder("gold", [x - 2.9, y + 4.15, z + fz], .42, .42, .12, 10, [0, 0, Math.PI / 2]);
+    }
+  }
   for (const [dx, dz, h, radius] of [[-.6, -2.88, 9.8, 1.51], [-.3, 2.6, 7.3, 1.19], [2.05, .25, 12.55, 1.13]]) {
     const tx = x + dx, tz = z + dz;
     b.cylinder("castle", [tx, y + h / 2, tz], radius * .92, radius, h, 12);
     b.cylinder("cream", [tx, y + h, tz], radius * 1.13, radius, .45, 12);
     b.cylinder("roof", [tx, y + h + 1.57, tz], 0, radius * 1.17, 3.25, 12);
-    b.sphere("gold", [tx, y + h + 3.25, tz], .18);
+    b.sphere("gold", [tx, y + h + 3.25, tz], .2);
     arch(b, tx - radius * .98, y + h * .61, tz, .36, .93, "castle");
+    if (!lowPower) {
+      b.box("lamp", [tx - radius * 1.0, y + h * .64, tz], [.06, .72, .3]);
+      b.cylinder("gold", [tx, y + h + 3.9, tz], .04, .05, 1.4, 6);
+      b.box("vermilion", [tx, y + h + 4.25, tz - .55], [.08, .55, 1.1]);
+    }
   }
   const blocks = lowPower ? 5 : 8;
   for (let i = 0; i < blocks; i++) {
     b.box("castle", [x - 2.72, y + 4.54, z - 3.62 + i * 7.24 / (blocks - 1)], [.36, .55, .46]);
   }
+}
+
+function elbafColossalSword(b: Builder, x: number, y: number, z: number, lowPower: boolean) {
+  // La gigantesque épée mythique plantée en biais dans les falaises d'Elbaf (visible dès l'approche).
+  const tiltZ = 0.16;
+  const tiltX = -0.08;
+  // Lame monumentale en acier sombre + nervure centrale dorée/métallique.
+  b.box("metal", [x, y + 7.2, z], [1.95, 15.2, .42], [tiltX, .15, tiltZ]);
+  b.box("castle", [x - .22, y + 7.3, z], [1.1, 14.4, .5], [tiltX, .15, tiltZ]);
+  if (!lowPower) {
+    // Rune lumineuse cyan gravée le long de la lame géante.
+    b.box("neonCyan", [x - .36, y + 8.6, z + .24], [.22, 5.2, .12], [tiltX, .15, tiltZ]);
+  }
+  // Garde nordique massive en or vieilli.
+  const gx = x - Math.sin(tiltZ) * 14.8;
+  const gy = y + Math.cos(tiltZ) * 14.8;
+  const gz = z - Math.sin(tiltX) * 14.8;
+  b.box("oldGold", [gx, gy, gz], [6.4, 1.05, 1.15], [tiltX, .15, tiltZ]);
+  b.box("gold", [gx, gy, gz], [6.8, .38, 1.28], [tiltX, .15, tiltZ]);
+  // Poignée en bois sombre + pommeau sphérique doré au sommet.
+  const hx = x - Math.sin(tiltZ) * 17.8;
+  const hy = y + Math.cos(tiltZ) * 17.8;
+  const hz = z - Math.sin(tiltX) * 17.8;
+  b.cylinder("wood", [hx, hy, hz], .42, .48, 5.2, 10, [tiltX, .15, tiltZ]);
+  const px = x - Math.sin(tiltZ) * 20.6;
+  const py = y + Math.cos(tiltZ) * 20.6;
+  const pz = z - Math.sin(tiltX) * 20.6;
+  b.sphere("gold", [px, py, pz], .95);
 }
 
 function elbafRainbow(b: Builder, lowPower: boolean) {
@@ -1404,6 +1444,7 @@ function elbaf(b: Builder, lowPower: boolean) {
   elbafTree(b, 8.1, 12, 17.6, 1, lowPower);
   elbafTree(b, 7.22, 13.9, -23.3, .65, lowPower);
   elbafCastle(b, -.1, 14.62, -24.5, lowPower);
+  elbafColossalSword(b, 5.4, 9.75, -1.5, lowPower);
   elbafRainbow(b, lowPower);
   elbafRopeBridge(b, -.4, -19.2, 13.3, 14.65, 12.7, lowPower);
   for (const [z, y] of [[-37.5, 20], [34.4, 19.1]]) {
@@ -1932,12 +1973,26 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
       elbafPine(b, -32.2, 3.25, -27.6, 3.9);
       elbafRopeBridge(b, -33.9, -14.2, 6.6, 3.2, 4.26, lowPower);
       if (!lowPower) {
-        // Drakkar sur la grève.
+        // Drakkar des géants d'Elbaf sur la grève : coque, boucliers dorés, proue dragon et voile rayée rouge/crème.
         const drakkarY = sceneryTerrainHeight(6, -41.4, 34);
         b.sphere("wood", [-41.4, drakkarY + 0.45, 34], 1.32, [1.1, .55, 3.05]);
-        b.cylinder("elbafBark", [-41.4, drakkarY + 2.6, 34], .12, .16, 4.2, 8);
-        b.box("vermilion", [-41.4, drakkarY + 3.35, 34.25], [1.5, 1.75, .12]);
-        b.cylinder("oldGold", [-41.4, drakkarY + 1.3, 30.5], .1, .33, 1.25, 6, [.45, 0, 0]);
+        b.cylinder("elbafBark", [-41.4, drakkarY + 2.6, 34], .12, .16, 4.4, 8);
+        b.box("vermilion", [-41.4, drakkarY + 3.45, 34.25], [1.7, 1.85, .14]);
+        b.box("cream", [-41.4, drakkarY + 3.45, 34.27], [.55, 1.85, .16]);
+        b.cylinder("oldGold", [-41.4, drakkarY + 1.35, 30.4], .12, .34, 1.4, 6, [.45, 0, 0]);
+        b.sphere("gold", [-41.4, drakkarY + 2.0, 30.05], .28);
+        for (const sz of [32.4, 34.0, 35.6]) {
+          for (const sideS of [-1, 1]) {
+            b.cylinder("gold", [-41.4 + sideS * 1.28, drakkarY + 0.72, sz], .32, .32, .08, 8, [0, 0, Math.PI / 2]);
+          }
+        }
+        // Pierres runiques lumineuses et braseros nordiques bordant le chemin.
+        for (const rz of [-36, -6, 20]) {
+          const ry = sceneryTerrainHeight(6, -17.8, rz) - 0.04;
+          b.cylinder("rock", [-17.8, ry + 1.15, rz], .28, .44, 2.3, 6);
+          b.box("neonCyan", [-17.42, ry + 1.35, rz], [.08, .85, .14]);
+          b.sphere("lamp", [-17.8, ry + 2.45, rz], .22);
+        }
       }
     } else {
       elbafLodge(b, 17.2, sceneryTerrainHeight(6, 17.2, -43.3) - 0.04, -43.3, 2.65, lowPower);

@@ -711,19 +711,25 @@ function LandmarkModel({ def }: { def: PropDef }) {
 
     case "giantSword":
       return (
-        <group scale={s * 1.1}>
+        <group scale={s * 1.15}>
           <mesh material={MATS.rock} position={[0, 0.9, 0]} castShadow>
-            <dodecahedronGeometry args={[1.8, 1]} />
+            <dodecahedronGeometry args={[1.9, 1]} />
           </mesh>
           <group position={[0, 1.4, 0]} rotation={[0.12, 0.2, 0.22]}>
             <mesh material={MATS.steelRail} position={[0, 3.6, 0]} castShadow>
-              <boxGeometry args={[0.95, 7.2, 0.22]} />
+              <boxGeometry args={[1.05, 7.2, 0.22]} />
+            </mesh>
+            <mesh material={MATS.neonCyan} position={[0, 4.2, 0.13]}>
+              <boxGeometry args={[0.16, 3.0, 0.06]} />
             </mesh>
             <mesh material={MATS.gold} position={[0, 7.2, 0]}>
-              <boxGeometry args={[2.8, 0.42, 0.48]} />
+              <boxGeometry args={[3.0, 0.46, 0.5]} />
             </mesh>
             <mesh material={MATS.trunk} position={[0, 8.3, 0]}>
-              <cylinderGeometry args={[0.2, 0.22, 2.0, 8]} />
+              <cylinderGeometry args={[0.22, 0.24, 2.0, 8]} />
+            </mesh>
+            <mesh material={MATS.gold} position={[0, 9.45, 0]}>
+              <sphereGeometry args={[0.42, 10, 8]} />
             </mesh>
           </group>
         </group>
@@ -732,19 +738,36 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "vikingHall":
       return (
         <group scale={s * 1.2}>
-          <mesh material={MATS.trunk} position={[0, 1.8, 0]} castShadow>
+          {/* Socle en pierre nordique */}
+          <mesh material={MATS.rock} position={[0, 0.26, 0]} receiveShadow>
+            <boxGeometry args={[5.8, 0.52, 7.6]} />
+          </mesh>
+          <mesh material={MATS.trunk} position={[0, 2.0, 0]} castShadow>
             <boxGeometry args={[5.4, 3.6, 7.2]} />
           </mesh>
-          <mesh material={MATS.darkRoof} position={[0, 5.2, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+          <mesh material={MATS.darkRoof} position={[0, 5.4, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
             <coneGeometry args={[5.6, 3.4, 4]} />
           </mesh>
-          {[-2.72, 2.72].map((x) => (
-            <mesh key={x} material={MATS.gold} position={[x, 2.0, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.55, 0.55, 0.14, 10]} />
-            </mesh>
+          {/* Boucliers vikings dorés et fenêtres lumineuses sur les flancs visibles (±X) */}
+          {[-2.74, 2.74].map((x) => (
+            <group key={x}>
+              {[-2.0, 0, 2.0].map((sz, i) => (
+                <mesh
+                  key={i}
+                  material={i === 1 ? MATS.redWood : MATS.gold}
+                  position={[x, 2.05, sz]}
+                  rotation={[0, 0, Math.PI / 2]}
+                >
+                  <cylinderGeometry args={[0.52, 0.52, 0.14, 10]} />
+                </mesh>
+              ))}
+              <mesh material={MATS.lanternLight} position={[x, 3.15, 0]}>
+                <boxGeometry args={[0.08, 0.72, 1.35]} />
+              </mesh>
+            </group>
           ))}
-          <mesh material={MATS.lanternLight} position={[0, 1.8, 3.62]}>
-            <boxGeometry args={[1.2, 1.6, 0.1]} />
+          <mesh material={MATS.lanternLight} position={[0, 2.0, 3.63]}>
+            <boxGeometry args={[1.25, 1.65, 0.1]} />
           </mesh>
         </group>
       );
