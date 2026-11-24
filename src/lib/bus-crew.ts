@@ -29,5 +29,5 @@ export function getBusCrew(locale: Locale) {
 }
 
 export function countPeopleOnBoard(visitors: number): number {
-  return visitors + BUS_CREW.length;
+  return Math.max(0, visitors);
 }

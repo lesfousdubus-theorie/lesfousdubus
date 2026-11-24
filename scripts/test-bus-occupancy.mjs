@@ -11,8 +11,8 @@ const { getRenderedRowIndices, getNearestBusDoor, getSeatCountInRow, getSeatRowZ
 const { BUS_CREW, countPeopleOnBoard } = await load("src/lib/bus-crew.ts");
 const { createJourneyState, beginJourney, getPassengerWalkPath, updateJourney } = await load("src/lib/bus-journey.ts");
 assert.equal(BUS_CREW.length, 3);
-assert.equal(countPeopleOnBoard(0), BUS_CREW.length, "An empty visitor list includes only the three guides.");
-assert.equal(countPeopleOnBoard(2), 5, "The two real visitors must not be mixed with artificial passengers.");
+assert.equal(countPeopleOnBoard(0), 0, "Permanent crew at the front is not counted in passenger total.");
+assert.equal(countPeopleOnBoard(2), 2, "Passenger count starts from visitor #1 without adding crew.");
 
 const check = options => {
   const result = getBusOccupancy(options);
