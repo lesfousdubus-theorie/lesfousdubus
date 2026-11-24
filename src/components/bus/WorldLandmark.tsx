@@ -621,13 +621,19 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "drumMesa":
       return (
         <group scale={s * 1.5}>
-          {/* Les légendaires montagnes en forme de tambour de l'île de Drum */}
+          {/* Les légendaires montagnes en forme de tambour de l'île de Drum (parois cannelées + corniche enneigée) */}
           <mesh material={MATS.rock} position={[0, 7.0, 0]} castShadow>
-            <cylinderGeometry args={[5.5, 6.2, 14, 16]} />
+            <cylinderGeometry args={[5.1, 6.2, 14, 14]} />
           </mesh>
-          {/* Plateau enneigé au sommet */}
-          <mesh material={MATS.snow} position={[0, 14.1, 0]}>
-            <cylinderGeometry args={[5.6, 5.6, 0.5, 16]} />
+          <mesh material={MATS.marble} position={[0, 12.9, 0]}>
+            <cylinderGeometry args={[5.75, 4.95, 2.1, 14]} />
+          </mesh>
+          {/* Couronne enneigée évasée et touche de neige rose sakura au sommet */}
+          <mesh material={MATS.snow} position={[0, 14.15, 0]}>
+            <cylinderGeometry args={[6.0, 5.85, 0.72, 14]} />
+          </mesh>
+          <mesh material={MATS.pinkSakura} position={[0, 14.56, 0]} scale={[1, 0.12, 1]}>
+            <sphereGeometry args={[4.4, 12, 8]} />
           </mesh>
         </group>
       );

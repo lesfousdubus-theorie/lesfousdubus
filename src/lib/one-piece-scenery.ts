@@ -985,38 +985,67 @@ function drum(b: Builder, lowPower: boolean) {
     b.cylinder("dark", [x, base + height + 1.15, z], 0, 1.65, 2.5, 10);
     b.cylinder("snow", [x, base + height + 1.6, z], 0, 1.2, 1.7, 10);
     arch(b, x - 1.08, base + height * 0.63, z, 0.44, 1.3, "castle");
+    if (!lowPower) b.box("lamp", [x - 1.12, base + height * 0.66, z], [0.06, 0.78, 0.3]);
   }
   b.cylinder("castle", [1, base + 5.5, 0], 1.35, 1.6, 11, 10);
   b.cylinder("dark", [1, base + 12.3, 0], 0, 2.0, 3.5, 10);
   b.cylinder("snow", [1, base + 12.9, 0], 0, 1.45, 2.5, 10);
+  if (!lowPower) b.box("lamp", [-0.46, base + 8.6, 0], [0.08, 1.1, 0.55]);
   // Drapeau pirate de sakura du Dr. Hiriluk au sommet du donjon.
-  b.cylinder("metal", [1, base + 15.6, 0], 0.08, 0.1, 3.4, 6);
-  b.box("dark", [1, base + 16.4, 1.1], [0.1, 1.45, 2.1]);
-  b.sphere("blossom", [0.94, base + 16.4, 1.1], 0.34);
-  for (const [py, pz] of [[0.34, 0], [-0.34, 0], [0, 0.34], [0, -0.34]]) {
-    b.sphere("blossomLight", [0.92, base + 16.4 + py, 1.1 + pz], 0.18);
+  b.cylinder("metal", [1, base + 15.8, 0], 0.08, 0.1, 3.8, 6);
+  b.box("dark", [1, base + 16.6, 1.25], [0.1, 1.65, 2.4]);
+  b.sphere("blossom", [0.94, base + 16.6, 1.25], 0.38);
+  for (const [py, pz] of [[0.38, 0], [-0.38, 0], [0, 0.38], [0, -0.38]]) {
+    b.sphere("blossomLight", [0.92, base + 16.6 + py, 1.25 + pz], 0.2);
+  }
+  // Le Miracle des Cerisiers du Dr. Hiriluk : nuage géant de neige rose en fleurs couronnant les Monts Drum !
+  const sakuraPuffs: Array<[number, number, number, number, number, MaterialKey]> = [
+    [-4.5, base + 13.5, -5.2, 4.4, 2.1, "blossomLight"],
+    [4.8, base + 14.2, -4.6, 4.8, 2.2, "blossom"],
+    [-3.8, base + 14.8, 5.4, 4.2, 2.0, "blossom"],
+    [5.2, base + 13.2, 5.2, 4.6, 2.1, "blossomLight"],
+    [0.5, base + 16.5, -6.5, 3.8, 1.8, "blossomLight"],
+    [-6.8, base + 11.2, 0.8, 3.6, 1.7, "blossom"],
+    [7.2, base + 11.8, 0.5, 3.9, 1.8, "blossomLight"],
+  ];
+  for (const [px, py, pz, pr, ph, mat] of sakuraPuffs.filter((_, i) => !lowPower || i % 2 === 0)) {
+    b.sphere(mat, [px, py, pz], pr, [1.25, ph / pr, 1.15]);
   }
   arch(b, -3.62, base + 0.2, 0, 1.6, 3.1, "castle");
-  for (const z of [-2.2, 2.2]) arch(b, -3.64, base + 2.3, z, 0.62, 1.6, "castle");
-  // A winding, pale path and little snowbound village give the sheer heights scale.
+  for (const z of [-2.2, 2.2]) {
+    arch(b, -3.64, base + 2.3, z, 0.62, 1.6, "castle");
+    if (!lowPower) b.box("lamp", [-3.68, base + 2.75, z], [0.06, 0.85, 0.42]);
+  }
+  // A winding, pale path and little snowbound village (Bighorn) give the sheer heights scale.
   b.curve("snow", [[-16, 0.4, -14], [-13, 0.5, -7], [-16, 0.4, 0], [-12, 0.6, 11]], 1.0, 20);
   if (!lowPower) {
-    for (let i = 0; i < 3; i++) {
-      const x = -10 + i * 4.8, z = -12 + (i % 2) * 1.7;
-      b.box(i % 2 ? "wood" : "castle", [x, 1.3, z], [3.2, 2.6, 3.4]);
-      b.roof("dark", [x, 2.6, z], 4, 4.3, 1.6);
-      b.roof("snow", [x, 2.74, z], 3.9, 4.2, 1.6);
-      b.box("lamp", [x - 1.63, 1.4, z], [0.1, 0.65, 0.65]);
+    // 5 chalets enneigés du village de Bighorn avec fenêtres chaleureuses et cheminées fumantes.
+    const cottages: Array<[number, number, boolean]> = [
+      [-10.2, -12.4, false],
+      [-5.4, -10.8, true],
+      [-0.6, -12.6, false],
+      [-12.8, 9.6, true],
+      [-7.6, 12.8, false],
+    ];
+    for (const [x, z, woodWall] of cottages) {
+      b.box(woodWall ? "wood" : "castle", [x, 1.3, z], [3.3, 2.6, 3.5]);
+      b.roof("dark", [x, 2.6, z], 4.1, 4.4, 1.6);
+      b.roof("snow", [x, 2.74, z], 4.0, 4.3, 1.6);
+      b.box("lamp", [x - 1.68, 1.4, z], [0.1, 0.72, 0.8]);
       b.box("rock", [x + 0.8, 3.7, z + 0.6], [0.45, 1.2, 0.55]);
       b.sphere("cloudShade", [x + 0.8, 4.7, z + 0.6], 0.48, [1.1, 0.8, 1.1]);
     }
-    // Téléphérique du mont Drum : pylône de départ, câble, bras porteur et cabine éclairée.
-    b.box("rock", [-13.5, 2.1, -5.5], [1.8, 4.2, 1.8]);
-    b.box("metal", [-13.5, 4.3, -5.5], [2.0, 0.3, 2.0]);
-    b.curve("metal", [[-13.5, 4.3, -5.5], [-8.5, 15.2, -2.5], [-3.8, base + 1.5, -0.5]], 0.07, 16);
+    // Pétales de neige rose d'Hiriluk déposés sur les sommets des Monts Drum voisins.
+    b.sphere("blossomLight", [-10.5, 18.25, 7], 3.8, [1.15, 0.14, 1.15]);
+    b.sphere("blossomLight", [10, 22.25, -6], 4.0, [1.15, 0.14, 1.15]);
+    // Téléphérique du mont Drum : gare de départ, câble, bras porteur et cabine rouge éclairée.
+    b.box("rock", [-13.5, 2.1, -5.5], [2.0, 4.2, 2.0]);
+    b.box("metal", [-13.5, 4.3, -5.5], [2.2, 0.32, 2.2]);
+    b.sphere("lamp", [-14.55, 3.6, -5.5], 0.24);
+    b.curve("metal", [[-13.5, 4.3, -5.5], [-8.5, 15.2, -2.5], [-3.8, base + 1.5, -0.5]], 0.08, 16);
     b.cylinder("metal", [-8.5, 14.85, -2.5], 0.08, 0.08, 0.75, 6);
-    b.box("vermilion", [-8.5, 13.7, -2.5], [1.6, 1.6, 1.8]);
-    b.box("lamp", [-9.32, 13.8, -2.5], [0.08, 0.55, 1.0]);
+    b.box("vermilion", [-8.5, 13.7, -2.5], [1.65, 1.65, 1.85]);
+    b.box("lamp", [-9.35, 13.8, -2.5], [0.08, 0.6, 1.05]);
   }
 }
 
@@ -1919,11 +1948,25 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
         }
       }
       if (!lowPower) {
-        // Lanternes enneigées et clôtures en bois bordant la piste de Drum.
+        // Chalet enneigé de Bighorn face au bus (+X), lanternes enneigées et congères roses d'Hiriluk.
+        for (const [cx, cz] of [[-29, -22], [-31, 22]]) {
+          const cy = sceneryTerrainHeight(4, cx, cz) - 0.05;
+          b.box("wood", [cx, cy + 1.5, cz], [4.2, 3.0, 4.4]);
+          b.roof("dark", [cx, cy + 3.0, cz], 5.1, 5.4, 1.8);
+          b.roof("snow", [cx, cy + 3.16, cz], 4.9, 5.2, 1.75);
+          b.box("lamp", [cx + 2.14, cy + 1.65, cz], [0.08, 0.9, 1.1]);
+          b.box("rock", [cx - 0.9, cy + 4.1, cz + 0.8], [0.5, 1.3, 0.55]);
+          b.sphere("cloudShade", [cx - 0.9, cy + 5.2, cz + 0.8], 0.52, [1.1, 0.8, 1.1]);
+        }
+        // Touches de neige rose sakura sur les congères de Drum.
+        for (const [sx, sz] of [[-24, -6], [-26, 36]]) {
+          b.sphere("blossomLight", [sx, sceneryTerrainHeight(4, sx, sz) + 0.12, sz], 3.4, [1.2, 0.16, 1.1]);
+        }
         for (const z of [-42, -14, 14, 42]) {
-          b.cylinder("wood", [-22.5, 1.2, z], 0.1, 0.14, 2.4, 6);
-          b.sphere("lamp", [-22.5, 2.5, z], 0.32);
-          b.box("snow", [-22.5, 2.86, z], [0.65, 0.18, 0.65]);
+          const ly = sceneryTerrainHeight(4, -22.5, z) - 0.04;
+          b.cylinder("wood", [-22.5, ly + 1.2, z], 0.1, 0.14, 2.4, 6);
+          b.sphere("lamp", [-22.5, ly + 2.5, z], 0.32);
+          b.box("snow", [-22.5, ly + 2.86, z], [0.68, 0.18, 0.68]);
         }
       }
     }
