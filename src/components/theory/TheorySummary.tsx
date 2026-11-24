@@ -1,13 +1,9 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import {
-  CENTRAL_THESIS,
-  THEORY_FOUNDATIONS,
-  THEORY_GROUPS,
-  THEORY_REFERENCES,
-  type TheoryPoint,
-} from "@/lib/theory-data";
+import { type TheoryPoint } from "@/lib/theory-data";
+import { getTheoryData } from "@/lib/theory-data-en";
+import { pickLocale, useLocale } from "@/lib/i18n";
 import { ChevronDownIcon, ExternalArrowIcon } from "../ui/BusIcons";
 
 function getOrderedSections(sections: readonly TheoryPoint[]): TheoryPoint[] {
@@ -18,6 +14,13 @@ function getOrderedSections(sections: readonly TheoryPoint[]): TheoryPoint[] {
 
 /** Short thematic cards for the theory modal. */
 export default function TheorySummary() {
+  const locale = useLocale();
+  const {
+    centralThesis,
+    foundations,
+    groups,
+    references,
+  } = getTheoryData(locale);
   const groupsRef = useRef<HTMLDivElement>(null);
   const [allExpanded, setAllExpanded] = useState(false);
 
@@ -42,15 +45,17 @@ export default function TheorySummary() {
   return (
     <article className="space-y-10">
       <header className="bus-case-highlight space-y-4 rounded-2xl border-l-4 border-l-[#7a3aec] p-5 sm:p-7">
-        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#c4b5fd]">L’idée centrale</p>
-        <h3 className="text-xl font-black leading-tight text-white sm:text-2xl lg:text-[28px]">{CENTRAL_THESIS.title}</h3>
-        <p className="font-semibold leading-7 text-[#c4b5fd] sm:text-lg">{CENTRAL_THESIS.subtitle}</p>
-        <p className="leading-7 text-[#dfe5ff] sm:text-base">{CENTRAL_THESIS.overview}</p>
-        <p className="text-sm leading-6 text-[#a3aed9]">{CENTRAL_THESIS.context}</p>
+        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#c4b5fd]">
+          {pickLocale(locale, "L’idée centrale", "Core premise")}
+        </p>
+        <h3 className="text-xl font-black leading-tight text-white sm:text-2xl lg:text-[28px]">{centralThesis.title}</h3>
+        <p className="font-semibold leading-7 text-[#c4b5fd] sm:text-lg">{centralThesis.subtitle}</p>
+        <p className="leading-7 text-[#dfe5ff] sm:text-base">{centralThesis.overview}</p>
+        <p className="text-sm leading-6 text-[#a3aed9]">{centralThesis.context}</p>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        {THEORY_FOUNDATIONS.map(item => (
+        {foundations.map(item => (
           <div key={item.title} className="bus-case-elevated rounded-xl p-5">
             <p className="font-bold leading-6 text-[#c4b5fd]">{item.title}</p>
             <p className="mt-3 text-sm leading-7 text-[#dfe5ff]">{item.text}</p>
@@ -59,8 +64,8 @@ export default function TheorySummary() {
       </div>
 
       <div className="flex flex-col gap-3 border-y border-[#947eef]/20 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <nav aria-label="Les thèmes de la théorie" className="flex min-w-0 flex-1 flex-wrap gap-x-5 gap-y-1 text-sm">
-          {THEORY_GROUPS.map(group => (
+        <nav aria-label={pickLocale(locale, "Les thèmes de la théorie", "Theory themes")} className="flex min-w-0 flex-1 flex-wrap gap-x-5 gap-y-1 text-sm">
+          {groups.map(group => (
             <a
               key={group.id}
               href={"#modal-" + group.id}
@@ -83,12 +88,14 @@ export default function TheorySummary() {
             allExpanded ? "bus-btn-active" : "bus-btn-secondary"
           }`}
         >
-          {allExpanded ? "Tout replier" : "Tout déplier"}
+          {allExpanded
+            ? pickLocale(locale, "Tout replier", "Collapse all")
+            : pickLocale(locale, "Tout déplier", "Expand all")}
         </button>
       </div>
 
       <div ref={groupsRef} className="space-y-10">
-        {THEORY_GROUPS.map(group => {
+        {groups.map(group => {
           const orderedSections = getOrderedSections(group.sections);
           const leftSections = orderedSections.filter((_, index) => index % 2 === 0);
           const rightSections = orderedSections.filter((_, index) => index % 2 === 1);
@@ -115,7 +122,7 @@ export default function TheorySummary() {
       <div className="border-t border-[#947eef]/20 pt-5 text-sm text-[#a3aed9]">
         <p className="font-semibold">Sources</p>
         <div className="mt-1 flex flex-wrap gap-x-5">
-          {[THEORY_REFERENCES.video, THEORY_REFERENCES.threads, THEORY_REFERENCES.mechanism].map(source => (
+          {[references.video, references.threads, references.mechanism].map(source => (
             <a
               key={source.url}
               href={source.url}

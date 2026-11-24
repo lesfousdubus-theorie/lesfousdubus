@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { playStretch } from "@/lib/horn";
+import { getLocale, pickLocale } from "@/lib/i18n";
 import { ApiError, fetchJson, getExistingVisitorId, getOrCreateVisitorId, isRetryableRegistrationError, type BusApiState } from "@/lib/client/bus-api";
 import type { PassengerProfile } from "@/types/passenger";
 import type { Phase } from "./bus/constants";
@@ -280,19 +281,33 @@ export function useBusSync({
           const nextRows = getBusPhysicalRows(d.seatCapacity);
           if (nextRows > prevRows) {
             const addedRows = nextRows - prevRows;
+            const locale = getLocale();
             playStretch();
             showToast(
-              "Le bus s’allonge !",
-              `Nouveaux nakamas à bord ! +${addedRows} ${addedRows > 1 ? "rangées créées" : "rangée créée"}`,
-              "NOUVELLE RANGÉE",
+              pickLocale(locale, "Le bus s’allonge !", "The bus gets longer!"),
+              pickLocale(
+                locale,
+                `Nouveaux nakamas à bord ! +${addedRows} ${addedRows > 1 ? "rangées créées" : "rangée créée"}`,
+                `New nakama on board! +${addedRows} ${addedRows > 1 ? "rows added" : "row added"}`,
+              ),
+              pickLocale(locale, "NOUVELLE RANGÉE", "NEW ROW"),
             );
           } else {
             const arrivals = d.count - previousCount;
             const totalPeople = countPeopleOnBoard(d.count);
+            const locale = getLocale();
             showToast(
-              arrivals > 1 ? `+${arrivals} Nakamas à bord !` : "+1 Nakama à bord !",
-              `${totalPeople.toLocaleString("fr-FR")} ${totalPeople > 1 ? "passagers voyagent" : "passager voyage"} vers Laugh Tale`,
-              "À BORD",
+              pickLocale(
+                locale,
+                arrivals > 1 ? `+${arrivals} Nakamas à bord !` : "+1 Nakama à bord !",
+                arrivals > 1 ? `+${arrivals} Nakama on board!` : "+1 Nakama on board!",
+              ),
+              pickLocale(
+                locale,
+                `${totalPeople.toLocaleString("fr-FR")} ${totalPeople > 1 ? "passagers voyagent" : "passager voyage"} vers Laugh Tale`,
+                `${totalPeople.toLocaleString("en-US")} ${totalPeople > 1 ? "passengers riding" : "passenger riding"} to Laugh Tale`,
+              ),
+              pickLocale(locale, "À BORD", "ON BOARD"),
             );
           }
         }
@@ -378,7 +393,10 @@ export function useBusSync({
         });
         if (controller.signal.aborted) return;
         if (retryAvatarId && data.passenger?.avatarId !== retryAvatarId) {
-          throw new ApiError("Le personnage choisi n’a pas pu être enregistré.", 502);
+          throw new ApiError(
+            pickLocale(getLocale(), "Le personnage choisi n’a pas pu être enregistré.", "The chosen character could not be saved."),
+            502,
+          );
         }
         pendingRegistrationProfileRef.current = null;
         applyBusSnapshot(data);
@@ -420,7 +438,12 @@ export function useBusSync({
         if (!isRetryableRegistrationError(error)) {
           pendingRegistrationProfileRef.current = null;
           setRegistrationPending(false);
-          showToast("Inscription refusée", "Recharge la page avant de réessayer.", "ERREUR");
+          const locale = getLocale();
+          showToast(
+            pickLocale(locale, "Inscription refusée", "Registration declined"),
+            pickLocale(locale, "Recharge la page avant de réessayer.", "Reload the page before trying again."),
+            pickLocale(locale, "ERREUR", "ERROR"),
+          );
           return;
         }
         attempt += 1;

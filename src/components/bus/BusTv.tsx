@@ -8,6 +8,7 @@ import type { JourneyState } from "@/lib/bus-journey";
 import { YOUTUBE_ID, THEORY_VIDEO_URL } from "@/lib/theory-video";
 import { createInitialCaptionReset, isYouTubePlaybackActive, mountYouTubePlayer, type YouTubePlayer } from "@/lib/youtube-player";
 import { emitBusAudioEvent, getFreeViewTvVolume, onBusAudioEvent, OUTSIDE_TV_VOLUME } from "@/lib/bus-audio";
+import { getLocale, pickLocale, useLocale } from "@/lib/i18n";
 import BusPartyTv from "./BusPartyTv";
 import BusTvScreen, { TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT } from "./BusTvScreen";
 
@@ -296,7 +297,7 @@ export function BusTvPlayer({
     const resetInitialCaptions = createInitialCaptionReset();
     disconnectRef.current = mountYouTubePlayer(mountElement, {
       id: "tv-primary-iframe",
-      title: "La théorie des Fous du Bus",
+      title: pickLocale(getLocale(), "La théorie des Fous du Bus", "The Bus Fools Theory"),
       allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen",
       width: 560,
       height: 315,
@@ -475,6 +476,7 @@ export function BusTvPlayer({
     emitBusAudioEvent("tvPlay");
   }, []);
 
+  const locale = useLocale();
   const isScreenOn = useCallback(() => shouldPlay() && !warmingRef.current, [shouldPlay]);
   const interactive = tvOn && phase === "inside" && !freeView && !partyOn && !isMutedForFullscreen;
   const showRetry = playerStatus === "blocked" || playerStatus === "error";
@@ -491,18 +493,22 @@ export function BusTvPlayer({
         >
           <p className="max-w-[440px] text-base font-bold leading-snug text-[#dfe5ff] sm:text-xl">
             {playerStatus === "blocked"
-              ? "La lecture automatique a été bloquée."
-              : "Le lecteur vidéo ne répond pas."}
+              ? pickLocale(locale, "La lecture automatique a été bloquée.", "Autoplay was blocked.")
+              : pickLocale(locale, "Le lecteur vidéo ne répond pas.", "The video player is not responding.")}
           </p>
           <button
             type="button"
             style={{ pointerEvents: interactive ? "auto" : "none" }}
             onPointerDown={(e) => e.stopPropagation()}
             onClick={handleActivate}
-            aria-label={playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
+            aria-label={playerStatus === "blocked"
+              ? pickLocale(locale, "Lancer la vidéo", "Play video")
+              : pickLocale(locale, "Réessayer la vidéo", "Retry video")}
             className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-2.5 text-lg font-semibold focus-visible:outline-none sm:px-7 sm:py-3 sm:text-2xl"
           >
-            {playerStatus === "blocked" ? "Lancer la vidéo" : "Réessayer la vidéo"}
+            {playerStatus === "blocked"
+              ? pickLocale(locale, "Lancer la vidéo", "Play video")
+              : pickLocale(locale, "Réessayer la vidéo", "Retry video")}
           </button>
           {playerStatus === "error" && (
             <a
@@ -513,7 +519,7 @@ export function BusTvPlayer({
               onPointerDown={(e) => e.stopPropagation()}
               className="inline-flex min-h-11 items-center justify-center rounded-lg px-3 py-1.5 text-base font-semibold text-[#c4b5fd] underline underline-offset-4 hover:text-white focus-visible:outline-none sm:text-xl"
             >
-              Voir la vidéo sur YouTube
+              {pickLocale(locale, "Voir la vidéo sur YouTube", "Watch on YouTube")}
             </a>
           )}
         </div>

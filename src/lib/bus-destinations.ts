@@ -1,3 +1,5 @@
+import type { Locale } from "./i18n-shared";
+
 /** Les 28 étapes choisies pour la girouette du Grand Line Express. */
 export const GRAND_LINE_STOPS = [
   "Shells Town", "Orange Town", "Île de Gaimon", "Syrup Village", "Baratie",
@@ -7,6 +9,19 @@ export const GRAND_LINE_STOPS = [
   "Dressrosa", "Zou", "Whole Cake Island", "Wano", "Egghead", "Elbaf",
   "Lodestar", "Laugh Tale",
 ] as const;
+
+export const GRAND_LINE_STOPS_EN = [
+  "Shells Town", "Orange Town", "Island of Rare Animals", "Syrup Village", "Baratie",
+  "Arlong Park", "Loguetown", "Cactus Island", "Little Garden", "Drum Island",
+  "Alabasta", "Jaya", "Skypiea", "Long Ring Long Land", "Water 7", "Enies Lobby",
+  "Thriller Bark", "Sabaody Archipelago", "Fish-Man Island", "Punk Hazard",
+  "Dressrosa", "Zou", "Whole Cake Island", "Wano", "Egghead", "Elbaf",
+  "Lodestar", "Laugh Tale",
+] as const;
+
+export function getGrandLineStops(locale: Locale) {
+  return locale === "en" ? GRAND_LINE_STOPS_EN : GRAND_LINE_STOPS;
+}
 
 // Police bitmap 5×7 : chaque bit représente une LED, sans texte lissé.
 const FONT: Record<string, number[]> = {
@@ -28,6 +43,11 @@ export const LED_COLUMNS = 72;
 export const LED_ROWS = 9;
 export const LED_COLUMNS_PER_SECOND = 18;
 export const DESTINATION_MESSAGE = `GRAND LINE > ${GRAND_LINE_STOPS.join(" > ")}    `;
+export const DESTINATION_MESSAGE_EN = `GRAND LINE > ${GRAND_LINE_STOPS_EN.join(" > ")}    `;
+
+export function getDestinationMessage(locale: Locale): string {
+  return locale === "en" ? DESTINATION_MESSAGE_EN : DESTINATION_MESSAGE;
+}
 
 export function encodeLedText(text: string): Uint8Array {
   const columns: number[] = [];
@@ -49,10 +69,12 @@ export function getRandomDestinationStart(random: () => number = Math.random): n
 }
 
 /** Commencer au premier caractère d'une étape, puis conserver l'ordre de la boucle. */
-export function getDestinationStartOffset(index: number): number {
-  const stop = GRAND_LINE_STOPS[index];
+export function getDestinationStartOffset(index: number, locale: Locale = "fr"): number {
+  const stops = getGrandLineStops(locale);
+  const stop = stops[index];
   if (!stop) throw new RangeError("Invalid destination index");
-  return encodeLedText(DESTINATION_MESSAGE.slice(0, DESTINATION_MESSAGE.indexOf(stop))).length;
+  const message = getDestinationMessage(locale);
+  return encodeLedText(message.slice(0, message.indexOf(stop))).length;
 }
 
 export function getLedOffset(seconds: number, messageWidth: number, startOffset = 0): number {

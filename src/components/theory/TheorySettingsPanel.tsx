@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { pickLocale, useLocale, type Locale } from "@/lib/i18n";
 import {
   DEFAULT_GRAPHICS_SETTINGS,
   isDefaultGraphicsSettings,
@@ -25,48 +26,60 @@ interface TheorySettingsPanelProps {
 interface SliderOption<T extends string> {
   value: T;
   label: string;
+  labelEn: string;
 }
 
-const TIER_LABELS: Record<GraphicsQualityTier, string> = {
-  low: "Éco",
-  medium: "Moyen",
-  high: "Élevé",
-  ultra: "Ultra",
+const TIER_LABELS: Record<Locale, Record<GraphicsQualityTier, string>> = {
+  fr: {
+    low: "Faible",
+    medium: "Moyenne",
+    high: "Élevée",
+    ultra: "Ultra",
+  },
+  en: {
+    low: "Low",
+    medium: "Medium",
+    high: "High",
+    ultra: "Ultra",
+  },
 };
 
 const PRESET_OPTIONS: SliderOption<GraphicsPresetPreference>[] = [
-  { value: "auto", label: "Auto" },
-  { value: "low", label: "Éco" },
-  { value: "medium", label: "Moyen" },
-  { value: "high", label: "Élevé" },
-  { value: "ultra", label: "Ultra" },
+  { value: "auto", label: "Auto", labelEn: "Auto" },
+  { value: "low", label: "Faible", labelEn: "Low" },
+  { value: "medium", label: "Moyenne", labelEn: "Medium" },
+  { value: "high", label: "Élevée", labelEn: "High" },
+  { value: "ultra", label: "Ultra", labelEn: "Ultra" },
 ];
 
 const DRAW_DISTANCE_OPTIONS: SliderOption<DrawDistancePreference>[] = [
-  { value: "auto", label: "Auto" },
-  { value: "near", label: "Courte" },
-  { value: "medium", label: "Moyenne" },
-  { value: "far", label: "Étendue" },
-  { value: "max", label: "Max" },
+  { value: "auto", label: "Auto", labelEn: "Auto" },
+  { value: "near", label: "Courte", labelEn: "Short" },
+  { value: "medium", label: "Moyenne", labelEn: "Medium" },
+  { value: "far", label: "Étendue", labelEn: "Far" },
+  { value: "max", label: "Max", labelEn: "Max" },
 ];
 
 const PIXEL_QUALITY_OPTIONS: SliderOption<PixelQualityPreference>[] = [
-  { value: "auto", label: "Auto" },
-  { value: "eco", label: "Fluide" },
-  { value: "standard", label: "Standard" },
-  { value: "sharp", label: "Fine" },
-  { value: "native", label: "Max" },
+  { value: "auto", label: "Auto", labelEn: "Auto" },
+  { value: "eco", label: "Basse", labelEn: "Low" },
+  { value: "standard", label: "Normale", labelEn: "Normal" },
+  { value: "sharp", label: "Haute", labelEn: "High" },
+  { value: "native", label: "Max", labelEn: "Max" },
 ];
 
 const SHADOW_OPTIONS: SliderOption<ShadowQualityPreference>[] = [
-  { value: "auto", label: "Auto" },
-  { value: "off", label: "Off" },
-  { value: "standard", label: "Standards" },
-  { value: "high", label: "Fines" },
+  { value: "auto", label: "Auto", labelEn: "Auto" },
+  { value: "off", label: "Aucune", labelEn: "Off" },
+  { value: "basic", label: "Simples", labelEn: "Simple" },
+  { value: "standard", label: "Normales", labelEn: "Normal" },
+  { value: "high", label: "Hautes", labelEn: "High" },
 ];
 
-function optionLabel<T extends string>(options: SliderOption<T>[], value: T) {
-  return options.find((item) => item.value === value)?.label ?? value;
+function optionLabel<T extends string>(options: SliderOption<T>[], value: T, locale: Locale) {
+  const item = options.find((entry) => entry.value === value);
+  if (!item) return value;
+  return locale === "en" ? item.labelEn : item.label;
 }
 
 export default function TheorySettingsPanel({
@@ -76,6 +89,7 @@ export default function TheorySettingsPanel({
   onUpdateGraphics,
   onResetGraphics,
 }: TheorySettingsPanelProps) {
+  const locale = useLocale();
   const [draft, setDraft] = useState<GraphicsSettings>(graphicsSettings);
   const draftRef = useRef<GraphicsSettings>(graphicsSettings);
   const timerRef = useRef<number | null>(null);
@@ -119,9 +133,10 @@ export default function TheorySettingsPanel({
   return (
     <div className="space-y-2">
       <SettingSlider
-        label="Qualité globale"
+        label={pickLocale(locale, "Qualité globale", "Overall quality")}
+        locale={locale}
         value={draft.preset}
-        autoHint={TIER_LABELS[activeTier]}
+        autoHint={TIER_LABELS[locale][activeTier]}
         options={PRESET_OPTIONS}
         onChange={(preset) => commitDraft({
           ...draftRef.current,
@@ -133,23 +148,26 @@ export default function TheorySettingsPanel({
         })}
       />
       <SettingSlider
-        label="Distance d’affichage"
+        label={pickLocale(locale, "Distance d’affichage", "Draw distance")}
+        locale={locale}
         value={draft.drawDistance}
-        autoHint={optionLabel(DRAW_DISTANCE_OPTIONS, resolvedProfile.drawDistance)}
+        autoHint={optionLabel(DRAW_DISTANCE_OPTIONS, resolvedProfile.drawDistance, locale)}
         options={DRAW_DISTANCE_OPTIONS}
         onChange={(drawDistance) => commitDraft({ ...draftRef.current, drawDistance })}
       />
       <SettingSlider
-        label="Finesse des pixels"
+        label={pickLocale(locale, "Résolution", "Resolution")}
+        locale={locale}
         value={draft.pixelQuality}
-        autoHint={optionLabel(PIXEL_QUALITY_OPTIONS, resolvedProfile.pixelQuality)}
+        autoHint={optionLabel(PIXEL_QUALITY_OPTIONS, resolvedProfile.pixelQuality, locale)}
         options={PIXEL_QUALITY_OPTIONS}
         onChange={(pixelQuality) => commitDraft({ ...draftRef.current, pixelQuality })}
       />
       <SettingSlider
-        label="Ombres"
+        label={pickLocale(locale, "Ombres", "Shadows")}
+        locale={locale}
         value={draft.shadows}
-        autoHint={optionLabel(SHADOW_OPTIONS, resolvedProfile.shadows)}
+        autoHint={optionLabel(SHADOW_OPTIONS, resolvedProfile.shadows, locale)}
         options={SHADOW_OPTIONS}
         onChange={(shadows) => commitDraft({ ...draftRef.current, shadows })}
       />
@@ -164,7 +182,7 @@ export default function TheorySettingsPanel({
             : "bus-btn-tonal cursor-pointer"
         }`}
       >
-        Réinitialiser (Auto)
+        {pickLocale(locale, "Réinitialiser (Auto)", "Reset (Auto)")}
       </button>
     </div>
   );
@@ -172,12 +190,14 @@ export default function TheorySettingsPanel({
 
 function SettingSlider<T extends string>({
   label,
+  locale,
   value,
   autoHint,
   options,
   onChange,
 }: {
   label: string;
+  locale: Locale;
   value: T;
   autoHint: string;
   options: SliderOption<T>[];
@@ -185,7 +205,7 @@ function SettingSlider<T extends string>({
 }) {
   const inputId = useId();
   const currentIndex = Math.max(0, options.findIndex((item) => item.value === value));
-  const currentLabel = value === "auto" ? `Auto · ${autoHint}` : optionLabel(options, value);
+  const currentLabel = value === "auto" ? `Auto · ${autoHint}` : optionLabel(options, value, locale);
 
   return (
     <div className="bus-case-inset rounded-xl px-3 py-2">
@@ -211,31 +231,48 @@ function SettingSlider<T extends string>({
         }}
         className="bus-range mt-1.5 h-4 w-full cursor-pointer focus-visible:outline-none"
       />
-      <div aria-hidden="true" className="mt-0.5 flex items-center justify-between px-[9px]">
-        {options.map((item, index) => (
-          <span
-            key={item.value}
-            className={`h-1 w-0.5 rounded-full transition-colors ${
-              index === currentIndex ? "bg-[#c4b5fd]" : "bg-white/25"
-            }`}
-          />
-        ))}
+      <div aria-hidden="true" className="relative mt-0.5 h-1.5">
+        {options.map((item, index) => {
+          const ratio = options.length > 1 ? index / (options.length - 1) : 0;
+          return (
+            <span
+              key={item.value}
+              style={{ left: `calc(9px + (100% - 18px) * ${ratio})` }}
+              className={`absolute top-0 h-1.5 w-0.5 -translate-x-1/2 rounded-full transition-colors ${
+                index === currentIndex ? "bg-[#c4b5fd]" : "bg-white/25"
+              }`}
+            />
+          );
+        })}
       </div>
-      <div className="mt-0.5 flex items-center justify-between gap-1 text-[10px]">
-        {options.map((item, index) => (
-          <button
-            key={item.value}
-            type="button"
-            onClick={() => onChange(item.value)}
-            className={`cursor-pointer truncate transition-colors focus-visible:outline-none ${
-              index === currentIndex
-                ? "font-bold text-[#c4b5fd]"
-                : "font-medium text-[#9aa6d6] hover:text-white"
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
+      <div className="relative mt-0.5 h-4 text-[10px]">
+        {options.map((item, index) => {
+          const ratio = options.length > 1 ? index / (options.length - 1) : 0;
+          const isFirst = index === 0;
+          const isLast = index === options.length - 1;
+          const posStyle = isFirst
+            ? { left: 0 }
+            : isLast
+              ? { right: 0 }
+              : { left: `calc(9px + (100% - 18px) * ${ratio})` };
+          return (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => onChange(item.value)}
+              style={posStyle}
+              className={`absolute top-0 cursor-pointer whitespace-nowrap transition-colors focus-visible:outline-none ${
+                isFirst ? "text-left" : isLast ? "text-right" : "-translate-x-1/2 text-center"
+              } ${
+                index === currentIndex
+                  ? "font-bold text-[#c4b5fd]"
+                  : "font-medium text-[#9aa6d6] hover:text-white"
+              }`}
+            >
+              {locale === "en" ? item.labelEn : item.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

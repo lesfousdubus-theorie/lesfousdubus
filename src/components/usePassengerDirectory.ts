@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchJson, type BusApiState } from "@/lib/client/bus-api";
+import { getLocale } from "@/lib/i18n";
 import type { PassengerManifestEntry, PassengerProfile } from "@/types/passenger";
 
 /** Liste paginée et fiches passagers : chaque réponse reste attachée à sa requête active. */
@@ -47,7 +48,11 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
       setSelectedPassenger(data.passenger);
     } catch {
       if (controller.signal.aborted) return;
-      setPassengerCardError("Impossible de charger ce message pour le moment.");
+      setPassengerCardError(
+        getLocale() === "en"
+          ? "Unable to load this message right now."
+          : "Impossible de charger ce message pour le moment.",
+      );
     } finally {
       if (passengerCardRequest.current === controller) setPassengerCardLoading(false);
     }
@@ -81,7 +86,11 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
       setManifestHasMore(data.hasMore);
     } catch {
       if (controller.signal.aborted) return;
-      setManifestError("Impossible de charger les passagers pour le moment.");
+      setManifestError(
+        getLocale() === "en"
+          ? "Unable to load passengers right now."
+          : "Impossible de charger les passagers pour le moment.",
+      );
     } finally {
       if (manifestRequest.current === controller) setManifestLoading(false);
     }
@@ -137,7 +146,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
     void openPassengerCard({
       seatIndex: passenger.seatIndex,
       entryNumber: passenger.entryNumber,
-      displayName: passenger.displayName ?? "Anonyme",
+      displayName: passenger.displayName ?? (getLocale() === "en" ? "Anonymous" : "Anonyme"),
       comment: null,
     });
   }, [closePassengerManifest, openPassengerCard]);

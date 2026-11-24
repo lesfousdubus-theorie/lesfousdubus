@@ -10,6 +10,7 @@ import { DRIVER_ARM_FIELDS, DRIVER_FOREARM, DRIVER_SEAT_POSITIONS, DRIVER_SHOULD
 import { sampleCopilotDance } from "@/lib/copilot-dance";
 import { CABIN_FLOOR_Y, SEATED_HIP_HEIGHT, SEATED_HIP_Z } from "@/lib/passenger-gait";
 import { blendPassengerPose, createPassengerPose, samplePassengerPose } from "@/lib/passenger-motion";
+import { getLocale, pickLocale } from "@/lib/i18n";
 
 interface BusDriversProps {
   hornPulse: number;
@@ -177,7 +178,11 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
       new CustomEvent("bus-show-toast", {
         detail: {
           badge: "KAMAL",
-          text: "« Accrochez-vous, on est dans le Siècle Oublié ! »",
+          text: pickLocale(
+            getLocale(),
+            "« Accrochez-vous, on est dans le Siècle Oublié ! »",
+            "“Hold on tight, we’re inside the Void Century!”",
+          ),
           sub: "Le Mont Corvo",
         },
       }),
@@ -191,7 +196,11 @@ export function BusDrivers({ hornPulse, reducedMotion = false, partyOn = false }
       new CustomEvent("bus-show-toast", {
         detail: {
           badge: "KYTA",
-          text: "« Le Log Pose s’affole ! La théorie des Fous du Bus se vérifie sous nos yeux ! »",
+          text: pickLocale(
+            getLocale(),
+            "« Le Log Pose s’affole ! La théorie des Fous du Bus se vérifie sous nos yeux ! »",
+            "“The Log Pose is going crazy! The Bus Fools Theory is coming true before our eyes!”",
+          ),
           sub: "Le Mont Corvo",
         },
       }),

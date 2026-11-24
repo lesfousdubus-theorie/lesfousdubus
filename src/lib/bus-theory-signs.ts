@@ -1,4 +1,5 @@
 import { getBusDoorBounds, type BusDoorLayout } from "./bus-layout";
+import type { Locale } from "./i18n-shared";
 
 // Formulations courtes des pistes de theory-data.ts, écrites pour des écrans et des tags.
 export const THEORY_SIGN_MESSAGES = [
@@ -15,6 +16,25 @@ export const THEORY_SIGN_MESSAGES = [
   { id: "laugh-tale", lines: ["LAUGH TALE EST", "UNE QUESTION DE TEMPS"] },
   { id: "premier-pirate", lines: ["LUFFY SERA LE PREMIER PIRATE", "À PRENDRE LA MER !"] },
 ] as const;
+
+export const THEORY_SIGN_MESSAGES_EN = [
+  { id: "siecle", lines: ["THE VOID CENTURY", "IS THE PRESENT"] },
+  { id: "luffy", lines: ["LUFFY IS NIKA", "AND JOY BOY"] },
+  { id: "barbe-noire", lines: ["BLACKBEARD IS", "DAVY D. JONES"] },
+  { id: "poneglyphes", lines: ["THE PONEGLYPHS", "COME FROM THE FUTURE"] },
+  { id: "timing", lines: ["IT IS ALL A MATTER", "OF TIMING"] },
+  { id: "lili", lines: ["VIVI WILL BE", "LILY"] },
+  { id: "ryuma", lines: ["ZORO WILL BE", "RYUMA"] },
+  { id: "robin", lines: ["ROBIN WILL WRITE", "THE PONEGLYPHS"] },
+  { id: "harley", lines: ["USOPP WILL WRITE", "THE HALEY"] },
+  { id: "all-blue", lines: ["THE FOUR SEAS", "WILL FORM ALL BLUE"] },
+  { id: "laugh-tale", lines: ["LAUGH TALE IS", "A MATTER OF TIME"] },
+  { id: "premier-pirate", lines: ["LUFFY WILL BE THE FIRST PIRATE", "TO SET SAIL!"] },
+] as const;
+
+export function getTheorySignMessages(locale: Locale) {
+  return locale === "en" ? THEORY_SIGN_MESSAGES_EN : THEORY_SIGN_MESSAGES;
+}
 
 interface GraffitiPlacement {
   message: number;

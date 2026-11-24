@@ -23,6 +23,7 @@ import {
   type WorldState,
 } from "./constants";
 import type { PassengerProfile } from "@/types/passenger";
+import { pickLocale, useLocale } from "@/lib/i18n";
 import { isPassengerAvatarId } from "@/lib/passenger-avatar";
 import { THEORY_VIDEO_URL } from "@/lib/theory-video";
 import {
@@ -79,7 +80,19 @@ interface SceneProps {
   onReadTheory?: () => void;
 }
 
-function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil.", onReadTheory }: { reason?: string; onReadTheory?: () => void }) {
+function SceneFallback({
+  reason,
+  reasonEn,
+  onReadTheory,
+}: {
+  reason?: string;
+  reasonEn?: string;
+  onReadTheory?: () => void;
+}) {
+  const locale = useLocale();
+  const displayReason = reason
+    ? (locale === "en" && reasonEn ? reasonEn : reason)
+    : pickLocale(locale, "La 3D n’est pas disponible sur cet appareil.", "3D is not available on this device.");
   return (
     <div className="absolute inset-0 bg-gradient-to-b from-[#79c2ff] to-[#174f91] text-center text-white">
       <div className="bus-scene-fallback absolute inset-x-3 bottom-3 top-52 grid place-items-center overflow-y-auto sm:top-52 lg:top-40">
@@ -87,8 +100,8 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
         <div className="bus-icon-badge mx-auto mb-3 grid h-16 w-16 place-items-center rounded-2xl" aria-hidden="true">
           <BusFrontIcon className="h-9 w-9" />
         </div>
-        <p className="text-lg font-black text-white">Le bus reste au dépôt</p>
-        <p className="mt-2 text-sm text-[#dfe5ff]">{reason}</p>
+        <p className="text-lg font-black text-white">{pickLocale(locale, "Le bus reste au dépôt", "The bus stays at the depot")}</p>
+        <p className="mt-2 text-sm text-[#dfe5ff]">{displayReason}</p>
         <div className="mt-4 flex flex-wrap justify-center gap-x-2 gap-y-2.5">
         {onReadTheory && (
           <button
@@ -96,7 +109,7 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
             onClick={onReadTheory}
             className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-5 py-2.5 font-semibold focus-visible:outline-none"
           >
-            Lire la théorie
+            {pickLocale(locale, "Lire la théorie", "Read the theory")}
           </button>
         )}
         <a
@@ -105,7 +118,7 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
           rel="noopener noreferrer"
           className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-full px-4 py-2 font-semibold focus-visible:outline-none"
         >
-          Voir la vidéo
+          {pickLocale(locale, "Voir la vidéo", "Watch video")}
           <ExternalArrowIcon />
         </a>
         <button
@@ -113,7 +126,7 @@ function SceneFallback({ reason = "La 3D n’est pas disponible sur cet appareil
           className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-4 py-2 font-semibold focus-visible:outline-none"
           onClick={() => window.location.reload()}
         >
-          Réessayer
+          {pickLocale(locale, "Réessayer", "Try again")}
         </button>
         </div>
       </div>
@@ -136,7 +149,13 @@ class SceneErrorBoundary extends Component<{ children: ReactNode; onAvailability
 
   render() {
     return this.state.failed
-      ? <SceneFallback onReadTheory={this.props.onReadTheory} reason="Le chargement de la scène a échoué. Tu peux relancer l’expérience." />
+      ? (
+        <SceneFallback
+          onReadTheory={this.props.onReadTheory}
+          reason="Le chargement de la scène a échoué. Tu peux relancer l’expérience."
+          reasonEn="The scene failed to load. You can relaunch the experience."
+        />
+      )
       : this.props.children;
   }
 }
@@ -489,6 +508,7 @@ export default function Scene({
   onAvailabilityChange,
   onReadTheory,
 }: SceneProps) {
+  const locale = useLocale();
   const runtimeState = useSceneRuntimeState();
   const { hidden, reducedMotion } = runtimeState;
   const webGLProbe = useWebGLProbe();
@@ -591,7 +611,7 @@ export default function Scene({
   }, [currentPassengerSeatIndex, currentPassengerName, currentPassengerAvatarId, passengerProfiles]);
 
   if (webGLProbe.supported === false) return <SceneFallback onReadTheory={onReadTheory} />;
-  if (webGLProbe.supported === null) return <div role="status" className="sr-only">Préparation de la scène 3D…</div>;
+  if (webGLProbe.supported === null) return <div role="status" className="sr-only">{pickLocale(locale, "Préparation de la scène 3D…", "Preparing 3D scene…")}</div>;
 
   return (
     <SceneErrorBoundary onAvailabilityChange={onAvailabilityChange} onReadTheory={onReadTheory}>
@@ -744,7 +764,11 @@ export default function Scene({
       />
       </Canvas>
       {contextLost && (
-        <SceneFallback onReadTheory={onReadTheory} reason="Le moteur graphique a été suspendu par l’appareil. Le contexte WebGL est en cours de restauration ; tu peux aussi relancer l’expérience." />
+        <SceneFallback
+          onReadTheory={onReadTheory}
+          reason="Le moteur graphique a été suspendu par l’appareil. Le contexte WebGL est en cours de restauration ; tu peux aussi relancer l’expérience."
+          reasonEn="The graphics engine was paused by your device. The WebGL context is being restored; you can also relaunch the experience."
+        />
       )}
       </div>
     </SceneErrorBoundary>

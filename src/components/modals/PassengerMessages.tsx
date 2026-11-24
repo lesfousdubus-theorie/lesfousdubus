@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { fetchJson } from "@/lib/client/bus-api";
+import { pickLocale, useLocale } from "@/lib/i18n";
 import { ArrowLeftIcon, ListOrderedIcon, PauseIcon, PlayIcon, ShuffleIcon } from "@/components/ui/BusIcons";
 import { startMessageMotion } from "./passenger-message-motion";
 import { useModalAccessibility } from "./useModalAccessibility";
@@ -20,6 +21,7 @@ const prefersReducedMotion = () => window.matchMedia(reducedMotionQuery).matches
 const serverMotionPreference = () => true;
 
 export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => void; returnFocusRef: RefObject<HTMLElement | null> }) {
+  const locale = useLocale();
   const dialogRef = useRef<HTMLElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const wallRef = useRef<HTMLDivElement>(null);
@@ -95,32 +97,32 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
       }}
       className="messages-page fixed inset-0 z-[2147483647] grid overflow-hidden text-white focus:outline-none">
       <header className="messages-wall-header flex min-w-0 items-center justify-between gap-2 px-3 py-1.5 sm:gap-3 sm:px-5 sm:py-2">
-        <h1 id="messages-title" className="min-w-0 truncate text-base font-black leading-tight sm:text-lg">Messages des passagers</h1>
+        <h1 id="messages-title" className="min-w-0 truncate text-base font-black leading-tight sm:text-lg">{pickLocale(locale, "Messages des passagers", "Passenger messages")}</h1>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          {messageCount > 0 && loading && <p role="status" className="hidden text-xs text-white/75 sm:block">Chargement…</p>}
+          {messageCount > 0 && loading && <p role="status" className="hidden text-xs text-white/75 sm:block">{pickLocale(locale, "Chargement…", "Loading…")}</p>}
           {messageCount > 0 && error && !reading && (
             <button type="button" onClick={() => void load()} className="messages-wall-control px-2.5 text-xs">
-              Réessayer
+              {pickLocale(locale, "Réessayer", "Try again")}
             </button>
           )}
           <button
             type="button"
             aria-pressed={ordered}
-            aria-label={ordered ? "Remettre les messages en mouvement" : "Ordonner les messages"}
-            title={ordered ? "En vrac" : "Ordonner les messages"}
+            aria-label={ordered ? pickLocale(locale, "Remettre les messages en mouvement", "Resume floating messages") : pickLocale(locale, "Ordonner les messages", "Sort messages")}
+            title={ordered ? pickLocale(locale, "En vrac", "Scattered") : pickLocale(locale, "Ordonner les messages", "Sort messages")}
             disabled={messageCount === 0}
             onClick={() => setOrdered((previous) => !previous)}
             className="messages-wall-control shrink-0"
           >
             {ordered ? <ShuffleIcon className="h-3.5 w-3.5 text-[#dcd3ff]" /> : <ListOrderedIcon className="h-3.5 w-3.5 text-[#dcd3ff]" />}
-            <span>{ordered ? "En vrac" : "Ordonner"}</span>
+            <span>{ordered ? pickLocale(locale, "En vrac", "Scattered") : pickLocale(locale, "Ordonner", "Grid view")}</span>
           </button>
           {!ordered && (
             <button
               type="button"
               aria-pressed={paused}
-              aria-label={paused ? "Reprendre le défilement" : "Mettre en pause le défilement"}
-              title={paused ? "Reprendre" : "Mettre en pause"}
+              aria-label={paused ? pickLocale(locale, "Reprendre le défilement", "Resume scrolling") : pickLocale(locale, "Mettre en pause le défilement", "Pause scrolling")}
+              title={paused ? pickLocale(locale, "Reprendre", "Resume") : pickLocale(locale, "Mettre en pause", "Pause")}
               disabled={messageCount === 0 || Boolean(reading)}
               onClick={() => setPauseOverride(!paused)}
               className="messages-wall-control shrink-0"
@@ -132,8 +134,8 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
             ref={buttonRef}
             type="button"
             onClick={onClose}
-            aria-label="Retour au bus"
-            title="Retour au bus"
+            aria-label={pickLocale(locale, "Retour au bus", "Back to bus")}
+            title={pickLocale(locale, "Retour au bus", "Back to bus")}
             className="messages-wall-control shrink-0"
           >
             <ArrowLeftIcon className="h-4 w-4 shrink-0" />
@@ -160,7 +162,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
                     {message.comment}
                   </span>
                   <span className="flex items-center justify-between gap-2 text-xs font-bold text-[#dcd3ff]">
-                    <span className="text-[#c7d2fe]">Place n°{message.seatIndex + 1}</span>
+                    <span className="text-[#c7d2fe]">{pickLocale(locale, `Place n°${message.seatIndex + 1}`, `Seat #${message.seatIndex + 1}`)}</span>
                     <span className="truncate">— {message.displayName}</span>
                   </span>
                 </button>
@@ -185,7 +187,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
             <div className="messages-reader min-h-0 w-full max-w-[35rem] text-left">
               <div className="flex shrink-0 items-center justify-between gap-2">
                 <p className="break-words text-sm font-bold text-[#c4b5fd]">{reading.displayName}</p>
-                <button ref={closeMessageRef} type="button" onClick={closeMessage} className="messages-wall-control shrink-0">Fermer</button>
+                <button ref={closeMessageRef} type="button" onClick={closeMessage} className="messages-wall-control shrink-0">{pickLocale(locale, "Fermer", "Close")}</button>
               </div>
               <blockquote tabIndex={0} className="messages-reader-copy mt-2 min-h-0 overflow-y-auto whitespace-pre-wrap break-words leading-relaxed sm:text-lg">{reading.comment}</blockquote>
             </div>
@@ -193,11 +195,11 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
         )}
         {messageCount === 0 && !reading && (
           <div className="messages-wall-state z-20 text-center">
-            {loading && <p role="status">Chargement des messages…</p>}
-            {error && <div role="alert"><p>Impossible de charger les messages.</p>
-              <button type="button" onClick={() => void load()} className="messages-wall-control mt-2">Réessayer</button>
+            {loading && <p role="status">{pickLocale(locale, "Chargement des messages…", "Loading messages…")}</p>}
+            {error && <div role="alert"><p>{pickLocale(locale, "Impossible de charger les messages.", "Unable to load messages.")}</p>
+              <button type="button" onClick={() => void load()} className="messages-wall-control mt-2">{pickLocale(locale, "Réessayer", "Try again")}</button>
             </div>}
-            {!loading && !error && <p>Aucun message pour le moment.</p>}
+            {!loading && !error && <p>{pickLocale(locale, "Aucun message pour le moment.", "No messages yet.")}</p>}
           </div>
         )}
       </div>

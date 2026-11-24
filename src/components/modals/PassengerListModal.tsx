@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import type { PassengerManifestEntry } from "@/types/passenger";
-import { BUS_CREW, countPeopleOnBoard } from "@/lib/bus-crew";
+import { countPeopleOnBoard, getBusCrew } from "@/lib/bus-crew";
+import { formatPassengerDisplayName, pickLocale, useLocale } from "@/lib/i18n";
 import { BusFrontIcon, ChevronRightIcon, CloseIcon, ExternalArrowIcon, PersonIcon, SearchIcon } from "../ui/BusIcons";
 import { useModalAccessibility } from "./useModalAccessibility";
 import { ModalCloseButton } from "./ModalCloseButton";
@@ -57,6 +58,7 @@ export function PassengerListModal({
   onOpenMessages: () => void;
   onClose: () => void;
 }) {
+  const locale = useLocale();
   const dialogRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -94,18 +96,18 @@ export function PassengerListModal({
 
   const filteredPassengers = useMemo(() => {
     const normalizedQuery = normalizeSearchText(activeSearchQuery);
-    const numericQuery = normalizedQuery.replace(/^(?:place\s*)?(?:n[°o]\s*|#)?/, "").trim();
+    const numericQuery = normalizedQuery.replace(/^(?:(?:place|seat)\s*)?(?:n[°o]\s*|#)?/, "").trim();
     const isNumericQuery = /^\d+$/.test(numericQuery);
 
     return passengers.filter((passenger) => {
       if (activeOnlyWithComment && !passenger.hasComment) return false;
       if (!normalizedQuery) return true;
       const placeNumber = passenger.entryNumber ?? passenger.seatIndex + 1;
-      const normalizedName = normalizeSearchText(passenger.displayName ?? "Anonyme");
+      const normalizedName = normalizeSearchText(formatPassengerDisplayName(passenger.displayName, locale));
       if (normalizedName.includes(normalizedQuery)) return true;
       return isNumericQuery && String(placeNumber).includes(numericQuery);
     });
-  }, [activeOnlyWithComment, activeSearchQuery, passengers]);
+  }, [activeOnlyWithComment, activeSearchQuery, locale, passengers]);
 
   const hasActiveFilter = activeSearchQuery.trim().length > 0 || activeOnlyWithComment;
 
@@ -134,9 +136,15 @@ export function PassengerListModal({
               <BusFrontIcon className="h-5 w-5" />
             </span>
             <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#c4b5fd]">Le convoi</p>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#c4b5fd]">{pickLocale(locale, "Le convoi", "The convoy")}</p>
               <h2 ref={titleRef} tabIndex={-1} id="passenger-list-title" className="mt-0.5 text-xl font-black focus:outline-none sm:text-2xl">
-                {count === null ? "Passagers" : `${countPeopleOnBoard(count).toLocaleString("fr-FR")} passagers`}
+                {count === null
+                  ? pickLocale(locale, "Passagers", "Passengers")
+                  : pickLocale(
+                      locale,
+                      `${countPeopleOnBoard(count).toLocaleString("fr-FR")} passagers`,
+                      `${countPeopleOnBoard(count).toLocaleString("en-US")} passengers`,
+                    )}
               </h2>
             </div>
           </div>
@@ -150,10 +158,10 @@ export function PassengerListModal({
           className="relative min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5"
         >
           <button type="button" onClick={onOpenMessages} className="bus-btn-primary mb-4 flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold focus-visible:outline-none">
-            Voir les messages <span aria-hidden="true">→</span>
+            {pickLocale(locale, "Voir les messages", "View messages")} <span aria-hidden="true">→</span>
           </button>
-          <div aria-label="Équipage permanent" className="mb-3 grid gap-2 sm:grid-cols-2">
-            {BUS_CREW.map((member) => (
+          <div aria-label={pickLocale(locale, "Équipage permanent", "Permanent crew")} className="mb-3 grid gap-2 sm:grid-cols-2">
+            {getBusCrew(locale).map((member) => (
               <div key={member.name} className="bus-case-highlight flex min-h-16 items-center gap-3 rounded-2xl px-3.5 py-2.5">
                 <span aria-hidden="true" className="bus-icon-badge grid h-9 w-9 shrink-0 place-items-center rounded-full">
                   <BusFrontIcon className="h-4 w-4" />
@@ -180,7 +188,7 @@ export function PassengerListModal({
             <div role="status" aria-live="polite" aria-atomic="true" className="grid min-h-32 place-items-center p-6">
               <div className="flex flex-col items-center gap-3 text-center text-sm font-bold text-[#a3aed9]">
                 <span aria-hidden="true" className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-[#947eef] motion-reduce:animate-none" />
-                Chargement des passagers…
+                {pickLocale(locale, "Chargement des passagers…", "Loading passengers…")}
               </div>
             </div>
           ) : <>
@@ -189,7 +197,7 @@ export function PassengerListModal({
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative min-w-[12rem] flex-1">
                   <label htmlFor="passenger-list-search" className="sr-only">
-                    Rechercher un passager par nom ou numéro de place
+                    {pickLocale(locale, "Rechercher un passager par nom ou numéro de place", "Search for a passenger by name or seat number")}
                   </label>
                   <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a3aed9]" />
                   <input
@@ -197,14 +205,14 @@ export function PassengerListModal({
                     type="search"
                     value={activeSearchQuery}
                     onChange={(event) => setActiveSearchQuery(event.target.value)}
-                    placeholder="Nom ou n° de place…"
+                    placeholder={pickLocale(locale, "Nom ou n° de place…", "Name or seat #…")}
                     className="bus-case-inset min-h-11 w-full rounded-xl py-2 pl-10 pr-11 text-base text-white placeholder:text-[#8995c4] transition-colors focus:border-[#947eef] focus:outline-none sm:text-sm"
                   />
                   {activeSearchQuery && (
                     <button
                       type="button"
                       onClick={() => setActiveSearchQuery("")}
-                      aria-label="Effacer la recherche"
+                      aria-label={pickLocale(locale, "Effacer la recherche", "Clear search")}
                       className="absolute inset-y-0 right-0 grid w-11 cursor-pointer place-items-center rounded-r-xl text-[#a3aed9] transition-colors hover:text-white focus-visible:outline-none"
                     >
                       <CloseIcon className="h-4 w-4" />
@@ -219,7 +227,7 @@ export function PassengerListModal({
                     activeOnlyWithComment ? "bus-btn-active" : "bus-btn-secondary"
                   }`}
                 >
-                  Avec message
+                  {pickLocale(locale, "Avec message", "With message")}
                 </button>
                 {myPassenger && (
                   <button
@@ -227,7 +235,7 @@ export function PassengerListModal({
                     onClick={jumpToMySeat}
                     className="bus-btn-tonal min-h-11 cursor-pointer rounded-full px-3.5 py-2 text-xs font-semibold focus-visible:outline-none"
                   >
-                    Ma place
+                    {pickLocale(locale, "Ma place", "My seat")}
                   </button>
                 )}
                 {onRefresh && (
@@ -239,7 +247,7 @@ export function PassengerListModal({
                     }}
                     className="bus-btn-secondary min-h-11 cursor-pointer rounded-full px-3.5 py-2 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-60"
                   >
-                    Actualiser
+                    {pickLocale(locale, "Actualiser", "Refresh")}
                   </button>
                 )}
               </div>
@@ -265,14 +273,17 @@ export function PassengerListModal({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
-                      <span className="block truncate text-sm font-black text-white">{passenger.displayName ?? "Anonyme"}</span>
+                      <span className="block truncate text-sm font-black text-white">{formatPassengerDisplayName(passenger.displayName, locale)}</span>
                       {isCurrentSeat && (
                         <span className="bus-pill-badge shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
-                          Moi
+                          {pickLocale(locale, "Moi", "Me")}
                         </span>
                       )}
                     </span>
-                    <span className="block text-xs font-semibold text-[#c7d2fe]">Place n° {placeNumber.toLocaleString("fr-FR")}{passenger.hasComment ? " · Message" : ""}</span>
+                    <span className="block text-xs font-semibold text-[#c7d2fe]">
+                      {pickLocale(locale, `Place n° ${placeNumber.toLocaleString("fr-FR")}`, `Seat #${placeNumber.toLocaleString("en-US")}`)}
+                      {passenger.hasComment ? pickLocale(locale, " · Message", " · Message") : ""}
+                    </span>
                   </span>
                   <ChevronRightIcon className="h-4 w-4 shrink-0 text-[#c7d2fe] transition-colors group-hover:text-white" />
                 </button>
@@ -288,14 +299,16 @@ export function PassengerListModal({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
-                      <span className="block truncate text-sm font-bold text-[#dfe5ff]">Anonyme</span>
+                      <span className="block truncate text-sm font-bold text-[#dfe5ff]">{pickLocale(locale, "Anonyme", "Anonymous")}</span>
                       {isCurrentSeat && (
                         <span className="bus-pill-badge shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
-                          Moi
+                          {pickLocale(locale, "Moi", "Me")}
                         </span>
                       )}
                     </span>
-                    <span className="block text-xs font-semibold text-[#a3aed9]">Place n° {placeNumber.toLocaleString("fr-FR")}</span>
+                    <span className="block text-xs font-semibold text-[#a3aed9]">
+                      {pickLocale(locale, `Place n° ${placeNumber.toLocaleString("fr-FR")}`, `Seat #${placeNumber.toLocaleString("en-US")}`)}
+                    </span>
                   </span>
                 </div>
               );
@@ -304,27 +317,27 @@ export function PassengerListModal({
           {loading && passengers.length > 0 && (
             <div role="status" aria-live="polite" aria-atomic="true" className="flex min-h-20 items-center justify-center gap-3 text-sm font-bold text-[#a3aed9]">
               <span aria-hidden="true" className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-[#947eef] motion-reduce:animate-none" />
-              Chargement des passagers…
+              {pickLocale(locale, "Chargement des passagers…", "Loading passengers…")}
             </div>
           )}
           {error && (
             <div className="mt-3 rounded-2xl border border-red-400/40 bg-red-950/50 p-4 text-center">
               <p role="alert" className="text-sm font-bold text-red-100">{error}</p>
               <button type="button" onClick={onRetry} className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold focus-visible:outline-none">
-                Réessayer
+                {pickLocale(locale, "Réessayer", "Try again")}
               </button>
             </div>
           )}
           {!loading && !error && hasMore && (
             <button type="button" onClick={onLoadMore} className="bus-btn-secondary mt-4 min-h-11 w-full cursor-pointer rounded-full px-4 py-2.5 text-sm font-semibold focus-visible:outline-none">
-              Afficher plus de passagers
+              {pickLocale(locale, "Afficher plus de passagers", "Show more passengers")}
             </button>
           )}
-          {!loading && !error && passengers.length === 0 && <p className="p-8 text-center text-sm text-[#a3aed9]">L’équipage attend les prochains passagers.</p>}
+          {!loading && !error && passengers.length === 0 && <p className="p-8 text-center text-sm text-[#a3aed9]">{pickLocale(locale, "L’équipage attend les prochains passagers.", "The crew is waiting for the next passengers.")}</p>}
           {!error && passengers.length > 0 && filteredPassengers.length === 0 && (
             <div className="p-6 text-center">
               <p className="text-sm text-[#a3aed9]">
-                Aucun passager chargé ne correspond à ce filtre.
+                {pickLocale(locale, "Aucun passager chargé ne correspond à ce filtre.", "No loaded passenger matches this filter.")}
               </p>
               {hasActiveFilter && (
                 <button
@@ -335,7 +348,7 @@ export function PassengerListModal({
                   }}
                   className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-full px-4 py-2 text-xs font-semibold focus-visible:outline-none"
                 >
-                  Réinitialiser les filtres
+                  {pickLocale(locale, "Réinitialiser les filtres", "Reset filters")}
                 </button>
               )}
             </div>

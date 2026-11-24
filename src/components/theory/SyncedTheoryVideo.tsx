@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { YOUTUBE_ID } from "@/lib/theory-video";
 import { isYouTubePlaybackActive, loadYouTubeIframeApi, type YouTubePlayer } from "@/lib/youtube-player";
+import { getLocale, pickLocale, useLocale } from "@/lib/i18n";
 import { PlayIcon } from "@/components/ui/BusIcons";
 
 export default function SyncedTheoryVideo({
@@ -12,6 +13,7 @@ export default function SyncedTheoryVideo({
   active?: boolean;
   onPlaybackChange?: (active: boolean) => void;
 }) {
+  const locale = useLocale();
   const mountRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const activeRef = useRef(active);
@@ -101,7 +103,11 @@ export default function SyncedTheoryVideo({
                 }
                 playbackTimer = window.setInterval(observePlayback, 250);
                 const iframe = event.target.getIframe();
-                iframe.title = "La Théorie des Fous du Bus — Vidéo officielle Le Mont Corvo";
+                iframe.title = pickLocale(
+                  getLocale(),
+                  "La Théorie des Fous du Bus — Vidéo officielle Le Mont Corvo",
+                  "The Bus Fools Theory — Official video by Le Mont Corvo",
+                );
                 iframe.setAttribute(
                   "allow",
                   "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen",
@@ -175,6 +181,21 @@ export default function SyncedTheoryVideo({
     };
   }, [retryCount, reportPlayback]);
 
+  useEffect(() => {
+    try {
+      const iframe = playerRef.current?.getIframe();
+      if (iframe) {
+        iframe.title = pickLocale(
+          locale,
+          "La Théorie des Fous du Bus — Vidéo officielle Le Mont Corvo",
+          "The Bus Fools Theory — Official video by Le Mont Corvo",
+        );
+      }
+    } catch {
+      /* Iframe may not be mounted yet. */
+    }
+  }, [locale]);
+
   const resume = () => {
     const player = playerRef.current;
     if (!player) return;
@@ -205,7 +226,7 @@ export default function SyncedTheoryVideo({
             className="h-6 w-6 animate-spin rounded-full border-2 border-[#947eef]/30 border-t-[#947eef] motion-reduce:animate-none"
           />
           <span className="text-xs font-medium text-[#a3aed9]">
-            Chargement du lecteur YouTube…
+            {pickLocale(locale, "Chargement du lecteur YouTube…", "Loading YouTube player…")}
           </span>
         </div>
       )}
@@ -215,14 +236,14 @@ export default function SyncedTheoryVideo({
           className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#030617]/90 p-4 text-center"
         >
           <p className="text-xs font-semibold text-[#dfe5ff] sm:text-sm">
-            Le lecteur vidéo n’a pas pu se charger.
+            {pickLocale(locale, "Le lecteur vidéo n’a pas pu se charger.", "The video player could not load.")}
           </p>
           <button
             type="button"
             onClick={retry}
             className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-5 py-2.5 text-xs font-semibold focus-visible:outline-none sm:px-6 sm:text-sm"
           >
-            Réessayer le lecteur
+            {pickLocale(locale, "Réessayer le lecteur", "Retry player")}
           </button>
         </div>
       )}
@@ -234,7 +255,7 @@ export default function SyncedTheoryVideo({
         >
           <span className="bus-btn-primary inline-flex min-h-11 items-center justify-center gap-2.5 rounded-full px-5 py-3 text-sm font-semibold sm:text-base">
             <PlayIcon className="h-4 w-4 shrink-0" />
-            <span>Reprendre la vidéo</span>
+            <span>{pickLocale(locale, "Reprendre la vidéo", "Resume video")}</span>
           </span>
         </button>
       )}

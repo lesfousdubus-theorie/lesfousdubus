@@ -209,7 +209,7 @@ export const THEORY_GROUPS: readonly TheoryGroup[] = [
       {
         id: "uranus", icon: "🔥",
         title: "Mother Flame alimenterait Uranus",
-        summary: "L’énergie créée par Vegapunk serait détournée pour alimenter une puissance capable de détruire des îles. Mother Flame serait son carburant ; la forme exacte d’Uranus reste ouverte, la vidéo envisageant notamment une machine volante ou Imu utilisant cette énergie.",
+        summary: "L’énergie créée par Vegapunk serait détournée pour alimenter une puissance capable de détruire des îles. Mother Flame serait son carburant ; la forme exacte d’Uranus reste ouverte, qu’il s’agisse d’une machine volante ou d’Imu utilisant cette énergie.",
       },
       {
         id: "vingt-rois", icon: "♟️",
@@ -235,7 +235,7 @@ export const THEORY_GROUPS: readonly TheoryGroup[] = [
       {
         id: "laugh-tale", icon: "🧭",
         title: "Laugh Tale serait Roadstar à une autre époque",
-        summary: "Le bon lieu ne suffirait pas : il faudrait aussi atteindre le bon moment, lorsque Red Line aurait disparu. Les Road Ponéglyphes apporteraient cette dimension temporelle. La vidéo propose que Roger ait rejoint ce futur ; sa découverte précéderait l’aventure qui lui donne naissance.",
+        summary: "Le bon lieu ne suffirait pas : il faudrait aussi atteindre le bon moment, lorsque Red Line aurait disparu. Les Road Ponéglyphes apporteraient cette dimension temporelle. Roger aurait ainsi rejoint ce futur, sa découverte précédant l’aventure qui lui donne naissance.",
       },
       {
         id: "all-blue", icon: "🐟",
@@ -274,11 +274,11 @@ export const THEORY_FAQ: FAQItem[] = [
   },
   {
     question: "Les personnages restent-ils libres ?",
-    answer: "La théorie présente les légendes comme le récit des choix des héros. Luffy ne chercherait pas à suivre un texte ancien : il agirait selon ses convictions, puis son aventure serait racontée. Cette lecture conserve un débat ouvert sur le destin et la liberté.",
+    answer: "Les légendes ne sont que le récit des choix des héros. Luffy ne chercherait pas à suivre un texte ancien : il agirait selon ses convictions, puis son aventure serait racontée.",
   },
   {
     question: "Joy Boy aurait-il d’abord perdu la guerre ?",
-    answer: "La théorie ne suppose pas une première aventure où Luffy aurait perdu. Le récit d’un échec et d’un retour attendu servirait à entretenir l’espoir et à préparer les peuples.",
+    answer: "Il n’y aurait jamais eu une première aventure où Luffy aurait perdu. Le récit d’un échec et d’un retour attendu servirait simplement à entretenir l’espoir et à préparer les peuples.",
   },
   {
     question: "Pourquoi Roger serait-il arrivé trop tôt ?",
@@ -286,7 +286,7 @@ export const THEORY_FAQ: FAQItem[] = [
   },
   {
     question: "Comment expliquer la résistance des Ponéglyphes ?",
-    answer: "La vidéo propose un alliage futur associant les recherches de Vegapunk au savoir des Kozuki. Les pierres pourraient aussi être détruites ultérieurement : leur résistance connue ne fixe donc pas leur destin final dans cette hypothèse.",
+    answer: "Un alliage futur associerait les recherches de Vegapunk au savoir des Kozuki. Les pierres pourraient aussi être détruites ultérieurement : leur résistance connue ne fixe donc pas leur destin final.",
   },
   {
     question: "Pourquoi Emeth reconnaîtrait-il Luffy sans être reconnu ?",

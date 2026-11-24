@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { getRegisteredSeat } from "@/lib/bus-occupancy";
 import { ApiError, fetchJson, getExistingVisitorId, getOrCreateVisitorId, type BusApiState } from "@/lib/client/bus-api";
+import { getLocale, pickLocale } from "@/lib/i18n";
 import type { PassengerProfile } from "@/types/passenger";
 import { isPassengerAvatarId, type PassengerAvatarId } from "@/lib/passenger-avatar";
 import { cleanText } from "@/lib/server/text";
-import { findModerationIssue, MODERATION_MESSAGES } from "@/lib/server/moderation";
+import { findModerationIssue, getModerationMessage } from "@/lib/server/moderation";
 import type { OnboardingReason, OnboardingSubmission } from "./modals/OnboardingModal";
 
 interface PassengerProfileOptions {
@@ -100,12 +101,16 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     const comment = cleanText(joinComment, 180, true);
     if (profileModalMode === "name") {
       if (!name) {
-        setJoinError("Choisis un nom à afficher au-dessus de ton personnage.");
+        setJoinError(pickLocale(getLocale(), "Choisis un nom à afficher au-dessus de ton personnage.", "Choose a name to display above your character."));
+        return;
+      }
+      if (["anonyme", "anonymous"].includes(name.toLowerCase())) {
+        setJoinError(pickLocale(getLocale(), "Choisis un nom différent d’Anonyme.", "Please choose a name other than Anonymous."));
         return;
       }
       const nameIssue = findModerationIssue(name);
       if (nameIssue) {
-        setJoinError(MODERATION_MESSAGES[nameIssue]);
+        setJoinError(getModerationMessage(nameIssue, getLocale()));
         return;
       }
       if (name === savedProfile.name) {
@@ -115,12 +120,12 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       }
     } else {
       if (!comment) {
-        setJoinError("Écris un commentaire avant de l’enregistrer.");
+        setJoinError(pickLocale(getLocale(), "Écris un commentaire avant de l’enregistrer.", "Write a comment before saving it."));
         return;
       }
       const commentIssue = findModerationIssue(comment);
       if (commentIssue) {
-        setJoinError(MODERATION_MESSAGES[commentIssue]);
+        setJoinError(getModerationMessage(commentIssue, getLocale()));
         return;
       }
       if (comment === savedProfile.comment) {
@@ -174,14 +179,21 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
         ]);
       }
       setShowJoinModal(false);
+      const locale = getLocale();
       showToast(
-        profileModalMode === "name" ? "Nom enregistré !" : "Commentaire enregistré !",
+        profileModalMode === "name"
+          ? pickLocale(locale, "Nom enregistré !", "Name saved!")
+          : pickLocale(locale, "Commentaire enregistré !", "Comment saved!"),
         undefined,
-        "PROFIL",
+        pickLocale(locale, "PROFIL", "PROFILE"),
       );
     } catch (error) {
       if (controller.signal.aborted) return;
-      setJoinError(error instanceof ApiError ? error.message : "Impossible d’enregistrer pour le moment. Réessaie dans quelques instants.");
+      setJoinError(
+        error instanceof ApiError
+          ? error.message
+          : pickLocale(getLocale(), "Impossible d’enregistrer pour le moment. Réessaie dans quelques instants.", "Unable to save right now. Try again in a moment."),
+      );
     } finally {
       profileMutationLock.current = false;
       profileRequest.current = null;
@@ -226,10 +238,15 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       }
       setJoinComment("");
       setShowJoinModal(false);
-      showToast("Commentaire retiré", undefined, "PROFIL");
+      const locale = getLocale();
+      showToast(pickLocale(locale, "Commentaire retiré", "Comment removed"), undefined, pickLocale(locale, "PROFIL", "PROFILE"));
     } catch (error) {
       if (controller.signal.aborted) return;
-      setJoinError(error instanceof ApiError ? error.message : "Impossible de supprimer pour le moment. Réessaie dans quelques instants.");
+      setJoinError(
+        error instanceof ApiError
+          ? error.message
+          : pickLocale(getLocale(), "Impossible de supprimer pour le moment. Réessaie dans quelques instants.", "Unable to delete right now. Try again in a moment."),
+      );
     } finally {
       profileMutationLock.current = false;
       profileRequest.current = null;
@@ -347,18 +364,22 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     const comment = cleanText(submission.comment, 180, true);
     const avatarId = isPassengerAvatarId(submission.avatarId) ? submission.avatarId : null;
     if (!displayName) {
-      setOnboardingError("Choisis un nom avant de continuer.");
+      setOnboardingError(pickLocale(getLocale(), "Choisis un nom avant de continuer.", "Choose a name before continuing."));
+      return null;
+    }
+    if (["anonyme", "anonymous"].includes(displayName.toLowerCase())) {
+      setOnboardingError(pickLocale(getLocale(), "Choisis un nom différent d’Anonyme.", "Please choose a name other than Anonymous."));
       return null;
     }
     const nameIssue = findModerationIssue(displayName);
     if (nameIssue) {
-      setOnboardingError(MODERATION_MESSAGES[nameIssue]);
+      setOnboardingError(getModerationMessage(nameIssue, getLocale()));
       return null;
     }
     if (comment) {
       const commentIssue = findModerationIssue(comment);
       if (commentIssue) {
-        setOnboardingError(MODERATION_MESSAGES[commentIssue]);
+        setOnboardingError(getModerationMessage(commentIssue, getLocale()));
         return null;
       }
     }
@@ -429,15 +450,16 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
         clearLocalRegistrationOnly();
         setOnboardingReason(null);
         setOnboardingError("");
+        const locale = getLocale();
         showToast(
-          "Place introuvable",
-          "Entre dans le bus pour obtenir une nouvelle place.",
-          "PLACE",
+          pickLocale(locale, "Place introuvable", "Seat not found"),
+          pickLocale(locale, "Entre dans le bus pour obtenir une nouvelle place.", "Get on the bus to claim a new seat."),
+          pickLocale(locale, "PLACE", "SEAT"),
         );
         return;
       }
       if (submission.avatarId && data.passenger.avatarId !== submission.avatarId) {
-        throw new ApiError("Le personnage choisi n’a pas été enregistré.", 502);
+        throw new ApiError(pickLocale(getLocale(), "Le personnage choisi n’a pas été enregistré.", "The chosen character was not saved."), 502);
       }
       setCurrentPassengerSeatIndex(data.seatIndex);
       setCurrentPassengerEntryNumber((previous) =>
@@ -453,14 +475,19 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       }
       setOnboardingReason(null);
       setOnboardingError("");
+      const locale = getLocale();
       showToast(
-        "Nom enregistré !",
-        "Tu peux maintenant monter dans le bus à tout moment.",
-        "PROFIL",
+        pickLocale(locale, "Nom enregistré !", "Name saved!"),
+        pickLocale(locale, "Tu peux maintenant monter dans le bus à tout moment.", "You can now hop onto the bus anytime."),
+        pickLocale(locale, "PROFIL", "PROFILE"),
       );
     } catch (error) {
       if (controller.signal.aborted) return;
-      setOnboardingError(error instanceof ApiError ? error.message : "Impossible d’enregistrer pour le moment. Réessaie dans quelques instants.");
+      setOnboardingError(
+        error instanceof ApiError
+          ? error.message
+          : pickLocale(getLocale(), "Impossible d’enregistrer pour le moment. Réessaie dans quelques instants.", "Unable to save right now. Try again in a moment."),
+      );
     } finally {
       profileMutationLock.current = false;
       profileRequest.current = null;
@@ -496,7 +523,12 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       /* Le choix reste disponible pendant cette visite. */
     }
     setShowAvatarModal(false);
-    showToast("Choix automatique rétabli", "Un personnage te sera attribué automatiquement à la montée.", "PERSONNAGE");
+    const locale = getLocale();
+    showToast(
+      pickLocale(locale, "Choix automatique rétabli", "Automatic choice restored"),
+      pickLocale(locale, "Un personnage te sera attribué automatiquement à la montée.", "A character will be automatically assigned when you board."),
+      pickLocale(locale, "PERSONNAGE", "CHARACTER"),
+    );
   }, [hasRegisteredPlace, showToast, updateOnboardingDraft]);
 
   const saveAvatarDraft = useCallback((avatarId: PassengerAvatarId) => {
@@ -510,7 +542,12 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
       localStorage.setItem("fdb-avatar-id", avatarId);
     } catch { /* Le choix reste disponible pendant cette visite. */ }
     setShowAvatarModal(false);
-    showToast("Personnage choisi !", undefined, "PERSONNAGE");
+    const locale = getLocale();
+    showToast(
+      pickLocale(locale, "Personnage choisi !", "Character selected!"),
+      undefined,
+      pickLocale(locale, "PERSONNAGE", "CHARACTER"),
+    );
   }, [showToast, updateOnboardingDraft]);
 
   const submitAvatar = useCallback(async (avatarId: PassengerAvatarId | null) => {
@@ -549,7 +586,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
         saveAvatarDraft(avatarId);
         return;
       }
-      if (data.passenger?.avatarId !== avatarId) throw new ApiError("Le personnage n’a pas été enregistré. Réessaie.", 502);
+      if (data.passenger?.avatarId !== avatarId) throw new ApiError(pickLocale(getLocale(), "Le personnage n’a pas été enregistré. Réessaie.", "The character was not saved. Please try again."), 502);
       const accepted = applyBusSnapshot(data);
       setCurrentPassengerSeatIndex(data.seatIndex);
       setCurrentPassengerEntryNumber((previous) =>
@@ -560,9 +597,16 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
         setPassengerProfiles(profiles => [...profiles.filter(profile => profile.seatIndex !== data.passenger!.seatIndex), data.passenger!]);
       }
       setShowAvatarModal(false);
-      showToast("Personnage enregistré !", undefined, "PROFIL");
+      const locale = getLocale();
+      showToast(pickLocale(locale, "Personnage enregistré !", "Character saved!"), undefined, pickLocale(locale, "PROFIL", "PROFILE"));
     } catch (error) {
-      if (!controller.signal.aborted) setAvatarError(error instanceof ApiError ? error.message : "Impossible d’enregistrer ton personnage. Réessaie dans quelques instants.");
+      if (!controller.signal.aborted) {
+        setAvatarError(
+          error instanceof ApiError
+            ? error.message
+            : pickLocale(getLocale(), "Impossible d’enregistrer ton personnage. Réessaie dans quelques instants.", "Unable to save your character. Try again in a moment."),
+        );
+      }
     } finally {
       profileMutationLock.current = false;
       profileRequest.current = null;

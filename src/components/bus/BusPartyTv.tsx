@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { THEORY_SIGN_MESSAGES } from "@/lib/bus-theory-signs";
+import { getTheorySignMessages } from "@/lib/bus-theory-signs";
+import { pickLocale, useLocale } from "@/lib/i18n";
 import { PARTY_BEAT_SECONDS } from "@/lib/party-rhythm";
 import { TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT } from "./BusTvScreen";
 
 const SECONDS_PER_CARD = 12 * PARTY_BEAT_SECONDS;
 
-function makePartyCard(lines: readonly string[], index: number) {
+function makePartyCard(lines: readonly string[], index: number, headerTitle: string) {
   const canvas = document.createElement("canvas");
   canvas.width = 640;
   canvas.height = 360;
@@ -24,7 +25,7 @@ function makePartyCard(lines: readonly string[], index: number) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.font = "bold 23px system-ui, sans-serif";
-  ctx.fillText("LA THÉORIE DES FOUS DU BUS", 320, 76);
+  ctx.fillText(headerTitle, 320, 76);
   ctx.fillStyle = "#fff8e6";
   ctx.font = "900 52px system-ui, sans-serif";
   lines.forEach((line, row) => ctx.fillText(line, 320, 163 + row * 62, 548));
@@ -37,9 +38,12 @@ function makePartyCard(lines: readonly string[], index: number) {
 }
 
 export function usePartyTvCards(active: boolean) {
-  const textures = useMemo(() => active
-    ? THEORY_SIGN_MESSAGES.map(({ lines }, index) => makePartyCard(lines, index))
-    : null, [active]);
+  const locale = useLocale();
+  const textures = useMemo(() => {
+    if (!active) return null;
+    const headerTitle = pickLocale(locale, "LA THÉORIE DES FOUS DU BUS", "THE BUS FOOLS THEORY");
+    return getTheorySignMessages(locale).map(({ lines }, index) => makePartyCard(lines, index, headerTitle));
+  }, [active, locale]);
   useEffect(() => () => textures?.forEach(texture => texture.dispose()), [textures]);
   return textures;
 }
@@ -52,6 +56,12 @@ export default function BusPartyTv({ cards, index, reducedMotion }: {
   const material = useRef<THREE.MeshBasicMaterial>(null);
   const elapsed = useRef(0);
   const initial = index % cards.length;
+  useEffect(() => {
+    if (!material.current) return;
+    const step = Math.floor(elapsed.current / SECONDS_PER_CARD);
+    material.current.map = cards[(initial + step) % cards.length];
+    material.current.needsUpdate = true;
+  }, [cards, initial]);
   useFrame((_, delta) => {
     if (!material.current || reducedMotion) return;
     // Le moteur redémarre son horloge après la fermeture d’une modale.

@@ -3,6 +3,7 @@
 import { memo, useCallback, useMemo } from "react";
 import * as THREE from "three";
 import { BUS_RELAY } from "@/lib/bus-crew";
+import { getLocale, pickLocale } from "@/lib/i18n";
 import { ENTRY_SEAT_POSITION } from "@/lib/bus-layout";
 import { Passenger, getArchetypeMaterials } from "./Passengers";
 import { Accessory } from "./PassengerAppearance";
@@ -42,7 +43,10 @@ function BusRelayPassenger({ hornPulse, reducedMotion, partyOn }: { hornPulse: n
   const mats = useMemo(() => getArchetypeMaterials(archetype), []);
   const onActivate = useCallback(() => {
     window.dispatchEvent(new CustomEvent("bus-show-toast", { detail: {
-      badge: "FOUDUBUSTV", text: "Le relais de la théorie sur X / Twitter", sub: BUS_RELAY.handle, href: BUS_RELAY.url,
+      badge: "FOUDUBUSTV",
+      text: pickLocale(getLocale(), "Le relais de la théorie sur X / Twitter", "The theory relay on X / Twitter"),
+      sub: BUS_RELAY.handle,
+      href: BUS_RELAY.url,
     } }));
   }, []);
   return <Passenger name="bus-entry-passenger" label={BUS_RELAY.name} onActivate={onActivate}

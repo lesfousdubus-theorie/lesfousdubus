@@ -17,7 +17,7 @@ interface Props {
   shadowsEnabled?: boolean;
   shadowMapSize?: 1024 | 2048;
   shadowsType?: false | "basic" | "percentage" | "soft";
-  shadowsQuality?: "off" | "standard" | "high";
+  shadowsQuality?: "off" | "basic" | "standard" | "high";
   starCount?: number;
   cabinCenterZ?: number;
   cabinLength?: number;

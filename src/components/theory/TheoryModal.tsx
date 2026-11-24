@@ -13,6 +13,7 @@ import { createPortal } from "react-dom";
 import TheoryPanelContent, { type TheoryTab } from "./TheoryPanelContent";
 import { ModalCloseButton } from "../modals/ModalCloseButton";
 import { useModalAccessibility } from "../modals/useModalAccessibility";
+import { pickLocale, setLocale, useLocale } from "@/lib/i18n";
 import {
   FastBoltIcon,
   HandshakeIcon,
@@ -42,6 +43,7 @@ export default function TheoryModal({
   const dialogTitleRef = useRef<HTMLHeadingElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const scrollPositions = useRef<Partial<Record<TheoryTab, number>>>({});
+  const locale = useLocale();
 
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalOpen;
 
@@ -120,17 +122,44 @@ export default function TheoryModal({
               </span>
               <div className="min-w-0">
                 <h2 ref={dialogTitleRef} tabIndex={-1} id="theory-modal-title" className="text-sm font-black leading-tight uppercase tracking-[0.025em] text-[#c4b5fd] focus:outline-none sm:text-xl sm:tracking-[0.04em] lg:text-2xl">
-                  La Théorie des Fous du Bus
+                  {pickLocale(locale, "La Théorie des Fous du Bus", "The Bus Fools Theory")}
                 </h2>
                 <p className="mt-1 text-xs font-semibold leading-snug text-[#dfe5ff] sm:uppercase sm:tracking-[0.1em]">
-                  Le Siècle Oublié est le Présent
+                  {pickLocale(locale, "Le Siècle Oublié est le Présent", "The Void Century is the Present")}
                 </p>
               </div>
             </div>
-            <ModalCloseButton onClick={handleClose} />
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <div
+                role="group"
+                aria-label={pickLocale(locale, "Langue du site", "Site language")}
+                className="inline-flex h-11 items-center rounded-full border border-[#947eef]/35 bg-[#04071c]/90 p-1"
+              >
+                {(["fr", "en"] as const).map((code) => {
+                  const active = locale === code;
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      onClick={() => setLocale(code)}
+                      aria-pressed={active}
+                      aria-label={code === "fr" ? "Français" : "English"}
+                      className={`h-9 min-w-[2.5rem] cursor-pointer rounded-full px-2.5 text-xs font-extrabold uppercase tracking-wide transition-colors focus-visible:outline-none ${
+                        active
+                          ? "bus-btn-active text-white"
+                          : "text-[#b4bfe8] hover:text-white"
+                      }`}
+                    >
+                      {code.toUpperCase()}
+                    </button>
+                  );
+                })}
+              </div>
+              <ModalCloseButton onClick={handleClose} />
+            </div>
           </div>
 
-          <div role="tablist" aria-label="Sections de la théorie" className="flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-[#947eef]/20 bg-[#04071c]/85 px-2 py-2 no-scrollbar min-[360px]:px-3 min-[360px]:py-2.5 sm:gap-2 sm:px-7 lg:px-9">
+          <div role="tablist" aria-label={pickLocale(locale, "Sections de la théorie", "Theory sections")} className="flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-[#947eef]/20 bg-[#04071c]/85 px-2 py-2 no-scrollbar min-[360px]:px-3 min-[360px]:py-2.5 sm:gap-2 sm:px-7 lg:px-9">
             <TabButton
               buttonRef={(element) => { tabRefs.current[0] = element; }}
               active={activeTab === "thesis"}
@@ -139,8 +168,8 @@ export default function TheoryModal({
               tabId="theory-tab-thesis"
               panelId="theory-panel-thesis"
               icon={<FastBoltIcon className="hidden h-4 w-4 shrink-0 text-current sm:block" />}
-              label="La Théorie"
-              shortLabel="Théorie"
+              label={pickLocale(locale, "La Théorie", "The Theory")}
+              shortLabel={pickLocale(locale, "Théorie", "Theory")}
             />
             <TabButton
               buttonRef={(element) => { tabRefs.current[1] = element; }}
@@ -150,8 +179,8 @@ export default function TheoryModal({
               tabId="theory-tab-video"
               panelId="theory-panel-video"
               icon={<TvIcon className="hidden h-4 w-4 shrink-0 text-current sm:block" />}
-              label="Vidéo du Mont Corvo"
-              shortLabel="Vidéo"
+              label={pickLocale(locale, "Vidéo du Mont Corvo", "Le Mont Corvo Video")}
+              shortLabel={pickLocale(locale, "Vidéo", "Video")}
             />
             <TabButton
               buttonRef={(element) => { tabRefs.current[2] = element; }}
@@ -161,7 +190,7 @@ export default function TheoryModal({
               tabId="theory-tab-faq"
               panelId="theory-panel-faq"
               icon={<HelpCircleIcon className="hidden h-4 w-4 shrink-0 text-current sm:block" />}
-              label="FAQ & Origine"
+              label={pickLocale(locale, "FAQ & Origine", "FAQ & Origin")}
               shortLabel="FAQ"
             />
             <TabButton
@@ -172,8 +201,8 @@ export default function TheoryModal({
               tabId="theory-tab-participate"
               panelId="theory-panel-participate"
               icon={<HandshakeIcon className="hidden h-4 w-4 shrink-0 text-current sm:block" />}
-              label="Participer au site"
-              shortLabel="Participer"
+              label={pickLocale(locale, "Participer au site", "Contribute")}
+              shortLabel={pickLocale(locale, "Participer", "Contribute")}
             />
           </div>
 

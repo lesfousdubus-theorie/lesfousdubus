@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { emitBusAudioEvent, INITIAL_MUSIC_PLAYBACK, onBusAudioEvent, type BusMusicPlayback } from "@/lib/bus-audio";
+import { pickLocale, useLocale, type Locale } from "@/lib/i18n";
 import { EqualizerDetailsIcon, VolumeHighIcon, VolumeLowIcon, VolumeOffIcon } from "@/components/ui/BusIcons";
 
 function formatTime(seconds: number) {
@@ -10,12 +11,18 @@ function formatTime(seconds: number) {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
 }
 
-function playbackLabel(playback: BusMusicPlayback) {
-  if (playback.state === "error") return `Indisponible · réessaie avec ${playback.track === "party" ? "Fête" : "Musique"}`;
-  if (playback.state === "suspended") return "En pause pendant la vidéo";
-  if (playback.state === "playing") return "En lecture";
-  if (playback.state === "loading") return playback.requested ? "Démarrage…" : "Préparation…";
-  return playback.elapsed > 0 ? "En pause" : "En attente";
+function playbackLabel(playback: BusMusicPlayback, locale: Locale) {
+  if (playback.state === "error") {
+    return pickLocale(
+      locale,
+      `Indisponible · réessaie avec ${playback.track === "party" ? "Fête" : "Musique"}`,
+      `Unavailable · try again with ${playback.track === "party" ? "Party" : "Music"}`,
+    );
+  }
+  if (playback.state === "suspended") return pickLocale(locale, "En pause pendant la vidéo", "Paused during video");
+  if (playback.state === "playing") return pickLocale(locale, "En lecture", "Playing");
+  if (playback.state === "loading") return playback.requested ? pickLocale(locale, "Démarrage…", "Starting…") : pickLocale(locale, "Préparation…", "Preparing…");
+  return playback.elapsed > 0 ? pickLocale(locale, "En pause", "Paused") : pickLocale(locale, "En attente", "Idle");
 }
 
 interface MusicPlaybackControlsProps {
@@ -38,6 +45,7 @@ export default function MusicPlaybackControls({
   volume = 65,
   onVolumeChange,
 }: MusicPlaybackControlsProps = {}) {
+  const locale = useLocale();
   const [playback, setPlayback] = useState(INITIAL_MUSIC_PLAYBACK);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [draft, setDraft] = useState<number | null>(null);
@@ -181,13 +189,13 @@ export default function MusicPlaybackControls({
 
   const elapsed = draft ?? playback.elapsed;
   const seekEnabled = playback.ready && playback.duration > 0 && playback.state !== "error";
-  const status = playbackLabel(playback);
+  const status = playbackLabel(playback, locale);
   const resolvedVolume = Number.isFinite(volume) ? Math.max(0, Math.min(100, Math.round(volume))) : 65;
 
   if (!showTrigger && !open) return null;
 
   const panel = open ? (
-    <div ref={panelRef} id={id} role="region" aria-label="Progression de la musique"
+    <div ref={panelRef} id={id} role="region" aria-label={pickLocale(locale, "Progression de la musique", "Music progress")}
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
       className="bus-case bus-glass pointer-events-auto fixed z-50 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl px-4 py-2.5 text-white backdrop-blur-md">
@@ -195,8 +203,12 @@ export default function MusicPlaybackControls({
       <p role="status" className="mt-0.5 text-xs leading-5 text-[#a3aed9]">{status}</p>
       <input type="range" min={0} max={playback.duration || 1} step={0.1}
         disabled={!seekEnabled} value={Math.min(elapsed, playback.duration || 0)}
-        aria-label={`Position dans ${playback.title}`}
-        aria-valuetext={`${formatTime(elapsed)} sur ${playback.duration ? formatTime(playback.duration) : "durée en cours de chargement"}`}
+        aria-label={pickLocale(locale, `Position dans ${playback.title}`, `Position in ${playback.title}`)}
+        aria-valuetext={pickLocale(
+          locale,
+          `${formatTime(elapsed)} sur ${playback.duration ? formatTime(playback.duration) : "durée en cours de chargement"}`,
+          `${formatTime(elapsed)} of ${playback.duration ? formatTime(playback.duration) : "duration loading"}`,
+        )}
         onPointerDown={() => {
           draggingRef.current = true;
           clearDraftTimer();
@@ -227,7 +239,7 @@ export default function MusicPlaybackControls({
             step={1}
             value={resolvedVolume}
             onChange={event => onVolumeChange(Number(event.target.value))}
-            aria-label="Volume de la musique"
+            aria-label={pickLocale(locale, "Volume de la musique", "Music volume")}
             aria-valuetext={`${resolvedVolume}%`}
             className="pointer-events-auto h-10 min-w-0 flex-1 cursor-pointer touch-pan-x rounded-lg accent-[#7a3aec] focus-visible:outline-none"
           />
@@ -241,11 +253,11 @@ export default function MusicPlaybackControls({
 
   return <div ref={attachRoot} className={showTrigger ? "bus-music-playback pointer-events-auto relative flex shrink-0 items-center" : "contents"}>
     {showTrigger && <button ref={triggerRef} type="button"
-      aria-label={`Détails de la musique : ${playback.title}. ${status}`}
+      aria-label={pickLocale(locale, `Détails de la musique : ${playback.title}. ${status}`, `Music details: ${playback.title}. ${status}`)}
       aria-expanded={open} aria-controls={id} onClick={() => setOpen(value => !value)}
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
-      title={`${playback.title} · ${status} · afficher la progression`}
+      title={pickLocale(locale, `${playback.title} · ${status} · afficher la progression`, `${playback.title} · ${status} · show progress`)}
       className={`bus-glass pointer-events-auto relative z-10 flex h-11 w-11 items-center justify-center gap-2 touch-manipulation focus-visible:outline-none cursor-pointer ${compact ? "bus-icon-button rounded-full" : "rounded-full lg:w-auto lg:max-w-[165px] lg:justify-start lg:rounded-full lg:px-3.5"} ${
         open ? "bus-btn-active" : "bus-btn-secondary"
       }`}>

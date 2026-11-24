@@ -3,21 +3,27 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { pickLocale, useLocale } from "@/lib/i18n";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
 import { findModerationIssue } from "@/lib/server/moderation";
 import { cleanText } from "@/lib/server/text";
-import { getNakamaArchetype, NAKAMA_ROSTER } from "../bus/passenger-archetypes";
+import { getCharacterName, getNakamaArchetype, NAKAMA_ROSTER } from "../bus/passenger-archetypes";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { useModalAccessibility } from "./useModalAccessibility";
 import { BusFrontIcon, ChevronLeftIcon, ChevronRightIcon, EnterBusIcon, UserBadgeIcon } from "../ui/BusIcons";
 
+function AvatarPreviewLoading() {
+  const locale = useLocale();
+  return (
+    <p role="status" className="grid h-full place-items-center text-sm text-[#dfe5ff]">
+      {pickLocale(locale, "Chargement du personnage…", "Loading character…")}
+    </p>
+  );
+}
+
 const AvatarPreview = dynamic(() => import("../bus/AvatarPreview"), {
   ssr: false,
-  loading: () => (
-    <p role="status" className="grid h-full place-items-center text-sm text-[#dfe5ff]">
-      Chargement du personnage…
-    </p>
-  ),
+  loading: () => <AvatarPreviewLoading />,
 });
 
 export type OnboardingReason = "boarding" | "missing-name";
@@ -70,6 +76,7 @@ export function OnboardingModal({
   onClose?: () => void;
   onSubmit: (submission: OnboardingSubmission) => void;
 }) {
+  const locale = useLocale();
   const [name, setName] = useState(initialName);
   const [comment, setComment] = useState(initialComment);
   const [selectedAvatarId, setSelectedAvatarId] = useState<PassengerAvatarId | null>(initialAvatarId);
@@ -184,10 +191,14 @@ export function OnboardingModal({
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#c4b5fd]">
-                {reason === "missing-name" ? "Place enregistrée" : "Embarquement"}
+                {reason === "missing-name"
+                  ? pickLocale(locale, "Place enregistrée", "Seat registered")
+                  : pickLocale(locale, "Embarquement", "Boarding")}
               </p>
               <h2 id="onboarding-title" className="mt-0.5 text-xl font-black leading-tight sm:text-2xl">
-                {reason === "missing-name" ? "Choisis ton nom" : "Monte dans le bus !"}
+                {reason === "missing-name"
+                  ? pickLocale(locale, "Choisis ton nom", "Choose your name")
+                  : pickLocale(locale, "Monte dans le bus !", "Get on the bus!")}
               </h2>
             </div>
           </div>
@@ -210,8 +221,8 @@ export function OnboardingModal({
         >
           <div>
             <label htmlFor="onboarding-name" className="mb-1.5 flex items-center justify-between gap-2 text-sm font-black text-white">
-              <span>Nom</span>
-              <span className="text-xs font-semibold text-[#c4b5fd]">Obligatoire · 24 caractères max.</span>
+              <span>{pickLocale(locale, "Nom", "Name")}</span>
+              <span className="text-xs font-semibold text-[#c4b5fd]">{pickLocale(locale, "Obligatoire · 24 caractères max.", "Required · 24 characters max.")}</span>
             </label>
             <input
               ref={initialFocusRef}
@@ -229,7 +240,7 @@ export function OnboardingModal({
                 onDraftChange?.({ displayName: nextName, comment, avatarId: selectedAvatarId });
                 onClearError();
               }}
-              placeholder="Ex. NakamaBasque"
+              placeholder={pickLocale(locale, "Ex. NakamaBasque", "e.g. NakamaPirate")}
               className="bus-case-inset w-full select-text rounded-xl px-3.5 py-2.5 text-base text-white outline-none transition-colors placeholder:text-[#a3aed9]/70 focus:border-[#947eef] focus:ring-2 focus:ring-[#947eef]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
             />
             <p aria-hidden="true" className="mt-1 text-right text-xs font-semibold tabular-nums text-[#a3aed9]">
@@ -239,8 +250,8 @@ export function OnboardingModal({
 
           <div>
             <label htmlFor="onboarding-comment" className="mb-1.5 flex items-center justify-between gap-2 text-sm font-black text-white">
-              <span>Message</span>
-              <span className="text-xs font-semibold text-[#a3aed9]">Facultatif · 180 caractères max.</span>
+              <span>{pickLocale(locale, "Message", "Message")}</span>
+              <span className="text-xs font-semibold text-[#a3aed9]">{pickLocale(locale, "Facultatif · 180 caractères max.", "Optional · 180 characters max.")}</span>
             </label>
             <textarea
               ref={commentRef}
@@ -258,7 +269,7 @@ export function OnboardingModal({
                 onDraftChange?.({ displayName: name, comment: nextComment, avatarId: selectedAvatarId });
                 onClearError();
               }}
-              placeholder="Ex. Trop bien, vive la théorie !"
+              placeholder={pickLocale(locale, "Ex. Trop bien, vive la théorie !", "e.g. Awesome, long live the theory!")}
               className="bus-case-inset w-full resize-none select-text rounded-xl px-3.5 py-2.5 text-base leading-relaxed text-white outline-none transition-colors placeholder:text-[#a3aed9]/70 focus:border-[#947eef] focus:ring-2 focus:ring-[#947eef]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60 sm:text-sm"
             />
             <p aria-hidden="true" className="mt-1 text-right text-xs font-semibold tabular-nums text-[#a3aed9]">
@@ -270,10 +281,10 @@ export function OnboardingModal({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-wide text-[#a3aed9]">
-                  Personnage <span className="font-semibold text-[#a3aed9]">(facultatif)</span>
+                  {pickLocale(locale, "Personnage", "Character")} <span className="font-semibold text-[#a3aed9]">{pickLocale(locale, "(facultatif)", "(optional)")}</span>
                 </p>
                 <p className="mt-0.5 truncate text-sm font-bold text-[#c4b5fd]">
-                  {selectedAvatarId ? activeCharacter.name : "Automatique (selon ta place)"}
+                  {selectedAvatarId ? getCharacterName(activeCharacter, locale) : pickLocale(locale, "Automatique (selon ta place)", "Automatic (based on your seat)")}
                 </p>
               </div>
               <button
@@ -284,7 +295,11 @@ export function OnboardingModal({
                 aria-controls="onboarding-character-picker"
                 className="bus-btn-secondary inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-full px-3.5 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:text-sm"
               >
-                {showPicker ? "Masquer l’aperçu" : selectedAvatarId ? "Changer" : "Choisir mon personnage"}
+                {showPicker
+                  ? pickLocale(locale, "Masquer l’aperçu", "Hide preview")
+                  : selectedAvatarId
+                    ? pickLocale(locale, "Changer", "Change")
+                    : pickLocale(locale, "Choisir mon personnage", "Choose my character")}
               </button>
             </div>
 
@@ -339,7 +354,7 @@ export function OnboardingModal({
                       type="button"
                       onClick={() => changeCharacter(direction)}
                       aria-disabled={saving}
-                      aria-label={direction < 0 ? "Personnage précédent" : "Personnage suivant"}
+                      aria-label={direction < 0 ? pickLocale(locale, "Personnage précédent", "Previous character") : pickLocale(locale, "Personnage suivant", "Next character")}
                       className={`bus-btn-secondary absolute top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full text-white focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${direction < 0 ? "left-2" : "right-2"}`}
                     >
                       {direction < 0 ? <ChevronLeftIcon className="h-5 w-5" /> : <ChevronRightIcon className="h-5 w-5" />}
@@ -347,14 +362,14 @@ export function OnboardingModal({
                   ))}
                 </div>
                 <div className="mt-2.5 flex items-center justify-between gap-2" aria-live="polite" aria-atomic="true">
-                  <span className="text-sm font-black text-white">{activeCharacter.name}</span>
+                  <span className="text-sm font-black text-white">{getCharacterName(activeCharacter, locale)}</span>
                   <span className="text-xs font-semibold tabular-nums text-[#a3aed9]">
                     {resolvedIndex + 1} / {NAKAMA_ROSTER.length}
                   </span>
                 </div>
                 <div
                   role="group"
-                  aria-label="Sélection rapide du personnage"
+                  aria-label={pickLocale(locale, "Sélection rapide du personnage", "Quick character selection")}
                   className="mt-2 flex w-full min-w-0 gap-1.5 overflow-x-auto overscroll-x-contain px-0.5 py-1"
                 >
                   {NAKAMA_ROSTER.map((item) => {
@@ -376,13 +391,13 @@ export function OnboardingModal({
                           className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/25"
                           style={{ backgroundColor: item.shirtColor }}
                         />
-                        <span>{item.name}</span>
+                        <span>{getCharacterName(item, locale)}</span>
                       </button>
                     );
                   })}
                 </div>
                 <label className="mt-2 flex items-center gap-3 text-xs font-semibold text-[#dfe5ff]">
-                  <span>Faire tourner</span>
+                  <span>{pickLocale(locale, "Faire tourner", "Rotate")}</span>
                   <input
                     type="range"
                     min={-180}
@@ -391,8 +406,8 @@ export function OnboardingModal({
                     disabled={saving}
                     value={rotationDegrees}
                     onChange={(event) => setRotation((Number(event.target.value) * Math.PI) / 180)}
-                    aria-label="Rotation du personnage"
-                    aria-valuetext={`${rotationDegrees} degrés`}
+                    aria-label={pickLocale(locale, "Rotation du personnage", "Character rotation")}
+                    aria-valuetext={pickLocale(locale, `${rotationDegrees} degrés`, `${rotationDegrees} degrees`)}
                     className="h-6 min-w-0 flex-1 cursor-pointer accent-[#7a3aec] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </label>
@@ -408,7 +423,7 @@ export function OnboardingModal({
                     }}
                     className="bus-btn-secondary mt-2.5 min-h-11 w-full cursor-pointer rounded-full px-3 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
                   >
-                    Laisser le choix automatique
+                    {pickLocale(locale, "Laisser le choix automatique", "Use automatic choice")}
                   </button>
                 )}
               </div>
@@ -428,10 +443,10 @@ export function OnboardingModal({
           >
             {reason === "missing-name" ? <UserBadgeIcon className="h-5 w-5 shrink-0" /> : <EnterBusIcon className="h-5 w-5 shrink-0" />}
             {saving
-              ? "Enregistrement…"
+              ? pickLocale(locale, "Enregistrement…", "Saving…")
               : reason === "missing-name"
-                ? "Enregistrer mon nom"
-                : "Monter dans le bus"}
+                ? pickLocale(locale, "Enregistrer mon nom", "Save my name")
+                : pickLocale(locale, "Monter dans le bus", "Board the bus")}
           </button>
         </form>
       </section>

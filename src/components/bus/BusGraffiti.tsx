@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
-import { getBusGraffitiPlacements, THEORY_SIGN_MESSAGES } from "@/lib/bus-theory-signs";
+import { getBusGraffitiPlacements, getTheorySignMessages } from "@/lib/bus-theory-signs";
 import type { BusDoorLayout } from "@/lib/bus-layout";
+import { useLocale } from "@/lib/i18n";
 import { makeGraffitiTexture } from "@/lib/textures";
 import { SIDE_LABEL_Y } from "./BusBodyGeometry";
 
@@ -24,10 +25,11 @@ function BusGraffitiGroup({
   geometry: THREE.PlaneGeometry;
   instances: Array<{ side: number; z: number; width: number }>;
 }) {
+  const locale = useLocale();
+  const signMessage = getTheorySignMessages(locale)[message];
   const material = useMemo(() => {
-    const { lines } = THEORY_SIGN_MESSAGES[message];
     const map = makeGraffitiTexture({
-      text: lines.join("\n"),
+      text: signMessage.lines.join("\n"),
       width: 1024,
       height: 342,
       ...PALETTES[message % PALETTES.length],
@@ -45,7 +47,7 @@ function BusGraffitiGroup({
       polygonOffsetUnits: -2,
       roughness: 0.45,
     });
-  }, [message]);
+  }, [message, signMessage]);
 
   useEffect(() => () => {
     material.map?.dispose();
@@ -55,7 +57,7 @@ function BusGraffitiGroup({
   const mesh = useMemo(() => {
     const transform = new THREE.Object3D();
     const instanced = new THREE.InstancedMesh(geometry, material, instances.length);
-    instanced.name = `bus-side-slogan-${THEORY_SIGN_MESSAGES[message].id}`;
+    instanced.name = `bus-side-slogan-${signMessage.id}`;
     instances.forEach(({ side, width, z }, index) => {
       transform.position.set(side * 1.342, SIDE_LABEL_Y, z);
       transform.rotation.y = side * Math.PI / 2;
@@ -65,7 +67,7 @@ function BusGraffitiGroup({
     });
     instanced.computeBoundingSphere();
     return instanced;
-  }, [geometry, instances, material, message]);
+  }, [geometry, instances, material, signMessage.id]);
 
   useEffect(() => () => { mesh.dispose(); }, [mesh]);
 

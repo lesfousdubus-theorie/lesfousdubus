@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { pickLocale, syncSavedLocale, useLocale } from "@/lib/i18n";
 
 export default function ErrorPage({
   error,
@@ -10,7 +11,10 @@ export default function ErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const locale = useLocale();
+
   useEffect(() => {
+    syncSavedLocale();
     console.error(error);
   }, [error]);
 
@@ -18,16 +22,22 @@ export default function ErrorPage({
     <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto overscroll-contain bg-[#04071c] p-4 text-white sm:p-6">
       <main className="bus-case-elevated my-auto w-full max-w-md rounded-2xl p-6 text-center sm:p-8">
         <span className="bus-icon-badge inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest">
-          Erreur
+          {pickLocale(locale, "Erreur", "Error")}
         </span>
         <h1 className="mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl">
-          Un problème est survenu dans le bus
+          {pickLocale(locale, "Un problème est survenu dans le bus", "Something went wrong on the bus")}
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-[#dfe5ff] sm:text-base">
-          Une secousse imprévue s’est produite sur Grand Line. Tu peux retenter l’expérience ou revenir au point de départ.
+          {pickLocale(
+            locale,
+            "Une secousse imprévue s’est produite sur Grand Line. Tu peux retenter l’expérience ou revenir au point de départ.",
+            "An unexpected bump happened on the Grand Line. You can try again or return to the start.",
+          )}
         </p>
         <p className="mt-2.5 text-xs leading-relaxed text-[#a3aed9]">
-          {error.digest ? `Référence : ${error.digest}` : "Si l’incident persiste, recharge simplement la page."}
+          {error.digest
+            ? pickLocale(locale, `Référence : ${error.digest}`, `Reference: ${error.digest}`)
+            : pickLocale(locale, "Si l’incident persiste, recharge simplement la page.", "If the issue persists, simply reload the page.")}
         </p>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3.5">
           <button
@@ -35,13 +45,13 @@ export default function ErrorPage({
             onClick={() => reset()}
             className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
           >
-            Réessayer
+            {pickLocale(locale, "Réessayer", "Try again")}
           </button>
           <Link
             href="/"
             className="bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
           >
-            Retourner à l’accueil
+            {pickLocale(locale, "Retourner à l’accueil", "Return home")}
           </Link>
         </div>
       </main>

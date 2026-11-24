@@ -2,6 +2,7 @@
 
 import { useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
+import { formatOrdinalRank, formatPassengerDisplayName, pickLocale, useLocale, type Locale } from "@/lib/i18n";
 import type { PassengerProfile } from "@/types/passenger";
 import { CommentBubbleIcon, UserBadgeIcon } from "../ui/BusIcons";
 import { useModalAccessibility } from "./useModalAccessibility";
@@ -9,8 +10,16 @@ import { ModalCloseButton } from "./ModalCloseButton";
 
 const REPORT_EMAIL = "contact@lesfousdubus.sbs";
 
-export function getPassengerReportHref(passenger: PassengerProfile) {
+export function getPassengerReportHref(passenger: PassengerProfile, locale: Locale = "fr") {
   const placeNumber = passenger.entryNumber ?? passenger.seatIndex + 1;
+  if (locale === "en") {
+    const message = [
+      "Hello,", "", "I would like to report the following passenger:",
+      `Seat #: ${placeNumber} (seat ${passenger.seatIndex})`, `Name: ${passenger.displayName}`,
+      `Message: ${passenger.comment ?? "none"}`, "", "Reason for report:", "",
+    ].join("\r\n");
+    return `mailto:${REPORT_EMAIL}?subject=${encodeURIComponent(`Report passenger #${placeNumber}`)}&body=${encodeURIComponent(message)}`;
+  }
   const message = [
     "Bonjour,", "", "Je souhaite signaler le passager suivant :",
     `Place n° : ${placeNumber} (siège ${passenger.seatIndex})`, `Nom : ${passenger.displayName}`,
@@ -36,12 +45,13 @@ export function PassengerCard({
   onClose: () => void;
   onBack?: () => void;
 }) {
+  const locale = useLocale();
   const dialogRef = useRef<HTMLElement>(null);
   const handleKeyDown = useModalAccessibility(Boolean(passenger), onClose, dialogRef, dialogRef, returnFocusRef);
 
   if (!passenger) return null;
   const placeNumber = passenger.entryNumber ?? passenger.seatIndex + 1;
-  const arrivalRank = placeNumber === 1 ? "1re" : `${placeNumber.toLocaleString("fr-FR")}e`;
+  const arrivalRank = formatOrdinalRank(placeNumber, locale);
 
   return createPortal(
     <div
@@ -67,10 +77,14 @@ export function PassengerCard({
             </span>
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#c4b5fd]">
-                Place n° {placeNumber.toLocaleString("fr-FR")} · {arrivalRank} à bord
+                {pickLocale(
+                  locale,
+                  `Place n° ${placeNumber.toLocaleString("fr-FR")} · ${arrivalRank} à bord`,
+                  `Seat #${placeNumber.toLocaleString("en-US")} · ${arrivalRank} on board`,
+                )}
               </p>
               <h2 id="passenger-name" className="mt-0.5 break-words text-xl font-black leading-tight text-white sm:text-2xl">
-                {passenger.displayName}
+                {formatPassengerDisplayName(passenger.displayName, locale)}
               </h2>
             </div>
           </div>
@@ -84,7 +98,7 @@ export function PassengerCard({
               onClick={onBack}
               className="bus-btn-secondary mb-4 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold focus-visible:outline-none"
             >
-              ← Retour aux passagers
+              {pickLocale(locale, "← Retour aux passagers", "← Back to passengers")}
             </button>
           )}
           <div className="bus-case-elevated rounded-2xl p-4">
@@ -94,7 +108,7 @@ export function PassengerCard({
                   aria-hidden="true"
                   className="h-7 w-7 shrink-0 animate-spin rounded-full border-2 border-[#dfe5ff]/25 border-t-[#947eef] motion-reduce:animate-none"
                 />
-                <p className="text-sm font-semibold text-[#dfe5ff]">Chargement de son message…</p>
+                <p className="text-sm font-semibold text-[#dfe5ff]">{pickLocale(locale, "Chargement de son message…", "Loading their message…")}</p>
               </div>
             ) : error ? (
               <div>
@@ -104,7 +118,7 @@ export function PassengerCard({
                   onClick={onRetry}
                   className="bus-btn-secondary mt-3 min-h-11 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold focus-visible:outline-none"
                 >
-                  Réessayer
+                  {pickLocale(locale, "Réessayer", "Try again")}
                 </button>
               </div>
             ) : (
@@ -114,7 +128,7 @@ export function PassengerCard({
                   <span>Message</span>
                 </div>
                 <p className={passenger.comment ? "whitespace-pre-wrap break-words text-base leading-relaxed text-[#dfe5ff]" : "text-sm text-[#a3aed9]"}>
-                  {passenger.comment || "Ce passager n’a pas laissé de message."}
+                  {passenger.comment || pickLocale(locale, "Ce passager n’a pas laissé de message.", "This passenger did not leave a message.")}
                 </p>
               </div>
             )}
@@ -122,10 +136,10 @@ export function PassengerCard({
           {!loading && !error && (passenger.comment || passenger.displayName) && (
             <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
               <a
-                href={getPassengerReportHref(passenger)}
+                href={getPassengerReportHref(passenger, locale)}
                 className="inline-flex min-h-11 cursor-pointer items-center rounded-md px-1 text-xs font-semibold text-[#a3aed9] underline underline-offset-4 transition-colors hover:text-red-300 focus-visible:outline-none"
               >
-                Signaler ce contenu
+                {pickLocale(locale, "Signaler ce contenu", "Report this content")}
               </a>
             </div>
           )}

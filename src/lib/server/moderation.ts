@@ -66,7 +66,13 @@ export function findModerationIssue(text: string): ModerationIssue | null {
   return null;
 }
 
+import { localizeServerError, type Locale } from "@/lib/i18n-shared";
+
 export const MODERATION_MESSAGES: Record<ModerationIssue, string> = {
   link: "Les liens et adresses e-mail ne sont pas autorisés dans le bus.",
   language: "Ce texte contient un terme non autorisé. Reformule-le pour rejoindre les autres nakamas.",
 };
+
+export function getModerationMessage(issue: ModerationIssue, locale: Locale = "fr"): string {
+  return localizeServerError(MODERATION_MESSAGES[issue], locale);
+}

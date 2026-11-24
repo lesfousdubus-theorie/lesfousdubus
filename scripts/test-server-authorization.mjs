@@ -71,12 +71,18 @@ export async function runServerAuthorizationChecks() {
       assert.equal(health.status, 200, `${configuration.name}: optional moderation must not break health`);
       const ownId = `auth-${configuration.name}-owner`;
       const targetId = `auth-${configuration.name}-target`;
-      const own = await request("POST", { visitorId: ownId });
-      const target = await request("POST", { visitorId: targetId });
+      const own = await request("POST", { visitorId: ownId, displayName: "Nakama Owner" });
+      const target = await request("POST", { visitorId: targetId, displayName: "Nakama Target" });
       assert.equal(own.status, 200);
       assert.equal(target.status, 200);
       const targetSeat = target.data.seatIndex;
       if (configuration.name === "enabled") {
+        // Anonymous boarding and reserved anonymous names must be rejected.
+        assert.equal((await request("POST", { visitorId: `auth-${configuration.name}-anon-1` })).status, 400);
+        assert.equal((await request("POST", { visitorId: `auth-${configuration.name}-anon-2`, displayName: "" })).status, 400);
+        assert.equal((await request("POST", { visitorId: `auth-${configuration.name}-anon-3`, displayName: "Anonyme" })).status, 400);
+        assert.equal((await request("POST", { visitorId: `auth-${configuration.name}-anon-4`, displayName: "anonymous" })).status, 400);
+
         const invalidVisitorLookup = await worker.fetch("http://isolated.test/api/bus-entries?visitorId=bad");
         assert.equal(invalidVisitorLookup.status, 400, "Invalid visitorId query must return 400.");
         assert.equal(invalidVisitorLookup.headers.get("cache-control"), "no-store, max-age=0");
@@ -90,24 +96,23 @@ export async function runServerAuthorizationChecks() {
         assert.equal(missingData.seatIndex, null);
         assert.equal(missingData.passenger, null);
 
-        const anonymousLookup = await worker.fetch(`http://isolated.test/api/bus-entries?visitorId=${encodeURIComponent(ownId)}`);
-        assert.equal(anonymousLookup.status, 200);
-        assert.equal(anonymousLookup.headers.get("cache-control"), "no-store, max-age=0");
-        const anonymousLookupData = await anonymousLookup.json();
-        assert.equal(anonymousLookupData.registered, true);
-        assert.equal(anonymousLookupData.hasDisplayName, false);
-        assert.equal(anonymousLookupData.seatIndex, own.data.seatIndex);
-        assert.equal(anonymousLookupData.entryNumber, 1);
-        assert.deepEqual(anonymousLookupData.passenger, {
-          seatIndex: own.data.seatIndex,
-          entryNumber: 1,
-          displayName: "",
-          comment: null,
-          avatarId: null,
-        });
+        // Duplicate name by another visitor must return 409 (case-insensitive & trimmed).
+        const duplicateJoin = await request("POST", { visitorId: `auth-${configuration.name}-dup`, displayName: "  nakama   owner  " });
+        assert.equal(duplicateJoin.status, 409, "Another visitor must not be able to take an already used name.");
+        const duplicateRename = await request("POST", { visitorId: targetId, displayName: "NAKAMA OWNER" });
+        assert.equal(duplicateRename.status, 409, "Renaming to an already taken name must return 409.");
 
         const named = await request("POST", { visitorId: ownId, displayName: "Nakama Test", comment: "Vive le bus !" });
         assert.equal(named.status, 200);
+        // Once ownId renamed from "Nakama Owner" to "Nakama Test", "Nakama Owner" becomes available again.
+        const reclaimedName = await request("POST", { visitorId: targetId, displayName: "Nakama Owner" });
+        assert.equal(reclaimedName.status, 200, "Previous name must become available again once changed.");
+        assert.equal(reclaimedName.data.passenger.displayName, "Nakama Owner");
+        // Same visitor changing only casing of their own name must succeed.
+        const recasedOwn = await request("POST", { visitorId: ownId, displayName: "NAKAMA TEST" });
+        assert.equal(recasedOwn.status, 200);
+        const restoredOwnCase = await request("POST", { visitorId: ownId, displayName: "Nakama Test" });
+        assert.equal(restoredOwnCase.status, 200);
         const chosen = await request("POST", { visitorId: ownId, avatarId: "chopper" });
         assert.equal(chosen.status, 200);
         assert.equal(chosen.data.added, false, "Changing avatar must never add a visitor.");
@@ -120,7 +125,7 @@ export async function runServerAuthorizationChecks() {
         assert.deepEqual((await distantName.json()).names, [
           { seatIndex: chosen.data.seatIndex, displayName: "Nakama Test", avatarId: "chopper" },
         ]);
-        assert(chosen.data.profileRevision > named.data.profileRevision, "Avatar changes invalidate nearby public profiles.");
+        assert(chosen.data.profileRevision > restoredOwnCase.data.profileRevision, "Avatar changes invalidate nearby public profiles.");
         const namedLookup = await worker.fetch(`http://isolated.test/api/bus-entries?visitorId=${encodeURIComponent(ownId)}`);
         assert.equal(namedLookup.status, 200);
         const namedLookupData = await namedLookup.json();
@@ -164,18 +169,18 @@ export async function runServerAuthorizationChecks() {
         const restoredChopper = await request("POST", { visitorId: ownId, avatarId: "chopper", updateOnly: true });
         assert.equal(restoredChopper.status, 200);
         assert.equal(restoredChopper.data.passenger.avatarId, "chopper");
-        const anonymous = await request("POST", { visitorId: ownId, displayName: "", comment: "" });
-        assert.equal(anonymous.data.passenger.avatarId, "chopper", "Removing text must preserve the chosen avatar.");
-        const clearedLookup = await worker.fetch(`http://isolated.test/api/bus-entries?visitorId=${encodeURIComponent(ownId)}`);
-        const clearedLookupData = await clearedLookup.json();
-        assert.equal(clearedLookupData.registered, true);
-        assert.equal(clearedLookupData.hasDisplayName, false);
-        assert.equal(clearedLookupData.passenger.displayName, "");
-        assert.equal(clearedLookupData.passenger.avatarId, "chopper");
+        // Clearing displayName to empty must be rejected, while clearing comment alone stays allowed.
+        const clearNameRejected = await request("POST", { visitorId: ownId, displayName: "", comment: "" });
+        assert.equal(clearNameRejected.status, 400, "Clearing a passenger's displayName to become anonymous must be rejected.");
+        const clearedComment = await request("POST", { visitorId: ownId, comment: "" });
+        assert.equal(clearedComment.status, 200);
+        assert.equal(clearedComment.data.passenger.displayName, "Nakama Test");
+        assert.equal(clearedComment.data.passenger.comment, null);
+        assert.equal(clearedComment.data.passenger.avatarId, "chopper", "Removing comment must preserve the chosen avatar and name.");
         const profiles = await worker.fetch("http://isolated.test/api/bus-entries?profiles=1&from=0&limit=48");
         const ownProfile = (await profiles.json()).passengers.find(profile => profile.seatIndex === own.data.seatIndex);
-        assert.equal(ownProfile.avatarId, "chopper", "An avatar-only profile must reach other visitors' renderers.");
-        assert.equal(ownProfile.displayName, "", "An avatar choice must not add an anonymous name label.");
+        assert.equal(ownProfile.avatarId, "chopper", "Profile avatar must reach other visitors' renderers.");
+        assert.equal(ownProfile.displayName, "Nakama Test");
         await assert.rejects(database.prepare("UPDATE bus_entries SET avatar_id = 'not-in-roster' WHERE seat_index = ?").bind(own.data.seatIndex).run());
         const multilineComment = "Ligne 1 : pirate\n\nLigne 2 : nakama 🏴‍☠️";
         const multilinePost = await request("POST", {
@@ -289,14 +294,14 @@ export async function runServerAuthorizationChecks() {
           assert.equal(res.status, 200, "Repeated updateOnly checks use the profile quota instead of burning the 6/h join quota.");
           assert.equal(res.data.seatIndex, null);
         }
-        const quotaGhostJoin = await request("POST", { visitorId: quotaGhost, avatarId: "zoro" }, undefined, "198.51.100.77");
-        assert.equal(quotaGhostJoin.status, 200);
+        const quotaGhostJoin = await request("POST", { visitorId: quotaGhost, displayName: "Nakama Test", avatarId: "zoro" }, undefined, "198.51.100.77");
+        assert.equal(quotaGhostJoin.status, 200, "A name freed by permanent deletion must become available again.");
         assert.equal(quotaGhostJoin.data.added, true);
         assert.equal(quotaGhostJoin.data.passenger.avatarId, "zoro");
       }
       if (configuration.name === "missing") {
         const results = await Promise.all(Array.from({ length: 130 }, (_, index) => request("POST",
-          { visitorId: `auth-quota-${index}` }, undefined, "198.51.100.240")));
+          { visitorId: `auth-quota-${index}`, displayName: `QuotaUser ${index}` }, undefined, "198.51.100.240")));
         assert.equal(results.filter(result => result.status === 200).length, 120);
         const refusals = results.filter(result => result.status === 429);
         assert.equal(refusals.length, 10, "The shared-IP join quota must remain 120 per hour.");

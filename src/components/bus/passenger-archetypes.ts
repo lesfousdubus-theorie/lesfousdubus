@@ -1,3 +1,4 @@
+import type { Locale } from "@/lib/i18n";
 import { isPassengerAvatarId, type PassengerAvatarId } from "@/lib/passenger-avatar";
 
 export interface NakamaArchetype {
@@ -270,4 +271,9 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
 export function getNakamaArchetype(index: number | null, avatarId?: string | null) {
   return (isPassengerAvatarId(avatarId) && NAKAMA_ROSTER.find(archetype => archetype.id === avatarId))
     || NAKAMA_ROSTER[Math.max(0, index ?? 0) % NAKAMA_ROSTER.length];
+}
+
+export function getCharacterName(archetype: Pick<NakamaArchetype, "id" | "name">, locale: Locale): string {
+  if (locale === "en" && archetype.id === "buggy") return "Buggy";
+  return archetype.name;
 }

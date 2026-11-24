@@ -4,7 +4,8 @@ import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type React
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import type { PassengerProfile } from "@/types/passenger";
-import { NAKAMA_ROSTER, getNakamaArchetype, type NakamaArchetype } from "./passenger-archetypes";
+import { getCharacterName, NAKAMA_ROSTER, getNakamaArchetype, type NakamaArchetype } from "./passenger-archetypes";
+import { useLocale, type Locale } from "@/lib/i18n";
 import { NakamaProp } from "./PassengerAppearance";
 import PassengerHead from "./PassengerHead";
 import { SimplifiedPassengers } from "./SimplifiedPassengers";
@@ -29,10 +30,11 @@ function getSeatedPassengerNameHeight(id: string, crown: number) {
   return CABIN_FLOOR_Y + getPassengerSkeleton(id).seatedHipHeight + getPassengerNameHeightFromHip(id, crown);
 }
 
-function getNakamaShortName(archetype: NakamaArchetype) {
+function getNakamaShortName(archetype: NakamaArchetype, locale: Locale) {
+  const name = getCharacterName(archetype, locale);
   return ["shanks", "buggy"].includes(archetype.id)
-    ? archetype.name.split(" ")[0]
-    : archetype.name.split(" ").at(-1) ?? archetype.name;
+    ? name.split(" ")[0]
+    : name.split(" ").at(-1) ?? name;
 }
 
 function getFallbackPassengerHeadTop(archetype: NakamaArchetype) {
@@ -227,16 +229,17 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
     }
     return profiles;
   }, [passengerProfiles, summaries]);
+  const locale = useLocale();
   const headHeights = usePassengerHeadHeights();
   const distantLabels = useMemo(() => simplified.flatMap(({ seat, index, passengerKind }) => {
     const profile = passengerKind === "visitor" ? profilesBySeatIndex.get(index) : undefined;
     const archetype = getNakamaArchetype(index, profile?.avatarId);
-    const name = passengerKind === "visitor" ? getVisiblePassengerName(profile?.displayName) : getNakamaShortName(archetype);
+    const name = passengerKind === "visitor" ? getVisiblePassengerName(profile?.displayName) : getNakamaShortName(archetype, locale);
     const crown = headHeights.get(archetype.id) ?? getFallbackPassengerHeadTop(archetype);
     if (!name) return [];
     const skeleton = getPassengerSkeleton(archetype.id);
     return [{ index, name, x: seat.x, y: getSeatedPassengerNameHeight(archetype.id, crown), z: seat.z + skeleton.seatedHipZ + BODY_BEHIND_HIP + 0.02 }];
-  }), [headHeights, profilesBySeatIndex, simplified]);
+  }), [headHeights, locale, profilesBySeatIndex, simplified]);
   const detailedSeats = new Set(mountedDetailed.map(occupant => occupant.physicalSeatIndex));
   const poses=useMemo<PassengerPoseRegistry>(()=>new Map(),[]);
   useEffect(()=>{
@@ -260,7 +263,7 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
         name={passengerKind === "nakama" ? `crew-nakama-${archetype.id}-${index}` : undefined}
         passengerKind={passengerKind} physicalSeatIndex={physicalSeatIndex}
         cardActors={cardActors} cardPairIndex={cardPairBySeat.get(physicalSeatIndex) ?? null}
-        label={passengerKind === "nakama" ? getNakamaShortName(archetype) : getVisiblePassengerName(profilesBySeatIndex.get(index)?.displayName) ?? null}
+        label={passengerKind === "nakama" ? getNakamaShortName(archetype, locale) : getVisiblePassengerName(profilesBySeatIndex.get(index)?.displayName) ?? null}
         hornPulse={hornPulse} partyOn={partyOn}
         peerSide={detailedSeats.has(physicalSeatIndex ^ 1) ? (seat.seatInRow % 2 === 0 ? 1 : -1) : 0}
         interactionPairIndex={Math.floor(physicalSeatIndex / 2)}

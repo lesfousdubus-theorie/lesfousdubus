@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
+import { pickLocale, useLocale } from "@/lib/i18n";
 import { useModalAccessibility } from "./useModalAccessibility";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { CommentBubbleIcon, UserBadgeIcon } from "../ui/BusIcons";
@@ -33,6 +34,7 @@ export function JoinBusModal({
   onSubmit: () => void;
   onRemove: () => void;
 }) {
+  const locale = useLocale();
   const dialogRef = useRef<HTMLElement>(null);
   const initialFocusRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const [submitNonce, setSubmitNonce] = useState(0);
@@ -76,8 +78,12 @@ export function JoinBusModal({
             <div className="min-w-0 flex-1">
               <h2 id="join-bus-title" className="text-xl font-black leading-tight sm:text-2xl">
                 {mode === "name"
-                  ? hasSavedValue ? "Modifie ton nom" : "Ajoute ton nom"
-                  : hasSavedValue ? "Modifie ton commentaire" : "Laisse un commentaire"}
+                  ? hasSavedValue
+                    ? pickLocale(locale, "Modifie ton nom", "Edit your name")
+                    : pickLocale(locale, "Ajoute ton nom", "Add your name")
+                  : hasSavedValue
+                    ? pickLocale(locale, "Modifie ton commentaire", "Edit your comment")
+                    : pickLocale(locale, "Laisse un commentaire", "Leave a comment")}
               </h2>
             </div>
           </div>
@@ -97,8 +103,8 @@ export function JoinBusModal({
           {mode === "name" ? (
             <div>
               <label htmlFor="join-bus-name" className="mb-2 flex items-center justify-between gap-3 text-sm font-black text-white">
-                <span>Nom</span>
-                <span className="text-xs font-semibold text-[#c4b5fd]">24 caractères max.</span>
+                <span>{pickLocale(locale, "Nom", "Name")}</span>
+                <span className="text-xs font-semibold text-[#c4b5fd]">{pickLocale(locale, "24 caractères max.", "24 characters max.")}</span>
               </label>
               <input
                 ref={mode === "name" ? initialFocusRef as RefObject<HTMLInputElement> : undefined}
@@ -112,7 +118,7 @@ export function JoinBusModal({
                   const chars = Array.from(event.target.value);
                   onNameChange(chars.length > 24 ? chars.slice(0, 24).join("") : event.target.value);
                 }}
-                placeholder="Ex. NakamaBasque"
+                placeholder={pickLocale(locale, "Ex. NakamaBasque", "e.g. NakamaPirate")}
                 className="bus-case-inset w-full select-text rounded-xl px-4 py-3 text-base text-white outline-none transition-colors placeholder:text-[#a3aed9]/70 focus:border-[#947eef] focus:ring-2 focus:ring-[#947eef]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
               />
               <p aria-hidden="true" className="mt-1.5 text-right text-xs font-semibold tabular-nums text-[#a3aed9]">
@@ -122,8 +128,8 @@ export function JoinBusModal({
           ) : (
             <div>
               <label htmlFor="join-bus-comment" className="mb-2 flex items-center justify-between gap-3 text-sm font-black text-white">
-                <span>Ton message</span>
-                <span className="text-xs font-semibold text-[#c4b5fd]">180 caractères max.</span>
+                <span>{pickLocale(locale, "Ton message", "Your message")}</span>
+                <span className="text-xs font-semibold text-[#c4b5fd]">{pickLocale(locale, "180 caractères max.", "180 characters max.")}</span>
               </label>
               <textarea
                 ref={mode === "comment" ? initialFocusRef as RefObject<HTMLTextAreaElement> : undefined}
@@ -138,7 +144,7 @@ export function JoinBusModal({
                   const chars = Array.from(event.target.value);
                   onCommentChange(chars.length > 180 ? chars.slice(0, 180).join("") : event.target.value);
                 }}
-                placeholder="Ex. Trop bien, vive la théorie !"
+                placeholder={pickLocale(locale, "Ex. Trop bien, vive la théorie !", "e.g. Awesome, long live the theory!")}
                 className="bus-case-inset w-full resize-none select-text rounded-xl px-4 py-3 text-base leading-relaxed text-white outline-none transition-colors placeholder:text-[#a3aed9]/70 focus:border-[#947eef] focus:ring-2 focus:ring-[#947eef]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
               />
               <p aria-hidden="true" className="mt-1.5 text-right text-xs font-semibold tabular-nums text-[#a3aed9]">
@@ -160,7 +166,7 @@ export function JoinBusModal({
               className="bus-btn-primary flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80"
             >
               {mode === "name" ? <UserBadgeIcon className="h-5 w-5 shrink-0" /> : <CommentBubbleIcon className="h-5 w-5 shrink-0" />}
-              {joining ? "Enregistrement…" : "Enregistrer"}
+              {joining ? pickLocale(locale, "Enregistrement…", "Saving…") : pickLocale(locale, "Enregistrer", "Save")}
             </button>
             {mode === "comment" && hasSavedValue && (
               <button
@@ -169,7 +175,7 @@ export function JoinBusModal({
                 onClick={() => { if (!joining) onRemove(); }}
                 className="min-h-12 cursor-pointer rounded-full border border-red-400/45 bg-red-950/40 px-4 py-3 text-sm font-semibold text-red-100 transition-colors hover:bg-red-900/55 focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80"
               >
-                Retirer mon commentaire
+                {pickLocale(locale, "Retirer mon commentaire", "Remove my comment")}
               </button>
             )}
           </div>

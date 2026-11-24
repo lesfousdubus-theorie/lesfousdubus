@@ -1,3 +1,4 @@
+import { getLocale, localizeServerError } from "@/lib/i18n";
 import { isValidVisitorId } from "@/lib/visitor-id";
 
 export interface BusApiState {
@@ -87,17 +88,19 @@ export async function fetchJson<T>(
   try {
     const response = await fetch(input, { ...init, signal: requestController.signal });
     const data: unknown = await response.json().catch(() => null);
+    const locale = getLocale();
     if (!response.ok) {
+      const rawMessage = data && typeof data === "object" && "error" in data && typeof data.error === "string"
+        ? data.error
+        : "Le serveur ne répond pas pour le moment.";
       throw new ApiError(
-        data && typeof data === "object" && "error" in data && typeof data.error === "string"
-          ? data.error
-          : "Le serveur ne répond pas pour le moment.",
+        localizeServerError(rawMessage, locale),
         response.status,
         getRetryAfterMs(response),
       );
     }
     if (!data || typeof data !== "object" || Array.isArray(data)) {
-      throw new ApiError("Réponse du serveur invalide.", 502);
+      throw new ApiError(localizeServerError("Réponse du serveur invalide.", locale), 502);
     }
     return data as T;
   } finally {

@@ -30,6 +30,30 @@ function isSeatConflictError(error: unknown): boolean {
   return pattern.test(String(error));
 }
 
+function isDisplayNameConflictError(error: unknown): boolean {
+  if (!error) return false;
+  const pattern = /UNIQUE constraint failed.*(?:display_name|bus_entries_unique_display_name)/i;
+  if (typeof error === "string") return pattern.test(error);
+  if (error instanceof Error) {
+    if (pattern.test(error.message)) return true;
+    if (error.cause && isDisplayNameConflictError(error.cause)) return true;
+  }
+  if (typeof error === "object") {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && pattern.test(message)) return true;
+    const cause = (error as { cause?: unknown }).cause;
+    if (cause && isDisplayNameConflictError(cause)) return true;
+  }
+  return pattern.test(String(error));
+}
+
+function isReservedAnonymousName(value: string): boolean {
+  const lower = value.trim().toLowerCase();
+  return lower === "anonyme" || lower === "anonymous";
+}
+
+const DUPLICATE_NAME_ERROR = "Ce nom est déjà pris par un autre passager. Choisis-en un autre.";
+
 export async function GET(request: Request) {
   try {
     const database = await getPassengerDatabase();
@@ -196,6 +220,9 @@ export async function POST(request: Request) {
     const displayName = cleanText(body.displayName, 24);
     const comment = cleanText(body.comment, 180, true);
     if (displayName) {
+      if (isReservedAnonymousName(displayName)) {
+        return Response.json({ error: "Choisis un nom différent d’Anonyme." }, { status: 400, headers: WRITE_HEADERS });
+      }
       const issue = findModerationIssue(displayName);
       if (issue) {
         return Response.json({ error: MODERATION_MESSAGES[issue] }, { status: 400, headers: WRITE_HEADERS });
@@ -227,6 +254,21 @@ export async function POST(request: Request) {
     );
     if (!rateLimit.allowed) return rateLimitedResponse(rateLimit.retryAfter);
 
+    if (!existing && !updateOnly && !displayName) {
+      return Response.json({ error: "Choisis un nom avant de monter dans le bus." }, { status: 400, headers: WRITE_HEADERS });
+    }
+    if (existing && hasDisplayName && !displayName) {
+      return Response.json({ error: "Choisis un nom à afficher au-dessus de ton personnage." }, { status: 400, headers: WRITE_HEADERS });
+    }
+    if (displayName && (hasDisplayName || !existing)) {
+      const nameOwner = await database.prepare(
+        "SELECT visitor_id FROM bus_entries WHERE LOWER(TRIM(display_name)) = LOWER(?) AND visitor_id != ? LIMIT 1",
+      ).bind(displayName, visitorId).first<{ visitor_id: string }>();
+      if (nameOwner) {
+        return Response.json({ error: DUPLICATE_NAME_ERROR }, { status: 409, headers: WRITE_HEADERS });
+      }
+    }
+
     let added = false;
     if (!existing && !updateOnly) {
       const MAX_SEAT_ATTEMPTS = 8;
@@ -242,13 +284,16 @@ export async function POST(request: Request) {
              ON CONFLICT(visitor_id) DO NOTHING`,
           ).bind(
             visitorId,
-            hasDisplayName ? displayName || null : null,
+            displayName,
             hasComment ? comment || null : null,
             hasAvatar ? body.avatarId : null,
           ).run();
           added = (insertion.meta.changes ?? 0) > 0;
           break;
         } catch (insertError) {
+          if (isDisplayNameConflictError(insertError)) {
+            return Response.json({ error: DUPLICATE_NAME_ERROR }, { status: 409, headers: WRITE_HEADERS });
+          }
           if (!isSeatConflictError(insertError) || attempt === MAX_SEAT_ATTEMPTS - 1) {
             throw insertError;
           }
@@ -266,15 +311,22 @@ export async function POST(request: Request) {
     if (existing && (hasDisplayName || hasComment || hasAvatar)) {
       // Seuls les champs fournis changent : choisir un personnage conserve le
       // prénom, le commentaire et la place du visiteur.
-      await database.prepare(
-        `UPDATE bus_entries SET
-          display_name = CASE WHEN ? THEN ? ELSE display_name END,
-          comment = CASE WHEN ? THEN ? ELSE comment END,
-          avatar_id = CASE WHEN ? THEN ? ELSE avatar_id END
-         WHERE visitor_id = ?`,
-      ).bind(hasDisplayName ? 1 : 0, displayName || null,
-        hasComment ? 1 : 0, comment || null,
-        hasAvatar ? 1 : 0, hasAvatar ? body.avatarId : null, visitorId).run();
+      try {
+        await database.prepare(
+          `UPDATE bus_entries SET
+            display_name = CASE WHEN ? THEN ? ELSE display_name END,
+            comment = CASE WHEN ? THEN ? ELSE comment END,
+            avatar_id = CASE WHEN ? THEN ? ELSE avatar_id END
+           WHERE visitor_id = ?`,
+        ).bind(hasDisplayName ? 1 : 0, displayName || null,
+          hasComment ? 1 : 0, comment || null,
+          hasAvatar ? 1 : 0, hasAvatar ? body.avatarId : null, visitorId).run();
+      } catch (updateError) {
+        if (isDisplayNameConflictError(updateError)) {
+          return Response.json({ error: DUPLICATE_NAME_ERROR }, { status: 409, headers: WRITE_HEADERS });
+        }
+        throw updateError;
+      }
     }
 
     const passengerRow = existing || !updateOnly

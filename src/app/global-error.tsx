@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { pickLocale, syncSavedLocale, useLocale } from "@/lib/i18n";
 
 const GLOBAL_ERROR_FALLBACK_CSS = `@layer base {
   *, *::before, *::after { box-sizing: border-box; }
@@ -139,31 +140,40 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const locale = useLocale();
+
   useEffect(() => {
+    syncSavedLocale();
     console.error(error);
   }, [error]);
 
   return (
-    <html lang="fr">
+    <html lang={locale}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Erreur critique | Les Fous du Bus</title>
+        <title>{pickLocale(locale, "Erreur critique | Les Fous du Bus", "Critical error | The Bus Fools")}</title>
         <style>{GLOBAL_ERROR_FALLBACK_CSS}</style>
       </head>
       <body className="m-0 bg-[#04071c] text-white antialiased">
         <div className="ge-shell fixed inset-0 z-50 grid place-items-center overflow-y-auto overscroll-contain bg-[#04071c] p-4 text-white sm:p-6">
           <main className="ge-card bus-case-elevated my-auto w-full max-w-md rounded-2xl p-6 text-center sm:p-8">
             <span className="ge-badge bus-icon-badge inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest">
-              Erreur critique
+              {pickLocale(locale, "Erreur critique", "Critical error")}
             </span>
             <h1 className="ge-title mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl">
-              Impossible de charger le bus
+              {pickLocale(locale, "Impossible de charger le bus", "Unable to load the bus")}
             </h1>
             <p className="ge-body mt-3 text-sm leading-relaxed text-[#dfe5ff] sm:text-base">
-              Une erreur critique est survenue lors de l’embarquement sur le bus. Tu peux retenter l’expérience ou revenir à l’accueil.
+              {pickLocale(
+                locale,
+                "Une erreur critique est survenue lors de l’embarquement sur le bus. Tu peux retenter l’expérience ou revenir à l’accueil.",
+                "A critical error occurred while boarding the bus. You can try again or return home.",
+              )}
             </p>
             <p className="ge-muted mt-2.5 text-xs leading-relaxed text-[#a3aed9]">
-              {error.digest ? `Référence : ${error.digest}` : "Si le problème persiste, recharge simplement l’onglet."}
+              {error.digest
+                ? pickLocale(locale, `Référence : ${error.digest}`, `Reference: ${error.digest}`)
+                : pickLocale(locale, "Si le problème persiste, recharge simplement l’onglet.", "If the problem persists, simply reload the tab.")}
             </p>
             <div className="ge-actions mt-7 flex flex-wrap items-center justify-center gap-3.5">
               <button
@@ -171,14 +181,14 @@ export default function GlobalError({
                 onClick={() => reset()}
                 className="ge-btn-primary bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
               >
-                Réessayer
+                {pickLocale(locale, "Réessayer", "Try again")}
               </button>
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a
                 href="/"
                 className="ge-btn-secondary bus-btn-secondary inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
               >
-                Retourner à l’accueil
+                {pickLocale(locale, "Retourner à l’accueil", "Return home")}
               </a>
             </div>
           </main>

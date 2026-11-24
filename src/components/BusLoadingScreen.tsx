@@ -1,11 +1,14 @@
 "use client";
 
+import { pickLocale, useLocale } from "@/lib/i18n";
+
 /** The wheel is inline; the retrieved crew emblem is preloaded by the root layout. */
 export default function BusLoadingScreen({ failed = false, exiting = false }: { failed?: boolean; exiting?: boolean }) {
+  const locale = useLocale();
   return (
     <section
       aria-labelledby="bus-loading-title"
-      className={`fixed inset-0 z-[70] grid place-items-center overflow-y-auto overscroll-contain bg-[#04071c] px-6 py-10 text-white transition-opacity duration-300 ${exiting ? "pointer-events-none opacity-0" : "opacity-100"}`}
+      className={`fixed inset-0 z-[2147483647] grid place-items-center overflow-y-auto overscroll-contain bg-[#04071c] px-6 py-10 text-white transition-opacity duration-300 ${exiting ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
       <div className="my-auto flex w-full max-w-lg flex-col items-center text-center">
         <svg id="bus-loading-wheel" viewBox="0 0 256 256" aria-hidden="true" focusable="false"
@@ -44,19 +47,21 @@ export default function BusLoadingScreen({ failed = false, exiting = false }: { 
             id="bus-loading-title"
             className={failed ? "text-2xl font-black leading-tight text-white" : "mt-5 text-sm font-semibold tracking-wide text-[#dfe5ff]"}
           >
-            {failed ? "Le bus n’a pas pu démarrer" : "Chargement du bus…"}
+            {failed
+              ? pickLocale(locale, "Le bus n’a pas pu démarrer", "The bus failed to start")
+              : pickLocale(locale, "Chargement du bus…", "Loading the bus…")}
           </h1>
           {failed && (
             <>
               <p className="mt-3 text-sm leading-relaxed text-[#dfe5ff]">
-                Le chargement a échoué. Tu peux réessayer.
+                {pickLocale(locale, "Le chargement a échoué. Tu peux réessayer.", "Loading failed. You can try again.")}
               </p>
               <button
                 type="button"
                 onClick={() => window.location.reload()}
                 className="bus-btn-primary mt-6 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none sm:text-base"
               >
-                Réessayer le chargement
+                {pickLocale(locale, "Réessayer le chargement", "Retry loading")}
               </button>
             </>
           )}

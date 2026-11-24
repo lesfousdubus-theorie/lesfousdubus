@@ -5,6 +5,7 @@ import type { Phase } from "./bus/constants";
 import { COMPACT_HUD_MEDIA_QUERY, useHudLayout } from "./useHudLayout";
 import { emitBusAudioEvent, INITIAL_MUSIC_PLAYBACK, onBusAudioEvent, type BusMusicPlayback } from "@/lib/bus-audio";
 import { countPeopleOnBoard } from "@/lib/bus-crew";
+import { formatOrdinalRank, pickLocale, useLocale } from "@/lib/i18n";
 import { getSeatCountInRow } from "@/lib/bus-layout";
 import MusicPlaybackControls from "./audio/MusicPlaybackControls";
 import TheorySettingsPanel from "./theory/TheorySettingsPanel";
@@ -143,6 +144,7 @@ export function BusHud({
   bgmVolume, setBgmVolume,
   partyOn, toggleParty,
 }: BusHudProps) {
+  const locale = useLocale();
   const compactHud = useSyncExternalStore(subscribeCompactHud, getCompactHudSnapshot, () => false);
   const seatCountInRow = getSeatCountInRow(seatRow);
   const [immersive, setImmersive] = useState(false);
@@ -180,13 +182,13 @@ export function BusHud({
   const hasActiveGroupedControl = partyOn || headlights || speedMultiplier !== 1 || manualDayNight !== null;
   const musicSuspendedByTv = bgmPlaying && !partyOn && musicPlayback.track === "background" && musicPlayback.state === "suspended";
   const resetViewTitle = phase === "inside" && !freeView
-    ? "Recentrer la vue sur l’écran"
-    : "Recentrer la vue sur le bus";
+    ? pickLocale(locale, "Recentrer la vue sur l’écran", "Recenter view on the screen")
+    : pickLocale(locale, "Recentrer la vue sur le bus", "Recenter view on the bus");
   const tvButtonDescription = partyOn
-    ? "La fête est en cours — arrête la fête pour utiliser la télévision"
+    ? pickLocale(locale, "La fête est en cours — arrête la fête pour utiliser la télévision", "Party is active — stop the party to use the TV")
     : tvOn
-      ? "Éteindre la télévision"
-      : "Allumer la télévision";
+      ? pickLocale(locale, "Éteindre la télévision", "Turn off the TV")
+      : pickLocale(locale, "Allumer la télévision", "Turn on the TV");
   const safeToastHref = toast?.href && /^https?:\/\//i.test(toast.href) ? toast.href : undefined;
 
   const toggleMobileMenu = () => {
@@ -337,11 +339,20 @@ export function BusHud({
             onWheel={(event) => event.stopPropagation()}
           >
             <h1 className="break-words text-xs font-black uppercase leading-[1.18] tracking-tight min-[390px]:text-[13px] min-[430px]:text-sm sm:text-xl lg:text-3xl">
-              <span className="text-[#c4b5fd]">La Théorie</span> <br className="sm:hidden" />
-              <span className="text-white">des Fous du Bus</span>
+              {locale === "en" ? (
+                <>
+                  <span className="text-[#c4b5fd]">The Bus Fools</span> <br className="sm:hidden" />
+                  <span className="text-white">Theory</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-[#c4b5fd]">La Théorie</span> <br className="sm:hidden" />
+                  <span className="text-white">des Fous du Bus</span>
+                </>
+              )}
             </h1>
             <p className="mt-1 hidden text-xs font-bold uppercase leading-tight tracking-[0.035em] text-[#a995f7] sm:block lg:text-sm">
-              Le Siècle Oublié est le Présent
+              {pickLocale(locale, "Le Siècle Oublié est le Présent", "The Void Century is the Present")}
             </p>
           </div>
         </div>
@@ -353,15 +364,19 @@ export function BusHud({
               type="button"
               onClick={() => setShowTheoryModal(true)}
               className="bus-btn-primary pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-semibold focus-visible:outline-none min-[360px]:px-3 min-[390px]:px-3.5 sm:px-4 sm:text-xs cursor-pointer"
-              title="Découvrir la théorie des Fous du Bus"
+              title={pickLocale(locale, "Découvrir la théorie des Fous du Bus", "Discover the Bus Fools Theory")}
             >
               <ScrollIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 min-[360px]:block" />
-              <span><span className="bus-landscape-hide hidden min-[360px]:inline">La </span>Théorie</span>
+              <span>
+                {locale === "en"
+                  ? <><span className="bus-landscape-hide hidden min-[360px]:inline">The </span>Theory</>
+                  : <><span className="bus-landscape-hide hidden min-[360px]:inline">La </span>Théorie</>}
+              </span>
             </button>
-            <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label={phase === "inside" ? "Changer de personnage" : "Choisir mon personnage"}
+            <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label={phase === "inside" ? pickLocale(locale, "Changer de personnage", "Change character") : pickLocale(locale, "Choisir mon personnage", "Choose my character")}
               className="bus-btn-secondary pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-[11px] font-semibold focus-visible:outline-none disabled:opacity-60 min-[360px]:px-2.5 min-[390px]:px-3 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer">
               <PersonIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 sm:block" />
-              <span>Personnage</span>
+              <span>{pickLocale(locale, "Personnage", "Character")}</span>
             </button>
             {hasSavedPlace && (
               <button
@@ -370,44 +385,50 @@ export function BusHud({
                 onClick={openPlaceModal}
                 disabled={busy}
                 aria-haspopup="dialog"
-                aria-label={entryNumber ? `Ma place, numéro ${entryNumber}` : "Ma place"}
-                title={entryNumber ? `Place n° ${entryNumber} (${entryNumber === 1 ? "1re" : `${entryNumber}e`} personne à être rentrée dans le bus)` : "Gérer ma place"}
+                aria-label={entryNumber ? pickLocale(locale, `Ma place, numéro ${entryNumber}`, `My seat, number ${entryNumber}`) : pickLocale(locale, "Ma place", "My seat")}
+                title={entryNumber
+                  ? pickLocale(
+                      locale,
+                      `Place n° ${entryNumber} (${formatOrdinalRank(entryNumber, "fr")} personne à être rentrée dans le bus)`,
+                      `Seat #${entryNumber} (${formatOrdinalRank(entryNumber, "en")} person to board the bus)`,
+                    )
+                  : pickLocale(locale, "Gérer ma place", "Manage my seat")}
                 className="bus-btn-secondary pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-[11px] font-semibold focus-visible:outline-none disabled:opacity-60 min-[360px]:px-2.5 min-[390px]:px-3 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer"
               >
                 <SeatTicketIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 sm:block" />
-                <span>Ma place</span>
+                <span>{pickLocale(locale, "Ma place", "My seat")}</span>
                 {entryNumber !== null && entryNumber !== undefined && (
                   <span className="bus-pill-badge rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none tabular-nums sm:text-[11px]">
-                    N°&nbsp;{entryNumber.toLocaleString("fr-FR")}
+                    {pickLocale(locale, "N°\u00a0", "#")}{entryNumber.toLocaleString(locale === "en" ? "en-US" : "fr-FR")}
                   </span>
                 )}
               </button>
             )}
           </div>
-          <button ref={immersiveButtonRef} type="button" onClick={() => { setMusicDetailsState({ open: false, phase, epoch: phaseEpoch }); closeMobileMenu(); setImmersiveRestoreVisible(true); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label="Activer le mode immersif" title="Mode immersif"
+          <button ref={immersiveButtonRef} type="button" onClick={() => { setMusicDetailsState({ open: false, phase, epoch: phaseEpoch }); closeMobileMenu(); setImmersiveRestoreVisible(true); setImmersive(true); }} disabled={!sceneAvailable || busy} aria-label={pickLocale(locale, "Activer le mode immersif", "Enable immersive mode")} title={pickLocale(locale, "Mode immersif", "Immersive mode")}
             className="bus-immersive-toggle bus-btn-secondary pointer-events-auto inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-2.5 text-[11px] font-semibold focus-visible:outline-none disabled:opacity-60 sm:gap-2 sm:px-3.5 sm:text-xs cursor-pointer">
             <FullscreenExpandIcon className="h-4 w-4 shrink-0" />
-            <span className="bus-landscape-hide">Mode immersif</span>
+            <span className="bus-landscape-hide">{pickLocale(locale, "Mode immersif", "Immersive mode")}</span>
           </button>
         </div>
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
         <div className="bus-top-stats bus-case bus-glass pointer-events-auto absolute right-2 top-2 flex min-h-11 items-stretch gap-0.5 rounded-[1.25rem] p-0.5 backdrop-blur-md min-[375px]:p-1 sm:left-auto sm:right-4 sm:top-4 sm:min-h-14 sm:gap-1 sm:p-1">
-          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} title="Voir la liste des passagers" className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-[1rem] border border-transparent px-2 py-1 text-left leading-tight transition-[border-color] duration-150 hover:border-[#cfc4fc]/80 focus-visible:outline-none min-[375px]:gap-1.5 min-[375px]:px-2.5 sm:gap-2.5 sm:px-3 sm:py-2 cursor-pointer">
+          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} title={pickLocale(locale, "Voir la liste des passagers", "View passenger list")} className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-[1rem] border border-transparent px-2 py-1 text-left leading-tight transition-[border-color] duration-150 hover:border-[#cfc4fc]/80 focus-visible:outline-none min-[375px]:gap-1.5 min-[375px]:px-2.5 sm:gap-2.5 sm:px-3 sm:py-2 cursor-pointer">
             <span aria-hidden="true" className="hidden text-[#c4b5fd] min-[400px]:inline-flex min-[400px]:items-center">
               <BusFrontIcon className="h-4 w-4 shrink-0 sm:h-6 sm:w-6" />
             </span>
             <span>
               <span className="flex items-center gap-1 sm:gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-[0.04em] text-[#c4b5fd] sm:text-xs">
-                  Passagers
+                  {pickLocale(locale, "Passagers", "Passengers")}
                 </span>
-                <span title={`${numRows} rangées`} className="bus-landscape-hide hidden rounded-full border border-[#947eef]/30 bg-[#6141e8]/20 px-1.5 text-xs font-semibold text-[#dfe5ff] md:inline">
+                <span title={pickLocale(locale, `${numRows} rangées`, `${numRows} rows`)} className="bus-landscape-hide hidden rounded-full border border-[#947eef]/30 bg-[#6141e8]/20 px-1.5 text-xs font-semibold text-[#dfe5ff] md:inline">
                   {numRows} r.
                 </span>
               </span>
               <span className="bus-stats-value block text-sm font-black tabular-nums text-white sm:text-xl">
-                {count === null ? (statsLoadError ? "Liste" : "…") : countPeopleOnBoard(count).toLocaleString("fr-FR")}
+                {count === null ? (statsLoadError ? pickLocale(locale, "Liste", "List") : "…") : countPeopleOnBoard(count).toLocaleString(locale === "en" ? "en-US" : "fr-FR")}
               </span>
             </span>
           </button>
@@ -418,22 +439,37 @@ export function BusHud({
                 setStatsLoadError(false);
                 setStatsRetryToken((value) => value + 1);
               }}
-              title="Réessayer de charger le compteur des passagers"
+              title={pickLocale(locale, "Réessayer de charger le compteur des passagers", "Retry loading passenger counter")}
               className="bus-btn-tonal flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full px-2 py-1 text-xs font-semibold focus-visible:outline-none cursor-pointer"
             >
-              <span>Réessayer</span>
+              <span>{pickLocale(locale, "Réessayer", "Try again")}</span>
             </button>
           )}
           <div className="my-1 w-px bg-[#947eef]/25" aria-hidden="true" />
-          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-h-11 min-w-0 flex-none rounded-[1rem] border border-transparent px-2 py-1 text-left leading-tight transition-[border-color] duration-150 hover:border-[#cfc4fc]/80 focus-visible:outline-none min-[375px]:px-2.5 sm:px-3 sm:py-2 cursor-pointer" title="Voir le compteur précis depuis le 26 mai 2024">
+          <button
+            type="button"
+            aria-label={pickLocale(
+              locale,
+              `La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`,
+              `The theory has stood for ${theoryAgeInDays.toLocaleString("en-US")} days. View the date and the first video`,
+            )}
+            onClick={() => setShowTheoryAge(true)}
+            className="min-h-11 min-w-0 flex-none rounded-[1rem] border border-transparent px-2 py-1 text-left leading-tight transition-[border-color] duration-150 hover:border-[#cfc4fc]/80 focus-visible:outline-none min-[375px]:px-2.5 sm:px-3 sm:py-2 cursor-pointer"
+            title={pickLocale(locale, "Voir le compteur précis depuis le 26 mai 2024", "View exact counter since May 26, 2024")}
+          >
             <span className="block text-[10px] font-bold uppercase tracking-[0.04em] text-[#c4b5fd] sm:text-xs">
-              <span className="hud-label-short sm:hidden"><span className="hidden min-[375px]:inline">La </span>théorie</span><span className="hud-label-long hidden sm:inline">La théorie existe depuis</span>
+              <span className="hud-label-short sm:hidden">
+                {locale === "en" ? "Theory" : <><span className="hidden min-[375px]:inline">La </span>théorie</>}
+              </span>
+              <span className="hud-label-long hidden sm:inline">
+                {pickLocale(locale, "La théorie existe depuis", "Theory has stood for")}
+              </span>
             </span>
             <span className="bus-stats-value block text-sm font-black tabular-nums text-white sm:text-xl">
-              {theoryAgeInDays.toLocaleString("fr-FR")}
+              {theoryAgeInDays.toLocaleString(locale === "en" ? "en-US" : "fr-FR")}
               <span className="ml-0.5 text-[10px] font-bold text-[#dfe5ff] sm:ml-1 sm:text-xs">
-                <span className="min-[375px]:hidden">j</span>
-                <span className="hidden min-[375px]:inline">jours</span>
+                <span className="min-[375px]:hidden">{pickLocale(locale, "j", "d")}</span>
+                <span className="hidden min-[375px]:inline">{pickLocale(locale, "jours", "days")}</span>
               </span>
             </span>
           </button>
@@ -447,10 +483,20 @@ export function BusHud({
               <button
                 type="button"
                 onClick={toggleDayNight}
-                title={manualDayNight === null ? `Forcer le mode ${isNight ? "Jour" : "Nuit"}` : "Revenir au cycle automatique"}
+                title={manualDayNight === null
+                  ? pickLocale(locale, `Forcer le mode ${isNight ? "Jour" : "Nuit"}`, `Force ${isNight ? "Day" : "Night"} mode`)
+                  : pickLocale(locale, "Revenir au cycle automatique", "Return to automatic cycle")}
                 aria-label={manualDayNight === null
-                  ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
-                  : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
+                  ? pickLocale(
+                      locale,
+                      `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`,
+                      `Automatic cycle, currently ${isNight ? "night" : "day"}. Force ${isNight ? "day" : "night"} mode`,
+                    )
+                  : pickLocale(
+                      locale,
+                      `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`,
+                      `Forced ${isNight ? "night" : "day"} mode. Return to automatic cycle`,
+                    )}
                 className={`bus-glass flex h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold focus-visible:outline-none sm:px-3.5 sm:text-sm cursor-pointer ${
                   manualDayNight !== null ? "bus-btn-active" : "bus-btn-secondary"
                 }`}
@@ -460,9 +506,9 @@ export function BusHud({
                 ) : (
                   <SunIcon className={`h-4 w-4 shrink-0 ${manualDayNight !== null ? "text-white" : "text-[#dcd3ff]"}`} />
                 )}
-                <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
+                <span>{manualDayNight === null ? "Auto" : isNight ? pickLocale(locale, "Nuit", "Night") : pickLocale(locale, "Jour", "Day")}</span>
               </button>
-              <button type="button" onClick={resetView} disabled={busy} aria-label="Recentrer la vue" title={resetViewTitle} className="bus-btn-secondary grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer">
+              <button type="button" onClick={resetView} disabled={busy} aria-label={pickLocale(locale, "Recentrer la vue", "Recenter view")} title={resetViewTitle} className="bus-btn-secondary grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer">
                 <CrosshairResetIcon className="h-5 w-5 shrink-0" />
               </button>
               <button
@@ -470,8 +516,18 @@ export function BusHud({
                 onClick={toggleBgm}
                 disabled={partyOn}
                 aria-pressed={bgmPlaying || partyOn}
-                aria-label={partyOn ? "Musique de fête active — arrêter avec le bouton Fête" : bgmPlaying ? "Couper la musique de fond" : "Activer la musique de fond (Life in Pieces — Le Mont Corvo)"}
-                title={partyOn ? "Party At Baratie — utilise Fête pour arrêter la musique" : musicSuspendedByTv ? "Musique en pause pendant la vidéo/TV — cliquer pour couper" : bgmPlaying ? "Couper la musique de fond (Life in Pieces)" : "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)"}
+                aria-label={partyOn
+                  ? pickLocale(locale, "Musique de fête active — arrêter avec le bouton Fête", "Party music active — stop with the Party button")
+                  : bgmPlaying
+                    ? pickLocale(locale, "Couper la musique de fond", "Stop background music")
+                    : pickLocale(locale, "Activer la musique de fond (Life in Pieces — Le Mont Corvo)", "Play background music (Life in Pieces — Le Mont Corvo)")}
+                title={partyOn
+                  ? pickLocale(locale, "Party At Baratie — utilise Fête pour arrêter la musique", "Party At Baratie — use Party to stop music")
+                  : musicSuspendedByTv
+                    ? pickLocale(locale, "Musique en pause pendant la vidéo/TV — cliquer pour couper", "Music paused during video/TV — click to mute")
+                    : bgmPlaying
+                      ? pickLocale(locale, "Couper la musique de fond (Life in Pieces)", "Stop background music (Life in Pieces)")
+                      : pickLocale(locale, "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)", "Play background music (Howard Harper-Barnes - Life in Pieces)")}
                 className={`bus-glass flex h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 sm:px-3.5 sm:text-sm cursor-pointer ${
                   bgmPlaying || partyOn ? "bus-btn-active" : "bus-btn-secondary"
                 }`}
@@ -485,7 +541,7 @@ export function BusHud({
                 ) : (
                   <MusicNoteIcon className="h-4 w-4 shrink-0" />
                 )}
-                <span>Musique</span>
+                <span>{pickLocale(locale, "Musique", "Music")}</span>
                 {bgmPlaying && !musicSuspendedByTv && (
                   <span className="bus-music-badge hidden rounded-md border border-white/30 bg-white/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white md:inline">
                     ON
@@ -509,19 +565,19 @@ export function BusHud({
                 {speedMenuOpen && (
                   <div
                     role="group"
-                    aria-label="Régler la vitesse du bus"
+                    aria-label={pickLocale(locale, "Régler la vitesse du bus", "Adjust bus speed")}
                     className="bus-case-elevated absolute bottom-full -right-12 mb-2 z-40 flex items-center gap-1.5 rounded-full p-1 text-xs shadow-2xl sm:-right-[3.25rem]"
                   >
                     <button
                       type="button"
                       onClick={decelerateBus}
                       disabled={speedMultiplier <= 0}
-                      aria-label="Ralentir le bus"
+                      aria-label={pickLocale(locale, "Ralentir le bus", "Slow down the bus")}
                       className="flex h-9 items-center justify-center gap-1.5 rounded-full border border-transparent bg-white/[0.07] px-3 text-xs font-semibold text-white transition-colors hover:border-[#cfc4fc]/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
-                      title="Ralentir le bus (Touche - ou Flèche Bas)"
+                      title={pickLocale(locale, "Ralentir le bus (Touche - ou Flèche Bas)", "Slow down the bus (- key or Down Arrow)")}
                     >
                       <SlowSpeedIcon className="h-4 w-4 shrink-0" />
-                      <span>Ralentir</span>
+                      <span>{pickLocale(locale, "Ralentir", "Slow down")}</span>
                     </button>
                     <div className="flex min-w-[3.5rem] items-center justify-center gap-1 px-1.5 font-black tabular-nums">
                       <span className={speedMultiplier >= 2.0 ? "text-[#c4b5fd]" : speedMultiplier <= 0.5 ? "text-[#93c5fd]" : "text-white"}>
@@ -537,12 +593,12 @@ export function BusHud({
                       type="button"
                       onClick={accelerateBus}
                       disabled={speedMultiplier >= 3.0}
-                      aria-label="Accélérer le bus"
+                      aria-label={pickLocale(locale, "Accélérer le bus", "Speed up the bus")}
                       className="bus-btn-tonal flex h-9 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
-                      title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
+                      title={pickLocale(locale, "Accélérer le bus (Touche + ou Flèche Haut / Boost)", "Speed up the bus (+ key or Up Arrow / Boost)")}
                     >
                       <FastBoltIcon className="h-4 w-4 shrink-0" />
-                      <span>Accélérer</span>
+                      <span>{pickLocale(locale, "Accélérer", "Speed up")}</span>
                     </button>
                   </div>
                 )}
@@ -557,8 +613,8 @@ export function BusHud({
                     }));
                   }}
                   aria-expanded={speedMenuOpen}
-                  aria-label="Vitesse du bus"
-                  title="Vitesse du bus"
+                  aria-label={pickLocale(locale, "Vitesse du bus", "Bus speed")}
+                  title={pickLocale(locale, "Vitesse du bus", "Bus speed")}
                   className={`${speedMenuOpen || speedMultiplier !== 1 ? "bus-btn-active" : "bus-btn-secondary"} bus-glass flex h-11 items-center gap-2 rounded-full px-3.5 text-xs font-semibold backdrop-blur-md focus-visible:outline-none sm:text-sm cursor-pointer`}
                 >
                   {speedMultiplier >= 2.0 ? (
@@ -566,29 +622,19 @@ export function BusHud({
                   ) : (
                     <SlowSpeedIcon className="h-4 w-4 shrink-0" />
                   )}
-                  <span>Vitesse</span>
+                  <span>{pickLocale(locale, "Vitesse", "Speed")}</span>
                 </button>
               </div>
               <div ref={settingsMenuRef} className="pointer-events-auto relative">
                 {settingsMenuOpen && (
                   <div
                     role="dialog"
-                    aria-label="Paramètres graphiques"
+                    aria-label={pickLocale(locale, "Paramètres graphiques", "Graphics settings")}
                     className="bus-case-elevated bus-scrollbar absolute bottom-full right-0 z-50 mb-2 max-h-[calc(100dvh-6.5rem)] w-[min(18.5rem,calc(100vw-1.5rem))] overflow-y-auto rounded-2xl p-3 shadow-2xl"
                   >
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-white">
-                        <SlidersIcon className="h-3.5 w-3.5 text-[#c4b5fd]" />
-                        <span>Paramètres</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setSettingsMenuState({ open: false, phase, epoch: phaseEpoch })}
-                        aria-label="Fermer les paramètres"
-                        className="grid h-7 w-7 cursor-pointer place-items-center rounded-full border border-white/15 bg-white/[0.06] text-white/80 transition-colors hover:border-[#cfc4fc] hover:text-white focus-visible:outline-none"
-                      >
-                        <CloseIcon className="h-3.5 w-3.5" />
-                      </button>
+                    <div className="mb-2 flex items-center gap-2 text-xs font-extrabold tracking-wide text-white">
+                      <SlidersIcon className="h-3.5 w-3.5 text-[#c4b5fd]" />
+                      <span>{pickLocale(locale, "Paramètres", "Settings")}</span>
                     </div>
                     <TheorySettingsPanel
                       graphicsSettings={graphicsSettings}
@@ -610,8 +656,8 @@ export function BusHud({
                     }));
                   }}
                   aria-expanded={settingsMenuOpen}
-                  aria-label="Paramètres"
-                  title="Paramètres"
+                  aria-label={pickLocale(locale, "Paramètres", "Settings")}
+                  title={pickLocale(locale, "Paramètres", "Settings")}
                   className={`${settingsMenuOpen ? "bus-btn-active" : "bus-btn-secondary"} bus-glass grid h-11 w-11 shrink-0 place-items-center rounded-full backdrop-blur-md focus-visible:outline-none cursor-pointer`}
                 >
                   <SlidersIcon className="h-4 w-4 shrink-0 text-[#dcd3ff]" />
@@ -631,14 +677,14 @@ export function BusHud({
                   type="button"
                   onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
                   disabled={seatRow <= 0}
-                  aria-label="Rangée précédente"
+                  aria-label={pickLocale(locale, "Rangée précédente", "Previous row")}
                   className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-                  title={seatRow <= 0 ? "Première rangée atteinte" : "Rangée précédente"}
+                  title={seatRow <= 0 ? pickLocale(locale, "Première rangée atteinte", "First row reached") : pickLocale(locale, "Rangée précédente", "Previous row")}
                 >
                   <ChevronLeftIcon className="h-4 w-4 shrink-0" />
                 </button>
                 <span className="flex h-10 items-center justify-center text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
-                  <span>Rangée</span>
+                  <span>{pickLocale(locale, "Rangée", "Row")}</span>
                   <span className="ml-1 text-[#c4b5fd]">{seatRow + 1}</span>
                   <span className="mx-0.5 text-[#a3aed9]">/</span>
                   <span>{numRows}</span>
@@ -647,9 +693,9 @@ export function BusHud({
                   type="button"
                   onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
                   disabled={seatRow >= numRows - 1}
-                  aria-label="Rangée suivante"
+                  aria-label={pickLocale(locale, "Rangée suivante", "Next row")}
                   className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-                  title={seatRow >= numRows - 1 ? "Dernière rangée atteinte" : "Rangée suivante"}
+                  title={seatRow >= numRows - 1 ? pickLocale(locale, "Dernière rangée atteinte", "Last row reached") : pickLocale(locale, "Rangée suivante", "Next row")}
                 >
                   <ChevronRightIcon className="h-4 w-4 shrink-0" />
                 </button>
@@ -661,14 +707,14 @@ export function BusHud({
                   type="button"
                   onClick={() => setSeatColumn(Math.max(0, seatColumn - 1))}
                   disabled={seatColumn <= 0}
-                  aria-label="Colonne à gauche"
+                  aria-label={pickLocale(locale, "Colonne à gauche", "Column left")}
                   className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-                  title={seatColumn <= 0 ? "Déjà dans la colonne la plus à gauche" : "Colonne à gauche"}
+                  title={seatColumn <= 0 ? pickLocale(locale, "Déjà dans la colonne la plus à gauche", "Already in the leftmost column") : pickLocale(locale, "Colonne à gauche", "Column left")}
                 >
                   <ChevronLeftIcon className="h-4 w-4 shrink-0" />
                 </button>
                 <span className="flex h-10 items-center justify-center text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
-                  <span>Colonne</span>
+                  <span>{pickLocale(locale, "Colonne", "Column")}</span>
                   <span className="ml-1 text-[#c4b5fd]">{seatColumn + 1}</span>
                   <span className="mx-0.5 text-[#a3aed9]">/</span>
                   <span>{seatCountInRow}</span>
@@ -677,9 +723,9 @@ export function BusHud({
                   type="button"
                   onClick={() => setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1))}
                   disabled={seatColumn >= seatCountInRow - 1}
-                  aria-label="Colonne à droite"
+                  aria-label={pickLocale(locale, "Colonne à droite", "Column right")}
                   className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-                  title={seatColumn >= seatCountInRow - 1 ? "Déjà dans la colonne la plus à droite" : "Colonne à droite"}
+                  title={seatColumn >= seatCountInRow - 1 ? pickLocale(locale, "Déjà dans la colonne la plus à droite", "Already in the rightmost column") : pickLocale(locale, "Colonne à droite", "Column right")}
                 >
                   <ChevronRightIcon className="h-4 w-4 shrink-0" />
                 </button>
@@ -693,27 +739,37 @@ export function BusHud({
           <div
             id={mobileMenuId}
             role="region"
-            aria-label="Commandes du bus"
+            aria-label={pickLocale(locale, "Commandes du bus", "Bus controls")}
             onPointerDown={(event) => event.stopPropagation()}
             onPointerUp={(event) => event.stopPropagation()}
             className="bus-mobile-menu pointer-events-none fixed bottom-16 left-1/2 z-40 flex w-max max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 text-white"
           >
-            <HudButton compact showMobileIcon className="px-2.5 min-[360px]:px-3" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon={<HeadlightsIcon />} disabled={busy}>
-              {headlights ? "Éteindre" : "Phares"}
+            <HudButton compact showMobileIcon className="px-2.5 min-[360px]:px-3" onClick={toggleHeadlights} active={headlights} ariaLabel={pickLocale(locale, "Phares", "Headlights")} icon={<HeadlightsIcon />} disabled={busy}>
+              {headlights ? pickLocale(locale, "Éteindre", "Turn off") : pickLocale(locale, "Phares", "Lights")}
             </HudButton>
-            <HudButton compact showMobileIcon className="px-2.5 min-[360px]:px-3" onClick={honk} ariaLabel="Klaxonner" icon={<HornIcon />} disabled={busy}>
-              Klaxon
+            <HudButton compact showMobileIcon className="px-2.5 min-[360px]:px-3" onClick={honk} ariaLabel={pickLocale(locale, "Klaxonner", "Honk")} icon={<HornIcon />} disabled={busy}>
+              {pickLocale(locale, "Klaxon", "Horn")}
             </HudButton>
-            <HudButton compact showMobileIcon className="px-2.5 min-[360px]:px-3" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? "Arrêter la fête" : "Lancer la fête"} icon={<PartyIcon />} disabled={!partyOn && busy}>
-              {partyOn ? "Stop" : "Fête"}
+            <HudButton compact showMobileIcon className="px-2.5 min-[360px]:px-3" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? pickLocale(locale, "Arrêter la fête", "Stop party") : pickLocale(locale, "Lancer la fête", "Start party")} icon={<PartyIcon />} disabled={!partyOn && busy}>
+              {partyOn ? "Stop" : pickLocale(locale, "Fête", "Party")}
             </HudButton>
             <button
               type="button"
               onClick={toggleDayNight}
-              title={manualDayNight === null ? `Forcer le mode ${isNight ? "Jour" : "Nuit"}` : "Revenir au cycle automatique"}
+              title={manualDayNight === null
+                ? pickLocale(locale, `Forcer le mode ${isNight ? "Jour" : "Nuit"}`, `Force ${isNight ? "Day" : "Night"} mode`)
+                : pickLocale(locale, "Revenir au cycle automatique", "Return to automatic cycle")}
               aria-label={manualDayNight === null
-                ? `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`
-                : `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`}
+                ? pickLocale(
+                    locale,
+                    `Cycle automatique, actuellement ${isNight ? "nuit" : "jour"}. Forcer le mode ${isNight ? "jour" : "nuit"}`,
+                    `Automatic cycle, currently ${isNight ? "night" : "day"}. Force ${isNight ? "day" : "night"} mode`,
+                  )
+                : pickLocale(
+                    locale,
+                    `Mode ${isNight ? "nuit" : "jour"} forcé. Revenir au cycle automatique`,
+                    `Forced ${isNight ? "night" : "day"} mode. Return to automatic cycle`,
+                  )}
               className={`bus-mobile-day-night bus-glass pointer-events-auto flex h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-semibold focus-visible:outline-none cursor-pointer ${
                 manualDayNight !== null ? "bus-btn-active" : "bus-btn-secondary"
               }`}
@@ -723,13 +779,13 @@ export function BusHud({
               ) : (
                 <SunIcon className={`h-4 w-4 shrink-0 ${manualDayNight !== null ? "text-white" : "text-[#dcd3ff]"}`} />
               )}
-              <span>{manualDayNight === null ? "Auto" : isNight ? "Nuit" : "Jour"}</span>
+              <span>{manualDayNight === null ? "Auto" : isNight ? pickLocale(locale, "Nuit", "Night") : pickLocale(locale, "Jour", "Day")}</span>
             </button>
             <button
               type="button"
               onClick={resetView}
               disabled={busy}
-              aria-label="Recentrer la vue"
+              aria-label={pickLocale(locale, "Recentrer la vue", "Recenter view")}
               title={resetViewTitle}
               className="bus-icon-button bus-btn-secondary bus-glass pointer-events-auto grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
             >
@@ -739,16 +795,16 @@ export function BusHud({
               {speedMenuOpen && (
                 <div
                   role="group"
-                  aria-label="Régler la vitesse du bus"
+                  aria-label={pickLocale(locale, "Régler la vitesse du bus", "Adjust bus speed")}
                   className="bus-case-elevated absolute bottom-full -right-12 mb-2 z-40 flex items-center gap-1 rounded-full p-1 text-xs shadow-2xl"
                 >
                   <button
                     type="button"
                     onClick={decelerateBus}
                     disabled={speedMultiplier <= 0}
-                    aria-label="Ralentir le bus"
+                    aria-label={pickLocale(locale, "Ralentir le bus", "Slow down the bus")}
                     className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-transparent bg-white/[0.07] text-white transition-colors hover:border-[#cfc4fc]/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
-                    title="Ralentir le bus"
+                    title={pickLocale(locale, "Ralentir le bus", "Slow down the bus")}
                   >
                     <SlowSpeedIcon className="h-4 w-4 shrink-0" />
                   </button>
@@ -766,9 +822,9 @@ export function BusHud({
                     type="button"
                     onClick={accelerateBus}
                     disabled={speedMultiplier >= 3.0}
-                    aria-label="Accélérer le bus"
+                    aria-label={pickLocale(locale, "Accélérer le bus", "Speed up the bus")}
                     className="bus-btn-tonal grid h-9 w-9 shrink-0 place-items-center rounded-full focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
-                    title="Accélérer le bus"
+                    title={pickLocale(locale, "Accélérer le bus", "Speed up the bus")}
                   >
                     <FastBoltIcon className="h-4 w-4 shrink-0" />
                   </button>
@@ -785,8 +841,8 @@ export function BusHud({
                   }));
                 }}
                 aria-expanded={speedMenuOpen}
-                aria-label="Vitesse du bus"
-                title="Vitesse du bus"
+                aria-label={pickLocale(locale, "Vitesse du bus", "Bus speed")}
+                title={pickLocale(locale, "Vitesse du bus", "Bus speed")}
                 className={`${speedMenuOpen || speedMultiplier !== 1 ? "bus-btn-active" : "bus-btn-secondary"} bus-glass flex h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold focus-visible:outline-none cursor-pointer`}
               >
                 {speedMultiplier >= 2.0 ? (
@@ -794,29 +850,19 @@ export function BusHud({
                 ) : (
                   <SlowSpeedIcon className="h-4 w-4 shrink-0" />
                 )}
-                <span>Vitesse</span>
+                <span>{pickLocale(locale, "Vitesse", "Speed")}</span>
               </button>
             </div>
             <div ref={settingsMenuRef} className="pointer-events-auto relative">
               {settingsMenuOpen && (
                 <div
                   role="dialog"
-                  aria-label="Paramètres graphiques"
+                  aria-label={pickLocale(locale, "Paramètres graphiques", "Graphics settings")}
                   className="bus-case-elevated bus-scrollbar absolute bottom-full right-0 z-50 mb-2 max-h-[calc(100dvh-6.5rem)] w-[min(18.5rem,calc(100vw-1.5rem))] overflow-y-auto rounded-2xl p-3 shadow-2xl"
                 >
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-white">
-                      <SlidersIcon className="h-3.5 w-3.5 text-[#c4b5fd]" />
-                      <span>Paramètres</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setSettingsMenuState({ open: false, phase, epoch: phaseEpoch })}
-                      aria-label="Fermer les paramètres"
-                      className="grid h-7 w-7 cursor-pointer place-items-center rounded-full border border-white/15 bg-white/[0.06] text-white/80 transition-colors hover:border-[#cfc4fc] hover:text-white focus-visible:outline-none"
-                    >
-                      <CloseIcon className="h-3.5 w-3.5" />
-                    </button>
+                  <div className="mb-2 flex items-center gap-2 text-xs font-extrabold tracking-wide text-white">
+                    <SlidersIcon className="h-3.5 w-3.5 text-[#c4b5fd]" />
+                    <span>{pickLocale(locale, "Paramètres", "Settings")}</span>
                   </div>
                   <TheorySettingsPanel
                     graphicsSettings={graphicsSettings}
@@ -838,8 +884,8 @@ export function BusHud({
                   }));
                 }}
                 aria-expanded={settingsMenuOpen}
-                aria-label="Paramètres"
-                title="Paramètres"
+                aria-label={pickLocale(locale, "Paramètres", "Settings")}
+                title={pickLocale(locale, "Paramètres", "Settings")}
                 className={`bus-icon-button ${settingsMenuOpen ? "bus-btn-active" : "bus-btn-secondary"} bus-glass grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-none cursor-pointer`}
               >
                 <SlidersIcon className="h-4 w-4 shrink-0 text-[#dcd3ff]" />
@@ -887,25 +933,33 @@ export function BusHud({
               />
               <HudButton className="shrink-0 px-3.5 min-[360px]:px-4" onClick={() => { closeMobileMenu(); void enterBus(); }} primary icon={<EnterBusIcon />} disabled={joining || phase !== "outside"}>
                 {joining || phase === "entering"
-                  ? "Installation…"
+                  ? pickLocale(locale, "Installation…", "Boarding…")
                   : hasSavedPlace
-                    ? <>Revenir<span className="hidden min-[430px]:inline"> à sa place</span></>
-                    : <>Entrer<span className="hidden min-[460px]:inline"> dans le bus</span></>}
+                    ? locale === "en"
+                      ? <>Back<span className="hidden min-[430px]:inline"> to seat</span></>
+                      : <>Revenir<span className="hidden min-[430px]:inline"> à sa place</span></>
+                    : locale === "en"
+                      ? <>Board<span className="hidden min-[460px]:inline"> the bus</span></>
+                      : <>Entrer<span className="hidden min-[460px]:inline"> dans le bus</span></>}
               </HudButton>
             </>
           ) : (
             <>
-              <HudButton className="min-w-[96px] flex-[1_0_auto] sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon={<HeadlightsIcon />} disabled={!exteriorControlsVisible}>
-                {headlights ? "Éteindre" : "Phares"}
+              <HudButton className="min-w-[96px] flex-[1_0_auto] sm:w-[108px] sm:flex-none" onClick={toggleHeadlights} active={headlights} ariaLabel={pickLocale(locale, "Phares", "Headlights")} icon={<HeadlightsIcon />} disabled={!exteriorControlsVisible}>
+                {headlights ? pickLocale(locale, "Éteindre", "Turn off") : pickLocale(locale, "Phares", "Lights")}
               </HudButton>
-              <HudButton className="min-w-[104px] flex-[1_0_auto] sm:w-[112px] sm:flex-none" onClick={honk} ariaLabel="Klaxonner" icon={<HornIcon />} disabled={!exteriorControlsVisible}>
-                <span className="hud-label-short sm:hidden">Klaxon</span><span className="hud-label-long hidden sm:inline">Klaxonner</span>
+              <HudButton className="min-w-[104px] flex-[1_0_auto] sm:w-[112px] sm:flex-none" onClick={honk} ariaLabel={pickLocale(locale, "Klaxonner", "Honk")} icon={<HornIcon />} disabled={!exteriorControlsVisible}>
+                <span className="hud-label-short sm:hidden">{pickLocale(locale, "Klaxon", "Horn")}</span><span className="hud-label-long hidden sm:inline">{pickLocale(locale, "Klaxonner", "Honk")}</span>
               </HudButton>
-              <HudButton className="min-w-[96px] flex-[1_0_auto] sm:w-[100px] sm:flex-none" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? "Arrêter la fête" : "Lancer la fête"} icon={<PartyIcon />} disabled={(!partyOn && busy) || !exteriorControlsVisible}>
-                {partyOn ? "Stop" : "Fête"}
+              <HudButton className="min-w-[96px] flex-[1_0_auto] sm:w-[100px] sm:flex-none" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? pickLocale(locale, "Arrêter la fête", "Stop party") : pickLocale(locale, "Lancer la fête", "Start party")} icon={<PartyIcon />} disabled={(!partyOn && busy) || !exteriorControlsVisible}>
+                {partyOn ? "Stop" : pickLocale(locale, "Fête", "Party")}
               </HudButton>
               <HudButton className="min-w-[190px] flex-[1_0_auto] sm:w-[190px] sm:flex-none" onClick={() => void enterBus()} primary icon={<EnterBusIcon />} disabled={joining || phase !== "outside"}>
-                {joining || phase === "entering" ? "Installation…" : hasSavedPlace ? "Revenir à sa place" : "Entrer dans le bus"}
+                {joining || phase === "entering"
+                  ? pickLocale(locale, "Installation…", "Boarding…")
+                  : hasSavedPlace
+                    ? pickLocale(locale, "Revenir à sa place", "Back to my seat")
+                    : pickLocale(locale, "Entrer dans le bus", "Board the bus")}
               </HudButton>
             </>
           )}
@@ -923,16 +977,16 @@ export function BusHud({
           {compactHud ? (
             <>
               <div className="flex w-full items-center justify-center gap-1 min-[360px]:gap-1.5">
-                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={() => { closeMobileMenu(); openProfileModal("name"); }} ariaLabel="Modifier mon nom" icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
-                  Nom
+                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={() => { closeMobileMenu(); openProfileModal("name"); }} ariaLabel={pickLocale(locale, "Modifier mon nom", "Edit my name")} icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
+                  {pickLocale(locale, "Nom", "Name")}
                 </HudButton>
-                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={() => { closeMobileMenu(); openProfileModal("comment"); }} ariaLabel="Mettre un commentaire" icon={<CommentBubbleIcon />} disabled={busy || !interiorControlsVisible}>
-                  Commenter
+                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={() => { closeMobileMenu(); openProfileModal("comment"); }} ariaLabel={pickLocale(locale, "Mettre un commentaire", "Leave a comment")} icon={<CommentBubbleIcon />} disabled={busy || !interiorControlsVisible}>
+                  {pickLocale(locale, "Commenter", "Comment")}
                 </HudButton>
-                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={toggleFreeView} ariaLabel={freeView ? "Revenir à ma place" : "Explorer en vue libre"} active={freeView} icon={freeView ? <EyeViewIcon /> : <CompassExploreIcon />} disabled={busy || !interiorControlsVisible}>
-                  {freeView ? "Ma place" : "Vue libre"}
+                <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={toggleFreeView} ariaLabel={freeView ? pickLocale(locale, "Revenir à ma place", "Return to my seat") : pickLocale(locale, "Explorer en vue libre", "Explore in free view")} active={freeView} icon={freeView ? <EyeViewIcon /> : <CompassExploreIcon />} disabled={busy || !interiorControlsVisible}>
+                  {freeView ? pickLocale(locale, "Ma place", "My seat") : pickLocale(locale, "Vue libre", "Free view")}
                 </HudButton>
-                <HudButton compact className="min-w-11 shrink-0 px-2.5 min-[360px]:px-3.5" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} description={tvButtonDescription} icon={<TvIcon />} disabled={partyOn || busy || !interiorControlsVisible}>
+                <HudButton compact className="min-w-11 shrink-0 px-2.5 min-[360px]:px-3.5" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? pickLocale(locale, "Éteindre la télévision", "Turn off the TV") : pickLocale(locale, "Allumer la télévision", "Turn on the TV")} description={tvButtonDescription} icon={<TvIcon />} disabled={partyOn || busy || !interiorControlsVisible}>
                   TV
                 </HudButton>
               </div>
@@ -962,39 +1016,39 @@ export function BusHud({
                   buttonRef={interiorMenuButtonRef}
                   onToggle={toggleMobileMenu}
                 />
-                <HudButton compact showMobileIcon className="shrink-0 px-3.5 min-[360px]:px-4" onClick={() => { closeMobileMenu(); exitBus(); }} ariaLabel="Sortir du bus" description="Sortir en gardant ta place et ton profil. Pour les supprimer, ouvre Ma place." exit icon={<ExitBusIcon />} disabled={busy || !interiorControlsVisible}>
-                  {phase === "exiting" ? "Sortie…" : "Sortir"}
+                <HudButton compact showMobileIcon className="shrink-0 px-3.5 min-[360px]:px-4" onClick={() => { closeMobileMenu(); exitBus(); }} ariaLabel={pickLocale(locale, "Sortir du bus", "Exit the bus")} description={pickLocale(locale, "Sortir en gardant ta place et ton profil. Pour les supprimer, ouvre Ma place.", "Exit while keeping your seat and profile. To delete them, open My seat.")} exit icon={<ExitBusIcon />} disabled={busy || !interiorControlsVisible}>
+                  {phase === "exiting" ? pickLocale(locale, "Sortie…", "Exiting…") : pickLocale(locale, "Sortir", "Exit")}
                 </HudButton>
               </div>
             </>
           ) : (
             <>
               <div className="flex w-full items-center justify-center gap-1.5 sm:gap-2">
-                <HudButton className="min-w-0 flex-auto" onClick={() => openProfileModal("name")} ariaLabel="Modifier mon nom" icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
-                  Nom
+                <HudButton className="min-w-0 flex-auto" onClick={() => openProfileModal("name")} ariaLabel={pickLocale(locale, "Modifier mon nom", "Edit my name")} icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
+                  {pickLocale(locale, "Nom", "Name")}
                 </HudButton>
-                <HudButton className="min-w-0 flex-auto" onClick={() => openProfileModal("comment")} ariaLabel="Mettre un commentaire" icon={<CommentBubbleIcon />} disabled={busy || !interiorControlsVisible}>
-                  Commenter
+                <HudButton className="min-w-0 flex-auto" onClick={() => openProfileModal("comment")} ariaLabel={pickLocale(locale, "Mettre un commentaire", "Leave a comment")} icon={<CommentBubbleIcon />} disabled={busy || !interiorControlsVisible}>
+                  {pickLocale(locale, "Commenter", "Comment")}
                 </HudButton>
-                <HudButton compact className="min-w-0 flex-auto" onClick={toggleFreeView} ariaLabel={freeView ? "Revenir à ma place" : "Explorer en vue libre"} active={freeView} icon={freeView ? <EyeViewIcon /> : <CompassExploreIcon />} disabled={busy || !interiorControlsVisible}>
-                  {freeView ? "Ma place" : "Vue libre"}
+                <HudButton compact className="min-w-0 flex-auto" onClick={toggleFreeView} ariaLabel={freeView ? pickLocale(locale, "Revenir à ma place", "Return to my seat") : pickLocale(locale, "Explorer en vue libre", "Explore in free view")} active={freeView} icon={freeView ? <EyeViewIcon /> : <CompassExploreIcon />} disabled={busy || !interiorControlsVisible}>
+                  {freeView ? pickLocale(locale, "Ma place", "My seat") : pickLocale(locale, "Vue libre", "Free view")}
                 </HudButton>
               </div>
               <div className="grid w-full grid-cols-5 items-center gap-1.5 sm:gap-2">
-                <HudButton compact className="min-w-0 w-full" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} description={tvButtonDescription} icon={<TvIcon />} disabled={partyOn || busy || !interiorControlsVisible}>
+                <HudButton compact className="min-w-0 w-full" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? pickLocale(locale, "Éteindre la télévision", "Turn off the TV") : pickLocale(locale, "Allumer la télévision", "Turn on the TV")} description={tvButtonDescription} icon={<TvIcon />} disabled={partyOn || busy || !interiorControlsVisible}>
                   TV
                 </HudButton>
-                <HudButton compact className="min-w-0 w-full" onClick={toggleHeadlights} active={headlights} ariaLabel="Phares" icon={<HeadlightsIcon />} disabled={busy || !interiorControlsVisible}>
-                  Phares
+                <HudButton compact className="min-w-0 w-full" onClick={toggleHeadlights} active={headlights} ariaLabel={pickLocale(locale, "Phares", "Headlights")} icon={<HeadlightsIcon />} disabled={busy || !interiorControlsVisible}>
+                  {pickLocale(locale, "Phares", "Lights")}
                 </HudButton>
-                <HudButton compact className="min-w-0 w-full" onClick={honk} ariaLabel="Klaxonner" icon={<HornIcon />} disabled={busy || !interiorControlsVisible}>
-                  Klaxon
+                <HudButton compact className="min-w-0 w-full" onClick={honk} ariaLabel={pickLocale(locale, "Klaxonner", "Honk")} icon={<HornIcon />} disabled={busy || !interiorControlsVisible}>
+                  {pickLocale(locale, "Klaxon", "Horn")}
                 </HudButton>
-                <HudButton compact className="min-w-0 w-full" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? "Arrêter la fête" : "Lancer la fête"} icon={<PartyIcon />} disabled={(!partyOn && busy) || !interiorControlsVisible}>
-                  {partyOn ? "Stop" : "Fête"}
+                <HudButton compact className="min-w-0 w-full" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? pickLocale(locale, "Arrêter la fête", "Stop party") : pickLocale(locale, "Lancer la fête", "Start party")} icon={<PartyIcon />} disabled={(!partyOn && busy) || !interiorControlsVisible}>
+                  {partyOn ? "Stop" : pickLocale(locale, "Fête", "Party")}
                 </HudButton>
-                <HudButton compact className="min-w-0 w-full" onClick={exitBus} ariaLabel="Sortir du bus" description="Sortir en gardant ta place et ton profil. Pour les supprimer, ouvre Ma place." exit icon={<ExitBusIcon />} disabled={busy || !interiorControlsVisible}>
-                  {phase === "exiting" ? "Sortie…" : "Sortir"}
+                <HudButton compact className="min-w-0 w-full" onClick={exitBus} ariaLabel={pickLocale(locale, "Sortir du bus", "Exit the bus")} description={pickLocale(locale, "Sortir en gardant ta place et ton profil. Pour les supprimer, ouvre Ma place.", "Exit while keeping your seat and profile. To delete them, open My seat.")} exit icon={<ExitBusIcon />} disabled={busy || !interiorControlsVisible}>
+                  {phase === "exiting" ? pickLocale(locale, "Sortie…", "Exiting…") : pickLocale(locale, "Sortir", "Exit")}
                 </HudButton>
               </div>
             </>
@@ -1050,8 +1104,8 @@ export function BusHud({
                     event.stopPropagation();
                     onDismissToast();
                   }}
-                  aria-label="Fermer la notification"
-                  title="Fermer la notification"
+                  aria-label={pickLocale(locale, "Fermer la notification", "Close notification")}
+                  title={pickLocale(locale, "Fermer la notification", "Close notification")}
                   className="grid h-11 w-11 shrink-0 place-items-center self-center rounded-full border border-transparent text-white transition-colors hover:border-[#cfc4fc]/70 hover:text-white focus-visible:outline-none cursor-pointer"
                 >
                   <CloseIcon className="h-4 w-4 shrink-0" />
@@ -1060,13 +1114,13 @@ export function BusHud({
             </div>
           </div>
         )}
-        {immersive && !hidden && <button ref={restoreButtonRef} type="button" onClick={restoreControls} aria-label="Quitter le mode immersif et afficher les commandes"
+        {immersive && !hidden && <button ref={restoreButtonRef} type="button" onClick={restoreControls} aria-label={pickLocale(locale, "Quitter le mode immersif et afficher les commandes", "Exit immersive mode and show controls")}
           data-visible={immersiveRestoreVisible}
           className={`bus-immersive-restore bus-btn-secondary fixed z-[2147483647] inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold focus-visible:outline-none cursor-pointer ${
             immersiveRestoreVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
           style={{ right: "calc(1rem + env(safe-area-inset-right))", top: "calc(1rem + env(safe-area-inset-top))" }}>
-          Afficher les commandes
+          {pickLocale(locale, "Afficher les commandes", "Show controls")}
         </button>}
 
     </>
@@ -1086,14 +1140,25 @@ function CompactMusicToggleButton({
   disabled?: boolean;
   onToggle: () => void;
 }) {
+  const locale = useLocale();
   return (
     <button
       type="button"
       onClick={onToggle}
       disabled={partyOn || disabled}
       aria-pressed={playing || partyOn}
-      aria-label={partyOn ? "Musique de fête active — arrêter avec le bouton Fête" : playing ? "Couper la musique de fond" : "Activer la musique de fond (Life in Pieces — Le Mont Corvo)"}
-      title={partyOn ? "Party At Baratie — utilise Fête pour arrêter la musique" : suspended ? "Musique en pause pendant la vidéo/TV — cliquer pour couper" : playing ? "Couper la musique de fond (Life in Pieces)" : "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)"}
+      aria-label={partyOn
+        ? pickLocale(locale, "Musique de fête active — arrêter avec le bouton Fête", "Party music active — stop with the Party button")
+        : playing
+          ? pickLocale(locale, "Couper la musique de fond", "Stop background music")
+          : pickLocale(locale, "Activer la musique de fond (Life in Pieces — Le Mont Corvo)", "Play background music (Life in Pieces — Le Mont Corvo)")}
+      title={partyOn
+        ? pickLocale(locale, "Party At Baratie — utilise Fête pour arrêter la musique", "Party At Baratie — use Party to stop music")
+        : suspended
+          ? pickLocale(locale, "Musique en pause pendant la vidéo/TV — cliquer pour couper", "Music paused during video/TV — click to mute")
+          : playing
+            ? pickLocale(locale, "Couper la musique de fond (Life in Pieces)", "Stop background music (Life in Pieces)")
+            : pickLocale(locale, "Lancer la musique de fond (Howard Harper-Barnes - Life in Pieces)", "Play background music (Howard Harper-Barnes - Life in Pieces)")}
       className={`bus-icon-button bus-glass pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full touch-manipulation focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
         playing || partyOn ? "bus-btn-active" : "bus-btn-secondary"
       }`}
@@ -1128,6 +1193,7 @@ function MobileMenuToggleButton({
   buttonRef: RefObject<HTMLButtonElement | null>;
   onToggle: () => void;
 }) {
+  const locale = useLocale();
   return (
     <button
       ref={buttonRef}
@@ -1136,7 +1202,7 @@ function MobileMenuToggleButton({
       aria-expanded={open}
       aria-controls={open ? menuId : undefined}
       aria-haspopup="true"
-      aria-label={open ? "Fermer le menu des commandes" : "Ouvrir le menu des commandes"}
+      aria-label={open ? pickLocale(locale, "Fermer le menu des commandes", "Close controls menu") : pickLocale(locale, "Ouvrir le menu des commandes", "Open controls menu")}
       disabled={disabled}
       onPointerDown={(event) => event.stopPropagation()}
       onPointerUp={(event) => event.stopPropagation()}
@@ -1150,7 +1216,7 @@ function MobileMenuToggleButton({
       } ${open ? "bus-btn-active" : "bus-btn-secondary"}`}
     >
       <SlidersIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 min-[360px]:block" />
-      <span className="pointer-events-none">Commandes</span>
+      <span className="pointer-events-none">{pickLocale(locale, "Commandes", "Controls")}</span>
       {hasActiveControl && !open && (
         <span aria-hidden="true" className="bus-mobile-menu-dot pointer-events-none h-2 w-2 shrink-0 rounded-full bg-[#c4b5fd]" />
       )}

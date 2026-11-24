@@ -10,6 +10,7 @@ import type { PassengerProfile } from "@/types/passenger";
 import { playDing, playStretch, unlockAudio } from "@/lib/horn";
 import { useBusControls } from "./useBusControls";
 import { getOrCreateVisitorId, isRetryableRegistrationError, fetchJson, ApiError, type BusApiState } from "@/lib/client/bus-api";
+import { getLocale, pickLocale, syncSavedLocale } from "@/lib/i18n";
 import { TheoryAgeModal } from "./modals/TheoryAgeModal";
 import { getTheoryAgeInDays } from "@/lib/theory-age";
 import { useBusSync, type PendingRegistrationProfile, type VisitorLookupResult } from "./useBusSync";
@@ -37,6 +38,9 @@ const MAX_DEBUG_PASSENGERS = 10_000;
 
 export default function BusExperience() {
   useVisualViewport();
+  useEffect(() => {
+    syncSavedLocale();
+  }, []);
   const preferences = useBusPreferences();
   const [showHelp, setShowHelp] = useState(false);
   const [showPlaceModal, setShowPlaceModal] = useState(false);
@@ -252,7 +256,7 @@ export default function BusExperience() {
         && range.length === 3
         && range.every((value) => Number.isSafeInteger(value) && value >= 0))
     ) {
-      throw new ApiError("Réponse du serveur invalide.", 502);
+      throw new ApiError(pickLocale(getLocale(), "Réponse du serveur invalide.", "Invalid server response."), 502);
     }
     if (data.profileRevision < profileRevisionRef.current) return false;
     profileRevisionRef.current = data.profileRevision;
@@ -453,7 +457,10 @@ export default function BusExperience() {
         body: JSON.stringify(payload),
       });
       if (expectedAvatarId && d.passenger?.avatarId !== expectedAvatarId) {
-        throw new ApiError("Le personnage choisi n’a pas pu être enregistré.", 502);
+        throw new ApiError(
+          pickLocale(getLocale(), "Le personnage choisi n’a pas pu être enregistré.", "The chosen character could not be saved."),
+          502,
+        );
       }
       if (!hasRegisteredSeat) {
         playDing();
@@ -515,15 +522,20 @@ export default function BusExperience() {
           transitionPhase("outside");
           handleOpenOnboardingModal(
             "boarding",
-            error instanceof ApiError ? error.message : "Nom refusé par le serveur.",
+            error instanceof ApiError
+              ? error.message
+              : pickLocale(getLocale(), "Nom refusé par le serveur.", "Name rejected by the server."),
             submission,
           );
           return;
         }
+        const locale = getLocale();
         showToast(
-          "Mode visiteur",
-          error instanceof ApiError ? error.message : "Le bus reste accessible sans inscription.",
-          "SYNCHRO",
+          pickLocale(locale, "Mode visiteur", "Visitor mode"),
+          error instanceof ApiError
+            ? error.message
+            : pickLocale(locale, "Le bus reste accessible sans inscription.", "The bus stays open without registration."),
+          pickLocale(locale, "SYNCHRO", "SYNC"),
         );
         return;
       }
@@ -646,7 +658,12 @@ export default function BusExperience() {
   }, [partyOn, sceneAvailable, stopParty]);
 
   const handleMusicError = useCallback((message: string) => {
-    showToast("Musique indisponible", message, "MUSIQUE");
+    const locale = getLocale();
+    showToast(
+      pickLocale(locale, "Musique indisponible", "Music unavailable"),
+      message,
+      pickLocale(locale, "MUSIQUE", "MUSIC"),
+    );
   }, [showToast]);
 
   const effectiveCount = count ?? 0;
@@ -742,7 +759,7 @@ export default function BusExperience() {
         phaseEpoch={phaseEpoch}
         freeView={freeView}
         toggleFreeView={() => setFreeView(value => !value)}
-        hidden={overlayOpen}
+        hidden={overlayOpen || loadingPhase !== "hidden"}
         sceneAvailable={sceneAvailable}
         toast={toast}
         onDismissToast={dismissToast}
@@ -829,7 +846,9 @@ export default function BusExperience() {
           onDelete={leaveBusPermanently}
         />
       )}
-      <PassengerDialogs profile={profile} directory={directory} count={count} currentSeatIndex={currentPassengerSeatIndex} onSubmitOnboarding={handleSubmitOnboarding} />
+      {loadingPhase === "hidden" && (
+        <PassengerDialogs profile={profile} directory={directory} count={count} currentSeatIndex={currentPassengerSeatIndex} onSubmitOnboarding={handleSubmitOnboarding} />
+      )}
       {profile.showAvatarModal && <AvatarSelectionModal avatarId={profile.savedAvatarId} seatIndex={currentPassengerSeatIndex} hasRegisteredPlace={currentPassengerSeatIndex !== null}
         saving={profile.profileSaving} error={profile.avatarError} onClose={profile.closeAvatarModal}
         onChoose={avatarId => void profile.submitAvatar(avatarId)} />}

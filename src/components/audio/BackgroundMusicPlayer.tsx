@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { mountYouTubePlayer, type YouTubePlayer } from "@/lib/youtube-player";
 import { PARTY_YOUTUBE_ID, PARTY_TITLE, createPartyDanceGate, samplePartyDanceGate } from "@/lib/bus-party";
 import { emitBusAudioEvent, onBusAudioEvent, type BusMusicTrack } from "@/lib/bus-audio";
+import { getLocale, pickLocale } from "@/lib/i18n";
 
 export const BGM_YOUTUBE_ID = "63RzVcR1qHg";
 export { PARTY_YOUTUBE_ID } from "@/lib/bus-party";
@@ -133,7 +134,7 @@ export default function BackgroundMusicPlayer({
     };
     fadeTimerRef.current = window.setTimeout(tick, 60);
   }, [clearFade, shouldPlay]);
-  const reportFailure = useCallback((slot: MusicSlot, message: string, reconnect = false) => {
+  const reportFailure = useCallback((slot: MusicSlot, messageFr: string, messageEn: string, reconnect = false) => {
     const requested = shouldPlay(slot);
     slot.error = true;
     stopWarmup(slot);
@@ -153,7 +154,17 @@ export default function BackgroundMusicPlayer({
       queueMicrotask(() => {
         if (slot.track === "party") onPartyPlaybackError?.();
         else onPlayingChange(false);
-        onPlaybackError?.(`${message} Réessaie avec le bouton ${slot.track === "party" ? "Fête" : "Musique"}.`);
+        const locale = getLocale();
+        const buttonName = slot.track === "party"
+          ? pickLocale(locale, "Fête", "Party")
+          : pickLocale(locale, "Musique", "Music");
+        onPlaybackError?.(
+          pickLocale(
+            locale,
+            `${messageFr} Réessaie avec le bouton ${buttonName}.`,
+            `${messageEn} Try again with the ${buttonName} button.`,
+          ),
+        );
       });
     }
     publishPlayback();
@@ -182,7 +193,7 @@ export default function BackgroundMusicPlayer({
         if (other.warming && !desiredPlayingRef.current && !desiredPartyRef.current) continue;
         stopWarmup(other);
         try { other.player.mute(); other.player.pauseVideo(); }
-        catch { reportFailure(other, "Le lecteur YouTube ne répond plus.", true); }
+        catch { reportFailure(other, "Le lecteur YouTube ne répond plus.", "The YouTube player stopped responding.", true); }
       }
       const player = slot.player;
       if (!slot.ready || !player) { publishPlayback(); return; }
@@ -199,8 +210,8 @@ export default function BackgroundMusicPlayer({
           startTimerRef.current = null;
           if (!shouldPlay(slot) || slot.player !== player) return;
           try {
-            if (player.getPlayerState() !== 1) reportFailure(slot, "YouTube n’a pas démarré la lecture.");
-          } catch { reportFailure(slot, "Le lecteur YouTube ne répond plus.", true); }
+            if (player.getPlayerState() !== 1) reportFailure(slot, "YouTube n’a pas démarré la lecture.", "YouTube did not start playback.");
+          } catch { reportFailure(slot, "Le lecteur YouTube ne répond plus.", "The YouTube player stopped responding.", true); }
         }, 12_000);
         player.unMute(); player.playVideo();
         if (player.getPlayerState() === 1) { clearStartTimer(); startFade(); }
@@ -213,7 +224,7 @@ export default function BackgroundMusicPlayer({
         if (!slot.warming) { player.mute(); player.pauseVideo(); }
       }
       publishPlayback();
-    } catch { reportFailure(slot, "Le lecteur YouTube ne répond plus.", true); }
+    } catch { reportFailure(slot, "Le lecteur YouTube ne répond plus.", "The YouTube player stopped responding.", true); }
   }, [clearStartTimer, clearFade, startFade, reportFailure, reportDance, shouldPlay, stopWarmup, publishPlayback]);
 
   const connectSlot = useCallback((slot: MusicSlot) => {
@@ -222,12 +233,16 @@ export default function BackgroundMusicPlayer({
     slot.error = false;
     slot.disconnect = mountYouTubePlayer(host, {
       id: slot.track === "party" ? "party-music-iframe" : "bgm-iframe",
-      title: `Musique ${slot.track === "party" ? "de fête" : "de fond"} — ${slot.title}`,
+      title: pickLocale(
+        getLocale(),
+        `Musique ${slot.track === "party" ? "de fête" : "de fond"} — ${slot.title}`,
+        `${slot.track === "party" ? "Party" : "Background"} music — ${slot.title}`,
+      ),
       allow: "autoplay; encrypted-media",
       audioOnly: true,
       width: 200, height: 200, videoId: slot.videoId,
       playerVars: { autoplay: 0, controls: 0, rel: 0, playsinline: 1 },
-      onUnavailable: () => reportFailure(slot, "Le lecteur YouTube n’a pas pu être chargé.", true),
+      onUnavailable: () => reportFailure(slot, "Le lecteur YouTube n’a pas pu être chargé.", "Could not load the YouTube player.", true),
       events: {
         onReady: ({ target }) => {
           slot.ready = true;
@@ -249,7 +264,7 @@ export default function BackgroundMusicPlayer({
               stopWarmup(slot);
               target.mute(); target.pauseVideo(); target.seekTo(0, true);
               publishPlayback();
-            } catch { reportFailure(slot, "Le lecteur YouTube ne répond plus.", true); }
+            } catch { reportFailure(slot, "Le lecteur YouTube ne répond plus.", "The YouTube player stopped responding.", true); }
           }, 120);
           target.playVideo();
           publishPlayback();
@@ -279,10 +294,10 @@ export default function BackgroundMusicPlayer({
           // Offscreen muted preloads may be refused on Safari. A real click
           // must still get a chance to use this very same player.
           stopWarmup(slot);
-          if (shouldPlay(slot)) reportFailure(slot, "Le navigateur a bloqué la lecture.");
+          if (shouldPlay(slot)) reportFailure(slot, "Le navigateur a bloqué la lecture.", "The browser blocked playback.");
           else publishPlayback();
         },
-        onError: () => reportFailure(slot, "YouTube ne peut pas lire cette piste pour le moment.", true),
+        onError: () => reportFailure(slot, "YouTube ne peut pas lire cette piste pour le moment.", "YouTube cannot play this track right now.", true),
       },
     });
   }, [applyDesiredPlayback, clearStartTimer, startFade, reportFailure, shouldPlay, stopWarmup, updateDance, publishPlayback]);
@@ -329,7 +344,7 @@ export default function BackgroundMusicPlayer({
       slot.restart = false; slot.player.seekTo(seconds, true);
       if (!shouldPlay(slot)) { slot.player.mute(); slot.player.pauseVideo(); }
       updateDance(); publishPlayback();
-    } catch { reportFailure(slot, "Impossible de déplacer la lecture.", true); }
+    } catch { reportFailure(slot, "Impossible de déplacer la lecture.", "Unable to seek playback.", true); }
   }), [shouldPlay, stopWarmup, updateDance, publishPlayback, reportFailure]);
   useEffect(() => onBusAudioEvent("musicToggle", detail => {
     if (desiredPartyRef.current) return;

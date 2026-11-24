@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import { pickLocale, useLocale } from "@/lib/i18n";
 import {
   makeDashboardTexture, makeLabelTexture,
   makeLicensePlateTexture, makeTvOffTexture, makeBusContactShadowTexture,
@@ -143,8 +144,11 @@ export default function useBusResources() {
 
   const { hatGeo, ribbonGeo } = useMemo(() => createStrawHatGeometry(), []);
 
+  const locale = useLocale();
   const [montCorvoTex, setMontCorvoTex] = useState<THREE.Texture>(() => montCorvoPlaceholder);
-  const [sideLabel, setSideLabel] = useState<THREE.CanvasTexture>(() => sideLabelPlaceholder);
+  const [sideLabelReady, setSideLabelReady] = useState(false);
+  const [localizedSideLabel, setLocalizedSideLabel] = useState<{ locale: string; tex: THREE.CanvasTexture } | null>(null);
+  const sideLabel = localizedSideLabel?.locale === locale ? localizedSideLabel.tex : sideLabelPlaceholder;
   const [tvOffTex, setTvOffTex] = useState<THREE.CanvasTexture>(() => tvOffPlaceholder);
   const [dashTex, setDashTex] = useState<THREE.CanvasTexture>(() => dashPlaceholder);
   const [licensePlateTex, setLicensePlateTex] = useState<THREE.CanvasTexture>(() => platePlaceholder);
@@ -169,15 +173,7 @@ export default function useBusResources() {
         break;
       }
       case 2: {
-        const tex = makeLabelTexture({
-          text: "LES FOUS DU BUS",
-          sub: "GRAND LINE EXPRESS",
-          bg: BLUE,
-          fg: YELLOW,
-        });
-        tex.anisotropy = 4;
-        ownedTexturesRef.current.push(tex);
-        setSideLabel(tex);
+        setSideLabelReady(true);
         break;
       }
       case 3: {
@@ -248,6 +244,22 @@ export default function useBusResources() {
       loaded.forEach((tex) => tex.dispose());
     };
   }, [mats]);
+
+  useEffect(() => {
+    if (!sideLabelReady) return;
+    const tex = makeLabelTexture({
+      text: pickLocale(locale, "LES FOUS DU BUS", "THE BUS FOOLS"),
+      sub: "GRAND LINE EXPRESS",
+      bg: BLUE,
+      fg: YELLOW,
+    });
+    tex.anisotropy = 4;
+    const frame = window.requestAnimationFrame(() => setLocalizedSideLabel({ locale, tex }));
+    return () => {
+      window.cancelAnimationFrame(frame);
+      tex.dispose();
+    };
+  }, [locale, sideLabelReady]);
 
   useEffect(() => {
     const owned = ownedTexturesRef.current;

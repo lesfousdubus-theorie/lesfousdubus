@@ -33,7 +33,7 @@ export type GraphicsQualityTier = "low" | "medium" | "high" | "ultra";
 export type GraphicsPresetPreference = "auto" | GraphicsQualityTier;
 export type DrawDistancePreference = "auto" | "near" | "medium" | "far" | "max";
 export type PixelQualityPreference = "auto" | "eco" | "standard" | "sharp" | "native";
-export type ShadowQualityPreference = "auto" | "off" | "standard" | "high";
+export type ShadowQualityPreference = "auto" | "off" | "basic" | "standard" | "high";
 export type WorldDensityPreference = "auto" | "light" | "balanced" | "rich" | "max";
 
 export interface GraphicsSettings {
@@ -128,7 +128,7 @@ export const TIER_ORDER: readonly GraphicsQualityTier[] = ["low", "medium", "hig
 const PRESET_VALUES = new Set<GraphicsPresetPreference>(["auto", "low", "medium", "high", "ultra"]);
 const DRAW_DISTANCE_VALUES = new Set<DrawDistancePreference>(["auto", "near", "medium", "far", "max"]);
 const PIXEL_QUALITY_VALUES = new Set<PixelQualityPreference>(["auto", "eco", "standard", "sharp", "native"]);
-const SHADOW_QUALITY_VALUES = new Set<ShadowQualityPreference>(["auto", "off", "standard", "high"]);
+const SHADOW_QUALITY_VALUES = new Set<ShadowQualityPreference>(["auto", "off", "basic", "standard", "high"]);
 const WORLD_DENSITY_VALUES = new Set<WorldDensityPreference>(["auto", "light", "balanced", "rich", "max"]);
 
 function pickOption<T extends string>(value: unknown, allowed: Set<T>, fallback: T): T {
@@ -432,6 +432,7 @@ const SHADOW_TABLE: Record<Exclude<ShadowQualityPreference, "auto">, {
   shadowMapSize: 1024 | 2048;
 }> = {
   off: { canvasShadows: false, shadowMapSize: 1024 },
+  basic: { canvasShadows: "basic", shadowMapSize: 1024 },
   // Three.js >=0.182 déprécie PCFSoftShadowMap (retombe en Basic sans filtre) : "percentage" active PCFShadowMap filtré
   standard: { canvasShadows: "percentage", shadowMapSize: 2048 },
   high: { canvasShadows: "percentage", shadowMapSize: 2048 },

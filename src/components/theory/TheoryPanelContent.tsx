@@ -1,6 +1,7 @@
 "use client";
 
-import { THEORY_FAQ } from "@/lib/theory-data";
+import { getTheoryData } from "@/lib/theory-data-en";
+import { pickLocale, useLocale } from "@/lib/i18n";
 import TheorySummary from "./TheorySummary";
 import { THEORY_VIDEO_URL } from "@/lib/theory-video";
 import SyncedTheoryVideo from "./SyncedTheoryVideo";
@@ -25,6 +26,8 @@ export default function TheoryPanelContent({
   videoActive?: boolean;
   videoMounted?: boolean;
 }) {
+  const locale = useLocale();
+  const { faq: faqItems } = getTheoryData(locale);
   return (
     <>
       {/* 1. ONGLET THÈSE */}
@@ -43,7 +46,7 @@ export default function TheoryPanelContent({
                 Le Mont Corvo
               </span>
               <span className="text-xs font-semibold text-[#dfe5ff]">
-                La théorie expliquée en détail
+                {pickLocale(locale, "La théorie expliquée en détail", "The full breakdown")}
               </span>
             </div>
             <SyncedTheoryVideo
@@ -59,7 +62,7 @@ export default function TheoryPanelContent({
                 className="bus-btn-primary inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold focus-visible:outline-none sm:text-sm"
               >
                 <TvIcon className="h-4 w-4 shrink-0" />
-                <span>Regarder sur YouTube</span>
+                <span>{pickLocale(locale, "Regarder sur YouTube", "Watch on YouTube")}</span>
                 <ExternalArrowIcon className="h-3.5 w-3.5 shrink-0" />
               </a>
             </div>
@@ -70,7 +73,7 @@ export default function TheoryPanelContent({
       {/* 3. ONGLET FAQ & ORIGINE */}
       {activeTab === "faq" && (
         <div className="mx-auto max-w-[920px] space-y-3">
-          {THEORY_FAQ.map((faq, idx) => (
+          {faqItems.map((faq, idx) => (
             <details
               key={idx}
               className="bus-case-elevated group rounded-xl p-4 transition-colors [&[open]]:border-[#947eef]/65 [&[open]]:bg-[#161d52]/85 motion-reduce:transition-none sm:p-5"
@@ -101,15 +104,17 @@ export default function TheoryPanelContent({
               <WrenchIcon className="h-7 w-7" />
             </span>
             <p className="mt-5 text-xs font-black uppercase tracking-[0.16em] text-[#c4b5fd]">
-              Le bus se construit avec sa communauté
+              {pickLocale(locale, "Le bus se construit avec sa communauté", "Built together with the community")}
             </p>
             <h3 className="mt-2 text-2xl font-black text-white sm:text-3xl">
-              Participer au site
+              {pickLocale(locale, "Participer au site", "Contribute to the site")}
             </h3>
             <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#dfe5ff] sm:text-[15px]">
-              Une idée, une amélioration ou un bug à signaler ? Le code du site est disponible
-              sur GitHub. Tu peux consulter le projet, proposer une modification ou ouvrir une
-              discussion pour aider le bus à avancer.
+              {pickLocale(
+                locale,
+                "Une idée, une amélioration ou un bug à signaler ? Le code du site est disponible sur GitHub. Tu peux consulter le projet, proposer une modification ou ouvrir une discussion pour aider le bus à avancer.",
+                "Have an idea, improvement, or bug to report? The site’s source code is on GitHub. You can explore the repository, submit a pull request, or start a discussion to help the bus keep rolling.",
+              )}
             </p>
             <a
               href="https://github.com/lesfousdubus-theorie/lesfousdubus"
@@ -118,7 +123,7 @@ export default function TheoryPanelContent({
               className="bus-btn-primary mt-6 inline-flex min-h-12 cursor-pointer items-center justify-center gap-2.5 rounded-full px-6 py-3 text-sm font-semibold focus-visible:outline-none"
             >
               <GitHubIcon className="h-5 w-5 shrink-0" />
-              <span>Ouvrir le projet sur GitHub</span>
+              <span>{pickLocale(locale, "Ouvrir le projet sur GitHub", "Open project on GitHub")}</span>
               <ExternalArrowIcon className="h-4 w-4 shrink-0" />
             </a>
           </section>

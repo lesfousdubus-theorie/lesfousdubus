@@ -3,15 +3,21 @@
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { pickLocale, useLocale } from "@/lib/i18n";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
-import { getNakamaArchetype, NAKAMA_ROSTER } from "../bus/passenger-archetypes";
+import { getCharacterName, getNakamaArchetype, NAKAMA_ROSTER } from "../bus/passenger-archetypes";
 import { useModalAccessibility } from "./useModalAccessibility";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { ChevronLeftIcon, ChevronRightIcon, PersonIcon } from "../ui/BusIcons";
 
+function AvatarPreviewLoading() {
+  const locale = useLocale();
+  return <p role="status" className="grid h-full place-items-center text-sm text-[#dfe5ff]">{pickLocale(locale, "Chargement du personnage…", "Loading character…")}</p>;
+}
+
 const AvatarPreview = dynamic(() => import("../bus/AvatarPreview"), {
   ssr: false,
-  loading: () => <p role="status" className="grid h-full place-items-center text-sm text-[#dfe5ff]">Chargement du personnage…</p>,
+  loading: () => <AvatarPreviewLoading />,
 });
 
 function normalizeRotationDegrees(rotation: number): number {
@@ -41,6 +47,7 @@ export function AvatarSelectionModal({
   onChoose: (avatarId: PassengerAvatarId | null) => void;
   onClear?: () => void;
 }) {
+  const locale = useLocale();
   const [index, setIndex] = useState(() => NAKAMA_ROSTER.indexOf(getNakamaArchetype(seatIndex, avatarId)));
   const [rotation, setRotation] = useState(0);
   const dialogRef = useRef<HTMLElement>(null);
@@ -90,9 +97,13 @@ export function AvatarSelectionModal({
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#c4b5fd]">
-              Personnage
+              {pickLocale(locale, "Personnage", "Character")}
             </p>
-            <h2 id="avatar-selection-title" className="mt-0.5 text-xl font-black leading-tight sm:text-2xl">{hasRegisteredPlace ? "Changer de personnage" : "Choisir mon personnage"}</h2>
+            <h2 id="avatar-selection-title" className="mt-0.5 text-xl font-black leading-tight sm:text-2xl">
+              {hasRegisteredPlace
+                ? pickLocale(locale, "Changer de personnage", "Change character")
+                : pickLocale(locale, "Choisir mon personnage", "Choose my character")}
+            </h2>
           </div>
         </div>
         <ModalCloseButton onClick={close} disabled={saving} />
@@ -138,25 +149,25 @@ export function AvatarSelectionModal({
             <AvatarPreview avatarId={character.id} rotation={rotation} />
           </div>
           {[-1, 1].map(direction => <button key={direction} type="button" onClick={() => changeCharacter(direction)} aria-disabled={saving}
-            aria-label={direction < 0 ? "Personnage précédent" : "Personnage suivant"}
+            aria-label={direction < 0 ? pickLocale(locale, "Personnage précédent", "Previous character") : pickLocale(locale, "Personnage suivant", "Next character")}
             className={`bus-btn-secondary absolute top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full text-white focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${direction < 0 ? "left-3 sm:left-4" : "right-3 sm:right-4"}`}>
             {direction < 0 ? <ChevronLeftIcon className="h-5 w-5" /> : <ChevronRightIcon className="h-5 w-5" />}
           </button>)}
         </div>
         <div className="mt-3.5 text-center" aria-live="polite" aria-atomic="true">
-          <h3 className="text-xl font-black text-white">{character.name}</h3>
+          <h3 className="text-xl font-black text-white">{getCharacterName(character, locale)}</h3>
           <p className="mt-1 flex items-center justify-center gap-2 text-xs font-semibold tabular-nums text-[#a3aed9]">
             <span>{index + 1} / {NAKAMA_ROSTER.length}</span>
             {isCurrentAvatar && (
               <span className="rounded-full border border-[#a995f7]/45 bg-[#472dc8]/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#e9e4ff]">
-                Actuel
+                {pickLocale(locale, "Actuel", "Current")}
               </span>
             )}
           </p>
         </div>
         <div
           role="group"
-          aria-label="Sélection rapide du personnage"
+          aria-label={pickLocale(locale, "Sélection rapide du personnage", "Quick character selection")}
           onWheel={(event) => {
             if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
             const el = event.currentTarget;
@@ -188,18 +199,18 @@ export function AvatarSelectionModal({
                   className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/45"
                   style={{ backgroundColor: item.shirtColor }}
                 />
-                <span>{item.name}</span>
+                <span>{getCharacterName(item, locale)}</span>
               </button>
             );
           })}
         </div>
         <div className="mt-3.5 flex items-center gap-3 text-xs font-semibold text-[#dfe5ff]">
           <label htmlFor="avatar-rotation-range" className="shrink-0">
-            Faire tourner
+            {pickLocale(locale, "Faire tourner", "Rotate")}
           </label>
           <input id="avatar-rotation-range" type="range" min={-180} max={180} step={5} disabled={saving} value={rotationDegrees}
             onChange={event => setRotation(Number(event.target.value) * Math.PI / 180)}
-            aria-label="Rotation du personnage" aria-valuetext={`${rotationDegrees} degrés`}
+            aria-label={pickLocale(locale, "Rotation du personnage", "Character rotation")} aria-valuetext={pickLocale(locale, `${rotationDegrees} degrés`, `${rotationDegrees} degrees`)}
             className="bus-range h-6 min-w-0 flex-1 cursor-pointer focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
           <span className="w-10 shrink-0 text-right tabular-nums text-[#b4bfe8]">{rotationDegrees}°</span>
           <button
@@ -208,13 +219,17 @@ export function AvatarSelectionModal({
             onClick={() => setRotation(0)}
             className="bus-btn-secondary shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold focus-visible:outline-none disabled:cursor-default disabled:opacity-35"
           >
-            Face
+            {pickLocale(locale, "Face", "Front")}
           </button>
         </div>
         {error && <p role="alert" className="mt-4 rounded-xl border border-red-400/50 bg-red-950/60 px-3.5 py-2.5 text-sm font-bold text-red-100">{error}</p>}
         <button type="button" aria-disabled={saving} onClick={() => { if (!saving) onChoose(character.id); }}
           className="bus-btn-primary mt-5 flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80">
-          {saving ? "Enregistrement…" : (hasRegisteredPlace && isCurrentAvatar ? "Garder ce personnage" : "Choisir ce personnage")}
+          {saving
+            ? pickLocale(locale, "Enregistrement…", "Saving…")
+            : (hasRegisteredPlace && isCurrentAvatar
+              ? pickLocale(locale, "Garder ce personnage", "Keep this character")
+              : pickLocale(locale, "Choisir ce personnage", "Choose this character"))}
         </button>
         {!hasRegisteredPlace && avatarId !== null && (
           <button
@@ -227,7 +242,7 @@ export function AvatarSelectionModal({
             }}
             className="bus-btn-secondary mt-2.5 min-h-11 w-full cursor-pointer rounded-full px-3 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
           >
-            Laisser le choix automatique
+            {pickLocale(locale, "Laisser le choix automatique", "Use automatic choice")}
           </button>
         )}
       </div>
