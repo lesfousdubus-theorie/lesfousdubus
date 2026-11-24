@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, type RefObject } from "react";
+import { memo, useLayoutEffect, useRef, type RefObject } from "react";
 import * as THREE from "three";
 import { WHEEL_CENTER_Y, WHEEL_RADIUS } from "./BusBodyGeometry";
 
@@ -12,7 +12,7 @@ interface Props {
 }
 
 /** La rotation se fait autour de l'essieu local Y, avec les écrous sur les jantes. */
-export default function BusWheels({ positions, wheels, visible, mats }: Props) {
+const BusWheels = memo(function BusWheels({ positions, wheels, visible, mats }: Props) {
   return <group name="bus-wheels" visible={visible}>
     {positions.map(([x, z], index) => <group key={index} position={[x + Math.sign(x) * 0.1, WHEEL_CENTER_Y, z]} rotation={[0, 0, Math.PI / 2]}>
       <group ref={(wheel) => { wheels.current[index] = wheel; }}>
@@ -38,7 +38,9 @@ export default function BusWheels({ positions, wheels, visible, mats }: Props) {
       </group>
     </group>)}
   </group>;
-}
+});
+
+export default BusWheels;
 
 function RimInstances({ radius, faceOffset, material, bolt = false }: {
   radius: number; faceOffset: number; material: THREE.Material; bolt?: boolean;
@@ -56,7 +58,7 @@ function RimInstances({ radius, faceOffset, material, bolt = false }: {
     ref.current.instanceMatrix.needsUpdate = true;
     ref.current.computeBoundingSphere();
   }, [radius, faceOffset]);
-  return <instancedMesh ref={ref} args={[undefined, undefined, 16]} material={material}>
+  return <instancedMesh ref={ref} args={[undefined, undefined, 16]} material={material} frustumCulled={false}>
     <cylinderGeometry args={bolt ? [0.024, 0.024, 0.022, 6] : [0.038, 0.038, 0.01, 10]} />
   </instancedMesh>;
 }

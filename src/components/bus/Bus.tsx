@@ -106,6 +106,7 @@ export default function Bus({
   const group = useRef<THREE.Group>(null);
   const hat = useRef<THREE.Group>(null);
   const wheels = useRef<(THREE.Group | null)[]>([]);
+  const wheelAngleRef = useRef(0);
   const leftWiper = useRef<THREE.Group>(null);
   const rightWiper = useRef<THREE.Group>(null);
   const exteriorView = freeView || messagesBackdrop;
@@ -166,6 +167,9 @@ export default function Bus({
   }, [rearWallZ, renderedRowIndices]);
 
   const wheelPositions = useMemo(() => getWheelPositions(rearWallZ, doors), [rearWallZ, doors]);
+  useEffect(() => {
+    wheels.current.length = wheelPositions.length;
+  }, [wheelPositions.length]);
 
   // Détection du moment d'extension pour animer le rebond
   const stretchRef = useRef(0);
@@ -259,12 +263,18 @@ export default function Bus({
       hat.current.rotation.z = 0;
     }
 
-    // Rotation des roues du bus adaptée à la vitesse de défilement
+    // Rotation des roues du bus adaptée à la vitesse de défilement,
+    // bornée sous le seuil stroboscopique des 8 boulons (π/8 rad/frame)
+    // pour éviter tout mini-freeze visuel sur les jantes.
     if (phase !== "inside" || exteriorView) {
-      wheels.current.forEach((w) => {
+      const wheelStep = Math.min(Math.min(frameDt, 0.035) * 10.5 * mult, 0.28);
+      wheelAngleRef.current = (wheelAngleRef.current + wheelStep) % (Math.PI * 2);
+      const angle = wheelAngleRef.current;
+      for (let i = 0; i < wheels.current.length; i++) {
+        const w = wheels.current[i];
         // Le support tourne Y local vers -X monde : +Y fait rouler vers -Z.
-        if (w) w.rotation.y = (w.rotation.y + frameDt * 12 * mult) % (Math.PI * 2);
-      });
+        if (w) w.rotation.y = angle;
+      }
     }
 
     // Suivi throttlé de la TV active selon la position réelle de la caméra en cabine
