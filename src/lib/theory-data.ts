@@ -176,7 +176,7 @@ export const THEORY_GROUPS: readonly TheoryGroup[] = [
       {
         id: "roger-joy-boy", icon: "🧩",
         title: "Roger aurait pu être pris pour Joy Boy",
-        summary: "Avec son chapeau, son rêve et son parcours, Roger aurait pu sembler être le libérateur attendu par Imu. Certaines évocations de Joy Boy pourraient alors renvoyer à cette erreur d’identification. Cette hypothèse d’identification reste incertaine.",
+        summary: "Avec son chapeau, son rêve et son parcours, Roger aurait pu sembler être le libérateur attendu par Imu. Certaines évocations de Joy Boy pourraient alors renvoyer à cette erreur d’identification.",
         sources: [THEORY_REFERENCES.roger],
       },
     ],
