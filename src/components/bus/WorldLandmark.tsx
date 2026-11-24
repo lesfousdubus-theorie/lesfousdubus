@@ -81,7 +81,8 @@ const MATS = {
     roughness: 0.25,
   }),
   water: new THREE.MeshStandardMaterial({ color: "#43bdd7", roughness: 0.28, metalness: 0.08 }),
-  marble: new THREE.MeshStandardMaterial({ color: "#dce5ef", roughness: 0.85 }),
+  marble: new THREE.MeshStandardMaterial({ color: "#eef3f8", roughness: 0.82 }),
+  jadeRoof: new THREE.MeshStandardMaterial({ color: "#2d7c75", roughness: 0.72 }),
 };
 
 function LandmarkModel({ def }: { def: PropDef }) {
@@ -800,12 +801,12 @@ function LandmarkModel({ def }: { def: PropDef }) {
     case "waterfallCliff":
       return (
         <group scale={s * 1.2}>
-          {/* Falaise rocheuse stratifiée bordant le gouffre d'Enies Lobby */}
+          {/* Falaise rocheuse surmontée d'herbe verte ensoleillée bordant le gouffre d'Enies Lobby */}
           <mesh material={MATS.rock} position={[0, 3.4, 0]} castShadow>
             <cylinderGeometry args={[2.9, 3.9, 6.8, 10]} />
           </mesh>
-          <mesh material={MATS.marble} position={[0, 6.9, 0]}>
-            <cylinderGeometry args={[3.05, 2.95, 0.4, 10]} />
+          <mesh material={MATS.leaf} position={[0, 6.9, 0]}>
+            <cylinderGeometry args={[3.05, 2.95, 0.42, 10]} />
           </mesh>
           {/* Bassin supérieur et rideau de cascade en chute libre */}
           <mesh material={MATS.water} position={[0, 7.12, 0.25]}>
@@ -833,13 +834,13 @@ function LandmarkModel({ def }: { def: PropDef }) {
           <mesh material={MATS.snow} position={[0, 0.3, 0.1]} receiveShadow>
             <boxGeometry args={[7.2, 0.6, 6.2]} />
           </mesh>
-          <mesh material={MATS.marble} position={[0, 3.0, 0]} castShadow>
+          <mesh material={MATS.snow} position={[0, 3.0, 0]} castShadow>
             <boxGeometry args={[6.4, 5.4, 5.2]} />
           </mesh>
-          <mesh material={MATS.snow} position={[0, 5.8, 0]}>
+          <mesh material={MATS.wallPastelA} position={[0, 5.8, 0]}>
             <boxGeometry args={[6.9, 0.36, 5.7]} />
           </mesh>
-          <mesh material={MATS.darkRoof} position={[0, 6.95, 0]} rotation={[0, Math.PI / 4, 0]}>
+          <mesh material={MATS.jadeRoof} position={[0, 6.95, 0]} rotation={[0, Math.PI / 4, 0]}>
             <coneGeometry args={[5.2, 2.0, 4]} />
           </mesh>
           {[-2.3, -1.15, 1.15, 2.3].map((x) => (

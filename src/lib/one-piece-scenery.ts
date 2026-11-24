@@ -84,6 +84,7 @@ export const SCENERY_MATERIALS = {
   elbafCliff: new THREE.MeshStandardMaterial({ color: "#957d6b", roughness: 1 }),
   elbafBark: new THREE.MeshStandardMaterial({ color: "#946139", roughness: 1 }),
   elbafGrass: new THREE.MeshStandardMaterial({ color: "#8fc344", roughness: 1 }),
+  abyss: new THREE.MeshStandardMaterial({ color: "#050914", roughness: 1 }),
   elbafRainbow: new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide,
     transparent: true, opacity: .68, depthWrite: false, toneMapped: false }),
   elbafFalls: new THREE.MeshStandardMaterial({ color: "#70bfea", emissive: "#51a7e2", emissiveIntensity: .24,
@@ -1292,134 +1293,165 @@ function worldGovEmblem(b: Builder, x: number, y: number, z: number, scale: numb
 }
 
 function eniesLobby(b: Builder, lowPower: boolean) {
-  // 1. Gouffre océanique sans fond : abîme sombre encadré par une falaise en demi-cercle
-  // et un rideau de cascades écumantes dégagé des Portes de la Justice (x <= 7.5).
-  const chasmX = -3.8;
-  b.cylinder("dark", [chasmX, 0.18, 0], 10.6, 10.6, 0.28, 24);
-  b.ring("foam", [chasmX, 0.38, 0], 10.0, 0.42);
-  const segments = lowPower ? 12 : 20;
-  for (let i = 0; i < segments; i++) {
-    const a = (i / segments) * Math.PI * 2;
+  // ENIES LOBBY — L'Île Judiciaire en plein après-midi perpétuel, suspendue au-dessus d'un gouffre océanique sans fond.
+  // Palette canonique One Piece :
+  // - Abîme circulaire noir profond + rideau de cascades turquoise/écume à 360°
+  // - Îlot rocheux en surplomb (falaise chaude + herbe verte ensoleillée)
+  // - Ville basse en terre cuite / brique rouge + Palais & Tour de la Justice en marbre blanc, toits vert jade et or
+  // - Pont de l'Hésitation derrière la Tour de la Justice menant aux gigantesques Portes de la Justice blanches et acier.
+
+  const chasmX = -2.0;
+
+  // 1. Le gouffre océanique circulaire sans fond (trou noir béant entouré d'un anneau de cascades).
+  b.cylinder("abyss", [chasmX, 0.22, 0], 13.6, 13.6, 0.28, 28);
+  // Anneau extérieur d'eau océanique se déversant dans le trou + rideau de chute d'eau + brume épaisse.
+  b.ring("water", [chasmX, 0.56, 0], 13.7, 0.85);
+  b.ring("foam", [chasmX, 0.68, 0], 13.2, 0.45);
+  const cascadeCount = lowPower ? 14 : 24;
+  for (let i = 0; i < cascadeCount; i++) {
+    const a = (i / cascadeCount) * Math.PI * 2;
     const ca = Math.cos(a), sa = Math.sin(a);
-    // Ouverture face au bus (-X) pour lire le gouffre et ouverture vers les Portes (+X) pour éviter tout clipping.
-    if (ca < -0.62 || (ca > 0.72 && Math.abs(sa) < 0.65)) continue;
-    const rx = chasmX + ca * 11.4, rz = sa * 11.4;
-    b.box("rock", [rx, 1.75, rz], [2.2, 3.5, 3.7], [0, -a, 0]);
-    b.box("rockLight", [rx, 3.55, rz], [2.4, 0.35, 3.8], [0, -a, 0]);
-    b.box("water", [chasmX + ca * 10.2, 1.8, sa * 10.2], [0.36, 3.5, 3.4], [0, -a, 0.08]);
+    // Dégager légèrement l'axe des Portes de la Justice (+X) pour montrer le courant Tarai.
+    if (ca > 0.78 && Math.abs(sa) < 0.52) continue;
+    const rx = chasmX + ca * 13.2, rz = sa * 13.2;
+    // Lèvre d'eau qui plonge vers le trou noir central.
+    b.box("water", [rx, 1.05, rz], [0.55, 1.45, 3.2], [0, -a, 0.22]);
     if (!lowPower) {
-      b.box("foam", [chasmX + ca * 9.95, 1.4, sa * 9.95], [0.22, 2.4, 0.55], [0, -a, 0.08]);
-      b.sphere("foam", [chasmX + ca * 9.8, 0.45, sa * 9.8], 0.75, [1.0, 0.45, 1.35]);
-    }
-  }
-
-  // 2. Pont de l'Hésitation (viaduc monumental en pierre reliant la route à la Tour de la Justice).
-  b.box("castle", [-12.4, 2.15, 0], [9.2, 0.95, 5.4]);
-  b.box("cream", [-12.4, 2.7, 0], [9.4, 0.2, 5.7]);
-  for (const side of [-1, 1]) {
-    b.box("cream", [-12.4, 3.15, side * 2.65], [9.2, 0.65, 0.32]);
-  }
-  for (const px of [-16.2, -12.8, -9.4]) {
-    for (const pz of [-2.2, 2.2]) {
-      b.cylinder("rockLight", [px, 1.05, pz], 0.48, 0.62, 2.1, 8);
-    }
-  }
-  if (!lowPower) {
-    // Étendards du Gouvernement Mondial et braseros lumineux bordant le Pont de l'Hésitation.
-    for (const px of [-15.8, -12.6, -9.6]) {
-      for (const side of [-1, 1]) {
-        b.cylinder("metal", [px, 4.35, side * 2.65], 0.06, 0.09, 2.4, 6);
-        b.box("blueHouse", [px, 4.55, side * 2.65], [0.1, 1.25, 0.62]);
-        b.box("gold", [px, 4.55, side * 2.65], [0.14, 0.22, 0.22]);
-        b.sphere("lamp", [px, 5.65, side * 2.65], 0.24);
+      b.box("foam", [chasmX + ca * 12.75, 0.9, sa * 12.75], [0.28, 1.25, 0.75], [0, -a, 0.22]);
+      if (i % 2 === 0) {
+        b.sphere("cloud", [chasmX + ca * 12.2, 0.55, sa * 12.2], 0.95, [1.1, 0.48, 1.45]);
       }
     }
   }
 
-  // 3. Tour de la Justice (Palais central néoclassique + coupole + tours de garde jumelles).
-  const tx = -4.2;
-  // Socle massif à gradins ancré dans l'îlot central.
-  b.box("rockLight", [tx, 1.1, 0], [8.8, 2.2, 14.8]);
-  b.box("cream", [tx, 2.35, 0], [8.4, 0.4, 14.4]);
-  // Corps principal du tribunal.
-  b.box("castle", [tx, 7.6, 0], [7.8, 10.6, 13.6]);
-  b.box("cream", [tx, 13.1, 0], [8.5, 0.65, 14.4]);
-  b.roof("dark", [tx, 13.45, 0], 8.9, 14.8, 2.6);
-  // Coupole judiciaire centrale couronnant la Tour de la Justice.
-  b.cylinder("cream", [tx, 16.4, 0], 2.5, 2.8, 1.6, 14);
-  b.dome("dark", [tx, 17.2, 0], 2.55, [1, 1.1, 1]);
-  b.cylinder("gold", [tx, 20.4, 0], 0, 0.16, 1.6, 8);
+  // 2. L'Île suspendue en surplomb au-dessus du gouffre : pilier rocheux effilé vers le bas + plateau herbeux vert.
+  // Pilier central s'enfonçant dans le vide noir (forme caractéristique en champignon/éperon rocheux).
+  b.cylinder("elbafCliff", [-5.8, 1.85, 0], 6.4, 3.3, 3.5, 16);
+  b.cylinder("sandstone", [-5.8, 3.55, 0], 6.8, 6.2, 0.75, 16);
+  // Pelouse vert ensoleillé sur le dessus de l'îlot suspendu.
+  b.cylinder("elbafGrass", [-5.8, 4.02, 0], 6.55, 6.65, 0.34, 16);
+  // Second éperon rocheux plus étroit supportant la Tour de la Justice juste au bord du vide.
+  b.cylinder("elbafCliff", [0.8, 1.9, 0], 3.8, 1.9, 3.6, 14);
+  b.cylinder("elbafGrass", [0.8, 3.82, 0], 3.7, 3.75, 0.3, 14);
 
-  // Colonnade monumentale face au bus (-X) avec chapiteaux et grand portail.
-  for (const z of [-6.0, -4.2, -2.4, 2.4, 4.2, 6.0]) {
-    b.cylinder("cream", [tx - 4.15, 7.6, z], 0.36, 0.44, 10.2, 10);
-    b.box("sandLight", [tx - 4.15, 12.75, z], [0.95, 0.32, 0.95]);
-  }
-  arch(b, tx - 3.95, 2.55, 0, 2.9, 5.8, "castle");
-  // Fronton sombre + grand emblème doré à 5 points du Gouvernement Mondial.
-  b.box("dark", [tx - 4.02, 10.9, 0], [0.24, 1.9, 4.2]);
-  worldGovEmblem(b, tx - 4.16, 10.9, 0, 1.15);
+  // Passerelle d'accès reliant le bord ouest du gouffre (côté bus) à l'île suspendue.
+  b.box("snow", [-13.6, 3.75, 0], [5.8, 0.55, 3.8]);
+  for (const side of [-1, 1]) b.box("cream", [-13.6, 4.25, side * 1.75], [5.8, 0.48, 0.24]);
+  b.cylinder("elbafCliff", [-15.8, 1.9, 0], 1.1, 1.5, 3.8, 10);
 
-  // Fenêtres lumineuses sur la façade et les côtés du tribunal.
-  if (!lowPower) {
-    for (const fy of [4.8, 8.2]) {
-      for (const fz of [-5.1, -3.3, 3.3, 5.1]) {
-        b.box("lamp", [tx - 3.92, fy, fz], [0.08, 1.35, 0.72]);
-      }
-      for (const fx of [-6.2, -4.2, -2.2]) {
-        for (const side of [-1, 1]) {
-          b.box("lamp", [fx, fy, side * 6.84], [0.75, 1.35, 0.08]);
-        }
-      }
-    }
-  }
-
-  // Tours de garde jumelles encadrant le palais (nord & sud) + drapeau du Gouvernement Mondial.
-  for (const side of [-1, 1]) {
-    const tz = side * 8.6;
-    b.box("rockLight", [tx + 0.5, 1.2, tz], [5.2, 2.4, 5.2]);
-    b.box("castle", [tx + 0.5, 10.6, tz], [4.5, 17.6, 4.5]);
-    b.box("cream", [tx + 0.5, 19.55, tz], [5.0, 0.48, 5.0]);
-    b.roof("dark", [tx + 0.5, 19.8, tz], 5.4, 5.4, 2.8);
-    arch(b, tx - 1.78, 14.5, tz, 1.25, 2.8, "castle");
+  // 3. Quartier en terre cuite / brique rouge + Porte Principale sur l'avant de l'île suspendue (x = -11 .. -8).
+  const clayHouses: Array<[number, number, number, number, MaterialKey]> = [
+    [-10.2, -4.4, 2.3, 2.8, "coral"],
+    [-10.2, 4.4, 2.3, 2.8, "coral"],
+    [-7.8, -5.2, 2.5, 3.4, "sandstone"],
+    [-7.8, 5.2, 2.5, 3.4, "sandstone"],
+  ];
+  for (const [hx, hz, hw, hh, mat] of clayHouses) {
+    b.box(mat, [hx, 4.15 + hh / 2, hz], [hw, hh, hw * 0.9]);
+    b.roof("roof", [hx, 4.15 + hh, hz], hw + 0.45, hw * 0.9 + 0.45, 0.9);
     if (!lowPower) {
-      b.box("lamp", [tx - 1.82, 15.6, tz], [0.08, 1.6, 0.85]);
-      b.box("lamp", [tx - 1.82, 10.2, tz], [0.08, 1.4, 0.75]);
-      b.sphere("lamp", [tx + 0.5, 22.8, tz], 0.48);
+      b.box("lamp", [hx - hw / 2 - 0.04, 4.15 + hh * 0.55, hz], [0.06, 0.75, 0.55]);
     }
   }
-  // Mât et bannière emblématique du Gouvernement Mondial sur la tour nord.
+  // Grande Porte d'Entrée blanche et jade devant le Tribunal.
+  for (const side of [-1, 1]) {
+    b.box("snow", [-11.2, 5.8, side * 1.9], [1.1, 3.4, 1.1]);
+    b.roof("jadeRoof", [-11.2, 7.5, side * 1.9], 1.55, 1.55, 0.85);
+  }
+  b.box("snow", [-11.2, 7.1, 0], [0.95, 0.9, 3.8]);
+  b.box("jadeRoof", [-11.2, 7.7, 0], [1.15, 0.36, 4.2]);
+
+  // 4. Le Grand Tribunal (Courthouse) en marbre blanc, toit vert jade et or, sur l'île suspendue (x = -6.2).
+  b.box("snow", [-6.2, 6.9, 0], [5.4, 5.5, 8.6]);
+  b.box("cream", [-6.2, 9.75, 0], [5.9, 0.42, 9.1]);
+  b.roof("jadeRoof", [-6.2, 9.96, 0], 6.4, 9.6, 2.2);
+  // Colonnade blanche face au bus (-X) + emblème doré à 5 points.
+  for (const cz of [-3.4, -1.7, 1.7, 3.4]) {
+    b.cylinder("snow", [-9.05, 6.8, cz], 0.24, 0.28, 5.1, 8);
+  }
+  arch(b, -8.92, 4.2, 0, 1.9, 3.4, "snow");
+  worldGovEmblem(b, -9.02, 8.7, 0, 0.72);
   if (!lowPower) {
-    b.cylinder("metal", [tx - 1.6, 22.2, -8.6], 0.07, 0.1, 5.2, 6);
-    b.box("cream", [tx - 1.6, 23.6, -10.1], [0.12, 1.9, 3.0]);
-    worldGovEmblem(b, tx - 1.68, 23.6, -10.1, 0.65);
+    for (const fz of [-2.55, 2.55]) b.box("lamp", [-8.94, 7.1, fz], [0.06, 1.0, 0.55]);
   }
 
-  // 4. Colossal Portes de la Justice en arrière-plan (h = 35 m), entrouvertes sur la mer brumeuse.
-  // Plus aucun bloc noir parasite dans l'ouverture : uniquement l'écume marine tourbillonnant au seuil !
-  b.sphere("foam", [9.6, 0.55, 0], 1.8, [1.6, 0.35, 2.2]);
+  // Pont-levis au-dessus du vide entre le Tribunal et la Tour de la Justice.
+  b.box("wood", [-2.6, 4.25, 0], [2.4, 0.36, 3.2]);
+  for (const side of [-1, 1]) b.box("snow", [-2.6, 4.68, side * 1.5], [2.4, 0.45, 0.18]);
+
+  // 5. La Tour de la Justice (QG du CP9) — marbre blanc éclatant, toits vert jade, coupole et tours jumelles (x = 0.8).
+  const tx = 0.8;
+  b.box("snow", [tx, 9.2, 0], [5.4, 10.6, 9.8]);
+  b.box("cream", [tx, 14.65, 0], [6.0, 0.55, 10.4]);
+  b.roof("jadeRoof", [tx, 14.95, 0], 6.5, 10.9, 2.4);
+  // Coupole blanche & jade couronnant la Tour de la Justice.
+  b.cylinder("snow", [tx, 17.85, 0], 2.0, 2.25, 1.5, 14);
+  b.dome("jadeRoof", [tx, 18.6, 0], 2.08, [1, 1.15, 1]);
+  b.cylinder("gold", [tx, 21.65, 0], 0, 0.14, 1.4, 8);
+
+  // Colonnade & grand fronton de la Tour de la Justice face au Tribunal (-X).
+  for (const cz of [-4.2, -2.5, 2.5, 4.2]) {
+    b.cylinder("snow", [tx - 2.85, 9.2, cz], 0.28, 0.34, 10.0, 8);
+  }
+  b.box("jadeRoof", [tx - 2.78, 12.6, 0], [0.22, 1.8, 3.8]);
+  worldGovEmblem(b, tx - 2.94, 12.6, 0, 0.98);
+  if (!lowPower) {
+    for (const fy of [6.8, 10.2]) {
+      for (const fz of [-3.3, 3.3]) b.box("lamp", [tx - 2.74, fy, fz], [0.06, 1.25, 0.65]);
+    }
+  }
+
+  // Tours de garde jumelles blanches à toits vert jade + Drapeau du Gouvernement Mondial.
+  for (const side of [-1, 1]) {
+    const tz = side * 6.5;
+    b.cylinder("elbafCliff", [tx, 1.9, tz], 2.1, 1.1, 3.6, 10);
+    b.box("snow", [tx, 11.4, tz], [3.6, 15.2, 3.6]);
+    b.box("cream", [tx, 19.15, tz], [4.1, 0.42, 4.1]);
+    b.roof("jadeRoof", [tx, 19.36, tz], 4.5, 4.5, 2.4);
+    if (!lowPower) {
+      b.box("lamp", [tx - 1.84, 15.5, tz], [0.06, 1.45, 0.75]);
+      b.box("lamp", [tx - 1.84, 10.8, tz], [0.06, 1.25, 0.68]);
+      b.sphere("lamp", [tx, 21.95, tz], 0.38);
+    }
+  }
+  // Mât et célèbre drapeau blanc du Gouvernement Mondial flottant sur la tour nord.
+  if (!lowPower) {
+    b.cylinder("gold", [tx - 1.2, 21.8, -6.5], 0.06, 0.09, 4.8, 6);
+    b.box("snow", [tx - 1.2, 23.1, -8.0], [0.12, 1.85, 2.9]);
+    worldGovEmblem(b, tx - 1.28, 23.1, -8.0, 0.62);
+  }
+
+  // 6. Le Pont de l'Hésitation (DERRIÈRE la Tour de la Justice, tendu au-dessus du gouffre vers les Portes de la Justice).
+  b.box("snow", [6.1, 4.35, 0], [6.4, 0.65, 3.6]);
+  for (const side of [-1, 1]) {
+    b.box("cream", [6.1, 4.88, side * 1.68], [6.4, 0.46, 0.24]);
+  }
+  for (const px of [4.6, 7.6]) {
+    for (const pz of [-1.45, 1.45]) b.cylinder("snow", [px, 2.2, pz], 0.34, 0.44, 4.3, 8);
+  }
+
+  // 7. Les colossales Portes de la Justice en acier blanc-argenté (h = 36 m), entrouvertes sur le courant Tarai.
+  b.sphere("foam", [10.6, 0.6, 0], 2.0, [1.7, 0.38, 2.4]);
   for (const side of [-1, 1]) {
     const gz = side * 7.2;
     const tilt = side * -0.15;
     const sinT = Math.sin(tilt), cosT = Math.cos(tilt);
-    // Grand vantail en pierre-acier.
-    b.box("castle", [9.6, 17.5, gz], [2.6, 35, 10.8], [0, tilt, 0]);
+    // Vantail monumental blanc-argenté (couleur canonique lumineuse des Portes de la Justice).
+    b.box("snow", [10.6, 18.0, gz], [2.5, 36, 10.6], [0, tilt, 0]);
     // Pilier-charnière massif sur le bord extérieur.
-    b.box("rockLight", [9.6 - side * 5.2 * sinT, 17.5, gz + side * 5.2 * cosT], [3.4, 35.6, 2.2], [0, tilt, 0]);
-    // Couronnement supérieur monumental + flèche dorée.
-    b.box("cream", [9.6, 35.3, gz], [3.2, 1.2, 11.6], [0, tilt, 0]);
-    b.box("metal", [9.6, 36.2, gz], [3.0, 0.7, 11.2], [0, tilt, 0]);
-    b.cylinder("gold", [9.6, 38.0, gz], 0, 0.8, 3.0, 8);
-    // Nervures verticales et traverses métalliques rivetées.
-    b.box("dark", [8.25, 17.5, gz], [0.3, 32, 0.95], [0, tilt, 0]);
-    for (const h of [5.5, 12.5, 19.5, 26.5, 32.5]) {
-      b.box("metal", [9.6, h, gz], [2.85, 0.72, 11.0], [0, tilt, 0]);
+    b.box("castle", [10.6 - side * 5.1 * sinT, 18.0, gz + side * 5.1 * cosT], [3.3, 36.6, 2.2], [0, tilt, 0]);
+    // Couronnement supérieur & flèche dorée.
+    b.box("cream", [10.6, 36.3, gz], [3.1, 1.15, 11.4], [0, tilt, 0]);
+    b.box("jadeRoof", [10.6, 37.1, gz], [2.8, 0.65, 10.8], [0, tilt, 0]);
+    b.cylinder("gold", [10.6, 38.9, gz], 0, 0.78, 3.0, 8);
+    // Nervures et traverses métalliques rivetées.
+    b.box("metal", [9.3, 18.0, gz], [0.28, 33, 0.9], [0, tilt, 0]);
+    for (const h of [5.5, 12.5, 19.5, 26.5, 33.0]) {
+      b.box("metal", [10.6, h, gz], [2.75, 0.7, 10.8], [0, tilt, 0]);
     }
-    // Écume au pied de chaque vantail.
-    b.box("foam", [9.2, 0.45, gz], [3.6, 0.65, 11.2], [0, tilt, 0]);
+    b.box("foam", [10.2, 0.5, gz], [3.6, 0.7, 11.0], [0, tilt, 0]);
     if (!lowPower) {
-      // Grand emblème doré à 5 points du Gouvernement Mondial sur chaque porte.
-      worldGovEmblem(b, 8.12, 23.2, gz, 1.85, tilt);
+      worldGovEmblem(b, 9.15, 23.6, gz, 1.85, tilt);
     }
   }
 }
@@ -1725,44 +1757,52 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
     }
   }
   if (zone === 7) {
-    // Enies Lobby : promenade judiciaire à colonnades continues, bannières du Gouvernement Mondial et brume de cascade.
+    // Enies Lobby : promenade judiciaire en marbre blanc, entablement vert jade et contrastes ville basse terre cuite.
     const x = side * 22;
-    b.box("castle", [x, 0.24, 0], [2.8, 0.42, 134]);
+    b.box("snow", [x, 0.24, 0], [2.8, 0.42, 134]);
     b.box("cream", [x, 0.5, 0], [3.0, 0.12, 134]);
-    // Entablement supérieur reliant les colonnes sur les deux tronçons (dégagé devant le Pont de l'Hésitation côté est).
-    const segments: Array<[number, number]> = side > 0 ? [[-60, -14], [14, 60]] : [[-60, 60]];
+    // Entablement blanc et frise vert jade reliant les colonnes (dégagé devant le passage vers l'île suspendue côté est).
+    const segments: Array<[number, number]> = side > 0 ? [[-60, -15], [15, 60]] : [[-60, 60]];
     for (const [zStart, zEnd] of segments) {
       const len = zEnd - zStart;
       const zMid = (zStart + zEnd) / 2;
-      b.box("castle", [x, 4.75, zMid], [1.35, 0.48, len]);
-      b.box("cream", [x, 5.06, zMid], [1.55, 0.16, len + 0.4]);
+      b.box("snow", [x, 4.75, zMid], [1.35, 0.48, len]);
+      b.box("jadeRoof", [x, 5.08, zMid], [1.55, 0.2, len + 0.4]);
     }
     const step = lowPower ? 24 : 12;
     for (let z = -58; z <= 58; z += step) {
-      if (side > 0 && Math.abs(z) < 13) continue;
-      b.box("rockLight", [x, 0.72, z], [1.25, 0.42, 1.25]);
-      b.cylinder("cream", [x, 2.7, z], 0.36, 0.44, 3.8, 8);
-      b.box("sandLight", [x, 4.55, z], [1.15, 0.24, 1.15]);
+      if (side > 0 && Math.abs(z) < 14) continue;
+      b.box("cream", [x, 0.72, z], [1.25, 0.42, 1.25]);
+      b.cylinder("snow", [x, 2.7, z], 0.36, 0.44, 3.8, 8);
+      b.box("gold", [x, 4.46, z], [1.05, 0.14, 1.05]);
       if (!lowPower && Math.abs(z) % 24 < 6) {
-        b.sphere("lamp", [x, 5.45, z], 0.28);
-        b.box("blueHouse", [x - side * 0.78, 3.4, z], [0.1, 1.5, 0.65]);
-        b.box("gold", [x - side * 0.82, 3.4, z], [0.08, 0.25, 0.25]);
+        b.sphere("lamp", [x, 5.5, z], 0.28);
+        b.box("snow", [x - side * 0.78, 3.4, z], [0.1, 1.5, 0.68]);
+        b.box("gold", [x - side * 0.82, 3.4, z], [0.08, 0.28, 0.28]);
       }
     }
     if (side < 0) {
-      // 2 Palais annexes judiciaires néoclassiques avec colonnades, fenêtres éclairées et emblème doré face au bus (+X).
+      // Palais judiciaires blancs à toits vert jade + maisons basses en terre cuite rouge de la vieille ville.
       for (const z of [-36, 26]) {
-        b.box("rockLight", [-34, 0.45, z], [8.4, 0.9, 12.2]);
-        b.box("castle", [-34, 3.55, z], [7.6, 5.6, 11.2]);
+        b.box("cream", [-34, 0.45, z], [8.4, 0.9, 12.2]);
+        b.box("snow", [-34, 3.55, z], [7.6, 5.6, 11.2]);
         b.box("cream", [-34, 6.45, z], [8.2, 0.38, 11.8]);
-        b.roof("dark", [-34, 6.65, z], 8.6, 12.2, 2.2);
+        b.roof("jadeRoof", [-34, 6.65, z], 8.6, 12.2, 2.2);
         for (const cz of [-4.2, -1.8, 1.8, 4.2]) {
-          b.cylinder("cream", [-29.9, 3.5, z + cz], 0.32, 0.38, 5.4, 8);
+          b.cylinder("snow", [-29.9, 3.5, z + cz], 0.32, 0.38, 5.4, 8);
         }
         b.box("dark", [-30.16, 2.2, z], [0.12, 2.8, 2.0]);
         if (!lowPower) {
           for (const fz of [-3.2, 3.2]) b.box("lamp", [-30.16, 4.2, z + fz], [0.08, 1.2, 0.85]);
           worldGovEmblem(b, -30.05, 5.45, z, 0.72);
+        }
+      }
+      // Bâtiments anciens en terre cuite rouge / brique entre les palais judiciaires (contraste canonique).
+      if (!lowPower) {
+        for (const [bx, bz, bw, bh] of [[-32.5, -10, 4.2, 4.2], [-33.0, 4, 4.6, 4.8], [-32.5, -56, 4.0, 3.8]]) {
+          b.box("coral", [bx, bh / 2, bz], [bw, bh, bw * 0.9]);
+          b.roof("roof", [bx, bh, bz], bw + 0.6, bw * 0.9 + 0.6, 1.2);
+          b.box("lamp", [bx + bw / 2 + 0.04, bh * 0.55, bz], [0.06, 0.9, 0.65]);
         }
       }
       // Viaduc du Sea Train sur piliers en pierre arrivant vers l'île judiciaire.

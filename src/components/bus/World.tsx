@@ -33,7 +33,7 @@ export const ZONES = [
   { name: "Île de Drum", subtitle: "Royaume des neiges", ground: "#ebf2fa", shore: "#dbe5f2" },
   { name: "Egghead", subtitle: "L'île du futur", ground: "#83cfa3", shore: "#80cfda" },
   { name: "Elbaf", subtitle: "Royaume des géants", ground: "#76a951", shore: "#9a8664" },
-  { name: "Enies Lobby", subtitle: "L'île judiciaire", ground: "#8fa5b5", shore: "#c6f0ed" },
+  { name: "Enies Lobby", subtitle: "L'île judiciaire", ground: "#78a962", shore: "#c6f0ed" },
 ] as const;
 
 const LOOP = ZONE_LEN * ZONES.length;
@@ -46,7 +46,7 @@ const TINT_COLORS = [
   "#ffffff",
   "#bfe89b",
   "#a6cf65",
-  "#c9d6e0",
+  "#d8e6c8",
 ] as const;
 
 const ZONE_PROPS: Record<number, PropType[]> = {
@@ -68,7 +68,7 @@ function weatherForLandscape(zone: number, visit: number, seed: number): WorldSt
   if (zone === 3) return value < 0.34 ? "rain" : value < 0.5 ? "snow" : "clear";
   if (zone === 2) return value < 0.25 ? "rain" : value < 0.35 ? "snow" : "clear";
   if (zone === 6) return value < 0.16 ? "rain" : "clear";
-  if (zone === 7) return value < 0.25 ? "rain" : "clear";
+  if (zone === 7) return value < 0.05 ? "rain" : "clear";
   if (zone === 5) return value < 0.18 ? "rain" : "clear";
   return value < 0.12 ? "rain" : "clear";
 }
