@@ -213,39 +213,90 @@ function LandmarkModel({ def }: { def: PropDef }) {
       );
 
     case "building": {
-      // Édifice vénitien / Water Seven
-      const w = 3.6 + def.seed * 3.5;
-      const h = 5.0 + def.seed * 8.0;
+      // Palais vénitien / Water Seven (architecture à étages, corniche, balcon, toit en tuiles ou coupole turquoise)
+      const w = 3.6 + def.seed * 3.2;
+      const d = w * 0.88;
+      const h = 5.0 + def.seed * 7.2;
       const wallMat =
-        def.seed > 0.6 ? MATS.wallPastelA : def.seed > 0.3 ? MATS.wallPastelB : MATS.wallPastelC;
+        def.seed > 0.66 ? MATS.wallPastelA : def.seed > 0.33 ? MATS.wallPastelB : MATS.wallPastelC;
+      const hasDome = def.seed > 0.72;
+      const floors = Math.max(2, Math.min(3, Math.floor((h - 0.8) / 2.2)));
       return (
         <group scale={s}>
+          {/* Socle en pierre claire ancré dans le sol */}
+          <mesh material={MATS.wallPastelA} position={[0, 0.32, 0]}>
+            <boxGeometry args={[w + 0.3, 0.64, d + 0.3]} />
+          </mesh>
           {/* Corps du bâtiment */}
           <mesh material={wallMat} position={[0, h / 2, 0]} castShadow>
-            <boxGeometry args={[w, h, w * 0.9]} />
+            <boxGeometry args={[w, h, d]} />
           </mesh>
-          {/* Toit en tuiles */}
-          <mesh material={MATS.roofTerracotta} position={[0, h + 1.2, 0]} rotation={[0, Math.PI / 4, 0]}>
-            <coneGeometry args={[w * 0.82, 2.4, 4]} />
+          {/* Corniche supérieure vénitienne */}
+          <mesh material={MATS.wallPastelA} position={[0, h - 0.14, 0]}>
+            <boxGeometry args={[w + 0.42, 0.32, d + 0.42]} />
           </mesh>
-          {/* Flèche ou dôme */}
-          <mesh material={MATS.gold} position={[0, h + 2.5, 0]}>
-            <coneGeometry args={[0.25, 1.2, 8]} />
-          </mesh>
-          {/* Fenêtres à arches et lueurs adaptées à la hauteur du bâtiment */}
-          {Array.from({ length: Math.max(1, Math.min(3, Math.floor((h - 0.8) / 2.2))) }, (_, floor) =>
-            [-w * 0.28, w * 0.28].map((fx, fi) => (
-              <mesh
-                key={`${floor}-${fi}`}
-                material={(floor + fi) % 2 === 0 ? MATS.lanternLight : MATS.black}
-                position={[fx, 1.5 + floor * 2.2, w * 0.45 + 0.02]}
-              >
-                <boxGeometry args={[0.65, 1.1, 0.06]} />
+          {/* Coupole turquoise sur les grands palais, toit en tuiles plus bas et élégant sinon */}
+          {hasDome ? (
+            <>
+              <mesh material={MATS.wallPastelA} position={[0, h + 0.55, 0]}>
+                <cylinderGeometry args={[w * 0.34, w * 0.38, 1.1, 12]} />
               </mesh>
-            )),
+              <mesh material={MATS.water} position={[0, h + 1.05, 0]}>
+                <sphereGeometry args={[w * 0.36, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
+              </mesh>
+              <mesh material={MATS.gold} position={[0, h + 1.05 + w * 0.36 + 0.35, 0]}>
+                <coneGeometry args={[0.14, 0.85, 8]} />
+              </mesh>
+            </>
+          ) : (
+            <>
+              <mesh material={MATS.roofTerracotta} position={[0, h + 0.78, 0]} rotation={[0, Math.PI / 4, 0]}>
+                <coneGeometry args={[w * 0.78, 1.56, 4]} />
+              </mesh>
+              <mesh material={MATS.wallPastelA} position={[w * 0.22, h + 1.15, d * 0.16]}>
+                <boxGeometry args={[0.38, 0.9, 0.38]} />
+              </mesh>
+            </>
           )}
-          <mesh material={MATS.wallPastelA} position={[0, 2.9, w * 0.48]}>
-            <boxGeometry args={[w * 0.72, 0.16, 0.45]} />
+          {/* Fenêtres vénitiennes lumineuses sur les faces visibles depuis le bus (±X et +Z) */}
+          {Array.from({ length: floors }, (_, floor) => {
+            const wy = 1.55 + floor * 2.15;
+            return (
+              <group key={floor}>
+                {[-w * 0.25, w * 0.25].map((fx, fi) => (
+                  <mesh
+                    key={`z-${fi}`}
+                    material={(floor + fi) % 2 === 0 ? MATS.lanternLight : MATS.black}
+                    position={[fx, wy, d / 2 + 0.03]}
+                  >
+                    <boxGeometry args={[0.56, 1.05, 0.06]} />
+                  </mesh>
+                ))}
+                {[-d * 0.25, d * 0.25].map((fz, fi) => (
+                  <group key={`x-${fi}`}>
+                    <mesh
+                      material={(floor + fi) % 2 === 1 ? MATS.lanternLight : MATS.black}
+                      position={[-w / 2 - 0.03, wy, fz]}
+                    >
+                      <boxGeometry args={[0.06, 1.05, 0.56]} />
+                    </mesh>
+                    <mesh
+                      material={(floor + fi) % 2 === 0 ? MATS.lanternLight : MATS.black}
+                      position={[w / 2 + 0.03, wy, fz]}
+                    >
+                      <boxGeometry args={[0.06, 1.05, 0.56]} />
+                    </mesh>
+                  </group>
+                ))}
+              </group>
+            );
+          })}
+          {/* Balcons vénitiens avec garde-corps */}
+          <mesh material={MATS.wallPastelA} position={[0, 2.75, d / 2 + 0.22]}>
+            <boxGeometry args={[w * 0.68, 0.14, 0.44]} />
+          </mesh>
+          <mesh material={MATS.wallPastelA} position={[-w / 2 - 0.22, 2.75, 0]}>
+            <boxGeometry args={[0.44, 0.14, d * 0.64]} />
           </mesh>
         </group>
       );

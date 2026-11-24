@@ -302,95 +302,307 @@ function alabasta(b: Builder, lowPower: boolean) {
   }
 }
 
-function venetianHouse(b: Builder, x: number, y: number, z: number, width: number, height: number, color: MaterialKey, lowPower: boolean) {
-  b.box(color, [x, y + height / 2, z], [width, height, width * 0.82]);
-  b.box("cream", [x, y + height - 0.15, z], [width + 0.4, 0.35, width * 0.82 + 0.4]);
-  b.roof("roof", [x, y + height, z], width + 0.8, width + 0.1, 1.2);
-  b.box("roof", [x + width * 0.25, y + height + 1.2, z + 0.4], [0.42, 1.25, 0.55]);
-  const floors = lowPower ? 2 : Math.max(2, Math.floor(height / 2.4));
+function venetianHouse(
+  b: Builder,
+  x: number,
+  y: number,
+  z: number,
+  width: number,
+  height: number,
+  color: MaterialKey,
+  lowPower: boolean,
+  domed = false,
+) {
+  const depth = width * 0.84;
+  // Socle en pierre ancré dans le sol/la terrasse pour éviter tout flottement.
+  b.box("cream", [x, y + 0.22, z], [width + 0.24, 0.56, depth + 0.24]);
+  b.box(color, [x, y + height / 2, z], [width, height, depth]);
+  // Corniche supérieure en pierre claire.
+  b.box("cream", [x, y + height - 0.14, z], [width + 0.36, 0.32, depth + 0.36]);
+  if (domed) {
+    b.cylinder("cream", [x, y + height + 0.45, z], width * 0.36, width * 0.4, 0.9, 12);
+    b.dome("turquoise", [x, y + height + 0.85, z], width * 0.38, [1, 1.15, 1]);
+    b.cylinder("gold", [x, y + height + 0.85 + width * 0.44 + 0.35, z], 0, 0.08, 0.75, 6);
+  } else {
+    b.roof("roof", [x, y + height, z], width + 0.75, depth + 0.65, 1.15);
+    b.box("cream", [x + width * 0.24, y + height + 1.05, z + depth * 0.18], [0.34, 0.95, 0.38]);
+    b.box("roof", [x + width * 0.24, y + height + 1.56, z + depth * 0.18], [0.46, 0.12, 0.5]);
+  }
+  const floors = lowPower ? 2 : Math.max(2, Math.min(4, Math.floor(height / 2.2)));
   for (let floor = 0; floor < floors; floor++) {
-    const wy = y + 1 + floor * (height - 2) / Math.max(1, floors - 1);
+    const wy = y + 0.9 + floor * (height - 1.9) / Math.max(1, floors - 1);
     for (const side of [-1, 1]) {
-      arch(b, x - width / 2 - 0.06, wy, z + side * width * 0.23, 0.55, 1.1);
-      b.box("dark", [x + side * width * 0.24, wy + 0.4, z - width * 0.41 - 0.03], [0.58, 1.1, 0.07]);
+      // Façades est/ouest (tournées vers le bus) avec fenêtres vénitiennes et lueurs chaudes.
+      const lit = (floor + (side > 0 ? 1 : 0)) % 2 === 0;
+      arch(b, x - width / 2 - 0.05, wy, z + side * width * 0.23, 0.52, 1.05);
+      if (lit && !lowPower) {
+        b.box("lamp", [x - width / 2 - 0.09, wy + 0.38, z + side * width * 0.23], [0.04, 0.62, 0.36]);
+      }
+      // Façades nord/sud.
+      b.box(lit ? "lamp" : "dark", [x + side * width * 0.23, wy + 0.38, z - depth / 2 - 0.04], [0.5, 0.92, 0.07]);
+      if (!lowPower) {
+        b.box(lit ? "dark" : "lamp", [x + side * width * 0.23, wy + 0.38, z + depth / 2 + 0.04], [0.5, 0.92, 0.07]);
+      }
     }
     if (!lowPower && floor === 1) {
-      b.box("cream", [x - width / 2 - 0.35, wy - 0.1, z], [0.75, 0.15, width * 0.7]);
-      b.box("dark", [x - width / 2 - 0.66, wy + 0.15, z], [0.07, 0.4, width * 0.7]);
+      b.box("cream", [x - width / 2 - 0.32, wy - 0.08, z], [0.68, 0.14, depth * 0.72]);
+      b.box("cream", [x - width / 2 - 0.62, wy + 0.18, z], [0.09, 0.38, depth * 0.72]);
+      b.box("turquoise", [x - width / 2 - 0.32, wy + 1.05, z], [0.52, 0.08, depth * 0.68], [0, 0, -0.25]);
+    }
+  }
+}
+
+function yagaraGondola(
+  b: Builder,
+  x: number,
+  y: number,
+  z: number,
+  dir: 1 | -1,
+  canopy: MaterialKey,
+  lowPower: boolean,
+) {
+  // Coque de gondole vénitienne effilée.
+  b.sphere("dark", [x, y + 0.14, z], 1, [0.76, 0.26, 2.35]);
+  b.sphere("wood", [x, y + 0.26, z], 1, [0.58, 0.12, 1.95]);
+  // Proue et poupe relevées typiques de Water 7.
+  b.box("gold", [x, y + 0.42, z + dir * 2.15], [0.16, 0.42, 0.24], [dir * 0.35, 0, 0]);
+  // Yagara Bull devant la gondole (corps turquoise, cou élancé, tête et crête).
+  const yz = z - dir * 2.55;
+  b.sphere("turquoise", [x, y + 0.24, yz], 0.56, [0.82, 0.62, 1.25]);
+  b.cylinder("turquoise", [x, y + 0.62, yz - dir * 0.48], 0.24, 0.32, 0.76, 8, [-dir * 0.28, 0, 0]);
+  b.sphere("turquoise", [x, y + 0.96, yz - dir * 0.66], 0.32, [0.88, 0.82, 1.15]);
+  b.box("foam", [x, y + 1.14, yz - dir * 0.46], [0.1, 0.26, 0.34], [dir * 0.3, 0, 0]);
+  if (!lowPower) {
+    // Harnais doré et dais coloré au-dessus des passagers.
+    b.box("gold", [x, y + 0.48, z - dir * 1.4], [0.62, 0.07, 1.35]);
+    b.box(canopy, [x, y + 1.12, z + dir * 0.15], [1.08, 0.14, 1.95]);
+    b.box("cream", [x, y + 1.03, z + dir * 0.15], [1.12, 0.06, 2.0]);
+    for (const sx of [-0.46, 0.46]) {
+      for (const sz of [-0.68, 0.98]) {
+        b.cylinder("wood", [x + sx, y + 0.68, z + dir * sz], 0.045, 0.05, 0.84, 6);
+      }
+    }
+    b.sphere("lamp", [x, y + 0.72, z + dir * 1.9], 0.14);
+  }
+}
+
+function venetianBridge(b: Builder, centerX: number, z: number, lowPower: boolean) {
+  const steps = lowPower ? 9 : 13;
+  const span = 8.4;
+  // Culées massives en pierre ancrées sur chaque berge du canal.
+  for (const edge of [-1, 1]) {
+    b.box("cream", [centerX + edge * (span / 2 + 0.25), 0.38, z], [1.2, 0.96, 3.2]);
+    b.box("sandLight", [centerX + edge * (span / 2 + 0.25), 0.9, z], [1.3, 0.14, 3.32]);
+  }
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const bx = centerX - span / 2 + t * span;
+    const archH = Math.sin(t * Math.PI);
+    const y = 0.58 + archH * 1.55;
+    b.box("cream", [bx, y, z], [span / steps + 0.12, 0.34, 2.9]);
+    // Garde-corps vénitiens avec colonnettes.
+    for (const side of [-1, 1]) {
+      b.box("cream", [bx, y + 0.68, z + side * 1.38], [span / steps + 0.14, 0.16, 0.22]);
+      if (i % 2 === 0) {
+        b.box("sandLight", [bx, y + 0.38, z + side * 1.38], [0.18, 0.58, 0.18]);
+      }
+    }
+  }
+  if (!lowPower) {
+    // 4 lanternes vénitiennes aux entrées du pont.
+    for (const edge of [-1, 1]) {
+      for (const side of [-1, 1]) {
+        const lx = centerX + edge * (span / 2 + 0.15);
+        const lz = z + side * 1.45;
+        b.cylinder("dark", [lx, 1.75, lz], 0.06, 0.09, 1.8, 6);
+        b.sphere("lamp", [lx, 2.75, lz], 0.24);
+      }
     }
   }
 }
 
 function waterSeven(b: Builder, lowPower: boolean) {
-  // La grande fontaine reste centrée dans wx <= 46 et dégagée du canal est (wx = 22, x_local = -11).
-  const cx = 2.2;
-  for (let tier = 0; tier < 4; tier++) {
-    const radius = 10.0 - tier * 1.95, bottom = tier * 4.1;
-    b.cylinder("cream", [cx, bottom + 1.8, 0], radius, radius + 0.65, 3.6, 24);
-    b.cylinder("water", [cx, bottom + 3.65, 0], radius + 0.06, radius + 0.06, 0.18, 24);
-    b.ring("foam", [cx, bottom + 3.77, 0], radius - 0.15, 0.15);
-    b.cylinder("turquoise", [cx, bottom + 0.28, 0], radius + 0.55, radius + 0.55, 0.4, 24);
-    const count = lowPower ? 6 : 10;
-    for (let flow = 0; flow < count; flow++) {
-      const angle = flow / count * Math.PI * 2;
-      const r = radius + 0.1;
-      b.box("water", [cx + Math.cos(angle) * r, bottom + 1.8, Math.sin(angle) * r], [0.18, 3.7, 1.3], [0, -angle, 0]);
-      if (!lowPower) b.box("foam", [cx + Math.cos(angle) * (r + 0.08), bottom + 1.5, Math.sin(angle) * (r + 0.08)], [0.06, 2.7, 0.16], [0, -angle, 0]);
-    }
-  }
-  b.cylinder("cream", [cx, 18, 0], 2.2, 3.4, 3.9, 16);
-  b.cylinder("water", [cx, 20, 0], 2.3, 2.3, 0.2, 16);
-  b.cylinder("cream", [cx, 21.3, 0], 0.9, 1.5, 2.5, 12);
-  b.sphere("water", [cx, 22.9, 0], 1.1, [0.65, 1.4, 0.65]);
-  b.ring("foam", [cx, 20.15, 0], 2.05, 0.13);
-  const houses: [number, number, number, number, number, MaterialKey][] = [
-    [-2.8, 3.8, -7.2, 2.6, 5.2, "coral"], [1.5, 3.8, -9.2, 2.9, 6.4, "peach"],
-    [5.8, 3.8, -8.5, 3.1, 5.6, "cream"], [8.8, 3.8, -4.8, 2.7, 7.2, "blueHouse"],
-    [9.5, 3.8, 1.8, 2.7, 5.5, "coral"], [6.8, 3.8, 7.6, 3.0, 6.1, "peach"],
-    [1.2, 3.8, 9.2, 2.8, 4.8, "blueHouse"], [-3.2, 3.8, 7.2, 2.6, 6.2, "coral"],
-    [4.8, 11.9, -3.2, 2.4, 5.4, "peach"], [5.6, 7.9, 4.8, 2.6, 6.0, "cream"],
+  // La cité-fontaine monumentale de Water 7, centrée sur wx ≈ 35.6 (x_local = 2.6),
+  // dégagée du canal est (x_local = -11, wx = 22) et dans la berge est (wx <= 48).
+  const cx = 2.6;
+
+  // 1. Socle portuaire en pierre claire + 4 terrasses circulaires en gradins avec canaux annulaires.
+  const tiers = [
+    { r: 11.4, bottom: 0.0, h: 3.4 },
+    { r: 9.1, bottom: 3.4, h: 3.7 },
+    { r: 6.9, bottom: 7.1, h: 3.9 },
+    { r: 4.8, bottom: 11.0, h: 3.9 },
   ];
-  houses.filter((_, i) => !lowPower || i % 2 === 0).forEach((house) => venetianHouse(b, ...house, lowPower));
-  // Tour de l'horloge Galley-La sur le haut de la fontaine.
-  b.cylinder("coral", [cx + 4.8, 11.5, -1.5], 1.4, 1.75, 14.5, 8);
-  b.cylinder("cream", [cx + 4.8, 18.9, -1.5], 1.85, 1.85, 0.5, 8);
-  b.dome("turquoise", [cx + 4.8, 19.2, -1.5], 1.9, [1, 1.1, 1]);
-  b.cylinder("gold", [cx + 4.8, 21.9, -1.5], 0, 0.14, 1.3, 6);
-  b.cylinder("cream", [cx + 3.35, 17.1, -1.5], 0.8, 0.8, 0.12, 16, [0, 0, Math.PI / 2]);
-  b.box("dark", [cx + 3.24, 17.28, -1.5], [0.08, 0.52, 0.08]);
-  b.box("dark", [cx + 3.23, 17.1, -1.27], [0.08, 0.08, 0.45]);
-  // Passerelle piétonne arquée enjambant perpendiculairement le canal (x_local = -11, wx = 22).
-  for (let step = 0; step <= 12; step++) {
-    const bx = -15.0 + step * (8.0 / 12);
-    const y = 0.55 + Math.sin(step / 12 * Math.PI) * 1.45;
-    b.box("cream", [bx, y, -8], [0.74, 0.36, 2.8]);
-    for (const side of [-1, 1]) {
-      b.box("cream", [bx, y + 0.65, -8 + side * 1.35], [0.75, 0.15, 0.22]);
-      if (step % 2 === 0) b.box("cream", [bx, y + 0.36, -8 + side * 1.35], [0.18, 0.65, 0.18]);
+
+  // Bassin-lagon turquoise au pied de l'île-fontaine.
+  b.cylinder("water", [cx, 0.18, 0], 12.2, 12.4, 0.32, 28);
+  b.ring("foam", [cx, 0.38, 0], 11.8, 0.22);
+
+  for (let ti = 0; ti < tiers.length; ti++) {
+    const { r, bottom, h } = tiers[ti];
+    // Mur de soutènement en pierre calcaire + corniche supérieure + parapet.
+    b.cylinder("cream", [cx, bottom + h / 2, 0], r, r + 0.55, h, 28);
+    b.cylinder("sandLight", [cx, bottom + h - 0.18, 0], r + 0.24, r + 0.24, 0.34, 28);
+    // Canal annulaire bleu turquoise + écume sur chaque terrasse.
+    b.cylinder("water", [cx, bottom + h + 0.06, 0], r - 0.08, r - 0.08, 0.16, 28);
+    b.ring("foam", [cx, bottom + h + 0.18, 0], r - 0.26, 0.13);
+    // Frise turquoise architecturale à la base de chaque niveau.
+    b.cylinder("turquoise", [cx, bottom + 0.32, 0], r + 0.48, r + 0.54, 0.44, 28);
+
+    // Arches d'aqueduc et cascades d'eau plongeant d'un étage à l'autre.
+    const flowCount = lowPower ? 6 : 10;
+    for (let flow = 0; flow < flowCount; flow++) {
+      const angle = (flow / flowCount) * Math.PI * 2 + ti * 0.22;
+      const ca = Math.cos(angle), sa = Math.sin(angle);
+      const rEdge = r + 0.22;
+      // Bec d'aqueduc en pierre au sommet de chaque chute.
+      b.box("sandLight", [cx + ca * (r + 0.08), bottom + h - 0.12, sa * (r + 0.08)], [0.55, 0.38, 1.35], [0, -angle, 0]);
+      // Rideau d'eau légèrement incliné vers l'extérieur + filet d'écume.
+      b.box("water", [cx + ca * (rEdge + 0.18), bottom + h / 2, sa * (rEdge + 0.18)], [0.22, h + 0.12, 1.05], [0, -angle, 0.06]);
+      if (!lowPower) {
+        b.box("foam", [cx + ca * (rEdge + 0.28), bottom + h * 0.48, sa * (rEdge + 0.28)], [0.08, h * 0.82, 0.22], [0, -angle, 0.06]);
+        b.sphere("foam", [cx + ca * (rEdge + 0.34), bottom + 0.28, sa * (rEdge + 0.34)], 0.42, [0.9, 0.42, 1.25]);
+      }
+      // Arches sombres sculptées dans la muraille entre les chutes.
+      if (!lowPower && ti < 3) {
+        const midA = angle + Math.PI / flowCount;
+        const rWall = r + 0.24;
+        b.box("dark", [cx + Math.cos(midA) * rWall, bottom + h * 0.46, Math.sin(midA) * rWall], [0.16, h * 0.52, 1.05], [0, -midA, 0]);
+      }
     }
   }
-  for (const bx of [-15.0, -7.0]) b.box("cream", [bx, 0.28, -8], [0.9, 0.56, 2.8]);
-  // Quai en bois sur pilotis ancrés au fond, Yagara Bull sur l'eau du canal et grue Galley-La.
-  b.box("wood", [-13.0, 0.65, 7.0], [2.4, 0.22, 6.0]);
-  for (const px of [-13.9, -12.1]) {
-    for (const pz of [4.4, 7.0, 9.6]) b.cylinder("wood", [px, 0.25, pz], 0.11, 0.13, 0.86, 6);
+
+  // 2. Grande Fontaine Sommitale emblématique de Water 7 (y = 14.9 → 26.8).
+  b.cylinder("cream", [cx, 16.7, 0], 2.9, 3.8, 3.6, 20);
+  b.cylinder("sandLight", [cx, 18.6, 0], 3.55, 3.1, 0.55, 20);
+  // Vasque supérieure débordante.
+  b.cylinder("water", [cx, 18.95, 0], 3.3, 3.3, 0.22, 20);
+  b.ring("foam", [cx, 19.1, 0], 3.1, 0.16);
+  // Flèche centrale sculptée de la fontaine.
+  b.cylinder("cream", [cx, 20.8, 0], 1.15, 2.0, 3.5, 16);
+  b.cylinder("turquoise", [cx, 22.65, 0], 1.55, 1.25, 0.48, 16);
+  b.cylinder("cream", [cx, 23.6, 0], 0.65, 1.05, 1.6, 12);
+  b.cylinder("gold", [cx, 24.55, 0], 0.18, 0.42, 0.45, 10);
+  // Panache d'eau jaillissant du sommet + 6 arcs d'eau retombant dans la vasque.
+  b.sphere("water", [cx, 25.4, 0], 1.15, [0.75, 1.45, 0.75]);
+  b.sphere("foam", [cx, 26.25, 0], 0.72, [1.1, 0.65, 1.1]);
+  const jetCount = lowPower ? 4 : 8;
+  for (let j = 0; j < jetCount; j++) {
+    const a = (j / jetCount) * Math.PI * 2;
+    const ca = Math.cos(a), sa = Math.sin(a);
+    b.curve(
+      "water",
+      [
+        [cx + ca * 0.45, 25.0, sa * 0.45],
+        [cx + ca * 1.75, 24.1, sa * 1.75],
+        [cx + ca * 2.65, 21.8, sa * 2.65],
+        [cx + ca * 2.95, 19.05, sa * 2.95],
+      ],
+      0.24,
+      10,
+    );
+    if (!lowPower) {
+      b.curve(
+        "foam",
+        [
+          [cx + ca * 0.55, 25.25, sa * 0.55],
+          [cx + ca * 1.85, 24.3, sa * 1.85],
+          [cx + ca * 2.75, 22.0, sa * 2.75],
+        ],
+        0.1,
+        8,
+      );
+    }
   }
-  b.sphere("dark", [-10.6, 0.24, 11.2], 1, [0.75, 0.28, 2.5]);
-  b.sphere("wood", [-10.6, 0.38, 11.2], 1, [0.58, 0.12, 2.1]);
+
+  // 3. Maisons vénitiennes et palais densément étagés sur CHAQUE terrasse (posés proprement sur les rebords sans clipping).
+  const terraceRing = (
+    count: number,
+    ringRadius: number,
+    baseY: number,
+    minW: number,
+    minH: number,
+    angleOffset: number,
+    skipAngle?: number,
+  ) => {
+    const palette: MaterialKey[] = ["coral", "peach", "cream", "blueHouse", "sandLight"];
+    for (let i = 0; i < count; i++) {
+      if (lowPower && i % 2 === 1) continue;
+      const a = angleOffset + (i / count) * Math.PI * 2;
+      if (skipAngle !== undefined && Math.abs(Math.atan2(Math.sin(a - skipAngle), Math.cos(a - skipAngle))) < 0.42) continue;
+      const hx = cx + Math.cos(a) * ringRadius;
+      const hz = Math.sin(a) * ringRadius;
+      const w = minW + (i % 3) * 0.28;
+      const h = minH + ((i * 7) % 4) * 0.65;
+      const domed = !lowPower && i % 4 === 1;
+      venetianHouse(b, hx, baseY, hz, w, h, palette[(i + Math.round(baseY)) % palette.length], lowPower, domed);
+    }
+  };
+  // Terrasse 0 (y = 3.4, rebord entre r = 9.1 et 11.4 → r = 10.25)
+  terraceRing(12, 10.25, 3.4, 2.15, 3.6, 0.15);
+  // Terrasse 1 (y = 7.1, rebord entre r = 6.9 et 9.1 → r = 8.0)
+  terraceRing(9, 8.0, 7.1, 1.95, 3.5, 0.45, -0.32);
+  // Terrasse 2 (y = 11.0, rebord entre r = 4.8 et 6.9 → r = 5.85)
+  terraceRing(6, 5.85, 11.0, 1.75, 3.2, 0.85, -0.32);
+
+  // 4. Siège de la Galley-La (Manoir d'Iceburg) + Tour de l'Horloge sur les hauteurs face au bus.
+  // Manoir d'Iceburg sur la terrasse supérieure nord-ouest (bien visible depuis la route).
+  const mx = cx - 4.9, mz = -3.1, my = 11.0;
+  b.box("cream", [mx, my + 2.1, mz], [2.9, 4.2, 3.2]);
+  b.box("sandLight", [mx, my + 4.3, mz], [3.2, 0.34, 3.5]);
+  b.cylinder("cream", [mx, my + 5.05, mz], 1.15, 1.3, 1.2, 12);
+  b.dome("turquoise", [mx, my + 5.65, mz], 1.32, [1, 1.25, 1]);
+  b.cylinder("gold", [mx, my + 7.45, mz], 0, 0.12, 1.0, 6);
   if (!lowPower) {
-    // Yagara Bull amarré le long du quai dans le canal (wx ≈ 22.4).
-    b.sphere("turquoise", [-10.6, 0.56, 8.7], 0.48, [0.8, 0.8, 1.05]);
-    b.box("coral", [-10.6, 1.18, 11.2], [1.05, 0.14, 2.0]);
-    for (const pz of [10.4, 12.0]) b.cylinder("wood", [-10.6, 0.78, pz], 0.06, 0.06, 0.76, 6);
-    // Grue navale de Galley-La posée sur le quai, flèche orientée vers le canal (+X).
-    b.cylinder("metal", [-13.5, 3.0, 5.4], 0.22, 0.32, 6.0, 8);
-    b.box("metal", [-11.8, 5.85, 5.4], [4.0, 0.26, 0.28], [0, 0, 0.16]);
-    b.cylinder("gold", [-10.0, 4.85, 5.4], 0.05, 0.05, 2.4, 6);
-    b.box("wood", [-10.0, 3.45, 5.4], [1.3, 0.5, 1.0]);
-    // Lanternes chaudes ancrées sur le quai et aux entrées de la passerelle.
-    for (const [lx, ly, lz] of [[-13.9, 1.75, 4.4], [-13.9, 1.75, 9.6], [-15.0, 1.1, -9.8], [-7.0, 1.1, -9.8]]) {
-      b.cylinder("dark", [lx, ly, lz], 0.07, 0.1, 2.2, 6);
-      b.sphere("lamp", [lx, ly + 1.2, lz], 0.28);
+    // Colonnade & fenêtre lumineuse du manoir tournées vers le bus (-X).
+    for (const cz of [-1.1, -0.35, 0.35, 1.1]) {
+      b.cylinder("cream", [mx - 1.62, my + 1.4, mz + cz], 0.11, 0.13, 2.8, 6);
+    }
+    b.box("sandLight", [mx - 1.62, my + 2.9, mz], [0.42, 0.24, 2.7]);
+    b.box("lamp", [mx - 1.48, my + 3.55, mz], [0.06, 0.75, 1.35]);
+  }
+
+  // Tour de l'Horloge Galley-La dominant la cité-fontaine.
+  const tx = cx + 5.1, tz = -1.7;
+  b.cylinder("coral", [tx, 12.6, tz], 1.32, 1.68, 12.2, 8);
+  b.cylinder("cream", [tx, 18.85, tz], 1.82, 1.82, 0.48, 8);
+  b.dome("turquoise", [tx, 19.1, tz], 1.85, [1, 1.15, 1]);
+  b.cylinder("gold", [tx, 21.85, tz], 0, 0.14, 1.4, 6);
+  // Cadran d'horloge orienté vers le bus (-X) avec aiguilles.
+  b.cylinder("cream", [tx - 1.38, 17.2, tz], 0.82, 0.82, 0.14, 16, [0, 0, Math.PI / 2]);
+  b.ring("gold", [tx - 1.45, 17.2, tz], 0.82, 0.07, [0, Math.PI / 2, 0]);
+  b.box("dark", [tx - 1.48, 17.38, tz], [0.08, 0.5, 0.08]);
+  b.box("dark", [tx - 1.49, 17.2, tz + 0.22], [0.08, 0.08, 0.44]);
+
+  // 5. Passerelle piétonne vénitienne enjambant le canal est (x_local = -11, wx = 22).
+  venetianBridge(b, -11.0, -9.0, lowPower);
+
+  // 6. Dock 1 de la Galley-La : quai en bois, cale sèche avec coque en chantier, grue navale et Yagara Bull.
+  b.box("wood", [-13.3, 0.66, 9.5], [2.8, 0.24, 10.6]);
+  for (const px of [-14.4, -12.2]) {
+    for (const pz of [4.8, 8.0, 11.2, 14.4]) {
+      b.cylinder("wood", [px, 0.25, pz], 0.12, 0.14, 0.88, 6);
+    }
+  }
+  // Yagara Bull + gondole amarrée le long du quai dans le canal (x_local = -10.7, wx = 22.3).
+  yagaraGondola(b, -10.7, 0.12, 11.8, 1, "coral", lowPower);
+
+  if (!lowPower) {
+    // Cale de chantier naval avec coque de navire en bois en construction sur tréteaux.
+    b.box("wood", [-13.6, 1.1, 11.4], [1.4, 0.55, 3.6]);
+    b.sphere("wood", [-13.6, 1.45, 11.4], 1, [0.95, 0.48, 2.2]);
+    b.box("cream", [-13.6, 1.92, 11.4], [1.45, 0.14, 3.2]);
+    b.cylinder("wood", [-13.6, 3.1, 11.4], 0.1, 0.14, 2.4, 6);
+    // Grue navale de la Galley-La posée sur le quai, flèche treillis orientée vers le canal.
+    b.cylinder("metal", [-13.6, 3.4, 6.2], 0.24, 0.36, 6.6, 8);
+    b.box("metal", [-11.8, 6.45, 6.2], [4.4, 0.3, 0.34], [0, 0, 0.16]);
+    b.box("metal", [-12.6, 5.4, 6.2], [2.4, 0.16, 0.18], [0, 0, 0.62]);
+    b.cylinder("gold", [-9.9, 5.25, 6.2], 0.05, 0.05, 2.6, 6);
+    b.box("wood", [-9.9, 3.75, 6.2], [1.4, 0.48, 0.95]);
+    // Arche d'entrée bleue "Dock 1" et lanternes de port sur le quai.
+    for (const pz of [4.8, 14.4]) {
+      b.cylinder("dark", [-14.4, 1.85, pz], 0.07, 0.1, 2.2, 6);
+      b.sphere("lamp", [-14.4, 3.05, pz], 0.26);
     }
   }
 }
@@ -1193,44 +1405,83 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
   }
   if (zone === 1) {
     const x = side * 22;
-    b.box("water", [x, 0.13, 0], [3.5, 0.12, 144]);
-    for (const offset of [-2.1, 2.1]) b.box("cream", [x + offset, 0.2, 0], [0.45, 0.3, 144]);
-    for (const z of [-44, 37]) {
-      // Small arched bridges cross the canal, perpendicular to the route.
-      for (let i = 0; i < 9; i++) {
-        const bx = x - 3.6 + i * 0.9;
-        const y = 0.8 + Math.sin(i / 8 * Math.PI) * 1.25;
-        b.box("cream", [bx, y, z], [0.95, 0.3, 2.8]);
-        for (const edge of [-1, 1]) b.box("cream", [bx, y + 0.65, z + edge * 1.35], [0.96, 0.18, 0.16]);
-      }
+    // Canal vénitien turquoise avec berges en pierre claire, bordure d'écume et bornes d'amarrage.
+    b.box("water", [x, 0.13, 0], [3.6, 0.12, 144]);
+    for (const offset of [-2.1, 2.1]) {
+      b.box("cream", [x + offset, 0.22, 0], [0.55, 0.34, 144]);
+      b.box("sandLight", [x + offset, 0.41, 0], [0.62, 0.08, 144]);
     }
     if (!lowPower) {
-      for (const gz of [-18, 14]) {
-        b.sphere("dark", [x, 0.28, gz], 0.8, [0.65, 0.3, 2.1]);
-        b.sphere("turquoise", [x, 0.48, gz - 1.4], 0.38, [0.7, 0.7, 0.9]);
+      for (const offset of [-1.72, 1.72]) b.box("foam", [x + offset, 0.2, 0], [0.12, 0.04, 144]);
+      // Réverbères vénitiens et bornes d'amarrage le long de la promenade du canal.
+      for (let z = -56; z <= 56; z += 28) {
+        if (Math.abs(z + 44) < 6 || Math.abs(z - 37) < 6) continue;
+        const px = x - side * 2.25;
+        b.cylinder("dark", [px, 1.55, z], 0.06, 0.09, 2.6, 6);
+        b.sphere("lamp", [px, 2.92, z], 0.22);
+        b.cylinder("wood", [x - side * 1.9, 0.45, z + 6], 0.11, 0.13, 0.6, 6);
       }
     }
+    // Ponts vénitiens arqués en pierre enjambant le canal.
+    for (const z of [-44, 37]) {
+      venetianBridge(b, x, z, lowPower);
+    }
+    // Gondoles Yagara Bull glissant sur les canaux.
+    if (!lowPower) {
+      yagaraGondola(b, x, 0.12, -18, 1, "coral", lowPower);
+      yagaraGondola(b, x, 0.12, 14, -1, "blueHouse", lowPower);
+    }
     if (side < 0) {
-      const colors: MaterialKey[] = ["coral", "peach", "blueHouse"];
-      for (let i = 0; i < (lowPower ? 2 : 4); i++) {
-        venetianHouse(b, -34 - (i % 2) * 2, 0, -43 + i * 29, 4.5, 5.5 + i % 2 * 2.4, colors[i % 3], lowPower);
-      }
-      // Sea-train railway hugs the far bank on timber piles, rails posés sans vide sur les traverses.
-      for (const rx of [-43, -41.2]) b.box("dark", [rx, 1.2, 1], [0.14, 0.16, 116]);
-      for (let i = 0; i < (lowPower ? 8 : 15); i++) {
-        const z = -54 + i * (lowPower ? 15 : 8);
-        b.box("wood", [-42.1, 1.02, z], [3.4, 0.2, 0.6]);
-        if (i % 2 === 0) b.cylinder("wood", [-42.1, 0.24, z], 0.3, 0.4, 1.72, 6);
+      // Quartier vénitien dense sur la berge ouest face à la cité-fontaine.
+      const westHouses: Array<[number, number, number, number, MaterialKey, boolean]> = [
+        [-31.5, -56, 4.4, 6.2, "coral", false],
+        [-34.5, -36, 4.8, 8.0, "peach", true],
+        [-31.0, -18, 4.2, 5.8, "blueHouse", false],
+        [-35.0, -2, 5.0, 9.2, "cream", true],
+        [-31.8, 16, 4.5, 6.6, "coral", false],
+        [-34.8, 34, 4.7, 7.8, "blueHouse", false],
+        [-32.0, 52, 4.4, 6.0, "peach", false],
+      ];
+      westHouses
+        .filter((_, i) => !lowPower || i % 2 === 0)
+        .forEach(([hx, hz, hw, hh, col, domed]) => {
+          const hy = sceneryTerrainHeight(1, hx, hz) - 0.12;
+          venetianHouse(b, hx, hy, hz, hw, hh, col, lowPower, domed);
+        });
+      // Voie ferrée maritime du Puffing Tom sur viaduc en bois + rails métalliques.
+      for (const rx of [-43, -41.2]) b.box("metal", [rx, 1.2, 1], [0.14, 0.16, 120]);
+      for (let i = 0; i < (lowPower ? 8 : 16); i++) {
+        const z = -56 + i * (lowPower ? 16 : 7.5);
+        b.box("wood", [-42.1, 1.02, z], [3.5, 0.22, 0.62]);
+        if (i % 2 === 0) {
+          b.cylinder("wood", [-43.1, 0.26, z], 0.22, 0.28, 1.72, 6);
+          b.cylinder("wood", [-41.1, 0.26, z], 0.22, 0.28, 1.72, 6);
+        }
       }
       if (!lowPower) {
-        // Locomotive du Puffing Tom et wagon posés sur les rails avec attelage.
-        b.box("dark", [-42.1, 2.02, -12], [2.1, 1.5, 5.4]);
-        b.cylinder("metal", [-42.1, 2.35, -14.8], 0.75, 0.75, 2.4, 10, [Math.PI / 2, 0, 0]);
-        b.cylinder("vermilion", [-42.1, 3.35, -15.3], 0.3, 0.24, 1.1, 8);
-        b.sphere("cloud", [-42.1, 4.4, -14.8], 0.8, [1, 0.7, 1.2]);
-        b.sphere("lamp", [-42.1, 2.2, -16.1], 0.32);
-        b.box("metal", [-42.1, 1.6, -8.5], [0.5, 0.25, 1.8]);
-        b.box("blueHouse", [-42.1, 2.02, -5.2], [2.0, 1.45, 5.0]);
+        // Puffing Tom (Train des Mers) : proue requin emblématique, chaudière cerclée d'or, panache de vapeur et 2 wagons.
+        b.box("dark", [-42.1, 2.02, -12], [2.2, 1.55, 5.6]);
+        b.cylinder("dark", [-42.1, 2.48, -15.0], 0.88, 0.92, 3.0, 12, [Math.PI / 2, 0, 0]);
+        // Bagues dorées sur la chaudière et chasse-vagues avant.
+        for (const bz of [-14.0, -15.4]) b.ring("gold", [-42.1, 2.48, bz], 0.9, 0.08, [0, 0, 0]);
+        b.box("vermilion", [-42.1, 1.62, -16.75], [2.1, 0.72, 1.2], [0.35, 0, 0]);
+        // Cheminée + panache de vapeur blanche.
+        b.cylinder("vermilion", [-42.1, 3.65, -15.4], 0.34, 0.24, 1.35, 8);
+        b.sphere("cloud", [-42.1, 4.75, -14.8], 0.85, [1.0, 0.7, 1.2]);
+        b.sphere("cloud", [-42.1, 5.45, -13.2], 1.1, [1.05, 0.72, 1.35]);
+        b.sphere("cloud", [-42.1, 6.0, -11.1], 1.25, [1.1, 0.68, 1.5]);
+        // Phare avant lumineux + cabine vitrée.
+        b.sphere("lamp", [-42.1, 2.48, -16.6], 0.34);
+        b.box("lamp", [-42.1, 2.38, -10.8], [2.24, 0.56, 1.6]);
+        // 2 wagons passagers bleus et crème avec fenêtres illuminées.
+        for (const wz of [-5.2, 1.2]) {
+          b.box("metal", [-42.1, 1.58, wz - 3.2], [0.55, 0.24, 1.4]);
+          b.box("blueHouse", [-42.1, 2.08, wz], [2.1, 1.55, 5.1]);
+          b.box("cream", [-42.1, 2.92, wz], [2.22, 0.22, 5.25]);
+          for (const fz of [-1.4, 0, 1.4]) {
+            b.box("lamp", [-42.1, 2.18, wz + fz], [2.16, 0.55, 0.85]);
+          }
+        }
       }
     }
   }
