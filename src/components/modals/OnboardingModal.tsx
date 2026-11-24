@@ -207,7 +207,7 @@ export function OnboardingModal({
 
         <form
           noValidate
-          className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5"
+          className="flex min-h-0 flex-1 flex-col"
           onSubmit={(event) => {
             event.preventDefault();
             if (saving) return;
@@ -219,235 +219,254 @@ export function OnboardingModal({
             });
           }}
         >
-          <div>
-            <label htmlFor="onboarding-name" className="mb-1.5 flex items-center justify-between gap-2 text-sm font-black text-white">
-              <span>{pickLocale(locale, "Nom", "Name")}</span>
-              <span className="text-xs font-semibold text-[#c4b5fd]">{pickLocale(locale, "Obligatoire · 24 caractères max.", "Required · 24 characters max.")}</span>
-            </label>
-            <input
-              ref={initialFocusRef}
-              id="onboarding-name"
-              name="displayName"
-              required
-              readOnly={saving}
-              aria-invalid={nameInvalid}
-              aria-describedby={error ? "onboarding-error" : undefined}
-              value={name}
-              onChange={(event) => {
-                const chars = Array.from(event.target.value);
-                const nextName = chars.length > 24 ? chars.slice(0, 24).join("") : event.target.value;
-                setName(nextName);
-                onDraftChange?.({ displayName: nextName, comment, avatarId: selectedAvatarId });
-                onClearError();
-              }}
-              placeholder={pickLocale(locale, "Ex. NakamaBasque", "e.g. NakamaPirate")}
-              className="bus-case-inset w-full select-text rounded-xl px-3.5 py-2.5 text-base text-white outline-none transition-colors placeholder:text-[#a3aed9]/70 focus:border-[#947eef] focus:ring-2 focus:ring-[#947eef]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
-            />
-            <p aria-hidden="true" className="mt-1 text-right text-xs font-semibold tabular-nums text-[#a3aed9]">
-              {Array.from(name).length}/24
-            </p>
-          </div>
-
-          <div>
-            <label htmlFor="onboarding-comment" className="mb-1.5 flex items-center justify-between gap-2 text-sm font-black text-white">
-              <span>{pickLocale(locale, "Message", "Message")}</span>
-              <span className="text-xs font-semibold text-[#a3aed9]">{pickLocale(locale, "Facultatif · 180 caractères max.", "Optional · 180 characters max.")}</span>
-            </label>
-            <textarea
-              ref={commentRef}
-              id="onboarding-comment"
-              name="comment"
-              readOnly={saving}
-              aria-invalid={commentInvalid}
-              aria-describedby={error ? "onboarding-error" : undefined}
-              rows={2}
-              value={comment}
-              onChange={(event) => {
-                const chars = Array.from(event.target.value);
-                const nextComment = chars.length > 180 ? chars.slice(0, 180).join("") : event.target.value;
-                setComment(nextComment);
-                onDraftChange?.({ displayName: name, comment: nextComment, avatarId: selectedAvatarId });
-                onClearError();
-              }}
-              placeholder={pickLocale(locale, "Ex. Trop bien, vive la théorie !", "e.g. Awesome, long live the theory!")}
-              className="bus-case-inset w-full resize-none select-text rounded-xl px-3.5 py-2.5 text-base leading-relaxed text-white outline-none transition-colors placeholder:text-[#a3aed9]/70 focus:border-[#947eef] focus:ring-2 focus:ring-[#947eef]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60 sm:text-sm"
-            />
-            <p aria-hidden="true" className="mt-1 text-right text-xs font-semibold tabular-nums text-[#a3aed9]">
-              {Array.from(comment).length}/180
-            </p>
-          </div>
-
-          <div className="bus-case-elevated rounded-xl p-3.5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-[#a3aed9]">
-                  {pickLocale(locale, "Personnage", "Character")} <span className="font-semibold text-[#a3aed9]">{pickLocale(locale, "(facultatif)", "(optional)")}</span>
-                </p>
-                <p className="mt-0.5 truncate text-sm font-bold text-[#c4b5fd]">
-                  {selectedAvatarId ? getCharacterName(activeCharacter, locale) : pickLocale(locale, "Automatique (selon ta place)", "Automatic (based on your seat)")}
-                </p>
-              </div>
-              <button
-                type="button"
-                aria-disabled={saving}
-                onClick={togglePicker}
-                aria-expanded={showPicker}
-                aria-controls="onboarding-character-picker"
-                className="bus-btn-secondary inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-full px-3.5 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:text-sm"
-              >
-                {showPicker
-                  ? pickLocale(locale, "Masquer l’aperçu", "Hide preview")
-                  : selectedAvatarId
-                    ? pickLocale(locale, "Changer", "Change")
-                    : pickLocale(locale, "Choisir mon personnage", "Choose my character")}
-              </button>
+          <div className="bus-scrollbar min-h-0 flex-1 space-y-3.5 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
+            <div>
+              <label htmlFor="onboarding-name" className="mb-1.5 flex items-center justify-between gap-2 text-sm font-black text-white">
+                <span>{pickLocale(locale, "Nom", "Name")}</span>
+                <span className="text-xs font-semibold tabular-nums text-[#c4b5fd]">
+                  {pickLocale(locale, "Obligatoire", "Required")} · {Array.from(name).length}/24
+                </span>
+              </label>
+              <input
+                ref={initialFocusRef}
+                id="onboarding-name"
+                name="displayName"
+                required
+                readOnly={saving}
+                aria-invalid={nameInvalid}
+                aria-describedby={error ? "onboarding-error" : undefined}
+                value={name}
+                onChange={(event) => {
+                  const chars = Array.from(event.target.value);
+                  const nextName = chars.length > 24 ? chars.slice(0, 24).join("") : event.target.value;
+                  setName(nextName);
+                  onDraftChange?.({ displayName: nextName, comment, avatarId: selectedAvatarId });
+                  onClearError();
+                }}
+                placeholder={pickLocale(locale, "Ex. NakamaBasque", "e.g. NakamaPirate")}
+                className="bus-case-inset w-full select-text rounded-xl px-3.5 py-2.5 text-base text-white outline-none transition-colors placeholder:text-[#a3aed9]/70 focus:border-[#947eef] focus:ring-2 focus:ring-[#947eef]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60"
+              />
             </div>
 
-            {showPicker && (
-              <div id="onboarding-character-picker" className="mt-3 min-w-0 border-t border-[#947eef]/20 pt-3">
-                <div className="bus-case-inset relative rounded-xl">
-                  <div
-                    data-avatar-id={activeCharacter.id}
-                    data-avatar-rotation={rotation.toFixed(3)}
-                    aria-hidden="true"
-                    className="h-[min(28dvh,12.5rem)] min-h-36 w-full cursor-grab touch-none overflow-hidden rounded-xl active:cursor-grabbing"
-                    onPointerDown={(event) => {
-                      if (saving || dragRef.current !== null || (event.pointerType === "mouse" && event.button !== 0)) return;
-                      dragRef.current = { pointerId: event.pointerId, x: event.clientX, rotation };
-                      try {
-                        event.currentTarget.setPointerCapture(event.pointerId);
-                      } catch {}
-                    }}
-                    onPointerMove={(event) => {
-                      const drag = dragRef.current;
-                      if (!drag || drag.pointerId !== event.pointerId) return;
-                      setRotation(drag.rotation + (event.clientX - drag.x) * 0.015);
-                    }}
-                    onPointerUp={(event) => {
-                      if (dragRef.current?.pointerId !== event.pointerId) return;
-                      dragRef.current = null;
-                      try {
-                        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                          event.currentTarget.releasePointerCapture(event.pointerId);
-                        }
-                      } catch {}
-                    }}
-                    onPointerCancel={(event) => {
-                      if (dragRef.current?.pointerId !== event.pointerId) return;
-                      dragRef.current = null;
-                      try {
-                        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                          event.currentTarget.releasePointerCapture(event.pointerId);
-                        }
-                      } catch {}
-                    }}
-                    onLostPointerCapture={(event) => {
-                      if (dragRef.current?.pointerId !== event.pointerId) return;
-                      dragRef.current = null;
-                    }}
-                  >
-                    <AvatarPreview avatarId={activeCharacter.id} rotation={rotation} />
-                  </div>
-                  {[-1, 1].map((direction) => (
-                    <button
-                      key={direction}
-                      type="button"
-                      onClick={() => changeCharacter(direction)}
-                      aria-disabled={saving}
-                      aria-label={direction < 0 ? pickLocale(locale, "Personnage précédent", "Previous character") : pickLocale(locale, "Personnage suivant", "Next character")}
-                      className={`bus-btn-secondary absolute top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full text-white focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${direction < 0 ? "left-2" : "right-2"}`}
-                    >
-                      {direction < 0 ? <ChevronLeftIcon className="h-5 w-5" /> : <ChevronRightIcon className="h-5 w-5" />}
-                    </button>
-                  ))}
+            <div>
+              <label htmlFor="onboarding-comment" className="mb-1.5 flex items-center justify-between gap-2 text-sm font-black text-white">
+                <span>{pickLocale(locale, "Message", "Message")}</span>
+                <span className="text-xs font-semibold tabular-nums text-[#a3aed9]">
+                  {pickLocale(locale, "Facultatif", "Optional")} · {Array.from(comment).length}/180
+                </span>
+              </label>
+              <textarea
+                ref={commentRef}
+                id="onboarding-comment"
+                name="comment"
+                readOnly={saving}
+                aria-invalid={commentInvalid}
+                aria-describedby={error ? "onboarding-error" : undefined}
+                rows={2}
+                value={comment}
+                onChange={(event) => {
+                  const chars = Array.from(event.target.value);
+                  const nextComment = chars.length > 180 ? chars.slice(0, 180).join("") : event.target.value;
+                  setComment(nextComment);
+                  onDraftChange?.({ displayName: name, comment: nextComment, avatarId: selectedAvatarId });
+                  onClearError();
+                }}
+                placeholder={pickLocale(locale, "Ex. Trop bien, vive la théorie !", "e.g. Awesome, long live the theory!")}
+                className="bus-case-inset w-full resize-none select-text rounded-xl px-3.5 py-2.5 text-base leading-relaxed text-white outline-none transition-colors placeholder:text-[#a3aed9]/70 focus:border-[#947eef] focus:ring-2 focus:ring-[#947eef]/30 aria-[invalid=true]:border-red-400/80 read-only:cursor-not-allowed read-only:opacity-60 sm:text-sm"
+              />
+            </div>
+
+            <div className="bus-case-elevated rounded-xl p-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#a3aed9]">
+                    {pickLocale(locale, "Personnage", "Character")} <span className="font-semibold text-[#a3aed9]">{pickLocale(locale, "(facultatif)", "(optional)")}</span>
+                  </p>
+                  <p className="mt-0.5 truncate text-sm font-bold text-[#c4b5fd]" aria-live="polite" aria-atomic="true">
+                    {selectedAvatarId ? getCharacterName(activeCharacter, locale) : pickLocale(locale, "Automatique (selon ta place)", "Automatic (based on your seat)")}
+                    {showPicker && (
+                      <span className="ml-2 text-xs font-semibold tabular-nums text-[#a3aed9]">
+                        · {resolvedIndex + 1} / {NAKAMA_ROSTER.length}
+                      </span>
+                    )}
+                  </p>
                 </div>
-                <div className="mt-2.5 flex items-center justify-between gap-2" aria-live="polite" aria-atomic="true">
-                  <span className="text-sm font-black text-white">{getCharacterName(activeCharacter, locale)}</span>
-                  <span className="text-xs font-semibold tabular-nums text-[#a3aed9]">
-                    {resolvedIndex + 1} / {NAKAMA_ROSTER.length}
-                  </span>
-                </div>
-                <div
-                  role="group"
-                  aria-label={pickLocale(locale, "Sélection rapide du personnage", "Quick character selection")}
-                  className="mt-2 flex w-full min-w-0 gap-1.5 overflow-x-auto overscroll-x-contain px-0.5 py-1"
+                <button
+                  type="button"
+                  aria-disabled={saving}
+                  onClick={togglePicker}
+                  aria-expanded={showPicker}
+                  aria-controls="onboarding-character-picker"
+                  className="bus-btn-secondary inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-full px-3.5 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:text-sm"
                 >
-                  {NAKAMA_ROSTER.map((item) => {
-                    const selected = item.id === activeCharacter.id;
-                    return (
-                      <button
-                        key={item.id}
-                        ref={selected ? activeRosterButtonRef : undefined}
-                        type="button"
-                        aria-pressed={selected}
-                        aria-disabled={saving}
-                        onClick={() => selectCharacter(item.id)}
-                        className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${
-                          selected ? "bus-btn-active" : "bus-btn-secondary"
-                        }`}
-                      >
-                        <span
-                          aria-hidden="true"
-                          className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/25"
-                          style={{ backgroundColor: item.shirtColor }}
-                        />
-                        <span>{getCharacterName(item, locale)}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <label className="mt-2 flex items-center gap-3 text-xs font-semibold text-[#dfe5ff]">
-                  <span>{pickLocale(locale, "Faire tourner", "Rotate")}</span>
-                  <input
-                    type="range"
-                    min={-180}
-                    max={180}
-                    step={5}
-                    disabled={saving}
-                    value={rotationDegrees}
-                    onChange={(event) => setRotation((Number(event.target.value) * Math.PI) / 180)}
-                    aria-label={pickLocale(locale, "Rotation du personnage", "Character rotation")}
-                    aria-valuetext={pickLocale(locale, `${rotationDegrees} degrés`, `${rotationDegrees} degrees`)}
-                    className="h-6 min-w-0 flex-1 cursor-pointer accent-[#7a3aec] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
-                  />
-                </label>
-                {!hasLockedDbAvatar && selectedAvatarId !== null && (
-                  <button
-                    type="button"
-                    aria-disabled={saving}
-                    onClick={() => {
-                      if (saving) return;
-                      setSelectedAvatarId(null);
-                      setShowPicker(false);
-                      onDraftChange?.({ displayName: name, comment, avatarId: null });
-                    }}
-                    className="bus-btn-secondary mt-2.5 min-h-11 w-full cursor-pointer rounded-full px-3 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
-                  >
-                    {pickLocale(locale, "Laisser le choix automatique", "Use automatic choice")}
-                  </button>
-                )}
+                  {showPicker
+                    ? pickLocale(locale, "Masquer l’aperçu", "Hide preview")
+                    : selectedAvatarId
+                      ? pickLocale(locale, "Changer", "Change")
+                      : pickLocale(locale, "Choisir mon personnage", "Choose my character")}
+                </button>
               </div>
-            )}
+
+              {showPicker && (
+                <div id="onboarding-character-picker" className="mt-3 min-w-0 border-t border-[#947eef]/20 pt-3">
+                  <div className="bus-case-inset relative rounded-xl">
+                    <div
+                      data-avatar-id={activeCharacter.id}
+                      data-avatar-rotation={rotation.toFixed(3)}
+                      aria-hidden="true"
+                      className="h-[min(24dvh,11rem)] min-h-36 w-full cursor-grab touch-none overflow-hidden rounded-xl active:cursor-grabbing"
+                      onPointerDown={(event) => {
+                        if (saving || dragRef.current !== null || (event.pointerType === "mouse" && event.button !== 0)) return;
+                        dragRef.current = { pointerId: event.pointerId, x: event.clientX, rotation };
+                        try {
+                          event.currentTarget.setPointerCapture(event.pointerId);
+                        } catch {}
+                      }}
+                      onPointerMove={(event) => {
+                        const drag = dragRef.current;
+                        if (!drag || drag.pointerId !== event.pointerId) return;
+                        setRotation(drag.rotation + (event.clientX - drag.x) * 0.015);
+                      }}
+                      onPointerUp={(event) => {
+                        if (dragRef.current?.pointerId !== event.pointerId) return;
+                        dragRef.current = null;
+                        try {
+                          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                            event.currentTarget.releasePointerCapture(event.pointerId);
+                          }
+                        } catch {}
+                      }}
+                      onPointerCancel={(event) => {
+                        if (dragRef.current?.pointerId !== event.pointerId) return;
+                        dragRef.current = null;
+                        try {
+                          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                            event.currentTarget.releasePointerCapture(event.pointerId);
+                          }
+                        } catch {}
+                      }}
+                      onLostPointerCapture={(event) => {
+                        if (dragRef.current?.pointerId !== event.pointerId) return;
+                        dragRef.current = null;
+                      }}
+                    >
+                      <AvatarPreview avatarId={activeCharacter.id} rotation={rotation} />
+                    </div>
+                    {[-1, 1].map((direction) => (
+                      <button
+                        key={direction}
+                        type="button"
+                        onClick={() => changeCharacter(direction)}
+                        aria-disabled={saving}
+                        aria-label={direction < 0 ? pickLocale(locale, "Personnage précédent", "Previous character") : pickLocale(locale, "Personnage suivant", "Next character")}
+                        className={`bus-btn-secondary absolute top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full text-white focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${direction < 0 ? "left-2.5" : "right-2.5"}`}
+                      >
+                        {direction < 0 ? <ChevronLeftIcon className="h-5 w-5" /> : <ChevronRightIcon className="h-5 w-5" />}
+                      </button>
+                    ))}
+                  </div>
+                  <div
+                    role="group"
+                    aria-label={pickLocale(locale, "Sélection rapide du personnage", "Quick character selection")}
+                    onWheel={(event) => {
+                      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+                      const el = event.currentTarget;
+                      if (el.scrollWidth <= el.clientWidth) return;
+                      el.scrollLeft += event.deltaY;
+                    }}
+                    className="bus-scroll-fade-x mt-3 flex w-full min-w-0 gap-1.5 overflow-x-auto overscroll-x-contain scroll-px-4 px-3 py-1"
+                  >
+                    {NAKAMA_ROSTER.map((item) => {
+                      const selected = item.id === activeCharacter.id;
+                      return (
+                        <button
+                          key={item.id}
+                          ref={selected ? activeRosterButtonRef : undefined}
+                          type="button"
+                          aria-pressed={selected}
+                          aria-disabled={saving}
+                          onClick={() => selectCharacter(item.id)}
+                          className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${
+                            selected ? "bus-btn-active" : "bus-btn-secondary"
+                          }`}
+                        >
+                          <span
+                            aria-hidden="true"
+                            className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/25"
+                            style={{ backgroundColor: item.shirtColor }}
+                          />
+                          <span>{getCharacterName(item, locale)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-3 flex items-center gap-2.5 text-xs font-semibold text-[#dfe5ff]">
+                    <label htmlFor="onboarding-rotation-range" className="shrink-0">
+                      {pickLocale(locale, "Faire tourner", "Rotate")}
+                    </label>
+                    <input
+                      id="onboarding-rotation-range"
+                      type="range"
+                      min={-180}
+                      max={180}
+                      step={5}
+                      disabled={saving}
+                      value={rotationDegrees}
+                      onChange={(event) => setRotation((Number(event.target.value) * Math.PI) / 180)}
+                      aria-label={pickLocale(locale, "Rotation du personnage", "Character rotation")}
+                      aria-valuetext={pickLocale(locale, `${rotationDegrees} degrés`, `${rotationDegrees} degrees`)}
+                      className="bus-range h-6 min-w-0 flex-1 cursor-pointer focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+                    <span className="w-9 shrink-0 text-right tabular-nums text-[#b4bfe8]">{rotationDegrees}°</span>
+                    <button
+                      type="button"
+                      disabled={saving || rotationDegrees === 0}
+                      onClick={() => setRotation(0)}
+                      className="bus-btn-secondary shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold focus-visible:outline-none disabled:cursor-default disabled:opacity-35"
+                    >
+                      {pickLocale(locale, "Face", "Front")}
+                    </button>
+                  </div>
+                  {!hasLockedDbAvatar && selectedAvatarId !== null && (
+                    <button
+                      type="button"
+                      aria-disabled={saving}
+                      onClick={() => {
+                        if (saving) return;
+                        setSelectedAvatarId(null);
+                        setShowPicker(false);
+                        onDraftChange?.({ displayName: name, comment, avatarId: null });
+                      }}
+                      className="bus-btn-secondary mt-3 min-h-11 w-full cursor-pointer rounded-full px-3 text-xs font-semibold focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
+                    >
+                      {pickLocale(locale, "Laisser le choix automatique", "Use automatic choice")}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          {error && (
-            <p id="onboarding-error" role="alert" className="rounded-xl border border-red-400/50 bg-red-950/60 px-3.5 py-2.5 text-sm font-bold text-red-100">
-              {error}
-            </p>
-          )}
+          <div className="shrink-0 space-y-2.5 border-t border-[#947eef]/20 bg-[#0b0f2f]/90 px-4 py-3.5 sm:px-6 sm:py-4">
+            {error && (
+              <p id="onboarding-error" role="alert" className="rounded-xl border border-red-400/50 bg-red-950/60 px-3.5 py-2.5 text-sm font-bold text-red-100">
+                {error}
+              </p>
+            )}
 
-          <button
-            type="submit"
-            aria-disabled={saving}
-            className="bus-btn-primary flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80"
-          >
-            {reason === "missing-name" ? <UserBadgeIcon className="h-5 w-5 shrink-0" /> : <EnterBusIcon className="h-5 w-5 shrink-0" />}
-            {saving
-              ? pickLocale(locale, "Enregistrement…", "Saving…")
-              : reason === "missing-name"
-                ? pickLocale(locale, "Enregistrer mon nom", "Save my name")
-                : pickLocale(locale, "Monter dans le bus", "Board the bus")}
-          </button>
+            <button
+              type="submit"
+              aria-disabled={saving}
+              className="bus-btn-primary flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80"
+            >
+              {reason === "missing-name" ? <UserBadgeIcon className="h-5 w-5 shrink-0" /> : <EnterBusIcon className="h-5 w-5 shrink-0" />}
+              {saving
+                ? pickLocale(locale, "Enregistrement…", "Saving…")
+                : reason === "missing-name"
+                  ? pickLocale(locale, "Enregistrer mon nom", "Save my name")
+                  : pickLocale(locale, "Monter dans le bus", "Board the bus")}
+            </button>
+          </div>
         </form>
       </section>
     </div>,
