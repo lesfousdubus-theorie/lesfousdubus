@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
+  DEFAULT_GRAPHICS_SETTINGS,
   isDefaultGraphicsSettings,
   resolveGraphicsProfile,
   type DrawDistancePreference,
@@ -84,95 +85,89 @@ export default function TheorySettingsPanel({
   onUpdateGraphics,
   onResetGraphics,
 }: TheorySettingsPanelProps) {
-  const [pending, setPending] = useState<Partial<GraphicsSettings> | null>(null);
-  const pendingRef = useRef<Partial<GraphicsSettings> | null>(null);
+  const [draft, setDraft] = useState<GraphicsSettings>(graphicsSettings);
+  const draftRef = useRef<GraphicsSettings>(graphicsSettings);
   const timerRef = useRef<number | null>(null);
-  const effectiveSettings: GraphicsSettings = pending ? { ...graphicsSettings, ...pending } : graphicsSettings;
 
   useEffect(() => () => {
     if (timerRef.current !== null) window.clearTimeout(timerRef.current);
   }, []);
 
-  const scheduleGraphicsPatch = useCallback((patch: Partial<GraphicsSettings>, isPreset = false) => {
-    const nextPending = { ...(pendingRef.current ?? {}), ...patch };
-    pendingRef.current = nextPending;
-    setPending(nextPending);
+  const commitDraft = useCallback((nextDraft: GraphicsSettings) => {
+    draftRef.current = nextDraft;
+    setDraft(nextDraft);
     if (timerRef.current !== null) window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
       timerRef.current = null;
-      const current = pendingRef.current;
-      pendingRef.current = null;
-      setPending(null);
-      if (!current) return;
-      if (isPreset && current.preset) {
-        onSelectPreset(current.preset);
-        const { preset: _preset, ...rest } = current;
-        void _preset;
-        if (Object.keys(rest).length > 0) onUpdateGraphics(rest);
+      const latest = draftRef.current;
+      if (latest.preset !== graphicsSettings.preset && latest.drawDistance === "auto" && latest.pixelQuality === "auto" && latest.shadows === "auto" && latest.worldDensity === "auto") {
+        onSelectPreset(latest.preset);
       } else {
-        onUpdateGraphics(current);
+        onUpdateGraphics(latest);
       }
     }, 160);
-  }, [onSelectPreset, onUpdateGraphics]);
+  }, [graphicsSettings.preset, onSelectPreset, onUpdateGraphics]);
 
   const handleReset = useCallback(() => {
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-    pendingRef.current = null;
-    setPending(null);
+    const reset = { ...DEFAULT_GRAPHICS_SETTINGS };
+    draftRef.current = reset;
+    setDraft(reset);
     onResetGraphics();
   }, [onResetGraphics]);
 
   const recommendedTier = telemetry?.recommendedTier ?? "medium";
   const activeTier = telemetry?.activeTier
-    ?? (effectiveSettings.preset === "auto" ? recommendedTier : effectiveSettings.preset);
-  const resolvedProfile = resolveGraphicsProfile(effectiveSettings, activeTier, 1);
-  const isDefault = isDefaultGraphicsSettings(effectiveSettings);
+    ?? (draft.preset === "auto" ? recommendedTier : draft.preset);
+  const resolvedProfile = resolveGraphicsProfile(draft, activeTier, 1);
+  const isDefault = isDefaultGraphicsSettings(draft);
 
   return (
     <div className="space-y-3.5">
       <SettingSlider
         label="Qualité globale"
-        value={effectiveSettings.preset}
+        value={draft.preset}
         autoHint={TIER_LABELS[activeTier]}
         options={PRESET_OPTIONS}
-        onChange={(preset) => scheduleGraphicsPatch({
+        onChange={(preset) => commitDraft({
+          ...draftRef.current,
           preset,
           drawDistance: "auto",
           pixelQuality: "auto",
           shadows: "auto",
           worldDensity: "auto",
-        }, true)}
+        })}
       />
       <SettingSlider
         label="Distance d’affichage"
-        value={effectiveSettings.drawDistance}
+        value={draft.drawDistance}
         autoHint={optionLabel(DRAW_DISTANCE_OPTIONS, resolvedProfile.drawDistance)}
         options={DRAW_DISTANCE_OPTIONS}
-        onChange={(drawDistance) => scheduleGraphicsPatch({ drawDistance })}
+        onChange={(drawDistance) => commitDraft({ ...draftRef.current, drawDistance })}
       />
       <SettingSlider
         label="Finesse des pixels"
-        value={effectiveSettings.pixelQuality}
+        value={draft.pixelQuality}
         autoHint={optionLabel(PIXEL_QUALITY_OPTIONS, resolvedProfile.pixelQuality)}
         options={PIXEL_QUALITY_OPTIONS}
-        onChange={(pixelQuality) => scheduleGraphicsPatch({ pixelQuality })}
+        onChange={(pixelQuality) => commitDraft({ ...draftRef.current, pixelQuality })}
       />
       <SettingSlider
         label="Ombres"
-        value={effectiveSettings.shadows}
+        value={draft.shadows}
         autoHint={optionLabel(SHADOW_OPTIONS, resolvedProfile.shadows)}
         options={SHADOW_OPTIONS}
-        onChange={(shadows) => scheduleGraphicsPatch({ shadows })}
+        onChange={(shadows) => commitDraft({ ...draftRef.current, shadows })}
       />
       <SettingSlider
         label="Densité des décors"
-        value={effectiveSettings.worldDensity}
+        value={draft.worldDensity}
         autoHint={optionLabel(WORLD_DENSITY_OPTIONS, resolvedProfile.worldDensity)}
         options={WORLD_DENSITY_OPTIONS}
-        onChange={(worldDensity) => scheduleGraphicsPatch({ worldDensity })}
+        onChange={(worldDensity) => commitDraft({ ...draftRef.current, worldDensity })}
       />
 
       <button
