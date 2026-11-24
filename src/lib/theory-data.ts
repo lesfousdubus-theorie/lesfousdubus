@@ -278,11 +278,11 @@ export const THEORY_FAQ: FAQItem[] = [
   },
   {
     question: "Joy Boy aurait-il d’abord perdu la guerre ?",
-    answer: "La théorie ne suppose pas une première aventure où Luffy aurait perdu. Le récit d’un échec et d’un retour attendu servirait à entretenir l’espoir et à préparer les peuples. Cette interprétation reste une piste.",
+    answer: "La théorie ne suppose pas une première aventure où Luffy aurait perdu. Le récit d’un échec et d’un retour attendu servirait à entretenir l’espoir et à préparer les peuples.",
   },
   {
     question: "Pourquoi Roger serait-il arrivé trop tôt ?",
-    answer: "Roger aurait découvert une histoire que la génération de Luffy devait encore accomplir. Il pouvait la connaître sans pouvoir réaliser à sa place la promesse attendue. La vidéo propose un voyage vers le futur ; les prolongements explorent aussi une communication entre époques.",
+    answer: "Sur Laugh Tale, Roger n’a pas découvert un passé oublié mais l’avenir : une histoire qui ne s’était pas encore produite. Comme l’ère de Luffy et des Armes Antiques n’avait pas encore commencé, il ne pouvait qu’en rire et attendre que la bonne génération prenne le relais.",
   },
   {
     question: "Comment expliquer la résistance des Ponéglyphes ?",

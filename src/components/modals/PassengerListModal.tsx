@@ -258,7 +258,7 @@ export function PassengerListModal({
                   type="button"
                   data-passenger-seat={passenger.seatIndex}
                   onClick={() => onPassengerClick(passenger)}
-                  className={`group flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-left transition-colors hover:bg-[#192058] focus-visible:outline-none ${rowClass}`}
+                  className={`group flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-left transition-colors hover:border-[#cfc4fc] focus-visible:outline-none ${rowClass}`}
                 >
                   <span aria-hidden="true" className="bus-icon-badge grid h-8 w-8 shrink-0 place-items-center rounded-full">
                     <PersonIcon className="h-4 w-4" />

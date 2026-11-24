@@ -1,11 +1,11 @@
 "use client";
 
 /** The wheel is inline; the retrieved crew emblem is preloaded by the root layout. */
-export default function BusLoadingScreen({ failed = false }: { failed?: boolean }) {
+export default function BusLoadingScreen({ failed = false, exiting = false }: { failed?: boolean; exiting?: boolean }) {
   return (
     <section
       aria-labelledby="bus-loading-title"
-      className="fixed inset-0 grid place-items-center overflow-y-auto overscroll-contain bg-[#04071c] px-6 py-10 text-white"
+      className={`fixed inset-0 z-[70] grid place-items-center overflow-y-auto overscroll-contain bg-[#04071c] px-6 py-10 text-white transition-opacity duration-300 ${exiting ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
       <div className="my-auto flex w-full max-w-lg flex-col items-center text-center">
         <svg id="bus-loading-wheel" viewBox="0 0 256 256" aria-hidden="true" focusable="false"

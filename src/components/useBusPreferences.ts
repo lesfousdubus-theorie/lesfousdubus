@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { startTransition, useCallback, useState } from "react";
 import {
   DEFAULT_GRAPHICS_SETTINGS,
   sanitizeGraphicsSettings,
@@ -51,32 +51,38 @@ export function useBusPreferences() {
   const [graphicsSettings, setGraphicsSettings] = useState<GraphicsSettings>(readGraphicsSettings);
 
   const updateGraphicsSettings = useCallback((patch: Partial<GraphicsSettings>) => {
-    setGraphicsSettings((current) => {
-      const next = sanitizeGraphicsSettings({ ...current, ...patch });
-      writeGraphicsSettings(next);
-      return next;
+    startTransition(() => {
+      setGraphicsSettings((current) => {
+        const next = sanitizeGraphicsSettings({ ...current, ...patch });
+        writeGraphicsSettings(next);
+        return next;
+      });
     });
   }, []);
 
   const selectGraphicsPreset = useCallback((preset: GraphicsPresetPreference) => {
-    setGraphicsSettings((current) => {
-      const next = sanitizeGraphicsSettings({
-        ...current,
-        preset,
-        drawDistance: "auto",
-        pixelQuality: "auto",
-        shadows: "auto",
-        worldDensity: "auto",
+    startTransition(() => {
+      setGraphicsSettings((current) => {
+        const next = sanitizeGraphicsSettings({
+          ...current,
+          preset,
+          drawDistance: "auto",
+          pixelQuality: "auto",
+          shadows: "auto",
+          worldDensity: "auto",
+        });
+        writeGraphicsSettings(next);
+        return next;
       });
-      writeGraphicsSettings(next);
-      return next;
     });
   }, []);
 
   const resetGraphicsSettings = useCallback(() => {
     const next = { ...DEFAULT_GRAPHICS_SETTINGS };
-    setGraphicsSettings(next);
-    writeGraphicsSettings(next);
+    startTransition(() => {
+      setGraphicsSettings(next);
+      writeGraphicsSettings(next);
+    });
   }, []);
 
   return {

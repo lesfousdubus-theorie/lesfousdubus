@@ -29,7 +29,7 @@ export interface NakamaArchetype {
 export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> = [
   {
     id: "luffy",
-    name: "Monkey D. Luffy",
+    name: "Luffy",
     skinColor: "#fcd5b5",
     hairColor: "#171717",
     hairStyle: "spiky",
@@ -43,7 +43,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "zoro",
-    name: "Roronoa Zoro",
+    name: "Zoro",
     skinColor: "#f8cb9c",
     hairColor: "#16a34a", // Cheveux vert marimo
     hairStyle: "crop",
@@ -92,7 +92,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "chopper",
-    name: "Tony Tony Chopper",
+    name: "Chopper",
     skinColor: "#b45309", // Pelage renne
     hairColor: "#78350f",
     hairStyle: "crop",
@@ -105,7 +105,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "robin",
-    name: "Nico Robin",
+    name: "Robin",
     skinColor: "#fed7aa",
     hairColor: "#09090b", // Longs cheveux sombres soyeux
     hairStyle: "flowing",
@@ -156,7 +156,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "law",
-    name: "Trafalgar Law",
+    name: "Law",
     skinColor: "#fed7aa",
     hairColor: "#18181b",
     hairStyle: "shaggy",
@@ -170,7 +170,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "ace",
-    name: "Portgas D. Ace",
+    name: "Ace",
     skinColor: "#f8cb9c",
     hairColor: "#18181b",
     hairStyle: "wavy",
@@ -210,7 +210,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "shanks",
-    name: "Shanks le Roux",
+    name: "Shanks",
     skinColor: "#f8cb9c",
     hairColor: "#b91c1c", // Cheveux rouge sang
     hairStyle: "flowing",
@@ -222,7 +222,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "buggy",
-    name: "Buggy le Clown",
+    name: "Baggy",
     skinColor: "#fed7aa",
     hairColor: "#0284c7", // Nattes bleues
     hairStyle: "flowing",
@@ -234,7 +234,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "doflamingo",
-    name: "Donquixote Doflamingo",
+    name: "Doflamingo",
     skinColor: "#f3ca9f", hairColor: "#f6d657", hairStyle: "crop",
     shirtColor: "#edc461", pantsColor: "#f4f1ed",
     accessory: "sunglasses", accessoryColor: "#c52659", accessorySubColor: "#f38bb9",
@@ -242,7 +242,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "boa_hancock",
-    name: "Boa Hancock",
+    name: "Hancock",
     skinColor: "#f8d5ba", hairColor: "#15151c", hairStyle: "flowing",
     shirtColor: "#b52c40", pantsColor: "#b52c40",
     accessory: "earrings", accessoryColor: "#f7ca52",
@@ -250,7 +250,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "vivi",
-    name: "Nefertari Vivi",
+    name: "Vivi",
     skinColor: "#f8d8bc", hairColor: "#51afdf", hairStyle: "flowing",
     shirtColor: "#ee98af", pantsColor: "#f1e8dc",
     accessory: "none", accessoryColor: "#deba48",
@@ -258,7 +258,7 @@ export const NAKAMA_ROSTER: Array<NakamaArchetype & { id: PassengerAvatarId }> =
   },
   {
     id: "mihawk",
-    name: "Dracule Mihawk",
+    name: "Mihawk",
     skinColor: "#e8be9b", hairColor: "#151719", hairStyle: "crop",
     shirtColor: "#351e2b", pantsColor: "#29242c",
     accessory: "cowboy_hat", accessoryColor: "#17151b", accessorySubColor: "#8f233b",

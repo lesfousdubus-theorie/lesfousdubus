@@ -338,9 +338,15 @@ function PerformanceDirector({
     const previous = mountedRefreshRef.current;
     mountedRefreshRef.current = refreshKey;
     if (previous && previous !== refreshKey && paused && canRefreshPaused) {
-      // Actualise une image derrière le modal Paramètres pour refléter portée, ombres et densité.
-      const frame = requestAnimationFrame(() => advance(get().clock.elapsedTime + 0.001));
-      return () => cancelAnimationFrame(frame);
+      // Actualise une image derrière le modal Paramètres après stabilisation pour garder la fluidité des sliders.
+      let frame = 0;
+      const timer = window.setTimeout(() => {
+        frame = requestAnimationFrame(() => advance(get().clock.elapsedTime + 0.001));
+      }, 120);
+      return () => {
+        window.clearTimeout(timer);
+        if (frame) cancelAnimationFrame(frame);
+      };
     }
   }, [advance, canRefreshPaused, get, paused, refreshKey]);
 
@@ -520,8 +526,8 @@ export default function Scene({
   const sceneDpr = dprOverride && dprOverride.key === dprKey ? dprOverride.dpr : profile.maxDpr;
 
   useEffect(() => {
-    onAvailabilityChange?.(canvasReady && busReady && !contextLost);
-  }, [busReady, canvasReady, contextLost, onAvailabilityChange]);
+    onAvailabilityChange?.(canvasReady && busReady && shadersReady && !contextLost);
+  }, [busReady, canvasReady, contextLost, onAvailabilityChange, shadersReady]);
   const renderPaused = hidden || contextLost || uiPaused;
   const playbackSuspended = hidden || contextLost;
   // Calcul géométrique de la cabine pour la caméra

@@ -50,6 +50,7 @@ export function AvatarSelectionModal({
   const close = () => { if (!saving) onClose(); };
   const handleKeyDown = useModalAccessibility(true, close, dialogRef);
   const character = NAKAMA_ROSTER[index];
+  const isCurrentAvatar = avatarId !== null && character.id === avatarId;
   const rotationDegrees = normalizeRotationDegrees(rotation);
 
   const changeCharacter = (direction: number) => {
@@ -99,7 +100,7 @@ export function AvatarSelectionModal({
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
         <div className="bus-case-elevated relative rounded-xl">
           <div data-avatar-id={character.id} data-avatar-rotation={rotation.toFixed(3)}
-            aria-hidden="true" className="h-[min(38dvh,19rem)] min-h-40 w-full cursor-grab touch-none overflow-hidden rounded-xl active:cursor-grabbing"
+            aria-hidden="true" className="h-[min(34dvh,17.5rem)] min-h-40 w-full cursor-grab touch-none overflow-hidden rounded-xl active:cursor-grabbing"
             onPointerDown={event => {
               if (saving || dragRef.current !== null || (event.pointerType === "mouse" && event.button !== 0)) return;
               dragRef.current = { pointerId: event.pointerId, x: event.clientX, rotation };
@@ -138,18 +139,31 @@ export function AvatarSelectionModal({
           </div>
           {[-1, 1].map(direction => <button key={direction} type="button" onClick={() => changeCharacter(direction)} aria-disabled={saving}
             aria-label={direction < 0 ? "Personnage précédent" : "Personnage suivant"}
-            className={`bus-btn-secondary absolute top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full text-white focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${direction < 0 ? "left-2" : "right-2"}`}>
+            className={`bus-btn-secondary absolute top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full text-white focus-visible:outline-none aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${direction < 0 ? "left-3 sm:left-4" : "right-3 sm:right-4"}`}>
             {direction < 0 ? <ChevronLeftIcon className="h-5 w-5" /> : <ChevronRightIcon className="h-5 w-5" />}
           </button>)}
         </div>
-        <div className="mt-4 text-center" aria-live="polite" aria-atomic="true">
+        <div className="mt-3.5 text-center" aria-live="polite" aria-atomic="true">
           <h3 className="text-xl font-black text-white">{character.name}</h3>
-          <p className="mt-1 text-xs font-semibold tabular-nums text-[#a3aed9]">{index + 1} / {NAKAMA_ROSTER.length}</p>
+          <p className="mt-1 flex items-center justify-center gap-2 text-xs font-semibold tabular-nums text-[#a3aed9]">
+            <span>{index + 1} / {NAKAMA_ROSTER.length}</span>
+            {isCurrentAvatar && (
+              <span className="rounded-full border border-[#a995f7]/45 bg-[#472dc8]/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#e9e4ff]">
+                Actuel
+              </span>
+            )}
+          </p>
         </div>
         <div
           role="group"
           aria-label="Sélection rapide du personnage"
-          className="mt-3 flex w-full min-w-0 gap-1.5 overflow-x-auto overscroll-x-contain px-0.5 py-1"
+          onWheel={(event) => {
+            if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+            const el = event.currentTarget;
+            if (el.scrollWidth <= el.clientWidth) return;
+            el.scrollLeft += event.deltaY;
+          }}
+          className="bus-scroll-fade-x mt-3.5 flex w-full min-w-0 gap-1.5 overflow-x-auto overscroll-x-contain scroll-px-4 px-3 py-1"
         >
           {NAKAMA_ROSTER.map((item, itemIndex) => {
             const selected = itemIndex === index;
@@ -171,7 +185,7 @@ export function AvatarSelectionModal({
               >
                 <span
                   aria-hidden="true"
-                  className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/25"
+                  className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/45"
                   style={{ backgroundColor: item.shirtColor }}
                 />
                 <span>{item.name}</span>
@@ -179,17 +193,28 @@ export function AvatarSelectionModal({
             );
           })}
         </div>
-        <label className="mt-3 flex items-center gap-3 text-xs font-semibold text-[#dfe5ff]">
-          <span>Faire tourner</span>
-          <input type="range" min={-180} max={180} step={5} disabled={saving} value={rotationDegrees}
+        <div className="mt-3.5 flex items-center gap-3 text-xs font-semibold text-[#dfe5ff]">
+          <label htmlFor="avatar-rotation-range" className="shrink-0">
+            Faire tourner
+          </label>
+          <input id="avatar-rotation-range" type="range" min={-180} max={180} step={5} disabled={saving} value={rotationDegrees}
             onChange={event => setRotation(Number(event.target.value) * Math.PI / 180)}
             aria-label="Rotation du personnage" aria-valuetext={`${rotationDegrees} degrés`}
-            className="h-6 min-w-0 flex-1 cursor-pointer accent-[#7a3aec] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
-        </label>
+            className="bus-range h-6 min-w-0 flex-1 cursor-pointer focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
+          <span className="w-10 shrink-0 text-right tabular-nums text-[#b4bfe8]">{rotationDegrees}°</span>
+          <button
+            type="button"
+            disabled={saving || rotationDegrees === 0}
+            onClick={() => setRotation(0)}
+            className="bus-btn-secondary shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold focus-visible:outline-none disabled:cursor-default disabled:opacity-35"
+          >
+            Face
+          </button>
+        </div>
         {error && <p role="alert" className="mt-4 rounded-xl border border-red-400/50 bg-red-950/60 px-3.5 py-2.5 text-sm font-bold text-red-100">{error}</p>}
         <button type="button" aria-disabled={saving} onClick={() => { if (!saving) onChoose(character.id); }}
           className="bus-btn-primary mt-5 flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold focus-visible:outline-none aria-disabled:cursor-wait aria-disabled:opacity-80">
-          {saving ? "Enregistrement…" : "Choisir ce personnage"}
+          {saving ? "Enregistrement…" : (hasRegisteredPlace && isCurrentAvatar ? "Garder ce personnage" : "Choisir ce personnage")}
         </button>
         {!hasRegisteredPlace && avatarId !== null && (
           <button

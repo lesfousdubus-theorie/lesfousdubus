@@ -80,6 +80,7 @@ interface BusHudProps {
   busy: boolean;
   setShowTheoryModal: Dispatch<SetStateAction<boolean>>;
   setShowTheoryAge: Dispatch<SetStateAction<boolean>>;
+  openSettingsModal: () => void;
   setStatsLoadError: Dispatch<SetStateAction<boolean>>;
   setStatsRetryToken: Dispatch<SetStateAction<number>>;
   setSeatRow: Dispatch<SetStateAction<number>>;
@@ -122,7 +123,7 @@ export function BusHud({
   passengerManifestButtonRef, statsLoadError, count,
   numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow, seatColumn,
   exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
-  tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, setStatsLoadError,
+  tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, openSettingsModal, setStatsLoadError,
   setStatsRetryToken, setSeatRow, setSeatColumn, toggleTv, openPassengerManifest,
   toggleDayNight, decelerateBus, accelerateBus, toggleHeadlights, honk,
   enterBus, openProfileModal, exitBus, resetView, bgmPlaying, toggleBgm,
@@ -139,13 +140,20 @@ export function BusHud({
     phase,
     epoch: phaseEpoch,
   });
+  const [speedMenuState, setSpeedMenuState] = useState<{ open: boolean; phase: Phase; epoch: number }>({
+    open: false,
+    phase,
+    epoch: phaseEpoch,
+  });
   const [musicPlayback, setMusicPlayback] = useState<BusMusicPlayback>(INITIAL_MUSIC_PLAYBACK);
   const immersiveButtonRef = useRef<HTMLButtonElement>(null);
   const restoreButtonRef = useRef<HTMLButtonElement>(null);
   const exteriorMenuButtonRef = useRef<HTMLButtonElement>(null);
   const interiorMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const speedMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuId = useId();
   const musicDetailsOpen = musicDetailsState.open && musicDetailsState.phase === phase && musicDetailsState.epoch === phaseEpoch && !hidden && !immersive;
+  const speedMenuOpen = speedMenuState.open && speedMenuState.phase === phase && speedMenuState.epoch === phaseEpoch && !hidden && !immersive;
   const mobileMenuOpen = mobileMenuState.open && mobileMenuState.phase === phase && compactHud && sceneAvailable && !hidden && !immersive;
   const hudRef = useHudLayout(phase, hidden, sceneAvailable, compactHud, mobileMenuOpen, immersive);
   const activeMenuButtonRef = exteriorControlsVisible ? exteriorMenuButtonRef : interiorMenuButtonRef;
@@ -180,6 +188,26 @@ export function BusHud({
     emitBusAudioEvent("musicSnapshot");
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (!speedMenuOpen) return;
+    const closeOnOutside = (event: PointerEvent) => {
+      if (speedMenuRef.current && !speedMenuRef.current.contains(event.target as Node)) {
+        setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
+      }
+    };
+    window.addEventListener("pointerdown", closeOnOutside);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("pointerdown", closeOnOutside);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [phase, phaseEpoch, speedMenuOpen]);
 
   const restoreControls = () => {
     setImmersive(false);
@@ -340,7 +368,7 @@ export function BusHud({
 
         {/* Compteurs des passagers et des jours écoulés depuis la naissance de la théorie */}
         <div className="bus-top-stats bus-case bus-glass pointer-events-auto absolute right-2 top-2 flex min-h-11 items-stretch gap-0.5 rounded-[1.25rem] p-0.5 backdrop-blur-md min-[375px]:p-1 sm:left-auto sm:right-4 sm:top-4 sm:min-h-14 sm:gap-1 sm:p-1">
-          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} title="Voir la liste des passagers" className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-full px-2 py-1 text-left leading-tight transition-colors hover:bg-[#6141e8]/20 focus-visible:outline-none min-[375px]:gap-1.5 min-[375px]:px-2.5 sm:gap-2.5 sm:px-3 sm:py-2 cursor-pointer">
+          <button ref={passengerManifestButtonRef} type="button" onClick={openPassengerManifest} title="Voir la liste des passagers" className="group flex min-h-11 min-w-0 flex-none items-center gap-1 rounded-[1rem] border border-transparent px-2 py-1 text-left leading-tight transition-[border-color] duration-150 hover:border-[#cfc4fc]/80 focus-visible:outline-none min-[375px]:gap-1.5 min-[375px]:px-2.5 sm:gap-2.5 sm:px-3 sm:py-2 cursor-pointer">
             <span aria-hidden="true" className="hidden text-[#c4b5fd] min-[400px]:inline-flex min-[400px]:items-center">
               <BusFrontIcon className="h-4 w-4 shrink-0 sm:h-6 sm:w-6" />
             </span>
@@ -372,7 +400,7 @@ export function BusHud({
             </button>
           )}
           <div className="my-1 w-px bg-[#947eef]/25" aria-hidden="true" />
-          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-h-11 min-w-0 flex-none rounded-full px-2 py-1 text-left leading-tight transition-colors hover:bg-[#6141e8]/20 focus-visible:outline-none min-[375px]:px-2.5 sm:px-3 sm:py-2 cursor-pointer" title="Voir le compteur précis depuis le 26 mai 2024">
+          <button type="button" aria-label={`La théorie existe depuis ${theoryAgeInDays.toLocaleString("fr-FR")} jours. Voir la date et la première vidéo`} onClick={() => setShowTheoryAge(true)} className="min-h-11 min-w-0 flex-none rounded-[1rem] border border-transparent px-2 py-1 text-left leading-tight transition-[border-color] duration-150 hover:border-[#cfc4fc]/80 focus-visible:outline-none min-[375px]:px-2.5 sm:px-3 sm:py-2 cursor-pointer" title="Voir le compteur précis depuis le 26 mai 2024">
             <span className="block text-[10px] font-bold uppercase tracking-[0.04em] text-[#c4b5fd] sm:text-xs">
               <span className="hud-label-short sm:hidden"><span className="hidden min-[375px]:inline">La </span>théorie</span><span className="hud-label-long hidden sm:inline">La théorie existe depuis</span>
             </span>
@@ -450,49 +478,77 @@ export function BusHud({
               />
             </div>
 
-            {/* Contrôleur de vitesse du bus : Boutons interactifs Ralentir & Accélérer */}
-            <div className="bus-speed bus-case bus-glass pointer-events-auto absolute bottom-3 left-3 right-3 flex h-11 items-center gap-1 rounded-full px-1.5 text-xs backdrop-blur-md sm:left-auto sm:right-4 sm:bottom-4 sm:gap-1.5 sm:px-2 sm:text-sm">
-              <button
-                type="button"
-                onClick={decelerateBus}
-                disabled={speedMultiplier <= 0.3}
-                aria-label="Ralentir le bus"
-                className="group relative flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-full border border-transparent bg-white/[0.07] px-2 text-xs font-semibold text-white transition-colors hover:bg-[#6141e8]/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 sm:w-[90px] sm:flex-none sm:px-2.5 cursor-pointer"
-                title="Ralentir le bus (Touche - ou Flèche Bas)"
-              >
-                <SlowSpeedIcon className="relative h-4 w-4 shrink-0" />
-                <span className="bus-speed-label relative">Ralentir</span>
-              </button>
-
-              <div className="bus-speed-value flex w-[62px] shrink-0 items-center justify-center gap-1 px-1 font-black tabular-nums sm:w-[76px] sm:px-1.5">
-                <span
-                  className={
-                    speedMultiplier >= 2.0
-                      ? "text-[#c4b5fd]"
-                      : speedMultiplier <= 0.5
-                        ? "text-[#93c5fd]"
-                        : "text-white"
-                  }
-                >
-                  {speedMultiplier.toFixed(1)}x
-                </span>
-                {speedMultiplier >= 2.0 && (
-                  <span className="bus-pill-badge rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase">
-                    Boost
-                  </span>
+            {/* Contrôleur de vitesse du bus + Paramètres en bas à droite */}
+            <div className="bus-speed pointer-events-none absolute bottom-3 right-3 z-40 flex items-center gap-1.5 sm:right-4 sm:bottom-4 sm:gap-2">
+              <div ref={speedMenuRef} className="pointer-events-auto relative">
+                {speedMenuOpen && (
+                  <div
+                    role="group"
+                    aria-label="Régler la vitesse du bus"
+                    className="bus-case-elevated absolute bottom-full -right-12 mb-2 z-40 flex items-center gap-1.5 rounded-full p-1 text-xs shadow-2xl sm:-right-[3.25rem]"
+                  >
+                    <button
+                      type="button"
+                      onClick={decelerateBus}
+                      disabled={speedMultiplier <= 0.3}
+                      aria-label="Ralentir le bus"
+                      className="flex h-9 items-center justify-center gap-1.5 rounded-full border border-transparent bg-white/[0.07] px-3 text-xs font-semibold text-white transition-colors hover:border-[#cfc4fc]/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
+                      title="Ralentir le bus (Touche - ou Flèche Bas)"
+                    >
+                      <SlowSpeedIcon className="h-4 w-4 shrink-0" />
+                      <span>Ralentir</span>
+                    </button>
+                    <div className="flex min-w-[3.5rem] items-center justify-center gap-1 px-1.5 font-black tabular-nums">
+                      <span className={speedMultiplier >= 2.0 ? "text-[#c4b5fd]" : speedMultiplier <= 0.5 ? "text-[#93c5fd]" : "text-white"}>
+                        {speedMultiplier.toFixed(1)}x
+                      </span>
+                      {speedMultiplier >= 2.0 && (
+                        <span className="bus-pill-badge rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase">
+                          Boost
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={accelerateBus}
+                      disabled={speedMultiplier >= 3.0}
+                      aria-label="Accélérer le bus"
+                      className="bus-btn-tonal flex h-9 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
+                      title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
+                    >
+                      <FastBoltIcon className="h-4 w-4 shrink-0" />
+                      <span>Accélérer</span>
+                    </button>
+                  </div>
                 )}
+                <button
+                  type="button"
+                  onClick={() => setSpeedMenuState((prev) => ({
+                    open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
+                    phase,
+                    epoch: phaseEpoch,
+                  }))}
+                  aria-expanded={speedMenuOpen}
+                  aria-label="Vitesse du bus"
+                  title="Vitesse du bus"
+                  className={`${speedMenuOpen || speedMultiplier !== 1 ? "bus-btn-active" : "bus-btn-secondary"} bus-glass flex h-11 items-center gap-2 rounded-full px-3.5 text-xs font-semibold backdrop-blur-md focus-visible:outline-none sm:text-sm cursor-pointer`}
+                >
+                  {speedMultiplier >= 2.0 ? (
+                    <FastBoltIcon className="h-4 w-4 shrink-0" />
+                  ) : (
+                    <SlowSpeedIcon className="h-4 w-4 shrink-0" />
+                  )}
+                  <span>Vitesse</span>
+                </button>
               </div>
-
               <button
                 type="button"
-                onClick={accelerateBus}
-                disabled={speedMultiplier >= 3.0}
-                aria-label="Accélérer le bus"
-                className="bus-btn-tonal relative flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-semibold focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 sm:w-[90px] sm:flex-none sm:px-2.5 cursor-pointer"
-                title="Accélérer le bus (Touche + ou Flèche Haut / Boost)"
+                onClick={openSettingsModal}
+                aria-label="Paramètres"
+                title="Paramètres"
+                className="bus-btn-secondary bus-glass pointer-events-auto grid h-11 w-11 shrink-0 place-items-center rounded-full backdrop-blur-md focus-visible:outline-none cursor-pointer"
               >
-                <FastBoltIcon className="relative h-4 w-4 shrink-0" />
-                <span className="bus-speed-label relative">Accélérer</span>
+                <SlidersIcon className="h-4 w-4 shrink-0 text-[#dcd3ff]" />
               </button>
             </div>
           </>
@@ -509,7 +565,7 @@ export function BusHud({
                   onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
                   disabled={seatRow <= 0}
                   aria-label="Rangée précédente"
-                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:bg-[#1a2258] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   title={seatRow <= 0 ? "Première rangée atteinte" : "Rangée précédente"}
                 >
                   <ChevronLeftIcon className="h-4 w-4 shrink-0" />
@@ -525,7 +581,7 @@ export function BusHud({
                   onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
                   disabled={seatRow >= numRows - 1}
                   aria-label="Rangée suivante"
-                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:bg-[#1a2258] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   title={seatRow >= numRows - 1 ? "Dernière rangée atteinte" : "Rangée suivante"}
                 >
                   <ChevronRightIcon className="h-4 w-4 shrink-0" />
@@ -539,7 +595,7 @@ export function BusHud({
                   onClick={() => setSeatColumn(Math.max(0, seatColumn - 1))}
                   disabled={seatColumn <= 0}
                   aria-label="Colonne à gauche"
-                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:bg-[#1a2258] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   title={seatColumn <= 0 ? "Déjà dans la colonne la plus à gauche" : "Colonne à gauche"}
                 >
                   <ChevronLeftIcon className="h-4 w-4 shrink-0" />
@@ -555,7 +611,7 @@ export function BusHud({
                   onClick={() => setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1))}
                   disabled={seatColumn >= seatCountInRow - 1}
                   aria-label="Colonne à droite"
-                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:bg-[#1a2258] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   title={seatColumn >= seatCountInRow - 1 ? "Déjà dans la colonne la plus à droite" : "Colonne à droite"}
                 >
                   <ChevronRightIcon className="h-4 w-4 shrink-0" />
@@ -617,38 +673,74 @@ export function BusHud({
             >
               <CrosshairResetIcon className="h-5 w-5 shrink-0" />
             </button>
-            <div className="bus-mobile-speed bus-case bus-glass pointer-events-auto flex h-11 shrink-0 items-center gap-0.5 rounded-full px-1 text-xs">
+            <div ref={speedMenuRef} className="pointer-events-auto relative z-40">
+              {speedMenuOpen && (
+                <div
+                  role="group"
+                  aria-label="Régler la vitesse du bus"
+                  className="bus-case-elevated absolute bottom-full -right-12 mb-2 z-40 flex items-center gap-1 rounded-full p-1 text-xs shadow-2xl"
+                >
+                  <button
+                    type="button"
+                    onClick={decelerateBus}
+                    disabled={speedMultiplier <= 0.3}
+                    aria-label="Ralentir le bus"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-transparent bg-white/[0.07] text-white transition-colors hover:border-[#cfc4fc]/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
+                    title="Ralentir le bus"
+                  >
+                    <SlowSpeedIcon className="h-4 w-4 shrink-0" />
+                  </button>
+                  <div className="flex min-w-[2.75rem] items-center justify-center gap-1 px-1 font-black tabular-nums">
+                    <span className={speedMultiplier >= 2.0 ? "text-[#c4b5fd]" : speedMultiplier <= 0.5 ? "text-[#93c5fd]" : "text-white"}>
+                      {speedMultiplier.toFixed(1)}x
+                    </span>
+                    {speedMultiplier >= 2.0 && (
+                      <span className="bus-pill-badge rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase">
+                        Boost
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={accelerateBus}
+                    disabled={speedMultiplier >= 3.0}
+                    aria-label="Accélérer le bus"
+                    className="bus-btn-tonal grid h-9 w-9 shrink-0 place-items-center rounded-full focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
+                    title="Accélérer le bus"
+                  >
+                    <FastBoltIcon className="h-4 w-4 shrink-0" />
+                  </button>
+                </div>
+              )}
               <button
                 type="button"
-                onClick={decelerateBus}
-                disabled={speedMultiplier <= 0.3}
-                aria-label="Ralentir le bus"
-                className="grid h-9 w-10 shrink-0 place-items-center rounded-full text-white transition-colors hover:bg-[#6141e8]/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
-                title="Ralentir le bus"
+                onClick={() => setSpeedMenuState((prev) => ({
+                  open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
+                  phase,
+                  epoch: phaseEpoch,
+                }))}
+                aria-expanded={speedMenuOpen}
+                aria-label="Vitesse du bus"
+                title="Vitesse du bus"
+                className={`${speedMenuOpen || speedMultiplier !== 1 ? "bus-btn-active" : "bus-btn-secondary"} bus-glass flex h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold focus-visible:outline-none cursor-pointer`}
               >
-                <SlowSpeedIcon className="h-4 w-4 shrink-0" />
-              </button>
-              <div className="bus-speed-value flex min-w-[2.75rem] items-center justify-center gap-1 px-1 font-black tabular-nums">
-                <span className={speedMultiplier >= 2.0 ? "text-[#c4b5fd]" : speedMultiplier <= 0.5 ? "text-[#93c5fd]" : "text-white"}>
-                  {speedMultiplier.toFixed(1)}x
-                </span>
-                {speedMultiplier >= 2.0 && (
-                  <span className="bus-pill-badge rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase">
-                    Boost
-                  </span>
+                {speedMultiplier >= 2.0 ? (
+                  <FastBoltIcon className="h-4 w-4 shrink-0" />
+                ) : (
+                  <SlowSpeedIcon className="h-4 w-4 shrink-0" />
                 )}
-              </div>
-              <button
-                type="button"
-                onClick={accelerateBus}
-                disabled={speedMultiplier >= 3.0}
-                aria-label="Accélérer le bus"
-                className="grid h-9 w-10 shrink-0 place-items-center rounded-full text-[#dcd3ff] transition-colors hover:bg-[#6141e8]/25 hover:text-white focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
-                title="Accélérer le bus"
-              >
-                <FastBoltIcon className="h-4 w-4 shrink-0" />
+                <span>Vitesse</span>
               </button>
             </div>
+            <button
+              type="button"
+              onClick={openSettingsModal}
+              aria-label="Paramètres"
+              title="Paramètres"
+              className="bus-icon-button bus-btn-secondary bus-glass pointer-events-auto grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-none cursor-pointer"
+            >
+              <SlidersIcon className="h-4 w-4 shrink-0 text-[#dcd3ff]" />
+            </button>
           </div>
         )}
 
@@ -871,7 +963,7 @@ export function BusHud({
                   }}
                   aria-label="Fermer la notification"
                   title="Fermer la notification"
-                  className="grid h-11 w-11 shrink-0 place-items-center self-center rounded-full text-white transition-colors hover:bg-[#6141e8]/25 hover:text-white focus-visible:outline-none cursor-pointer"
+                  className="grid h-11 w-11 shrink-0 place-items-center self-center rounded-full border border-transparent text-white transition-colors hover:border-[#cfc4fc]/70 hover:text-white focus-visible:outline-none cursor-pointer"
                 >
                   <CloseIcon className="h-4 w-4 shrink-0" />
                 </button>

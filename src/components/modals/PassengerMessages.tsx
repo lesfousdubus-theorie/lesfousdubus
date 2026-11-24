@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { fetchJson } from "@/lib/client/bus-api";
-import { ListOrderedIcon, PauseIcon, PlayIcon, ShuffleIcon } from "@/components/ui/BusIcons";
+import { ArrowLeftIcon, ListOrderedIcon, PauseIcon, PlayIcon, ShuffleIcon } from "@/components/ui/BusIcons";
 import { startMessageMotion } from "./passenger-message-motion";
 import { useModalAccessibility } from "./useModalAccessibility";
 
@@ -136,7 +136,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
             title="Retour au bus"
             className="messages-wall-control shrink-0"
           >
-            <span aria-hidden="true" className="text-base leading-none">←</span>
+            <ArrowLeftIcon className="h-4 w-4 shrink-0" />
           </button>
         </div>
       </header>
@@ -154,7 +154,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
                   type="button"
                   key={message.seatIndex}
                   onClick={(event) => readMessage(message, event.currentTarget)}
-                  className="flex cursor-pointer flex-col justify-between gap-2 rounded-2xl border border-[#947eef]/38 bg-[#0e1438]/95 p-3.5 text-left text-white transition-colors hover:bg-[#182058] focus-visible:outline-none"
+                  className="flex cursor-pointer flex-col justify-between gap-2 rounded-2xl border border-[#947eef]/38 bg-[#0e1438]/95 p-3.5 text-left text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none"
                 >
                   <span className="whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-white">
                     {message.comment}

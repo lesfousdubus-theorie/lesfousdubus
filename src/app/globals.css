@@ -33,9 +33,6 @@
 
   .bus-btn-primary:hover:not(:disabled):not([aria-disabled="true"]) {
     border-color: #cfc4fc;
-    background-color: #5e3ee4;
-    background-image: linear-gradient(90deg, #7737e8 0%, #5e3ee4 50%, #4448e0 100%);
-    color: #ffffff;
   }
 
   /* État actif / sélectionné pour les commandes à bascule, onglets et filtres (contraste AAA >= 7:1). */
@@ -50,9 +47,6 @@
 
   .bus-btn-active:hover:not(:disabled):not([aria-disabled="true"]) {
     border-color: #d6ccfd;
-    background-color: #5136d4;
-    background-image: linear-gradient(90deg, #682fd8 0%, #5136d4 50%, #3b3fd0 100%);
-    color: #ffffff;
   }
 
   /* Bouton secondaire / case sombre à bordure violette discrète, fixe, sans halo (contraste AAA > 14:1). */
@@ -66,8 +60,6 @@
 
   .bus-btn-secondary:hover:not(:disabled):not([aria-disabled="true"]) {
     border-color: rgba(207, 196, 252, 0.82);
-    background-color: rgba(22, 29, 78, 0.97);
-    color: #ffffff;
   }
 
   /* Variante tonale (ex. Sortir, actions contextuelles secondaires, contraste AAA > 12:1). */
@@ -81,8 +73,64 @@
 
   .bus-btn-tonal:hover:not(:disabled):not([aria-disabled="true"]) {
     border-color: #cfc4fc;
-    background-color: rgba(42, 34, 114, 0.97);
-    color: #ffffff;
+  }
+
+  .bus-scroll-fade-x {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(169, 149, 247, 0.45) transparent;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  }
+
+  .bus-range {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+  }
+
+  .bus-range::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, rgba(122, 58, 236, 0.55) 0%, rgba(169, 149, 247, 0.25) 100%);
+    border: 1px solid rgba(169, 149, 247, 0.28);
+  }
+
+  .bus-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    margin-top: -7px;
+    border-radius: 9999px;
+    background: #8b5cf6;
+    border: 2px solid #e9e4ff;
+    transition: transform 120ms ease, background-color 120ms ease;
+  }
+
+  .bus-range:hover:not(:disabled)::-webkit-slider-thumb {
+    background: #9f75ff;
+    transform: scale(1.08);
+  }
+
+  .bus-range::-moz-range-track {
+    height: 6px;
+    border-radius: 9999px;
+    background: rgba(169, 149, 247, 0.22);
+    border: 1px solid rgba(169, 149, 247, 0.28);
+  }
+
+  .bus-range::-moz-range-progress {
+    height: 6px;
+    border-radius: 9999px;
+    background: #7a3aec;
+  }
+
+  .bus-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 9999px;
+    background: #8b5cf6;
+    border: 2px solid #e9e4ff;
   }
 
   /* Bouton destructif sobre, sans relief ni halo. */
@@ -312,21 +360,6 @@ body {
   width: max-content;
 }
 
-.bus-speed button {
-  flex: none;
-  width: 90px;
-}
-
-[data-bottom-layout="stacked"] .bus-speed {
-  left: calc(0.75rem + env(safe-area-inset-left)) !important;
-  width: auto;
-}
-
-[data-bottom-layout="stacked"] .bus-speed button {
-  flex: 1;
-  width: auto;
-}
-
 .bus-exterior-controls,
 .bus-interior-controls {
   bottom: calc(0.5rem + env(safe-area-inset-bottom)) !important;
@@ -548,25 +581,7 @@ body {
     left: auto !important;
     right: calc(0.35rem + env(safe-area-inset-right)) !important;
     bottom: calc(0.35rem + env(safe-area-inset-bottom)) !important;
-    width: auto !important;
-    max-width: min(15rem, calc(100vw - 7rem));
-    padding-inline: 0.3rem !important;
-  }
-
-  .bus-speed button {
-    width: 2.75rem !important;
-    min-width: 2.75rem !important;
-    flex: none !important;
-    padding-inline: 0.45rem !important;
-  }
-
-  .bus-speed-label {
-    display: none !important;
-  }
-
-  .bus-speed-value {
-    width: auto !important;
-    min-width: 3.6rem;
+    width: max-content !important;
   }
 
   .bus-exterior-controls,

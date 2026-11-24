@@ -25,6 +25,8 @@ import { emitBusAudioEvent } from "@/lib/bus-audio";
 import { shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts";
 import { AvatarSelectionModal } from "./modals/AvatarSelectionModal";
 import { ManagePlaceModal } from "./modals/ManagePlaceModal";
+import { SettingsModal } from "./modals/SettingsModal";
+import BusLoadingScreen from "./BusLoadingScreen";
 import type { OnboardingSubmission } from "./modals/OnboardingModal";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
 import type { SceneGraphicsTelemetry } from "@/lib/scene-performance";
@@ -39,9 +41,11 @@ export default function BusExperience() {
   const preferences = useBusPreferences();
   const [showHelp, setShowHelp] = useState(false);
   const [showPlaceModal, setShowPlaceModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [resetViewToken, setResetViewToken] = useState(0);
   const [freeView, setFreeView] = useState(false);
   const [sceneAvailable, setSceneAvailable] = useState(false);
+  const [loadingPhase, setLoadingPhase] = useState<"visible" | "exiting" | "hidden">("visible");
   const [graphicsTelemetry, setGraphicsTelemetry] = useState<SceneGraphicsTelemetry | null>(null);
   const [bgmPlaying, setBgmPlaying] = useState(false);
   const [theoryVideoPlaying, setTheoryVideoPlaying] = useState(false);
@@ -656,7 +660,7 @@ export default function BusExperience() {
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
-  const sceneModalOpen = showHelp || showPlaceModal || showTheoryModal || showJoinModal || profile.showAvatarModal || onboardingReason !== null || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
+  const sceneModalOpen = showHelp || showPlaceModal || showTheoryModal || showSettingsModal || showJoinModal || profile.showAvatarModal || onboardingReason !== null || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
   const overlayOpen = sceneModalOpen || directory.showMessages;
 
   // Les préférences de confort restent disponibles au clavier sans encombrer le HUD.
@@ -669,6 +673,23 @@ export default function BusExperience() {
     window.addEventListener("keydown", openComfort);
     return () => window.removeEventListener("keydown", openComfort);
   }, [busy, overlayOpen]);
+
+  useEffect(() => {
+    if (loadingPhase !== "visible") return;
+    const statsReady = count !== null || statsLoadError;
+    if (!sceneAvailable || !statsReady) {
+      const fallbackTimer = window.setTimeout(() => setLoadingPhase("exiting"), 7000);
+      return () => window.clearTimeout(fallbackTimer);
+    }
+    const settleTimer = window.setTimeout(() => setLoadingPhase("exiting"), 1400);
+    return () => window.clearTimeout(settleTimer);
+  }, [count, loadingPhase, sceneAvailable, statsLoadError]);
+
+  useEffect(() => {
+    if (loadingPhase !== "exiting") return;
+    const hideTimer = window.setTimeout(() => setLoadingPhase("hidden"), 320);
+    return () => window.clearTimeout(hideTimer);
+  }, [loadingPhase]);
 
   return (
     <div data-party={partyOn ? "true" : "false"} data-party-dancing={partyDancing ? "true" : "false"} data-phase={phase} data-view={phase === "inside" && freeView ? "free" : "seat"} data-scene-available={sceneAvailable} data-tv-on={tvOn ? "true" : "false"} className="bus-app fixed inset-0 h-dvh w-screen overflow-hidden select-none bg-[#79c2ff] text-white">
@@ -749,6 +770,7 @@ export default function BusExperience() {
         busy={busy}
         setShowTheoryModal={setShowTheoryModal}
         setShowTheoryAge={setShowTheoryAge}
+        openSettingsModal={() => setShowSettingsModal(true)}
         setStatsLoadError={setStatsLoadError}
         setStatsRetryToken={setStatsRetryToken}
         setSeatRow={setSeatRow}
@@ -792,13 +814,15 @@ export default function BusExperience() {
         isOpen={showTheoryModal}
         onVideoPlaybackChange={setTheoryVideoPlaying}
         onClose={() => setShowTheoryModal(false)}
+      />
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
         graphicsSettings={preferences.graphicsSettings}
         graphicsTelemetry={graphicsTelemetry}
         onSelectGraphicsPreset={preferences.selectGraphicsPreset}
         onUpdateGraphicsSettings={preferences.updateGraphicsSettings}
         onResetGraphicsSettings={preferences.resetGraphicsSettings}
-        letterShortcutsEnabled={preferences.letterShortcutsEnabled}
-        setLetterShortcutsEnabled={preferences.setLetterShortcutsEnabled}
       />
       {showPlaceModal && (
         <ManagePlaceModal
@@ -817,6 +841,7 @@ export default function BusExperience() {
         saving={profile.profileSaving} error={profile.avatarError} onClose={profile.closeAvatarModal}
         onChoose={avatarId => void profile.submitAvatar(avatarId)} />}
       <TheoryAgeModal isOpen={showTheoryAge} onClose={() => setShowTheoryAge(false)} />
+      {loadingPhase !== "hidden" && <BusLoadingScreen exiting={loadingPhase === "exiting"} />}
     </div>
   );
 }

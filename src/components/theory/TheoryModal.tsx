@@ -14,17 +14,10 @@ import TheoryPanelContent, { type TheoryTab } from "./TheoryPanelContent";
 import { ModalCloseButton } from "../modals/ModalCloseButton";
 import { useModalAccessibility } from "../modals/useModalAccessibility";
 import {
-  DEFAULT_GRAPHICS_SETTINGS,
-  type GraphicsPresetPreference,
-  type GraphicsSettings,
-  type SceneGraphicsTelemetry,
-} from "@/lib/scene-performance";
-import {
   FastBoltIcon,
   HandshakeIcon,
   HelpCircleIcon,
   ScrollIcon,
-  SlidersIcon,
   TvIcon,
 } from "../ui/BusIcons";
 
@@ -32,28 +25,14 @@ interface TheoryModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   onVideoPlaybackChange?: (active: boolean) => void;
-  graphicsSettings?: GraphicsSettings;
-  graphicsTelemetry?: SceneGraphicsTelemetry | null;
-  onSelectGraphicsPreset?: (preset: GraphicsPresetPreference) => void;
-  onUpdateGraphicsSettings?: (patch: Partial<GraphicsSettings>) => void;
-  onResetGraphicsSettings?: () => void;
-  letterShortcutsEnabled?: boolean;
-  setLetterShortcutsEnabled?: (enabled: boolean) => void;
 }
 
-const THEORY_TABS: TheoryTab[] = ["thesis", "video", "faq", "participate", "settings"];
+const THEORY_TABS: TheoryTab[] = ["thesis", "video", "faq", "participate"];
 
 export default function TheoryModal({
   isOpen: externalIsOpen,
   onClose,
   onVideoPlaybackChange,
-  graphicsSettings = DEFAULT_GRAPHICS_SETTINGS,
-  graphicsTelemetry = null,
-  onSelectGraphicsPreset,
-  onUpdateGraphicsSettings,
-  onResetGraphicsSettings,
-  letterShortcutsEnabled,
-  setLetterShortcutsEnabled,
 }: TheoryModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TheoryTab>("thesis");
@@ -196,17 +175,6 @@ export default function TheoryModal({
               label="Participer au site"
               shortLabel="Participer"
             />
-            <TabButton
-              buttonRef={(element) => { tabRefs.current[4] = element; }}
-              active={activeTab === "settings"}
-              onClick={() => selectTab("settings")}
-              onKeyDown={(event) => handleTabKeyDown(event, 4)}
-              tabId="theory-tab-settings"
-              panelId="theory-panel-settings"
-              icon={<SlidersIcon className="hidden h-4 w-4 shrink-0 text-current sm:block" />}
-              label="Paramètres"
-              shortLabel="Paramètres"
-            />
           </div>
 
           <div
@@ -222,13 +190,6 @@ export default function TheoryModal({
                     videoActive={tab === "video" ? isOpen && activeTab === "video" : undefined}
                     videoMounted={tab === "video" ? videoMounted || activeTab === "video" : undefined}
                     onVideoPlaybackChange={onVideoPlaybackChange}
-                    graphicsSettings={graphicsSettings}
-                    graphicsTelemetry={graphicsTelemetry}
-                    onSelectGraphicsPreset={onSelectGraphicsPreset}
-                    onUpdateGraphicsSettings={onUpdateGraphicsSettings}
-                    onResetGraphicsSettings={onResetGraphicsSettings}
-                    letterShortcutsEnabled={letterShortcutsEnabled}
-                    setLetterShortcutsEnabled={setLetterShortcutsEnabled}
                   />
                 )}
               </div>
