@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { BUS_FRONT_Z } from "@/lib/bus-layout";
-import { getPartyDanceTime, PARTY_BEAT_SECONDS } from "@/lib/party-rhythm";
+import { getPartyDanceChillMix, getPartyDanceTime, PARTY_BEAT_SECONDS } from "@/lib/party-rhythm";
 import type { WorldState } from "./constants";
 
 const BEAM_Y = 3.083;
@@ -187,8 +187,9 @@ export default function BusPartyLights({
     previous.focus = visibleFocus;
 
     // Huit temps par rotation, avec des phases opposées des deux côtés de l'allée.
-    const beats = time / PARTY_BEAT_SECONDS;
-    const beatGlow = 0.91 + 0.09 * Math.cos(beats * TAU);
+    const chill = reducedMotion ? 0 : getPartyDanceChillMix();
+    const beats = (time / PARTY_BEAT_SECONDS) * (1 - chill * 0.72);
+    const beatGlow = (0.91 + 0.09 * Math.cos(beats * TAU)) * (1 - chill * 0.25);
     previous.stations.forEach((station, stationIndex) => {
       const stationZ = from + station * step;
       for (let fixture = 0; fixture < beamsPerStation; fixture++) {

@@ -10,7 +10,7 @@ export const THEORY_SIGN_MESSAGES = [
   { id: "lili", lines: ["VIVI SERA", "LILY"] },
   { id: "ryuma", lines: ["ZORO SERA", "RYUMA"] },
   { id: "robin", lines: ["ROBIN ÉCRIRA", "LES PONÉGLYPHES"] },
-  { id: "harley", lines: ["USOPP ÉCRIRA", "LE HARLEY"] },
+  { id: "harley", lines: ["USOPP ÉCRIRA", "LE HALEY"] },
   { id: "all-blue", lines: ["LES QUATRE MERS", "FORMERONT ALL BLUE"] },
   { id: "laugh-tale", lines: ["LAUGH TALE EST", "UNE QUESTION DE TEMPS"] },
   { id: "premier-pirate", lines: ["LUFFY SERA LE PREMIER PIRATE", "À PRENDRE LA MER !"] },

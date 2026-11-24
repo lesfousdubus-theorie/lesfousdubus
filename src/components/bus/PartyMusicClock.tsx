@@ -7,7 +7,11 @@ import { clearPartyDanceClock, partyMusicClock, syncPartyClock, updatePartyDance
 /** Un seul échantillon par image pour tous les danseurs, sans état React à chaque beat. */
 export default function PartyMusicClock() {
   useLayoutEffect(() => {
-    const stop = onBusAudioEvent("musicPlayback", playback => syncPartyClock(partyMusicClock, playback, performance.now()));
+    const stop = onBusAudioEvent("musicPlayback", playback => {
+      const now = performance.now();
+      syncPartyClock(partyMusicClock, playback, now);
+      updatePartyDanceFrame(now);
+    });
     emitBusAudioEvent("musicSnapshot");
     return () => { stop(); clearPartyDanceClock(); };
   }, []);

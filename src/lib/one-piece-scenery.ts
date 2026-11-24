@@ -396,68 +396,121 @@ function waterSeven(b: Builder, lowPower: boolean) {
 }
 
 function skypiea(b: Builder, lowPower: boolean) {
-  // Floating scalloped cloud shelf with a golden city on top.
-  const cloudCount = lowPower ? 7 : 13;
+  // 1. Mer Blanche-Blanche : socle de nuages épais et vaporeux soutenant Upper Yard.
+  const cloudCount = lowPower ? 8 : 14;
   for (let i = 0; i < cloudCount; i++) {
-    const a = i / cloudCount * Math.PI * 2;
-    b.sphere(i % 3 ? "cloud" : "cloudShade", [Math.cos(a) * 9, 4 + Math.sin(i) * 0.45, Math.sin(a) * 8], 5.2, [1.05, 0.55, 0.9]);
+    const a = (i / cloudCount) * Math.PI * 2;
+    b.sphere(i % 3 ? "cloud" : "cloudShade", [Math.cos(a) * 10.2, 3.6 + Math.sin(i * 1.3) * 0.55, Math.sin(a) * 9.2], 5.4, [1.08, 0.54, 0.94]);
   }
-  b.sphere("cloud", [0, 4.4, 0], 10, [1.2, 0.45, 1]);
-  b.cylinder("oldGold", [0, 7, 1.5], 8.6, 9.5, 0.8, 12);
-  // Three thick strands entwine: the Giant Jack reads as a climbing beanstalk.
+  b.sphere("cloud", [0, 4.1, 0], 11.2, [1.22, 0.44, 1.05]);
+
+  // 2. Upper Yard (le Vearth, fragment de Jaya projeté dans le ciel) : terre réelle + jungle tropicale dense.
+  b.cylinder("elbafCliff", [0.4, 6.2, 0.4], 9.2, 10.6, 2.2, 12);
+  b.cylinder("foliageDeep", [0.4, 7.45, 0.4], 9.4, 9.5, 0.55, 12);
+  const jungleMounds: Array<[number, number, number, number, MaterialKey]> = [
+    [-6.2, 8.2, -4.6, 3.2, "foliageDeep"],
+    [-7.6, 8.0, 2.8, 2.9, "leaf"],
+    [-3.2, 8.3, 6.4, 3.0, "foliageDeep"],
+    [7.2, 8.1, -5.8, 2.8, "leaf"],
+    [6.8, 8.0, 5.6, 2.9, "foliageDeep"],
+    [-1.2, 8.2, -6.5, 2.7, "leafLight"],
+  ];
+  for (const [jx, jy, jz, jr, mat] of jungleMounds) {
+    b.sphere(mat, [jx, jy, jz], jr, [1.2, 0.62, 1.1]);
+  }
+  if (!lowPower) {
+    // Arbres géants de la jungle d'Upper Yard autour des ruines.
+    for (const [tx, tz, th] of [[-7.4, -3.5, 5.4], [-6.8, 5.2, 4.8], [8.2, -4.2, 4.6], [7.8, 4.8, 5.0]]) {
+      b.cylinder("elbafBark", [tx, 7.6 + th * 0.45, tz], 0.35, 0.62, th, 7);
+      b.sphere("foliageDeep", [tx, 7.8 + th, tz], 2.25, [1.28, 0.62, 1.18]);
+      b.sphere("leafLight", [tx + 0.7, 8.4 + th, tz - 0.5], 1.45, [1.1, 0.55, 1.05]);
+    }
+  }
+
+  // 3. Cité antique de Shandora : pyramide mésoaméricaine à degrés en pierre et or + escalier central + Ponéglyphe.
+  for (let i = 0; i < 4; i++) {
+    const w = 10.6 - i * 1.75;
+    const d = 10.2 - i * 1.65;
+    const y = 8.15 + i * 1.05;
+    b.box(i % 2 === 0 ? "rock" : "oldGold", [3.6, y, 0], [w, 1.0, d]);
+    b.box("gold", [3.6, y + 0.52, 0], [w + 0.14, 0.14, d + 0.14]);
+  }
+  // Escalier monumental orienté vers la route (-x) pour grimper la pyramide.
+  for (let s = 0; s < 6; s++) {
+    b.box(s % 2 === 0 ? "rockLight" : "oldGold", [-1.6 + s * 0.48, 8.0 + s * 0.68, 0], [1.15, 0.68, 2.7]);
+  }
+  // Colonnes dorées sculptées et vestiges de Shandora.
+  if (!lowPower) {
+    for (const z of [-6.4, 6.4]) {
+      for (let i = 0; i < 3; i++) {
+        const x = 0.2 + i * 3.1;
+        const h = 3.2 + (i % 2) * 1.3;
+        b.cylinder("rock", [x, 7.7 + h * 0.5, z], 0.42, 0.62, h, 8);
+        b.box("gold", [x, 7.8 + h, z], [1.3, 0.34, 1.3]);
+      }
+      b.box("oldGold", [3.3, 11.4, z], [7.6, 0.5, 1.05]);
+    }
+    // Ponéglyphe de Shandora (monolithe sombre gravé d'or) et braseros sacrés au pied de l'escalier.
+    b.box("dark", [-3.2, 8.85, 0], [1.65, 2.3, 1.65]);
+    b.box("gold", [-4.05, 8.85, 0], [0.08, 1.55, 1.05]);
+    for (const side of [-1, 1]) {
+      b.cylinder("oldGold", [-2.7, 8.35, side * 3.4], 0.48, 0.34, 1.35, 8);
+      b.sphere("lamp", [-2.7, 9.25, side * 3.4], 0.44);
+    }
+  }
+
+  // 4. Giant Jack : haricot géant colossal jaillissant du cœur d'Upper Yard jusque très haut dans les nuages.
   for (let strand = 0; strand < 3; strand++) {
     const points: Point[] = [];
-    for (let i = 0; i <= 16; i++) {
-      const a = i * 0.48 + strand * Math.PI * 2 / 3;
-      points.push([-5 + Math.cos(a) * 1.15, 5 + i * 1.9, 2 + Math.sin(a) * 1.15]);
+    for (let i = 0; i <= 18; i++) {
+      const a = i * 0.46 + (strand * Math.PI * 2) / 3;
+      const swayX = Math.sin(i * 0.22) * 1.35;
+      const swayZ = Math.cos(i * 0.18) * 0.9;
+      points.push([-3.4 + swayX + Math.cos(a) * 1.25, 5.2 + i * 1.85, 1.6 + swayZ + Math.sin(a) * 1.25]);
     }
-    b.curve(strand === 1 ? "leafLight" : "leaf", points, strand === 1 ? 0.75 : 1.05, 40);
+    const mat: MaterialKey = strand === 0 ? "foliageDeep" : strand === 1 ? "leafLight" : "leaf";
+    b.curve(mat, points, strand === 1 ? 0.78 : 1.08, 42);
   }
-  for (let i = 0; i < (lowPower ? 5 : 8); i++) {
-    const a = i * 1.78, y = 10 + i * 3.1;
-    const x = -5 + Math.cos(a) * 4.1, z = 2 + Math.sin(a) * 4.1;
-    b.sphere(i % 2 ? "leaf" : "leafLight", [x, y, z], 2.2, [1.7, 0.18, 0.72]);
-    b.curve("leaf", [[-5, y - 1.2, 2], [x * 0.55 - 2.2, y - 0.4, z * 0.55], [x, y, z]], 0.22, 7);
+  for (let i = 0; i < (lowPower ? 6 : 9); i++) {
+    const a = i * 1.72;
+    const y = 10.5 + i * 2.95;
+    const x = -3.4 + Math.cos(a) * 4.4;
+    const z = 1.6 + Math.sin(a) * 4.4;
+    b.sphere(i % 2 ? "leaf" : "leafLight", [x, y, z], 2.35, [1.75, 0.18, 0.78]);
+    b.curve("foliageDeep", [[-3.4, y - 1.1, 1.6], [x * 0.55 - 1.5, y - 0.35, z * 0.55 + 0.7], [x, y, z]], 0.24, 7);
   }
-  // Shandora: a stepped golden plinth, carved columns, central hanging bell.
-  for (let i = 0; i < 4; i++) b.box(i % 2 ? "gold" : "oldGold", [6, 7.5 + i * 0.55, 0], [11 - i * 1.3, 0.55, 10 - i * 1.2]);
+
+  // 5. Beffroi d'Or et Cloche d'Or de Shandora : hissés tout en haut dans une couronne de nuages au sommet du Giant Jack.
+  const bx = 2.4;
+  const by = 22.4;
+  const bz = 0.6;
+  b.sphere("cloud", [bx, by - 0.9, bz], 6.4, [1.18, 0.42, 1.05]);
+  b.sphere("cloudShade", [bx - 3.6, by - 1.4, bz + 2.2], 3.5, [1.1, 0.48, 0.95]);
+  b.sphere("cloud", [bx + 3.8, by - 1.2, bz - 1.8], 3.6, [1.1, 0.48, 0.95]);
+  // Socle doré à degrés du beffroi céleste.
+  for (let i = 0; i < 3; i++) {
+    b.box(i % 2 ? "gold" : "oldGold", [bx, by + i * 0.48, bz], [7.8 - i * 1.1, 0.48, 6.8 - i * 1.0]);
+  }
   for (const side of [-1, 1]) {
-    b.cylinder("oldGold", [6 + side * 3.5, 13.5, 0], 0.55, 0.75, 9.5, 8);
-    b.box("gold", [6 + side * 3.5, 10.4, 0], [1.65, 0.55, 1.65]);
-    b.box("gold", [6 + side * 3.5, 17.9, 0], [1.8, 0.5, 1.8]);
-    b.curve("gold", [[6 + side * 4.5, 18.7, 0], [6 + side * 3, 19.7, 0], [6 + side * 2, 19, 0]], 0.25, 10);
+    b.cylinder("oldGold", [bx + side * 2.9, by + 5.6, bz], 0.46, 0.64, 8.6, 8);
+    b.box("gold", [bx + side * 2.9, by + 2.8, bz], [1.4, 0.48, 1.4]);
+    b.box("gold", [bx + side * 2.9, by + 9.6, bz], [1.6, 0.46, 1.6]);
+    b.curve("gold", [[bx + side * 3.8, by + 10.3, bz], [bx + side * 2.5, by + 11.2, bz], [bx + side * 1.6, by + 10.6, bz]], 0.22, 10);
   }
-  b.box("oldGold", [6, 18.4, 0], [9.6, 0.65, 1.2]);
-  b.box("gold", [6, 18.9, 0], [8.5, 0.3, 1.5]);
-  b.cylinder("oldGold", [6, 16.7, 0], 0.14, 0.14, 2.8, 8);
-  const bellProfile = [[0.0, 0], [2.8, 0], [2.85, 0.25], [2.3, 0.6], [1.75, 1.5], [1.6, 3.5], [1.2, 4.0], [0.5, 4.2], [0, 4.2]];
-  b.add(new THREE.LatheGeometry(bellProfile.map(([r, y]) => new THREE.Vector2(r, y)), 20), "gold", [6, 10.1, 0]);
-  b.ring("oldGold", [6, 10.4, 0], 2.7, 0.16);
-  b.ring("oldGold", [6, 12.8, 0], 1.69, 0.13);
-  b.sphere("oldGold", [6, 9.8, 0], 0.45);
+  b.box("oldGold", [bx, by + 10.0, bz], [8.2, 0.6, 1.15]);
+  b.box("gold", [bx, by + 10.5, bz], [7.2, 0.28, 1.4]);
+  b.cylinder("oldGold", [bx, by + 8.5, bz], 0.13, 0.13, 2.5, 8);
+  const bellProfile = [[0.0, 0], [2.45, 0], [2.5, 0.22], [2.05, 0.55], [1.55, 1.35], [1.4, 3.15], [1.05, 3.6], [0.45, 3.8], [0, 3.8]];
+  b.add(new THREE.LatheGeometry(bellProfile.map(([r, y]) => new THREE.Vector2(r, y)), 20), "gold", [bx, by + 2.5, bz]);
+  b.ring("oldGold", [bx, by + 2.8, bz], 2.38, 0.14);
+  b.ring("oldGold", [bx, by + 4.95, bz], 1.48, 0.12);
+  b.sphere("oldGold", [bx, by + 2.2, bz], 0.4);
+
+  // 6. Rubans de nuages blancs s'enroulant autour du Giant Jack.
+  b.curve("cloud", [[-10.5, 6.2, -4.5], [-12.2, 11.5, -6.5], [-8.8, 17.2, -7.2], [-3.2, 22.0, -5.8], [2.5, 24.8, -4.2]], 0.75, 24);
   if (!lowPower) {
-    for (const z of [-7.2, 7.2]) {
-      for (let i = 0; i < 3; i++) {
-        const x = -0.5 + i * 3.3;
-        b.cylinder("oldGold", [x, 9, z], 0.45, 0.7, 3.3 + (i % 2) * 1.4, 8);
-        b.box("gold", [x, 10.75 + (i % 2) * 0.7, z], [1.4, 0.35, 1.4]);
-      }
-      b.box("oldGold", [2.8, 11.3, z], [8.4, 0.55, 1.1]);
-    }
-    // Ponéglyphe de Shandora (socle sombre gravé d'or) et braseros sacrés sur l'esplanade dorée.
-    b.box("dark", [-1.2, 8.6, 0], [1.7, 2.4, 1.7]);
-    b.box("gold", [-2.07, 8.6, 0], [0.08, 1.6, 1.1]);
-    for (const side of [-1, 1]) {
-      b.cylinder("oldGold", [-1.0, 8.1, side * 4.0], 0.5, 0.35, 1.4, 8);
-      b.sphere("lamp", [-1.0, 9.05, side * 4.0], 0.45);
-    }
-    // Petit îlot nuageux suspendu avec son arbre céleste à côté du Giant Jack.
-    b.sphere("cloud", [-12.5, 14.5, 6.5], 2.8, [1.2, 0.45, 1]);
-    b.cylinder("wood", [-12.5, 15.8, 6.5], 0.18, 0.28, 1.4, 6);
-    b.sphere("leafLight", [-12.5, 16.8, 6.5], 1.25, [1.15, 0.65, 1.15]);
+    b.curve("cloudShade", [[-9.5, 13.5, 5.5], [-5.2, 18.0, 7.6], [1.2, 21.8, 6.2], [6.8, 25.4, 2.4]], 0.58, 18);
   }
-  // A long white cloud ribbon curls upward behind the beanstalk.
-  b.curve("cloud", [[-11, 5.7, -4], [-13, 8, -7], [-10, 12, -9], [-5, 16, -8], [1, 19, -6]], 0.7, 22);
 }
 
 function cherryTree(b: Builder, x: number, y: number, z: number, size: number, lowPower: boolean) {
@@ -1182,29 +1235,52 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
     }
   }
   if (zone === 2) {
+    // Bancs de nuages d'îles célestes le long de la Mer Blanche-Blanche.
     for (let i = 0; i < (lowPower ? 3 : 6); i++) {
-      const x = side * (24 + i % 3 * 7), z = -54 + i * 21;
-      b.sphere(i % 3 ? "cloud" : "cloudShade", [x, 0.3, z], 1, [7.5, 1.2 + i % 2 * 0.8, 5]);
-      b.sphere("cloud", [x + side * 3.1, 1.0, z + 1.4], 2.6, [1.3, 0.65, 1]);
+      const x = side * (24 + (i % 3) * 7), z = -54 + i * 21;
+      b.sphere(i % 3 ? "cloud" : "cloudShade", [x, 0.35, z], 1, [7.6, 1.25 + (i % 2) * 0.75, 5.2]);
+      b.sphere("cloud", [x + side * 3.1, 1.05, z + 1.4], 2.6, [1.3, 0.65, 1]);
     }
     if (side < 0) {
-      // White Sea's stepped cloud road curls between the cloud banks.
-      b.curve("cloudShade", [[-29, 0.9, -54], [-35, 1.1, -28], [-26, 0.8, 5], [-35, 1.1, 44]], 1.8, 26);
-      b.curve("cloud", [[-29, 1.3, -54], [-35, 1.5, -28], [-26, 1.2, 5], [-35, 1.5, 44]], 1.4, 26);
+      // Angel Island : Milky Road (fleuve de nuages turquoise et blanc), Porte du Paradis ailée, maisons-nuages et Waver.
+      b.curve("cloudShade", [[-29, 0.85, -56], [-35, 1.05, -26], [-26, 0.85, 6], [-35, 1.05, 48]], 2.1, 26);
+      b.curve("foam", [[-29, 1.28, -56], [-35, 1.48, -26], [-26, 1.28, 6], [-35, 1.48, 48]], 1.45, 26);
+      b.curve("water", [[-29, 1.46, -56], [-35, 1.66, -26], [-26, 1.46, 6], [-35, 1.66, 48]], 0.85, 26);
       if (!lowPower) {
-        for (const z of [-21, 26]) {
-          for (const x of [-40, -32]) b.cylinder("cream", [x, 3.25, z], 0.4, 0.6, 6.5, 8);
-          b.box("cream", [-36, 6.5, z], [9.5, 0.6, 1.3]);
-          b.roof("gold", [-36, 6.8, z], 10, 2.4, 1.2);
-          b.sphere("lamp", [-36, 5.8, z], 0.38);
+        // Porte du Paradis (Heaven's Gate) avec arches ailées au-dessus de la Milky Road.
+        for (const z of [-22, 28]) {
+          for (const x of [-40, -30.5]) {
+            b.cylinder("cloud", [x, 3.3, z], 0.55, 0.78, 6.6, 10);
+            b.ring("gold", [x, 6.25, z], 0.68, 0.12);
+          }
+          b.curve("cloud", [[-40, 6.4, z], [-35.25, 8.2, z], [-30.5, 6.4, z]], 0.52, 14);
+          b.curve("gold", [[-39.4, 6.6, z], [-35.25, 8.4, z], [-31.1, 6.6, z]], 0.16, 12);
+          // Ailes d'ange sculptées de chaque côté de la porte.
+          b.curve("cloud", [[-40.5, 5.4, z], [-43.4, 7.0, z], [-44.8, 8.8, z]], 0.42, 10);
+          b.curve("cloud", [[-30.0, 5.4, z], [-27.1, 7.0, z], [-25.7, 8.8, z]], 0.42, 10);
+          b.sphere("lamp", [-35.25, 7.25, z], 0.36);
         }
-        // Arbres-nuages célestes et petit Waver posé sur la route blanche.
-        for (const [cx, cz] of [[-24, -40], [-25, 14]]) {
-          b.cylinder("cream", [cx, 1.6, cz], 0.2, 0.3, 3.4, 7);
-          b.sphere("cloud", [cx, 3.7, cz], 1.5, [1.2, 0.6, 1.1]);
+        // Petites maisons-nuages arrondies d'Angel Island (Lovely Street) + Waver sur la Milky Road.
+        for (const [hx, hz, roofMat] of [[-23.5, -39, "blueHouse"], [-23.8, 16, "blossomLight"]] as Array<[number, number, MaterialKey]>) {
+          b.sphere("cloud", [hx, 0.8, hz], 2.5, [1.2, 0.45, 1.1]);
+          b.cylinder("cream", [hx, 2.2, hz], 1.55, 1.75, 2.2, 12);
+          b.sphere(roofMat, [hx, 3.45, hz], 1.7, [1.12, 0.78, 1.12]);
+          b.ring("cloud", [hx, 3.25, hz], 1.75, 0.28);
+          b.box("dark", [hx + 1.65, 1.85, hz], [0.16, 1.1, 0.7]);
         }
-        b.sphere("cream", [-26.5, 2.85, -4], 0.7, [0.7, 0.35, 1.8]);
-        b.box("turquoise", [-26.5, 4.05, -4], [0.1, 1.7, 1.4]);
+        // Waver (bateau à Dial) glissant sur la Milky Road.
+        b.sphere("cream", [-26.2, 2.15, -3], 0.72, [0.75, 0.34, 1.9]);
+        b.box("turquoise", [-26.2, 3.25, -3], [0.1, 1.6, 1.35]);
+        b.sphere("gold", [-26.2, 2.25, -1.5], 0.24);
+      }
+    } else if (!lowPower) {
+      // Côté Upper Yard : affleurements de Vearth (terre + jungle dense) et pierres dorées de Shandora.
+      for (const [vx, vz] of [[25.5, -38], [26.5, 36]]) {
+        b.sphere("elbafCliff", [vx, 0.55, vz], 4.2, [1.25, 0.42, 1.15]);
+        b.sphere("foliageDeep", [vx - 1.1, 1.65, vz - 0.8], 2.1, [1.2, 0.65, 1.1]);
+        b.sphere("leaf", [vx + 1.4, 1.55, vz + 0.9], 1.75, [1.15, 0.62, 1.1]);
+        b.box("rock", [vx, 1.45, vz], [2.4, 0.9, 2.2]);
+        b.box("gold", [vx, 1.96, vz], [2.5, 0.14, 2.3]);
       }
     }
   }

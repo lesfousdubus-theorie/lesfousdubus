@@ -1,4 +1,5 @@
 import type { PassengerActivity } from "./passenger-motion";
+import { getPartyDanceChillMix, getPartyDanceFinaleMix } from "./party-rhythm";
 
 export type FacialMood = "rest" | "speaking" | "listening" | "smile" | "laugh" | "cheer";
 export function createFacialExpression() {
@@ -48,15 +49,22 @@ export function sampleFacialExpression(expression: FacialExpression, time: numbe
   expression.mood = "rest";
 
   if (activity === "party" || activity === "horn") {
-    expression.mood = activity === "party" ? "laugh" : "cheer";
-    expression.smile = .45 + profile.enthusiasm * .5;
-    expression.width = 1.05 + profile.enthusiasm * .22;
-    expression.teeth = .8;
+    const chill = activity === "party" ? getPartyDanceChillMix() : 0;
+    const finale = activity === "party" ? getPartyDanceFinaleMix() : 0;
+    expression.mood = activity === "party" && chill < 0.5 ? "laugh" : "cheer";
+    const calm = 1 - chill;
+    const chillSmile = profile.grin + ((.45 + profile.enthusiasm * .5) - profile.grin) * (1 - chill * 0.55);
+    expression.smile = chillSmile + (.9 - chillSmile) * finale;
+    const chillWidth = 1 + (.05 + profile.enthusiasm * .22) * (1 - chill * 0.65);
+    expression.width = chillWidth + (1.16 - chillWidth) * finale;
+    expression.teeth = .8 * (1 - chill * 0.45) + .36 * finale;
     // A short pause between laughs avoids every face flapping continuously.
     const laughBeat = (time * (activity === "horn" ? 1.15 : .72) + seed) % 3.4;
     const laugh = reducedMotion ? .55 : smooth(laughBeat / .2) * smooth((2.65 - laughBeat) / .38);
     const syllable = reducedMotion ? .7 : .35 + .65 * (.5 + .5 * Math.sin(time * profile.tempo + seed));
-    expression.opening = (.15 + profile.enthusiasm * .85) * laugh * syllable;
+    const baseOpening = (.15 + profile.enthusiasm * .85) * laugh * syllable * calm;
+    const finaleCheer = (.78 + .18 * profile.enthusiasm) * finale;
+    expression.opening = Math.max(baseOpening, finaleCheer);
     return;
   }
   // Reduced motion keeps the meaningful smile and removes the syllable loops.

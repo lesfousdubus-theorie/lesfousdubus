@@ -64,9 +64,9 @@ if (base) {
   assert(!home.html.includes('id="theorie-fous-du-bus-manifeste"'), "The crawler-only hidden article must be removed.");
   assert.doesNotMatch(home.html, /href="\/theorie"/);
   assert.match(home.html, /id="bus-loading-wheel"/);
-  assert.equal(meta(home.html, "og:image"), `${SITE_URL}/og-image.jpg`);
+  assert.equal(meta(home.html, "og:image"), `${SITE_URL}/og-bus-preview.jpg`);
   assert.equal(meta(home.html, "og:type"), "website");
-  assert.equal(meta(home.html, "twitter:image"), `${SITE_URL}/og-image.jpg`);
+  assert.equal(meta(home.html, "twitter:image"), `${SITE_URL}/og-bus-preview.jpg`);
   assert.doesNotMatch(xml.html, /<loc>https:\/\/lesfousdubus\.sbs\/theorie<\/loc>/);
   assert.match(robots.html, /Disallow: \/api\//);
   const legacy = await fetch(new URL("/sitemap-index.xml", base), { redirect: "manual" });

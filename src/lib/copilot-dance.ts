@@ -1,4 +1,4 @@
-import { getPartyDanceTime, PARTY_BEAT_SECONDS, PARTY_PHRASE_SECONDS } from "./party-rhythm";
+import { getPartyDanceChillMix, getPartyDanceFinaleMix, getPartyDanceTime, PARTY_BEAT_SECONDS, PARTY_PHRASE_SECONDS } from "./party-rhythm";
 import type { PassengerPose } from "./passenger-motion";
 
 export const COPILOT_DANCE_PHASE_SECONDS = PARTY_PHRASE_SECONDS;
@@ -43,6 +43,31 @@ export function sampleCopilotDance(pose: PassengerPose, elapsed: number, reduced
   }
   if (reducedMotion) {
     pose.bob = 0; pose.rootYaw = 0; pose.torsoYaw = 0; pose.torsoPitch = 0; pose.torsoRoll = 0;
+  } else {
+    const chill = getPartyDanceChillMix();
+    if (chill > 0) {
+      const finale = getPartyDanceFinaleMix();
+      const sway = Math.sin((time / PARTY_BEAT_SECONDS) * Math.PI * 0.5);
+      const relax = 1 - chill;
+      pose.bob = pose.bob * relax + (0.004 + 0.026 * finale) * chill;
+      pose.rootYaw = pose.rootYaw * relax + sway * 0.13 * chill * (1 - finale * 0.6);
+      pose.torsoRoll = pose.torsoRoll * relax + sway * 0.22 * chill * (1 - finale * 0.6);
+      pose.torsoYaw = pose.torsoYaw * relax + sway * 0.12 * chill * (1 - finale * 0.6);
+      pose.headYaw = pose.headYaw * relax + sway * 0.15 * chill * (1 - finale * 0.7);
+      pose.headPitch = pose.headPitch * relax - 0.14 * finale * chill;
+      const armX = 0.78 + (2.65 - 0.78) * finale;
+      const leftArmZ = -0.18 + (-0.25 - -0.18) * finale;
+      const rightArmZ = 0.18 + (0.25 - 0.18) * finale;
+      const elbowX = 1.55 + (0.22 - 1.55) * finale;
+      pose.leftX = pose.leftX * relax + armX * chill;
+      pose.rightX = pose.rightX * relax + armX * chill;
+      pose.leftZ = pose.leftZ * relax + leftArmZ * chill;
+      pose.rightZ = pose.rightZ * relax + rightArmZ * chill;
+      pose.leftElbowX = pose.leftElbowX * relax + elbowX * chill;
+      pose.rightElbowX = pose.rightElbowX * relax + elbowX * chill;
+      pose.leftElbowZ = pose.leftElbowZ * relax - 0.38 * (1 - finale) * chill;
+      pose.rightElbowZ = pose.rightElbowZ * relax + 0.38 * (1 - finale) * chill;
+    }
   }
   pose.activity = "party"; pose.celebrating = true; pose.games = false; pose.rightKick = 0;
   pose.gesture = COPILOT_DANCE_GESTURES[stage];

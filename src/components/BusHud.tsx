@@ -7,6 +7,13 @@ import { emitBusAudioEvent, INITIAL_MUSIC_PLAYBACK, onBusAudioEvent, type BusMus
 import { countPeopleOnBoard } from "@/lib/bus-crew";
 import { getSeatCountInRow } from "@/lib/bus-layout";
 import MusicPlaybackControls from "./audio/MusicPlaybackControls";
+import TheorySettingsPanel from "./theory/TheorySettingsPanel";
+import {
+  DEFAULT_GRAPHICS_SETTINGS,
+  type GraphicsPresetPreference,
+  type GraphicsSettings,
+  type SceneGraphicsTelemetry,
+} from "@/lib/scene-performance";
 import {
   BusFrontIcon,
   ChevronLeftIcon,
@@ -72,7 +79,6 @@ interface BusHudProps {
   exteriorControlsVisible: boolean;
   interiorControlsVisible: boolean;
   headlights: boolean;
-  hasEntered: boolean;
   partyOn: boolean;
   toggleParty: () => void;
   tvOn: boolean;
@@ -80,7 +86,11 @@ interface BusHudProps {
   busy: boolean;
   setShowTheoryModal: Dispatch<SetStateAction<boolean>>;
   setShowTheoryAge: Dispatch<SetStateAction<boolean>>;
-  openSettingsModal: () => void;
+  graphicsSettings?: GraphicsSettings;
+  graphicsTelemetry?: SceneGraphicsTelemetry | null;
+  onSelectGraphicsPreset?: (preset: GraphicsPresetPreference) => void;
+  onUpdateGraphicsSettings?: (patch: Partial<GraphicsSettings>) => void;
+  onResetGraphicsSettings?: () => void;
   setStatsLoadError: Dispatch<SetStateAction<boolean>>;
   setStatsRetryToken: Dispatch<SetStateAction<number>>;
   setSeatRow: Dispatch<SetStateAction<number>>;
@@ -122,8 +132,11 @@ export function BusHud({
   onDismissToast, onPauseToast, onResumeToast,
   passengerManifestButtonRef, statsLoadError, count,
   numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow, seatColumn,
-  exteriorControlsVisible, interiorControlsVisible, headlights, hasEntered,
-  tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge, openSettingsModal, setStatsLoadError,
+  exteriorControlsVisible, interiorControlsVisible, headlights,
+  tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge,
+  graphicsSettings = DEFAULT_GRAPHICS_SETTINGS, graphicsTelemetry = null,
+  onSelectGraphicsPreset, onUpdateGraphicsSettings, onResetGraphicsSettings,
+  setStatsLoadError,
   setStatsRetryToken, setSeatRow, setSeatColumn, toggleTv, openPassengerManifest,
   toggleDayNight, decelerateBus, accelerateBus, toggleHeadlights, honk,
   enterBus, openProfileModal, exitBus, resetView, bgmPlaying, toggleBgm,
@@ -145,19 +158,26 @@ export function BusHud({
     phase,
     epoch: phaseEpoch,
   });
+  const [settingsMenuState, setSettingsMenuState] = useState<{ open: boolean; phase: Phase; epoch: number }>({
+    open: false,
+    phase,
+    epoch: phaseEpoch,
+  });
   const [musicPlayback, setMusicPlayback] = useState<BusMusicPlayback>(INITIAL_MUSIC_PLAYBACK);
   const immersiveButtonRef = useRef<HTMLButtonElement>(null);
   const restoreButtonRef = useRef<HTMLButtonElement>(null);
   const exteriorMenuButtonRef = useRef<HTMLButtonElement>(null);
   const interiorMenuButtonRef = useRef<HTMLButtonElement>(null);
   const speedMenuRef = useRef<HTMLDivElement>(null);
+  const settingsMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuId = useId();
   const musicDetailsOpen = musicDetailsState.open && musicDetailsState.phase === phase && musicDetailsState.epoch === phaseEpoch && !hidden && !immersive;
   const speedMenuOpen = speedMenuState.open && speedMenuState.phase === phase && speedMenuState.epoch === phaseEpoch && !hidden && !immersive;
+  const settingsMenuOpen = settingsMenuState.open && settingsMenuState.phase === phase && settingsMenuState.epoch === phaseEpoch && !hidden && !immersive;
   const mobileMenuOpen = mobileMenuState.open && mobileMenuState.phase === phase && compactHud && sceneAvailable && !hidden && !immersive;
   const hudRef = useHudLayout(phase, hidden, sceneAvailable, compactHud, mobileMenuOpen, immersive);
   const activeMenuButtonRef = exteriorControlsVisible ? exteriorMenuButtonRef : interiorMenuButtonRef;
-  const hasActiveGroupedControl = partyOn || headlights || speedMultiplier !== 1 || manualDayNight !== null || (hasEntered && phase === "outside" && tvOn);
+  const hasActiveGroupedControl = partyOn || headlights || speedMultiplier !== 1 || manualDayNight !== null;
   const musicSuspendedByTv = bgmPlaying && !partyOn && musicPlayback.track === "background" && musicPlayback.state === "suspended";
   const resetViewTitle = phase === "inside" && !freeView
     ? "Recentrer la vue sur l’écran"
@@ -190,15 +210,20 @@ export function BusHud({
   }, []);
 
   useEffect(() => {
-    if (!speedMenuOpen) return;
+    if (!speedMenuOpen && !settingsMenuOpen) return;
     const closeOnOutside = (event: PointerEvent) => {
-      if (speedMenuRef.current && !speedMenuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (speedMenuOpen && speedMenuRef.current && !speedMenuRef.current.contains(target)) {
         setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
+      }
+      if (settingsMenuOpen && settingsMenuRef.current && !settingsMenuRef.current.contains(target)) {
+        setSettingsMenuState({ open: false, phase, epoch: phaseEpoch });
       }
     };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
+        setSettingsMenuState({ open: false, phase, epoch: phaseEpoch });
       }
     };
     window.addEventListener("pointerdown", closeOnOutside);
@@ -207,7 +232,7 @@ export function BusHud({
       window.removeEventListener("pointerdown", closeOnOutside);
       window.removeEventListener("keydown", closeOnEscape);
     };
-  }, [phase, phaseEpoch, speedMenuOpen]);
+  }, [phase, phaseEpoch, settingsMenuOpen, speedMenuOpen]);
 
   const restoreControls = () => {
     setImmersive(false);
@@ -490,7 +515,7 @@ export function BusHud({
                     <button
                       type="button"
                       onClick={decelerateBus}
-                      disabled={speedMultiplier <= 0.3}
+                      disabled={speedMultiplier <= 0}
                       aria-label="Ralentir le bus"
                       className="flex h-9 items-center justify-center gap-1.5 rounded-full border border-transparent bg-white/[0.07] px-3 text-xs font-semibold text-white transition-colors hover:border-[#cfc4fc]/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
                       title="Ralentir le bus (Touche - ou Flèche Bas)"
@@ -523,11 +548,14 @@ export function BusHud({
                 )}
                 <button
                   type="button"
-                  onClick={() => setSpeedMenuState((prev) => ({
-                    open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
-                    phase,
-                    epoch: phaseEpoch,
-                  }))}
+                  onClick={() => {
+                    setSettingsMenuState({ open: false, phase, epoch: phaseEpoch });
+                    setSpeedMenuState((prev) => ({
+                      open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
+                      phase,
+                      epoch: phaseEpoch,
+                    }));
+                  }}
                   aria-expanded={speedMenuOpen}
                   aria-label="Vitesse du bus"
                   title="Vitesse du bus"
@@ -541,15 +569,54 @@ export function BusHud({
                   <span>Vitesse</span>
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={openSettingsModal}
-                aria-label="Paramètres"
-                title="Paramètres"
-                className="bus-btn-secondary bus-glass pointer-events-auto grid h-11 w-11 shrink-0 place-items-center rounded-full backdrop-blur-md focus-visible:outline-none cursor-pointer"
-              >
-                <SlidersIcon className="h-4 w-4 shrink-0 text-[#dcd3ff]" />
-              </button>
+              <div ref={settingsMenuRef} className="pointer-events-auto relative">
+                {settingsMenuOpen && (
+                  <div
+                    role="dialog"
+                    aria-label="Paramètres graphiques"
+                    className="bus-case-elevated bus-scrollbar absolute bottom-full right-0 z-50 mb-2 max-h-[calc(100dvh-6.5rem)] w-[min(18.5rem,calc(100vw-1.5rem))] overflow-y-auto rounded-2xl p-3 shadow-2xl"
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-white">
+                        <SlidersIcon className="h-3.5 w-3.5 text-[#c4b5fd]" />
+                        <span>Paramètres</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSettingsMenuState({ open: false, phase, epoch: phaseEpoch })}
+                        aria-label="Fermer les paramètres"
+                        className="grid h-7 w-7 cursor-pointer place-items-center rounded-full border border-white/15 bg-white/[0.06] text-white/80 transition-colors hover:border-[#cfc4fc] hover:text-white focus-visible:outline-none"
+                      >
+                        <CloseIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <TheorySettingsPanel
+                      graphicsSettings={graphicsSettings}
+                      telemetry={graphicsTelemetry}
+                      onSelectPreset={(preset) => onSelectGraphicsPreset?.(preset)}
+                      onUpdateGraphics={(patch) => onUpdateGraphicsSettings?.(patch)}
+                      onResetGraphics={() => onResetGraphicsSettings?.()}
+                    />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
+                    setSettingsMenuState((prev) => ({
+                      open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
+                      phase,
+                      epoch: phaseEpoch,
+                    }));
+                  }}
+                  aria-expanded={settingsMenuOpen}
+                  aria-label="Paramètres"
+                  title="Paramètres"
+                  className={`${settingsMenuOpen ? "bus-btn-active" : "bus-btn-secondary"} bus-glass grid h-11 w-11 shrink-0 place-items-center rounded-full backdrop-blur-md focus-visible:outline-none cursor-pointer`}
+                >
+                  <SlidersIcon className="h-4 w-4 shrink-0 text-[#dcd3ff]" />
+                </button>
+              </div>
             </div>
           </>
         )}
@@ -640,11 +707,6 @@ export function BusHud({
             <HudButton compact showMobileIcon className="px-2.5 min-[360px]:px-3" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? "Arrêter la fête" : "Lancer la fête"} icon={<PartyIcon />} disabled={!partyOn && busy}>
               {partyOn ? "Stop" : "Fête"}
             </HudButton>
-            {hasEntered && phase === "outside" && (
-              <HudButton compact showMobileIcon className="min-w-11 px-2.5 min-[360px]:px-3" onClick={toggleTv} active={tvOn} ariaLabel={tvOn ? "Éteindre la télévision" : "Allumer la télévision"} description={tvButtonDescription} icon={<TvIcon />} disabled={partyOn}>
-                TV
-              </HudButton>
-            )}
             <button
               type="button"
               onClick={toggleDayNight}
@@ -683,7 +745,7 @@ export function BusHud({
                   <button
                     type="button"
                     onClick={decelerateBus}
-                    disabled={speedMultiplier <= 0.3}
+                    disabled={speedMultiplier <= 0}
                     aria-label="Ralentir le bus"
                     className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-transparent bg-white/[0.07] text-white transition-colors hover:border-[#cfc4fc]/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
                     title="Ralentir le bus"
@@ -714,11 +776,14 @@ export function BusHud({
               )}
               <button
                 type="button"
-                onClick={() => setSpeedMenuState((prev) => ({
-                  open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
-                  phase,
-                  epoch: phaseEpoch,
-                }))}
+                onClick={() => {
+                  setSettingsMenuState({ open: false, phase, epoch: phaseEpoch });
+                  setSpeedMenuState((prev) => ({
+                    open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
+                    phase,
+                    epoch: phaseEpoch,
+                  }));
+                }}
                 aria-expanded={speedMenuOpen}
                 aria-label="Vitesse du bus"
                 title="Vitesse du bus"
@@ -732,15 +797,54 @@ export function BusHud({
                 <span>Vitesse</span>
               </button>
             </div>
-            <button
-              type="button"
-              onClick={openSettingsModal}
-              aria-label="Paramètres"
-              title="Paramètres"
-              className="bus-icon-button bus-btn-secondary bus-glass pointer-events-auto grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-none cursor-pointer"
-            >
-              <SlidersIcon className="h-4 w-4 shrink-0 text-[#dcd3ff]" />
-            </button>
+            <div ref={settingsMenuRef} className="pointer-events-auto relative">
+              {settingsMenuOpen && (
+                <div
+                  role="dialog"
+                  aria-label="Paramètres graphiques"
+                  className="bus-case-elevated bus-scrollbar absolute bottom-full right-0 z-50 mb-2 max-h-[calc(100dvh-6.5rem)] w-[min(18.5rem,calc(100vw-1.5rem))] overflow-y-auto rounded-2xl p-3 shadow-2xl"
+                >
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-xs font-extrabold tracking-wide text-white">
+                      <SlidersIcon className="h-3.5 w-3.5 text-[#c4b5fd]" />
+                      <span>Paramètres</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSettingsMenuState({ open: false, phase, epoch: phaseEpoch })}
+                      aria-label="Fermer les paramètres"
+                      className="grid h-7 w-7 cursor-pointer place-items-center rounded-full border border-white/15 bg-white/[0.06] text-white/80 transition-colors hover:border-[#cfc4fc] hover:text-white focus-visible:outline-none"
+                    >
+                      <CloseIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <TheorySettingsPanel
+                    graphicsSettings={graphicsSettings}
+                    telemetry={graphicsTelemetry}
+                    onSelectPreset={(preset) => onSelectGraphicsPreset?.(preset)}
+                    onUpdateGraphics={(patch) => onUpdateGraphicsSettings?.(patch)}
+                    onResetGraphics={() => onResetGraphicsSettings?.()}
+                  />
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
+                  setSettingsMenuState((prev) => ({
+                    open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
+                    phase,
+                    epoch: phaseEpoch,
+                  }));
+                }}
+                aria-expanded={settingsMenuOpen}
+                aria-label="Paramètres"
+                title="Paramètres"
+                className={`bus-icon-button ${settingsMenuOpen ? "bus-btn-active" : "bus-btn-secondary"} bus-glass grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-none cursor-pointer`}
+              >
+                <SlidersIcon className="h-4 w-4 shrink-0 text-[#dcd3ff]" />
+              </button>
+            </div>
           </div>
         )}
 
@@ -800,21 +904,6 @@ export function BusHud({
               <HudButton className="min-w-[96px] flex-[1_0_auto] sm:w-[100px] sm:flex-none" onClick={toggleParty} active={partyOn} ariaLabel={partyOn ? "Arrêter la fête" : "Lancer la fête"} icon={<PartyIcon />} disabled={(!partyOn && busy) || !exteriorControlsVisible}>
                 {partyOn ? "Stop" : "Fête"}
               </HudButton>
-              {hasEntered && phase === "outside" && (
-                <div className="bus-exterior-tv">
-                  <HudButton
-                    className="w-[124px] sm:w-[132px]"
-                    onClick={toggleTv}
-                    active={tvOn}
-                    ariaLabel="Télévision"
-                    description={tvButtonDescription}
-                    icon={<TvIcon />}
-                    disabled={partyOn}
-                  >
-                    <span className="hud-label-short sm:hidden">TV</span><span className="hud-label-long hidden sm:inline">{tvOn ? "Éteindre la TV" : "Allumer la TV"}</span>
-                  </HudButton>
-                </div>
-              )}
               <HudButton className="min-w-[190px] flex-[1_0_auto] sm:w-[190px] sm:flex-none" onClick={() => void enterBus()} primary icon={<EnterBusIcon />} disabled={joining || phase !== "outside"}>
                 {joining || phase === "entering" ? "Installation…" : hasSavedPlace ? "Revenir à sa place" : "Entrer dans le bus"}
               </HudButton>

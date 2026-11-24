@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: THEORY_TITLE,
     description: THEORY_DESCRIPTION,
-    images: ["/og-image.jpg"],
+    images: ["/og-bus-preview.jpg"],
     creator: "@lesfousdubus",
   },
   robots: {

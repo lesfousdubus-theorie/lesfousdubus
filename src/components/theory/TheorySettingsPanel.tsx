@@ -12,7 +12,6 @@ import {
   type PixelQualityPreference,
   type SceneGraphicsTelemetry,
   type ShadowQualityPreference,
-  type WorldDensityPreference,
 } from "@/lib/scene-performance";
 
 interface TheorySettingsPanelProps {
@@ -64,14 +63,6 @@ const SHADOW_OPTIONS: SliderOption<ShadowQualityPreference>[] = [
   { value: "off", label: "Off" },
   { value: "standard", label: "Standards" },
   { value: "high", label: "Fines" },
-];
-
-const WORLD_DENSITY_OPTIONS: SliderOption<WorldDensityPreference>[] = [
-  { value: "auto", label: "Auto" },
-  { value: "light", label: "Allégée" },
-  { value: "balanced", label: "Normale" },
-  { value: "rich", label: "Riche" },
-  { value: "max", label: "Max" },
 ];
 
 function optionLabel<T extends string>(options: SliderOption<T>[], value: T) {
@@ -126,7 +117,7 @@ export default function TheorySettingsPanel({
   const isDefault = isDefaultGraphicsSettings(draft);
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-2">
       <SettingSlider
         label="Qualité globale"
         value={draft.preset}
@@ -161,13 +152,6 @@ export default function TheorySettingsPanel({
         autoHint={optionLabel(SHADOW_OPTIONS, resolvedProfile.shadows)}
         options={SHADOW_OPTIONS}
         onChange={(shadows) => commitDraft({ ...draftRef.current, shadows })}
-      />
-      <SettingSlider
-        label="Densité des décors"
-        value={draft.worldDensity}
-        autoHint={optionLabel(WORLD_DENSITY_OPTIONS, resolvedProfile.worldDensity)}
-        options={WORLD_DENSITY_OPTIONS}
-        onChange={(worldDensity) => commitDraft({ ...draftRef.current, worldDensity })}
       />
 
       <button
@@ -204,7 +188,7 @@ function SettingSlider<T extends string>({
   const currentLabel = value === "auto" ? `Auto · ${autoHint}` : optionLabel(options, value);
 
   return (
-    <div className="bus-case-inset rounded-xl px-3.5 py-2.5">
+    <div className="bus-case-inset rounded-xl px-3 py-2">
       <div className="flex items-center justify-between gap-2 text-xs">
         <label htmlFor={inputId} className="font-bold text-white">
           {label}
@@ -225,19 +209,19 @@ function SettingSlider<T extends string>({
           const next = options[Number(event.target.value)];
           if (next) onChange(next.value);
         }}
-        className="bus-range mt-2 h-5 w-full cursor-pointer focus-visible:outline-none"
+        className="bus-range mt-1.5 h-4 w-full cursor-pointer focus-visible:outline-none"
       />
       <div aria-hidden="true" className="mt-0.5 flex items-center justify-between px-[9px]">
         {options.map((item, index) => (
           <span
             key={item.value}
-            className={`h-1.5 w-0.5 rounded-full transition-colors ${
+            className={`h-1 w-0.5 rounded-full transition-colors ${
               index === currentIndex ? "bg-[#c4b5fd]" : "bg-white/25"
             }`}
           />
         ))}
       </div>
-      <div className="mt-1 flex items-center justify-between gap-1 text-[10px]">
+      <div className="mt-0.5 flex items-center justify-between gap-1 text-[10px]">
         {options.map((item, index) => (
           <button
             key={item.value}

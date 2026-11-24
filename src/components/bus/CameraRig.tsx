@@ -116,11 +116,12 @@ export default function CameraRig({
     arrivedRef.current = onArrived;
   }, [onArrived]);
 
-  // Position cible des yeux
+  // Position cible des yeux : ne descend jamais sous la hauteur standard (ex. Chopper) pour garder la vue dégagée au-dessus du dossier devant soi.
   const characterId = getNakamaArchetype(currentPassengerSeatIndex, currentPassengerAvatarId).id;
   const skeleton = getPassengerSkeleton(characterId), adultSkeleton = getPassengerSkeleton("");
-  const eyeY = SEAT_EYE.y + skeleton.seatedHipHeight + skeleton.neckAboveHip + skeleton.headAboveNeck
+  const rawEyeY = SEAT_EYE.y + skeleton.seatedHipHeight + skeleton.neckAboveHip + skeleton.headAboveNeck
     - adultSkeleton.seatedHipHeight - adultSkeleton.neckAboveHip - adultSkeleton.headAboveNeck;
+  const eyeY = Math.max(SEAT_EYE.y, rawEyeY);
   // Position X/Y/Z du siège actuel (lisse les déplacements latéraux, de hauteur d'avatar et dans l'allée)
   const seatZ = currentSeatZ ?? SEAT_EYE.z;
   const seatXRef = useRef(currentSeatX);

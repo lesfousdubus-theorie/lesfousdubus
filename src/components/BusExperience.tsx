@@ -25,7 +25,6 @@ import { emitBusAudioEvent } from "@/lib/bus-audio";
 import { shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts";
 import { AvatarSelectionModal } from "./modals/AvatarSelectionModal";
 import { ManagePlaceModal } from "./modals/ManagePlaceModal";
-import { SettingsModal } from "./modals/SettingsModal";
 import BusLoadingScreen from "./BusLoadingScreen";
 import type { OnboardingSubmission } from "./modals/OnboardingModal";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
@@ -41,7 +40,6 @@ export default function BusExperience() {
   const preferences = useBusPreferences();
   const [showHelp, setShowHelp] = useState(false);
   const [showPlaceModal, setShowPlaceModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [resetViewToken, setResetViewToken] = useState(0);
   const [freeView, setFreeView] = useState(false);
   const [sceneAvailable, setSceneAvailable] = useState(false);
@@ -624,10 +622,11 @@ export default function BusExperience() {
   }, [phase, sceneAvailable, onArrived]);
 
   const toggleTv = useCallback(() => {
+    if (phase !== "inside") return;
     const enabled = !tvOn;
     emitBusAudioEvent("tvToggle", enabled);
     setTvOn(enabled);
-  }, [tvOn]);
+  }, [phase, tvOn]);
 
   const toggleBgm = useCallback(() => {
     if (partyOn) { stopParty(); return; }
@@ -660,7 +659,7 @@ export default function BusExperience() {
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
-  const sceneModalOpen = showHelp || showPlaceModal || showTheoryModal || showSettingsModal || showJoinModal || profile.showAvatarModal || onboardingReason !== null || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
+  const sceneModalOpen = showHelp || showPlaceModal || showTheoryModal || showJoinModal || profile.showAvatarModal || onboardingReason !== null || showPassengerList || showTheoryAge || Boolean(selectedPassenger);
   const overlayOpen = sceneModalOpen || directory.showMessages;
 
   // Les préférences de confort restent disponibles au clavier sans encombrer le HUD.
@@ -762,7 +761,6 @@ export default function BusExperience() {
         exteriorControlsVisible={exteriorControlsVisible}
         interiorControlsVisible={interiorControlsVisible}
         headlights={headlights}
-        hasEntered={hasEntered}
         tvOn={tvOn}
         joining={joining}
         partyOn={partyOn}
@@ -770,7 +768,11 @@ export default function BusExperience() {
         busy={busy}
         setShowTheoryModal={setShowTheoryModal}
         setShowTheoryAge={setShowTheoryAge}
-        openSettingsModal={() => setShowSettingsModal(true)}
+        graphicsSettings={preferences.graphicsSettings}
+        graphicsTelemetry={graphicsTelemetry}
+        onSelectGraphicsPreset={preferences.selectGraphicsPreset}
+        onUpdateGraphicsSettings={preferences.updateGraphicsSettings}
+        onResetGraphicsSettings={preferences.resetGraphicsSettings}
         setStatsLoadError={setStatsLoadError}
         setStatsRetryToken={setStatsRetryToken}
         setSeatRow={setSeatRow}
@@ -814,15 +816,6 @@ export default function BusExperience() {
         isOpen={showTheoryModal}
         onVideoPlaybackChange={setTheoryVideoPlaying}
         onClose={() => setShowTheoryModal(false)}
-      />
-      <SettingsModal
-        isOpen={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        graphicsSettings={preferences.graphicsSettings}
-        graphicsTelemetry={graphicsTelemetry}
-        onSelectGraphicsPreset={preferences.selectGraphicsPreset}
-        onUpdateGraphicsSettings={preferences.updateGraphicsSettings}
-        onResetGraphicsSettings={preferences.resetGraphicsSettings}
       />
       {showPlaceModal && (
         <ManagePlaceModal

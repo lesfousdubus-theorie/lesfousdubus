@@ -312,7 +312,7 @@ export default function BackgroundMusicPlayer({
   }, [connectSlot, clearStartTimer, clearFade, reportDance, stopWarmup]);
 
   useEffect(() => {
-    const danceTimer = window.setInterval(updateDance, 100);
+    const danceTimer = window.setInterval(updateDance, 50);
     const snapshotTimer = window.setInterval(publishPlayback, 250);
     return () => { window.clearInterval(danceTimer); window.clearInterval(snapshotTimer); };
   }, [updateDance, publishPlayback]);

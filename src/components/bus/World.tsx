@@ -28,7 +28,7 @@ const TERRAIN_ROWS = 36;
 export const ZONES = [
   { name: "Alabasta", subtitle: "Royaume des sables", ground: "#e5bd6a", shore: "#d8a84e" },
   { name: "Water Seven", subtitle: "La cité de l'eau", ground: "#9ec5d4", shore: "#6da3ba" },
-  { name: "Skypiea", subtitle: "L'île céleste", ground: "#f5f3ec", shore: "#e4e1d6" },
+  { name: "Skypiea", subtitle: "L'île céleste", ground: "#eef6ff", shore: "#cfe5fa" },
   { name: "Pays des Wa", subtitle: "Terre des samouraïs", ground: "#5da854", shore: "#86c878" },
   { name: "Île de Drum", subtitle: "Royaume des neiges", ground: "#ebf2fa", shore: "#dbe5f2" },
   { name: "Egghead", subtitle: "L'île du futur", ground: "#83cfa3", shore: "#80cfda" },
@@ -52,7 +52,7 @@ const TINT_COLORS = [
 const ZONE_PROPS: Record<number, PropType[]> = {
   0: ["palm", "palm", "cactus", "cactus", "pyramid", "ruins", "rock"],
   1: ["building", "building", "building", "seaTrainPoles", "rock"],
-  2: ["cloud", "cloud", "cloud", "giantJack", "bell"],
+  2: ["cloud", "cloud", "cloudHouse", "skyJungleTree", "shandoraRuin"],
   3: ["sakura", "sakura", "sakura", "pagoda", "torii", "lantern"],
   4: ["pine", "pine", "pine", "snowman", "drumMesa", "rock"],
   5: ["palm"],
@@ -436,6 +436,17 @@ export default function World({
     flushDirtyBounds();
 
     const frameDt = Math.min(dt, phase==="entering"||phase==="exiting"?0.25:0.1);
+    if (worldRef.current) {
+      const targetSpeed = worldRef.current.targetSpeedMultiplier ?? worldRef.current.speedMultiplier ?? 1.0;
+      const currentSpeed = worldRef.current.speedMultiplier ?? targetSpeed;
+      const diff = targetSpeed - currentSpeed;
+      if (Math.abs(diff) < 0.002) {
+        worldRef.current.speedMultiplier = targetSpeed;
+      } else {
+        const rate = diff < 0 ? 2.6 : 2.1;
+        worldRef.current.speedMultiplier = currentSpeed + diff * (1 - Math.exp(-frameDt * rate));
+      }
+    }
     const mult = (worldRef.current?.speedMultiplier ?? 1.0) * (worldRef.current.motionFactor ?? 1);
     const scroll = (worldRef.current?.scroll ?? 0) + frameDt * WORLD_SPEED * mult;
     if (worldRef.current) worldRef.current.scroll = scroll;

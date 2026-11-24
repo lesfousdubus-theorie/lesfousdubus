@@ -5,7 +5,7 @@ import { playBoost, playDing, playHorn } from "@/lib/horn";
 import type { Phase, WorldState } from "./bus/constants";
 import { shouldIgnoreBusShortcut } from "@/lib/bus-shortcuts";
 
-const SPEED_STEPS = [0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
+const SPEED_STEPS = [0, 0.3, 0.5, 1, 1.5, 2, 2.5, 3] as const;
 
 /** Commandes du véhicule, avec le moteur 3D comme source de lumière et de météo. */
 export function useBusControls(
@@ -24,7 +24,7 @@ export function useBusControls(
       const s = new URLSearchParams(window.location.search).get("speed");
       if (s) {
         const parsed = parseFloat(s);
-        if (!Number.isNaN(parsed) && parsed > 0) return Math.min(3.0, Math.max(0.3, parsed));
+        if (!Number.isNaN(parsed) && parsed >= 0) return Math.min(3.0, Math.max(0, parsed));
       }
     }
     return 1.0;
@@ -48,9 +48,14 @@ export function useBusControls(
     setIsNight(nextMode === "night");
   }, [isNight, manualDayNight]);
 
-  // Synchronise en continu la vitesse du bus avec le moteur 3D
+  // Synchronise la vitesse cible du bus avec le moteur 3D (la vitesse réelle est lissée dans World)
+  const initializedSpeedRef = useRef(false);
   useEffect(() => {
-    worldRef.current.speedMultiplier = speedMultiplier;
+    worldRef.current.targetSpeedMultiplier = speedMultiplier;
+    if (!initializedSpeedRef.current) {
+      initializedSpeedRef.current = true;
+      worldRef.current.speedMultiplier = speedMultiplier;
+    }
   }, [speedMultiplier, worldRef]);
 
   // Détection du mode boost via l'URL (?boost=1), sans notification intrusive.
@@ -83,7 +88,7 @@ export function useBusControls(
     else playDing();
   }, []);
 
-  // Faire ralentir le bus (jusqu'à 0.3x min)
+  // Faire ralentir le bus (jusqu'à 0.0x min)
   const decelerateBus = useCallback(() => {
     const next = SPEED_STEPS.findLast((speed) => speed < speedRef.current - 0.001) ?? SPEED_STEPS[0];
     if (next === speedRef.current) return;

@@ -1,5 +1,5 @@
 import { applyPassengerCardPose } from "./passenger-card-game";
-import { getPartyDanceTime, PARTY_BEAT_SECONDS, PARTY_PHRASE_SECONDS } from "./party-rhythm";
+import { getPartyDanceChillMix, getPartyDanceFinaleMix, getPartyDanceTime, PARTY_BEAT_SECONDS, PARTY_PHRASE_SECONDS } from "./party-rhythm";
 
 export type PassengerActivity = "idle" | "chat" | "check" | "game" | "horn" | "party";
 export function createPassengerPose() {
@@ -102,7 +102,7 @@ export function getPassengerSignatureGain(time: number, id: string, party: boole
   const prevStage = phraseIndex > 0 ? getArchetypeBaseStage(id, phraseIndex - 1) : getArchetypeBaseStage(id, 0);
   const currStage = getArchetypeBaseStage(id, phraseIndex);
   const previous = stages.includes(prevStage) ? 1 : 0, current = stages.includes(currStage) ? 1 : 0;
-  return previous + (current - previous) * blend;
+  return (previous + (current - previous) * blend) * (1 - getPartyDanceChillMix());
 }
 
 export const CHARACTER_DANCES: Record<string, readonly string[]> = {
@@ -1169,6 +1169,40 @@ export function samplePassengerPose(pose: PassengerPose, time: number, index: nu
       pose.rootYaw = Math.max(-.08, Math.min(.08, pose.rootYaw));
       pose.headPitch = Math.max(-.42, Math.min(.42, pose.headPitch));
       pose.headYaw = Math.max(-.90, Math.min(.90, pose.headYaw));
+
+      if (party) {
+        const chill = getPartyDanceChillMix();
+        if (chill > 0) {
+          const finale = getPartyDanceFinaleMix();
+          // Balancement calé exactement sur la mesure musicale (1 aller-retour par mesure de 4 temps).
+          const sway = Math.sin(beat * 0.25);
+          const doubleBeat = Math.cos(beat * 0.5);
+          const relax = 1 - chill;
+          pose.bob = pose.bob * relax + (0.004 + 0.004 * doubleBeat) * chill;
+          pose.rootYaw = pose.rootYaw * relax + sway * 0.13 * chill * (1 - finale * 0.6);
+          pose.torsoRoll = pose.torsoRoll * relax + sway * 0.24 * chill * (1 - finale * 0.6);
+          pose.torsoYaw = pose.torsoYaw * relax + sway * 0.14 * chill * (1 - finale * 0.6);
+          pose.torsoPitch = pose.torsoPitch * relax + (-0.02 - 0.03 * finale) * chill;
+          pose.headYaw = pose.headYaw * relax + sway * 0.16 * chill * (1 - finale * 0.7);
+          pose.headPitch = pose.headPitch * relax + (doubleBeat * 0.03 - 0.14 * finale) * chill;
+          // Mode bouclier (mains devant, coudes repliés) puis mains levées (« Wouh ! ») juste avant 1:49.
+          const armX = 0.78 + (2.65 - 0.78) * finale;
+          const leftArmZ = -0.18 + (-0.25 - -0.18) * finale;
+          const rightArmZ = 0.18 + (0.25 - 0.18) * finale;
+          const elbowX = 1.55 + (0.22 - 1.55) * finale;
+          const leftElbowZ = -0.38 * (1 - finale);
+          const rightElbowZ = 0.38 * (1 - finale);
+          pose.leftX = pose.leftX * relax + armX * chill;
+          pose.rightX = pose.rightX * relax + armX * chill;
+          pose.leftZ = pose.leftZ * relax + leftArmZ * chill;
+          pose.rightZ = pose.rightZ * relax + rightArmZ * chill;
+          pose.leftElbowX = pose.leftElbowX * relax + elbowX * chill;
+          pose.rightElbowX = pose.rightElbowX * relax + elbowX * chill;
+          pose.leftElbowZ = pose.leftElbowZ * relax + leftElbowZ * chill;
+          pose.rightElbowZ = pose.rightElbowZ * relax + rightElbowZ * chill;
+          pose.bob += 0.03 * finale * chill;
+        }
+      }
     }
     const outwardLimit = Math.max(.12, .24 - Math.max(0, torsoWidth - .33));
     pose.leftZ = Math.max(-outwardLimit, pose.leftZ);

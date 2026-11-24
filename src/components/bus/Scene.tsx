@@ -709,8 +709,8 @@ export default function Scene({
       <World
         worldRef={worldRef}
         reducedMotion={reducedMotion}
-        lowPower={profile.lowPower}
-        propFraction={profile.propFraction}
+        lowPower={false}
+        propFraction={1}
         islandCullDistance={budgets.islandCullDistance}
         propCullDistance={budgets.propCullDistance}
         bridgeLengthOverride={budgets.bridgeLength}

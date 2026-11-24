@@ -13,6 +13,9 @@ export type PropType =
   | "building"
   | "seaTrainPoles"
   | "cloud"
+  | "cloudHouse"
+  | "skyJungleTree"
+  | "shandoraRuin"
   | "giantJack"
   | "bell"
   | "sakura"
@@ -280,6 +283,87 @@ function LandmarkModel({ def }: { def: PropDef }) {
           </mesh>
           <mesh material={MATS.cloud} position={[0.2, 1.2, 0.2]}>
             <sphereGeometry args={[1.5, 12, 12]} />
+          </mesh>
+        </group>
+      );
+
+    case "cloudHouse": {
+      const roofMat = def.seed > 0.5 ? MATS.wallPastelC : MATS.pinkSakura;
+      return (
+        <group scale={s * 1.15}>
+          {/* Maison-nuage d'Angel Island (forme guimauve arrondie) */}
+          <mesh material={MATS.cloud} position={[0, 0.45, 0]} scale={[1.25, 0.45, 1.15]}>
+            <sphereGeometry args={[2.3, 14, 10]} />
+          </mesh>
+          <mesh material={MATS.wallPastelA} position={[0, 1.7, 0]} castShadow>
+            <cylinderGeometry args={[1.65, 1.85, 2.1, 14]} />
+          </mesh>
+          <mesh material={roofMat} position={[0, 2.85, 0]} scale={[1.12, 0.85, 1.12]} castShadow>
+            <sphereGeometry args={[1.72, 14, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          </mesh>
+          <mesh material={MATS.cloud} position={[0, 2.78, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[1.82, 0.28, 8, 16]} />
+          </mesh>
+          <mesh material={MATS.black} position={[0, 1.3, 1.78]}>
+            <boxGeometry args={[0.72, 1.15, 0.14]} />
+          </mesh>
+          <mesh material={MATS.wallPastelC} position={[1.3, 1.95, 1.15]}>
+            <sphereGeometry args={[0.32, 10, 8]} />
+          </mesh>
+          <mesh material={MATS.cloud} position={[0.75, 4.15, -0.35]}>
+            <sphereGeometry args={[0.42, 10, 8]} />
+          </mesh>
+        </group>
+      );
+    }
+
+    case "skyJungleTree":
+      return (
+        <group scale={s * 1.2}>
+          {/* Arbre géant d'Upper Yard sur un tertre de vraie terre (Vearth) */}
+          <mesh material={MATS.sandDark} position={[0, 0.35, 0]} scale={[1.3, 0.42, 1.2]}>
+            <sphereGeometry args={[2.1, 12, 8]} />
+          </mesh>
+          <mesh material={MATS.trunk} position={[0, 3.1, 0]} rotation={[0.04, 0, -0.05]} castShadow>
+            <cylinderGeometry args={[0.42, 0.85, 5.8, 10]} />
+          </mesh>
+          <mesh material={MATS.pine} position={[0, 6.2, 0]} scale={[1.35, 0.72, 1.25]} castShadow>
+            <sphereGeometry args={[2.35, 14, 10]} />
+          </mesh>
+          <mesh material={MATS.leaf} position={[1.4, 5.6, 0.7]} scale={[1.1, 0.65, 1.1]}>
+            <sphereGeometry args={[1.6, 12, 10]} />
+          </mesh>
+          <mesh material={MATS.leafLight} position={[-1.2, 6.9, -0.5]} scale={[1.15, 0.6, 1.1]}>
+            <sphereGeometry args={[1.55, 12, 10]} />
+          </mesh>
+        </group>
+      );
+
+    case "shandoraRuin":
+      return (
+        <group scale={s * 1.1}>
+          {/* Vestige mésoaméricain en pierre et or de Shandora */}
+          <mesh material={MATS.rock} position={[0, 0.45, 0]} castShadow>
+            <boxGeometry args={[4.4, 0.9, 3.8]} />
+          </mesh>
+          <mesh material={MATS.gold} position={[0, 0.96, 0]}>
+            <boxGeometry args={[4.5, 0.14, 3.9]} />
+          </mesh>
+          <mesh material={MATS.rock} position={[0, 1.4, 0]} castShadow>
+            <boxGeometry args={[3.3, 0.8, 2.8]} />
+          </mesh>
+          {[-1.0, 1.0].map((x, idx) => (
+            <group key={x} position={[x, 1.8, 0]}>
+              <mesh material={MATS.rock} position={[0, idx === 0 ? 1.5 : 1.05, 0]} castShadow>
+                <cylinderGeometry args={[0.32, 0.4, idx === 0 ? 3.0 : 2.1, 8]} />
+              </mesh>
+              <mesh material={MATS.gold} position={[0, idx === 0 ? 3.05 : 2.15, 0]}>
+                <boxGeometry args={[0.92, 0.24, 0.92]} />
+              </mesh>
+            </group>
+          ))}
+          <mesh material={MATS.leaf} position={[1.35, 1.55, 1.15]} scale={[1.1, 0.65, 1]}>
+            <sphereGeometry args={[0.9, 10, 8]} />
           </mesh>
         </group>
       );

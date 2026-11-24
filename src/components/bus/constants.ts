@@ -19,7 +19,8 @@ export interface WorldState {
   timeOfDay: number; // 0..1
   zone: number;
   scroll: number;
-  speedMultiplier: number; // Vitesse de déplacement du bus
+  speedMultiplier: number; // Vitesse effective actuelle du bus (lissée)
+  targetSpeedMultiplier?: number; // Vitesse cible demandée par l'utilisateur
   motionFactor?: number; // Arrêt et reprise pendant l'embarquement
   weather: WeatherType;
   weatherIntensity: number; // 0 ciel clair → 1 intempéries soutenues

@@ -197,7 +197,7 @@ export function PassengerListModal({
                     type="search"
                     value={activeSearchQuery}
                     onChange={(event) => setActiveSearchQuery(event.target.value)}
-                    placeholder="Rechercher un nom ou n° de place…"
+                    placeholder="Nom ou n° de place…"
                     className="bus-case-inset min-h-11 w-full rounded-xl py-2 pl-10 pr-11 text-base text-white placeholder:text-[#8995c4] transition-colors focus:border-[#947eef] focus:outline-none sm:text-sm"
                   />
                   {activeSearchQuery && (

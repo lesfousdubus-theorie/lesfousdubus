@@ -14,7 +14,7 @@ export const THEORY_DESCRIPTION =
   "Découvre la théorie One Piece du Mont Corvo : le Siècle Oublié serait le présent, Joy Boy serait Luffy et Laugh Tale se situerait dans le futur.";
 
 export const SOCIAL_IMAGE = {
-  url: `${SITE_URL}/og-image.jpg`,
+  url: `${SITE_URL}/og-bus-preview.jpg`,
   width: 1200,
   height: 630,
   alt: THEORY_TITLE,
@@ -56,7 +56,7 @@ export const videoJsonLd = {
     "La théorie des Fous du Bus expliquée par le Mont Corvo : le Siècle Oublié serait le présent de One Piece, Laugh Tale serait Roadstar à une autre époque et Joy Boy serait Luffy.",
   thumbnailUrl: [
     THEORY_VIDEO_THUMBNAIL_URL,
-    `${SITE_URL}/og-image.jpg`,
+    `${SITE_URL}/og-bus-preview.jpg`,
   ],
   uploadDate: THEORY_VIDEO_UPLOAD_DATE,
   embedUrl: THEORY_VIDEO_EMBED_URL,

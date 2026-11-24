@@ -33,7 +33,7 @@ export const THEORY_REFERENCES = {
   ohara: { label: "La volonté d’Ohara", url: "https://x.com/FoudubusTV_/status/2087927875521429909" },
   prescience: { label: "La communication entre époques", url: "https://x.com/FoudubusTV_/status/2077434523428548915" },
   roger: { label: "L’ambiguïté autour de Roger", url: "https://x.com/FoudubusTV_/status/2078143309671743663" },
-  mural: { label: "La fresque du Harley", url: "https://x.com/FoudubusTV_/status/2091193422019232206" },
+  mural: { label: "La fresque du Haley", url: "https://x.com/FoudubusTV_/status/2091193422019232206" },
   swordAndShield: { label: "La piste de l’épée et du bouclier · spoilers", url: "https://x.com/FoudubusTV_/status/2115801685972967828" },
 } satisfies Record<string, TheorySource>;
 
@@ -120,7 +120,7 @@ export const THEORY_GROUPS: readonly TheoryGroup[] = [
       },
       {
         id: "usopp-harley", icon: "📖",
-        title: "Usopp écrirait le Harley",
+        title: "Usopp écrirait le Haley",
         summary: "Usopp raconterait l’aventure de son capitaine sous la forme d’une légende transmise aux géants. Il pourrait aussi être Louis Arnot, l’auteur d’aventures extraordinaires. En inspirant leur peuple et le culte de Nika, il accomplirait son rêve de grand guerrier des mers.",
       },
       {
