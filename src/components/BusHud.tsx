@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useId, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode, type RefObject, type SetStateAction } from "react";
+import { memo, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode, type RefObject, type SetStateAction } from "react";
 import type { Phase } from "./bus/constants";
 import { COMPACT_HUD_MEDIA_QUERY, useHudLayout } from "./useHudLayout";
 import { emitBusAudioEvent, INITIAL_MUSIC_PLAYBACK, onBusAudioEvent, type BusMusicPlayback } from "@/lib/bus-audio";
@@ -259,8 +259,11 @@ export const BusHud = memo(function BusHud({
   const restoreButtonRef = useRef<HTMLButtonElement>(null);
   const exteriorMenuButtonRef = useRef<HTMLButtonElement>(null);
   const interiorMenuButtonRef = useRef<HTMLButtonElement>(null);
-  const speedMenuRef = useRef<HTMLDivElement>(null);
-  const settingsMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const speedTriggerRef = useRef<HTMLButtonElement>(null);
+  const settingsTriggerRef = useRef<HTMLButtonElement>(null);
+  const speedPanelRef = useRef<HTMLDivElement>(null);
+  const settingsPanelRef = useRef<HTMLDivElement>(null);
   const mobileMenuId = useId();
   const musicDetailsOpen = musicDetailsState.open && musicDetailsState.phase === phase && musicDetailsState.epoch === phaseEpoch && !hidden && !immersive;
   const speedMenuOpen = speedMenuState.open && speedMenuState.phase === phase && speedMenuState.epoch === phaseEpoch && !hidden && !immersive;
@@ -282,10 +285,14 @@ export const BusHud = memo(function BusHud({
 
   const toggleMobileMenu = () => {
     setMusicDetailsState({ open: false, phase, epoch: phaseEpoch });
+    setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
+    setSettingsMenuState({ open: false, phase, epoch: phaseEpoch });
     setMobileMenuState((prev) => ({ open: !(prev.open && prev.phase === phase), phase }));
   };
   const closeMobileMenu = () => {
     setMobileMenuState({ open: false, phase });
+    setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
+    setSettingsMenuState({ open: false, phase, epoch: phaseEpoch });
   };
   const handleMusicDetailsOpenChange = (nextOpen: boolean) => {
     setMusicDetailsState({ open: nextOpen, phase, epoch: phaseEpoch });
@@ -306,10 +313,10 @@ export const BusHud = memo(function BusHud({
     if (!speedMenuOpen && !settingsMenuOpen) return;
     const closeOnOutside = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (speedMenuOpen && speedMenuRef.current && !speedMenuRef.current.contains(target)) {
+      if (speedMenuOpen && !speedTriggerRef.current?.contains(target) && !speedPanelRef.current?.contains(target)) {
         setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
       }
-      if (settingsMenuOpen && settingsMenuRef.current && !settingsMenuRef.current.contains(target)) {
+      if (settingsMenuOpen && !settingsTriggerRef.current?.contains(target) && !settingsPanelRef.current?.contains(target)) {
         setSettingsMenuState({ open: false, phase, epoch: phaseEpoch });
       }
     };
@@ -326,6 +333,73 @@ export const BusHud = memo(function BusHud({
       window.removeEventListener("keydown", closeOnEscape);
     };
   }, [phase, phaseEpoch, settingsMenuOpen, speedMenuOpen]);
+
+  useLayoutEffect(() => {
+    if (!speedMenuOpen && !settingsMenuOpen) return;
+    const isSettings = settingsMenuOpen;
+    const panel = isSettings ? settingsPanelRef.current : speedPanelRef.current;
+    const trigger = isSettings ? settingsTriggerRef.current : speedTriggerRef.current;
+    if (!panel || !trigger) return;
+
+    const position = () => {
+      const triggerRect = trigger.getBoundingClientRect();
+      if (triggerRect.width === 0 && triggerRect.height === 0) return;
+      const vv = window.visualViewport;
+      const vpLeft = vv?.offsetLeft ?? 0;
+      const vpTop = vv?.offsetTop ?? 0;
+      const vw = vv?.width ?? window.innerWidth;
+      const margin = 12;
+
+      let bottomAnchorTop = triggerRect.top;
+      if (compactHud && mobileMenuRef.current) {
+        const menuRect = mobileMenuRef.current.getBoundingClientRect();
+        if (menuRect.height > 0) {
+          bottomAnchorTop = Math.min(bottomAnchorTop, menuRect.top);
+        }
+      }
+
+      const maxH = Math.max(140, Math.floor(bottomAnchorTop - 8 - (vpTop + margin)));
+      panel.style.maxHeight = `${maxH}px`;
+
+      const panelRect = panel.getBoundingClientRect();
+      const rawLeft = isSettings
+        ? (compactHud
+            ? vpLeft + (vw - panelRect.width) / 2
+            : triggerRect.right - panelRect.width)
+        : triggerRect.left + triggerRect.width / 2 - panelRect.width / 2;
+
+      const minLeft = vpLeft + margin;
+      const maxLeft = Math.max(minLeft, vpLeft + vw - panelRect.width - margin);
+      const clampedLeft = Math.round(Math.max(minLeft, Math.min(rawLeft, maxLeft)));
+      const clampedTop = Math.round(Math.max(vpTop + margin, bottomAnchorTop - 8 - panelRect.height));
+
+      panel.style.left = `${clampedLeft}px`;
+      panel.style.top = `${clampedTop}px`;
+      panel.style.visibility = "visible";
+    };
+
+    position();
+    let frame = 0;
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(position);
+    };
+    const observer = new ResizeObserver(schedule);
+    observer.observe(panel);
+    observer.observe(trigger);
+    if (mobileMenuRef.current) observer.observe(mobileMenuRef.current);
+    if (hudRef.current) observer.observe(hudRef.current);
+    window.addEventListener("resize", schedule);
+    window.visualViewport?.addEventListener("resize", schedule);
+    window.visualViewport?.addEventListener("scroll", schedule);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("scroll", schedule);
+    };
+  }, [compactHud, hudRef, mobileMenuOpen, phase, settingsMenuOpen, speedMenuOpen]);
 
   const restoreControls = () => {
     setImmersive(false);
@@ -382,14 +456,18 @@ export const BusHud = memo(function BusHud({
     };
     const onPointerDown = (event: PointerEvent) => {
       if (!(event.target instanceof Element)) return;
-      if (event.target.closest(".bus-mobile-menu, [data-mobile-menu-toggle]")) return;
+      if (event.target.closest(".bus-mobile-menu, [data-mobile-menu-toggle], [data-bus-hud-popover]")) return;
       setMobileMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
+      setSpeedMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
+      setSettingsMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !event.defaultPrevented) {
         event.preventDefault();
         event.stopPropagation();
         setMobileMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
+        setSpeedMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
+        setSettingsMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
         focusTrigger();
       } else if (event.key === "F1") {
         setMobileMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
@@ -398,6 +476,8 @@ export const BusHud = memo(function BusHud({
     const onResize = () => {
       if (!getCompactHudSnapshot()) {
         setMobileMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
+        setSpeedMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
+        setSettingsMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
       }
     };
     document.addEventListener("pointerdown", onPointerDown);
@@ -464,10 +544,16 @@ export const BusHud = memo(function BusHud({
                   : <><span className="bus-landscape-hide hidden min-[360px]:inline">La </span>Théorie</>}
               </span>
             </button>
-            <button type="button" onClick={openAvatarModal} disabled={busy} aria-haspopup="dialog" aria-label={phase === "inside" ? pickLocale(locale, "Changer de personnage", "Change character") : pickLocale(locale, "Choisir mon personnage", "Choose my character")}
-              className="bus-btn-secondary pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-[11px] font-semibold focus-visible:outline-none disabled:opacity-60 min-[360px]:px-2.5 min-[390px]:px-3 sm:gap-2 sm:px-4 sm:text-xs cursor-pointer">
-              <PersonIcon className="bus-landscape-hide hidden h-4 w-4 shrink-0 sm:block" />
-              <span>{pickLocale(locale, "Personnage", "Character")}</span>
+            <button
+              type="button"
+              onClick={openAvatarModal}
+              disabled={busy}
+              aria-haspopup="dialog"
+              aria-label={phase === "inside" ? pickLocale(locale, "Changer de personnage", "Change character") : pickLocale(locale, "Choisir mon personnage", "Choose my character")}
+              title={phase === "inside" ? pickLocale(locale, "Changer de personnage", "Change character") : pickLocale(locale, "Choisir mon personnage", "Choose my character")}
+              className="bus-btn-secondary pointer-events-auto grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-none disabled:opacity-60 cursor-pointer"
+            >
+              <PersonIcon className="h-5 w-5 shrink-0" />
             </button>
             {hasSavedPlace && (
               <button
@@ -647,50 +733,12 @@ export const BusHud = memo(function BusHud({
 
             {/* Contrôleur de vitesse du bus + Paramètres en bas à droite */}
             <div className="bus-speed pointer-events-none absolute bottom-3 right-3 z-40 flex items-center gap-1.5 sm:right-4 sm:bottom-4 sm:gap-2">
-              <div ref={speedMenuRef} className="pointer-events-auto relative">
-                {speedMenuOpen && (
-                  <div
-                    role="group"
-                    aria-label={pickLocale(locale, "Régler la vitesse du bus", "Adjust bus speed")}
-                    className="bus-case-elevated absolute bottom-full -right-12 mb-2 z-40 flex items-center gap-1.5 rounded-full p-1 text-xs shadow-2xl sm:-right-[3.25rem]"
-                  >
-                    <button
-                      type="button"
-                      onClick={decelerateBus}
-                      disabled={speedMultiplier <= 0}
-                      aria-label={pickLocale(locale, "Ralentir le bus", "Slow down the bus")}
-                      className="flex h-9 items-center justify-center gap-1.5 rounded-full border border-transparent bg-white/[0.07] px-3 text-xs font-semibold text-white transition-colors hover:border-[#cfc4fc]/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
-                      title={pickLocale(locale, "Ralentir le bus (Touche - ou Flèche Bas)", "Slow down the bus (- key or Down Arrow)")}
-                    >
-                      <SlowSpeedIcon className="h-4 w-4 shrink-0" />
-                      <span>{pickLocale(locale, "Ralentir", "Slow down")}</span>
-                    </button>
-                    <div className="flex min-w-[3.5rem] items-center justify-center gap-1 px-1.5 font-black tabular-nums">
-                      <span className={speedMultiplier >= 2.0 ? "text-[#c4b5fd]" : speedMultiplier <= 0.5 ? "text-[#93c5fd]" : "text-white"}>
-                        {speedMultiplier.toFixed(1)}x
-                      </span>
-                      {speedMultiplier >= 2.0 && (
-                        <span className="bus-pill-badge rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase">
-                          Boost
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={accelerateBus}
-                      disabled={speedMultiplier >= 3.0}
-                      aria-label={pickLocale(locale, "Accélérer le bus", "Speed up the bus")}
-                      className="bus-btn-tonal flex h-9 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
-                      title={pickLocale(locale, "Accélérer le bus (Touche + ou Flèche Haut / Boost)", "Speed up the bus (+ key or Up Arrow / Boost)")}
-                    >
-                      <FastBoltIcon className="h-4 w-4 shrink-0" />
-                      <span>{pickLocale(locale, "Accélérer", "Speed up")}</span>
-                    </button>
-                  </div>
-                )}
+              <div className="pointer-events-auto relative">
                 <button
+                  ref={speedTriggerRef}
                   type="button"
                   onClick={() => {
+                    setMusicDetailsState({ open: false, phase, epoch: phaseEpoch });
                     setSettingsMenuState({ open: false, phase, epoch: phaseEpoch });
                     setSpeedMenuState((prev) => ({
                       open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
@@ -711,29 +759,12 @@ export const BusHud = memo(function BusHud({
                   <span>{pickLocale(locale, "Vitesse", "Speed")}</span>
                 </button>
               </div>
-              <div ref={settingsMenuRef} className="pointer-events-auto relative">
-                {settingsMenuOpen && (
-                  <div
-                    role="dialog"
-                    aria-label={pickLocale(locale, "Paramètres graphiques", "Graphics settings")}
-                    className="bus-case-elevated bus-scrollbar absolute bottom-full right-0 z-50 mb-2 max-h-[calc(100dvh-6.5rem)] w-[min(18.5rem,calc(100vw-1.5rem))] overflow-y-auto rounded-2xl p-3 shadow-2xl"
-                  >
-                    <div className="mb-2 flex items-center gap-2 text-xs font-extrabold tracking-wide text-white">
-                      <SlidersIcon className="h-3.5 w-3.5 text-[#c4b5fd]" />
-                      <span>{pickLocale(locale, "Paramètres", "Settings")}</span>
-                    </div>
-                    <TheorySettingsPanel
-                      graphicsSettings={graphicsSettings}
-                      telemetry={graphicsTelemetry}
-                      onSelectPreset={(preset) => onSelectGraphicsPreset?.(preset)}
-                      onUpdateGraphics={(patch) => onUpdateGraphicsSettings?.(patch)}
-                      onResetGraphics={() => onResetGraphicsSettings?.()}
-                    />
-                  </div>
-                )}
+              <div className="pointer-events-auto relative">
                 <button
+                  ref={settingsTriggerRef}
                   type="button"
                   onClick={() => {
+                    setMusicDetailsState({ open: false, phase, epoch: phaseEpoch });
                     setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
                     setSettingsMenuState((prev) => ({
                       open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
@@ -758,6 +789,7 @@ export const BusHud = memo(function BusHud({
         {/* Commandes secondaires dépliées librement au-dessus de la barre inférieure */}
         {mobileMenuOpen && (
           <div
+            ref={mobileMenuRef}
             id={mobileMenuId}
             role="region"
             aria-label={pickLocale(locale, "Commandes du bus", "Bus controls")}
@@ -812,48 +844,12 @@ export const BusHud = memo(function BusHud({
             >
               <CrosshairResetIcon className="h-5 w-5 shrink-0" />
             </button>
-            <div ref={speedMenuRef} className="pointer-events-auto relative z-40">
-              {speedMenuOpen && (
-                <div
-                  role="group"
-                  aria-label={pickLocale(locale, "Régler la vitesse du bus", "Adjust bus speed")}
-                  className="bus-case-elevated absolute bottom-full -right-12 mb-2 z-40 flex items-center gap-1 rounded-full p-1 text-xs shadow-2xl"
-                >
-                  <button
-                    type="button"
-                    onClick={decelerateBus}
-                    disabled={speedMultiplier <= 0}
-                    aria-label={pickLocale(locale, "Ralentir le bus", "Slow down the bus")}
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-transparent bg-white/[0.07] text-white transition-colors hover:border-[#cfc4fc]/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
-                    title={pickLocale(locale, "Ralentir le bus", "Slow down the bus")}
-                  >
-                    <SlowSpeedIcon className="h-4 w-4 shrink-0" />
-                  </button>
-                  <div className="flex min-w-[2.75rem] items-center justify-center gap-1 px-1 font-black tabular-nums">
-                    <span className={speedMultiplier >= 2.0 ? "text-[#c4b5fd]" : speedMultiplier <= 0.5 ? "text-[#93c5fd]" : "text-white"}>
-                      {speedMultiplier.toFixed(1)}x
-                    </span>
-                    {speedMultiplier >= 2.0 && (
-                      <span className="bus-pill-badge rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase">
-                        Boost
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={accelerateBus}
-                    disabled={speedMultiplier >= 3.0}
-                    aria-label={pickLocale(locale, "Accélérer le bus", "Speed up the bus")}
-                    className="bus-btn-tonal grid h-9 w-9 shrink-0 place-items-center rounded-full focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
-                    title={pickLocale(locale, "Accélérer le bus", "Speed up the bus")}
-                  >
-                    <FastBoltIcon className="h-4 w-4 shrink-0" />
-                  </button>
-                </div>
-              )}
+            <div className="pointer-events-auto relative z-40">
               <button
+                ref={speedTriggerRef}
                 type="button"
                 onClick={() => {
+                  setMusicDetailsState({ open: false, phase, epoch: phaseEpoch });
                   setSettingsMenuState({ open: false, phase, epoch: phaseEpoch });
                   setSpeedMenuState((prev) => ({
                     open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
@@ -874,29 +870,12 @@ export const BusHud = memo(function BusHud({
                 <span>{pickLocale(locale, "Vitesse", "Speed")}</span>
               </button>
             </div>
-            <div ref={settingsMenuRef} className="pointer-events-auto relative">
-              {settingsMenuOpen && (
-                <div
-                  role="dialog"
-                  aria-label={pickLocale(locale, "Paramètres graphiques", "Graphics settings")}
-                  className="bus-case-elevated bus-scrollbar absolute bottom-full right-0 z-50 mb-2 max-h-[calc(100dvh-6.5rem)] w-[min(18.5rem,calc(100vw-1.5rem))] overflow-y-auto rounded-2xl p-3 shadow-2xl"
-                >
-                  <div className="mb-2 flex items-center gap-2 text-xs font-extrabold tracking-wide text-white">
-                    <SlidersIcon className="h-3.5 w-3.5 text-[#c4b5fd]" />
-                    <span>{pickLocale(locale, "Paramètres", "Settings")}</span>
-                  </div>
-                  <TheorySettingsPanel
-                    graphicsSettings={graphicsSettings}
-                    telemetry={graphicsTelemetry}
-                    onSelectPreset={(preset) => onSelectGraphicsPreset?.(preset)}
-                    onUpdateGraphics={(patch) => onUpdateGraphicsSettings?.(patch)}
-                    onResetGraphics={() => onResetGraphicsSettings?.()}
-                  />
-                </div>
-              )}
+            <div className="pointer-events-auto relative">
               <button
+                ref={settingsTriggerRef}
                 type="button"
                 onClick={() => {
+                  setMusicDetailsState({ open: false, phase, epoch: phaseEpoch });
                   setSpeedMenuState({ open: false, phase, epoch: phaseEpoch });
                   setSettingsMenuState((prev) => ({
                     open: !(prev.open && prev.phase === phase && prev.epoch === phaseEpoch),
@@ -912,6 +891,90 @@ export const BusHud = memo(function BusHud({
                 <SlidersIcon className="h-4 w-4 shrink-0 text-[#dcd3ff]" />
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Popovers positionnés en fixed et bornés dans le viewport (évite tout débordement sur téléphone) */}
+        {speedMenuOpen && (
+          <div
+            ref={speedPanelRef}
+            data-bus-hud-popover
+            role="group"
+            aria-label={pickLocale(locale, "Régler la vitesse du bus", "Adjust bus speed")}
+            onPointerDown={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
+            onWheel={(event) => event.stopPropagation()}
+            onTouchMove={(event) => event.stopPropagation()}
+            style={{ visibility: "hidden" }}
+            className="bus-case-elevated pointer-events-auto fixed z-50 flex max-w-[calc(100vw-1.5rem)] items-center gap-1.5 rounded-full p-1 text-xs shadow-2xl"
+          >
+            <button
+              type="button"
+              onClick={decelerateBus}
+              disabled={speedMultiplier <= 0}
+              aria-label={pickLocale(locale, "Ralentir le bus", "Slow down the bus")}
+              className={compactHud
+                ? "grid h-9 w-9 shrink-0 place-items-center rounded-full border border-transparent bg-white/[0.07] text-white transition-colors hover:border-[#cfc4fc]/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
+                : "flex h-9 items-center justify-center gap-1.5 rounded-full border border-transparent bg-white/[0.07] px-3 text-xs font-semibold text-white transition-colors hover:border-[#cfc4fc]/70 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"}
+              title={compactHud
+                ? pickLocale(locale, "Ralentir le bus", "Slow down the bus")
+                : pickLocale(locale, "Ralentir le bus (Touche - ou Flèche Bas)", "Slow down the bus (- key or Down Arrow)")}
+            >
+              <SlowSpeedIcon className="h-4 w-4 shrink-0" />
+              {!compactHud && <span>{pickLocale(locale, "Ralentir", "Slow down")}</span>}
+            </button>
+            <div className="flex min-w-[2.75rem] items-center justify-center gap-1 px-1.5 font-black tabular-nums">
+              <span className={speedMultiplier >= 2.0 ? "text-[#c4b5fd]" : speedMultiplier <= 0.5 ? "text-[#93c5fd]" : "text-white"}>
+                {speedMultiplier.toFixed(1)}x
+              </span>
+              {speedMultiplier >= 2.0 && (
+                <span className="bus-pill-badge rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase">
+                  Boost
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={accelerateBus}
+              disabled={speedMultiplier >= 3.0}
+              aria-label={pickLocale(locale, "Accélérer le bus", "Speed up the bus")}
+              className={compactHud
+                ? "bus-btn-tonal grid h-9 w-9 shrink-0 place-items-center rounded-full focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"
+                : "bus-btn-tonal flex h-9 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer"}
+              title={compactHud
+                ? pickLocale(locale, "Accélérer le bus", "Speed up the bus")
+                : pickLocale(locale, "Accélérer le bus (Touche + ou Flèche Haut / Boost)", "Speed up the bus (+ key or Up Arrow / Boost)")}
+            >
+              <FastBoltIcon className="h-4 w-4 shrink-0" />
+              {!compactHud && <span>{pickLocale(locale, "Accélérer", "Speed up")}</span>}
+            </button>
+          </div>
+        )}
+
+        {settingsMenuOpen && (
+          <div
+            ref={settingsPanelRef}
+            data-bus-hud-popover
+            role="dialog"
+            aria-label={pickLocale(locale, "Paramètres graphiques", "Graphics settings")}
+            onPointerDown={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
+            onWheel={(event) => event.stopPropagation()}
+            onTouchMove={(event) => event.stopPropagation()}
+            style={{ visibility: "hidden" }}
+            className="bus-case-elevated bus-scrollbar pointer-events-auto fixed z-50 w-[min(18.5rem,calc(100vw-1.5rem))] overflow-y-auto overscroll-contain rounded-2xl p-3 shadow-2xl"
+          >
+            <div className="mb-2 flex items-center gap-2 text-xs font-extrabold tracking-wide text-white">
+              <SlidersIcon className="h-3.5 w-3.5 text-[#c4b5fd]" />
+              <span>{pickLocale(locale, "Paramètres", "Settings")}</span>
+            </div>
+            <TheorySettingsPanel
+              graphicsSettings={graphicsSettings}
+              telemetry={graphicsTelemetry}
+              onSelectPreset={(preset) => onSelectGraphicsPreset?.(preset)}
+              onUpdateGraphics={(patch) => onUpdateGraphicsSettings?.(patch)}
+              onResetGraphics={() => onResetGraphicsSettings?.()}
+            />
           </div>
         )}
 
@@ -997,7 +1060,7 @@ export const BusHud = memo(function BusHud({
         >
           {compactHud ? (
             <>
-              <div className="flex w-full items-center justify-center gap-1 min-[360px]:gap-1.5">
+              <div className="flex w-full flex-wrap items-center justify-center gap-1 min-[360px]:gap-1.5">
                 <HudButton compact className="shrink-0 px-2.5 min-[360px]:px-3.5" onClick={() => { closeMobileMenu(); openProfileModal("name"); }} ariaLabel={pickLocale(locale, "Modifier mon nom", "Edit my name")} icon={<UserBadgeIcon />} disabled={busy || !interiorControlsVisible}>
                   {pickLocale(locale, "Nom", "Name")}
                 </HudButton>

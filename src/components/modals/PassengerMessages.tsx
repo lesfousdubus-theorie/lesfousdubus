@@ -89,6 +89,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
   const request = useRef<AbortController | null>(null);
   const randomPoolRef = useRef<Message[]>([]);
   const randomCursorRef = useRef(0);
+  const randomSlotRef = useRef(-1);
   const swapCountRef = useRef(0);
   const scheduleRef = useRef<Array<{ nextAt: number; swapAt: number }>>([]);
   const nextFrom = useRef(0);
@@ -99,10 +100,19 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
 
   const fetchRandomBatch = useCallback(async (signal?: AbortSignal) => {
     try {
-      const page = await fetchJson<MessagePage>(`/api/bus-entries?messages=1&random=1&limit=${MAX_FLOATING_BUBBLES}`, { cache: "no-store", signal });
+      if (randomSlotRef.current < 0) randomSlotRef.current = Math.floor(Math.random() * 8);
+      const slot = randomSlotRef.current;
+      randomSlotRef.current = (slot + 1) % 8;
+      const page = await fetchJson<MessagePage>(`/api/bus-entries?messages=1&random=1&limit=${MAX_FLOATING_BUBBLES}&slot=${slot}`, { signal });
       if (signal?.aborted) return;
       if (page.messages.length > 0) {
-        randomPoolRef.current = page.messages;
+        const merged = new Map<number, Message>();
+        for (const msg of page.messages) merged.set(msg.seatIndex, msg);
+        for (const msg of randomPoolRef.current) {
+          if (merged.size >= 400) break;
+          if (!merged.has(msg.seatIndex)) merged.set(msg.seatIndex, msg);
+        }
+        randomPoolRef.current = [...merged.values()];
         randomCursorRef.current = 0;
       }
     } catch {
@@ -120,7 +130,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
     setError(false);
     try {
       const from = nextFrom.current;
-      const page = await fetchJson<MessagePage>(`/api/bus-entries?messages=1&from=${from}&limit=${PAGE_LIMIT}`, { cache: "no-store", signal: controller.signal });
+      const page = await fetchJson<MessagePage>(`/api/bus-entries?messages=1&from=${from}&limit=${PAGE_LIMIT}`, { signal: controller.signal });
       if (controller.signal.aborted) return;
       if (page.hasMore && page.nextFrom <= from) throw new Error("Invalid message cursor");
       nextFrom.current = page.nextFrom;
@@ -222,7 +232,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
 
       if (swappedNow) {
         swapCountRef.current += 1;
-        if (hasMore && swapCountRef.current % 50 === 0) {
+        if (hasMore && swapCountRef.current % 120 === 0) {
           void fetchRandomBatch();
         }
       }
@@ -351,7 +361,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
         {ordered ? (
           <div
             onScroll={handleGridScroll}
-            className="h-full overflow-y-auto px-3 py-4 sm:px-6 sm:py-6"
+            className="bus-scrollbar h-full overflow-y-auto px-3 py-4 sm:px-6 sm:py-6"
             aria-hidden={reading ? true : undefined}
             inert={reading ? true : undefined}
           >
@@ -409,7 +419,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
                 <p className="break-words text-sm font-bold text-[#c4b5fd]">{reading.displayName}</p>
                 <button ref={closeMessageRef} type="button" onClick={closeMessage} className="messages-wall-control shrink-0">{pickLocale(locale, "Fermer", "Close")}</button>
               </div>
-              <blockquote tabIndex={0} className="messages-reader-copy mt-2 min-h-0 overflow-y-auto whitespace-pre-wrap break-words leading-relaxed sm:text-lg">{reading.comment}</blockquote>
+              <blockquote tabIndex={0} className="messages-reader-copy bus-scrollbar mt-2 min-h-0 overflow-y-auto whitespace-pre-wrap break-words leading-relaxed sm:text-lg">{reading.comment}</blockquote>
             </div>
           </div>
         )}

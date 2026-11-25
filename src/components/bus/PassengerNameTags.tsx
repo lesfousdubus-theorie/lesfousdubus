@@ -57,65 +57,81 @@ export function getVisiblePassengerName(value: string | null | undefined) {
   return lower !== "anonyme" && lower !== "passager" ? name : undefined;
 }
 
-/** Charger le pseudo et le personnage des places rendues, hors des profils détaillés. */
+/** Charger le pseudo et le personnage par blocs canoniques de 80 places (partagés en cache Cloudflare). */
+const MAX_CACHED_SUMMARIES = 2_048;
+
 export function useVisiblePassengerSummaries(passengers: BusOccupant[], revision: number) {
   const key = passengers.filter(person => person.passengerKind === "visitor")
     .map(person => person.index).sort((a, b) => a - b).join(",");
-  const cache = useRef({ revision, names: new Map<number, NameEntry | null>() });
-  const inFlightRef = useRef<{ revision: number; seats: Set<number> }>({ revision, seats: new Set() });
-  const controllerRef = useRef<{ revision: number; controller: AbortController } | null>(null);
-  const [result, setResult] = useState<{ revision: number; names: ReadonlyMap<number, NameEntry | null> }>();
+  const cache = useRef({ names: new Map<number, NameEntry | null>() });
+  const inFlightBlocksRef = useRef<Set<number>>(new Set());
+  const controllerRef = useRef<AbortController | null>(null);
+  const [result, setResult] = useState<ReadonlyMap<number, NameEntry | null>>(EMPTY_NAMES);
 
   useEffect(() => {
     const ctrl = new AbortController();
-    controllerRef.current = { revision, controller: ctrl };
-    inFlightRef.current = { revision, seats: new Set() };
+    controllerRef.current = ctrl;
+    inFlightBlocksRef.current = new Set();
     return () => {
       ctrl.abort();
-      if (controllerRef.current?.controller === ctrl) controllerRef.current = null;
+      if (controllerRef.current === ctrl) controllerRef.current = null;
     };
-  }, [revision]);
+  }, []);
 
   useEffect(() => {
     if (!key) return;
-    if (cache.current.revision !== revision) cache.current = { revision, names: new Map() };
     const memory = cache.current;
-    const inFlight = inFlightRef.current.seats;
-    const ids = key.split(",").map(Number).filter(seat => !memory.names.has(seat) && !inFlight.has(seat));
-    if (!ids.length) return;
+    const inFlightBlocks = inFlightBlocksRef.current;
+    const missingSeats = key.split(",").map(Number).filter((seat) => !memory.names.has(seat));
+    if (!missingSeats.length) return;
+
+    const missingBlocks = [...new Set(missingSeats.map((seat) => Math.floor(seat / NAME_PAGE_SIZE) * NAME_PAGE_SIZE))]
+      .filter((blockStart) => !inFlightBlocks.has(blockStart));
+    if (!missingBlocks.length) return;
+
     let retry: number | undefined;
-    const load = async (remaining: number[], canRetry: boolean) => {
-      const ctrl = controllerRef.current?.revision === revision ? controllerRef.current.controller : null;
+    const loadBlocks = async (blocks: number[], canRetry: boolean) => {
+      const ctrl = controllerRef.current;
       if (!ctrl || ctrl.signal.aborted) return;
-      const toFetch = remaining.filter(seat => !memory.names.has(seat) && !inFlight.has(seat));
+      const toFetch = blocks.filter((block) => !inFlightBlocks.has(block));
       if (!toFetch.length) return;
-      for (const seat of toFetch) inFlight.add(seat);
-      const slices = Array.from({ length: Math.ceil(toFetch.length / NAME_PAGE_SIZE) }, (_, index) =>
-        toFetch.slice(index * NAME_PAGE_SIZE, (index + 1) * NAME_PAGE_SIZE));
-      const results = await Promise.allSettled(slices.map(seats => fetchJson<{ names: NameEntry[] }>(
-        `/api/bus-entries?names=1&seats=${seats.join(",")}&rev=${revision}`, { signal: ctrl.signal },
+      for (const block of toFetch) inFlightBlocks.add(block);
+      const results = await Promise.allSettled(toFetch.map((blockStart) => fetchJson<{ names: NameEntry[] }>(
+        `/api/bus-entries?names=1&from=${blockStart}&limit=${NAME_PAGE_SIZE}`, { signal: ctrl.signal },
       )));
-      for (const seat of toFetch) inFlight.delete(seat);
+      for (const block of toFetch) inFlightBlocks.delete(block);
       if (ctrl.signal.aborted) return;
       const failed: number[] = [];
       results.forEach((response, index) => {
+        const blockStart = toFetch[index];
         if (response.status === "rejected") {
-          failed.push(...slices[index]);
+          failed.push(blockStart);
           return;
         }
-        for (const seat of slices[index]) memory.names.set(seat, null);
-        for (const summary of response.value.names) memory.names.set(summary.seatIndex, summary);
+        for (let offset = 0; offset < NAME_PAGE_SIZE; offset++) {
+          const seat = blockStart + offset;
+          if (!memory.names.has(seat)) memory.names.set(seat, null);
+        }
+        for (const summary of response.value.names) {
+          memory.names.delete(summary.seatIndex);
+          memory.names.set(summary.seatIndex, summary);
+        }
       });
-      setResult({ revision, names: new Map(memory.names) });
-      if (canRetry && failed.length) retry = window.setTimeout(() => void load(failed, false), 1400);
+      while (memory.names.size > MAX_CACHED_SUMMARIES) {
+        const oldestKey = memory.names.keys().next().value;
+        if (oldestKey === undefined) break;
+        memory.names.delete(oldestKey);
+      }
+      setResult(new Map(memory.names));
+      if (canRetry && failed.length) retry = window.setTimeout(() => void loadBlocks(failed, false), 1400);
     };
-    const debounce = window.setTimeout(() => void load(ids, true), 220);
+    const debounce = window.setTimeout(() => void loadBlocks(missingBlocks, true), 220);
     return () => {
       window.clearTimeout(debounce);
       if (retry !== undefined) window.clearTimeout(retry);
     };
   }, [key, revision]);
-  return result?.revision === revision ? result.names : EMPTY_NAMES;
+  return result;
 }
 
 function makePassengerNameTexture(displayName: string) {

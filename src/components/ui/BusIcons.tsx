@@ -16,8 +16,8 @@ export function ScrollIcon({ className = "h-4 w-4 shrink-0" }: IconProps) {
 export function PersonIcon({ className = "h-4 w-4 shrink-0" }: IconProps) {
   return (
     <svg aria-hidden="true" focusable="false" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 21v-2a8 8 0 0 1 16 0v2" />
+      <circle cx="12" cy="8.5" r="3.5" />
+      <path d="M5 20a7 7 0 0 1 14 0" />
     </svg>
   );
 }

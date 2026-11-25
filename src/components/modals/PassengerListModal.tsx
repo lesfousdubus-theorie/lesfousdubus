@@ -155,7 +155,7 @@ export function PassengerListModal({
           onScroll={(event) => {
             onScrollTopChange?.(event.currentTarget.scrollTop);
           }}
-          className="relative min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5"
+          className="bus-scrollbar relative min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5"
         >
           <button type="button" onClick={onOpenMessages} className="bus-btn-primary mb-4 flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold focus-visible:outline-none">
             {pickLocale(locale, "Voir les messages", "View messages")} <span aria-hidden="true">→</span>

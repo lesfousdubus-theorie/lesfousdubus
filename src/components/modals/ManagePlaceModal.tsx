@@ -93,7 +93,7 @@ export function ManagePlaceModal({
           </div>
           <ModalCloseButton onClick={close} disabled={deleting} />
         </header>
-        <div className="min-h-0 overflow-y-auto overscroll-contain p-5 sm:p-6">
+        <div className="bus-scrollbar min-h-0 overflow-y-auto overscroll-contain p-5 sm:p-6">
           {confirming ? (
             <div role="alertdialog" aria-labelledby="manage-place-title" aria-describedby="manage-place-description">
               <p id="manage-place-description" className="text-sm leading-7 text-[#dfe5ff]">

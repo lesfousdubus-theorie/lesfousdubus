@@ -91,7 +91,7 @@ export function PassengerCard({
           <ModalCloseButton onClick={onClose} />
         </header>
 
-        <div className="min-h-0 overflow-y-auto overscroll-contain p-5 sm:p-6">
+        <div className="bus-scrollbar min-h-0 overflow-y-auto overscroll-contain p-5 sm:p-6">
           {onBack && (
             <button
               type="button"

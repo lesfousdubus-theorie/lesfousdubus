@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 interface Props {
   spans: Array<[number, number]>;
@@ -16,23 +15,66 @@ interface Props {
   castShadow?: boolean;
 }
 
-/** Toutes les découpes partagent un seul draw call, quelle que soit la longueur. */
+/** Toutes les découpes partagent un seul draw call instancié, sans allocation géométrique par tronçon. */
 export default function BusSpanMeshes({ spans, x, y, width, height, material, name, planeSide, castShadow = false }: Props) {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
   const key = spans.map(([from, to]) => `${from}:${to}`).join(",");
-  const geometry = useMemo(() => {
-    const segments = key ? key.split(",").map(pair => {
-      const [from, to] = pair.split(":").map(Number);
-      const shape = planeSide === undefined
-        ? new THREE.BoxGeometry(width, height, to - from)
-        : new THREE.PlaneGeometry(to - from, height);
-      if (planeSide !== undefined) shape.rotateY(planeSide * Math.PI / 2);
-      return shape.translate(x, y, (from + to) / 2);
-    }) : [];
-    const merged = segments.length ? mergeGeometries(segments, false) : new THREE.BufferGeometry();
-    segments.forEach(segment => segment.dispose());
-    return merged;
-  }, [key, x, y, width, height, planeSide]);
+  const capacity = Math.max(16, Math.ceil(spans.length / 64) * 64);
+
+  const geometry = useMemo(
+    () => (planeSide === undefined ? new THREE.BoxGeometry(1, 1, 1) : new THREE.PlaneGeometry(1, 1)),
+    [planeSide],
+  );
   useEffect(() => () => geometry.dispose(), [geometry]);
+
+  useLayoutEffect(() => {
+    const mesh = meshRef.current;
+    if (!mesh) return;
+    if (!key) {
+      mesh.count = 0;
+      mesh.visible = false;
+      return;
+    }
+    const pairs = key.split(",");
+    const dummy = new THREE.Object3D();
+    let minFrom = Infinity;
+    let maxTo = -Infinity;
+    for (let i = 0; i < pairs.length; i++) {
+      const [from, to] = pairs[i].split(":").map(Number);
+      if (from < minFrom) minFrom = from;
+      if (to > maxTo) maxTo = to;
+      dummy.position.set(x, y, (from + to) * 0.5);
+      dummy.rotation.set(0, planeSide !== undefined ? (planeSide * Math.PI) / 2 : 0, 0);
+      dummy.scale.set(
+        planeSide !== undefined ? to - from : width,
+        height,
+        planeSide !== undefined ? 1 : to - from,
+      );
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+    }
+    mesh.count = pairs.length;
+    mesh.visible = true;
+    mesh.instanceMatrix.needsUpdate = true;
+    if (Number.isFinite(minFrom) && Number.isFinite(maxTo)) {
+      const centerZ = (minFrom + maxTo) * 0.5;
+      const halfZ = Math.max(0.5, (maxTo - minFrom) * 0.5);
+      const radius = Math.hypot(width * 0.5, height * 0.5, halfZ);
+      mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(x, y, centerZ), radius);
+    }
+  }, [key, x, y, width, height, planeSide, capacity]);
+
   if (!spans.length) return null;
-  return <mesh name={name} geometry={geometry} material={material} castShadow={castShadow} raycast={planeSide === undefined ? undefined : () => null} />;
+  return (
+    <instancedMesh
+      key={`span-${capacity}-${planeSide ?? "box"}`}
+      ref={meshRef}
+      name={name}
+      args={[geometry, material, capacity]}
+      count={spans.length}
+      castShadow={castShadow}
+      dispose={null}
+      raycast={planeSide === undefined ? undefined : () => null}
+    />
+  );
 }

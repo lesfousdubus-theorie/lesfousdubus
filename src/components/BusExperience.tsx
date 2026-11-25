@@ -34,7 +34,7 @@ import type { SceneGraphicsTelemetry } from "@/lib/scene-performance";
 const Scene = dynamic(() => import("./bus/Scene"), { ssr: false });
 const TheoryModal = dynamic(() => import("./theory/TheoryModal"), { ssr: false });
 
-const MAX_DEBUG_PASSENGERS = 10_000;
+const MAX_DEBUG_PASSENGERS = 1_000_000;
 
 export default function BusExperience() {
   useVisualViewport();
@@ -549,10 +549,11 @@ export default function BusExperience() {
           avatarId: submission.avatarId,
         });
       }
-      registrationRetryDelayRef.current = Math.max(
-        1_000,
-        error instanceof ApiError && error.retryAfterMs !== null ? error.retryAfterMs : 10_000,
+      const baseDelay = Math.max(
+        2_000,
+        error instanceof ApiError && error.retryAfterMs !== null ? error.retryAfterMs : 8_000,
       );
+      registrationRetryDelayRef.current = baseDelay + Math.floor(Math.random() * Math.min(15_000, baseDelay));
       setRegistrationPending(true);
     } finally {
       enteringLockRef.current = false;

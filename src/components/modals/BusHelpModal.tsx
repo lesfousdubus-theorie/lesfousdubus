@@ -44,7 +44,7 @@ export function BusHelpModal({ isOpen, onClose, letterShortcutsEnabled, setLette
           </div>
           <ModalCloseButton onClick={onClose} />
         </header>
-        <div className="min-h-0 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6">
+        <div className="bus-scrollbar min-h-0 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6">
           <dl className="space-y-3 text-sm leading-relaxed text-[#dfe5ff]">
             <div className="bus-case-elevated rounded-2xl p-3.5 sm:p-4">
               <dt className="font-bold text-[#c4b5fd]">{pickLocale(locale, "Autour du bus · Vue libre", "Around the bus · Free view")}</dt>

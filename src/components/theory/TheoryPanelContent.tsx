@@ -127,6 +127,9 @@ export default function TheoryPanelContent({
               <ExternalArrowIcon className="h-4 w-4 shrink-0" />
             </a>
           </section>
+          <p className="mt-4 text-center text-xs font-semibold text-[#b4bfe8]">
+            Made with ❤️ by <span className="font-bold text-[#c4b5fd]">Épikaigle</span>
+          </p>
         </div>
       )}
     </>

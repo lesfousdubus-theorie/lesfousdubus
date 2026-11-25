@@ -71,22 +71,55 @@ export function useBusSync({
     registrationPendingRef.current = registrationPending;
   }, [registrationPending]);
 
-  // Récupération initiale : une erreur conserve l'état "inconnu" et propose
-  // explicitement une nouvelle tentative au lieu de laisser un simple tiret.
+  const latestProfileRefreshAtRef = useRef(0);
+  const lastFetchedProfileRevisionRef = useRef<number | null>(null);
+  const lastFetchedProfilesFromRef = useRef<number | null>(null);
+
+  // Récupération initiale en 1 seule requête (stats + 48 premiers profils) avec reprise étalée si D1 est saturé.
   useEffect(() => {
     const controller = new AbortController();
-    void fetchJson<BusApiState>("/api/bus-entries", { signal: controller.signal })
-      .then((data) => {
-        applyBusSnapshot(data);
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let attempt = 0;
+
+    const loadInitialStats = async () => {
+      try {
+        const data = await fetchJson<BusApiState & { passengers?: PassengerProfile[] }>(
+          "/api/bus-entries?profiles=1&from=0&limit=48",
+          { signal: controller.signal },
+        );
+        if (controller.signal.aborted) return;
+        const accepted = applyBusSnapshot(data);
+        if (accepted && Array.isArray(data.passengers)) {
+          const ownSeat = latestRegistrationRef.current.seatIndex;
+          const incoming = data.passengers;
+          setPassengerProfiles((prev) => {
+            if (ownSeat === null) return incoming;
+            const ownLocal = prev.find((p) => p.seatIndex === ownSeat);
+            return ownLocal ? [...incoming.filter((p) => p.seatIndex !== ownSeat), ownLocal] : incoming;
+          });
+        }
+        lastFetchedProfilesFromRef.current = 0;
+        latestProfileRefreshAtRef.current = Date.now();
+        lastFetchedProfileRevisionRef.current = data.profileRevision;
         setStatsLoadError(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (controller.signal.aborted) return;
         if (error instanceof DOMException && error.name === "AbortError") return;
         setStatsLoadError(true);
-      });
-    return () => controller.abort();
-  }, [applyBusSnapshot, setStatsLoadError, statsRetryToken]);
+        attempt += 1;
+        const delayMs = Math.min(60_000, 15_000 * attempt) + Math.floor(Math.random() * 5_000);
+        if (!document.hidden) {
+          retryTimer = setTimeout(() => void loadInitialStats(), delayMs);
+        }
+      }
+    };
+
+    void loadInitialStats();
+    return () => {
+      controller.abort();
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+  }, [applyBusSnapshot, latestRegistrationRef, setPassengerProfiles, setStatsLoadError, statsRetryToken]);
 
   // Vérification initiale de la fiche du visiteur en base :
   // - inscrit sans pseudo -> ouvre immédiatement la fenêtre d'identification ;
@@ -195,30 +228,58 @@ export function useBusSync({
     visitorLookupPromiseRef,
   ]);
 
-  // Seuls les profils proches de la caméra sont chargés : le compteur peut ainsi
-  // grandir sans télécharger des milliers de commentaires à chaque actualisation.
+  // Seuls les profils proches de la caméra sont chargés (URL canonique mise en cache Cloudflare,
+  // débounced au changement de rangée et plafonnée à 1 rafraîchissement / 45s sur profileRevision).
   useEffect(() => {
     const focusRow = phase === "inside" ? seatRow : 0;
-    const from = getRegisteredSeatIndex(Math.max(0, focusRow - 4));
+    const blockRow = Math.floor(Math.max(0, focusRow - 4) / 8) * 8;
+    const from = getRegisteredSeatIndex(blockRow);
+    if (
+      lastFetchedProfilesFromRef.current === from
+      && lastFetchedProfileRevisionRef.current === profileRevision
+    ) {
+      return;
+    }
     const controller = new AbortController();
+    const now = Date.now();
+    const revOnlyChange = lastFetchedProfileRevisionRef.current !== null && lastFetchedProfileRevisionRef.current !== profileRevision;
+    const delayMs = revOnlyChange
+      ? Math.max(250, 45_000 - (now - latestProfileRefreshAtRef.current))
+      : 160;
 
-    void fetchJson<BusApiState & { passengers?: PassengerProfile[] }>(
-      `/api/bus-entries?profiles=1&from=${from}&limit=48&rev=${profileRevision}`, {
-      cache: "no-store",
-      signal: controller.signal,
-    })
-      .then((data) => {
-        if (!applyBusSnapshot(data)) return;
-        setPassengerProfiles(data.passengers ?? []);
-      })
-      .catch(() => undefined);
+    const timer = setTimeout(() => {
+      lastFetchedProfilesFromRef.current = from;
+      latestProfileRefreshAtRef.current = Date.now();
+      lastFetchedProfileRevisionRef.current = profileRevision;
+      void fetchJson<BusApiState & { passengers?: PassengerProfile[] }>(
+        `/api/bus-entries?profiles=1&from=${from}&limit=48`,
+        { signal: controller.signal },
+      )
+        .then((data) => {
+          const accepted = applyBusSnapshot(data);
+          setPassengerProfiles((prev) => {
+            const incoming = data.passengers ?? [];
+            if (accepted) return incoming;
+            const ownSeat = latestRegistrationRef.current.seatIndex;
+            if (ownSeat === null) return incoming;
+            const ownLocal = prev.find((p) => p.seatIndex === ownSeat);
+            return ownLocal ? [...incoming.filter((p) => p.seatIndex !== ownSeat), ownLocal] : incoming;
+          });
+        })
+        .catch(() => undefined);
+    }, delayMs);
 
-    return () => controller.abort();
-  }, [applyBusSnapshot, phase, profileRevision, seatRow, setPassengerProfiles]);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [applyBusSnapshot, latestRegistrationRef, phase, profileRevision, seatRow, setPassengerProfiles]);
 
-  // Synchronisation en direct espacée (3 min) et suspendue quand l'onglet est masqué.
+  // Synchronisation en direct avec jitter aléatoire (3–4 min) et reprise étalée
+  // pour éviter les vagues simultanées lors des pics de trafic.
   useEffect(() => {
-    const POLL_INTERVAL_MS = 3 * 60 * 1_000;
+    const getJitteredPollIntervalMs = () => 180_000 + Math.floor(Math.random() * 60_000);
+    let currentIntervalMs = getJitteredPollIntervalMs();
     let timeout: ReturnType<typeof setTimeout> | null = null;
     let stopped = false;
     let lastPollAt = Date.now();
@@ -319,16 +380,24 @@ export function useBusSync({
     const schedule = () => {
       if (timeout) clearTimeout(timeout);
       if (!document.hidden) {
-        const remaining = Math.max(0, POLL_INTERVAL_MS - (Date.now() - lastPollAt));
+        const remaining = Math.max(0, currentIntervalMs - (Date.now() - lastPollAt));
         timeout = setTimeout(async () => {
+          currentIntervalMs = getJitteredPollIntervalMs();
           await poll();
           schedule();
-        }, remaining || POLL_INTERVAL_MS);
+        }, remaining || currentIntervalMs);
       }
     };
     const refresh = () => {
-      if (!document.hidden && Date.now() - lastPollAt >= POLL_INTERVAL_MS) {
-        void poll();
+      if (!document.hidden && Date.now() - lastPollAt >= currentIntervalMs) {
+        if (timeout) clearTimeout(timeout);
+        const resumeJitter = 1_000 + Math.floor(Math.random() * 14_000);
+        timeout = setTimeout(async () => {
+          currentIntervalMs = getJitteredPollIntervalMs();
+          await poll();
+          schedule();
+        }, resumeJitter);
+        return;
       }
       schedule();
     };
@@ -448,14 +517,17 @@ export function useBusSync({
         }
         attempt += 1;
         const retryAfter = error instanceof ApiError ? error.retryAfterMs : null;
-        schedule(Math.max(1_000, retryAfter ?? Math.min(10_000 * 2 ** (attempt - 1), 5 * 60_000)));
+        const backoff = Math.min(8_000 * 2 ** (attempt - 1), 5 * 60_000);
+        const base = Math.max(2_000, retryAfter ?? 0, backoff);
+        const jitter = Math.floor(Math.random() * Math.min(30_000, Math.round(base * 0.5)));
+        schedule(Math.min(5 * 60_000, base + jitter));
       } finally {
         running = false;
       }
     };
 
     const resume = () => {
-      if (!document.hidden) schedule(0);
+      if (!document.hidden) schedule(1_500 + Math.floor(Math.random() * 5_500));
       else if (timeout) clearTimeout(timeout);
     };
 

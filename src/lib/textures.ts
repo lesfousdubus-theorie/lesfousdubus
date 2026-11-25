@@ -71,7 +71,7 @@ export function makeLabelTexture({
   return configureCrispTexture(new THREE.CanvasTexture(canvas));
 }
 
-/** Plaque d'immatriculation rétro Grand Line */
+/** Plaque d'immatriculation rétro France */
 export function makeLicensePlateTexture(text = "MUGI-56"): THREE.CanvasTexture {
   const w = 512;
   const h = 160;
@@ -89,13 +89,13 @@ export function makeLicensePlateTexture(text = "MUGI-56"): THREE.CanvasTexture {
   c.lineWidth = 10;
   c.strokeRect(8, 8, w - 16, h - 16);
 
-  // Bande bleue européenne / Grand Line à gauche
+  // Bande bleue européenne / France à gauche
   c.fillStyle = "#0c359e";
   c.fillRect(8, 8, 54, h - 16);
   c.fillStyle = "#ffd23f";
   c.font = "bold 24px Arial, sans-serif";
   c.textAlign = "center";
-  c.fillText("GL", 35, 95);
+  c.fillText("FR", 35, 95);
 
   // Texte immatriculation
   c.fillStyle = "#111111";

@@ -52,7 +52,7 @@ function TheoryAgeModalDialog({ onClose }: { onClose: () => void }) {
           </div>
           <ModalCloseButton onClick={onClose} />
         </header>
-        <div className="min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6">
+        <div className="bus-scrollbar min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6">
           <p className="mb-3 text-sm font-bold text-[#dfe5ff]">{pickLocale(locale, "La théorie tient toujours depuis :", "The theory has stood undefeated for:")}</p>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
             {values.map(([label, value]) => (

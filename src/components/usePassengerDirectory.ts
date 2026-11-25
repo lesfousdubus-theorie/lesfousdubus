@@ -40,8 +40,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
     setPassengerCardLoading(true);
 
     try {
-      const data = await fetchJson<{ passenger: PassengerProfile }>(`/api/bus-entries?seat=${summary.seatIndex}&rev=${profileRevision}`, {
-        cache: "no-store",
+      const data = await fetchJson<{ passenger: PassengerProfile }>(`/api/bus-entries?seat=${summary.seatIndex}`, {
         signal: controller.signal,
       });
       if (passengerCardRequest.current !== controller) return;
@@ -56,13 +55,13 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
     } finally {
       if (passengerCardRequest.current === controller) setPassengerCardLoading(false);
     }
-  }, [profileRevision]);
+  }, []);
 
   useEffect(() => {
     if (!selectedPassenger) passengerCardRequest.current?.abort();
   }, [selectedPassenger]);
 
-  const loadPassengerManifest = useCallback(async (from = 0) => {
+  const loadPassengerManifest = useCallback(async (from = 0, forceFresh = false) => {
     if (from === 0) manifestRequest.current?.abort();
     const controller = new AbortController();
     manifestRequest.current = controller;
@@ -73,8 +72,8 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
         passengers: PassengerManifestEntry[];
         nextFrom: number;
         hasMore: boolean;
-      }>(`/api/bus-entries?manifest=1&from=${from}&limit=60&rev=${profileRevision}`, {
-        cache: "no-store",
+      }>(`/api/bus-entries?manifest=1&from=${from}&limit=60`, {
+        ...(forceFresh ? { cache: "no-store" as const } : {}),
         signal: controller.signal,
       });
 
@@ -101,7 +100,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
   }, []);
 
   const refreshPassengerManifest = useCallback(() => {
-    void loadPassengerManifest(0);
+    void loadPassengerManifest(0, true);
   }, [loadPassengerManifest]);
 
   const openPassengerManifest = useCallback(() => {
@@ -116,9 +115,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
     if (passengerManifest.length === 0 || Boolean(manifestError) || loadedManifestRevisionRef.current !== profileRevision) {
       setPassengerManifest([]);
       void loadPassengerManifest(0);
-      return;
     }
-    void loadPassengerManifest(0);
   }, [loadPassengerManifest, manifestError, passengerManifest.length, profileRevision]);
 
   const closePassengerManifest = useCallback(() => {

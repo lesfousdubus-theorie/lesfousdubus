@@ -56,6 +56,10 @@ export async function GET() {
       `SELECT rate_key, bucket, attempts, expires_at
        FROM bus_rate_limits LIMIT 1`,
     ).first();
+    await database.prepare(
+      `SELECT start_index, end_index
+       FROM bus_vacant_seat_ranges LIMIT 1`,
+    ).first();
     return healthResponse("d1", "ready", secret);
   } catch {
     return healthResponse("d1", "error", secret);

@@ -5,6 +5,14 @@ export interface CloudflareD1Result {
   };
 }
 
+export interface CloudflareD1BatchResult<T = Record<string, unknown>> {
+  results: T[];
+  success: boolean;
+  meta: {
+    changes?: number;
+  };
+}
+
 export interface CloudflareD1PreparedStatement {
   bind(...values: unknown[]): CloudflareD1PreparedStatement;
   first<T = Record<string, unknown>>(): Promise<T | null>;
@@ -14,6 +22,10 @@ export interface CloudflareD1PreparedStatement {
 
 export interface CloudflareD1Database {
   prepare(query: string): CloudflareD1PreparedStatement;
+  batch?<T = Record<string, unknown>>(
+    statements: CloudflareD1PreparedStatement[],
+  ): Promise<Array<CloudflareD1BatchResult<T>>>;
+  withSession?(constraintOrBookmark?: string): CloudflareD1Database;
 }
 
 declare global {

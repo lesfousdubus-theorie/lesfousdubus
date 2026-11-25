@@ -388,12 +388,30 @@ const DistantBusCrowd = memo(function DistantBusCrowd({
   }, [numRows]);
 
   const renderedRowSet = useMemo(() => new Set(renderedRowIndices), [renderedRowIndices]);
+  const focusRow = renderedRowIndices.length > 0
+    ? renderedRowIndices[Math.floor(renderedRowIndices.length / 2)]
+    : 0;
+  // Au-delà de ~45 000 passagers (1M+), ne garder montés que le tronçon d'avant et les 23 tronçons
+  // les plus proches de la caméra (~15 km) pour borner la mémoire GPU en O(1).
+  const activeChunks = useMemo(() => {
+    const MAX_ACTIVE_CHUNKS = 24;
+    if (chunks.length <= MAX_ACTIVE_CHUNKS) return chunks;
+    const focusChunk = Math.floor(focusRow / CHUNK_ROWS);
+    const radius = Math.floor((MAX_ACTIVE_CHUNKS - 1) / 2);
+    let start = Math.max(1, focusChunk - radius);
+    let end = start + (MAX_ACTIVE_CHUNKS - 1);
+    if (end > chunks.length) {
+      end = chunks.length;
+      start = Math.max(1, end - (MAX_ACTIVE_CHUNKS - 1));
+    }
+    return [chunks[0], ...chunks.slice(start, end)];
+  }, [chunks, focusRow]);
   const [mountedChunks, setMountedChunks] = useState(2);
   const mountedChunksRef = useRef(2);
-  const totalChunksRef = useRef(chunks.length);
+  const totalChunksRef = useRef(activeChunks.length);
   useEffect(() => {
-    totalChunksRef.current = chunks.length;
-  }, [chunks.length]);
+    totalChunksRef.current = activeChunks.length;
+  }, [activeChunks.length]);
 
   useFrame(({ clock }) => {
     if (mountedChunksRef.current < totalChunksRef.current) {
@@ -416,7 +434,7 @@ const DistantBusCrowd = memo(function DistantBusCrowd({
 
   return (
     <group name="bus-distant-crowd">
-      {chunks.slice(0, mountedChunks).map((range) => (
+      {activeChunks.slice(0, mountedChunks).map((range) => (
         <CrowdChunk
           key={range.chunkIdx}
           range={range}

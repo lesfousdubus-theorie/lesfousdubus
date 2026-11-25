@@ -108,7 +108,7 @@ export function AvatarSelectionModal({
         </div>
         <ModalCloseButton onClick={close} disabled={saving} />
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
+      <div className="bus-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
         <div className="bus-case-elevated relative rounded-xl">
           <div data-avatar-id={character.id} data-avatar-rotation={rotation.toFixed(3)}
             aria-hidden="true" className="h-[min(34dvh,17.5rem)] min-h-40 w-full cursor-grab touch-none overflow-hidden rounded-xl active:cursor-grabbing"

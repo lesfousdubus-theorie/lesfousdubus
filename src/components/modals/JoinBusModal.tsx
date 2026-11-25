@@ -92,7 +92,7 @@ export function JoinBusModal({
 
         <form
           noValidate
-          className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5"
+          className="bus-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5"
           onSubmit={(event) => {
             event.preventDefault();
             if (joining) return;

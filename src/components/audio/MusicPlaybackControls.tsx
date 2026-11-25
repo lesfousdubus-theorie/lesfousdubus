@@ -124,27 +124,39 @@ export default function MusicPlaybackControls({
     const position = () => {
       const panel = panelRef.current;
       if (!panel) return;
+      const vv = window.visualViewport;
+      const vpLeft = vv?.offsetLeft ?? 0;
+      const vpTop = vv?.offsetTop ?? 0;
+      const vw = vv?.width ?? window.innerWidth;
+      const vh = vv?.height ?? window.innerHeight;
+      const margin = 12;
       const trigger = triggerRef.current;
       const button = trigger ? trigger.getBoundingClientRect() : null;
       const hasTrigger = Boolean(button && button.width > 0 && button.height > 0);
-      const panelRect = panel.getBoundingClientRect();
-      const width = panelRect.width;
-      const left = hasTrigger && button
-        ? Math.max(12, Math.min(button.left, window.innerWidth - width - 12))
-        : Math.max(12, Math.round((window.innerWidth - width) / 2));
       const actions = [...(hud?.querySelectorAll<HTMLElement>(
         '.bus-exterior-controls:not([aria-hidden="true"]), .bus-interior-controls:not([aria-hidden="true"]), .bus-mobile-menu') ?? [])];
+      const preWidth = panel.getBoundingClientRect().width;
+      const left = hasTrigger && button
+        ? Math.max(vpLeft + margin, Math.min(button.left, vpLeft + vw - preWidth - margin))
+        : Math.max(vpLeft + margin, Math.round(vpLeft + (vw - preWidth) / 2));
       const blockingTops = actions
         .map(element => element.getBoundingClientRect())
-        .filter(rect => rect.height > 0 && rect.right > left && rect.left < left + width)
+        .filter(rect => rect.height > 0 && rect.right > left && rect.left < left + preWidth)
         .map(rect => rect.top);
       const actionsTop = Math.min(
-        hasTrigger && button ? button.top : window.innerHeight,
-        ...(blockingTops.length ? blockingTops : [window.innerHeight]),
+        hasTrigger && button ? button.top : vpTop + vh,
+        ...(blockingTops.length ? blockingTops : [vpTop + vh]),
       );
-      const top = Math.max(12, Math.min(actionsTop - panelRect.height - 12,
-        window.innerHeight - panelRect.height - 12));
-      Object.assign(panel.style, { left: `${left}px`, top: `${top}px` });
+      panel.style.maxHeight = `${Math.max(120, Math.floor(actionsTop - margin - (vpTop + margin)))}px`;
+      const panelRect = panel.getBoundingClientRect();
+      const clampedLeft = hasTrigger && button
+        ? Math.max(vpLeft + margin, Math.min(button.left, vpLeft + vw - panelRect.width - margin))
+        : Math.max(vpLeft + margin, Math.round(vpLeft + (vw - panelRect.width) / 2));
+      const top = Math.max(
+        vpTop + margin,
+        Math.min(actionsTop - panelRect.height - margin, vpTop + vh - panelRect.height - margin),
+      );
+      Object.assign(panel.style, { left: `${clampedLeft}px`, top: `${top}px` });
     };
     position();
     let frame = 0;
@@ -158,9 +170,13 @@ export default function MusicPlaybackControls({
     const layoutObserver = new MutationObserver(schedule);
     if (hud) layoutObserver.observe(hud, { attributes: true, attributeFilter: ["style", "data-bottom-layout"] });
     window.addEventListener("resize", schedule);
+    window.visualViewport?.addEventListener("resize", schedule);
+    window.visualViewport?.addEventListener("scroll", schedule);
     return () => {
       observer.disconnect(); layoutObserver.disconnect(); cancelAnimationFrame(frame);
       window.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("scroll", schedule);
     };
   }, [open, showTrigger, portalTarget, hasVolumeControl]);
 
@@ -208,7 +224,7 @@ export default function MusicPlaybackControls({
     <div ref={panelRef} id={id} role="region" aria-label={pickLocale(locale, "Progression de la musique", "Music progress")}
       onPointerDown={event => event.stopPropagation()}
       onPointerUp={event => event.stopPropagation()}
-      className="bus-case bus-glass pointer-events-auto fixed z-50 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl px-4 py-2.5 text-white backdrop-blur-md">
+      className="bus-case bus-glass bus-scrollbar pointer-events-auto fixed z-50 max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-1.5rem)] overflow-y-auto rounded-2xl px-4 py-2.5 text-white backdrop-blur-md">
       <p className="truncate text-sm font-bold text-[#c4b5fd]" title={playback.title}>{playback.title}</p>
       <p role="status" className="mt-0.5 text-xs leading-5 text-[#a3aed9]">{status}</p>
       <input type="range" min={0} max={playback.duration || 1} step={0.1}

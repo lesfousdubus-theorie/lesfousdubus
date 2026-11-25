@@ -209,7 +209,7 @@ export default function TheoryModal({
           <div
             ref={contentRef}
             tabIndex={0}
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,rgba(122,58,236,0.08),transparent_32rem)] px-3 py-4 text-sm leading-relaxed focus-visible:outline-none min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10"
+            className="bus-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,rgba(122,58,236,0.08),transparent_32rem)] px-3 py-4 text-sm leading-relaxed focus-visible:outline-none min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10"
           >
             {THEORY_TABS.map((tab) => (
               <div key={tab} role="tabpanel" id={`theory-panel-${tab}`} aria-labelledby={`theory-tab-${tab}`} hidden={tab !== activeTab}>
