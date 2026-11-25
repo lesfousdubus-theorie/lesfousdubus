@@ -10,6 +10,8 @@ const { getBusOccupancy, getVisibleBusRowRange, getAvatarSeat, getPhysicalSeat, 
 const { getRenderedRowIndices, getNearestBusDoor, getSeatCountInRow, getSeatRowZ, getBusDoors, getBusRearWallZ, getBusDoorBounds, getWheelPositions } = await load("src/lib/bus-layout.ts");
 const { BUS_CREW, countPeopleOnBoard } = await load("src/lib/bus-crew.ts");
 const { createJourneyState, beginJourney, getPassengerWalkPath, updateJourney } = await load("src/lib/bus-journey.ts");
+const { formatPassengerJoinedAt } = await load("src/lib/i18n-shared.ts");
+const { readSavedLocalSeat, writeSavedLocalSeat, clearSavedLocalSeat, clampLocalSeat } = await load("src/lib/client/local-seat.ts");
 assert.equal(BUS_CREW.length, 3);
 assert.equal(countPeopleOnBoard(0), 0, "Permanent crew at the front is not counted in passenger total.");
 assert.equal(countPeopleOnBoard(2), 2, "Passenger count starts from visitor #1 without adding crew.");
@@ -214,5 +216,29 @@ const hiddenOffscreen = getBusOccupancy({
   preserveVisibleSeats: true,
 });
 assert.equal(hiddenOffscreen.detailed.length + hiddenOffscreen.simplified.length, 0, "Offscreen passengers are hidden");
+
+assert.equal(formatPassengerJoinedAt("2026-09-10 14:23:05", "fr"), "10 septembre 2026");
+assert.equal(formatPassengerJoinedAt("2026-09-10T14:23:05.000Z", "en"), "September 10, 2026");
+assert.equal(formatPassengerJoinedAt(null, "fr"), null);
+assert.equal(formatPassengerJoinedAt("not-a-date", "fr"), null);
+
+const backingStorage = new Map();
+globalThis.window = {
+  localStorage: {
+    getItem: (key) => (backingStorage.has(key) ? backingStorage.get(key) : null),
+    setItem: (key, value) => { backingStorage.set(key, String(value)); },
+    removeItem: (key) => { backingStorage.delete(key); },
+  },
+};
+assert.equal(readSavedLocalSeat(), null);
+writeSavedLocalSeat(28, 2);
+assert.deepEqual(readSavedLocalSeat(), { row: 28, column: 2 });
+assert.deepEqual(clampLocalSeat({ row: 8, column: 3 }, 104), { row: 8, column: 1 }, "Vestibule row clamps column to bench width 2.");
+assert.deepEqual(clampLocalSeat({ row: 99, column: 3 }, 4), { row: 5, column: 3 }, "Shrinking capacity clamps saved row inside physical bus rows.");
+backingStorage.set("fdb-local-seat", "{invalid");
+assert.equal(readSavedLocalSeat(), null, "Corrupted local seat JSON is safely ignored.");
+writeSavedLocalSeat(12, 1);
+clearSavedLocalSeat();
+assert.equal(readSavedLocalSeat(), null);
 
 console.log("Bus occupancy passed: no artificial passengers, unchanged visitor IDs, real avatar columns, local visitor swaps, max two per bench, sparse vacancies and bounded rendering through 100000000 visitors.");

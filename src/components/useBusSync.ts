@@ -4,6 +4,7 @@ import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction }
 import { playStretch } from "@/lib/horn";
 import { getLocale, pickLocale } from "@/lib/i18n";
 import { ApiError, fetchJson, getExistingVisitorId, getOrCreateVisitorId, isRetryableRegistrationError, type BusApiState } from "@/lib/client/bus-api";
+import { clampLocalSeat, clearSavedLocalSeat, readSavedLocalSeat } from "@/lib/client/local-seat";
 import type { PassengerProfile } from "@/types/passenger";
 import type { Phase } from "./bus/constants";
 import { countPeopleOnBoard } from "@/lib/bus-crew";
@@ -154,6 +155,7 @@ export function useBusSync({
           latestRegistrationRef.current = { seatIndex: null, displayName: "" };
           setCurrentPassengerSeatIndex(null);
           setCurrentPassengerEntryNumber(null);
+          clearSavedLocalSeat();
           clearLocalRegistrationOnly();
           return { seatIndex: null, entryNumber: null, hasDisplayName: false, displayName: "" };
         }
@@ -175,9 +177,16 @@ export function useBusSync({
         setCurrentPassengerSeatIndex(seatIndex);
         setCurrentPassengerEntryNumber(entryNumber);
         if (seatIndex !== null && new URLSearchParams(window.location.search).get("row") === null) {
-          const seat = getRegisteredSeat(seatIndex);
-          setSeatRow(seat.row);
-          setSeatColumn?.(seat.column);
+          const savedLocalSeat = readSavedLocalSeat();
+          if (savedLocalSeat) {
+            const clamped = clampLocalSeat(savedLocalSeat, data.seatCapacity);
+            setSeatRow(clamped.row);
+            setSeatColumn?.(clamped.column);
+          } else {
+            const seat = getRegisteredSeat(seatIndex);
+            setSeatRow(seat.row);
+            setSeatColumn?.(seat.column);
+          }
         }
         restoreSavedProfile(normalizedPassenger);
         if (normalizedPassenger) {
@@ -318,6 +327,7 @@ export function useBusSync({
                   latestRegistrationRef.current = { seatIndex: null, displayName: "" };
                   setCurrentPassengerSeatIndex(null);
                   setCurrentPassengerEntryNumber(null);
+                  clearSavedLocalSeat();
                   clearLocalRegistrationOnly();
                 } else {
                   const nextSeat = refreshed.seatIndex;
@@ -328,8 +338,16 @@ export function useBusSync({
                       displayName: refreshed.passenger?.displayName?.trim() || latestRegistrationRef.current.displayName,
                     };
                     setCurrentPassengerSeatIndex(nextSeat);
-                    setSeatRow(getRegisteredSeat(nextSeat).row);
-                    setSeatColumn?.(null);
+                    const savedLocalSeat = readSavedLocalSeat();
+                    if (savedLocalSeat) {
+                      const clamped = clampLocalSeat(savedLocalSeat, refreshed.seatCapacity);
+                      setSeatRow(clamped.row);
+                      setSeatColumn?.(clamped.column);
+                    } else {
+                      const seat = getRegisteredSeat(nextSeat);
+                      setSeatRow(seat.row);
+                      setSeatColumn?.(seat.column);
+                    }
                   }
                   setCurrentPassengerEntryNumber(nextEntry);
                 }
@@ -453,6 +471,7 @@ export function useBusSync({
         if (retryAvatarId) retryPayload.avatarId = retryAvatarId;
 
         const data = await fetchJson<BusApiState & {
+          added?: boolean;
           seatIndex: number | null;
           entryNumber?: number | null;
           passenger: PassengerProfile | null;
@@ -495,9 +514,16 @@ export function useBusSync({
         };
         restoreSavedProfile(resolvedPassenger);
         if (data.seatIndex !== null) {
-          const seat = getRegisteredSeat(data.seatIndex);
-          setSeatRow(seat.row);
-          setSeatColumn?.(seat.column);
+          const savedLocalSeat = !data.added ? readSavedLocalSeat() : null;
+          if (savedLocalSeat) {
+            const clamped = clampLocalSeat(savedLocalSeat, data.seatCapacity);
+            setSeatRow(clamped.row);
+            setSeatColumn?.(clamped.column);
+          } else {
+            const seat = getRegisteredSeat(data.seatIndex);
+            setSeatRow(seat.row);
+            setSeatColumn?.(seat.column);
+          }
         }
         if (resolvedPassenger) {
           setPassengerProfiles((profiles) => [

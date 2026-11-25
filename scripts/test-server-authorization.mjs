@@ -75,6 +75,7 @@ export async function runServerAuthorizationChecks() {
       const target = await request("POST", { visitorId: targetId, displayName: "Nakama Target" });
       assert.equal(own.status, 200);
       assert.equal(target.status, 200);
+      assert(typeof own.data.passenger.joinedAt === "string" && !Number.isNaN(Date.parse(own.data.passenger.joinedAt)), "POST returns valid joinedAt timestamp.");
       const targetSeat = target.data.seatIndex;
       if (configuration.name === "enabled") {
         // Anonymous boarding and reserved anonymous names must be rejected.
@@ -133,6 +134,7 @@ export async function runServerAuthorizationChecks() {
         assert.equal(namedLookupData.hasDisplayName, true);
         assert.equal(namedLookupData.seatIndex, own.data.seatIndex);
         assert.deepEqual(namedLookupData.passenger, chosen.data.passenger);
+        assert.equal(namedLookupData.passenger.joinedAt, own.data.passenger.joinedAt, "visitorId lookup preserves passenger joinedAt.");
         const revisited = await request("POST", { visitorId: ownId });
         assert.equal(revisited.data.added, false);
         assert.deepEqual(revisited.data.passenger, chosen.data.passenger, "The same browser identity restores its DB avatar on boarding.");
@@ -181,6 +183,7 @@ export async function runServerAuthorizationChecks() {
         const ownProfile = (await profiles.json()).passengers.find(profile => profile.seatIndex === own.data.seatIndex);
         assert.equal(ownProfile.avatarId, "chopper", "Profile avatar must reach other visitors' renderers.");
         assert.equal(ownProfile.displayName, "Nakama Test");
+        assert.equal(ownProfile.joinedAt, own.data.passenger.joinedAt, "Profiles endpoint includes passenger joinedAt.");
         await assert.rejects(database.prepare("UPDATE bus_entries SET avatar_id = 'not-in-roster' WHERE seat_index = ?").bind(own.data.seatIndex).run());
         const multilineComment = "Ligne 1 : pirate\n\nLigne 2 : nakama 🏴‍☠️";
         const multilinePost = await request("POST", {
@@ -191,7 +194,13 @@ export async function runServerAuthorizationChecks() {
         assert.equal(multilinePost.data.passenger.comment, multilineComment);
         const seatFetch = await worker.fetch(`http://isolated.test/api/bus-entries?seat=${own.data.seatIndex}`);
         assert.equal(seatFetch.status, 200);
-        assert.equal((await seatFetch.json()).passenger.comment, multilineComment, "Multiline comment must persist and roundtrip through the database intact.");
+        const seatFetchData = await seatFetch.json();
+        assert.equal(seatFetchData.passenger.comment, multilineComment, "Multiline comment must persist and roundtrip through the database intact.");
+        assert.equal(seatFetchData.passenger.joinedAt, own.data.passenger.joinedAt, "Single seat lookup includes passenger joinedAt.");
+        const manifestFetch = await worker.fetch("http://isolated.test/api/bus-entries?manifest=1&from=0&limit=20");
+        assert.equal(manifestFetch.status, 200);
+        const ownManifestEntry = (await manifestFetch.json()).passengers.find(entry => entry.seatIndex === own.data.seatIndex);
+        assert.equal(ownManifestEntry.joinedAt, own.data.passenger.joinedAt, "Manifest endpoint includes passenger joinedAt.");
       }
       for (const token of [undefined, quotaSecret, randomUUID() + randomUUID()]) {
         const result = await request("DELETE", { seatIndex: targetSeat, visitorId: ownId }, token);

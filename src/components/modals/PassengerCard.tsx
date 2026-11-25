@@ -2,7 +2,7 @@
 
 import { useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
-import { formatOrdinalRank, formatPassengerDisplayName, pickLocale, useLocale, type Locale } from "@/lib/i18n";
+import { formatOrdinalRank, formatPassengerDisplayName, formatPassengerJoinedAt, pickLocale, useLocale, type Locale } from "@/lib/i18n";
 import type { PassengerProfile } from "@/types/passenger";
 import { CommentBubbleIcon, UserBadgeIcon } from "../ui/BusIcons";
 import { useModalAccessibility } from "./useModalAccessibility";
@@ -52,6 +52,7 @@ export function PassengerCard({
   if (!passenger) return null;
   const placeNumber = passenger.entryNumber ?? passenger.seatIndex + 1;
   const arrivalRank = formatOrdinalRank(placeNumber, locale);
+  const joinedDateLabel = formatPassengerJoinedAt(passenger.joinedAt, locale);
 
   return createPortal(
     <div
@@ -86,6 +87,15 @@ export function PassengerCard({
               <h2 id="passenger-name" className="mt-0.5 break-words text-xl font-black leading-tight text-white sm:text-2xl">
                 {formatPassengerDisplayName(passenger.displayName, locale)}
               </h2>
+              {joinedDateLabel && (
+                <p className="mt-1 text-xs font-medium text-[#c7d2fe]">
+                  {pickLocale(
+                    locale,
+                    `A rejoint le bus le ${joinedDateLabel}`,
+                    `Joined the bus on ${joinedDateLabel}`,
+                  )}
+                </p>
+              )}
             </div>
           </div>
           <ModalCloseButton onClick={onClose} />

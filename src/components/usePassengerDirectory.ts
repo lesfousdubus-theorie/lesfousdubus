@@ -145,6 +145,7 @@ export function usePassengerDirectory(applyBusSnapshot: (data: BusApiState) => b
       entryNumber: passenger.entryNumber,
       displayName: passenger.displayName ?? (getLocale() === "en" ? "Anonymous" : "Anonyme"),
       comment: null,
+      joinedAt: passenger.joinedAt ?? null,
     });
   }, [closePassengerManifest, openPassengerCard]);
 

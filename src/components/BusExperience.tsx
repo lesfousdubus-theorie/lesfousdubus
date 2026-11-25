@@ -9,7 +9,8 @@ import { type Phase, type WorldState } from "./bus/constants";
 import type { PassengerProfile } from "@/types/passenger";
 import { playDing, playStretch, unlockAudio } from "@/lib/horn";
 import { useBusControls } from "./useBusControls";
-import { getOrCreateVisitorId, isRetryableRegistrationError, fetchJson, ApiError, type BusApiState } from "@/lib/client/bus-api";
+import { getOrCreateVisitorId, getExistingVisitorId, isRetryableRegistrationError, fetchJson, ApiError, type BusApiState } from "@/lib/client/bus-api";
+import { clampLocalSeat, clearSavedLocalSeat, readSavedLocalSeat, writeSavedLocalSeat } from "@/lib/client/local-seat";
 import { getLocale, pickLocale, syncSavedLocale } from "@/lib/i18n";
 import { TheoryAgeModal } from "./modals/TheoryAgeModal";
 import { getTheoryAgeInDays } from "@/lib/theory-age";
@@ -146,11 +147,23 @@ export default function BusExperience() {
         if (Number.isSafeInteger(parsed) && parsed >= 0) {
           return Math.min(parsed, getBusPhysicalRows(debugCapacity) - 1);
         }
+      } else if (getExistingVisitorId()) {
+        const savedLocalSeat = readSavedLocalSeat();
+        if (savedLocalSeat) return savedLocalSeat.row;
       }
     }
     return 3;
   });
-  const [seatColumn, setSeatColumn] = useState<number | null>(null);
+  const [seatColumn, setSeatColumn] = useState<number | null>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("row") === null && getExistingVisitorId()) {
+        const savedLocalSeat = readSavedLocalSeat();
+        if (savedLocalSeat) return savedLocalSeat.column;
+      }
+    }
+    return null;
+  });
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -316,6 +329,10 @@ export default function BusExperience() {
   useEffect(() => {
     pendingAvatarIdRef.current = pendingAvatarId;
   }, [pendingAvatarId]);
+  const savedJoinedAtRef = useRef(profile.savedProfile.joinedAt);
+  useEffect(() => {
+    savedJoinedAtRef.current = profile.savedProfile.joinedAt;
+  }, [profile.savedProfile.joinedAt]);
 
   // Actualise le compteur d'âge exactement au prochain minuit local.
   useEffect(() => {
@@ -491,6 +508,7 @@ export default function BusExperience() {
               displayName: submission.displayName,
               comment: submission.comment || null,
               avatarId: submission.avatarId,
+              joinedAt: new Date().toISOString(),
             }
           : null
       );
@@ -501,12 +519,33 @@ export default function BusExperience() {
       // Synchronise le profil depuis la base : restaure le commentaire existant
       // même si le visiteur a vidé ses cookies ou changé d'onglet.
       if (resolvedPassenger !== null || !submission) {
-        restoreSavedProfile(resolvedPassenger);
+        restoreSavedProfile(
+          resolvedPassenger
+            ? {
+                ...resolvedPassenger,
+                joinedAt: resolvedPassenger.joinedAt ?? (d.added ? new Date().toISOString() : savedJoinedAtRef.current),
+              }
+            : null,
+        );
       }
       if (d.seatIndex !== null) {
-        const seat = getRegisteredSeat(d.seatIndex);
-        setSeatRow(seat.row);
-        setSeatColumn(seat.column);
+        if (d.added) {
+          clearSavedLocalSeat();
+          const seat = getRegisteredSeat(d.seatIndex);
+          setSeatRow(seat.row);
+          setSeatColumn(seat.column);
+        } else {
+          const savedLocalSeat = readSavedLocalSeat();
+          if (savedLocalSeat) {
+            const clamped = clampLocalSeat(savedLocalSeat, d.seatCapacity);
+            setSeatRow(clamped.row);
+            setSeatColumn(clamped.column);
+          } else {
+            const seat = getRegisteredSeat(d.seatIndex);
+            setSeatRow(seat.row);
+            setSeatColumn(seat.column);
+          }
+        }
       }
       if (resolvedPassenger) {
         setPassengerProfiles((profiles) => [
@@ -542,15 +581,25 @@ export default function BusExperience() {
         return;
       }
       const fallbackSeatIndex = latestRegistrationRef.current.seatIndex ?? seatCapacityRef.current;
-      const fallbackSeat = getRegisteredSeat(fallbackSeatIndex);
-      setSeatRow(fallbackSeat.row);
-      setSeatColumn(fallbackSeat.column);
+      const savedLocalSeat = !submission && latestRegistrationRef.current.seatIndex !== null
+        ? readSavedLocalSeat()
+        : null;
+      if (savedLocalSeat) {
+        const clamped = clampLocalSeat(savedLocalSeat, seatCapacityRef.current);
+        setSeatRow(clamped.row);
+        setSeatColumn(clamped.column);
+      } else {
+        const fallbackSeat = getRegisteredSeat(fallbackSeatIndex);
+        setSeatRow(fallbackSeat.row);
+        setSeatColumn(fallbackSeat.column);
+      }
       if (submission) {
         restoreSavedProfile({
           seatIndex: fallbackSeatIndex,
           displayName: submission.displayName,
           comment: submission.comment || null,
           avatarId: submission.avatarId,
+          joinedAt: new Date().toISOString(),
         });
       }
       const baseDelay = Math.max(
@@ -592,6 +641,7 @@ export default function BusExperience() {
       setRegistrationPending(false);
       setPassengerProfiles([]);
       clearDirectory();
+      clearSavedLocalSeat();
       clearProfile();
       setTvOn(false);
       setHasEntered(false);
@@ -682,6 +732,40 @@ export default function BusExperience() {
   const numRows = getBusPhysicalRows(seatCapacity);
   const registeredColumn = currentPassengerSeatIndex !== null ? getRegisteredSeat(currentPassengerSeatIndex).column : 3;
   const effectiveSeatColumn = Math.min(seatColumn ?? registeredColumn, getSeatCountInRow(seatRow) - 1);
+  const seatRowRef = useRef(seatRow);
+  const effectiveSeatColumnRef = useRef(effectiveSeatColumn);
+  useEffect(() => {
+    seatRowRef.current = seatRow;
+    effectiveSeatColumnRef.current = effectiveSeatColumn;
+  }, [effectiveSeatColumn, seatRow]);
+
+  const handleMoveSeatRow = useCallback((action: number | ((previous: number) => number)) => {
+    const currentRow = seatRowRef.current;
+    const rawNext = typeof action === "function" ? action(currentRow) : action;
+    const maxRow = Math.max(0, getBusPhysicalRows(seatCapacityRef.current) - 1);
+    const nextRow = Math.max(0, Math.min(maxRow, rawNext));
+    const nextColumn = Math.max(0, Math.min(effectiveSeatColumnRef.current, getSeatCountInRow(nextRow) - 1));
+    seatRowRef.current = nextRow;
+    effectiveSeatColumnRef.current = nextColumn;
+    setSeatRow(nextRow);
+    setSeatColumn(nextColumn);
+    writeSavedLocalSeat(nextRow, nextColumn);
+  }, []);
+
+  const handleMoveSeatColumn = useCallback((action: number | null | ((previous: number | null) => number | null)) => {
+    const currentRow = seatRowRef.current;
+    const rawNext = typeof action === "function" ? action(effectiveSeatColumnRef.current) : action;
+    if (rawNext === null) {
+      setSeatColumn(null);
+      return;
+    }
+    const maxColumn = Math.max(0, getSeatCountInRow(currentRow) - 1);
+    const nextColumn = Math.max(0, Math.min(maxColumn, rawNext));
+    effectiveSeatColumnRef.current = nextColumn;
+    setSeatColumn(nextColumn);
+    writeSavedLocalSeat(currentRow, nextColumn);
+  }, []);
+
   const busy = phase === "entering" || phase === "exiting";
   const exteriorControlsVisible = phase === "outside" || phase === "entering";
   const interiorControlsVisible = phase === "inside" || phase === "exiting";
@@ -839,8 +923,8 @@ export default function BusExperience() {
         seatRow={seatRow}
         seatColumn={effectiveSeatColumn}
         numRows={numRows}
-        setSeatRow={setSeatRow}
-        setSeatColumn={setSeatColumn}
+        setSeatRow={handleMoveSeatRow}
+        setSeatColumn={handleMoveSeatColumn}
       />
 
       {/* Lecteur de musique de fond (Howard Harper-Barnes - Life in Pieces) */}
@@ -870,6 +954,7 @@ export default function BusExperience() {
         <ManagePlaceModal
           inside={phase === "inside"}
           entryNumber={effectiveEntryNumber}
+          joinedAt={profile.savedProfile.joinedAt}
           onClose={() => setShowPlaceModal(false)}
           onEditName={() => { setShowPlaceModal(false); openProfileModal("name"); }}
           onEditComment={() => { setShowPlaceModal(false); openProfileModal("comment"); }}

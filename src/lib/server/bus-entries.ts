@@ -112,12 +112,27 @@ export interface PassengerRow {
   display_name: string | null;
   comment: string | null;
   avatar_id?: string | null;
+  created_at?: string | null;
 }
 export interface PassengerManifestRow {
   seat_index: number;
   entry_number?: number | null;
   display_name: string | null;
   has_comment: number;
+  created_at?: string | null;
+}
+
+const SQLITE_TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/;
+
+export function normalizeJoinedAt(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const isoCandidate = SQLITE_TIMESTAMP_RE.test(trimmed)
+    ? `${trimmed.replace(" ", "T")}Z`
+    : trimmed;
+  const parsed = new Date(isoCandidate);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
 export function toNamedPassengerProfile(row: PassengerRow, includeComment = false): PassengerProfile | null {
@@ -129,6 +144,7 @@ export function toNamedPassengerProfile(row: PassengerRow, includeComment = fals
     displayName: row.display_name || (row.comment !== null ? "Anonyme" : ""),
     comment: includeComment ? row.comment || null : null,
     avatarId,
+    joinedAt: normalizeJoinedAt(row.created_at),
   };
 }
 

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { formatOrdinalRank, pickLocale, useLocale } from "@/lib/i18n";
+import { formatOrdinalRank, formatPassengerJoinedAt, pickLocale, useLocale } from "@/lib/i18n";
 import { CommentBubbleIcon, SeatTicketIcon, UserBadgeIcon } from "../ui/BusIcons";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { useModalAccessibility } from "./useModalAccessibility";
@@ -10,6 +10,7 @@ import { useModalAccessibility } from "./useModalAccessibility";
 export function ManagePlaceModal({
   inside,
   entryNumber,
+  joinedAt = null,
   onClose,
   onDelete,
   onEditName,
@@ -18,6 +19,7 @@ export function ManagePlaceModal({
 }: {
   inside: boolean;
   entryNumber?: number | null;
+  joinedAt?: string | null;
   onClose: () => void;
   onExit?: () => void;
   onDelete: () => Promise<boolean>;
@@ -34,6 +36,7 @@ export function ManagePlaceModal({
   const titleRef = useRef<HTMLHeadingElement>(null);
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
   const ordinal = entryNumber ? formatOrdinalRank(entryNumber, locale) : null;
+  const joinedDateLabel = formatPassengerJoinedAt(joinedAt, locale);
   const close = () => {
     if (locked.current) return;
     if (confirming) {
@@ -127,6 +130,15 @@ export function ManagePlaceModal({
                       `You are the ${ordinal} person to board the bus.`,
                     )}
                   </p>
+                  {joinedDateLabel && (
+                    <p className="mt-1.5 text-xs font-medium text-[#c7d2fe]">
+                      {pickLocale(
+                        locale,
+                        `Tu as rejoint le bus le ${joinedDateLabel}.`,
+                        `You joined the bus on ${joinedDateLabel}.`,
+                      )}
+                    </p>
+                  )}
                 </div>
               )}
               {error && <p role="alert" className="mt-4 rounded-xl border border-red-400/50 bg-red-950/60 px-3.5 py-2.5 text-sm font-bold text-red-100">{error}</p>}

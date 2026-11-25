@@ -13,7 +13,7 @@ import {
 import {
   WRITE_HEADERS, acceptsJsonBody, unsupportedMediaTypeResponse,
   getPassengerDatabase, getReadDatabase, readBusStats, readVacantSeatRanges,
-  toNamedPassengerProfile, cleanText, readJsonBody, purgeExpiredRateLimits,
+  toNamedPassengerProfile, normalizeJoinedAt, cleanText, readJsonBody, purgeExpiredRateLimits,
   checkMemoryRateLimit, consumeRateLimits, rateLimitedResponse, parseNonNegativeInteger,
   type PassengerRow, type PassengerManifestRow,
 } from "@/lib/server/bus-entries";
@@ -88,7 +88,7 @@ async function readPostWriteState(
   }
   if (typeof database.batch === "function") {
     const passengerStmt = database.prepare(
-      `SELECT seat_index, entry_number, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
+      `SELECT seat_index, entry_number, display_name, comment, avatar_id, created_at FROM bus_entries WHERE visitor_id = ?`,
     ).bind(visitorId);
     const statsStmt = database.prepare(
       `SELECT passenger_count AS count, seat_capacity, profile_revision FROM bus_stats WHERE id = 1`,
@@ -111,7 +111,7 @@ async function readPostWriteState(
   }
   const [passengerRow, stats] = await Promise.all([
     database.prepare(
-      `SELECT seat_index, entry_number, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
+      `SELECT seat_index, entry_number, display_name, comment, avatar_id, created_at FROM bus_entries WHERE visitor_id = ?`,
     ).bind(visitorId).first<PassengerRow>(),
     readBusStats(database),
   ]);
@@ -142,7 +142,7 @@ export async function GET(request: Request) {
           },
           async () => {
             const row = await readDb.prepare(
-              `SELECT seat_index, entry_number, display_name, comment, avatar_id FROM bus_entries WHERE seat_index = ?`,
+              `SELECT seat_index, entry_number, display_name, comment, avatar_id, created_at FROM bus_entries WHERE seat_index = ?`,
             ).bind(seatIndex).first<PassengerRow>();
             if (!row) throw new SeatNotFoundError();
             return {
@@ -152,6 +152,7 @@ export async function GET(request: Request) {
                 displayName: row.display_name || "Anonyme",
                 comment: row.comment || null,
                 avatarId: isPassengerAvatarId(row.avatar_id) ? row.avatar_id : null,
+                joinedAt: normalizeJoinedAt(row.created_at),
               },
             };
           },
@@ -172,7 +173,7 @@ export async function GET(request: Request) {
       }
       const [row, stats] = await Promise.all([
         database.prepare(
-          `SELECT seat_index, entry_number, display_name, comment, avatar_id FROM bus_entries WHERE visitor_id = ?`,
+          `SELECT seat_index, entry_number, display_name, comment, avatar_id, created_at FROM bus_entries WHERE visitor_id = ?`,
         ).bind(visitorId).first<PassengerRow>(),
         readBusStats(database),
       ]);
@@ -192,6 +193,7 @@ export async function GET(request: Request) {
               displayName: row.display_name || "",
               comment: row.comment || null,
               avatarId,
+              joinedAt: normalizeJoinedAt(row.created_at),
             }
           : null,
       }, { headers: WRITE_HEADERS });
@@ -380,7 +382,7 @@ export async function GET(request: Request) {
         },
         async () => {
           const rows = await readDb.prepare(
-            `SELECT seat_index, entry_number, display_name, comment IS NOT NULL AS has_comment
+            `SELECT seat_index, entry_number, display_name, comment IS NOT NULL AS has_comment, created_at
              FROM bus_entries WHERE seat_index >= ? ORDER BY seat_index ASC LIMIT ?`,
           ).bind(from, limit + 1).all<PassengerManifestRow>();
           const passengers = rows.results.slice(0, limit).map((row) => ({
@@ -388,6 +390,7 @@ export async function GET(request: Request) {
             entryNumber: Number(row.entry_number ?? Number(row.seat_index) + 1),
             displayName: row.display_name || null,
             hasComment: Boolean(row.has_comment),
+            joinedAt: normalizeJoinedAt(row.created_at),
           }));
           const stats = await readBusStats(readDb);
           return {
@@ -413,7 +416,7 @@ export async function GET(request: Request) {
         },
         async () => {
           const rows = await readDb.prepare(
-            `SELECT seat_index, entry_number, display_name, avatar_id,
+            `SELECT seat_index, entry_number, display_name, avatar_id, created_at,
                     CASE WHEN comment IS NOT NULL THEN '' ELSE NULL END AS comment
              FROM bus_entries
              WHERE seat_index >= ? AND seat_index < ?
@@ -569,7 +572,7 @@ export async function POST(request: Request) {
                  (SELECT MAX(last_entry_number, COALESCE((SELECT MAX(entry_number) FROM bus_entries), 0)) + 1 FROM bus_stats WHERE id = 1)
                )
                ON CONFLICT(visitor_id) DO NOTHING
-               RETURNING seat_index, entry_number, display_name, comment, avatar_id`,
+               RETURNING seat_index, entry_number, display_name, comment, avatar_id, created_at`,
             ).bind(
               visitorId,
               displayName,

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { getRegisteredSeat } from "@/lib/bus-occupancy";
 import { ApiError, fetchJson, getExistingVisitorId, getOrCreateVisitorId, type BusApiState } from "@/lib/client/bus-api";
+import { readSavedLocalSeat } from "@/lib/client/local-seat";
 import { getLocale, pickLocale } from "@/lib/i18n";
 import type { PassengerProfile } from "@/types/passenger";
 import { isPassengerAvatarId, type PassengerAvatarId } from "@/lib/passenger-avatar";
@@ -43,10 +44,16 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     try { const value = localStorage.getItem("fdb-avatar-id"); return isPassengerAvatarId(value) ? value : null; }
     catch { return null; }
   });
-  const [savedProfile, setSavedProfile] = useState(() => {
-    if (!getExistingVisitorId()) return { name: "", comment: "" };
-    try { return { name: localStorage.getItem("fdb-display-name") ?? "", comment: localStorage.getItem("fdb-comment") ?? "" }; }
-    catch { return { name: "", comment: "" }; }
+  const [savedProfile, setSavedProfile] = useState<{ name: string; comment: string; joinedAt: string | null }>(() => {
+    if (!getExistingVisitorId()) return { name: "", comment: "", joinedAt: null };
+    try {
+      return {
+        name: localStorage.getItem("fdb-display-name") ?? "",
+        comment: localStorage.getItem("fdb-comment") ?? "",
+        joinedAt: localStorage.getItem("fdb-joined-at") || null,
+      };
+    }
+    catch { return { name: "", comment: "", joinedAt: null }; }
   });
   const [onboardingReason, setOnboardingReason] = useState<OnboardingReason | null>(null);
   const [onboardingError, setOnboardingError] = useState("");
@@ -165,10 +172,16 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
           ? null
           : (data.entryNumber ?? data.passenger?.entryNumber ?? previous ?? data.seatIndex + 1),
       );
-      setSavedProfile((previous) => profileModalMode === "name" ? { ...previous, name } : { ...previous, comment });
+      setSavedProfile((previous) => {
+        const nextJoinedAt = data.passenger?.joinedAt ?? previous.joinedAt;
+        return profileModalMode === "name"
+          ? { ...previous, name, joinedAt: nextJoinedAt }
+          : { ...previous, comment, joinedAt: nextJoinedAt };
+      });
       try {
         if (profileModalMode === "name") localStorage.setItem("fdb-display-name", name);
         if (profileModalMode === "comment") localStorage.setItem("fdb-comment", comment);
+        if (data.passenger?.joinedAt) localStorage.setItem("fdb-joined-at", data.passenger.joinedAt);
       } catch {
         // L'enregistrement D1 reste valide même si le stockage local est bloqué.
       }
@@ -259,10 +272,11 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     if (passenger === null) {
       setSavedAvatarId(null);
       setPendingAvatarId(null);
-      setSavedProfile({ name: "", comment: "" });
+      setSavedProfile({ name: "", comment: "", joinedAt: null });
       try {
         localStorage.removeItem("fdb-display-name");
         localStorage.removeItem("fdb-comment");
+        localStorage.removeItem("fdb-joined-at");
         localStorage.removeItem("fdb-avatar-id");
         localStorage.removeItem("fdb-avatar-draft");
       } catch {
@@ -273,15 +287,18 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
 
     const name = passenger.displayName ?? "";
     const comment = passenger.comment ?? "";
+    const joinedAt = passenger.joinedAt ?? savedProfileRef.current.joinedAt ?? null;
     const avatarId = isPassengerAvatarId(passenger.avatarId) ? passenger.avatarId : null;
     setSavedAvatarId(avatarId);
     setPendingAvatarId(null);
-    setSavedProfile({ name, comment });
+    setSavedProfile({ name, comment, joinedAt });
     try {
       if (name) localStorage.setItem("fdb-display-name", name);
       else localStorage.removeItem("fdb-display-name");
       if (comment) localStorage.setItem("fdb-comment", comment);
       else localStorage.removeItem("fdb-comment");
+      if (joinedAt) localStorage.setItem("fdb-joined-at", joinedAt);
+      else localStorage.removeItem("fdb-joined-at");
       if (avatarId) localStorage.setItem("fdb-avatar-id", avatarId);
       else localStorage.removeItem("fdb-avatar-id");
       localStorage.removeItem("fdb-avatar-draft");
@@ -295,6 +312,7 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     try {
       localStorage.removeItem("fdb-display-name");
       localStorage.removeItem("fdb-comment");
+      localStorage.removeItem("fdb-joined-at");
       localStorage.removeItem("fdb-avatar-id");
     } catch {
       /* Le stockage local reste optionnel. */
@@ -302,16 +320,16 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
     setCurrentPassengerEntryNumber(null);
     setJoinName("");
     setJoinComment("");
-    setSavedProfile({ name: "", comment: "" });
+    setSavedProfile({ name: "", comment: "", joinedAt: null });
     setSavedAvatarId(pendingAvatarIdRef.current);
   }, [clearOnboardingDraft, setCurrentPassengerEntryNumber]);
 
   const clearProfile = useCallback(() => {
     profileRequest.current?.abort();
     clearOnboardingDraft();
-    try { localStorage.removeItem("fdb-display-name"); localStorage.removeItem("fdb-comment"); localStorage.removeItem("fdb-avatar-id"); localStorage.removeItem("fdb-avatar-draft"); } catch { /* Profil déjà supprimé du serveur. */ }
+    try { localStorage.removeItem("fdb-display-name"); localStorage.removeItem("fdb-comment"); localStorage.removeItem("fdb-joined-at"); localStorage.removeItem("fdb-avatar-id"); localStorage.removeItem("fdb-avatar-draft"); } catch { /* Profil déjà supprimé du serveur. */ }
     setCurrentPassengerEntryNumber(null);
-    setJoinName(""); setJoinComment(""); setSavedProfile({ name: "", comment: "" });
+    setJoinName(""); setJoinComment(""); setSavedProfile({ name: "", comment: "", joinedAt: null });
     setShowJoinModal(false);
     setOnboardingReason(null);
     setOnboardingError("");
@@ -471,7 +489,9 @@ export function usePassengerProfile({ hasRegisteredPlace, applyBusSnapshot, setC
           ...profiles.filter((profile) => profile.seatIndex !== data.passenger!.seatIndex),
           data.passenger!,
         ]);
-        setSeatRow(getRegisteredSeat(data.passenger.seatIndex).row);
+        if (!readSavedLocalSeat()) {
+          setSeatRow(getRegisteredSeat(data.passenger.seatIndex).row);
+        }
       }
       setOnboardingReason(null);
       setOnboardingError("");

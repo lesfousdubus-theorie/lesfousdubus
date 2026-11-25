@@ -90,3 +90,25 @@ export function formatPassengerDisplayName(name: string | null | undefined, loca
   }
   return trimmed;
 }
+
+const SQLITE_TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/;
+
+export function parseJoinedAtTimestamp(value: string | null | undefined): Date | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  const isoCandidate = SQLITE_TIMESTAMP_RE.test(trimmed)
+    ? `${trimmed.replace(" ", "T")}Z`
+    : trimmed;
+  const date = new Date(isoCandidate);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function formatPassengerJoinedAt(value: string | null | undefined, locale: Locale): string | null {
+  const date = parseJoinedAtTimestamp(value);
+  if (!date) return null;
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}

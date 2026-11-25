@@ -6,6 +6,7 @@ export interface PassengerProfile {
   displayName: string;
   comment: string | null;
   avatarId?: PassengerAvatarId | null;
+  joinedAt?: string | null;
 }
 
 export interface PassengerManifestEntry {
@@ -13,4 +14,5 @@ export interface PassengerManifestEntry {
   entryNumber?: number;
   displayName: string | null;
   hasComment: boolean;
+  joinedAt?: string | null;
 }
