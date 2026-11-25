@@ -426,25 +426,38 @@ export function makeGraffitiTexture({
   c.rotate(angle);
   c.transform(1, 0, -0.12, 1, 0, 0);
 
+  const scale = Math.min(width / 1536, height / 512);
   const lines = text.split("\n").slice(0, 2);
-  let fontSize = lines.length > 1 ? 132 : 176;
+  let fontSize = Math.max(12, Math.round((lines.length > 1 ? 132 : 176) * scale));
   const fontFamily = "'Arial Narrow', 'Trebuchet MS', sans-serif";
   const setFont = () => {
     c.font = `italic 900 ${fontSize}px ${fontFamily}`;
   };
   setFont();
 
-  const maxTextW = width * 0.86;
+  const maxTextW = width * 0.84;
   const measured = Math.max(...lines.map((line) => c.measureText(line).width));
   if (measured > maxTextW) {
-    fontSize = Math.floor((fontSize * maxTextW) / measured);
+    fontSize = Math.max(12, Math.floor((fontSize * maxTextW) / measured));
+    setFont();
+  }
+  const maxTextH = height * 0.78;
+  const estimatedTextH = (lines.length > 1 ? fontSize * 1.92 : fontSize * 1.05) + 32 * scale;
+  if (estimatedTextH > maxTextH) {
+    fontSize = Math.max(12, Math.floor((fontSize * maxTextH) / estimatedTextH));
     setFont();
   }
   c.textAlign = "center";
   c.textBaseline = "middle";
 
   const lineHeight = fontSize * 0.88;
-  const firstY = lines.length > 1 ? -lineHeight / 2 : -10;
+  const firstY = lines.length > 1 ? -lineHeight / 2 : -10 * scale;
+  const shadowOffsetX = 13 * scale;
+  const shadowOffsetY = 15 * scale;
+  const shadowStrokeWidth = Math.max(3, Math.round(28 * scale));
+  const mainStrokeWidth = Math.max(2, Math.round(15 * scale));
+  const highlightOffset = 2 * scale;
+  const highlightStrokeWidth = Math.max(1, 2 * scale);
 
   lines.forEach((line, index) => {
     const y = firstY + index * lineHeight;
@@ -452,21 +465,21 @@ export function makeGraffitiTexture({
     // Ombre rouge décalée façon affiche sérigraphiée.
     c.lineJoin = "round";
     c.strokeStyle = stroke;
-    c.lineWidth = 28;
-    c.strokeText(line, 13, y + 15);
+    c.lineWidth = shadowStrokeWidth;
+    c.strokeText(line, shadowOffsetX, y + shadowOffsetY);
     c.fillStyle = accent;
-    c.fillText(line, 13, y + 15);
+    c.fillText(line, shadowOffsetX, y + shadowOffsetY);
 
     // Trait principal crème, fortement détouré pour rester lisible en mouvement.
     c.strokeStyle = stroke;
-    c.lineWidth = 15;
+    c.lineWidth = mainStrokeWidth;
     c.strokeText(line, 0, y);
     c.fillStyle = color;
     c.fillText(line, 0, y);
 
     c.strokeStyle = "rgba(255,255,255,0.55)";
-    c.lineWidth = 2;
-    c.strokeText(line, -2, y - 2);
+    c.lineWidth = highlightStrokeWidth;
+    c.strokeText(line, -highlightOffset, y - highlightOffset);
   });
 
   // Sous-texte optionnel (sans éclaboussures ni trait de peinture devant le texte).
