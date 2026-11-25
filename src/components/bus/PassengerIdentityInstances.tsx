@@ -140,7 +140,7 @@ const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, dri
     parts.forEach((part, partIndex) => {
       const mesh = meshes.current[partIndex];
       if (!mesh) return;
-      mesh.visible = useArticulated && (
+      mesh.visible = useArticulated && indices.length > 0 && (
         part.role === "signatureLeft" || part.role === "signatureRight"
           ? Boolean(celebrating && gain > 0.001)
           : part.role !== "rest" || !celebrating
@@ -162,10 +162,8 @@ const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, dri
       update(clock.elapsedTime);
     };
     drivers.listeners.add(onSync);
-    if (drivers.revision.current > 0) {
-      lastRevision.current = drivers.revision.current;
-      update(clock.elapsedTime);
-    }
+    lastRevision.current = drivers.revision.current;
+    update(clock.elapsedTime);
     return () => {
       drivers.listeners.delete(onSync);
     };
@@ -189,27 +187,40 @@ const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, dri
       <Prototype id={id} onReady={handleReady} />
     </group>;
   }
-  const hasStaticParts = Boolean(staticParts && staticParts.length > 0);
   return <group name={`bus-distant-identity-${id}`} userData={{ archetypeId: id }}>
     {staticParts?.map((part, i) => <instancedMesh key={`static-${i}-${groupCapacity}`} name={`bus-distant-static-${id}-${i}`}
       ref={node => { staticMeshes.current[i] = node; }} geometry={part.geometry} material={part.material}
       args={instancedArgs} count={indices.length} frustumCulled={false} raycast={() => null} userData={{ archetypeId: id, static: true }}
     />)}
-    {/* Garder les meshes articulés montés en permanence (visible=false au repos) pour supprimer
+    {/* Garder les meshes articulés montés en permanence (visible piloté par update()) pour supprimer
         le montage/démontage de ~240 InstancedMesh au début et à la fin de chaque danse. */}
     {parts.map((part, i) => <instancedMesh key={`${part.role}-${i}-${groupCapacity}`} name={`bus-distant-${id}-${part.role}-${i}`}
       ref={node => { meshes.current[i] = node; }} geometry={part.geometry} material={part.material}
-      args={instancedArgs} count={indices.length} visible={!hasStaticParts} frustumCulled={false} raycast={() => null} userData={{ role: part.role, archetypeId: id }}
+      args={instancedArgs} count={indices.length} frustumCulled={false} raycast={() => null} userData={{ role: part.role, archetypeId: id }}
     />)}
   </group>;
-}, (prev, next) => (
-  prev.id === next.id
-  && prev.groupHash === next.groupHash
-  && prev.indices.length === next.indices.length
-  && prev.drivers === next.drivers
-  && prev.partyOn === next.partyOn
-  && prev.reducedMotion === next.reducedMotion
-));
+}, (prev, next) => {
+  if (
+    prev.id !== next.id
+    || prev.groupHash !== next.groupHash
+    || prev.indices.length !== next.indices.length
+    || prev.drivers !== next.drivers
+    || prev.partyOn !== next.partyOn
+    || prev.reducedMotion !== next.reducedMotion
+  ) {
+    return false;
+  }
+  for (let k = 0; k < prev.indices.length; k++) {
+    const idx = prev.indices[k];
+    if (idx !== next.indices[k]) return false;
+    const prevOcc = prev.passengers[idx];
+    const nextOcc = next.passengers[idx];
+    if (prevOcc?.index !== nextOcc?.index || prevOcc?.physicalSeatIndex !== nextOcc?.physicalSeatIndex) {
+      return false;
+    }
+  }
+  return true;
+});
 
 const EMPTY_INDICES: number[] = [];
 
@@ -225,7 +236,7 @@ export default function PassengerIdentityInstances({ ids, passengers, drivers, p
       }
       entry.indices.push(i);
       const occ = passengers[i];
-      entry.hash = ((entry.hash * 31) ^ (occ ? ((occ.index * 7) ^ occ.physicalSeatIndex) : -1)) | 0;
+      entry.hash = ((entry.hash * 31) ^ ((i * 17) ^ (occ ? ((occ.index * 7) ^ occ.physicalSeatIndex) : -1))) | 0;
     });
     return result;
   }, [ids, passengers]);

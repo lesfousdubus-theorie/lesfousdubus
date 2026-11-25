@@ -376,15 +376,23 @@ function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, 
     () => detailed.slice(0, detailedBudget),
     [detailed, detailedBudget],
   );
+  const pendingDetailed = useMemo(
+    () => detailed.slice(detailedBudget),
+    [detailed, detailedBudget],
+  );
+  const renderedSimplified = useMemo(
+    () => (pendingDetailed.length > 0 ? [...pendingDetailed, ...simplified] : simplified),
+    [pendingDetailed, simplified],
+  );
   // Charger et afficher les noms de TOUS les passagers réellement dans le champ caméra (zéro badge derrière la caméra).
   const nearLabelVisitors = useMemo(() => {
     if (!showNearLabels || labelRowRange.minRow > labelRowRange.maxRow) return [];
-    const near = [...mountedDetailed, ...simplified].filter(
+    const near = [...mountedDetailed, ...renderedSimplified].filter(
       (o) => o.seat.row >= labelRowRange.minRow && o.seat.row <= labelRowRange.maxRow,
     );
     near.sort((a, b) => Math.abs(a.seat.z - detailFocus.z) - Math.abs(b.seat.z - detailFocus.z));
     return near.slice(0, 152);
-  }, [detailFocus.z, labelRowRange.maxRow, labelRowRange.minRow, mountedDetailed, showNearLabels, simplified]);
+  }, [detailFocus.z, labelRowRange.maxRow, labelRowRange.minRow, mountedDetailed, renderedSimplified, showNearLabels]);
   const summaries = useVisiblePassengerSummaries(nearLabelVisitors, profileRevision);
   const profilesBySeatIndex = useMemo(() => {
     const profiles = new Map(passengerProfiles.map(profile => [profile.seatIndex, profile]));
@@ -403,7 +411,7 @@ function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, 
   const headHeights = usePassengerHeadHeights();
   const distantLabels = useMemo(() => {
     if (!showNearLabels || labelRowRange.minRow > labelRowRange.maxRow) return [];
-    const candidates = simplified.filter(
+    const candidates = renderedSimplified.filter(
       ({ seat }) => seat.row >= labelRowRange.minRow && seat.row <= labelRowRange.maxRow,
     );
     candidates.sort((a, b) => Math.abs(a.seat.z - detailFocus.z) - Math.abs(b.seat.z - detailFocus.z));
@@ -416,13 +424,13 @@ function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, 
       const skeleton = getPassengerSkeleton(archetype.id);
       return [{ index, name, x: seat.x, y: getSeatedPassengerNameHeight(archetype.id, crown), z: seat.z + skeleton.seatedHipZ + BODY_BEHIND_HIP + 0.02 }];
     });
-  }, [detailFocus.z, headHeights, labelRowRange.maxRow, labelRowRange.minRow, locale, profilesBySeatIndex, showNearLabels, simplified]);
+  }, [detailFocus.z, headHeights, labelRowRange.maxRow, labelRowRange.minRow, locale, profilesBySeatIndex, renderedSimplified, showNearLabels]);
   const detailedSeats = new Set(mountedDetailed.map(occupant => occupant.physicalSeatIndex));
   const poses=useMemo<PassengerPoseRegistry>(()=>new Map(),[]);
   useEffect(()=>{
-    const visible=new Set([...mountedDetailed,...simplified].map(actor=>actor.index));
+    const visible=new Set([...mountedDetailed,...renderedSimplified].map(actor=>actor.index));
     pruneRegisteredPassengerPoses(poses,visible);
-  },[mountedDetailed,simplified,poses]);
+  },[mountedDetailed,renderedSimplified,poses]);
   const cardActors = useMemo<PassengerCardActors>(() => new Map(), []);
   const cardPairs = useMemo(() => getPassengerCardPairs(mountedDetailed.map(occupant => ({ ...occupant,
     archetypeId: getNakamaArchetype(occupant.index, occupant.passengerKind === "visitor"
@@ -430,8 +438,8 @@ function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, 
   })), NAKAMA_ROSTER.map(archetype => archetype.id)), [mountedDetailed, profilesBySeatIndex]);
   const cardPairBySeat = useMemo(() => new Map(cardPairs.flatMap(pair => [[pair.firstSeat, pair.pairIndex], [pair.secondSeat, pair.pairIndex]])), [cardPairs]);
   useEffect(() => () => { document.body.style.cursor = "auto"; }, []);
-  return <group ref={root} name="bus-seated-passengers" userData={{ detailedCount: mountedDetailed.length, simplifiedCount: simplified.length }}>
-    <SimplifiedPassengers passengers={simplified} profilesBySeatIndex={profilesBySeatIndex} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion} poses={poses}/>
+  return <group ref={root} name="bus-seated-passengers" userData={{ detailedCount: mountedDetailed.length, simplifiedCount: renderedSimplified.length }}>
+    <SimplifiedPassengers passengers={renderedSimplified} profilesBySeatIndex={profilesBySeatIndex} partyOn={partyOn} hornPulse={hornPulse} reducedMotion={reducedMotion} poses={poses}/>
     <DistantPassengerNames labels={distantLabels} profilesBySeatIndex={profilesBySeatIndex} onSelect={onPassengerSelect} />
     {mountedDetailed.map(({ seat, index, physicalSeatIndex, passengerKind }) => {
       const archetype = getNakamaArchetype(index, passengerKind === "visitor" ? profilesBySeatIndex.get(index)?.avatarId : null);
