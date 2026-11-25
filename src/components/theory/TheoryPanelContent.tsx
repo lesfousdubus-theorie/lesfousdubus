@@ -128,7 +128,15 @@ export default function TheoryPanelContent({
             </a>
           </section>
           <p className="mt-4 text-center text-xs font-semibold text-[#b4bfe8]">
-            Made with ❤️ by <span className="font-bold text-[#c4b5fd]">Épikaigle</span>
+            Made with ❤️ by{" "}
+            <a
+              href="https://x.com/Epikaigle"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-[#c4b5fd] underline decoration-[#c4b5fd]/55 underline-offset-4 transition-colors hover:text-white hover:decoration-current focus-visible:outline-none"
+            >
+              Épikaigle
+            </a>
           </p>
         </div>
       )}
