@@ -175,7 +175,9 @@ export function useBusSync({
         setCurrentPassengerSeatIndex(seatIndex);
         setCurrentPassengerEntryNumber(entryNumber);
         if (seatIndex !== null && new URLSearchParams(window.location.search).get("row") === null) {
-          setSeatRow(getRegisteredSeat(seatIndex).row);
+          const seat = getRegisteredSeat(seatIndex);
+          setSeatRow(seat.row);
+          setSeatColumn?.(seat.column);
         }
         restoreSavedProfile(normalizedPassenger);
         if (normalizedPassenger) {
@@ -223,6 +225,7 @@ export function useBusSync({
     setCurrentPassengerEntryNumber,
     setCurrentPassengerSeatIndex,
     setPassengerProfiles,
+    setSeatColumn,
     setSeatRow,
     statsRetryToken,
     visitorLookupPromiseRef,
@@ -492,7 +495,9 @@ export function useBusSync({
         };
         restoreSavedProfile(resolvedPassenger);
         if (data.seatIndex !== null) {
-          setSeatRow(getRegisteredSeat(data.seatIndex).row);
+          const seat = getRegisteredSeat(data.seatIndex);
+          setSeatRow(seat.row);
+          setSeatColumn?.(seat.column);
         }
         if (resolvedPassenger) {
           setPassengerProfiles((profiles) => [
@@ -538,6 +543,6 @@ export function useBusSync({
       document.removeEventListener("visibilitychange", resume);
       controller.abort();
     };
-  }, [applyBusSnapshot, latestRegistrationRef, pendingAvatarId, pendingRegistrationProfileRef, registrationPending, registrationRetryDelayRef, restoreSavedProfile, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles, setRegistrationPending, setSeatRow, showToast]);
+  }, [applyBusSnapshot, latestRegistrationRef, pendingAvatarId, pendingRegistrationProfileRef, registrationPending, registrationRetryDelayRef, restoreSavedProfile, setCurrentPassengerEntryNumber, setCurrentPassengerSeatIndex, setPassengerProfiles, setRegistrationPending, setSeatColumn, setSeatRow, showToast]);
 
 }

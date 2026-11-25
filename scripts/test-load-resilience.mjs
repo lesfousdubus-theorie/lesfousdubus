@@ -178,6 +178,16 @@ try {
         compatibilityFlags: ["nodejs_compat"],
         outboundService() { throw new Error("External network disabled in edge tests."); },
       },
+      {
+        name: "pre0010",
+        script: compiled.outputFiles[0].text,
+        modules: true,
+        compatibilityDate: "2026-09-03",
+        compatibilityFlags: ["nodejs_compat"],
+        bindings: { RATE_LIMIT_SECRET: quotaSecret, MODERATION_TOKEN: moderationToken },
+        d1Databases: { DB_BUS: `pre0010-db-${randomUUID()}` },
+        outboundService() { throw new Error("External network disabled in load tests."); },
+      },
     ],
   }));
 
@@ -245,7 +255,7 @@ try {
   const unchangedSeat = await database.prepare("SELECT seat_index FROM bus_entries WHERE visitor_id = 'load-visitor-499'").first();
   assert.equal(unchangedSeat.seat_index, 499, "Passenger #499 did not move on O(1) deletion.");
 
-  // Le prochain passager réutilise le siège vacant 0.
+  // Le prochain passager reçoit bien la toute dernière place (500), après tous les autres.
   const joinRes = await worker.fetch("http://load.test/api/bus-entries", {
     method: "POST",
     headers: { "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.2" },
@@ -253,9 +263,10 @@ try {
   });
   assert.equal(joinRes.status, 200);
   const joinData = await joinRes.json();
-  assert.equal(joinData.seatIndex, 0, "Next join reuses vacant seat 0.");
+  assert.equal(joinData.seatIndex, 500, "Next join appends at the last seat behind everyone else.");
+  assert.equal(joinData.seatCapacity, 501, "Appending at the back advances seat capacity to 501.");
   assert.equal(joinData.entryNumber, 501, "Entry number keeps incrementing monotonically.");
-  assert.deepEqual(joinData.vacantSeatRanges, []);
+  assert.deepEqual(joinData.vacantSeatRanges, [[0, 0, 0]], "Earlier vacant seat ranges stay recorded.");
 
   // 3. Mur de messages aléatoires en lots indexés (sans ORDER BY RANDOM()) + cache par slot.
   const msgRes = await worker.fetch("http://load.test/api/bus-entries?messages=1&random=1&limit=100&slot=3");
@@ -265,12 +276,12 @@ try {
   assert.equal(msgData.messages.length, 100);
   assert.equal(new Set(msgData.messages.map((m) => m.seatIndex)).size, 100, "Sampled messages must be deduplicated.");
 
-  // 4. Blocs canoniques de noms ?names=1&from=0&limit=80.
+  // 4. Blocs canoniques de noms ?names=1&from=0&limit=80 (le siège 0 reste vacant -> 79 noms).
   const namesRes = await worker.fetch("http://load.test/api/bus-entries?names=1&from=0&limit=80");
   assert.equal(namesRes.status, 200);
   assert(namesRes.headers.get("cache-control")?.includes("s-maxage=20"));
   const namesData = await namesRes.json();
-  assert.equal(namesData.names.length, 80);
+  assert.equal(namesData.names.length, 79);
 
   // 5. Coalescence de 50 GET concurrents + repli stale-on-error en cas de panne D1 simulée.
   await worker.fetch("http://load.test/__reset-cache");
@@ -395,6 +406,32 @@ try {
   const redirectRes = await edgeWorker.fetch("http://lesfousdubus.sbs/api/bus-entries", { redirect: "manual" });
   assert.equal(redirectRes.status, 308);
   assert.equal(redirectRes.headers.get("location"), "https://lesfousdubus.sbs/api/bus-entries");
+
+  // 8. Compatibilité D1 sans migration 0010 (sans table bus_vacant_seat_ranges) : POST réussit en 200.
+  const pre0010Db = await runtime.getD1Database("DB_BUS", "pre0010");
+  for (const file of migrationFiles.filter((name) => name < "0010_")) {
+    for (const sql of splitSqlQuery(readFileSync(join("migrations", file), "utf8"))) {
+      await pre0010Db.prepare(sql).run();
+    }
+  }
+  const pre0010Worker = await runtime.getWorker("pre0010");
+  await pre0010Worker.fetch("http://pre0010.test/__restore-db");
+  const pre0010Join1 = await pre0010Worker.fetch("http://pre0010.test/api/bus-entries", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.88" },
+    body: JSON.stringify({ visitorId: "pre0010-visitor-1", displayName: "Pre0010_One" }),
+  });
+  assert.equal(pre0010Join1.status, 200, "POST must succeed without 503 even before migration 0010 is applied.");
+  const pre0010Data1 = await pre0010Join1.json();
+  assert.equal(pre0010Data1.seatIndex, 0);
+  const pre0010Join2 = await pre0010Worker.fetch("http://pre0010.test/api/bus-entries", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.88" },
+    body: JSON.stringify({ visitorId: "pre0010-visitor-2", displayName: "Pre0010_Two" }),
+  });
+  assert.equal(pre0010Join2.status, 200, "Second POST must also succeed before migration 0010.");
+  const pre0010Data2 = await pre0010Join2.json();
+  assert.equal(pre0010Data2.seatIndex, 1);
 
   console.log("Load resilience & edge fast-path checks passed: SQL indexes, O(1) seats, write-storm shield, edge HTML/API cache, 0-D1 bot rejection, and stale fallback.");
 } finally {

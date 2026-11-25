@@ -299,8 +299,9 @@ export async function runServerAuthorizationChecks() {
         const quotaGhostJoin = await request("POST", { visitorId: quotaGhost, displayName: "Nakama Test", avatarId: "zoro" }, undefined, "198.51.100.77");
         assert.equal(quotaGhostJoin.status, 200, "A name freed by permanent deletion must become available again.");
         assert.equal(quotaGhostJoin.data.added, true);
-        assert.equal(quotaGhostJoin.data.seatIndex, 0, "Next boarding passenger reuses vacant seat 0.");
-        assert.deepEqual(quotaGhostJoin.data.vacantSeatRanges, [], "Reusing seat 0 clears vacant ranges.");
+        assert.equal(quotaGhostJoin.data.seatIndex, concurrentCount, "Next boarding passenger receives the last seat after everyone else.");
+        assert.equal(quotaGhostJoin.data.seatCapacity, concurrentCount + 1, "Appending at the back advances seat capacity by 1.");
+        assert.deepEqual(quotaGhostJoin.data.vacantSeatRanges, [[0, 0, 0]], "Earlier vacant seat ranges stay intact.");
         assert.equal(quotaGhostJoin.data.passenger.avatarId, "zoro");
       }
       if (configuration.name === "missing") {

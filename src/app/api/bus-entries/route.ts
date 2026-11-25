@@ -565,10 +565,7 @@ export async function POST(request: Request) {
               `INSERT INTO bus_entries (visitor_id, display_name, comment, avatar_id, seat_index, entry_number)
                VALUES (
                  ?, ?, ?, ?,
-                 COALESCE(
-                   (SELECT start_index FROM bus_vacant_seat_ranges ORDER BY start_index ASC LIMIT 1),
-                   (SELECT COALESCE(MAX(seat_index) + 1, 0) FROM bus_entries)
-                 ),
+                 (SELECT COALESCE(MAX(seat_index) + 1, 0) FROM bus_entries),
                  (SELECT MAX(last_entry_number, COALESCE((SELECT MAX(entry_number) FROM bus_entries), 0)) + 1 FROM bus_stats WHERE id = 1)
                )
                ON CONFLICT(visitor_id) DO NOTHING
@@ -603,10 +600,7 @@ export async function POST(request: Request) {
               `INSERT INTO bus_entries (visitor_id, display_name, comment, avatar_id, seat_index, entry_number)
                VALUES (
                  ?, ?, ?, ?,
-                 COALESCE(
-                   (SELECT start_index FROM bus_vacant_seat_ranges ORDER BY start_index ASC LIMIT 1),
-                   (SELECT COALESCE(MAX(seat_index) + 1, 0) FROM bus_entries)
-                 ),
+                 (SELECT COALESCE(MAX(seat_index) + 1, 0) FROM bus_entries),
                  (SELECT MAX(last_entry_number, COALESCE((SELECT MAX(entry_number) FROM bus_entries), 0)) + 1 FROM bus_stats WHERE id = 1)
                )
                ON CONFLICT(visitor_id) DO NOTHING`,

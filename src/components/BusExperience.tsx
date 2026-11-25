@@ -541,9 +541,13 @@ export default function BusExperience() {
         );
         return;
       }
+      const fallbackSeatIndex = latestRegistrationRef.current.seatIndex ?? seatCapacityRef.current;
+      const fallbackSeat = getRegisteredSeat(fallbackSeatIndex);
+      setSeatRow(fallbackSeat.row);
+      setSeatColumn(fallbackSeat.column);
       if (submission) {
         restoreSavedProfile({
-          seatIndex: latestRegistrationRef.current.seatIndex ?? 0,
+          seatIndex: fallbackSeatIndex,
           displayName: submission.displayName,
           comment: submission.comment || null,
           avatarId: submission.avatarId,
