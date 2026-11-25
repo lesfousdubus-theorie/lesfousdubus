@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode, type RefObject, type SetStateAction } from "react";
+import { memo, useEffect, useId, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode, type RefObject, type SetStateAction } from "react";
 import type { Phase } from "./bus/constants";
 import { COMPACT_HUD_MEDIA_QUERY, useHudLayout } from "./useHudLayout";
 import { emitBusAudioEvent, INITIAL_MUSIC_PLAYBACK, onBusAudioEvent, type BusMusicPlayback } from "@/lib/bus-audio";
@@ -75,8 +75,6 @@ interface BusHudProps {
   isNight: boolean;
   manualDayNight: "day" | "night" | null;
   speedMultiplier: number;
-  seatRow: number;
-  seatColumn: number;
   exteriorControlsVisible: boolean;
   interiorControlsVisible: boolean;
   headlights: boolean;
@@ -94,8 +92,7 @@ interface BusHudProps {
   onResetGraphicsSettings?: () => void;
   setStatsLoadError: Dispatch<SetStateAction<boolean>>;
   setStatsRetryToken: Dispatch<SetStateAction<number>>;
-  setSeatRow: Dispatch<SetStateAction<number>>;
-  setSeatColumn: Dispatch<SetStateAction<number | null>>;
+  onImmersiveChange?: (immersive: boolean) => void;
   toggleTv: () => void;
   openPassengerManifest: () => void;
   toggleDayNight: () => void;
@@ -127,18 +124,108 @@ const subscribeCompactHud = (callback: () => void) => {
 const getCompactHudSnapshot = () =>
   typeof window !== "undefined" && window.matchMedia(COMPACT_HUD_MEDIA_QUERY).matches;
 
-export function BusHud({
+export const BusSeatNav = memo(function BusSeatNav({
+  visible,
+  seatRow,
+  seatColumn,
+  numRows,
+  setSeatRow,
+  setSeatColumn,
+}: {
+  visible: boolean;
+  seatRow: number;
+  seatColumn: number;
+  numRows: number;
+  setSeatRow: Dispatch<SetStateAction<number>>;
+  setSeatColumn: Dispatch<SetStateAction<number | null>>;
+}) {
+  const locale = useLocale();
+  if (!visible) return null;
+  const seatCountInRow = getSeatCountInRow(seatRow);
+  return (
+    <div
+      className="pointer-events-none fixed inset-0 isolate select-none"
+      style={{ zIndex: 2147483647 }}
+    >
+      <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] sm:right-4 sm:top-[6.25rem]">
+        <div className="bus-case bus-glass flex flex-col gap-1 rounded-[1.25rem] p-1.5 backdrop-blur-md">
+          {/* Déplacement dans l'allée */}
+          <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
+              disabled={seatRow <= 0}
+              aria-label={pickLocale(locale, "Rangée précédente", "Previous row")}
+              className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+              title={seatRow <= 0 ? pickLocale(locale, "Première rangée atteinte", "First row reached") : pickLocale(locale, "Rangée précédente", "Previous row")}
+            >
+              <ChevronLeftIcon className="h-4 w-4 shrink-0" />
+            </button>
+            <span className="flex h-10 items-center justify-center text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
+              <span>{pickLocale(locale, "Rangée", "Row")}</span>
+              <span className="ml-1 text-[#c4b5fd]">{seatRow + 1}</span>
+              <span className="mx-0.5 text-[#a3aed9]">/</span>
+              <span>{numRows}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
+              disabled={seatRow >= numRows - 1}
+              aria-label={pickLocale(locale, "Rangée suivante", "Next row")}
+              className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+              title={seatRow >= numRows - 1 ? pickLocale(locale, "Dernière rangée atteinte", "Last row reached") : pickLocale(locale, "Rangée suivante", "Next row")}
+            >
+              <ChevronRightIcon className="h-4 w-4 shrink-0" />
+            </button>
+          </div>
+
+          {/* Déplacement latéral sur les sièges de la rangée */}
+          <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1 border-t border-[#947eef]/20 pt-1">
+            <button
+              type="button"
+              onClick={() => setSeatColumn(Math.max(0, seatColumn - 1))}
+              disabled={seatColumn <= 0}
+              aria-label={pickLocale(locale, "Colonne à gauche", "Column left")}
+              className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+              title={seatColumn <= 0 ? pickLocale(locale, "Déjà dans la colonne la plus à gauche", "Already in the leftmost column") : pickLocale(locale, "Colonne à gauche", "Column left")}
+            >
+              <ChevronLeftIcon className="h-4 w-4 shrink-0" />
+            </button>
+            <span className="flex h-10 items-center justify-center text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
+              <span>{pickLocale(locale, "Colonne", "Column")}</span>
+              <span className="ml-1 text-[#c4b5fd]">{seatColumn + 1}</span>
+              <span className="mx-0.5 text-[#a3aed9]">/</span>
+              <span>{seatCountInRow}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1))}
+              disabled={seatColumn >= seatCountInRow - 1}
+              aria-label={pickLocale(locale, "Colonne à droite", "Column right")}
+              className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+              title={seatColumn >= seatCountInRow - 1 ? pickLocale(locale, "Déjà dans la colonne la plus à droite", "Already in the rightmost column") : pickLocale(locale, "Colonne à droite", "Column right")}
+            >
+              <ChevronRightIcon className="h-4 w-4 shrink-0" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export const BusHud = memo(function BusHud({
   hasSavedPlace, entryNumber, openPlaceModal,
   phase, phaseEpoch = 0, freeView, toggleFreeView, openAvatarModal, hidden, sceneAvailable, toast,
   onDismissToast, onPauseToast, onResumeToast,
   passengerManifestButtonRef, statsLoadError, count,
-  numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier, seatRow, seatColumn,
+  numRows, theoryAgeInDays, isNight, manualDayNight, speedMultiplier,
   exteriorControlsVisible, interiorControlsVisible, headlights,
   tvOn, joining, busy, setShowTheoryModal, setShowTheoryAge,
   graphicsSettings = DEFAULT_GRAPHICS_SETTINGS, graphicsTelemetry = null,
   onSelectGraphicsPreset, onUpdateGraphicsSettings, onResetGraphicsSettings,
   setStatsLoadError,
-  setStatsRetryToken, setSeatRow, setSeatColumn, toggleTv, openPassengerManifest,
+  setStatsRetryToken, onImmersiveChange, toggleTv, openPassengerManifest,
   toggleDayNight, decelerateBus, accelerateBus, toggleHeadlights, honk,
   enterBus, openProfileModal, exitBus, resetView, bgmPlaying, toggleBgm,
   bgmVolume, setBgmVolume,
@@ -146,8 +233,10 @@ export function BusHud({
 }: BusHudProps) {
   const locale = useLocale();
   const compactHud = useSyncExternalStore(subscribeCompactHud, getCompactHudSnapshot, () => false);
-  const seatCountInRow = getSeatCountInRow(seatRow);
   const [immersive, setImmersive] = useState(false);
+  useEffect(() => {
+    onImmersiveChange?.(immersive);
+  }, [immersive, onImmersiveChange]);
   const [immersiveRestoreVisible, setImmersiveRestoreVisible] = useState(true);
   const [mobileMenuState, setMobileMenuState] = useState<{ open: boolean; phase: Phase }>({ open: false, phase });
   const [musicDetailsState, setMusicDetailsState] = useState<{ open: boolean; phase: Phase; epoch: number }>({
@@ -664,72 +753,7 @@ export function BusHud({
           </>
         )}
 
-        {/* Navigation unifiée entre les rangées et les colonnes quand on est à l'intérieur */}
-        {phase === "inside" && (
-          <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] sm:right-4 sm:top-[6.25rem]">
-            <div className="bus-case bus-glass flex flex-col gap-1 rounded-[1.25rem] p-1.5 backdrop-blur-md">
-              {/* Déplacement dans l'allée */}
-              <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
-                  disabled={seatRow <= 0}
-                  aria-label={pickLocale(locale, "Rangée précédente", "Previous row")}
-                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-                  title={seatRow <= 0 ? pickLocale(locale, "Première rangée atteinte", "First row reached") : pickLocale(locale, "Rangée précédente", "Previous row")}
-                >
-                  <ChevronLeftIcon className="h-4 w-4 shrink-0" />
-                </button>
-                <span className="flex h-10 items-center justify-center text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
-                  <span>{pickLocale(locale, "Rangée", "Row")}</span>
-                  <span className="ml-1 text-[#c4b5fd]">{seatRow + 1}</span>
-                  <span className="mx-0.5 text-[#a3aed9]">/</span>
-                  <span>{numRows}</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setSeatRow((r) => Math.min(numRows - 1, r + 1))}
-                  disabled={seatRow >= numRows - 1}
-                  aria-label={pickLocale(locale, "Rangée suivante", "Next row")}
-                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-                  title={seatRow >= numRows - 1 ? pickLocale(locale, "Dernière rangée atteinte", "Last row reached") : pickLocale(locale, "Rangée suivante", "Next row")}
-                >
-                  <ChevronRightIcon className="h-4 w-4 shrink-0" />
-                </button>
-              </div>
-
-              {/* Déplacement latéral sur les sièges de la rangée */}
-              <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1 border-t border-[#947eef]/20 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setSeatColumn(Math.max(0, seatColumn - 1))}
-                  disabled={seatColumn <= 0}
-                  aria-label={pickLocale(locale, "Colonne à gauche", "Column left")}
-                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-                  title={seatColumn <= 0 ? pickLocale(locale, "Déjà dans la colonne la plus à gauche", "Already in the leftmost column") : pickLocale(locale, "Colonne à gauche", "Column left")}
-                >
-                  <ChevronLeftIcon className="h-4 w-4 shrink-0" />
-                </button>
-                <span className="flex h-10 items-center justify-center text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
-                  <span>{pickLocale(locale, "Colonne", "Column")}</span>
-                  <span className="ml-1 text-[#c4b5fd]">{seatColumn + 1}</span>
-                  <span className="mx-0.5 text-[#a3aed9]">/</span>
-                  <span>{seatCountInRow}</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setSeatColumn(Math.min(seatCountInRow - 1, seatColumn + 1))}
-                  disabled={seatColumn >= seatCountInRow - 1}
-                  aria-label={pickLocale(locale, "Colonne à droite", "Column right")}
-                  className="grid h-10 w-11 place-items-center rounded-[0.875rem] border border-[#947eef]/28 bg-[#0e1438] p-0 text-white transition-colors hover:border-[#cfc4fc] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-                  title={seatColumn >= seatCountInRow - 1 ? pickLocale(locale, "Déjà dans la colonne la plus à droite", "Already in the rightmost column") : pickLocale(locale, "Colonne à droite", "Column right")}
-                >
-                  <ChevronRightIcon className="h-4 w-4 shrink-0" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* La navigation rangée/colonne est rendue par BusSeatNav pour éviter de re-rendre tout le HUD. */}
 
         {/* Commandes secondaires dépliées librement au-dessus de la barre inférieure */}
         {mobileMenuOpen && (
@@ -1122,7 +1146,7 @@ export function BusHud({
 
     </>
   );
-}
+});
 
 function CompactMusicToggleButton({
   playing,

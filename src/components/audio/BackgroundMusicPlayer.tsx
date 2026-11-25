@@ -336,11 +336,7 @@ export default function BackgroundMusicPlayer({
 
   useEffect(() => {
     const slots = Object.values(slotsRef.current);
-    const bgTimer = window.setTimeout(() => connectSlot(slotsRef.current.background), 3200);
-    const partyTimer = window.setTimeout(() => connectSlot(slotsRef.current.party), 5500);
     return () => {
-      window.clearTimeout(bgTimer);
-      window.clearTimeout(partyTimer);
       clearStartTimer(); clearFade(); reportDance(false);
       for (const slot of slots) {
         stopWarmup(slot);
@@ -350,7 +346,7 @@ export default function BackgroundMusicPlayer({
         slot.player = null;
       }
     };
-  }, [connectSlot, clearStartTimer, clearFade, reportDance, stopWarmup]);
+  }, [clearStartTimer, clearFade, reportDance, stopWarmup]);
 
   useEffect(() => {
     const danceTimer = window.setInterval(updateDance, 50);

@@ -139,36 +139,91 @@ export function getRenderedRowIndices(numRows: number, focusRow: number): number
   const add = (row: number) => {
     if (row >= 0 && row < numRows) rows.add(row);
   };
-  for (let row = 0; row < 16; row++) {
+  for (let row = 0; row < 12; row++) {
     add(row);
     add(numRows - 1 - row);
   }
-  for (let row = focusRow - 48; row <= focusRow + 48; row++) add(row);
-  for (let index = 0; index < 48; index++) add(Math.round((index * (numRows - 1)) / 47));
+  for (let row = focusRow - 68; row <= focusRow + 68; row++) add(row);
   return Array.from(rows).sort((a, b) => a - b);
 }
 
 export type TvPosition = [number, number, number];
 
-export function getTvPositions(numRows: number, frontPosition: { x: number; y: number; z: number }): TvPosition[] {
+export function getTvPositions(
+  numRows: number,
+  frontPosition: { x: number; y: number; z: number },
+  focusRow?: number,
+): TvPosition[] {
   const positions: TvPosition[] = [[frontPosition.x, frontPosition.y, frontPosition.z]];
   if (numRows > 6) {
     const stride = Math.max(4, Math.ceil((numRows - 6) / 8));
     for (let row = 4; row <= numRows - 3 && positions.length <= 8; row += stride) {
       positions.push([0, 2.55, getSeatRowZ(row - 0.25)]);
     }
+    // Sur un très long bus, garantit toujours une TV bien visible juste devant la rangée du passager
+    // (~3 rangées devant les yeux, soit ~3,6 m) même tout au fond du bus.
+    if (focusRow !== undefined && numRows > 18) {
+      const clampedFocus = Math.max(0, Math.min(numRows - 1, focusRow));
+      const desiredRow = Math.max(4, Math.min(numRows - 3, clampedFocus - 3));
+      const desiredZ = getSeatRowZ(desiredRow - 0.25);
+      const eyeZ = getSeatRowZ(clampedFocus) + 0.15;
+      const hasNearbyFrontTv = positions.some(([, , z]) => {
+        const dist = eyeZ - z;
+        return dist >= 2.5 && dist <= 12;
+      });
+      if (!hasNearbyFrontTv && eyeZ - desiredZ >= 2.5) {
+        if (positions.length >= 9) {
+          // Remplace l'écran secondaire le plus éloigné du passager (jamais la TV avant #0).
+          let farthestIdx = 1;
+          let farthestDist = -1;
+          for (let i = 1; i < positions.length; i++) {
+            const dist = Math.abs(positions[i][2] - desiredZ);
+            if (dist > farthestDist) {
+              farthestDist = dist;
+              farthestIdx = i;
+            }
+          }
+          positions[farthestIdx] = [0, 2.55, desiredZ];
+        } else {
+          positions.push([0, 2.55, desiredZ]);
+        }
+        positions.sort((a, b) => a[2] - b[2]);
+      }
+    }
   }
   return positions;
 }
 
-export function getActiveTvIndex(positions: TvPosition[], seatRow: number): number {
+/**
+ * Place une télé fixe toutes les 7 rangées (~8,4 m, à partir de la rangée 4) sur toute
+ * la fenêtre de rangées affichées (avant, arrière et autour de la caméra/du passager).
+ */
+export function getCabinTvPositions(
+  numRows: number,
+  frontPosition: { x: number; y: number; z: number },
+  renderedRowIndices: readonly number[],
+): TvPosition[] {
+  const positions: TvPosition[] = [[frontPosition.x, frontPosition.y, frontPosition.z]];
+  if (numRows > 6) {
+    const seenRows = new Set<number>();
+    for (let i = 0; i < renderedRowIndices.length; i++) {
+      const row = renderedRowIndices[i];
+      if (row < 4 || row > numRows - 3 || (row - 4) % 7 !== 0 || seenRows.has(row)) continue;
+      seenRows.add(row);
+      positions.push([0, 2.55, getSeatRowZ(row - 0.25)]);
+    }
+    positions.sort((a, b) => a[2] - b[2]);
+  }
+  return positions;
+}
+
+export function getActiveTvIndex(positions: TvPosition[], seatRow: number, minDistance = 2.5): number {
   const eyeZ = getSeatRowZ(seatRow) + 0.15;
   let bestIndex = 0;
   let bestDistance = Number.POSITIVE_INFINITY;
   positions.forEach((position, index) => {
     const distance = eyeZ - position[2];
-    // Un écran derrière le passager ou à moins de 2,5 m sort du champ sur mobile.
-    if (distance < 2.5) return;
+    if (distance < minDistance) return;
     if (distance < bestDistance) {
       bestDistance = distance;
       bestIndex = index;

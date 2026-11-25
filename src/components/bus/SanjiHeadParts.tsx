@@ -25,8 +25,8 @@ export function SanjiHair({ material }: { material: THREE.Material }) {
   return <group name="nakama-hair">
     <CharacterPart name="nakama-sanji-hair-cap" material={material} size={[.25,.075,.235]}
       position={[0,.120,.012]} radius={.025} detail={2}/>
-    <CharacterPart name="nakama-sanji-hair-back" material={material} size={[.244,.17,.055]}
-      position={[0,.014,.097]} radius={.018}/>
+    <CharacterPart name="nakama-sanji-hair-back" material={material} size={[.254,.17,.058]}
+      position={[0,.014,.109]} radius={.018}/>
     <CharacterPart name="nakama-sanji-hair-temple" material={material} size={[.038,.13,.11]}
       position={[.117,.033,.037]} radius={.010}/>
     <mesh name="nakama-sanji-fringe" material={material} geometry={getSweptFringe()} dispose={null} castShadow/>

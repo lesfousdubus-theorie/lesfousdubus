@@ -114,6 +114,37 @@ SCENERY_MATERIALS.elbafFalls.onBeforeCompile = (shader) => {
     `);
 };
 
+export const SCENERY_BAKED_MATTE = new THREE.MeshStandardMaterial({
+  vertexColors: true,
+  roughness: 0.92,
+  metalness: 0,
+});
+
+export const SCENERY_BAKED_SHINY = new THREE.MeshStandardMaterial({
+  vertexColors: true,
+  roughness: 0.38,
+  metalness: 0.55,
+});
+
+function isBakeableOpaque(material: THREE.MeshStandardMaterial): boolean {
+  return !material.transparent
+    && !material.vertexColors
+    && material.emissiveIntensity === 0
+    && material.emissive.getHex() === 0
+    && material.opacity >= 1;
+}
+
+function bakeVertexColor(geometry: THREE.BufferGeometry, color: THREE.Color): void {
+  const pos = geometry.getAttribute("position");
+  const colors = new Float32Array(pos.count * 3);
+  for (let i = 0; i < colors.length; i += 3) {
+    colors[i] = color.r;
+    colors[i + 1] = color.g;
+    colors[i + 2] = color.b;
+  }
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+}
+
 export interface SceneryBatch {
   material: THREE.MeshStandardMaterial;
   geometry: THREE.BufferGeometry;
@@ -123,7 +154,7 @@ export interface SceneryBatch {
 class Builder {
   private pieces = new Map<string, { key: MaterialKey; section: number | null; shapes: THREE.BufferGeometry[] }>();
 
-  constructor(private readonly splitForeground = false) {}
+  constructor(private readonly splitForeground = false, public readonly distantLod = false) {}
 
   add(geometry: THREE.BufferGeometry, material: MaterialKey, position: Point, rotation: Point = [0, 0, 0], scale: Point = [1, 1, 1]) {
     const matrix = new THREE.Matrix4().compose(
@@ -142,9 +173,20 @@ class Builder {
     plain.applyMatrix4(matrix);
     plain.computeBoundingBox();
     const bounds = plain.boundingBox!;
+    if (this.distantLod) {
+      const maxDim = Math.max(
+        bounds.max.x - bounds.min.x,
+        bounds.max.y - bounds.min.y,
+        bounds.max.z - bounds.min.z,
+      );
+      if (maxDim < 0.85) {
+        plain.dispose();
+        return;
+      }
+    }
     // Les canaux et autres bandes continues gardent leur lot d'origine.
     const section = this.splitForeground && bounds.max.y > .5 && bounds.max.z - bounds.min.z < 28
-      ? Math.floor((bounds.min.z + bounds.max.z) / 44) : null;
+      ? Math.floor((bounds.min.z + bounds.max.z) / 80) : null;
     const id = `${material}:${section}`;
     const group = this.pieces.get(id) ?? { key: material, section, shapes: [] };
     group.shapes.push(plain);
@@ -156,24 +198,34 @@ class Builder {
   }
 
   cylinder(material: MaterialKey, position: Point, top: number, bottom: number, height: number, segments = 12, rotation: Point = [0, 0, 0]) {
-    this.add(new THREE.CylinderGeometry(top, bottom, height, segments), material, position, rotation);
+    const seg = this.distantLod ? Math.max(4, Math.round(segments * 0.35)) : segments;
+    this.add(new THREE.CylinderGeometry(top, bottom, height, seg), material, position, rotation);
   }
 
   sphere(material: MaterialKey, position: Point, radius: number, scale: Point = [1, 1, 1], segments = 12) {
-    this.add(new THREE.SphereGeometry(radius, segments, 8), material, position, [0, 0, 0], scale);
+    const wSeg = this.distantLod ? Math.max(4, Math.round(segments * 0.35)) : segments;
+    const hSeg = this.distantLod ? 3 : 8;
+    this.add(new THREE.SphereGeometry(radius, wSeg, hSeg), material, position, [0, 0, 0], scale);
   }
 
   dome(material: MaterialKey, position: Point, radius: number, scale: Point = [1, 1, 1]) {
-    this.add(new THREE.SphereGeometry(radius, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), material, position, [0, 0, 0], scale);
+    this.add(
+      new THREE.SphereGeometry(radius, this.distantLod ? 6 : 16, this.distantLod ? 3 : 8, 0, Math.PI * 2, 0, Math.PI / 2),
+      material,
+      position,
+      [0, 0, 0],
+      scale,
+    );
   }
 
   ring(material: MaterialKey, position: Point, radius: number, tube: number, rotation: Point = [Math.PI / 2, 0, 0]) {
-    this.add(new THREE.TorusGeometry(radius, tube, 5, 24), material, position, rotation);
+    this.add(new THREE.TorusGeometry(radius, tube, this.distantLod ? 3 : 5, this.distantLod ? 6 : 24), material, position, rotation);
   }
 
   curve(material: MaterialKey, points: Point[], radius: number, segments = 16) {
     const curve = new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(...p)));
-    this.add(new THREE.TubeGeometry(curve, segments, radius, 6, false), material, [0, 0, 0]);
+    const tSeg = this.distantLod ? Math.max(4, Math.round(segments * 0.35)) : segments;
+    this.add(new THREE.TubeGeometry(curve, tSeg, radius, this.distantLod ? 3 : 6, false), material, [0, 0, 0]);
   }
 
   // A hip roof with raised eave corners, rather than a four-sided cone.
@@ -209,13 +261,42 @@ class Builder {
   }
 
   finish(): SceneryBatch[] {
-    return Array.from(this.pieces.values(), ({ key, section, shapes }) => {
-      const geometry = mergeGeometries(shapes, false)!;
+    const mergedBuckets = new Map<
+      string,
+      { material: THREE.MeshStandardMaterial; section: number | null; shapes: THREE.BufferGeometry[] }
+    >();
+    for (const { key, section, shapes } of this.pieces.values()) {
+      const mat = SCENERY_MATERIALS[key];
+      if (isBakeableOpaque(mat) && key !== "elbafRainbow" && key !== "elbafFalls") {
+        const targetMat = mat.metalness >= 0.3 ? SCENERY_BAKED_SHINY : SCENERY_BAKED_MATTE;
+        const bucketId = `${targetMat.uuid}:${section}`;
+        let bucket = mergedBuckets.get(bucketId);
+        if (!bucket) {
+          bucket = { material: targetMat, section, shapes: [] };
+          mergedBuckets.set(bucketId, bucket);
+        }
+        for (const shape of shapes) {
+          bakeVertexColor(shape, mat.color);
+          bucket.shapes.push(shape);
+        }
+      } else {
+        const bucketId = `${mat.uuid}:${section}`;
+        let bucket = mergedBuckets.get(bucketId);
+        if (!bucket) {
+          bucket = { material: mat, section, shapes: [] };
+          mergedBuckets.set(bucketId, bucket);
+        }
+        bucket.shapes.push(...shapes);
+      }
+    }
+
+    return Array.from(mergedBuckets.values(), ({ material, section, shapes }) => {
+      const geometry = shapes.length === 1 ? shapes[0] : mergeGeometries(shapes, false)!;
       geometry.computeBoundingBox();
       geometry.computeBoundingSphere();
       setSceneryParts(geometry, shapes);
-      shapes.forEach((shape) => shape.dispose());
-      return { material: SCENERY_MATERIALS[key], geometry, section };
+      if (shapes.length > 1) shapes.forEach((shape) => shape.dispose());
+      return { material, geometry, section };
     });
   }
 }
@@ -1108,7 +1189,7 @@ function eggheadPalm(b: Builder, x: number, z: number, height: number, lowPower:
   for (let i = 0; i < leaves; i++) {
     const a = i * Math.PI * 2 / leaves;
     const dx = Math.cos(a), dz = Math.sin(a);
-    b.add(new THREE.SphereGeometry(1, 8, 5), i % 2 ? "leafLight" : "leaf",
+    b.add(new THREE.SphereGeometry(1, b.distantLod ? 5 : 8, b.distantLod ? 3 : 5), i % 2 ? "leafLight" : "leaf",
       [x + .65 + dx * height * .27, yBase + height + .1, z + dz * height * .27],
       [0, -a, -.22], [height * .42, height * .044, height * .13]);
   }
@@ -1135,7 +1216,8 @@ function vegapunkSign(b: Builder, x: number, y: number, z: number, unit: number)
       for (const run of line.matchAll(/1+/g)) {
         const width = run[0].length;
         const column = (run.index ?? 0) + (width - 1) * .5;
-        b.box("eggYellow", [x, y + (2 - row) * unit, z + (i * 6 + column - 26) * unit],
+        // Miroir X des paysages : vu depuis le bus vers -X, la lecture gauche -> droite suit -Z.
+        b.box("eggYellow", [x, y + (2 - row) * unit, z - (i * 6 + column - 26) * unit],
           [.085, unit * .9, unit * (width - .1)]);
       }
     }
@@ -1397,31 +1479,30 @@ function elbafCastle(b: Builder, x: number, y: number, z: number, lowPower: bool
 }
 
 function elbafColossalSword(b: Builder, x: number, y: number, z: number, lowPower: boolean) {
-  // La gigantesque épée mythique plantée en biais dans les falaises d'Elbaf (visible dès l'approche).
-  const tiltZ = 0.16;
-  const tiltX = -0.08;
-  // Lame monumentale en acier sombre + nervure centrale dorée/métallique.
-  b.box("metal", [x, y + 7.2, z], [1.95, 15.2, .42], [tiltX, .15, tiltZ]);
-  b.box("castle", [x - .22, y + 7.3, z], [1.1, 14.4, .5], [tiltX, .15, tiltZ]);
+  // La gigantesque épée mythique plantée en biais dans les falaises d'Elbaf :
+  // toutes les pièces suivent exactement le même axe local +Y de l'Euler (lame, garde, poignée, pommeau alignés).
+  const rot: Point = [-0.08, 0.15, 0.16];
+  const euler = new THREE.Euler(rot[0], rot[1], rot[2]);
+  const axis = new THREE.Vector3(0, 1, 0).applyEuler(euler);
+  const faceZ = new THREE.Vector3(0, 0, 1).applyEuler(euler);
+  const along = (dist: number, zOff = 0): Point => [
+    x + axis.x * dist + faceZ.x * zOff,
+    y + axis.y * dist + faceZ.y * zOff,
+    z + axis.z * dist + faceZ.z * zOff,
+  ];
+  // Lame monumentale en acier sombre + nervure centrale.
+  b.box("metal", along(7.6), [1.95, 15.2, .42], rot);
+  b.box("castle", along(7.6), [1.1, 14.4, .5], rot);
   if (!lowPower) {
     // Rune lumineuse cyan gravée le long de la lame géante.
-    b.box("neonCyan", [x - .36, y + 8.6, z + .24], [.22, 5.2, .12], [tiltX, .15, tiltZ]);
+    b.box("neonCyan", along(9.0, 0.24), [.22, 5.2, .12], rot);
   }
-  // Garde nordique massive en or vieilli.
-  const gx = x - Math.sin(tiltZ) * 14.8;
-  const gy = y + Math.cos(tiltZ) * 14.8;
-  const gz = z - Math.sin(tiltX) * 14.8;
-  b.box("oldGold", [gx, gy, gz], [6.4, 1.05, 1.15], [tiltX, .15, tiltZ]);
-  b.box("gold", [gx, gy, gz], [6.8, .38, 1.28], [tiltX, .15, tiltZ]);
-  // Poignée en bois sombre + pommeau sphérique doré au sommet.
-  const hx = x - Math.sin(tiltZ) * 17.8;
-  const hy = y + Math.cos(tiltZ) * 17.8;
-  const hz = z - Math.sin(tiltX) * 17.8;
-  b.cylinder("wood", [hx, hy, hz], .42, .48, 5.2, 10, [tiltX, .15, tiltZ]);
-  const px = x - Math.sin(tiltZ) * 20.6;
-  const py = y + Math.cos(tiltZ) * 20.6;
-  const pz = z - Math.sin(tiltX) * 20.6;
-  b.sphere("gold", [px, py, pz], .95);
+  // Garde nordique massive en or vieilli exactement au sommet de la lame (dist = 15,2).
+  b.box("oldGold", along(15.2), [6.4, 1.05, 1.15], rot);
+  b.box("gold", along(15.2), [6.8, .38, 1.28], rot);
+  // Poignée en bois sombre + pommeau sphérique doré dans le prolongement exact de l'axe.
+  b.cylinder("wood", along(17.8), .42, .48, 5.2, 10, rot);
+  b.sphere("gold", along(20.6), .95);
 }
 
 function elbafRainbow(b: Builder, lowPower: boolean) {
@@ -1681,11 +1762,58 @@ function eniesLobby(b: Builder, lowPower: boolean) {
 const BUILDERS = [alabasta, waterSeven, skypiea, wano, drum, egghead, elbaf, eniesLobby];
 export const SET_PIECE_OFFSET_X = 33;
 
+/** Inverse une géométrie en miroir sur X (gauche <-> droite) en préservant le sens FrontSide des triangles et des normales. */
+function mirrorGeometryX(geometry: THREE.BufferGeometry): void {
+  const pos = geometry.getAttribute("position");
+  if (pos) {
+    for (let i = 0; i < pos.count; i++) pos.setX(i, -pos.getX(i));
+    pos.needsUpdate = true;
+  }
+  const norm = geometry.getAttribute("normal");
+  if (norm) {
+    for (let i = 0; i < norm.count; i++) norm.setX(i, -norm.getX(i));
+    norm.needsUpdate = true;
+  }
+  const index = geometry.getIndex();
+  if (index) {
+    for (let i = 0; i + 2 < index.count; i += 3) {
+      const b = index.getX(i + 1);
+      const c = index.getX(i + 2);
+      index.setX(i + 1, c);
+      index.setX(i + 2, b);
+    }
+    index.needsUpdate = true;
+  } else if (pos) {
+    for (const attr of Object.values(geometry.attributes)) {
+      if (!(attr instanceof THREE.BufferAttribute)) continue;
+      const itemSize = attr.itemSize;
+      const arr = attr.array as Float32Array;
+      for (let i = 0; i + 2 < attr.count; i += 3) {
+        const o1 = (i + 1) * itemSize;
+        const o2 = (i + 2) * itemSize;
+        for (let k = 0; k < itemSize; k++) {
+          const tmp = arr[o1 + k];
+          arr[o1 + k] = arr[o2 + k];
+          arr[o2 + k] = tmp;
+        }
+      }
+      attr.needsUpdate = true;
+    }
+  }
+  geometry.computeBoundingBox();
+  geometry.computeBoundingSphere();
+}
+
+function mirrorBatchesX(batches: SceneryBatch[]): SceneryBatch[] {
+  for (const batch of batches) mirrorGeometryX(batch.geometry);
+  return batches;
+}
+
 /** Geometry is local to an island; every authored vertex stays clear of the road. */
-export function createOnePieceScenery(zone: number, lowPower = false): SceneryBatch[] {
-  const builder = new Builder();
+export function createOnePieceScenery(zone: number, lowPower = false, distantLod = false): SceneryBatch[] {
+  const builder = new Builder(false, distantLod);
   BUILDERS[Math.max(0, Math.min(BUILDERS.length - 1, zone))](builder, lowPower);
-  return builder.finish();
+  return mirrorBatchesX(builder.finish());
 }
 
 function dune(b: Builder, x: number, z: number, scale: Point, light = false) {
@@ -1694,8 +1822,8 @@ function dune(b: Builder, x: number, z: number, scale: Point, light = false) {
 }
 
 /** Low, authored terrain details retain the route's open sightlines. */
-export function createOnePieceForeground(zone: number, side: number, lowPower = false): SceneryBatch[] {
-  const b = new Builder(true);
+export function createOnePieceForeground(zone: number, side: number, lowPower = false, distantLod = false): SceneryBatch[] {
+  const b = new Builder(true, distantLod);
   if (zone === 0) {
     for (let i = 0; i < (lowPower ? 3 : 6); i++) {
       if (side < 0 && i === 1) continue;
@@ -1703,10 +1831,11 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
     }
     if (side < 0) {
       // Oasis de Yuba / Nanohana : bassin turquoise, écume, vrais palmiers à palmes et tentes de bazar.
-      b.add(new THREE.CylinderGeometry(5.3, 5.5, 0.24, 24), "water", [-28, 0.14, -32], [0, 0, 0], [1.2, 1, 0.96]);
-      b.add(new THREE.TorusGeometry(5.35, 0.4, 6, 24), "sandLight", [-28, 0.24, -32], [Math.PI / 2, 0, 0], [1.2, 0.96, 0.72]);
+      const oasisSeg = distantLod ? 10 : 24;
+      b.add(new THREE.CylinderGeometry(5.3, 5.5, 0.24, oasisSeg), "water", [-28, 0.14, -32], [0, 0, 0], [1.2, 1, 0.96]);
+      b.add(new THREE.TorusGeometry(5.35, 0.4, distantLod ? 4 : 6, oasisSeg), "sandLight", [-28, 0.24, -32], [Math.PI / 2, 0, 0], [1.2, 0.96, 0.72]);
       if (!lowPower) {
-        b.add(new THREE.TorusGeometry(4.85, 0.12, 5, 24), "foam", [-28, 0.27, -32], [Math.PI / 2, 0, 0], [1.2, 0.96, 1]);
+        b.add(new THREE.TorusGeometry(4.85, 0.12, 5, oasisSeg), "foam", [-28, 0.27, -32], [Math.PI / 2, 0, 0], [1.2, 0.96, 1]);
       }
       // Ruines antiques de Sandora : colonnade alignée portant solidement son linteau + Ponéglyphe.
       const ruinBaseY = sampleMaxTerrainHeight(0, -34, -22, 33, 37, 2) - 0.1;
@@ -2119,5 +2248,75 @@ export function createOnePieceForeground(zone: number, side: number, lowPower = 
       }
     }
   }
-  return b.finish();
+  return mirrorBatchesX(b.finish());
+}
+
+/**
+ * Version LOD basse complexité d'une île complète (monument principal + avant-plans ouest/est),
+ * fusionnée en un lot unique `vertexColors` (+ éventuels effets transparents) pour que toutes
+ * les îles au loin s'affichent avec leurs vraies structures en ~1 draw call par île.
+ */
+export function createOnePieceDistantLod(zone: number): SceneryBatch[] {
+  const solidGeos: THREE.BufferGeometry[] = [];
+  const specialGrouped = new Map<THREE.MeshStandardMaterial, THREE.BufferGeometry[]>();
+  const bakedTint = new THREE.Color();
+
+  const collect = (batches: SceneryBatch[], offsetX = 0) => {
+    for (const batch of batches) {
+      if (offsetX !== 0) batch.geometry.translate(offsetX, 0, 0);
+      const mat = batch.material;
+      // Sauter les tubes transparents microscopiques au loin (Egghead) tout en gardant toutes les structures.
+      if (mat === SCENERY_MATERIALS.eggTube) {
+        batch.geometry.dispose();
+        continue;
+      }
+      if (mat.transparent || mat === SCENERY_MATERIALS.elbafRainbow || mat === SCENERY_MATERIALS.elbafFalls) {
+        const list = specialGrouped.get(mat);
+        if (list) list.push(batch.geometry);
+        else specialGrouped.set(mat, [batch.geometry]);
+        continue;
+      }
+      if (!batch.geometry.hasAttribute("color")) {
+        bakedTint.copy(mat.color);
+        if (mat.emissiveIntensity > 0) {
+          bakedTint.lerp(mat.emissive, Math.min(1, mat.emissiveIntensity * 0.45));
+        }
+        bakeVertexColor(batch.geometry, bakedTint);
+      }
+      solidGeos.push(batch.geometry);
+    }
+  };
+  collect(createOnePieceScenery(zone, true, true), -SET_PIECE_OFFSET_X);
+  collect(createOnePieceForeground(zone, -1, true, true));
+  collect(createOnePieceForeground(zone, 1, true, true));
+
+  const result: SceneryBatch[] = [];
+  if (solidGeos.length === 1) {
+    solidGeos[0].computeBoundingBox();
+    solidGeos[0].computeBoundingSphere();
+    result.push({ material: SCENERY_BAKED_MATTE, geometry: solidGeos[0], section: null });
+  } else if (solidGeos.length > 1) {
+    const merged = mergeGeometries(solidGeos, false);
+    solidGeos.forEach((g) => g.dispose());
+    if (merged) {
+      merged.computeBoundingBox();
+      merged.computeBoundingSphere();
+      result.push({ material: SCENERY_BAKED_MATTE, geometry: merged, section: null });
+    }
+  }
+  for (const [material, geos] of specialGrouped) {
+    if (geos.length === 1) {
+      geos[0].computeBoundingBox();
+      geos[0].computeBoundingSphere();
+      result.push({ material, geometry: geos[0], section: null });
+    } else {
+      const merged = mergeGeometries(geos, false);
+      geos.forEach((g) => g.dispose());
+      if (!merged) continue;
+      merged.computeBoundingBox();
+      merged.computeBoundingSphere();
+      result.push({ material, geometry: merged, section: null });
+    }
+  }
+  return result;
 }

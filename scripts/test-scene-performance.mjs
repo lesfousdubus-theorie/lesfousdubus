@@ -38,6 +38,7 @@ const { DANCE_PHASE_DURATION, createPassengerPose, samplePassengerPose } = await
 const { sampleCopilotDance } = await load("src/lib/copilot-dance.ts");
 const { PARTY_BEAT_SECONDS } = await load("src/lib/party-rhythm.ts");
 const { createZoneLoopOrder, getActiveZoneLoopState, getZoneSlotCenterZ, mulberry32 } = await load("src/lib/world-route.ts");
+const { computeScrollLockedShadowCenterZ, installSmoothPcfShadowFilter } = await load("src/lib/shadow-filter.ts");
 
 // 1. Formatage des noms GPU WebGL2 / ANGLE
 assert.equal(
@@ -661,5 +662,34 @@ const zoomedOutShadow = getShadowCameraFraming({
 assert(zoomedOutShadow.halfWidth > closeShadow.halfWidth, "zooming out widens shadow frustum");
 assert(zoomedOutShadow.halfDepth > closeShadow.halfDepth, "zooming out lengthens shadow frustum");
 assert(zoomedOutShadow.centerZ < closeShadow.centerZ, "zooming out follows camera view");
+
+// 13. Filtre PCF tente 5x5 + verrouillage exact des texels sur le défilement des paysages (long bus inclus)
+assert.equal(installSmoothPcfShadowFilter(), true, "smooth 5x5 tent PCF shader chunk installs cleanly");
+const longBusCloseShadow = getShadowCameraFraming({
+  cabinCenterZ: 3275,
+  cabinLength: 6560,
+  cameraX: 5.2,
+  cameraY: 3.4,
+  cameraZ: 420,
+  fogFar: 2400,
+  shadowMapSize: 4096,
+});
+assert(
+  longBusCloseShadow.halfWidth <= 110 && longBusCloseShadow.halfDepth <= 190,
+  "close view along a 6.5 km bus keeps a tight shadow frustum instead of inflating to zoom-out max",
+);
+assert(
+  Math.abs(longBusCloseShadow.centerZ - 420) <= 60,
+  "long-bus shadow frustum follows camera Z along the bus",
+);
+const baseScrollLock = computeScrollLockedShadowCenterZ(-115, 0, 192, 4096, -0.55, 0.78, -0.42);
+for (const scroll of [0.17, 1.43, 16.0, 257.89]) {
+  const cur = computeScrollLockedShadowCenterZ(-115, scroll, 192, 4096, -0.55, 0.78, -0.42);
+  const relShiftTexels = ((scroll - cur.snappedCenterZ) - (0 - baseScrollLock.snappedCenterZ)) / baseScrollLock.worldTexelZ;
+  assert(
+    Math.abs(relShiftTexels - Math.round(relShiftTexels)) < 1e-6,
+    `landscape shadow texel phase stays exact integer at scroll=${scroll}`,
+  );
+}
 
 console.log("Scene performance GPU classification, dynamic budgets, hysteresis and sea creature physics passed.");

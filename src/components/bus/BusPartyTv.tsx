@@ -37,14 +37,19 @@ function makePartyCard(lines: readonly string[], index: number, headerTitle: str
   return texture;
 }
 
+const PARTY_CARDS_CACHE = new Map<string, THREE.CanvasTexture[]>();
+
 export function usePartyTvCards(active: boolean) {
   const locale = useLocale();
   const textures = useMemo(() => {
     if (!active) return null;
+    const cached = PARTY_CARDS_CACHE.get(locale);
+    if (cached) return cached;
     const headerTitle = pickLocale(locale, "LA THÉORIE DES FOUS DU BUS", "THE BUS FOOLS THEORY");
-    return getTheorySignMessages(locale).map(({ lines }, index) => makePartyCard(lines, index, headerTitle));
+    const created = getTheorySignMessages(locale).map(({ lines }, index) => makePartyCard(lines, index, headerTitle));
+    PARTY_CARDS_CACHE.set(locale, created);
+    return created;
   }, [active, locale]);
-  useEffect(() => () => textures?.forEach(texture => texture.dispose()), [textures]);
   return textures;
 }
 

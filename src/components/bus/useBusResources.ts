@@ -153,17 +153,17 @@ export default function useBusResources() {
   const [dashTex, setDashTex] = useState<THREE.CanvasTexture>(() => dashPlaceholder);
   const [licensePlateTex, setLicensePlateTex] = useState<THREE.CanvasTexture>(() => platePlaceholder);
   const [contactShadowTex, setContactShadowTex] = useState<THREE.CanvasTexture>(() => shadowPlaceholder);
+  const [proceduralStage, setProceduralStage] = useState(0);
+  const [strawReady, setStrawReady] = useState(false);
+  const [corvoReady, setCorvoReady] = useState(false);
 
   const stageRef = useRef(0);
-  const nextAtRef = useRef(0);
   const ownedTexturesRef = useRef<THREE.Texture[]>([]);
 
-  useFrame((_, dt) => {
+  useFrame(() => {
     if (stageRef.current >= 5) return;
-    const now = performance.now();
-    if (now < nextAtRef.current) return;
-    nextAtRef.current = now + (dt > 0.05 ? 55 : 25);
     stageRef.current += 1;
+    setProceduralStage(stageRef.current);
 
     switch (stageRef.current) {
       case 1: {
@@ -205,8 +205,9 @@ export default function useBusResources() {
     const loader = new THREE.TextureLoader();
     const loaded: THREE.Texture[] = [];
 
-    const strawTimer = window.setTimeout(() => {
-      loader.load("/textures/straw.webp", (tex) => {
+    loader.load(
+      "/textures/straw.webp",
+      (tex) => {
         if (!active) {
           tex.dispose();
           return;
@@ -219,11 +220,18 @@ export default function useBusResources() {
         tex.anisotropy = 4;
         loaded.push(tex);
         mats.straw.map = tex;
-      });
-    }, 180);
+        mats.straw.needsUpdate = true;
+        setStrawReady(true);
+      },
+      undefined,
+      () => {
+        if (active) setStrawReady(true);
+      },
+    );
 
-    const corvoTimer = window.setTimeout(() => {
-      loader.load("/textures/montcorvo.png", (tex) => {
+    loader.load(
+      "/textures/montcorvo.png",
+      (tex) => {
         if (!active) {
           tex.dispose();
           return;
@@ -234,13 +242,16 @@ export default function useBusResources() {
         tex.anisotropy = 4;
         loaded.push(tex);
         setMontCorvoTex(tex);
-      });
-    }, 320);
+        setCorvoReady(true);
+      },
+      undefined,
+      () => {
+        if (active) setCorvoReady(true);
+      },
+    );
 
     return () => {
       active = false;
-      window.clearTimeout(strawTimer);
-      window.clearTimeout(corvoTimer);
       loaded.forEach((tex) => tex.dispose());
     };
   }, [mats]);
@@ -287,7 +298,11 @@ export default function useBusResources() {
     shadowPlaceholder,
   ]);
 
-  return { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex };
+  const sideLabelDone = localizedSideLabel?.locale === locale;
+  const resourcesReady = proceduralStage >= 5 && strawReady && corvoReady && sideLabelDone;
+  const resourcesProgress = (proceduralStage / 5) * 0.5 + (strawReady ? 0.2 : 0) + (corvoReady ? 0.2 : 0) + (sideLabelDone ? 0.1 : 0);
+
+  return { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex, resourcesReady, resourcesProgress };
 }
 
 export type BusMaterials = ReturnType<typeof useBusResources>["mats"];

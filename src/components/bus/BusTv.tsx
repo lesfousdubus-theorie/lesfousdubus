@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import type { Phase } from "./constants";
@@ -25,6 +25,120 @@ interface BusTvFrameProps {
   reducedMotion: boolean;
 }
 
+/** Regroupe les boîtiers + écrans des N télés en 6 draw calls instanciés (même avec 40+ télés toutes les 4 rangées). */
+export const BusTvHousings = memo(function BusTvHousings({
+  positions,
+  mats,
+  tvOn = false,
+  activeIdx = 0,
+  tvOffTex,
+  posterTex,
+  hideScreens = false,
+}: {
+  positions: Array<[number, number, number]>;
+  mats: Record<string, THREE.Material>;
+  tvOn?: boolean;
+  activeIdx?: number;
+  tvOffTex?: THREE.CanvasTexture;
+  posterTex?: THREE.Texture;
+  hideScreens?: boolean;
+}) {
+  const bodyRef = useRef<THREE.InstancedMesh>(null);
+  const backRef = useRef<THREE.InstancedMesh>(null);
+  const frameRef = useRef<THREE.InstancedMesh>(null);
+  const mountRef = useRef<THREE.InstancedMesh>(null);
+  const bezelRef = useRef<THREE.InstancedMesh>(null);
+  const screenRef = useRef<THREE.InstancedMesh>(null);
+  const count = positions.length;
+
+  useLayoutEffect(() => {
+    const m = new THREE.Matrix4();
+    const zero = new THREE.Matrix4().makeScale(0, 0, 0);
+    const sets: Array<[React.RefObject<THREE.InstancedMesh | null>, number, number, number]> = [
+      [bodyRef, 0, 0, 0],
+      [backRef, 0, 0, -0.041],
+      [frameRef, 0, 0, 0.041],
+      [mountRef, 0, 0.52, -0.08],
+      // Devant la face avant du cadre jaune (0.041 + 0.005 = 0.046) pour rester noir tant que la vidéo ne tourne pas.
+      [bezelRef, 0, 0, 0.049],
+    ];
+    for (const [ref, ox, oy, oz] of sets) {
+      const mesh = ref.current;
+      if (!mesh) continue;
+      for (let i = 0; i < count; i++) {
+        const [x, y, z] = positions[i];
+        mesh.setMatrixAt(i, m.makeTranslation(x + ox, y + oy, z + oz));
+      }
+      mesh.count = count;
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.computeBoundingSphere();
+    }
+    const screen = screenRef.current;
+    if (screen) {
+      for (let i = 0; i < count; i++) {
+        if (tvOn && i === activeIdx) {
+          screen.setMatrixAt(i, zero);
+        } else {
+          const [x, y, z] = positions[i];
+          screen.setMatrixAt(i, m.makeTranslation(x, y, z + 0.053));
+        }
+      }
+      screen.count = count;
+      screen.instanceMatrix.needsUpdate = true;
+      screen.computeBoundingSphere();
+    }
+  }, [activeIdx, count, positions, tvOn]);
+
+  if (!count) return null;
+  // Capacité par paliers de 32 pour éviter de détruire/recréer les 6 InstancedMesh quand la fenêtre glisse.
+  const capacity = Math.max(32, Math.ceil(count / 32) * 32);
+  // Les écrans éteints ou non actifs restent bien noirs (tvOffTex) au lieu d'afficher l'affiche orange.
+  const screenMap = tvOffTex ?? posterTex;
+  return (
+    <group name="bus-tv-housings">
+      <instancedMesh key={`tv-body-${capacity}`} ref={bodyRef} args={[undefined, undefined, capacity]} count={count} material={mats.dark} castShadow raycast={() => null}>
+        <boxGeometry args={[1.36, 0.82, 0.08]} />
+      </instancedMesh>
+      <instancedMesh key={`tv-back-${capacity}`} ref={backRef} args={[undefined, undefined, capacity]} count={count} raycast={() => null}>
+        <planeGeometry args={[1.34, 0.8]} />
+        <meshStandardMaterial color="#0c1017" roughness={0.7} side={THREE.DoubleSide} />
+      </instancedMesh>
+      <instancedMesh key={`tv-frame-${capacity}`} ref={frameRef} args={[undefined, undefined, capacity]} count={count} material={mats.yellow} raycast={() => null}>
+        <boxGeometry args={[1.34, 0.8, 0.01]} />
+      </instancedMesh>
+      <instancedMesh key={`tv-mount-${capacity}`} ref={mountRef} args={[undefined, undefined, capacity]} count={count} material={mats.seatFrame} raycast={() => null}>
+        <boxGeometry args={[0.16, 0.45, 0.16]} />
+      </instancedMesh>
+      <instancedMesh key={`tv-bezel-${capacity}`} ref={bezelRef} args={[undefined, undefined, capacity]} count={count} raycast={() => null}>
+        <planeGeometry args={[1.28, 0.73]} />
+        <meshBasicMaterial color="#05070c" side={THREE.DoubleSide} />
+      </instancedMesh>
+      {screenMap && (
+        <instancedMesh
+          key={`tv-screen-${capacity}`}
+          ref={screenRef}
+          args={[undefined, undefined, capacity]}
+          count={count}
+          visible={!hideScreens}
+          raycast={() => null}
+        >
+          <planeGeometry args={[TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT]} />
+          <meshStandardMaterial
+            key={tvOn ? "tv-on" : "tv-off"}
+            map={screenMap}
+            color="#05070b"
+            emissive="#000000"
+            emissiveIntensity={0}
+            roughness={0.25}
+            metalness={0.8}
+            toneMapped={false}
+          />
+        </instancedMesh>
+      )}
+    </group>
+  );
+});
+
 export function BusTvFrame({
   pos,
   idx,
@@ -36,27 +150,32 @@ export function BusTvFrame({
   posterTex,
   partyCards,
   reducedMotion,
-}: BusTvFrameProps) {
+  withHousing = true,
+}: BusTvFrameProps & { withHousing?: boolean }) {
   const showPoster = tvOn && !partyCards && !isActive;
   return (
     <group name="bus-tv-frame" userData={{ index: idx }} position={pos} visible={visible}>
-      <mesh material={mats.dark} castShadow>
-        <boxGeometry args={[1.36, 0.82, 0.08]} />
-      </mesh>
-      <mesh position={[0, 0, -0.041]}>
-        <planeGeometry args={[1.34, 0.8]} />
-        <meshStandardMaterial color="#0c1017" roughness={0.7} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh material={mats.yellow} position={[0, 0, 0.041]}>
-        <boxGeometry args={[1.34, 0.8, 0.01]} />
-      </mesh>
-      <mesh material={mats.seatFrame} position={[0, 0.52, -0.08]}>
-        <boxGeometry args={[0.16, 0.45, 0.16]} />
-      </mesh>
-      <mesh position={[0, 0, 0.045]}>
-        <planeGeometry args={[1.28, 0.73]} />
-        <meshBasicMaterial color="#05070c" side={THREE.DoubleSide} />
-      </mesh>
+      {withHousing && (
+        <>
+          <mesh material={mats.dark} castShadow>
+            <boxGeometry args={[1.36, 0.82, 0.08]} />
+          </mesh>
+          <mesh position={[0, 0, -0.041]}>
+            <planeGeometry args={[1.34, 0.8]} />
+            <meshStandardMaterial color="#0c1017" roughness={0.7} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh material={mats.yellow} position={[0, 0, 0.041]}>
+            <boxGeometry args={[1.34, 0.8, 0.01]} />
+          </mesh>
+          <mesh material={mats.seatFrame} position={[0, 0.52, -0.08]}>
+            <boxGeometry args={[0.16, 0.45, 0.16]} />
+          </mesh>
+          <mesh position={[0, 0, 0.049]}>
+            <planeGeometry args={[1.28, 0.73]} />
+            <meshBasicMaterial color="#05070c" side={THREE.DoubleSide} />
+          </mesh>
+        </>
+      )}
       {partyCards ? <BusPartyTv cards={partyCards} index={idx} reducedMotion={reducedMotion} /> : (
         <mesh name="bus-tv-display" position={[0, 0, 0.053]}>
           <planeGeometry args={[TV_SCREEN_WIDTH, TV_SCREEN_HEIGHT]} />
@@ -92,7 +211,7 @@ interface BusTvPlayerProps {
   onPlaybackChange?: (active: boolean) => void;
 }
 
-export function BusTvPlayer({
+export const BusTvPlayer = memo(function BusTvPlayer({
   pos,
   tvOn,
   partyOn = false,
@@ -209,7 +328,8 @@ export function BusTvPlayer({
 
   const shouldPlay = useCallback(() => {
     const desired = desiredRef.current;
-    return !partyAudioRef.current && !desired.partyOn && desired.hasEntered && desired.tvOn && desired.phase !== "entering"
+    return !partyAudioRef.current && !desired.partyOn && desired.hasEntered && desired.tvOn
+      && desired.phase === "inside"
       && !desired.isMutedForFullscreen && !desired.playbackSuspended;
   }, []);
 
@@ -380,16 +500,17 @@ export function BusTvPlayer({
   }, [applyDesiredPlayback, clearStartTimer, failPlayer, mountElement, reportPlayback, shouldPlay, stopVolumeRamp, stopWarmup]);
 
   useEffect(() => {
-    if (desiredRef.current.hasEntered) {
+    if (desiredRef.current.hasEntered || desiredRef.current.phase !== "outside") {
       connectPlayer();
-      return stopPlayer;
     }
-    const timer = window.setTimeout(connectPlayer, 2200);
-    return () => {
-      window.clearTimeout(timer);
-      stopPlayer();
-    };
+    return stopPlayer;
   }, [connectPlayer, stopPlayer]);
+
+  useEffect(() => {
+    if (hasEntered || phase !== "outside") {
+      connectPlayer();
+    }
+  }, [hasEntered, phase, connectPlayer]);
 
   useEffect(() => onBusAudioEvent("partyFocus", active => {
     if (active) {
@@ -526,4 +647,4 @@ export function BusTvPlayer({
       )}
     </BusTvScreen>
   </group>;
-}
+});

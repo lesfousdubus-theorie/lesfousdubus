@@ -368,14 +368,23 @@ export default function CameraRig({
     rt.toSeat = !next;
     rt.fromPos.copy(camera.position);
     rt.fromQ.copy(camera.quaternion);
-    rt.toPos.copy(next ? overview.pos : activeEyePos);
-    rt.duration = reducedMotion
-      ? 0.01
-      : THREE.MathUtils.clamp(rt.fromPos.distanceTo(rt.toPos) / 7, 1.8, 2.5);
-    rt.toTarget.copy(next ? overview.target : activeTvTarget);
+    if (next) {
+      // En vue libre, se décaler juste autour et derrière le personnage au lieu de repartir tout devant le bus
+      // (seul le bouton « Recentrer » ramène la caméra à l'avant du bus).
+      const sideSign = activeEyePos.x >= 0 ? 1 : -1;
+      rt.toTarget.set(activeEyePos.x, 1.85, activeEyePos.z);
+      rt.toPos.set(sideSign * 7.2, 3.6, activeEyePos.z + 5.8);
+      rt.toQ.setFromRotationMatrix(new THREE.Matrix4().lookAt(rt.toPos, rt.toTarget, CAMERA_UP));
+      rt.duration = reducedMotion ? 0.01 : 1.05;
+    } else {
+      rt.toPos.copy(activeEyePos);
+      rt.toTarget.copy(activeTvTarget);
+      rt.toQ.setFromRotationMatrix(new THREE.Matrix4().lookAt(rt.toPos, rt.toTarget, CAMERA_UP));
+      rt.duration = reducedMotion
+        ? 0.01
+        : THREE.MathUtils.clamp(rt.fromPos.distanceTo(rt.toPos) / 9, 0.9, 1.8);
+    }
     rt.fromTarget.copy(next ? activeTvTarget : pivot);
-    if (next) rt.toQ.copy(overview.orientation);
-    else rt.toQ.setFromRotationMatrix(new THREE.Matrix4().lookAt(rt.toPos, rt.toTarget, CAMERA_UP));
     targetFovRef.current = 55;
   }, [freeView, phase, camera, activeEyePos, activeTvTarget, overview, pivot, reducedMotion]);
 
@@ -571,11 +580,28 @@ export default function CameraRig({
       tappedKeysRef.current.clear();
     }
 
-    // Gestion du FOV (zoom)
+    // Gestion du FOV (zoom) et du plan proche (near) dynamique :
+    // augmente fortement la précision du depth buffer 24 bits dès que la caméra s'éloigne,
+    // supprimant tout Z-fighting sur la route, les bandes jaunes du bus et les visages des personnages.
     if (cam instanceof THREE.PerspectiveCamera) {
       let projectionChanged = false;
       if (cam.far !== cameraFar) {
         cam.far = cameraFar;
+        projectionChanged = true;
+      }
+      const busMinZ = cabinCenterZ - cabinLength * 0.5;
+      const busMaxZ = cabinCenterZ + cabinLength * 0.5;
+      const nearestBusZ = THREE.MathUtils.clamp(cam.position.z, busMinZ, busMaxZ);
+      const distToBus = Math.hypot(
+        Math.max(0, Math.abs(cam.position.x) - 1.5),
+        Math.max(0, cam.position.y - 3.6),
+        cam.position.z - nearestBusZ,
+      );
+      const targetNear = (p === "inside" && !freeViewRef.current)
+        ? 0.18
+        : THREE.MathUtils.clamp(Math.min(distToBus, Math.max(0.2, cam.position.y)) * 0.08, 0.2, 24);
+      if (Math.abs(targetNear - cam.near) / Math.max(0.18, cam.near) > 0.12) {
+        cam.near = targetNear;
         projectionChanged = true;
       }
 

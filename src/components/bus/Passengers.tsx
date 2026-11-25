@@ -47,6 +47,7 @@ function getFallbackPassengerHeadTop(archetype: NakamaArchetype) {
 }
 
 const ARCHETYPE_MATS_CACHE = new Map<string, Record<string, THREE.Material>>();
+const SUMMARY_PROFILE_CACHE = new WeakMap<object, PassengerProfile>();
 
 export function getArchetypeMaterials(archetype: NakamaArchetype): Record<string, THREE.Material> {
   const existing = ARCHETYPE_MATS_CACHE.get(archetype.id);
@@ -109,6 +110,7 @@ export function getArchetypeMaterials(archetype: NakamaArchetype): Record<string
 }
 
 interface PassengersProps {
+  phase?: "outside" | "entering" | "inside" | "exiting";
   passengerCount: number;
   seatCapacity: number;
   numRows: number;
@@ -129,7 +131,26 @@ interface PassengersProps {
   avatarAboard?: boolean;
 }
 
-function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices, vacantSeatRanges = [], hornPulse,
+function isCameraOutsideCabin(
+  phase: "outside" | "entering" | "inside" | "exiting",
+  pos: THREE.Vector3,
+  rearZ: number,
+): boolean {
+  // En mode extérieur, la caméra reste toujours hors de la cabine : on garde 100 % des passagers
+  // en instancing GPU (zéro démontage/remontage React et zéro siège vide au zoom rapide près des vitres).
+  if (phase === "outside") return true;
+  return Math.abs(pos.x) > 6.5 || pos.y > 5.0 || pos.z < FIRST_SEAT_Z - 8.0 || pos.z > rearZ + 6.0;
+}
+
+function isCameraNearLabels(
+  phase: "outside" | "entering" | "inside" | "exiting",
+  pos: THREE.Vector3,
+): boolean {
+  if (phase !== "outside") return true;
+  return Math.abs(pos.x) <= 36 && pos.y <= 28;
+}
+
+function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, renderedRowIndices, vacantSeatRanges = [], hornPulse,
   partyOn = false, reservedRow = 3, reservedColumn = null, passengerProfiles = [], onPassengerSelect,
   profileRevision = 0, lowPower = false, detailLimit, simplifiedLimit, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
   const camera = useThree(state => state.camera);
@@ -150,6 +171,24 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
         z: THREE.MathUtils.clamp(Math.round(camera.position.z / 1.5) * 1.5, FIRST_SEAT_Z, Math.max(FIRST_SEAT_Z, rearZ - 2)),
       };
   });
+  const [outsideCabin, setOutsideCabin] = useState(() =>
+    isCameraOutsideCabin(phase, camera.position, getSeatRowZ(Math.max(0, numRows - 1)) + 4),
+  );
+  const outsideCabinRef = useRef(outsideCabin);
+  const [showNearLabels, setShowNearLabels] = useState(() => isCameraNearLabels(phase, camera.position));
+  const showNearLabelsRef = useRef(showNearLabels);
+  const [labelRowRange, setLabelRowRange] = useState<BusRowRange>(() => ({ minRow: 0, maxRow: Math.min(numRows - 1, 36) }));
+  const labelRowRangeRef = useRef<{ minRow: number; maxRow: number; shrinkAt: number }>({
+    minRow: 0,
+    maxRow: Math.min(numRows - 1, 36),
+    shrinkAt: 0,
+  });
+  const prevCamPosRef = useRef(new THREE.Vector3());
+  const prevCamDirRef = useRef(new THREE.Vector3(0, 0, -1));
+  const curCamPosScratch = useMemo(() => new THREE.Vector3(), []);
+  const curCamDirScratch = useMemo(() => new THREE.Vector3(), []);
+  const camMotionInitRef = useRef(false);
+  const fastMotionUntilRef = useRef(0);
   const lastFocus = useRef({ ...detailFocus, time: -Infinity });
   const [detailedBudget, setDetailedBudget] = useState(1);
   const detailedCountRef = useRef(0);
@@ -167,51 +206,156 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
     }
     if (!root.current) return;
 
-    // Cache les rangées hors champ sans jamais retirer un passager visible de son siège
+    // Détecter les rotations/déplacements rapides de caméra (y compris glissement de siège en cabine)
+    // pour éviter tout recalcul de rangées/noms/détails en plein milieu de l'animation.
+    frameCamera.getWorldPosition(curCamPosScratch);
+    frameCamera.getWorldDirection(curCamDirScratch);
+    if (camMotionInitRef.current) {
+      const safeDt = Math.max(dt, 1 / 120);
+      const dot = THREE.MathUtils.clamp(prevCamDirRef.current.dot(curCamDirScratch), -1, 1);
+      const angularSpeed = Math.acos(dot) / safeDt;
+      const moveSpeed = prevCamPosRef.current.distanceTo(curCamPosScratch) / safeDt;
+      const moveThreshold = outsideCabinRef.current ? 28 : 1.2;
+      if (angularSpeed > 1.4 || moveSpeed > moveThreshold) {
+        fastMotionUntilRef.current = now + 220;
+      }
+    } else {
+      camMotionInitRef.current = true;
+    }
+    prevCamPosRef.current.copy(curCamPosScratch);
+    prevCamDirRef.current.copy(curCamDirScratch);
+
+    // Cache les rangées hors champ sans jamais retirer un passager visible de son siège ;
+    // vu de l'extérieur, la fenêtre renderedRowIndices est déjà bornée et statique : on masque
+    // instantanément le groupe entier sans re-render React ni ré-upload GPU pendant l'orbite.
     const rawVisible = getVisibleBusRowRange(frameCamera, root.current, numRows, 1.8, frustumScratch);
-    const prevVisible = visibleRangeRef.current;
-    const rawEmpty = rawVisible.minRow > rawVisible.maxRow;
-    const prevEmpty = prevVisible ? prevVisible.minRow > prevVisible.maxRow : false;
-    const needsExpand = !prevVisible
-      || prevVisible.numRows !== numRows
-      || (!rawEmpty && (prevEmpty || rawVisible.minRow < prevVisible.minRow || rawVisible.maxRow > prevVisible.maxRow));
-    const wantsShrink = Boolean(
-      prevVisible
-      && prevVisible.numRows === numRows
-      && !prevEmpty
-      && (rawEmpty || rawVisible.minRow > prevVisible.minRow + 8 || rawVisible.maxRow < prevVisible.maxRow - 8),
-    );
-    if (needsExpand || (wantsShrink && prevVisible && now >= prevVisible.shrinkAt)) {
-      const nextRange: BusRowRange = rawEmpty
-        ? { minRow: 1, maxRow: 0 }
-        : { minRow: Math.max(0, rawVisible.minRow - 3), maxRow: Math.min(numRows - 1, rawVisible.maxRow + 3) };
-      visibleRangeRef.current = { ...nextRange, numRows, shrinkAt: now + 260 };
-      setVisibleRowState({ numRows, range: nextRange });
-    } else if (!wantsShrink && prevVisible) {
-      prevVisible.shrinkAt = now + 260;
+    const renderedMin = renderedRowIndices?.length ? renderedRowIndices[0] : 0;
+    const renderedMax = renderedRowIndices?.length ? renderedRowIndices[renderedRowIndices.length - 1] : numRows - 1;
+    const clampedMin = Math.max(rawVisible.minRow, renderedMin);
+    const clampedMax = Math.min(rawVisible.maxRow, renderedMax);
+    const rawEmpty = clampedMin > clampedMax;
+    root.current.visible = !outsideCabinRef.current || !rawEmpty;
+    if (now < fastMotionUntilRef.current) return;
+
+    if (!outsideCabinRef.current) {
+      const prevVisible = visibleRangeRef.current;
+      const prevEmpty = prevVisible ? prevVisible.minRow > prevVisible.maxRow : false;
+      const needsExpand = !prevVisible
+        || prevVisible.numRows !== numRows
+        || (!rawEmpty && (prevEmpty || clampedMin < prevVisible.minRow || clampedMax > prevVisible.maxRow));
+      const wantsShrink = Boolean(
+        prevVisible
+        && prevVisible.numRows === numRows
+        && !prevEmpty
+        && (rawEmpty || clampedMin > prevVisible.minRow + 32 || clampedMax < prevVisible.maxRow - 32),
+      );
+      if (needsExpand || (wantsShrink && prevVisible && now >= prevVisible.shrinkAt)) {
+        const nextRange: BusRowRange = rawEmpty
+          ? { minRow: 1, maxRow: 0 }
+          : { minRow: Math.max(0, clampedMin - 32), maxRow: Math.min(numRows - 1, clampedMax + 32) };
+        visibleRangeRef.current = { ...nextRange, numRows, shrinkAt: now + 1200 };
+        setVisibleRowState({ numRows, range: nextRange });
+      } else if (!wantsShrink && prevVisible) {
+        prevVisible.shrinkAt = now + 1200;
+      }
     }
 
-    if (now - lastFocus.current.time < 250) return;
+    const focusInterval = showNearLabelsRef.current ? 260 : 600;
+    if (now - lastFocus.current.time < focusInterval) return;
     lastFocus.current.time = now;
-    frameCamera.getWorldPosition(cameraPoint);
+    cameraPoint.copy(curCamPosScratch);
     root.current.worldToLocal(cameraPoint);
     const rearZ = getSeatRowZ(Math.max(0, numRows - 1)) + 4;
+    const nextOutside = isCameraOutsideCabin(phase, cameraPoint, rearZ);
+    if (nextOutside !== outsideCabinRef.current) {
+      outsideCabinRef.current = nextOutside;
+      setOutsideCabin(nextOutside);
+    }
+    const nextShowLabels = isCameraNearLabels(phase, cameraPoint);
+    if (nextShowLabels !== showNearLabelsRef.current) {
+      showNearLabelsRef.current = nextShowLabels;
+      setShowNearLabels(nextShowLabels);
+    }
+    // Sélectionner uniquement les rangées réellement DANS le champ de la caméra (avec marge ±6 rangées
+    // et hystérésis de rétrécissement de 1200 ms pour éviter de démonter/remonter 150 sprites lors d'une orbite 360°).
+    if (nextShowLabels) {
+      const prevLabel = labelRowRangeRef.current;
+      const prevEmpty = prevLabel.minRow > prevLabel.maxRow;
+      if (rawEmpty) {
+        if (!prevEmpty && now >= prevLabel.shrinkAt) {
+          const emptyRange = { minRow: 1, maxRow: 0 };
+          labelRowRangeRef.current = { ...emptyRange, shrinkAt: now + 1200 };
+          setLabelRowRange(emptyRange);
+        }
+      } else {
+        const maxSpanRows = 38;
+        const span = clampedMax - clampedMin;
+        let desiredMin = clampedMin;
+        let desiredMax = clampedMax;
+        if (span > maxSpanRows) {
+          const camRow = Math.round((cameraPoint.z - FIRST_SEAT_Z) / 1.25);
+          const anchor = THREE.MathUtils.clamp(camRow, clampedMin, clampedMax);
+          desiredMin = Math.max(clampedMin, Math.min(clampedMax - maxSpanRows, anchor - Math.floor(maxSpanRows / 2)));
+          desiredMax = Math.min(clampedMax, desiredMin + maxSpanRows);
+        }
+        const needsExpand = prevEmpty || desiredMin < prevLabel.minRow || desiredMax > prevLabel.maxRow;
+        const wantsShrink = !prevEmpty && (desiredMin > prevLabel.minRow + 8 || desiredMax < prevLabel.maxRow - 8);
+        if (needsExpand || (wantsShrink && now >= prevLabel.shrinkAt)) {
+          const paddedMin = Math.max(renderedMin, desiredMin - 12);
+          const paddedMax = Math.min(renderedMax, Math.max(desiredMax, Math.min(desiredMax + 12, paddedMin + 52)));
+          const nextRange: BusRowRange = { minRow: paddedMin, maxRow: paddedMax };
+          labelRowRangeRef.current = { ...nextRange, shrinkAt: now + 1500 };
+          setLabelRowRange(nextRange);
+        } else if (!wantsShrink) {
+          prevLabel.shrinkAt = now + 1500;
+        }
+      }
+    }
     const farOutside = Math.abs(cameraPoint.x) > 28 || cameraPoint.z < -26 || cameraPoint.z > rearZ + 18;
-    const nextX = farOutside ? 0 : THREE.MathUtils.clamp(Math.round(cameraPoint.x / 1.2) * 1.2, -3, 3);
-    const nextZ = farOutside
-      ? getSeatRowZ(reservedRow)
-      : THREE.MathUtils.clamp(Math.round(cameraPoint.z / 1.5) * 1.5, FIRST_SEAT_Z, Math.max(FIRST_SEAT_Z, rearZ - 2));
-    if (Math.hypot(nextX - lastFocus.current.x, nextZ - lastFocus.current.z) <= 1.0) return;
+    const nextX = farOutside ? 0 : THREE.MathUtils.clamp(Math.round(cameraPoint.x / 1.5) * 1.5, -3, 3);
+    const nearestVisibleRow = rawVisible.minRow <= rawVisible.maxRow
+      ? THREE.MathUtils.clamp(Math.round((cameraPoint.z - FIRST_SEAT_Z) / 1.25), rawVisible.minRow, rawVisible.maxRow)
+      : reservedRow;
+    const rawNextZ = farOutside
+      ? getSeatRowZ(nearestVisibleRow)
+      : THREE.MathUtils.clamp(cameraPoint.z, FIRST_SEAT_Z, Math.max(FIRST_SEAT_Z, rearZ - 2));
+    const stepZ = nextShowLabels ? 5.0 : 24.0;
+    const nextZ = Math.round(rawNextZ / stepZ) * stepZ;
+    if (Math.hypot(nextX - lastFocus.current.x, nextZ - lastFocus.current.z) < (nextShowLabels ? 4.0 : 20.0)) return;
     lastFocus.current = { x: nextX, z: nextZ, time: now };
     setDetailFocus({ x: nextX, z: nextZ });
   }, -3);
-  const effectiveVisibleRowRange = visibleRowState.numRows === numRows ? visibleRowState.range : null;
-  const { detailed, simplified } = useMemo(() => getBusOccupancy({ passengerCount, seatCapacity,
+  const effectiveVisibleRowRange = outsideCabin
+    ? null
+    : (visibleRowState.numRows === numRows ? visibleRowState.range : null);
+  // Vu de l'extérieur du bus, SimplifiedPassengers affiche déjà exactement les mêmes visages, coiffures,
+  // chapeaux, costumes et animations de fête One Piece en instancing GPU : on évite ainsi de monter/démonter
+  // 8 à 14 arbres React complets (~840 meshes) à chaque mouvement d'orbite autour du bus.
+  // En cabine, on garde les 6 voisins les plus proches en version articulée complète (les autres sont déjà
+  // rendus à l'identique par SimplifiedPassengers en instancing GPU sans coût React au changement de siège).
+  const effectiveDetailLimit = outsideCabin ? 0 : Math.min(detailLimit ?? 8, 6);
+  const { detailed: rawDetailed, simplified: rawSimplified } = useMemo(() => getBusOccupancy({ passengerCount, seatCapacity,
     vacantSeatRanges, renderedRowIndices, reservedRow, reservedColumn, currentPassengerIndex: excludedPassengerIndex,
-    avatarAboard, lowPower, detailLimit, simplifiedLimit, detailFocus,
+    avatarAboard, lowPower, detailLimit: effectiveDetailLimit, simplifiedLimit, detailFocus,
     visibleRowRange: effectiveVisibleRowRange, preserveVisibleSeats: true }), [passengerCount, seatCapacity,
       vacantSeatRanges, renderedRowIndices, reservedRow, reservedColumn, excludedPassengerIndex, avatarAboard,
-      lowPower, detailLimit, simplifiedLimit, detailFocus, effectiveVisibleRowRange]);
+      lowPower, effectiveDetailLimit, simplifiedLimit, detailFocus, effectiveVisibleRowRange]);
+  // Conserver les mêmes références `detailed` et `simplified` quand aucun passager n'a réellement bougé
+  // (ex. changement de colonne vers un siège libre ou petit pas de rangée).
+  const [detailed, setDetailed] = useState(rawDetailed);
+  if (
+    detailed.length !== rawDetailed.length
+    || detailed.some((item, i) => item.index !== rawDetailed[i].index || item.physicalSeatIndex !== rawDetailed[i].physicalSeatIndex)
+  ) {
+    setDetailed(rawDetailed);
+  }
+  const [simplified, setSimplified] = useState(rawSimplified);
+  if (
+    simplified.length !== rawSimplified.length
+    || simplified.some((item, i) => item.index !== rawSimplified[i].index || item.physicalSeatIndex !== rawSimplified[i].physicalSeatIndex)
+  ) {
+    setSimplified(rawSimplified);
+  }
   const prevDetailedIdsRef = useRef<Set<number>>(new Set());
   useEffect(() => {
     detailedCountRef.current = detailed.length;
@@ -232,27 +376,47 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
     () => detailed.slice(0, detailedBudget),
     [detailed, detailedBudget],
   );
-  const occupants = useMemo(() => [...mountedDetailed, ...simplified], [mountedDetailed, simplified]);
-  const summaries = useVisiblePassengerSummaries(occupants, profileRevision);
+  // Charger et afficher les noms de TOUS les passagers réellement dans le champ caméra (zéro badge derrière la caméra).
+  const nearLabelVisitors = useMemo(() => {
+    if (!showNearLabels || labelRowRange.minRow > labelRowRange.maxRow) return [];
+    const near = [...mountedDetailed, ...simplified].filter(
+      (o) => o.seat.row >= labelRowRange.minRow && o.seat.row <= labelRowRange.maxRow,
+    );
+    near.sort((a, b) => Math.abs(a.seat.z - detailFocus.z) - Math.abs(b.seat.z - detailFocus.z));
+    return near.slice(0, 152);
+  }, [detailFocus.z, labelRowRange.maxRow, labelRowRange.minRow, mountedDetailed, showNearLabels, simplified]);
+  const summaries = useVisiblePassengerSummaries(nearLabelVisitors, profileRevision);
   const profilesBySeatIndex = useMemo(() => {
     const profiles = new Map(passengerProfiles.map(profile => [profile.seatIndex, profile]));
     for (const [index, summary] of summaries) {
       if (!summary || profiles.has(index)) continue;
-      profiles.set(index, { seatIndex: index, displayName: summary.displayName ?? "", avatarId: summary.avatarId, comment: null });
+      let cached = SUMMARY_PROFILE_CACHE.get(summary);
+      if (!cached) {
+        cached = { seatIndex: index, displayName: summary.displayName ?? "", avatarId: summary.avatarId, comment: null };
+        SUMMARY_PROFILE_CACHE.set(summary, cached);
+      }
+      profiles.set(index, cached);
     }
     return profiles;
   }, [passengerProfiles, summaries]);
   const locale = useLocale();
   const headHeights = usePassengerHeadHeights();
-  const distantLabels = useMemo(() => simplified.flatMap(({ seat, index, passengerKind }) => {
-    const profile = passengerKind === "visitor" ? profilesBySeatIndex.get(index) : undefined;
-    const archetype = getNakamaArchetype(index, profile?.avatarId);
-    const name = passengerKind === "visitor" ? getVisiblePassengerName(profile?.displayName) : getNakamaShortName(archetype, locale);
-    const crown = headHeights.get(archetype.id) ?? getFallbackPassengerHeadTop(archetype);
-    if (!name) return [];
-    const skeleton = getPassengerSkeleton(archetype.id);
-    return [{ index, name, x: seat.x, y: getSeatedPassengerNameHeight(archetype.id, crown), z: seat.z + skeleton.seatedHipZ + BODY_BEHIND_HIP + 0.02 }];
-  }), [headHeights, locale, profilesBySeatIndex, simplified]);
+  const distantLabels = useMemo(() => {
+    if (!showNearLabels || labelRowRange.minRow > labelRowRange.maxRow) return [];
+    const candidates = simplified.filter(
+      ({ seat }) => seat.row >= labelRowRange.minRow && seat.row <= labelRowRange.maxRow,
+    );
+    candidates.sort((a, b) => Math.abs(a.seat.z - detailFocus.z) - Math.abs(b.seat.z - detailFocus.z));
+    return candidates.slice(0, 152).flatMap(({ seat, index, passengerKind }) => {
+      const profile = passengerKind === "visitor" ? profilesBySeatIndex.get(index) : undefined;
+      const archetype = getNakamaArchetype(index, profile?.avatarId);
+      const name = passengerKind === "visitor" ? getVisiblePassengerName(profile?.displayName) : getNakamaShortName(archetype, locale);
+      const crown = headHeights.get(archetype.id) ?? getFallbackPassengerHeadTop(archetype);
+      if (!name) return [];
+      const skeleton = getPassengerSkeleton(archetype.id);
+      return [{ index, name, x: seat.x, y: getSeatedPassengerNameHeight(archetype.id, crown), z: seat.z + skeleton.seatedHipZ + BODY_BEHIND_HIP + 0.02 }];
+    });
+  }, [detailFocus.z, headHeights, labelRowRange.maxRow, labelRowRange.minRow, locale, profilesBySeatIndex, showNearLabels, simplified]);
   const detailedSeats = new Set(mountedDetailed.map(occupant => occupant.physicalSeatIndex));
   const poses=useMemo<PassengerPoseRegistry>(()=>new Map(),[]);
   useEffect(()=>{
@@ -288,7 +452,7 @@ function Passengers({ passengerCount, seatCapacity, numRows, renderedRowIndices,
   </group>;
 }
 
-export function Passenger({
+export const Passenger = memo(function Passenger({
   seat,
   index,
   archetype,
@@ -490,6 +654,6 @@ export function Passenger({
 
     </group>
   );
-}
+});
 
 export default memo(Passengers);

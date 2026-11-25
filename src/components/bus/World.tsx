@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { WorldLandmark, type PropDef, type PropType } from "./WorldLandmark";
 import WorldSetPiece, { WorldForeground } from "./WorldSetPiece";
+import { createOnePieceDistantLod, type SceneryBatch } from "@/lib/one-piece-scenery";
 import WorldOcean, { SEA_WAKE_COUNT } from "./WorldOcean";
 import WorldSeaCreatures from "./WorldSeaCreatures";
 import { useFrame } from "@react-three/fiber";
@@ -78,17 +80,21 @@ function smoothstep(start: number, end: number, value: number) {
 }
 
 function getTerrainWave(zone: number, x: number, z: number) {
-  return Math.sin(z * .11 + x * .21 + zone) * .5 + Math.sin(z * .23 - x * .13) * .27;
+  const mx = -x;
+  return Math.sin(z * .11 + mx * .21 + zone) * .5 + Math.sin(z * .23 - mx * .13) * .27;
 }
 
 function getTerrainHeight(zone: number, x: number, wave: number, z = 0) {
-  const shoulder = smoothstep(7, 17, Math.abs(x));
-  const shore = 1 - smoothstep(38, 48, Math.abs(x));
+  const absX = Math.abs(x);
+  const shoulder = smoothstep(7, 17, absX);
+  const shore = 1 - smoothstep(38, 48, absX);
   const relief = TERRAIN_RELIEF[zone];
-  // Les canaux de Water Seven et la cuvette de l'oasis d'Alabasta passent sous leur surface d'eau fixe.
-  const canal = zone === 1 ? 1 - smoothstep(1.4, 3.5, Math.abs(Math.abs(x) - 22)) : 0;
-  const oasis = zone === 0 ? 1 - smoothstep(4.8, 9.2, Math.hypot((x + 28) / 1.2, z + 32)) : 0;
-  return .008 + shoulder * shore * Math.max(0, .35 + wave) * relief * (1 - canal) * (1 - oasis) - canal * .06;
+  // Abaisse nettement le terrain sous la chaussée (|x| <= 3,7 m) pour empêcher tout Z-fighting au dézoom.
+  const roadBed = 1 - smoothstep(3.65, 4.45, absX);
+  // Les canaux de Water Seven et la cuvette de l'oasis d'Alabasta (inversée côté +X) passent sous leur surface d'eau fixe.
+  const canal = zone === 1 ? 1 - smoothstep(1.4, 3.5, Math.abs(absX - 22)) : 0;
+  const oasis = zone === 0 ? 1 - smoothstep(4.8, 9.2, Math.hypot((x - 28) / 1.2, z + 32)) : 0;
+  return .008 - roadBed * .19 + shoulder * shore * Math.max(0, .35 + wave) * relief * (1 - canal) * (1 - oasis) - canal * .06;
 }
 
 function makeTerrain(zone: number) {
@@ -215,7 +221,8 @@ function buildProps(worldSeed = 2026): PropDef[] {
         else localZ = Math.min(maxZ, Math.max(minZ, localZ < ZONE_LEN / 2 ? 48 + 9 + radius : localZ));
       }
       const zLocal = localZ - ZONE_LEN / 2;
-      const x = side * distance;
+      // Inverse gauche <-> droite (x -> -x) en miroir exact des décors et reliefs de l'île.
+      const x = -side * distance;
       const y = getTerrainHeight(z, x, getTerrainWave(z, x, zLocal), zLocal) - 0.03;
       out.push({
         id: out.length,
@@ -224,7 +231,7 @@ function buildProps(worldSeed = 2026): PropDef[] {
         y,
         base: z * ZONE_LEN + localZ,
         s,
-        rot,
+        rot: -rot,
         seed,
       });
     }
@@ -256,9 +263,11 @@ interface WorldProps {
   phase?: Phase;
   cabinCenterZ?: number;
   cabinLength?: number;
+  onReady?: (ready: boolean) => void;
+  onLoadProgress?: (progress: number) => void;
 }
 
-export default function World({
+const World = memo(function World({
   worldRef,
   reducedMotion = false,
   lowPower = false,
@@ -272,6 +281,8 @@ export default function World({
   phase = "outside",
   cabinCenterZ = 0,
   cabinLength = 9.2,
+  onReady,
+  onLoadProgress,
 }: WorldProps) {
   const [{ seed: worldSeed, order: zoneOrder }] = useState(() => {
     const seed = createRandomSeed();
@@ -313,12 +324,26 @@ export default function World({
     if (resolvedPropFraction === 0.75) return allProps.filter((_, index) => index % 4 !== 3);
     return allProps;
   }, [allProps, resolvedPropFraction]);
-  // Découpage fin : 4 micro-étapes par île (0: terrain, 1: monument, 2: avant-plan ouest, 3: avant-plan est).
-  // Au départ (subStage = 2), seule l'île la plus proche a son terrain et son monument.
-  const [zoneSubStage, setZoneSubStage] = useState(2);
+  // Découpage fin : 4 micro-étapes par île + 1 LOD lointain par frame pour garder le gouvernail 100 % fluide au chargement.
+  const [zoneSubStage, setZoneSubStage] = useState(1);
   const [seaCreaturesReady, setSeaCreaturesReady] = useState(false);
-  const [propLimit, setPropLimit] = useState(4);
-  const nextLoadAtRef = useRef(0);
+  const [propLimit, setPropLimit] = useState(2);
+  const [distantZoneBatches, setDistantZoneBatches] = useState<SceneryBatch[][]>(() => ZONES.map(() => []));
+  const distantBuiltCountRef = useRef(0);
+  const distantZoneBatchesRef = useRef<SceneryBatch[][]>(ZONES.map(() => []));
+  const loadStepNextAtRef = useRef(0);
+  const distantLodReady = distantZoneBatches.every((batches) => batches.length > 0);
+  const worldLoaded = zoneSubStage >= ZONES.length * 4 && seaCreaturesReady && propLimit >= props.length && distantLodReady;
+  useEffect(() => {
+    onReady?.(worldLoaded);
+  }, [onReady, worldLoaded]);
+  useEffect(() => {
+    const zoneFrac = Math.min(1, zoneSubStage / (ZONES.length * 4));
+    const propFrac = props.length > 0 ? Math.min(1, propLimit / props.length) : 1;
+    const lodBuilt = distantZoneBatches.reduce((sum, b) => sum + (b.length > 0 ? 1 : 0), 0);
+    const lodFrac = lodBuilt / ZONES.length;
+    onLoadProgress?.(zoneFrac * 0.45 + lodFrac * 0.25 + (seaCreaturesReady ? 0.1 : 0) + propFrac * 0.2);
+  }, [distantZoneBatches, onLoadProgress, propLimit, props.length, seaCreaturesReady, zoneSubStage]);
   const zoneStageFor = useCallback((zone: number) => {
     const rank = initialZoneLoadOrder.indexOf(zone);
     if (rank < 0) return 0;
@@ -332,35 +357,109 @@ export default function World({
   const zoneRefs = useRef<(THREE.Group | null)[]>([]);
   const terrainRefs = useRef<(THREE.Mesh | null)[]>([]);
   const sceneryRefs = useRef<(THREE.Group | null)[]>([]);
-  const railRefs = useRef<(THREE.Group | null)[]>([]);
   const propBounds = useRef<(SceneryBounds | null)[]>([]);
   const sceneBounds = useRef<SceneryBounds[][]>([]);
-  const railBounds = useRef<SceneryBounds[]>([]);
   const dirtyZonesRef = useRef<Set<number>>(new Set());
   const dirtyPropsRef = useRef<Set<number>>(new Set());
   const visibility = useMemo(() => createSceneryVisibility(), []);
 
   const bridgeLength = Math.max(960, bridgeLengthOverride ?? Math.max(1600, cabinLength + 1400));
-  const roadStartZ = cabinCenterZ - cabinLength / 2 - 280;
-  const roadEndZ = cabinCenterZ + cabinLength / 2 + 280;
-  const roadLength = cabinLength > LOOP * 0.45 ? Math.max(LOOP, roadEndZ - roadStartZ) : bridgeLength;
-  const roadCenterZ = cabinLength > LOOP * 0.45 ? (roadStartZ + roadEndZ) / 2 : cabinCenterZ;
-  const bridgeSegments = Math.min(200, Math.max(24, Math.ceil(roadLength / 40)));
-  const dashSpan = Math.min(Math.ceil(roadLength / 10) * 10, 1200);
-  const dashCount = dashSpan / 10;
-  const dashes = useMemo(() => Array.from({ length: dashCount }, (_, i) => i * 10), [dashCount]);
+  const horizonBound = Math.max(480, islandCullDistance ?? 580);
 
-  // Tuiles d'îles simplifiées (LOD lointain en 3 InstancedMesh) pour prolonger les paysages
-  // sur toute la longueur des bus géants (ex. 20 000 passagers) sans surcharger le GPU.
+  // Chaque île (détaillée ou LOD lointaine) embarque son propre tronçon de route (ZONE_LEN = 160 m)
+  // ainsi que les vraies structures One Piece en géométrie allégée (instanciée par matériau) pour
+  // qu'aucun paysage au loin ou au dézoom ne soit jamais vide.
+  const distantScrollGroupRef = useRef<THREE.Group>(null);
+  const lastDistantLayoutKeyRef = useRef("");
+  const nextFlightLayoutAtRef = useRef(0);
   const distantGroundRef = useRef<THREE.InstancedMesh>(null);
   const distantShoreRef = useRef<THREE.InstancedMesh>(null);
-  const distantLandmarkRef = useRef<THREE.InstancedMesh>(null);
-  const distantTileCapacity = Math.max(1, Math.ceil(roadLength / ZONE_LEN) + 4);
+  const distantRoadRef = useRef<THREE.InstancedMesh>(null);
+  const distantYellowRef = useRef<THREE.InstancedMesh>(null);
+  const distantRailRef = useRef<THREE.InstancedMesh>(null);
+  const distantDashRef = useRef<THREE.InstancedMesh>(null);
+  const distantTileCapacity = Math.max(32, Math.ceil((cabinLength + Math.max(bridgeLength, horizonBound * 2) + 2400) / ZONE_LEN) + 12);
+  const distantZoneCapacity = Math.max(8, Math.ceil(distantTileCapacity / ZONES.length) + 6);
+  const distantDashCapacity = 24;
+  useEffect(
+    () => () => {
+      for (const batches of distantZoneBatchesRef.current) {
+        for (const { geometry } of batches) geometry.dispose();
+      }
+    },
+    [],
+  );
+  const distantZoneMeshRefs = useRef<(THREE.InstancedMesh | null)[][]>(ZONES.map(() => []));
+  const distantZoneZsRef = useRef<number[][]>(ZONES.map(() => []));
+  const tileDashOffsets = useMemo(() => Array.from({ length: 16 }, (_, i) => -75 + i * 10), []);
+  // Géométries & matériaux de route fusionnés et partagés entre les 8 îles détaillées (4 draw calls par île au lieu de 21).
+  const sharedRoadAssets = useMemo(() => {
+    const planeGeo = new THREE.PlaneGeometry(7.4, ZONE_LEN, 1, 1);
+    const yellowParts = [-3.5, 3.5].map((x) => {
+      const g = new THREE.BoxGeometry(0.18, 0.02, ZONE_LEN);
+      g.translate(x, 0.052, 0);
+      return g;
+    });
+    const yellowGeo = mergeGeometries(yellowParts, false)!;
+    yellowParts.forEach((g) => g.dispose());
+
+    const railParts = [-3.85, 3.85].map((x) => {
+      const g = new THREE.BoxGeometry(0.1, 0.55, ZONE_LEN);
+      g.translate(x, 0.42, 0);
+      return g;
+    });
+    const railGeo = mergeGeometries(railParts, false)!;
+    railParts.forEach((g) => g.dispose());
+
+    const dashParts = tileDashOffsets.map((dz) => {
+      const g = new THREE.BoxGeometry(0.22, 0.02, 3.2);
+      g.translate(0, 0.056, dz);
+      return g;
+    });
+    const dashGeo = mergeGeometries(dashParts, false)!;
+    dashParts.forEach((g) => g.dispose());
+
+    const roadMat = new THREE.MeshStandardMaterial({
+      color: "#2d3036",
+      roughness: 0.92,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -1,
+    });
+    const yellowMat = new THREE.MeshStandardMaterial({
+      color: "#ffc107",
+      roughness: 0.8,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    });
+    const railMat = new THREE.MeshStandardMaterial({ color: "#969cb0", roughness: 0.5, metalness: 0.5 });
+    const dashMat = new THREE.MeshStandardMaterial({
+      color: "#ffffff",
+      roughness: 0.7,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    });
+    return { planeGeo, yellowGeo, railGeo, dashGeo, roadMat, yellowMat, railMat, dashMat };
+  }, [tileDashOffsets]);
+  useEffect(
+    () => () => {
+      sharedRoadAssets.planeGeo.dispose();
+      sharedRoadAssets.yellowGeo.dispose();
+      sharedRoadAssets.railGeo.dispose();
+      sharedRoadAssets.dashGeo.dispose();
+      sharedRoadAssets.roadMat.dispose();
+      sharedRoadAssets.yellowMat.dispose();
+      sharedRoadAssets.railMat.dispose();
+      sharedRoadAssets.dashMat.dispose();
+    },
+    [sharedRoadAssets],
+  );
   const distantMatrix = useMemo(() => new THREE.Matrix4(), []);
-  const distantPos = useMemo(() => new THREE.Vector3(), []);
-  const distantQuat = useMemo(() => new THREE.Quaternion(), []);
-  const distantScale = useMemo(() => new THREE.Vector3(), []);
   const distantColor = useMemo(() => new THREE.Color(), []);
+  const detailedVisibleRef = useRef<boolean[]>(new Array<boolean>(ZONES.length).fill(true));
+  const detailedTileByZoneRef = useRef<Int32Array>(new Int32Array(ZONES.length));
 
   const refreshPropBounds = useCallback((index: number) => {
     const group = propRefs.current[index];
@@ -415,32 +514,35 @@ export default function World({
     flushDirtyBounds();
   }, [flushDirtyBounds, zoneSubStage, visibleProps.length, props, lowPower]);
 
-  useLayoutEffect(() => {
-    railBounds.current = railRefs.current.flatMap(group => group ? [cacheSceneryBounds(group, 0)] : []);
-  }, [cabinCenterZ, bridgeLength]);
-
-  const dashRef = useRef<THREE.InstancedMesh>(null);
-  const dashMatrix = useMemo(() => new THREE.Matrix4(), []);
   const zoneZ = useRef<number[]>(new Array<number>(ZONES.length).fill(0));
   const seaWakesRef = useRef<THREE.Vector4[]>(
     Array.from({ length: SEA_WAKE_COUNT }, () => new THREE.Vector4(0, 0, 1, 0)),
   );
 
   useFrame((state, dt) => {
+    // Charger chaque élément par micro-étapes espacées d'au moins 20 ms afin de ne jamais
+    // bloquer le thread principal ni faire saccader le gouvernail de chargement.
     const now = performance.now();
-    // Charger tous les îlots et décors rapidement à l'arrivée sur des frames distinctes
-    // sans bloquer si la cadence baisse ni laisser de décors absents lors du mouvement de caméra.
-    if (now >= nextLoadAtRef.current) {
-      const slowFrame = dt > 0.05;
+    if (now >= loadStepNextAtRef.current) {
       if (zoneSubStage < ZONES.length * 4) {
+        loadStepNextAtRef.current = now + 22;
         setZoneSubStage((prev) => Math.min(ZONES.length * 4, prev + 1));
-        nextLoadAtRef.current = now + (slowFrame ? 45 : 20);
+      } else if (distantBuiltCountRef.current < ZONES.length) {
+        loadStepNextAtRef.current = now + 24;
+        const zIdx = distantBuiltCountRef.current;
+        distantBuiltCountRef.current += 1;
+        const built = createOnePieceDistantLod(zIdx);
+        const nextBatches = distantZoneBatchesRef.current.slice();
+        nextBatches[zIdx] = built;
+        distantZoneBatchesRef.current = nextBatches;
+        lastDistantLayoutKeyRef.current = "";
+        setDistantZoneBatches(nextBatches);
       } else if (!seaCreaturesReady) {
+        loadStepNextAtRef.current = now + 20;
         setSeaCreaturesReady(true);
-        nextLoadAtRef.current = now + (slowFrame ? 60 : 30);
       } else if (propLimit < props.length) {
-        setPropLimit((prev) => Math.min(props.length, prev + 6));
-        nextLoadAtRef.current = now + (slowFrame ? 45 : 18);
+        loadStepNextAtRef.current = now + 18;
+        setPropLimit((prev) => Math.min(props.length, prev + 4));
       }
     }
 
@@ -463,20 +565,24 @@ export default function World({
     if (worldRef.current) worldRef.current.scroll = scroll;
 
     visibility.begin(state.camera);
-    for (const rail of railBounds.current) visibility.update(rail, 0);
 
-    // Sur un bus très long (ex. 20 000 passagers), on centre la boucle des îles et
-    // des pointillés de route autour de la caméra (bornée au bus) pour ne jamais
-    // laisser l'avant du bus ou la zone explorée sans paysages.
+    // Sur un bus très long (ex. 20 000 passagers), on centre la boucle des îles détaillées
+    // autour de la caméra (bornée au bus), tout en plafonnant l'avant à exactement 3 paysages
+    // devant le nez du bus (un nouveau s'ajoute dès que le bus entre sur un nouveau paysage).
     const busStartZ = cabinCenterZ - cabinLength / 2;
     const busEndZ = cabinCenterZ + cabinLength / 2;
+    const frontTileIdx = Math.round((busStartZ - scroll + 40) / ZONE_LEN);
+    const minAllowedTileIdx = frontTileIdx - 3;
+    const minAllowedCenterZ = -40 + minAllowedTileIdx * ZONE_LEN + scroll;
     const sceneryCenterZ = cabinLength > LOOP * 0.45
       ? THREE.MathUtils.clamp(state.camera.position.z, busStartZ - 30, busEndZ + 30)
       : cabinCenterZ;
-    const loopStart = sceneryCenterZ - LOOP / 2;
-    const loopEnd = sceneryCenterZ + LOOP / 2;
+    const loopStart = Math.max(sceneryCenterZ - LOOP / 2, minAllowedCenterZ - 1);
+    const loopEnd = loopStart + LOOP;
 
-    // Boucler les 8 îles dans un ordre aléatoire sans répétition avant la fin du tour
+    // Boucler les 8 îles détaillées dans un ordre aléatoire sans répétition avant la fin du tour ;
+    // au-delà de detailedSwitchDist (~180–220 m), la tuile LOD allégée (mêmes structures) prend le relais.
+    const detailedSwitchDist = Math.min(islandCullDistance ?? 480, lowPower ? 180 : 220);
     for (let i = 0; i < ZONES.length; i++) {
       const g = zoneRefs.current[i];
       if (!g) continue;
@@ -485,11 +591,14 @@ export default function World({
       g.position.z = z;
       const eye = state.camera.position;
       const dzEdge = Math.max(0, Math.abs(z - eye.z) - ZONE_LEN / 2);
-      if (islandCullDistance !== undefined && dzEdge > islandCullDistance) {
+      const switchLimit = detailedVisibleRef.current[i] ? detailedSwitchDist + 24 : detailedSwitchDist;
+      if (z < minAllowedCenterZ - 1 || dzEdge > switchLimit) {
         g.visible = false;
+        detailedVisibleRef.current[i] = false;
         continue;
       }
       g.visible = true;
+      detailedVisibleRef.current[i] = true;
       const terrain = terrainRefs.current[i];
       const localZ = eye.z - z;
       if (terrain) terrain.visible = eye.y > 1.37 || eye.y >= terrainSurfaceAt(terrain.geometry, eye.x, localZ) - 0.06;
@@ -497,17 +606,22 @@ export default function World({
     }
 
     // Les props suivent exactement le bouclage de leur île sur toute la fenêtre.
+    const effectivePropCull = Math.min(propCullDistance ?? detailedSwitchDist, detailedSwitchDist);
     for (let i = 0; i < visibleProps.length; i++) {
       const g = propRefs.current[i];
       if (!g) continue;
       const zoneIdx = Math.floor(visibleProps[i].base / ZONE_LEN);
+      if (!detailedVisibleRef.current[zoneIdx]) {
+        g.visible = false;
+        continue;
+      }
       const localOffset = visibleProps[i].base - (zoneIdx * ZONE_LEN + ZONE_LEN / 2);
       const z = zoneZ.current[zoneIdx] + localOffset;
       g.position.z = z;
       const eye = state.camera.position;
       const dx = visibleProps[i].x - eye.x;
       const dz = z - eye.z;
-      if (propCullDistance !== undefined && dx * dx + dz * dz > propCullDistance * propCullDistance) {
+      if (dx * dx + dz * dz > effectivePropCull * effectivePropCull) {
         g.visible = false;
         continue;
       }
@@ -516,61 +630,140 @@ export default function World({
       else g.visible = true;
     }
 
-    // Défilement des lignes blanches du pont sur toute la portée dynamique
-    const dashStart = sceneryCenterZ - dashSpan / 2;
-    for (let i = 0; i < dashes.length; i++) {
-      const z = ((((dashes[i] + scroll - dashStart) % dashSpan) + dashSpan) % dashSpan) + dashStart;
-      dashMatrix.makeTranslation(0, 0.052, z);
-      dashRef.current?.setMatrixAt(i, dashMatrix);
+    // Tuiles d'îles simplifiées (LOD lointain) avec leur route intégrée et leurs vrais décors allégés :
+    // le groupe parent porte la translation continue +scroll (0 upload GPU/frame), les matrices d'instances
+    // ne sont reconstruites que lorsqu'une tuile change d'index (~toutes les 6 s).
+    if (distantScrollGroupRef.current) {
+      distantScrollGroupRef.current.position.z = scroll;
     }
-    if (dashRef.current) dashRef.current.instanceMatrix.needsUpdate = true;
-
-    // Tuiles d'îles simplifiées (LOD lointain) prolongeant les paysages derrière et devant sur toute la route.
-    if (distantGroundRef.current && distantShoreRef.current && distantLandmarkRef.current) {
-      const spanMin = roadCenterZ - roadLength / 2;
-      const spanMax = roadCenterZ + roadLength / 2;
-      const firstIndex = Math.floor((spanMin - scroll) / ZONE_LEN);
-      const lastIndex = Math.ceil((spanMax - scroll) / ZONE_LEN);
-      let tileCount = 0;
-      for (let tileIdx = firstIndex; tileIdx <= lastIndex && tileCount < distantTileCapacity; tileIdx++) {
-        const z = tileIdx * ZONE_LEN + scroll;
-        // Ne pas chevaucher les 8 îles détaillées autour de la caméra.
-        if (z > loopStart - ZONE_LEN * 0.45 && z < loopEnd + ZONE_LEN * 0.45) continue;
-        if (z < spanMin - ZONE_LEN * 0.5 || z > spanMax + ZONE_LEN * 0.5) continue;
-        const slot = ((tileIdx % ZONES.length) + ZONES.length) % ZONES.length;
-        const zoneIdx = zoneOrder[slot] ?? 0;
-        const zone = ZONES[zoneIdx];
-
-        distantMatrix.makeTranslation(0, -0.34, z);
-        distantGroundRef.current.setMatrixAt(tileCount, distantMatrix);
-        distantColor.set(zone.ground);
-        distantGroundRef.current.setColorAt(tileCount, distantColor);
-
-        distantMatrix.makeTranslation(0, -0.44, z);
-        distantShoreRef.current.setMatrixAt(tileCount, distantMatrix);
-        distantColor.set(zone.shore);
-        distantShoreRef.current.setColorAt(tileCount, distantColor);
-
-        // Silhouette basse complexité du monument principal de l'île (coût quasi nul).
-        const h = zoneIdx === 6 ? 26 : zoneIdx === 7 ? 24 : zoneIdx === 1 || zoneIdx === 3 || zoneIdx === 4 ? 20 : 16;
-        distantPos.set(33, h / 2, z);
-        distantScale.set(14, h, 14);
-        distantMatrix.compose(distantPos, distantQuat, distantScale);
-        distantLandmarkRef.current.setMatrixAt(tileCount, distantMatrix);
-        distantColor.set(TINT_COLORS[zoneIdx] ?? "#ffffff");
-        distantLandmarkRef.current.setColorAt(tileCount, distantColor);
-
-        tileCount += 1;
+    if (
+      distantGroundRef.current
+      && distantShoreRef.current
+      && distantRoadRef.current
+      && distantYellowRef.current
+      && distantRailRef.current
+      && distantDashRef.current
+    ) {
+      const eye = state.camera.position;
+      const eyeZ = eye.z;
+      const horizon = Math.max(640, islandCullDistance ?? 720);
+      const spanMax = Math.max(busEndZ + 480, eyeZ + horizon, loopEnd);
+      const firstIndex = minAllowedTileIdx;
+      // Aligner lastIndex et eyeTileIdx sur des multiples propres pour éviter de reconstruire les buffers
+      // 5 fois par tuile à des phases décalées pendant le défilement continu du bus.
+      const tileSpan = Math.ceil((spanMax - minAllowedCenterZ) / ZONE_LEN) + 2;
+      const lastIndex = firstIndex + tileSpan;
+      const rawEyeTileIdx = Math.round((eyeZ - scroll + 40) / ZONE_LEN);
+      const snappedEyeTileIdx = Math.round(rawEyeTileIdx / 4) * 4;
+      // Les socles d'îles et la route couvrent tout le bus (6,5 km+), tandis que les monuments 3D LOD
+      // couvrent ±1,1 à ±2,4 km autour de la caméra (évite de tracer 10 copies sub-pixel à 6 km).
+      const landmarkRadius = Math.max(
+        1100,
+        Math.min(2400, Math.round((Math.hypot(eye.x, eye.y) * 2.2 + 960) / 320) * 320),
+      );
+      let detailedSig = "";
+      const detailedTileByZone = detailedTileByZoneRef.current;
+      detailedTileByZone.fill(-999999);
+      for (let zIdx = 0; zIdx < ZONES.length; zIdx++) {
+        if (detailedVisibleRef.current[zIdx]) {
+          const dTile = Math.round((zoneZ.current[zIdx] - scroll + 40) / ZONE_LEN);
+          detailedTileByZone[zIdx] = dTile;
+          detailedSig += `${zIdx}:${dTile}:${zoneStageFor(zIdx) < 2 ? 0 : 1},`;
+        }
       }
-      distantGroundRef.current.count = tileCount;
-      distantShoreRef.current.count = tileCount;
-      distantLandmarkRef.current.count = tileCount;
-      distantGroundRef.current.instanceMatrix.needsUpdate = true;
-      distantShoreRef.current.instanceMatrix.needsUpdate = true;
-      distantLandmarkRef.current.instanceMatrix.needsUpdate = true;
-      if (distantGroundRef.current.instanceColor) distantGroundRef.current.instanceColor.needsUpdate = true;
-      if (distantShoreRef.current.instanceColor) distantShoreRef.current.instanceColor.needsUpdate = true;
-      if (distantLandmarkRef.current.instanceColor) distantLandmarkRef.current.instanceColor.needsUpdate = true;
+      const layoutKey = `${firstIndex}|${lastIndex}|${snappedEyeTileIdx}|${landmarkRadius}|${distantTileCapacity}|${detailedSig}`;
+      const isBoardingFlight = phase === "entering" || phase === "exiting";
+      if (layoutKey !== lastDistantLayoutKeyRef.current && (!isBoardingFlight || now >= nextFlightLayoutAtRef.current)) {
+        if (isBoardingFlight) nextFlightLayoutAtRef.current = now + 260;
+        lastDistantLayoutKeyRef.current = layoutKey;
+        const distantZoneZs = distantZoneZsRef.current;
+        for (let zIdx = 0; zIdx < ZONES.length; zIdx++) distantZoneZs[zIdx].length = 0;
+        let tileCount = 0;
+        let dashCountOut = 0;
+        for (let tileIdx = firstIndex; tileIdx <= lastIndex && tileCount < distantTileCapacity; tileIdx++) {
+          const localZ = -40 + tileIdx * ZONE_LEN;
+          const worldZ = localZ + scroll;
+          if (worldZ - ZONE_LEN * 0.5 > spanMax) continue;
+          const slot = ((-tileIdx % ZONES.length) + ZONES.length) % ZONES.length;
+          const zoneIdx = zoneOrder[slot] ?? 0;
+          const withinLandmarkHorizon = Math.abs(worldZ - eyeZ) <= landmarkRadius;
+          if (detailedTileByZone[zoneIdx] === tileIdx) {
+            if (zoneStageFor(zoneIdx) < 2 && withinLandmarkHorizon && distantZoneZs[zoneIdx].length < distantZoneCapacity) {
+              distantZoneZs[zoneIdx].push(localZ);
+            }
+            continue;
+          }
+          const zone = ZONES[zoneIdx];
+
+          distantMatrix.makeTranslation(0, -0.34, localZ);
+          distantGroundRef.current.setMatrixAt(tileCount, distantMatrix);
+          distantColor.set(zone.ground);
+          distantGroundRef.current.setColorAt(tileCount, distantColor);
+
+          distantMatrix.makeTranslation(0, -0.44, localZ);
+          distantShoreRef.current.setMatrixAt(tileCount, distantMatrix);
+          distantColor.set(zone.shore);
+          distantShoreRef.current.setColorAt(tileCount, distantColor);
+
+          distantMatrix.makeTranslation(0, 0.024, localZ);
+          distantRoadRef.current.setMatrixAt(tileCount, distantMatrix);
+
+          distantMatrix.makeTranslation(0, 0, localZ);
+          distantYellowRef.current.setMatrixAt(tileCount, distantMatrix);
+          distantRailRef.current.setMatrixAt(tileCount, distantMatrix);
+
+          if (Math.abs(tileIdx - snappedEyeTileIdx) <= 9 && dashCountOut < distantDashCapacity) {
+            distantDashRef.current.setMatrixAt(dashCountOut++, distantMatrix);
+          }
+
+          if (withinLandmarkHorizon && distantZoneZs[zoneIdx].length < distantZoneCapacity) {
+            distantZoneZs[zoneIdx].push(localZ);
+          }
+
+          tileCount += 1;
+        }
+        distantGroundRef.current.count = tileCount;
+        distantShoreRef.current.count = tileCount;
+        distantRoadRef.current.count = tileCount;
+        distantYellowRef.current.count = tileCount;
+        distantRailRef.current.count = tileCount;
+        distantDashRef.current.count = dashCountOut;
+        distantGroundRef.current.instanceMatrix.needsUpdate = true;
+        distantShoreRef.current.instanceMatrix.needsUpdate = true;
+        distantRoadRef.current.instanceMatrix.needsUpdate = true;
+        distantYellowRef.current.instanceMatrix.needsUpdate = true;
+        distantRailRef.current.instanceMatrix.needsUpdate = true;
+        distantDashRef.current.instanceMatrix.needsUpdate = true;
+        if (distantGroundRef.current.instanceColor) distantGroundRef.current.instanceColor.needsUpdate = true;
+        if (distantShoreRef.current.instanceColor) distantShoreRef.current.instanceColor.needsUpdate = true;
+
+        for (let zIdx = 0; zIdx < ZONES.length; zIdx++) {
+          const zs = distantZoneZs[zIdx];
+          const meshes = distantZoneMeshRefs.current[zIdx];
+          if (!meshes) continue;
+          const count = zs.length;
+          const sphereCenterZ = count > 0 ? (zs[0] + zs[count - 1]) * 0.5 : 0;
+          const sphereRadius = count > 0 ? Math.abs(zs[count - 1] - zs[0]) * 0.5 + 120 : 1;
+          for (let bIdx = 0; bIdx < meshes.length; bIdx++) {
+            const mesh = meshes[bIdx];
+            if (!mesh) continue;
+            mesh.count = count;
+            mesh.visible = count > 0;
+            if (count > 0) {
+              for (let k = 0; k < count; k++) {
+                distantMatrix.makeTranslation(0, 0, zs[k]);
+                mesh.setMatrixAt(k, distantMatrix);
+              }
+              mesh.instanceMatrix.clearUpdateRanges();
+              mesh.instanceMatrix.addUpdateRange(0, count * 16);
+              mesh.instanceMatrix.needsUpdate = true;
+              if (!mesh.boundingSphere) mesh.boundingSphere = new THREE.Sphere();
+              mesh.boundingSphere.center.set(0, 18, sphereCenterZ);
+              mesh.boundingSphere.radius = sphereRadius;
+            }
+          }
+        }
+      }
     }
 
     // Calcul de la zone active et fondu météorologique continu
@@ -618,8 +811,8 @@ export default function World({
               zoneRefs.current[i] = el;
             }}
           >
-            {/* Terre principale */}
-            <mesh position={[0, -0.34, 0]} receiveShadow>
+            {/* Terre principale (abaissée sous la chaussée pour éviter tout Z-fighting au dézoom) */}
+            <mesh position={[0, -0.48, 0]} receiveShadow>
               <boxGeometry args={[96, 0.6, ZONE_LEN - 16]} />
               <meshStandardMaterial color={zone.ground} roughness={0.9} />
             </mesh>
@@ -659,55 +852,50 @@ export default function World({
               <boxGeometry args={[104, 0.32, ZONE_LEN - 8]} />
               <meshStandardMaterial color={zone.shore} roughness={0.95} />
             </mesh>
+            {/* Tronçon de route intégré au paysage (4 meshes fusionnés par île au lieu de 21) */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.028, 0]} geometry={sharedRoadAssets.planeGeo} material={sharedRoadAssets.roadMat} receiveShadow dispose={null} />
+            <mesh geometry={sharedRoadAssets.yellowGeo} material={sharedRoadAssets.yellowMat} dispose={null} />
+            <mesh geometry={sharedRoadAssets.railGeo} material={sharedRoadAssets.railMat} dispose={null} />
+            <mesh geometry={sharedRoadAssets.dashGeo} material={sharedRoadAssets.dashMat} dispose={null} />
           </group>
         );
       })}
 
-      {/* Tuiles d'îles simplifiées (LOD lointain) prolongeant les paysages à perte de vue le long des très longs bus */}
-      <instancedMesh key={`dg-${distantTileCapacity}`} ref={distantGroundRef} args={[undefined, undefined, distantTileCapacity]} count={0} frustumCulled={false}>
-        <boxGeometry args={[96, 0.6, ZONE_LEN - 16]} />
-        <meshStandardMaterial roughness={0.92} />
-      </instancedMesh>
-      <instancedMesh key={`ds-${distantTileCapacity}`} ref={distantShoreRef} args={[undefined, undefined, distantTileCapacity]} count={0} frustumCulled={false}>
-        <boxGeometry args={[104, 0.32, ZONE_LEN - 8]} />
-        <meshStandardMaterial roughness={0.95} />
-      </instancedMesh>
-      <instancedMesh key={`dl-${distantTileCapacity}`} ref={distantLandmarkRef} args={[undefined, undefined, distantTileCapacity]} count={0} frustumCulled={false}>
-        <cylinderGeometry args={[0.55, 0.9, 1, 6]} />
-        <meshStandardMaterial roughness={0.9} />
-      </instancedMesh>
-
-      {/* Pont maritime continu de Grand Line, aligné exactement sur la portée des paysages */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.024, roadCenterZ]} receiveShadow>
-        <planeGeometry args={[7.4, roadLength, 1, bridgeSegments]} />
-        <meshStandardMaterial color="#2d3036" roughness={0.92} />
-      </mesh>
-
-      {/* Bandes de rive jaunes (même longueur exacte que la chaussée, zéro dépassement) */}
-      {[-3.5, 3.5].map((x) => (
-        <group key={x} name={`world-bridge-edge-marking-${x < 0 ? "left" : "right"}`}>
-          <mesh position={[x, 0.048, roadCenterZ]}>
-            <boxGeometry args={[0.22, 0.02, roadLength]} />
-            <meshStandardMaterial color="#ffc107" roughness={0.8} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
-          </mesh>
-        </group>
-      ))}
-
-      {/* Rambardes de sécurité chromées du pont maritime */}
-      {[-3.85, 3.85].map((x, i) => (
-        <group key={x} ref={(el: THREE.Group | null) => { railRefs.current[i] = el; }}>
-          <mesh position={[x, 0.42, roadCenterZ]}>
-            <boxGeometry args={[0.1, 0.55, roadLength, 1, 1, bridgeSegments]} />
-            <meshStandardMaterial color="#969cb0" roughness={0.5} metalness={0.5} />
-          </mesh>
-        </group>
-      ))}
-
-      {/* Ligne médiane discontinue animée */}
-      <instancedMesh key={dashCount} ref={dashRef} args={[undefined, undefined, dashCount]} frustumCulled={false}>
-        <boxGeometry args={[0.22, 0.02, 3.2]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.7} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
-      </instancedMesh>
+      {/* Tuiles d'îles simplifiées (LOD lointain) portées par un groupe défilant (0 upload GPU/frame) */}
+      <group ref={distantScrollGroupRef} name="world-distant-islands">
+        <instancedMesh key={`dg-${distantTileCapacity}`} ref={distantGroundRef} args={[undefined, undefined, distantTileCapacity]} count={0} frustumCulled={false} raycast={() => null}>
+          <boxGeometry args={[96, 0.6, ZONE_LEN - 16]} />
+          <meshStandardMaterial roughness={0.92} />
+        </instancedMesh>
+        <instancedMesh key={`ds-${distantTileCapacity}`} ref={distantShoreRef} args={[undefined, undefined, distantTileCapacity]} count={0} frustumCulled={false} raycast={() => null}>
+          <boxGeometry args={[104, 0.32, ZONE_LEN - 8]} />
+          <meshStandardMaterial roughness={0.95} />
+        </instancedMesh>
+        {distantZoneBatches.map((batches, zoneIdx) =>
+          batches.map((batch, batchIdx) => (
+            <instancedMesh
+              key={`dlod-${zoneIdx}-${batch.material.uuid}-${distantZoneCapacity}`}
+              ref={(el: THREE.InstancedMesh | null) => {
+                if (!distantZoneMeshRefs.current[zoneIdx]) distantZoneMeshRefs.current[zoneIdx] = [];
+                distantZoneMeshRefs.current[zoneIdx][batchIdx] = el;
+              }}
+              args={[batch.geometry, batch.material, distantZoneCapacity]}
+              count={0}
+              visible={false}
+              frustumCulled
+              dispose={null}
+              raycast={() => null}
+            />
+          )),
+        )}
+        <instancedMesh key={`dr-${distantTileCapacity}`} ref={distantRoadRef} args={[undefined, undefined, distantTileCapacity]} count={0} frustumCulled={false} raycast={() => null}>
+          <boxGeometry args={[7.4, 0.04, ZONE_LEN]} />
+          <meshStandardMaterial color="#2d3036" roughness={0.92} />
+        </instancedMesh>
+        <instancedMesh key={`dy-${distantTileCapacity}`} ref={distantYellowRef} args={[sharedRoadAssets.yellowGeo, sharedRoadAssets.yellowMat, distantTileCapacity]} count={0} frustumCulled={false} dispose={null} raycast={() => null} />
+        <instancedMesh key={`drail-${distantTileCapacity}`} ref={distantRailRef} args={[sharedRoadAssets.railGeo, sharedRoadAssets.railMat, distantTileCapacity]} count={0} frustumCulled={false} dispose={null} raycast={() => null} />
+        <instancedMesh key={`ddash-${distantDashCapacity}`} ref={distantDashRef} args={[sharedRoadAssets.dashGeo, sharedRoadAssets.dashMat, distantDashCapacity]} count={0} frustumCulled={false} dispose={null} raycast={() => null} />
+      </group>
 
       {/* Décors 3D enrichis des mondes */}
       {visibleProps.map((p, i) => (
@@ -725,4 +913,6 @@ export default function World({
       ))}
     </group>
   );
-}
+});
+
+export default World;

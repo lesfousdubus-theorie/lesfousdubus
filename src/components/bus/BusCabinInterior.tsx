@@ -96,20 +96,20 @@ function SeatInstances({
     });
   }, [benches]);
   const count = benches.length;
-  // Taille fixe : l'ajout d'une rangée ne recrée pas les quatre buffers GPU.
-  const capacity = 180 * 2;
+  // Capacité fixe large pour éviter toute recréation de buffer GPU lors du défilement caméra.
+  const capacity = Math.max(384, Math.ceil(count / 128) * 128);
   return (
     <>
-      <instancedMesh name="bus-seat-cushions" ref={cushion} args={[undefined, undefined, capacity]} count={count} material={seatMaterial} castShadow>
+      <instancedMesh key={`sc-${capacity}`} name="bus-seat-cushions" ref={cushion} args={[undefined, undefined, capacity]} count={count} material={seatMaterial} raycast={() => null}>
         <boxGeometry args={[0.95, 0.15, SEAT_CUSHION_DEPTH]} />
       </instancedMesh>
-      <instancedMesh ref={back} args={[undefined, undefined, capacity]} count={count} material={seatMaterial} castShadow>
+      <instancedMesh key={`sb-${capacity}`} ref={back} args={[undefined, undefined, capacity]} count={count} material={seatMaterial} raycast={() => null}>
         <boxGeometry args={[0.95, 0.58, 0.12]} />
       </instancedMesh>
-      <instancedMesh ref={base} args={[undefined, undefined, capacity]} count={count} material={frameMaterial}>
+      <instancedMesh key={`sbase-${capacity}`} ref={base} args={[undefined, undefined, capacity]} count={count} material={frameMaterial} raycast={() => null}>
         <boxGeometry args={[0.85, 0.36, SEAT_BASE_DEPTH]} />
       </instancedMesh>
-      <instancedMesh ref={headrest} args={[undefined, undefined, capacity]} count={count} material={frameMaterial}>
+      <instancedMesh key={`sh-${capacity}`} ref={headrest} args={[undefined, undefined, capacity]} count={count} material={frameMaterial} raycast={() => null}>
         <boxGeometry args={[0.95, 0.05, 0.08]} />
       </instancedMesh>
     </>

@@ -1,11 +1,12 @@
 const PADDING = 6;
-const COLLISION_CELL_SIZE = 96;
-const COLLISION_CELL_LIMIT = 8;
 const wallProgress = new WeakMap<HTMLElement, { width: number; height: number; count: number; age: number }>();
 
-type Rect = { x: number; y: number; width: number; height: number };
-type Bubble = Rect & {
+type Bubble = {
   node: HTMLElement;
+  spanX: number;
+  spanY: number;
+  baseX: number;
+  baseY: number;
   vx: number;
   vy: number;
   originX: number;
@@ -17,12 +18,6 @@ function reflectMessageAxis(position: number, length: number): number {
   const period = length * 2;
   const step = ((position % period) + period) % period;
   return step <= length ? step : period - step;
-}
-
-function messageOverlap(first: Rect, second: Rect): number {
-  const width = Math.min(first.x + first.width, second.x + second.width) - Math.max(first.x, second.x);
-  const height = Math.min(first.y + first.height, second.y + second.height) - Math.max(first.y, second.y);
-  return width > 0 && height > 0 ? width * height / (first.width * first.height) : 0;
 }
 
 export function startMessageMotion(wall: HTMLElement, moving: boolean) {
@@ -44,7 +39,8 @@ export function startMessageMotion(wall: HTMLElement, moving: boolean) {
     const count = nodes.length;
     const columns = Math.min(count, Math.max(1, Math.round(Math.sqrt(count * width / Math.max(1, height) / 2.1))));
     const cellWidth = width / columns;
-    const bubbleWidth = Math.min(Math.max(cellWidth - 14, 96), 256, Math.max(0, width - PADDING * 2));
+    const minBubbleWidth = width < 640 ? 148 : 176;
+    const bubbleWidth = Math.min(Math.max(cellWidth - 10, minBubbleWidth), 270, Math.max(0, width - PADDING * 2));
     wall.style.setProperty("--message-bubble-width", `${bubbleWidth}px`);
 
     bubbles = nodes.map((node, index) => {
@@ -58,10 +54,19 @@ export function startMessageMotion(wall: HTMLElement, moving: boolean) {
       const scatterY = (index * 0.38196601125 + (index % 5) * 0.197) % 1;
       const originX = scatterX * spanX;
       const originY = scatterY * spanY;
+      // Profondeur visuelle statique (évite un calcul de grille de collision O(N) à chaque frame).
+      const depthRatio = count > 1 ? index / (count - 1) : 1;
+      node.style.opacity = (0.76 + depthRatio * 0.24).toFixed(2);
       return {
-        node, width: nodeWidth, height: bubbleHeight,
-        x: PADDING + originX, y: PADDING + originY, originX, originY,
-        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+        node,
+        spanX,
+        spanY,
+        baseX: Math.min(PADDING, (width - nodeWidth) / 2),
+        baseY: Math.min(PADDING, (height - bubbleHeight) / 2),
+        originX: Math.min(spanX, originX),
+        originY: Math.min(spanY, originY),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
       };
     });
     const saved = wallProgress.get(wall);
@@ -71,45 +76,18 @@ export function startMessageMotion(wall: HTMLElement, moving: boolean) {
   }
 
   function paint() {
-    for (const bubble of bubbles) {
-      const spanX = Math.max(0, width - bubble.width - PADDING * 2);
-      const spanY = Math.max(0, height - bubble.height - PADDING * 2);
-      bubble.x = Math.min(PADDING, (width - bubble.width) / 2) + reflectMessageAxis(Math.min(spanX, bubble.originX) + age * bubble.vx, spanX);
-      bubble.y = Math.min(PADDING, (height - bubble.height) / 2) + reflectMessageAxis(Math.min(spanY, bubble.originY) + age * bubble.vy, spanY);
-    }
-    // Partir du premier plan et ne comparer que les bulles des cases voisines.
-    const collisionColumns = Math.max(1, Math.ceil(width / COLLISION_CELL_SIZE));
-    const cells = new Map<number, Bubble[]>();
-    for (let index = bubbles.length - 1; index >= 0; index--) {
-      const bubble = bubbles[index];
-      const left = Math.max(0, Math.floor(bubble.x / COLLISION_CELL_SIZE));
-      const right = Math.min(collisionColumns - 1, Math.floor((bubble.x + bubble.width) / COLLISION_CELL_SIZE));
-      const top = Math.max(0, Math.floor(bubble.y / COLLISION_CELL_SIZE));
-      const bottom = Math.floor((bubble.y + bubble.height) / COLLISION_CELL_SIZE);
-      let covered = 0;
-      for (let row = top; row <= bottom; row++) {
-        for (let column = left; column <= right; column++) {
-          const cell = row * collisionColumns + column;
-          const foreground = cells.get(cell);
-          if (!foreground) {
-            cells.set(cell, [bubble]);
-            continue;
-          }
-          for (const front of foreground) covered = Math.max(covered, messageOverlap(bubble, front));
-          if (foreground.length < COLLISION_CELL_LIMIT) foreground.push(bubble);
-        }
-      }
-      bubble.node.style.transform = `translate3d(${bubble.x.toFixed(2)}px, ${bubble.y.toFixed(2)}px, 0)`;
-      bubble.node.style.opacity = Math.max(.55, 1 - covered * .9).toFixed(2);
+    for (let i = 0; i < bubbles.length; i++) {
+      const bubble = bubbles[i];
+      const x = bubble.baseX + reflectMessageAxis(bubble.originX + age * bubble.vx, bubble.spanX);
+      const y = bubble.baseY + reflectMessageAxis(bubble.originY + age * bubble.vy, bubble.spanY);
+      bubble.node.style.transform = `translate3d(${Math.round(x * 2) * 0.5}px, ${Math.round(y * 2) * 0.5}px, 0)`;
     }
   }
 
   function tick(time: number) {
-    if (previous === undefined || bubbles.length <= 60 || time - previous >= 30) {
-      if (previous !== undefined) age += (time - previous) / 1000;
-      previous = time;
-      paint();
-    }
+    if (previous !== undefined) age += Math.min((time - previous) / 1000, 0.1);
+    previous = time;
+    paint();
     frame = window.requestAnimationFrame(tick);
   }
 

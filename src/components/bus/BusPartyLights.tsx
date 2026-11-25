@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { BUS_FRONT_Z } from "@/lib/bus-layout";
@@ -62,34 +62,31 @@ function createRadialSpotTexture(): THREE.DataTexture {
 }
 
 /**
- * Les projecteurs restent sur une grille fixe. Pour une cabine très longue,
- * on garde toute la densité autour de la caméra et des rappels jusqu'au fond.
+ * Couvre de façon continue toute la zone du bus visible autour de la caméra
+ * (sans laisser de tronçons sombres), avec un pas qui s'adapte au dézoom.
  */
-function sampleStations(total: number, capacity: number, focus: number) {
+function sampleStations(total: number, capacity: number, focus: number, stride = 1) {
   if (total <= capacity) return Array.from({ length: total }, (_, index) => index);
-  const nearbyCount = Math.floor(capacity * 0.65);
-  const start = THREE.MathUtils.clamp(focus - Math.floor(nearbyCount / 2), 0, total - nearbyCount);
-  const stations = Array.from({ length: nearbyCount }, (_, index) => start + index);
-  const remoteCount = capacity - nearbyCount;
-  for (let index = 0; index < remoteCount; index++) {
-    const station = Math.round(index * (total - nearbyCount - 1) / (remoteCount - 1));
-    stations.push(station >= start ? station + nearbyCount : station);
-  }
-  return stations;
+  const clampedStride = Math.max(1, Math.min(stride, Math.floor((total - 1) / Math.max(1, capacity - 1)) || 1));
+  const span = (capacity - 1) * clampedStride;
+  const start = THREE.MathUtils.clamp(Math.round(focus - span / 2), 0, Math.max(0, total - 1 - span));
+  return Array.from({ length: capacity }, (_, index) => Math.min(total - 1, start + index * clampedStride));
 }
 
-export default function BusPartyLights({
+const BusPartyLights = memo(function BusPartyLights({
   worldRef,
   focusZ,
   rearZ,
   lowPower,
   reducedMotion,
+  active = true,
 }: {
   worldRef: React.RefObject<WorldState>;
   focusZ: number;
   rearZ: number;
   lowPower: boolean;
   reducedMotion: boolean;
+  active?: boolean;
 }) {
   const group = useRef<THREE.Group>(null);
   const conesRef = useRef<THREE.InstancedMesh>(null);
@@ -103,13 +100,13 @@ export default function BusPartyLights({
 
   const from = BUS_FRONT_Z + 0.82;
   const to = rearZ - 0.82;
-  const stationCount = 1 + Math.ceil((to - from) / (lowPower ? 1.55 : 0.9));
-  const stationCapacity = Math.min(stationCount, lowPower ? 30 : 36);
+  const stationCount = 1 + Math.ceil((to - from) / (lowPower ? 1.55 : 0.95));
+  const stationCapacity = Math.min(stationCount, lowPower ? 56 : 112);
   const beamsPerStation = lowPower ? 1 : 2;
   const beamCount = stationCapacity * beamsPerStation;
   const step = (to - from) / (stationCount - 1);
 
-  const lastFrame = useRef({ time: NaN, focus: -1, night: -1, stations: [] as number[] });
+  const lastFrame = useRef({ time: NaN, focus: -1, stride: 1, night: -1, stations: [] as number[] });
   const { dummy, cameraLocal, direction, color } = useMemo(() => ({
     dummy: new THREE.Object3D(),
     cameraLocal: new THREE.Vector3(),
@@ -139,7 +136,7 @@ export default function BusPartyLights({
   }, [coneGeo, poolGeo, orbGeo, barGeo, beamTex, poolTex]);
 
   useLayoutEffect(() => {
-    lastFrame.current = { time: NaN, focus: -1, night: -1, stations: [] };
+    lastFrame.current = { time: NaN, focus: -1, stride: 1, night: -1, stations: [] };
     const sphere = new THREE.Sphere(new THREE.Vector3(0, 1.9, (from + to) / 2),
       Math.hypot(1.6, 1.45, (to - from) / 2 + 0.5));
     for (const mesh of [conesRef.current, orbsRef.current, poolsRef.current, barsRef.current]) {
@@ -153,6 +150,10 @@ export default function BusPartyLights({
     const anchor = group.current;
     const cones = conesRef.current, orbs = orbsRef.current, pools = poolsRef.current, bars = barsRef.current;
     if (!anchor || !cones || !orbs || !pools || !bars) return;
+    if (!active) {
+      if (anchor.visible) anchor.visible = false;
+      return;
+    }
 
     const night = THREE.MathUtils.smoothstep(1 - worldRef.current.daylight, 0.36, 0.9);
     anchor.visible = night > 0.01;
@@ -161,30 +162,32 @@ export default function BusPartyLights({
     const previous = lastFrame.current;
     if (night !== previous.night) {
       const brightness = night * (reducedMotion ? 0.72 : 1);
-      if (beamMatRef.current) beamMatRef.current.opacity = (lowPower ? 0.26 : 0.22) * brightness;
-      if (poolMatRef.current) poolMatRef.current.opacity = 0.66 * brightness;
+      if (beamMatRef.current) beamMatRef.current.opacity = (lowPower ? 0.24 : 0.2) * brightness;
+      if (poolMatRef.current) poolMatRef.current.opacity = 0.62 * brightness;
       if (orbMatRef.current) orbMatRef.current.opacity = 0.95 * brightness;
       if (barMatRef.current) barMatRef.current.opacity = 0.9 * brightness;
       previous.night = night;
     }
 
     let visibleFocus = 0;
+    let visibleStride = 1;
     if (stationCount > stationCapacity) {
       camera.getWorldPosition(cameraLocal);
       anchor.worldToLocal(cameraLocal);
-      const inCabin = Math.abs(cameraLocal.x) <= 1.7
-        && cameraLocal.y > 0.45 && cameraLocal.y < 3.5
-        && cameraLocal.z >= BUS_FRONT_Z && cameraLocal.z <= rearZ;
-      const viewZ = inCabin ? cameraLocal.z : focusZ;
-      // Changer de fenêtre au plus tous les quatre projecteurs.
-      visibleFocus = Math.round((viewZ - from) / (step * 4)) * 4;
+      // Suit toujours la zone du bus observée par la caméra (intérieur ET extérieur).
+      const viewZ = THREE.MathUtils.clamp(Number.isFinite(cameraLocal.z) ? cameraLocal.z : focusZ, from, to);
+      const camDist = Math.hypot(cameraLocal.x, Math.max(0, cameraLocal.y - 2));
+      visibleStride = camDist > 60 ? 3 : camDist > 22 ? 2 : 1;
+      const quant = Math.max(4, visibleStride * 4);
+      visibleFocus = Math.round((viewZ - from) / (step * quant)) * quant;
     }
     const time = reducedMotion ? 0 : getPartyDanceTime(clock.elapsedTime);
-    if (time === previous.time && visibleFocus === previous.focus) return;
-    const moved = visibleFocus !== previous.focus;
-    if (moved) previous.stations = sampleStations(stationCount, stationCapacity, visibleFocus);
+    if (time === previous.time && visibleFocus === previous.focus && visibleStride === previous.stride) return;
+    const moved = visibleFocus !== previous.focus || visibleStride !== previous.stride;
+    if (moved) previous.stations = sampleStations(stationCount, stationCapacity, visibleFocus, visibleStride);
     previous.time = time;
     previous.focus = visibleFocus;
+    previous.stride = visibleStride;
 
     // Huit temps par rotation, avec des phases opposées des deux côtés de l'allée.
     const chill = reducedMotion ? 0 : getPartyDanceChillMix();
@@ -262,4 +265,6 @@ export default function BusPartyLights({
       </instancedMesh>
     </group>
   );
-}
+});
+
+export default BusPartyLights;

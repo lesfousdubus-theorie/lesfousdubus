@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { getBusGraffitiPlacements, getTheorySignMessages } from "@/lib/bus-theory-signs";
 import type { BusDoorLayout } from "@/lib/bus-layout";
@@ -16,6 +17,9 @@ const PALETTES = [
   { color: "#bde7ff", stroke: "#071f5c", accent: "#ff4da6" },
 ];
 
+const GRAFFITI_WINDOW_M = 360;
+const GRAFFITI_WINDOW_CAPACITY = 48;
+
 function BusGraffitiGroup({
   message,
   geometry,
@@ -30,13 +34,13 @@ function BusGraffitiGroup({
   const material = useMemo(() => {
     const map = makeGraffitiTexture({
       text: signMessage.lines.join("\n"),
-      width: 1024,
-      height: 342,
+      width: 512,
+      height: 170,
       ...PALETTES[message % PALETTES.length],
       angle: message % 2 === 0 ? -0.035 : 0.045,
       decorationWidthScale: 0.76,
     });
-    map.anisotropy = 4;
+    map.anisotropy = 2;
     return new THREE.MeshStandardMaterial({
       map,
       transparent: true,
@@ -54,24 +58,66 @@ function BusGraffitiGroup({
     material.dispose();
   }, [material]);
 
-  const mesh = useMemo(() => {
-    const transform = new THREE.Object3D();
-    const instanced = new THREE.InstancedMesh(geometry, material, instances.length);
-    instanced.name = `bus-side-slogan-${signMessage.id}`;
-    instances.forEach(({ side, width, z }, index) => {
-      transform.position.set(side * 1.342, SIDE_LABEL_Y, z);
-      transform.rotation.y = side * Math.PI / 2;
-      transform.scale.set(width, Math.min(0.78, width / 3), 1);
-      transform.updateMatrix();
-      instanced.setMatrixAt(index, transform.matrix);
-    });
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const scratchRef = useRef<THREE.Object3D | null>(null);
+  const lastCamZRef = useRef(Number.NaN);
+  const windowed = instances.length > GRAFFITI_WINDOW_CAPACITY;
+  const capacity = Math.max(1, windowed ? GRAFFITI_WINDOW_CAPACITY : instances.length);
+
+  useLayoutEffect(() => {
+    const instanced = meshRef.current;
+    if (!instanced) return;
+    const scratch = (scratchRef.current ??= new THREE.Object3D());
+    const initialCount = Math.min(instances.length, capacity);
+    for (let index = 0; index < initialCount; index++) {
+      const { side, width, z } = instances[index];
+      scratch.position.set(side * 1.348, SIDE_LABEL_Y, z);
+      scratch.rotation.y = (side * Math.PI) / 2;
+      scratch.scale.set(width, Math.min(0.78, width / 3), 1);
+      scratch.updateMatrix();
+      instanced.setMatrixAt(index, scratch.matrix);
+    }
+    instanced.count = initialCount;
+    instanced.visible = initialCount > 0;
+    instanced.instanceMatrix.needsUpdate = true;
     instanced.computeBoundingSphere();
-    return instanced;
-  }, [geometry, instances, material, signMessage.id]);
+    lastCamZRef.current = Number.NaN;
+  }, [capacity, instances]);
 
-  useEffect(() => () => { mesh.dispose(); }, [mesh]);
+  useFrame(({ camera }) => {
+    const mesh = meshRef.current;
+    if (!mesh || !windowed) return;
+    const camZ = camera.position.z;
+    if (Number.isFinite(lastCamZRef.current) && Math.abs(camZ - lastCamZRef.current) < 48) return;
+    lastCamZRef.current = camZ;
+    const scratch = (scratchRef.current ??= new THREE.Object3D());
+    let out = 0;
+    for (let i = 0; i < instances.length && out < capacity; i++) {
+      const { side, width, z } = instances[i];
+      if (Math.abs(z - camZ) > GRAFFITI_WINDOW_M) continue;
+      scratch.position.set(side * 1.348, SIDE_LABEL_Y, z);
+      scratch.rotation.y = (side * Math.PI) / 2;
+      scratch.scale.set(width, Math.min(0.78, width / 3), 1);
+      scratch.updateMatrix();
+      mesh.setMatrixAt(out++, scratch.matrix);
+    }
+    mesh.count = out;
+    mesh.visible = out > 0;
+    mesh.instanceMatrix.needsUpdate = true;
+  });
 
-  return <primitive object={mesh} raycast={() => null} />;
+  return (
+    <instancedMesh
+      key={`graffiti-${signMessage.id}-${capacity}`}
+      ref={meshRef}
+      name={`bus-side-slogan-${signMessage.id}`}
+      args={[geometry, material, capacity]}
+      count={Math.min(instances.length, capacity)}
+      frustumCulled={false}
+      dispose={null}
+      raycast={() => null}
+    />
+  );
 }
 
 export default function BusGraffiti({ doors, rearWallZ, wheelPositions }: {
@@ -98,24 +144,9 @@ export default function BusGraffiti({ doors, rearWallZ, wheelPositions }: {
     return [...byMessage];
   }, [tags]);
 
-  const [mountedCount, setMountedCount] = useState(1);
-
-  useEffect(() => {
-    if (mountedCount >= grouped.length) return;
-    const timer = window.setTimeout(() => {
-      setMountedCount((prev) => Math.min(grouped.length, prev + 1));
-    }, 45);
-    return () => window.clearTimeout(timer);
-  }, [grouped.length, mountedCount]);
-
-  const visibleGroups = useMemo(
-    () => grouped.slice(0, mountedCount),
-    [grouped, mountedCount],
-  );
-
   return (
     <group name="bus-theory-graffiti">
-      {visibleGroups.map(([message, instances]) => (
+      {grouped.map(([message, instances]) => (
         <BusGraffitiGroup
           key={message}
           message={message}

@@ -20,9 +20,15 @@ export function getRegisteredSeatIndex(row: number, column = 0): number {
   return section * SEATS_PER_SECTION + (row % DOOR_SECTION_ROWS) * 4 + column;
 }
 
+const PHYSICAL_SEAT_CACHE = new Map<number, SeatInfo>();
+
 export function getPhysicalSeat(physicalSeatIndex: number): SeatInfo {
+  const cached = PHYSICAL_SEAT_CACHE.get(physicalSeatIndex);
+  if (cached) return cached;
   const row = Math.floor(physicalSeatIndex / 4), seatInRow = physicalSeatIndex % 4;
-  return { x: PASSENGER_SEAT_X[seatInRow], z: getSeatRowZ(row), row, seatInRow };
+  const info: SeatInfo = { x: PASSENGER_SEAT_X[seatInRow], z: getSeatRowZ(row), row, seatInRow };
+  if (PHYSICAL_SEAT_CACHE.size < 32768) PHYSICAL_SEAT_CACHE.set(physicalSeatIndex, info);
+  return info;
 }
 
 export function getAvatarSeat(seatCapacity: number, row: number, passengerIndex: number | null, seatColumn?: number | null) {

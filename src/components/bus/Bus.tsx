@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUniformsLib.js";
 import { TV_POSITION, type WorldState } from "./constants";
 import type { PassengerProfile } from "@/types/passenger";
 import Passengers from "./Passengers";
@@ -12,17 +11,16 @@ import BusConfetti from "./BusConfetti";
 import BusPartyLights from "./BusPartyLights";
 import BusSpeedLines from "./BusSpeedLines";
 import type { JourneyState } from "@/lib/bus-journey";
-import { BusTvFrame, BusTvPlayer } from "./BusTv";
+import { BusTvFrame, BusTvHousings, BusTvPlayer } from "./BusTv";
 import { usePartyTvCards } from "./BusPartyTv";
-import { getRenderedRowIndices, getActiveTvIndex, getTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelPositions, BUS_FRONT_Z, FIRST_SEAT_Z, type TvPosition } from "@/lib/bus-layout";
-import { getBusPhysicalRows } from "@/lib/bus-occupancy";
+import { getRenderedRowIndices, getActiveTvIndex, getCabinTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelPositions, BUS_FRONT_Z, FIRST_SEAT_Z, type TvPosition } from "@/lib/bus-layout";
+import { createVisibleBusRowRangeScratch, getBusPhysicalRows, getVisibleBusRowRange } from "@/lib/bus-occupancy";
 import { advanceWiperAngle } from "@/lib/bus-wipers";
-import BusExterior from "./BusExterior";
+import BusExterior, { PillarInstances } from "./BusExterior";
 import BusCabinInterior from "./BusCabinInterior";
 import BusCockpit from "./BusCockpit";
+import DistantBusCrowd from "./DistantBusCrowd";
 import useBusResources from "./useBusResources";
-
-RectAreaLightUniformsLib.init();
 
 interface BusProps {
   headlights: boolean;
@@ -55,6 +53,8 @@ interface BusProps {
   simplifiedPassengerLimit?: number;
   playbackSuspended?: boolean;
   shadersReady?: boolean;
+  onContentReady?: (ready: boolean) => void;
+  onLoadProgress?: (progress: number) => void;
 }
 
 function getTvIndexForCameraZ(positions: TvPosition[], camZ: number, minDistance: number): number {
@@ -102,6 +102,8 @@ export default function Bus({
   simplifiedPassengerLimit,
   playbackSuspended = false,
   shadersReady = true,
+  onContentReady,
+  onLoadProgress,
 }: BusProps) {
   const group = useRef<THREE.Group>(null);
   const hat = useRef<THREE.Group>(null);
@@ -115,24 +117,45 @@ export default function Bus({
   const numRows = getBusPhysicalRows(seatCapacity);
   const doors = useMemo(() => getBusDoors(numRows), [numRows]);
 
-  // Position Z de chaque rangée de sièges (suit dynamiquement la caméra sur les très longs bus)
+  // Position Z de chaque rangée de sièges (suit dynamiquement la zone observée par la caméra sur les très longs bus).
+  // En cabine (phase === "inside" / "entering"), on applique aussi une hystérésis (±36 rangées dans la fenêtre
+  // de ±68 rangées) afin que chaque changement de rangée ou de colonne ne reconstruise pas toute la cabine.
   const [cameraFocusRow, setCameraFocusRow] = useState(reservedRow);
   const cameraFocusRowRef = useRef(reservedRow);
-  const activeFocusRow = numRows > 180 && (phase === "outside" || freeView) ? cameraFocusRow : reservedRow;
+  const [seatedFocusRow, setSeatedFocusRow] = useState(reservedRow);
+  if (Math.abs(reservedRow - seatedFocusRow) > 36) {
+    setSeatedFocusRow(reservedRow);
+  }
+  const focusNextAtRef = useRef(0);
+  const fastMotionUntilRef = useRef(0);
+  const prevCamPosRef = useRef(new THREE.Vector3());
+  const curCamPosScratch = useMemo(() => new THREE.Vector3(), []);
+  const prevCamDirRef = useRef(new THREE.Vector3(0, 0, -1));
+  const curCamDirScratch = useMemo(() => new THREE.Vector3(), []);
+  const prevCamDirInitRef = useRef(false);
+  const visibleRowScratch = useMemo(() => createVisibleBusRowRangeScratch(), []);
+  const activeFocusRow = numRows > 180
+    ? ((phase === "outside" || freeView) ? cameraFocusRow : seatedFocusRow)
+    : reservedRow;
+  const activeFocusZ = getSeatRowZ(activeFocusRow);
   const renderedRowIndices = useMemo(
     () => getRenderedRowIndices(numRows, activeFocusRow),
     [numRows, activeFocusRow],
   );
 
-  // Une TV principale réelle et au maximum 8 rappels visuels légers dans les très longs bus.
-  const tvPositions = useMemo(() => getTvPositions(numRows, TV_POSITION), [numRows]);
+  // Une TV fixe toutes les 7 rangées sur toute la zone affichée du bus (boîtiers + écrans instanciés en 6 draw calls).
+  const tvPositions = useMemo(
+    () => getCabinTvPositions(numRows, TV_POSITION, renderedRowIndices),
+    [numRows, renderedRowIndices],
+  );
 
   // Un seul vrai lecteur YouTube est conservé. La caméra intérieure regarde vers
   // l'avant du bus (Z décroissant) : un écran derrière la rangée serait invisible.
   // Les autres écrans restent des répéteurs visuels sans iframe supplémentaire.
   const targetSeatedTvIndex = useMemo(() => {
     if (phase !== "inside" && phase !== "entering") return 0;
-    return getActiveTvIndex(tvPositions, reservedRow);
+    // Garde toujours allumée la TV la plus proche devant le passager tant qu'il ne l'a pas dépassée.
+    return getActiveTvIndex(tvPositions, reservedRow, 0.25);
   }, [phase, reservedRow, tvPositions]);
   const [freeViewTvIndex, setFreeViewTvIndex] = useState(0);
   const freeViewTvIndexRef = useRef(0);
@@ -190,16 +213,22 @@ export default function Bus({
   const HAT_BASE_POS: [number, number, number] = useMemo(() => [0, 3.395, -3.55], []);
   const HAT_BASE_ROT: [number, number, number] = useMemo(() => [0, 0, 0], []);
 
-  const { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex } = useBusResources();
+  const { mats, montCorvoTex, hatGeo, ribbonGeo, sideLabel, tvOffTex, dashTex, licensePlateTex, contactShadowTex, resourcesReady, resourcesProgress } = useBusResources();
   const partyCards = usePartyTvCards(partyOn);
 
   // Montage progressif des sous-ensembles du bus sur des frames distinctes
   // sans jamais recompiler les lumières globales ni bloquer à bas FPS.
   const [mountStage, setMountStage] = useState(() => (phase === "entering" || phase === "inside" ? 3 : 0));
   const mountStageRef = useRef(phase === "entering" || phase === "inside" ? 3 : 0);
-  const mountNextAtRef = useRef(0);
-  const ceilingLightRef = useRef<THREE.RectAreaLight>(null);
   const effectiveMountStage = phase === "entering" || phase === "inside" ? 3 : mountStage;
+
+  useEffect(() => {
+    onContentReady?.(effectiveMountStage >= 3 && resourcesReady);
+  }, [effectiveMountStage, onContentReady, resourcesReady]);
+
+  useEffect(() => {
+    onLoadProgress?.((effectiveMountStage / 3) * 0.5 + resourcesProgress * 0.5);
+  }, [effectiveMountStage, onLoadProgress, resourcesProgress]);
 
   // Cibles fixes pour les projecteurs de phares
   const leftTarget = useRef<THREE.Object3D>(null);
@@ -208,21 +237,13 @@ export default function Bus({
     const t = state.clock.elapsedTime;
     const frameDt = Math.min(dt, 0.1);
 
-    if (ceilingLightRef.current) {
-      ceilingLightRef.current.intensity = THREE.MathUtils.lerp(2.15, 0.85, worldRef.current.daylight);
-    }
-
     if (mountStageRef.current < 3) {
       if (phase === "entering" || phase === "inside") {
         mountStageRef.current = 3;
         setMountStage(3);
       } else if (shadersReady) {
-        const now = performance.now();
-        if (now >= mountNextAtRef.current) {
-          mountNextAtRef.current = now + (dt > 0.05 ? 60 : 30);
-          mountStageRef.current += 1;
-          setMountStage(mountStageRef.current);
-        }
+        mountStageRef.current += 1;
+        setMountStage(mountStageRef.current);
       }
     }
 
@@ -280,16 +301,58 @@ export default function Bus({
       }
     }
 
-    // Streaming dynamique des rangées autour de la caméra pour les bus très longs (> 180 rangées).
+    // Streaming dynamique des rangées centré sur les rangées visibles les plus PROCHES de la caméra
+    // (jusqu'à ~170 m avec visages, coiffures et chapeaux One Piece ; le LOD ultra-léger couvre déjà
+    // 100 % des 5 000+ rangées pendant les mouvements rapides pour éviter tout re-upload GPU en plein mouvement).
     if (numRows > 180 && (phase === "outside" || freeView)) {
-      const approxRow = THREE.MathUtils.clamp(
-        Math.round((state.camera.position.z - FIRST_SEAT_Z) / 1.25),
-        0,
-        numRows - 1,
-      );
-      if (Math.abs(approxRow - cameraFocusRowRef.current) >= 24) {
-        cameraFocusRowRef.current = approxRow;
-        setCameraFocusRow(approxRow);
+      const now = performance.now();
+      state.camera.getWorldPosition(curCamPosScratch);
+      state.camera.getWorldDirection(curCamDirScratch);
+      if (prevCamDirInitRef.current) {
+        const safeDt = Math.max(dt, 1 / 120);
+        const dot = THREE.MathUtils.clamp(prevCamDirRef.current.dot(curCamDirScratch), -1, 1);
+        const angularSpeed = Math.acos(dot) / safeDt;
+        const moveSpeed = prevCamPosRef.current.distanceTo(curCamPosScratch) / safeDt;
+        if (angularSpeed > 1.5 || moveSpeed > 28) {
+          fastMotionUntilRef.current = now + 180;
+        }
+      } else {
+        prevCamDirInitRef.current = true;
+      }
+      prevCamPosRef.current.copy(curCamPosScratch);
+      prevCamDirRef.current.copy(curCamDirScratch);
+
+      if (now >= fastMotionUntilRef.current && now >= focusNextAtRef.current) {
+        const visible = getVisibleBusRowRange(state.camera, group.current, numRows, 8.0, visibleRowScratch);
+        if (visible.minRow <= visible.maxRow) {
+          const camRow = Math.round((state.camera.position.z - FIRST_SEAT_Z) / 1.25);
+          const curFocus = cameraFocusRowRef.current;
+          const halfWindow = 64;
+          const clampedCam = THREE.MathUtils.clamp(camRow, visible.minRow, visible.maxRow);
+          const wantMin = Math.max(visible.minRow, clampedCam - 42);
+          const wantMax = Math.min(visible.maxRow, clampedCam + 42);
+          // Si les rangées visibles proches de la caméra sont déjà couvertes par la fenêtre actuelle (±68),
+          // ne pas déplacer focusRow pendant une simple orbite 360° autour du bus.
+          const alreadyCovered = wantMin >= curFocus - 58 && wantMax <= curFocus + 58;
+          const missingVisibleRow = wantMin < curFocus - 66 || wantMax > curFocus + 66;
+          if (!alreadyCovered) {
+            const visibleSpan = visible.maxRow - visible.minRow;
+            const rawTarget = visibleSpan <= halfWindow * 2
+              ? Math.round((visible.minRow + visible.maxRow) / 2)
+              : THREE.MathUtils.clamp(clampedCam, visible.minRow + halfWindow, visible.maxRow - halfWindow);
+            const targetFocusRow = rawTarget <= 8
+              ? rawTarget
+              : rawTarget >= numRows - 9
+                ? rawTarget
+                : Math.round(rawTarget / 8) * 8;
+            const minStep = missingVisibleRow ? 1 : 20;
+            if (Math.abs(targetFocusRow - curFocus) >= minStep) {
+              cameraFocusRowRef.current = targetFocusRow;
+              focusNextAtRef.current = now + 160;
+              setCameraFocusRow(targetFocusRow);
+            }
+          }
+        }
       }
     }
 
@@ -313,7 +376,7 @@ export default function Bus({
         group.current.worldToLocal(tvCamScratch);
         const camZ = tvCamScratch.z;
         if (freeView) {
-          const nextFree = getTvIndexForCameraZ(tvPositions, camZ, 1.5);
+          const nextFree = getTvIndexForCameraZ(tvPositions, camZ, 0.25);
           if (nextFree !== freeViewTvIndexRef.current) {
             freeViewTvIndexRef.current = nextFree;
             setFreeViewTvIndex(nextFree);
@@ -322,8 +385,8 @@ export default function Bus({
           const cur = Math.min(seatedTvIndexRef.current, tvPositions.length - 1);
           const target = targetSeatedTvIndex;
           const ready = cur === target
-            || (target > cur && camZ - tvPositions[target][2] >= 2.5)
-            || (target < cur && camZ - tvPositions[cur][2] < 2.5)
+            || (target > cur && camZ - tvPositions[target][2] >= 0.25)
+            || (target < cur && camZ - tvPositions[cur][2] < 0.25)
             || Math.abs(camZ - viewerZ) < 0.25;
           if (ready && cur !== target) {
             seatedTvIndexRef.current = target;
@@ -347,9 +410,8 @@ export default function Bus({
         rearWallZ={rearWallZ}
         doors={doors}
         numRows={numRows}
-        focusZ={viewerZ}
+        focusZ={activeFocusZ}
         lowPower={lowPower}
-        pillars={PILLARS}
         wheelPositions={wheelPositions}
         wheels={wheels}
         leftWiper={leftWiper}
@@ -368,20 +430,30 @@ export default function Bus({
         hatBaseRot={HAT_BASE_ROT}
         contactShadowTex={contactShadowTex}
       />
-
-      {/* Toute la rampe reste présente dès la frame 0 pour garder le nombre de lumières constant. */}
-      <rectAreaLight ref={ceilingLightRef} name="bus-cabin-ceiling-light" position={[0, 3.1, cabinCenterZ]}
-        rotation={[-Math.PI / 2, 0, 0]} color="#fff4db" intensity={0.85} width={1.14} height={cabinLength - 0.12} />
+      <PillarInstances positions={PILLARS} doors={doors} material={mats.bodyDark} />
 
       {effectiveMountStage >= 1 && (
         <BusCabinInterior mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ}
           rearWallZ={rearWallZ} rows={renderedRowIndices} wheelPositions={wheelPositions}
           tvPositions={tvPositions} doors={doors} />
       )}
+      {effectiveMountStage >= 3 && numRows > 180 && (
+        <DistantBusCrowd
+          numRows={numRows}
+          passengerCount={passengerCount}
+          seatCapacity={seatCapacity}
+          renderedRowIndices={renderedRowIndices}
+          seatMaterial={mats.seat}
+          pillarMaterial={mats.bodyDark}
+          partyOn={partyDancing}
+          reducedMotion={reducedMotion}
+        />
+      )}
 
       {/* PASSAGERS NAKAMA ASSIS DANS LE BUS */}
       {effectiveMountStage >= 3 && (
         <Passengers
+          phase={phase}
           passengerCount={passengerCount}
           seatCapacity={seatCapacity}
           numRows={numRows}
@@ -407,30 +479,60 @@ export default function Bus({
       {effectiveMountStage >= 2 && (
         <BusRelayPassenger hornPulse={hornPulse} reducedMotion={reducedMotion} partyOn={partyDancing} />
       )}
-      {effectiveMountStage >= 3 && partyOn && <BusConfetti focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion} dancing={partyDancing}/>}
-      {effectiveMountStage >= 3 && partyDancing && <BusPartyLights worldRef={worldRef} focusZ={getSeatRowZ(reservedRow)} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion}/>}
+      {effectiveMountStage >= 3 && (
+        <BusConfetti
+          focusZ={getSeatRowZ(activeFocusRow)}
+          rearZ={rearWallZ}
+          lowPower={lowPower}
+          reducedMotion={reducedMotion}
+          active={partyOn}
+          dancing={partyDancing}
+        />
+      )}
+      {effectiveMountStage >= 3 && (
+        <BusPartyLights
+          worldRef={worldRef}
+          focusZ={getSeatRowZ(activeFocusRow)}
+          rearZ={rearWallZ}
+          lowPower={lowPower}
+          reducedMotion={reducedMotion}
+          active={partyDancing}
+        />
+      )}
       {/* Lignes de vitesse manga dès la vitesse x2 (extérieur uniquement) */}
       {effectiveMountStage >= 3 && (
-        <BusSpeedLines worldRef={worldRef} focusZ={viewerZ} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion} visible={exteriorView || phase !== "inside"} />
+        <BusSpeedLines worldRef={worldRef} focusZ={activeFocusZ} rearZ={rearWallZ} lowPower={lowPower} reducedMotion={reducedMotion} visible={exteriorView || phase !== "inside"} />
       )}
       {effectiveMountStage >= 2 && (
         <BusCockpit mats={mats} dashTex={dashTex} hornPulse={hornPulse}
           partyOn={partyDancing} reducedMotion={reducedMotion} />
       )}
 
-      {/* ---------- TÉLÉVISIONS DU BUS ---------- */}
-      {effectiveMountStage >= 1 && tvPositions.map((pos, idx) => (
+      {/* ---------- TÉLÉVISIONS DU BUS (toutes les 4 rangées, instanciées en 6 draw calls) ---------- */}
+      {effectiveMountStage >= 1 && (
+        <BusTvHousings
+          positions={tvPositions}
+          mats={mats}
+          tvOn={tvOn && !partyOn && phase === "inside"}
+          activeIdx={activeTvIndex}
+          tvOffTex={tvOffTex}
+          posterTex={montCorvoTex}
+          hideScreens={Boolean(partyCards)}
+        />
+      )}
+      {effectiveMountStage >= 1 && partyCards && tvPositions.map((pos, idx) => (
         <BusTvFrame
           key={`tv-unit-${idx}`}
           pos={pos}
           idx={idx}
-          tvOn={tvOn && !partyOn}
+          tvOn={false}
           isActive={idx === activeTvIndex}
           mats={mats}
           tvOffTex={tvOffTex}
           posterTex={montCorvoTex}
           partyCards={partyCards}
           reducedMotion={reducedMotion}
+          withHousing={false}
         />
       ))}
       {effectiveMountStage >= 1 && (

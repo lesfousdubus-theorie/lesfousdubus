@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { BUS_FRONT_Z } from "@/lib/bus-layout";
@@ -42,7 +42,7 @@ function wrapRange(value: number, span: number) {
   return ((((value + span) % (span * 2)) + span * 2) % (span * 2)) - span;
 }
 
-export default function Weather({
+const Weather = memo(function Weather({
   worldRef,
   lowPower = false,
   rainCount,
@@ -207,4 +207,6 @@ export default function Weather({
       </points>
     </group>
   );
-}
+});
+
+export default Weather;

@@ -393,6 +393,11 @@ export default function WorldSeaCreatures({
       if (wakes && wakes[index]) wakes[index].set(0, 0, 1, 0);
     }
 
+    // Sur un très long bus (ex. 20 000 passagers), ancrer les monstres marins autour des
+    // premiers wagons (portes 1 à 5, z ≈ -15 à +85 m) au lieu du milieu du bus à 3,3 km.
+    const anchorBaseZ = Math.min(cabinCenterZ, 30);
+    const doorZoneSpread = cabinCenterZ > 45 ? 46 : Math.max(12, Math.min(36, Math.abs(cabinCenterZ) + 18));
+
     for (let index = 0; index < slots.length; index++) {
       const slot = SLOTS[index];
       const effect = slots[index];
@@ -445,7 +450,8 @@ export default function WorldSeaCreatures({
         track.entry = makeBurstState();
         const baseSwimSpeed = getSeaCreatureSwimSpeed(model.motion, p, busSpeed);
         const netRelVz = busSpeed + slot.direction * baseSwimSpeed;
-        const focusAnchor = cabinCenterZ + (index % 2 ? -10 : 12) + route * 0.6;
+        const cycleOffset = (fractHash(cycle * 37.3 + index * 13.7 + 0.5) - 0.5) * 2 * doorZoneSpread;
+        const focusAnchor = anchorBaseZ + cycleOffset + route * 0.35;
         track.waterZ = focusAnchor - (duration * 0.45 - local) * netRelVz;
       }
 
@@ -453,7 +459,7 @@ export default function WorldSeaCreatures({
       track.prevLocal = local;
 
       const previewZ = reducedMotion
-        ? cabinCenterZ + (index === 0 ? 52 : -48)
+        ? anchorBaseZ + (index === 0 ? 34 : -14)
         : track.waterZ + dScroll;
 
       const pose = sampleSeaCreaturePose({
@@ -477,15 +483,15 @@ export default function WorldSeaCreatures({
       track.waterZ = z;
 
       const group = model.group;
-      if (z < cabinCenterZ - maxAhead || z > cabinCenterZ + maxBehind) {
+      if (z < anchorBaseZ - maxAhead || z > anchorBaseZ + maxBehind) {
         effect.exit.group.visible = false;
         effect.entry.group.visible = false;
         continue;
       }
 
       // Enfoncement doux sous l'eau près des limites d'affichage pour éviter tout pop-in / pop-out brutal.
-      const aheadFade = THREE.MathUtils.smoothstep(z, cabinCenterZ - maxAhead, cabinCenterZ - maxAhead + 42);
-      const behindFade = 1 - THREE.MathUtils.smoothstep(z, cabinCenterZ + maxBehind - 42, cabinCenterZ + maxBehind);
+      const aheadFade = THREE.MathUtils.smoothstep(z, anchorBaseZ - maxAhead, anchorBaseZ - maxAhead + 42);
+      const behindFade = 1 - THREE.MathUtils.smoothstep(z, anchorBaseZ + maxBehind - 42, anchorBaseZ + maxBehind);
       const horizonSink = (1 - aheadFade * behindFade) * 18.0;
       const targetY = SEA_LEVEL + pose.height - horizonSink;
 

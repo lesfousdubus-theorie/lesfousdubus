@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import type * as THREE from "three";
 import type { PassengerActivity } from "@/lib/passenger-motion";
 import { blendFacialExpression, createFacialExpression, getFacialProfile, sampleFacialExpression } from "@/lib/passenger-expressions";
-import { CharacterPart, getCharacterShape, joinCharacterParts } from "./CharacterShapes";
+import { CharacterPart, getCharacterShape, joinCharacterParts, useCharacterLowPoly } from "./CharacterShapes";
 
 export type FacialMotionRef = RefObject<{ activity: PassengerActivity }>;
 
@@ -31,7 +31,8 @@ export default function AnimatedCharacterMouth({ id, index = 0, motion, reducedM
   const profile = getFacialProfile(id);
   const target = useRef(createFacialExpression());
   const expression = useRef({ ...createFacialExpression(), smile: profile.grin, teeth: profile.grin });
-  const mouthShape = getCharacterShape([1, 1, .009], .16, 1);
+  const lowPoly = useCharacterLowPoly();
+  const mouthShape = getCharacterShape([1, 1, .009], .16, 1, lowPoly);
   const teethShape = skull ? getSkullTeethGeometry() : mouthShape;
   const restWidth = profile.width;
   const restHeight = skull ? .025 : .008 + .009 * profile.grin;

@@ -44,7 +44,6 @@ interface BusExteriorProps {
   numRows: number;
   focusZ: number;
   lowPower: boolean;
-  pillars: number[];
   wheelPositions: [number, number][];
   wheels: RefObject<(THREE.Group | null)[]>;
   leftWiper: RefObject<THREE.Group | null>;
@@ -67,24 +66,40 @@ interface BusExteriorProps {
 
 const BusExterior = memo(function BusExterior({
   headlights, phase, journey, mats, cabinLength, cabinCenterZ, rearWallZ, doors, numRows, focusZ, lowPower,
-  pillars, wheelPositions, wheels, leftWiper, rightWiper, leftTarget, rightTarget,
+  wheelPositions, wheels, leftWiper, rightWiper, leftTarget, rightTarget,
   sideLabel, reducedMotion, freeView, licensePlateTex, montCorvoTex, hatGeo, ribbonGeo, hat,
   hatBasePos, hatBaseRot, contactShadowTex,
 }: BusExteriorProps) {
-  const sidePanels = useMemo(() => [-1, 1].map(side => {
-    const pieces = splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, side > 0).map(([from, to]) => {
-      const center = (from + to) / 2;
-      return createLowerBodyGeometry(to - from, [...new Set(wheelPositions.map(([, z]) => z - center))]).translate(0, 0, center);
-    });
-    const geometry = mergeGeometries(pieces, false)!;
-    pieces.forEach(piece => piece.dispose());
-    return { side, geometry };
-  }), [rearWallZ, wheelPositions, doors]);
-  useEffect(() => () => sidePanels.forEach(({ geometry }) => geometry.dispose()), [sidePanels]);
   const wheelZs = useMemo(
     () => [...new Set(wheelPositions.map(([, z]) => z))].sort((a, b) => a - b),
     [wheelPositions],
   );
+  const sidePanels = useMemo(() => {
+    const plainTemplateCache = new Map<string, THREE.BufferGeometry>();
+    const panels = [-1, 1].map((side) => {
+      const pieces = splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, side > 0).map(([from, to]) => {
+        const len = to - from;
+        const center = (from + to) / 2;
+        const localWheelZs = wheelZs.filter((z) => z + WHEEL_ARCH_RADIUS > from && z - WHEEL_ARCH_RADIUS < to).map((z) => z - center);
+        if (localWheelZs.length > 0) {
+          return createLowerBodyGeometry(len, localWheelZs).translate(0, 0, center);
+        }
+        const key = len.toFixed(3);
+        let template = plainTemplateCache.get(key);
+        if (!template) {
+          template = createLowerBodyGeometry(len, []);
+          plainTemplateCache.set(key, template);
+        }
+        return template.clone().translate(0, 0, center);
+      });
+      const geometry = mergeGeometries(pieces, false)!;
+      pieces.forEach((piece) => piece.dispose());
+      return { side, geometry };
+    });
+    plainTemplateCache.forEach((template) => template.dispose());
+    return panels;
+  }, [rearWallZ, wheelZs, doors]);
+  useEffect(() => () => sidePanels.forEach(({ geometry }) => geometry.dispose()), [sidePanels]);
   const leftOuterFloorSpans = useMemo(
     () => splitAtWheels([[BUS_FRONT_Z, rearWallZ]], wheelZs),
     [rearWallZ, wheelZs],
@@ -110,13 +125,12 @@ const BusExterior = memo(function BusExterior({
           {/* Panneau latéral haut extensible */}
           <RoundedBox args={[0.08, 0.45, cabinLength]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[sx * 1.3, 2.975, cabinCenterZ]} />
           <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, sx > 0)} material={mats.windowGlass} x={sx * 1.3} y={2.25} width={0} height={1} planeSide={sx} />
-          <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, sx > 0)} material={mats.yellow} x={sx * 1.35} y={1.72} width={0.024} height={0.08} />
+          <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, sx > 0)} material={mats.yellow} x={sx * 1.356} y={1.72} width={0.024} height={0.08} />
 
         </group>
       ))}
 
       <BusGraffiti doors={doors} rearWallZ={rearWallZ} wheelPositions={wheelPositions} />
-      <PillarInstances positions={pillars} doors={doors} material={mats.bodyDark} />
 
       {/* Face avant : pare-brise panoramique */}
       <RoundedBox args={[2.6, 1.25, 0.08]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 1.125, -4.6]} />
@@ -209,7 +223,7 @@ const BusExterior = memo(function BusExterior({
       {/* Ombre de contact au sol sous le bus : ancre solidement le bus au sol */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.026, cabinCenterZ - 0.5]}
+        position={[0, 0.036, cabinCenterZ - 0.5]}
         renderOrder={1}
       >
         <planeGeometry args={[3.2, cabinLength + 2.8]} />
@@ -219,7 +233,8 @@ const BusExterior = memo(function BusExterior({
           opacity={0.88}
           depthWrite={false}
           polygonOffset
-          polygonOffsetFactor={-1}
+          polygonOffsetFactor={-2}
+          polygonOffsetUnits={-2}
         />
       </mesh>
 
@@ -262,8 +277,9 @@ const BusExterior = memo(function BusExterior({
 
 export default BusExterior;
 
-function PillarInstances({ positions, doors, material }: { positions: number[]; doors: BusDoorLayout[]; material: THREE.Material }) {
+export const PillarInstances = memo(function PillarInstances({ positions, doors, material }: { positions: number[]; doors: BusDoorLayout[]; material: THREE.Material }) {
   const ref = useRef<THREE.InstancedMesh>(null);
+  const capacity = Math.max(448, Math.ceil((positions.length * 2) / 128) * 128);
   useLayoutEffect(() => {
     if (!ref.current) return;
     const matrix = new THREE.Matrix4();
@@ -271,7 +287,7 @@ function PillarInstances({ positions, doors, material }: { positions: number[]; 
     for (const x of [-1.3, 1.3]) {
       for (const z of positions) {
         if (x > 0 && !isWindowPillarClearOfDoor(z, doors)) continue;
-        if (index >= 366) break;
+        if (index >= capacity) break;
         matrix.makeTranslation(x, 2.255, z);
         ref.current.setMatrixAt(index++, matrix);
       }
@@ -279,10 +295,10 @@ function PillarInstances({ positions, doors, material }: { positions: number[]; 
     ref.current.count = index;
     ref.current.instanceMatrix.needsUpdate = true;
     ref.current.computeBoundingSphere();
-  }, [positions, doors]);
+  }, [capacity, positions, doors]);
   return (
-    <instancedMesh ref={ref} args={[undefined, undefined, 366]} material={material}>
+    <instancedMesh key={`pillars-${capacity}`} ref={ref} args={[undefined, undefined, capacity]} material={material} raycast={() => null}>
       <boxGeometry args={[0.08, 1.01, 0.1]} />
     </instancedMesh>
   );
-}
+});

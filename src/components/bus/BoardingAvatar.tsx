@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { PassengerProfile } from "@/types/passenger";
@@ -23,10 +23,11 @@ import { getVisiblePassengerName, PassengerNameTag } from "./PassengerNameTags";
 import { getPassengerNameHeightFromHip, usePassengerHeadHeight } from "./usePassengerHeadHeight";
 
 /** Le même nakama attend, marche, s'assoit, puis devient le corps en vue subjective. */
-export default function BoardingAvatar({ journey, passengerIndex, avatarId, physicalSeatIndex, profile, onSelect, partyOn, hornPulse, reducedMotion, firstPerson = false }: {
+const BoardingAvatar = memo(function BoardingAvatar({ journey, passengerIndex, avatarId, physicalSeatIndex = 0, physicalSeatIndexRef, profile, onSelect, partyOn, hornPulse, reducedMotion, firstPerson = false }: {
   journey: React.RefObject<JourneyState>; passengerIndex: number | null;
   avatarId?: string | null;
-  physicalSeatIndex: number;
+  physicalSeatIndex?: number;
+  physicalSeatIndexRef?: React.RefObject<number>;
   profile?: PassengerProfile;
   onSelect?: (passenger: PassengerProfile) => void;
   partyOn: boolean; hornPulse: number; reducedMotion: boolean;
@@ -102,10 +103,14 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
     if(!celebrate){targetPose.current.torsoRoll=0;targetPose.current.leftX=.12;targetPose.current.rightX=.12;targetPose.current.leftElbowX=1.05;targetPose.current.rightElbowX=1.05;}
     // A walking avatar stays quiet; seated free-view keeps the same social face as its companions.
     if(s.phase!=="inside") targetPose.current.activity="idle";
-    const seatX = PASSENGER_SEAT_X[physicalSeatIndex % 4];
-    if(sit>.95)keepPassengerHandsApart(targetPose.current,archetype.id,physicalSeatIndex%2===0?1:-1,seatX);
+    const seatIdx = physicalSeatIndexRef ? physicalSeatIndexRef.current : physicalSeatIndex;
+    root.current.userData.physicalSeatIndex = seatIdx;
+    root.current.userData.row = Math.floor(seatIdx / 4);
+    root.current.userData.seatInRow = seatIdx % 4;
+    const seatX = PASSENGER_SEAT_X[seatIdx % 4];
+    if(sit>.95)keepPassengerHandsApart(targetPose.current,archetype.id,seatIdx%2===0?1:-1,seatX);
     blendPassengerPose(pose.current,targetPose.current,dt,reducedMotion);
-    if(sit>.95)keepPassengerHandsApart(pose.current,archetype.id,physicalSeatIndex%2===0?1:-1,seatX);
+    if(sit>.95)keepPassengerHandsApart(pose.current,archetype.id,seatIdx%2===0?1:-1,seatX);
     if (firstPerson && s.phase === "inside") {
       root.current.position.set(camera.position.x, s.position.y, camera.position.z - 0.03);
     } else {
@@ -174,8 +179,8 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
       if(prop){const gain=celebrate&&sit>.95?getPassengerSignatureGain(clock.elapsedTime,archetype.id,partyOn,reducedMotion):0;prop.visible=gain>.001;prop.scale.setScalar(gain);}
     });
   });
-  return <group ref={root} name="bus-boarding-avatar" userData={{ passengerKind: "visitor", physicalSeatIndex,
-    seatIndex: passengerIndex, archetypeId: archetype.id, row: Math.floor(physicalSeatIndex / 4), seatInRow: physicalSeatIndex % 4 }} visible={false}
+  return <group ref={root} name="bus-boarding-avatar" userData={{ passengerKind: "visitor",
+    seatIndex: passengerIndex, archetypeId: archetype.id }} visible={false}
   >
     <group ref={hips} name="nakama-hips">
       {!firstPerson && displayName && crown !== undefined && (
@@ -246,4 +251,6 @@ export default function BoardingAvatar({ journey, passengerIndex, avatarId, phys
       </group>
     </group>
   </group>;
-}
+});
+
+export default BoardingAvatar;

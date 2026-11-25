@@ -1,4 +1,4 @@
-import { Box3, MathUtils, Mesh, Quaternion, Raycaster, Vector3, type Object3D, type PerspectiveCamera, type Vector2 } from "three";
+import { Box3, InstancedMesh, MathUtils, Mesh, Quaternion, Raycaster, Vector3, type Object3D, type PerspectiveCamera, type Vector2 } from "three";
 import { BUS_DOOR, BUS_FRONT_Z } from "./bus-layout";
 
 export const ORBIT_CAMERA_FLOOR = 0.24;
@@ -73,6 +73,8 @@ export function createBusExploration() {
     raycaster.setFromCamera(cursor, camera);
   }
 
+  const boxHit = new Vector3();
+
   function focus(camera: PerspectiveCamera, cursor: Vector2, rearZ: number, bus: Object3D | undefined) {
     if (!bus) return;
     aimRay(camera, cursor);
@@ -83,15 +85,25 @@ export function createBusExploration() {
     if (!raycaster.ray.intersectsBox(bounds)) return;
 
     const parts: Mesh[] = [];
+    let skippedHeavy = false;
     bus.traverseVisible(object => {
-      if (!(object instanceof Mesh) || !object.layers.test(camera.layers)) return;
+      if (!(object instanceof Mesh) || object instanceof InstancedMesh || !object.layers.test(camera.layers)) return;
+      const posAttr = object.geometry?.attributes?.position;
+      if (posAttr && posAttr.count > 2500) {
+        skippedHeavy = true;
+        return;
+      }
       const materials = Array.isArray(object.material) ? object.material : [object.material];
       if (materials.some(material => material.visible && !material.transparent)) parts.push(object);
     });
     raycaster.near = Math.max(camera.near, MIN_PIVOT_DEPTH);
     raycaster.far = camera.far;
     const [hit] = raycaster.intersectObjects(parts, false);
-    if (hit) pivot.copy(hit.point);
+    if (hit) {
+      pivot.copy(hit.point);
+    } else if (skippedHeavy && raycaster.ray.intersectBox(bounds, boxHit)) {
+      pivot.copy(boxHit);
+    }
   }
 
   function zoom(camera: PerspectiveCamera, cursor: Vector2, gesture: number, rearZ: number, maxDistance: number) {

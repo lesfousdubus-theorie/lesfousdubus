@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { bakePassengerIdentity, bakedPassengerIdentities, type IdentityPart, type IdentityRole } from "@/lib/baked-passenger";
+import { bakePassengerIdentity, bakedPassengerIdentities, bakedStaticPassengerIdentities, type IdentityPart, type IdentityRole, type StaticIdentityPart } from "@/lib/baked-passenger";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import { CABIN_FLOOR_Y } from "@/lib/passenger-gait";
 import { getPassengerSignatureGain } from "@/lib/passenger-motion";
@@ -12,6 +12,7 @@ import type { PassengerPoseRegistry } from "@/lib/passenger-motion";
 import type { PassengerProfile } from "@/types/passenger";
 import { Passenger } from "./Passengers";
 import { NAKAMA_ROSTER } from "./passenger-archetypes";
+import { CharacterLowPolyContext } from "./CharacterShapes";
 
 export interface IdentityDrivers {
   bodies: THREE.Matrix4[];
@@ -24,17 +25,20 @@ export interface IdentityDrivers {
   listeners: Set<() => void>;
 }
 
-function Prototype({ id, onReady }: { id: string; onReady: (parts: IdentityPart[]) => void }) {
+function Prototype({ id, onReady }: { id: string; onReady: (parts: IdentityPart[], staticParts: StaticIdentityPart[]) => void }) {
   const root = useRef<THREE.Group>(null);
   useLayoutEffect(() => {
     if (!root.current) return;
     const parts = bakedPassengerIdentities.get(id) ?? bakePassengerIdentity(root.current, id);
     bakedPassengerIdentities.set(id, parts);
-    onReady(parts);
+    const staticParts = bakedStaticPassengerIdentities.get(id) ?? [];
+    onReady(parts, staticParts);
   }, [id, onReady]);
   return <group ref={root} visible={false} dispose={null}>
-    <Passenger seat={{ x: 0, z: 0, row: 0, seatInRow: 0 }} index={0}
-      archetype={NAKAMA_ROSTER.find(actor => actor.id === id)!} hornPulse={0} reducedMotion />
+    <CharacterLowPolyContext.Provider value={true}>
+      <Passenger seat={{ x: 0, z: 0, row: 0, seatInRow: 0 }} index={0}
+        archetype={NAKAMA_ROSTER.find(actor => actor.id === id)!} hornPulse={0} reducedMotion />
+    </CharacterLowPolyContext.Provider>
   </group>;
 }
 
@@ -49,20 +53,70 @@ interface IdentityInstancesProps {
   reducedMotion: boolean;
 }
 
+interface IdentityGroupProps {
+  id: string;
+  indices: number[];
+  groupHash: number;
+  passengers: BusOccupant[];
+  drivers: IdentityDrivers;
+  partyOn: boolean;
+  reducedMotion: boolean;
+}
+
 /** Même tête, mêmes cheveux et même tenue à distance. Seule l'expression est figée. */
-function IdentityGroup({ id, indices, passengers, drivers, capacity, partyOn, reducedMotion }:
-  IdentityInstancesProps & { id: string; indices: number[] }) {
+const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, drivers, partyOn, reducedMotion }: IdentityGroupProps) {
   const clock = useThree(state => state.clock);
-  const [parts, setParts] = useState(() => bakedPassengerIdentities.get(id));
+  const [baked, setBaked] = useState<{ parts: IdentityPart[]; staticParts: StaticIdentityPart[] } | null>(() => {
+    const p = bakedPassengerIdentities.get(id);
+    return p ? { parts: p, staticParts: bakedStaticPassengerIdentities.get(id) ?? [] } : null;
+  });
+  const parts = baked?.parts;
+  const staticParts = baked?.staticParts;
   const meshes = useRef<Array<THREE.InstancedMesh | null>>([]);
+  const staticMeshes = useRef<Array<THREE.InstancedMesh | null>>([]);
   const lastRevision = useRef(-1);
+  const lastStaticKey = useRef("");
   const scratch = useMemo(() => ({ matrix: new THREE.Matrix4(), adjust: new THREE.Matrix4() }), []);
   const rig = getPassengerSkeleton(id);
   const shape = useMemo(() => getPassengerProportions(id), [id]);
+  const neededGroupCap = Math.max(128, Math.ceil(indices.length / 64) * 64);
+  const [groupCapacity, setGroupCapacity] = useState(neededGroupCap);
+  if (neededGroupCap > groupCapacity) {
+    setGroupCapacity(neededGroupCap);
+  }
   const update = useCallback((time: number) => {
     if (!parts) return;
     const { matrix, adjust } = scratch;
-    const gain = drivers.celebration.current ? getPassengerSignatureGain(time, id, partyOn, reducedMotion) : 0;
+    const celebrating = Boolean(drivers.celebration.current);
+    const hasStatic = Boolean(staticParts && staticParts.length > 0);
+    if (hasStatic) {
+      let seatHash = indices.length;
+      for (let k = 0; k < indices.length; k++) {
+        const occ = passengers[indices[k]];
+        seatHash = ((seatHash * 31) ^ (occ ? ((occ.index * 7) ^ occ.physicalSeatIndex) : -1)) | 0;
+      }
+      const staticKey = `${groupCapacity}:${celebrating}:${seatHash}`;
+      const staticChanged = lastStaticKey.current !== staticKey;
+      lastStaticKey.current = staticKey;
+      staticParts!.forEach((_, sIdx) => {
+        const sm = staticMeshes.current[sIdx];
+        if (!sm) return;
+        sm.visible = !celebrating && indices.length > 0;
+        if (!celebrating && (staticChanged || sm.count !== indices.length) && indices.length > 0) {
+          indices.forEach((index, at) => {
+            const { seat } = passengers[index];
+            sm.setMatrixAt(at, matrix.makeTranslation(seat.x, 0, seat.z));
+          });
+          sm.count = indices.length;
+          sm.instanceMatrix.clearUpdateRanges();
+          sm.instanceMatrix.addUpdateRange(0, indices.length * 16);
+          sm.instanceMatrix.needsUpdate = true;
+          sm.boundingSphere = null;
+        }
+      });
+    }
+    const useArticulated = celebrating || !hasStatic;
+    const gain = celebrating ? getPassengerSignatureGain(time, id, partyOn, reducedMotion) : 0;
     const roleMatrix = (role: IdentityRole, index: number) => {
       const { seat } = passengers[index];
       if (role === "legs") return matrix.makeTranslation(seat.x, CABIN_FLOOR_Y + rig.seatedHipHeight, seat.z + rig.seatedHipZ);
@@ -86,15 +140,20 @@ function IdentityGroup({ id, indices, passengers, drivers, capacity, partyOn, re
     parts.forEach((part, partIndex) => {
       const mesh = meshes.current[partIndex];
       if (!mesh) return;
-      mesh.visible = part.role === "signatureLeft" || part.role === "signatureRight"
-        ? Boolean(drivers.celebration.current && gain > 0.001)
-        : part.role !== "rest" || !drivers.celebration.current;
+      mesh.visible = useArticulated && (
+        part.role === "signatureLeft" || part.role === "signatureRight"
+          ? Boolean(celebrating && gain > 0.001)
+          : part.role !== "rest" || !celebrating
+      );
       if (!mesh.visible) return;
       indices.forEach((index, at) => mesh.setMatrixAt(at, roleMatrix(part.role, index)));
+      mesh.count = indices.length;
+      mesh.instanceMatrix.clearUpdateRanges();
+      if (indices.length > 0) mesh.instanceMatrix.addUpdateRange(0, indices.length * 16);
       mesh.instanceMatrix.needsUpdate = true;
       mesh.boundingSphere = null;
     });
-  }, [parts, indices, passengers, drivers, partyOn, reducedMotion, id, rig, shape, scratch]);
+  }, [parts, staticParts, indices, passengers, drivers, partyOn, reducedMotion, id, rig, shape, scratch, groupCapacity]);
 
   useLayoutEffect(() => {
     const onSync = () => {
@@ -118,62 +177,119 @@ function IdentityGroup({ id, indices, passengers, drivers, capacity, partyOn, re
   }, -1);
 
   const instancedArgs = useMemo<[undefined, undefined, number]>(
-    () => [undefined, undefined, capacity],
-    [capacity],
+    () => [undefined, undefined, groupCapacity],
+    [groupCapacity],
   );
+  const handleReady = useCallback((nextParts: IdentityPart[], nextStaticParts: StaticIdentityPart[]) => {
+    setBaked({ parts: nextParts, staticParts: nextStaticParts });
+  }, []);
 
   if (!parts) {
     return <group name={`bus-distant-fallback-${id}`} userData={{ archetypeId: id }}>
-      <Prototype id={id} onReady={setParts} />
+      <Prototype id={id} onReady={handleReady} />
     </group>;
   }
+  const hasStaticParts = Boolean(staticParts && staticParts.length > 0);
   return <group name={`bus-distant-identity-${id}`} userData={{ archetypeId: id }}>
-    {parts.map((part, i) => <instancedMesh key={`${part.role}-${i}-${capacity}`} name={`bus-distant-${id}-${part.role}-${i}`}
+    {staticParts?.map((part, i) => <instancedMesh key={`static-${i}-${groupCapacity}`} name={`bus-distant-static-${id}-${i}`}
+      ref={node => { staticMeshes.current[i] = node; }} geometry={part.geometry} material={part.material}
+      args={instancedArgs} count={indices.length} frustumCulled={false} raycast={() => null} userData={{ archetypeId: id, static: true }}
+    />)}
+    {/* Garder les meshes articulés montés en permanence (visible=false au repos) pour supprimer
+        le montage/démontage de ~240 InstancedMesh au début et à la fin de chaque danse. */}
+    {parts.map((part, i) => <instancedMesh key={`${part.role}-${i}-${groupCapacity}`} name={`bus-distant-${id}-${part.role}-${i}`}
       ref={node => { meshes.current[i] = node; }} geometry={part.geometry} material={part.material}
-      args={instancedArgs} count={indices.length} frustumCulled={false} userData={{ role: part.role, archetypeId: id }}
+      args={instancedArgs} count={indices.length} visible={!hasStaticParts} frustumCulled={false} raycast={() => null} userData={{ role: part.role, archetypeId: id }}
     />)}
   </group>;
-}
+}, (prev, next) => (
+  prev.id === next.id
+  && prev.groupHash === next.groupHash
+  && prev.indices.length === next.indices.length
+  && prev.drivers === next.drivers
+  && prev.partyOn === next.partyOn
+  && prev.reducedMotion === next.reducedMotion
+));
 
-export default function PassengerIdentityInstances({ ids, passengers, drivers, capacity, profilesBySeatIndex, hornPulse, poses, partyOn, reducedMotion }:
+const EMPTY_INDICES: number[] = [];
+
+export default function PassengerIdentityInstances({ ids, passengers, drivers, partyOn, reducedMotion }:
   IdentityInstancesProps & { ids: string[] }) {
-  const groups = useMemo(() => {
-    const result = new Map<string, number[]>();
+  const groupsMap = useMemo(() => {
+    const result = new Map<string, { indices: number[]; hash: number }>();
     ids.forEach((id, i) => {
-      const indices = result.get(id) ?? [];
-      indices.push(i);
-      result.set(id, indices);
+      let entry = result.get(id);
+      if (!entry) {
+        entry = { indices: [], hash: 0 };
+        result.set(id, entry);
+      }
+      entry.indices.push(i);
+      const occ = passengers[i];
+      entry.hash = ((entry.hash * 31) ^ (occ ? ((occ.index * 7) ^ occ.physicalSeatIndex) : -1)) | 0;
     });
-    return [...result];
-  }, [ids]);
+    return result;
+  }, [ids, passengers]);
+  // Conserver les archétypes déjà montés afin d'éviter toute destruction/recréation de buffers GPU
+  // lorsque la caméra pivote brièvement hors du bus (indices = [] masque simplement en O(1)).
+  const [mountedIds, setMountedIds] = useState<string[]>(() => [...groupsMap.keys()]);
+  const missingIds = useMemo(() => {
+    const seen = new Set(mountedIds);
+    const missing: string[] = [];
+    for (const id of groupsMap.keys()) {
+      if (!seen.has(id)) missing.push(id);
+    }
+    return missing;
+  }, [groupsMap, mountedIds]);
+  if (missingIds.length > 0) {
+    setMountedIds([...mountedIds, ...missingIds]);
+  }
   const [unlockedUnbaked, setUnlockedUnbaked] = useState(1);
   const unlockedUnbakedRef = useRef(1);
+  const nextBakeAtRef = useRef(0);
   const unbakedCount = useMemo(
-    () => groups.reduce((count, [id]) => count + (bakedPassengerIdentities.has(id) ? 0 : 1), 0),
-    [groups],
+    () => mountedIds.reduce((count, id) => count + (bakedPassengerIdentities.has(id) ? 0 : 1), 0),
+    [mountedIds],
   );
   const unbakedCountRef = useRef(unbakedCount);
-  const nextBakeAtRef = useRef(0);
   useEffect(() => {
     unbakedCountRef.current = unbakedCount;
   }, [unbakedCount]);
-  useFrame((_, dt) => {
+  useFrame(() => {
     if (unlockedUnbakedRef.current >= unbakedCountRef.current) return;
     const now = performance.now();
     if (now < nextBakeAtRef.current) return;
-    nextBakeAtRef.current = now + (dt > 0.05 ? 55 : 25);
-    unlockedUnbakedRef.current += 1;
+    nextBakeAtRef.current = now + 24;
+    unlockedUnbakedRef.current = Math.min(unbakedCountRef.current, unlockedUnbakedRef.current + 1);
     setUnlockedUnbaked(unlockedUnbakedRef.current);
   });
 
-  let unbakedSeen = 0;
-  return <>{groups.map(([id, indices]) => {
-    if (!bakedPassengerIdentities.has(id)) {
-      unbakedSeen += 1;
-      if (unbakedSeen > unlockedUnbaked) return null;
+  const renderIds = useMemo(() => {
+    let unbakedSeen = 0;
+    const out: string[] = [];
+    for (let i = 0; i < mountedIds.length; i++) {
+      const id = mountedIds[i];
+      if (!bakedPassengerIdentities.has(id)) {
+        unbakedSeen += 1;
+        if (unbakedSeen > unlockedUnbaked) continue;
+      }
+      out.push(id);
     }
-    return <IdentityGroup key={id} id={id} indices={indices}
-      passengers={passengers} drivers={drivers} capacity={capacity} profilesBySeatIndex={profilesBySeatIndex}
-      hornPulse={hornPulse} poses={poses} partyOn={partyOn} reducedMotion={reducedMotion} />;
+    return out;
+  }, [mountedIds, unlockedUnbaked]);
+
+  return <>{renderIds.map((id) => {
+    const entry = groupsMap.get(id);
+    return (
+      <IdentityGroup
+        key={id}
+        id={id}
+        indices={entry?.indices ?? EMPTY_INDICES}
+        groupHash={entry?.hash ?? 0}
+        passengers={passengers}
+        drivers={drivers}
+        partyOn={partyOn}
+        reducedMotion={reducedMotion}
+      />
+    );
   })}</>;
 }

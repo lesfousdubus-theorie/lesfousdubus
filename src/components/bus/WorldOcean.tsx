@@ -43,15 +43,17 @@ export default function WorldOcean({
         uniform vec4 seaWakes[${SEA_WAKE_COUNT}];`)
       .replace("#include <color_fragment>", `#include <color_fragment>
         float waterDistance = distance(seaPosition, cameraPosition.xz);
-        float detail = 1.0 - smoothstep(35.0, 150.0, waterDistance);
-        vec2 wavePosition = seaPosition;
-        wavePosition.y -= uScroll;
-        float current = sin(dot(wavePosition, vec2(0.15, 0.26)) - waterTime * 1.08);
-        float swell = sin(dot(wavePosition, vec2(0.31, -0.46)) - waterTime * 1.53 + current);
-        float ripples = sin(dot(wavePosition, vec2(1.12, 0.39)) + waterTime * 1.21 + swell * 1.2);
-        float crest = smoothstep(0.82, 0.99, ripples) * smoothstep(0.20, 0.94, swell);
-        diffuseColor.rgb *= 0.96 + (current * 0.047 + swell * 0.062) * detail;
-        diffuseColor.rgb += vec3(0.021, 0.060, 0.084) * crest * detail;
+        if (waterDistance < 155.0) {
+          float detail = 1.0 - smoothstep(35.0, 150.0, waterDistance);
+          vec2 wavePosition = seaPosition;
+          wavePosition.y -= uScroll;
+          float current = sin(dot(wavePosition, vec2(0.15, 0.26)) - waterTime * 1.08);
+          float swell = sin(dot(wavePosition, vec2(0.31, -0.46)) - waterTime * 1.53 + current);
+          float ripples = sin(dot(wavePosition, vec2(1.12, 0.39)) + waterTime * 1.21 + swell * 1.2);
+          float crest = smoothstep(0.82, 0.99, ripples) * smoothstep(0.20, 0.94, swell);
+          diffuseColor.rgb *= 0.96 + (current * 0.047 + swell * 0.062) * detail;
+          diffuseColor.rgb += vec3(0.021, 0.060, 0.084) * crest * detail;
+        }
         if (waterDistance < 280.0) {
           float wakeBoost = 0.0;
           for (int i = 0; i < ${SEA_WAKE_COUNT}; i++) {
@@ -100,7 +102,7 @@ export default function WorldOcean({
     if (fogColor) fogColor.getRGB(horizon.current.value, gl.outputColorSpace);
   });
 
-  return <mesh ref={surface} name="world-ocean" rotation={[-Math.PI / 2, 0, 0]} receiveShadow frustumCulled={false}>
+  return <mesh ref={surface} name="world-ocean" rotation={[-Math.PI / 2, 0, 0]} frustumCulled={false}>
     <circleGeometry args={[1, SEGMENTS]} />
     <meshStandardMaterial color="#165ea3" roughness={0.34} metalness={0.20} emissive="#06274d" emissiveIntensity={0.1}
       onBeforeCompile={customize} />

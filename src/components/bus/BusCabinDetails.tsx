@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { memo, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { makeLabelTexture } from "@/lib/textures";
@@ -98,7 +98,7 @@ function makeGrabRailBridges(from: number, to: number, bridges: Array<[number, n
   return { geometry, segments };
 }
 
-export default function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearWallZ, rowZs, wheelPositions, tvPositions }: Props) {
+const BusCabinDetails = memo(function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearWallZ, rowZs, wheelPositions, tvPositions }: Props) {
   // Quantité plafonnée, même quand le bus accueille des centaines de rangées.
   const detailZs = useMemo(() => rowZs.filter((_, index) => index % Math.max(1, Math.ceil(rowZs.length / 10)) === 0).slice(0, 10), [rowZs]);
   const grabRailSpans = useMemo(() => getGrabRailSpans(
@@ -150,24 +150,8 @@ export default function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearW
       <mesh name="bus-grab-rail-bridge" material={mats.yellow} geometry={grabRailBridges.geometry}
         position={[side * GRAB_HANDLE_X, 0, 0]} dispose={null}
         userData={{ side, segments: grabRailBridges.segments, ceilingY: CABIN_CEILING_Y }} />
-      {detailZs.map((z, i) => <group key={`detail-${i}`}>
-        <mesh material={mats.chrome} position={[side * 1.0675, 2.865, z]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.014, 0.014, 0.355, 8]} />
-        </mesh>
-        <mesh material={mats.chrome} position={[side * 0.89, 3.005, z]}>
-          <cylinderGeometry args={[0.014, 0.014, 0.28, 8]} />
-        </mesh>
-        {/* Chaque écran garde son espace libre, y compris les rappels arrière. */}
-        {isGrabHandleClearOfTv(z, tvPositions) && <group name="bus-grab-handle" userData={{ z, side }}>
-          <mesh material={mats.dark} position={[side * GRAB_HANDLE_X, 2.82, z]}>
-            <boxGeometry args={[0.027, 0.16, 0.027]} />
-          </mesh>
-          <mesh name="bus-grab-handle-ring" material={mats.yellow} position={[side * GRAB_HANDLE_X, 2.67, z]} scale={[1, 0.85, 1]}>
-            <torusGeometry args={[0.09, 0.015, 6, 16]} />
-          </mesh>
-        </group>}
-      </group>)}
     </group>)}
+    <CabinCeilingFixtures detailZs={detailZs} tvPositions={tvPositions} mats={mats} />
     {/* Coffrages fermés des passages de roue couvrant |x| ∈ [1.14, 1.258] et y ∈ [0.56, 1.14+]. */}
     <mesh name="bus-wheelhouses" material={mats.dark} geometry={wheelhouseGeo} dispose={null} />
     <mesh position={[0, 2.98, rearWallZ - 0.055]} rotation={[0, Math.PI, 0]}>
@@ -195,4 +179,100 @@ export default function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearW
       </mesh>
     </group>
   </group>;
-}
+});
+
+/** Regroupe les 80 supports de porte-bagages et poignées suspendues en 4 draw calls instanciés. */
+const CabinCeilingFixtures = memo(function CabinCeilingFixtures({
+  detailZs,
+  tvPositions,
+  mats,
+}: {
+  detailZs: number[];
+  tvPositions: TvPosition[];
+  mats: Record<string, THREE.Material>;
+}) {
+  const bracketsRef = useRef<THREE.InstancedMesh>(null);
+  const stemsRef = useRef<THREE.InstancedMesh>(null);
+  const strapsRef = useRef<THREE.InstancedMesh>(null);
+  const ringsRef = useRef<THREE.InstancedMesh>(null);
+  const maxItems = Math.max(1, detailZs.length * 2);
+
+  useLayoutEffect(() => {
+    const brackets = bracketsRef.current;
+    const stems = stemsRef.current;
+    const straps = strapsRef.current;
+    const rings = ringsRef.current;
+    if (!brackets || !stems || !straps || !rings) return;
+    const dummy = new THREE.Object3D();
+    let rackIdx = 0;
+    let handleIdx = 0;
+    for (const side of [-1, 1]) {
+      for (let i = 0; i < detailZs.length; i++) {
+        const z = detailZs[i];
+        dummy.position.set(side * 1.0675, 2.865, z);
+        dummy.rotation.set(0, 0, Math.PI / 2);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        brackets.setMatrixAt(rackIdx, dummy.matrix);
+
+        dummy.position.set(side * 0.89, 3.005, z);
+        dummy.rotation.set(0, 0, 0);
+        dummy.updateMatrix();
+        stems.setMatrixAt(rackIdx, dummy.matrix);
+        rackIdx += 1;
+
+        if (isGrabHandleClearOfTv(z, tvPositions)) {
+          dummy.position.set(side * GRAB_HANDLE_X, 2.82, z);
+          dummy.rotation.set(0, 0, 0);
+          dummy.scale.set(1, 1, 1);
+          dummy.updateMatrix();
+          straps.setMatrixAt(handleIdx, dummy.matrix);
+
+          dummy.position.set(side * GRAB_HANDLE_X, 2.67, z);
+          dummy.scale.set(1, 0.85, 1);
+          dummy.updateMatrix();
+          rings.setMatrixAt(handleIdx, dummy.matrix);
+          handleIdx += 1;
+        }
+      }
+    }
+    brackets.count = rackIdx;
+    brackets.visible = rackIdx > 0;
+    brackets.instanceMatrix.needsUpdate = true;
+    brackets.computeBoundingSphere();
+
+    stems.count = rackIdx;
+    stems.visible = rackIdx > 0;
+    stems.instanceMatrix.needsUpdate = true;
+    stems.computeBoundingSphere();
+
+    straps.count = handleIdx;
+    straps.visible = handleIdx > 0;
+    straps.instanceMatrix.needsUpdate = true;
+    straps.computeBoundingSphere();
+
+    rings.count = handleIdx;
+    rings.visible = handleIdx > 0;
+    rings.instanceMatrix.needsUpdate = true;
+    rings.computeBoundingSphere();
+  }, [detailZs, tvPositions]);
+
+  return (
+    <>
+      <instancedMesh key={`brackets-${maxItems}`} ref={bracketsRef} args={[undefined, undefined, maxItems]} material={mats.chrome} raycast={() => null}>
+        <cylinderGeometry args={[0.014, 0.014, 0.355, 8]} />
+      </instancedMesh>
+      <instancedMesh key={`stems-${maxItems}`} ref={stemsRef} args={[undefined, undefined, maxItems]} material={mats.chrome} raycast={() => null}>
+        <cylinderGeometry args={[0.014, 0.014, 0.28, 8]} />
+      </instancedMesh>
+      <instancedMesh key={`straps-${maxItems}`} ref={strapsRef} name="bus-grab-handle" args={[undefined, undefined, maxItems]} material={mats.dark} raycast={() => null}>
+        <boxGeometry args={[0.027, 0.16, 0.027]} />
+      </instancedMesh>
+      <instancedMesh key={`rings-${maxItems}`} ref={ringsRef} name="bus-grab-handle-ring" args={[undefined, undefined, maxItems]} material={mats.yellow} raycast={() => null}>
+        <torusGeometry args={[0.09, 0.015, 6, 16]} />
+      </instancedMesh>
+    </>
+  );
+});
+
+export default BusCabinDetails;

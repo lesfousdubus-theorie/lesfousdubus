@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { BusOccupant } from "@/lib/bus-occupancy";
@@ -13,7 +13,7 @@ import { keepPassengerHandsApart } from "@/lib/passenger-space";
 import PassengerIdentityInstances from "./PassengerIdentityInstances";
 
 /** Un seul lot borné par membre, avec les mêmes articulations que les passagers proches. */
-export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn, hornPulse, reducedMotion, poses }: {
+export const SimplifiedPassengers = memo(function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn, hornPulse, reducedMotion, poses }: {
   passengers: BusOccupant[]; profilesBySeatIndex?: Map<number, PassengerProfile>;
   partyOn: boolean; hornPulse: number; reducedMotion: boolean;
   poses?:PassengerPoseRegistry;
@@ -28,7 +28,11 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
   }), [passengers, profilesBySeatIndex,poses]);
   const ids=useMemo(()=>profiles.map(profile=>profile.archetype.id),[profiles]);
   const occupantsKey = useMemo(() => passengers.map((p, i) => `${p.index}:${p.physicalSeatIndex}:${ids[i]}`).join(","), [passengers, ids]);
-  const capacity = Math.max(160, Math.ceil(passengers.length / 64) * 64);
+  const neededCapacity = Math.max(768, Math.ceil(passengers.length / 256) * 256);
+  const [capacity, setCapacity] = useState(neededCapacity);
+  if (neededCapacity > capacity) {
+    setCapacity(neededCapacity);
+  }
   const listeners=useMemo(()=>new Set<()=>void>(),[]);
   const matrices = useMemo(() => ({
     bodies: Array.from({ length: capacity }, () => new THREE.Matrix4()),
@@ -84,19 +88,31 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
     const hornElapsed = hornPulse > 0 ? (performance.now() - hornPulse) / 1000 : Infinity;
     const active = partyOn || (!reducedMotion && hornElapsed < 1.8);
     celebration.current = active;
-    if (reducedMotion) snapReducedMotion(clock.elapsedTime, hornElapsed, active);
-    writeMatrices();
+    if (active) {
+      if (reducedMotion) snapReducedMotion(clock.elapsedTime, hornElapsed, active);
+      writeMatrices();
+    } else {
+      // Hors fête/klaxon, IdentityGroup utilise les lots statiques fusionnés (zéro calcul de membres).
+      revision.current++;
+    }
     listeners.forEach(fn => fn());
   }, [clock, hornPulse, listeners, partyOn, reducedMotion, snapReducedMotion, writeMatrices]);
   useFrame(({ clock }, dt) => {
     const hornElapsed = hornPulse > 0 ? (performance.now() - hornPulse) / 1000 : Infinity;
     const active = partyOn || (!reducedMotion && hornElapsed < 1.8);
-    celebration.current=active;
+    const wasCelebrating = celebration.current;
+    celebration.current = active;
+    if (!active) {
+      if (wasCelebrating) {
+        revision.current++;
+        listeners.forEach(fn => fn());
+      }
+      return;
+    }
     const key = `${active}:${reducedMotion}:${partyOn}:${hornPulse}:${occupantsKey}`;
     const modeChanged = mode.current.key !== key;
     if (modeChanged) { mode.current.key = key; mode.current.settleUntil = clock.elapsedTime + 1.6; }
-    // Les poses immobiles cessent d'écrire les matrices après leur transition.
-    if ((!active || reducedMotion) && !modeChanged && clock.elapsedTime > mode.current.settleUntil) return;
+    if (reducedMotion && !modeChanged && clock.elapsedTime > mode.current.settleUntil) return;
     if (reducedMotion) {
       snapReducedMotion(clock.elapsedTime, hornElapsed, active);
       mode.current.settleUntil = clock.elapsedTime - 1;
@@ -111,8 +127,7 @@ export function SimplifiedPassengers({ passengers, profilesBySeatIndex, partyOn,
     });
     writeMatrices();
   },-2);
-  if (!passengers.length) return null;
   return <PassengerIdentityInstances ids={ids} passengers={passengers} drivers={drivers} capacity={capacity}
     profilesBySeatIndex={profilesBySeatIndex} hornPulse={hornPulse} poses={poses}
     partyOn={partyOn} reducedMotion={reducedMotion}/>;
-}
+});

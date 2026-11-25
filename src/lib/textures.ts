@@ -469,28 +469,8 @@ export function makeGraffitiTexture({
     c.strokeText(line, -2, y - 2);
   });
 
-  // Coup de pinceau qui signe le tag sans gêner les lettres.
-  const underlineY = firstY + (lines.length - 1) * lineHeight + fontSize * 0.58;
-  c.strokeStyle = accent;
-  c.lineCap = "round";
-  c.lineWidth = 14;
-  c.beginPath();
-  c.moveTo(-width * 0.34 * decorationWidthScale, underlineY);
-  c.bezierCurveTo(-width * 0.08 * decorationWidthScale, underlineY + 22, width * 0.18 * decorationWidthScale, underlineY - 18, width * 0.35 * decorationWidthScale, underlineY + 4);
-  c.stroke();
-
-  // Quelques éclaboussures contrôlées : assez pour le geste peint, sans brouiller le texte.
-  const seed = text.length * 17;
-  c.fillStyle = accent;
-  for (let i = 0; i < 18; i++) {
-    const gx = (((i * 97 + seed * 23) % (width * 0.82)) - width * 0.41) * decorationWidthScale;
-    const gy = ((i * 61 + seed * 11) % (height * 0.72)) - height * 0.36;
-    c.beginPath();
-    c.arc(gx, gy, 2 + (i % 3) * 1.5, 0, Math.PI * 2);
-    c.fill();
-  }
-
-  // Sous-texte optionnel.
+  // Sous-texte optionnel (sans éclaboussures ni trait de peinture devant le texte).
+  void decorationWidthScale;
   if (sub) {
     c.font = `900 42px ${fontFamily}`;
     c.fillStyle = "#ffffff";

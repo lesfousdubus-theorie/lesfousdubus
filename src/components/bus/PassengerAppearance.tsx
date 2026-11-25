@@ -1,14 +1,23 @@
 "use client";
 
 import * as THREE from "three";
-import { CharacterPart } from "./CharacterShapes";
+import { CharacterPart, useCharacterLowPoly } from "./CharacterShapes";
 import type { NakamaArchetype } from "./passenger-archetypes";
 import { identityMaterial, strawMaterial } from "./PassengerIdentity";
 import { SanjiHair } from "./SanjiHeadParts";
 
 let strawHat: THREE.LatheGeometry | undefined;
+let strawHatLow: THREE.LatheGeometry | undefined;
 let hatCord: THREE.TubeGeometry | undefined;
-function getStrawHat() {
+let hatCordLow: THREE.TubeGeometry | undefined;
+function getStrawHat(lowPoly = false) {
+  if (lowPoly) {
+    if (strawHatLow) return strawHatLow;
+    const points = [[0, .171], [.105, .152], [.152, .102], [.163, .018],
+      [.25, .024], [.294, .032], [.25, .012], [.153, .007],
+      [.141, .101], [.095, .145], [0, .159]];
+    return strawHatLow = new THREE.LatheGeometry(points.reverse().map(([x, y]) => new THREE.Vector2(x, y)), 12);
+  }
   if(strawHat)return strawHat;
   // Wide, gently curved brim and a complete rounded crown; the hat is a closed
   // shell, including its underside, instead of two thin intersecting discs.
@@ -17,32 +26,41 @@ function getStrawHat() {
     [.153,.007],[.152,.057],[.141,.101],[.115,.134],[.074,.153],[0,.159]];
   return strawHat=new THREE.LatheGeometry(points.reverse().map(([x,y])=>new THREE.Vector2(x,y)),32);
 }
-function getHatCord() {
+function getHatCord(lowPoly = false) {
   // Runs behind the cheeks and under the neck, leaving the eyes and smile clear.
-  return hatCord??=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+  const pts = [
     new THREE.Vector3(-.153,.131,.015),new THREE.Vector3(-.142,-.015,.065),
     new THREE.Vector3(-.082,-.162,.074),new THREE.Vector3(0,-.178,.072),
     new THREE.Vector3(.082,-.162,.074),new THREE.Vector3(.142,-.015,.065),
     new THREE.Vector3(.153,.131,.015),
-  ]),18,.004,5,false);
+  ];
+  if (lowPoly) {
+    return hatCordLow ??= new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 8, .004, 3, false);
+  }
+  return hatCord??=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),18,.004,5,false);
 }
 
 /** Une calotte au-dessus du front, avec des mèches raccordées au volume arrière. */
 export function HairStyle({ style, mats, id }: {
   style: NakamaArchetype["hairStyle"]; mats: Record<string, THREE.Material>; id?:string;
 }) {
+  const lowPoly = useCharacterLowPoly();
   if (id === "sanji") return <SanjiHair material={mats.hair}/>;
   return <group name="nakama-hair">
     <mesh material={mats.hair} position={[0, 0.065, 0.014]} scale={[id==="jinbe"?.15:.13,id==="chopper"?.105:.14,id==="jinbe"?.14:.12]} castShadow>
-      <sphereGeometry args={[1, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+      <sphereGeometry args={[1, lowPoly ? 8 : 20, lowPoly ? 5 : 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
     </mesh>
-    <CharacterPart material={mats.hair} size={[0.24, 0.16, 0.047]} position={[0, 0.014, 0.104]} />
+    <CharacterPart
+      material={mats.hair}
+      size={[id === "jinbe" ? 0.284 : 0.254, 0.168, 0.052]}
+      position={[0, 0.014, id === "jinbe" ? 0.118 : 0.111]}
+    />
     {style === "spiky" && [-0.08, 0, 0.08].map((x, i) => <mesh key={x} material={mats.hair}
       position={[x, 0.19, -0.015]} rotation={[-0.18, 0, (i - 1) * 0.32]}>
-      <coneGeometry args={[0.046, 0.11, 7]} />
+      <coneGeometry args={[0.046, 0.11, lowPoly ? 5 : 7]} />
     </mesh>)}
     {style === "flowing" && <>
-      <CharacterPart material={mats.hair} size={[0.23, 0.31, 0.075]} position={[0, -0.09, 0.10]} />
+      <CharacterPart material={mats.hair} size={[0.252, 0.31, 0.078]} position={[0, -0.09, 0.114]} />
       {[-0.125, 0.125].map(x => <group key={x} position={[x, -0.055, 0.055]} rotation={[0.07, 0, 0]}>
         <CharacterPart material={mats.hair} size={[0.065, 0.31, 0.095]} />
         {id === "yamato" && <CharacterPart material={mats.turquoise} size={[0.064, 0.115, 0.096]} position={[0, -0.10, 0]} />}
@@ -56,12 +74,12 @@ export function HairStyle({ style, mats, id }: {
       <CharacterPart material={mats.hair} size={[.094,.05,.053]} position={[.006,.113,-.107]} rotation={[0,0,-.26]}/>
     </>}
     {style === "afro" && <mesh material={mats.hair} position={[0,0.14,id==="brook"?.096:.065]} scale={[1,id==="brook"?1.02:.9,.66]}>
-      <sphereGeometry args={[id==="brook"?.23:.21,20,16]}/>
+      <sphereGeometry args={[id==="brook"?.23:.21,lowPoly?10:20,lowPoly?7:16]}/>
     </mesh>}
     {style === "pompadour" && <CharacterPart material={mats.hair} size={[0.18, 0.18, 0.27]}
       position={[0, 0.20, -0.015]} rotation={[-0.35, 0, 0]} />}
     {style === "topknot" && <mesh material={mats.hair} position={[0, 0.22, 0.055]}>
-      <sphereGeometry args={[0.059, 16, 12]} />
+      <sphereGeometry args={[0.059, lowPoly ? 8 : 16, lowPoly ? 5 : 12]} />
     </mesh>}
     {(style === "wavy" || style === "shaggy") && [-0.12, 0.12].map(x => <CharacterPart key={x}
       material={mats.hair} size={[0.048, 0.17, 0.093]} position={[x, 0.016, 0.042]} />)}
@@ -76,18 +94,19 @@ export function Accessory({
   archetype: NakamaArchetype;
   mats: Record<string, THREE.Material>;
 }) {
+  const lowPoly = useCharacterLowPoly();
   switch (archetype.accessory) {
     case "straw_hat":
       // Chapeau de paille de Luffy (accroché dans le dos ou sur la tête)
       return (
         <group name="nakama-luffy-straw-hat">
           <group position={[0,.125,0]} rotation={[-.07,0,0]}>
-            <mesh name="nakama-hat-base" material={strawMaterial()} geometry={getStrawHat()} dispose={null} castShadow/>
+            <mesh name="nakama-hat-base" material={strawMaterial()} geometry={getStrawHat(lowPoly)} dispose={null} castShadow/>
             <mesh name="nakama-luffy-hat-ribbon" material={mats.accessorySub} position={[0,.040,0]}>
-              <cylinderGeometry args={[.164,.164,.040,32]}/>
+              <cylinderGeometry args={[.164,.164,.040,lowPoly?12:32]}/>
             </mesh>
           </group>
-          <mesh name="nakama-luffy-hat-cord" material={identityMaterial("#946831")} geometry={getHatCord()} dispose={null}/>
+          <mesh name="nakama-luffy-hat-cord" material={identityMaterial("#946831")} geometry={getHatCord(lowPoly)} dispose={null}/>
         </group>
       );
 
@@ -97,7 +116,7 @@ export function Accessory({
         <group position={[-0.12, -0.02, 0]}>
           {[0, 0.025, 0.05].map((ez) => (
             <mesh key={ez} material={mats.gold} position={[0, 0, ez]} rotation={[Math.PI / 2, 0, 0]}>
-              <torusGeometry args={[0.015, 0.004, 6, 12]} />
+              <torusGeometry args={[0.015, 0.004, lowPoly ? 4 : 6, lowPoly ? 8 : 12]} />
             </mesh>
           ))}
         </group>
@@ -108,14 +127,14 @@ export function Accessory({
       return (
         <group>
           <mesh name="nakama-hat-base" material={identityMaterial("#eee6d5")} position={[0,.12,.01]}>
-            <cylinderGeometry args={[.135,.15,.073,16]}/>
+            <cylinderGeometry args={[.135,.15,.073,lowPoly?10:16]}/>
           </mesh>
           <CharacterPart material={identityMaterial("#e8c679")} size={[.24,.05,.03]} position={[0,.125,-.131]}/>
           <CharacterPart material={identityMaterial("#eee6d5")} size={[.066,.035,.115]} position={[.135,.13,.06]} rotation={[0,0,-.33]}/>
           <group position={[0,.14,-.148]}>
           {[-0.05, 0.05].map((gx) => (
             <mesh key={gx} material={mats.gold} position={[gx, 0, 0]} rotation={[Math.PI/2, 0, 0]}>
-              <cylinderGeometry args={[0.03, 0.03, 0.02, 12]} />
+              <cylinderGeometry args={[0.03, 0.03, 0.02, lowPoly ? 8 : 12]} />
             </mesh>
           ))}
           <mesh material={mats.dark} position={[0, 0, 0.02]}>
@@ -132,13 +151,13 @@ export function Accessory({
         <group position={[0,.095,0]}>
           {/* Dôme rose */}
           <mesh name="nakama-hat-base" material={identityMaterial("#5bbce1")} position={[0,.025,0]}>
-            <cylinderGeometry args={[.20,.21,.03,24]}/>
+            <cylinderGeometry args={[.20,.21,.03,lowPoly?10:24]}/>
           </mesh>
           <mesh material={identityMaterial("#5bbce1")} position={[0,.023,0]}>
-            <sphereGeometry args={[.187,20,12,0,Math.PI*2,0,Math.PI/2]}/>
+            <sphereGeometry args={[.187,lowPoly?10:20,lowPoly?5:12,0,Math.PI*2,0,Math.PI/2]}/>
           </mesh>
           <mesh material={mats.accessory} position={[0,.056,0]}>
-            <cylinderGeometry args={[.185,.185,.069,24]}/>
+            <cylinderGeometry args={[.185,.185,.069,lowPoly?10:24]}/>
           </mesh>
           {/* Chopper's white X, not a medical plus sign. */}
           <mesh name="nakama-chopper-hat-cross" material={mats.accessorySub} position={[0,.074,-.192]} rotation={[0,0,Math.PI/4]}>
@@ -151,12 +170,12 @@ export function Accessory({
           {[-.18,.18].map((bx,bi)=>(
             <group key={bi} position={[bx,.15,0]} rotation={[0,0,bi===0?.46:-.46]}>
               <mesh material={identityMaterial("#70503b")}>
-                <cylinderGeometry args={[.023,.032,.18,8]}/>
+                <cylinderGeometry args={[.023,.032,.18,lowPoly?5:8]}/>
               </mesh>
               <mesh material={identityMaterial("#70503b")} position={[bi===0?-.04:.04,.04,0]} rotation={[0,0,bi===0?-.65:.65]}>
-                <cylinderGeometry args={[0.015, 0.02, 0.08, 6]} />
+                <cylinderGeometry args={[0.015, 0.02, 0.08, lowPoly ? 5 : 6]} />
               </mesh>
-              <mesh material={identityMaterial("#70503b")} position={[0,.097,0]}><sphereGeometry args={[.026,8,6]}/></mesh>
+              <mesh material={identityMaterial("#70503b")} position={[0,.097,0]}><sphereGeometry args={[.026,lowPoly?6:8,lowPoly?4:6]}/></mesh>
             </group>
           ))}
         </group>
@@ -167,14 +186,14 @@ export function Accessory({
       return (
         <group position={[0, archetype.hairStyle === "afro" ? 0.22 : 0.14, 0.02]}>
           <mesh name="nakama-hat-base" material={mats.accessory}>
-            <cylinderGeometry args={[0.18, 0.18, 0.02, 20]} />
+            <cylinderGeometry args={[0.18, 0.18, 0.02, lowPoly ? 10 : 20]} />
           </mesh>
           <mesh material={mats.accessory} position={[0, 0.12, 0]}>
-            <cylinderGeometry args={[0.11, 0.12, 0.22, 20]} />
+            <cylinderGeometry args={[0.11, 0.12, 0.22, lowPoly ? 10 : 20]} />
           </mesh>
           {/* Ruban coloré */}
           <mesh material={mats.accessorySub} position={[0, 0.03, 0]}>
-            <cylinderGeometry args={[0.115, 0.115, 0.04, 20]} />
+            <cylinderGeometry args={[0.115, 0.115, 0.04, lowPoly ? 10 : 20]} />
           </mesh>
         </group>
       );
@@ -194,7 +213,7 @@ export function Accessory({
       return (
         <group position={[0, 0.17, 0]}>
           <mesh name="nakama-hat-base" material={mats.accessory}>
-            <cylinderGeometry args={[0.15, 0.13, 0.1, 16]} />
+            <cylinderGeometry args={[0.15, 0.13, 0.1, lowPoly ? 10 : 16]} />
           </mesh>
           <mesh material={mats.accessory} position={[0, 0.03, -0.08]}>
             <boxGeometry args={[0.16, 0.02, 0.06]} />
@@ -207,14 +226,14 @@ export function Accessory({
       return (
         <group position={[0, 0.18, 0.02]}>
           <mesh name="nakama-hat-base" material={mats.accessory}>
-            <cylinderGeometry args={[0.22, 0.22, 0.02, 24]} />
+            <cylinderGeometry args={[0.22, 0.22, 0.02, lowPoly ? 10 : 24]} />
           </mesh>
           <mesh material={mats.accessory} position={[0, 0.06, 0]}>
-            <cylinderGeometry args={[0.11, 0.12, 0.1, 20]} />
+            <cylinderGeometry args={[0.11, 0.12, 0.1, lowPoly ? 10 : 20]} />
           </mesh>
           {/* Collier de perles rouges */}
           <mesh material={mats.accessorySub} position={[0, 0.02, 0]}>
-            <torusGeometry args={[0.12, 0.012, 6, 16]} />
+            <torusGeometry args={[0.12, 0.012, lowPoly ? 4 : 6, lowPoly ? 10 : 16]} />
           </mesh>
         </group>
       );
@@ -230,7 +249,7 @@ export function Accessory({
               position={[hx, 0.06, 0]}
               rotation={[0.2, 0, hi === 0 ? 0.35 : -0.35]}
             >
-              <coneGeometry args={[0.025, 0.14, 8]} />
+              <coneGeometry args={[0.025, 0.14, lowPoly ? 5 : 8]} />
             </mesh>
           ))}
         </group>
@@ -251,6 +270,7 @@ export function NakamaProp({
   mats: Record<string, THREE.Material>;
   id?: string;
 }) {
+  const lowPoly = useCharacterLowPoly();
   switch (prop) {
     case "meat":
       // Gigot d'anime légendaire de Luffy
@@ -258,11 +278,11 @@ export function NakamaProp({
         <group position={[0.12, 1.25, -0.16]} rotation={[0.4, 0.3, -0.2]}>
           {/* Os traversant */}
           <mesh material={mats.skin}>
-            <cylinderGeometry args={[0.02, 0.02, 0.28, 8]} />
+            <cylinderGeometry args={[0.02, 0.02, 0.28, lowPoly ? 6 : 8]} />
           </mesh>
           {/* Viande rôtie appétissante */}
           <mesh material={mats.accessorySub} position={[0, 0, 0]}>
-            <cylinderGeometry args={[0.06, 0.06, 0.16, 10]} />
+            <cylinderGeometry args={[0.06, 0.06, 0.16, lowPoly ? 6 : 10]} />
           </mesh>
         </group>
       );

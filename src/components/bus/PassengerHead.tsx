@@ -1,7 +1,7 @@
 "use client";
 
 import type * as THREE from "three";
-import { CharacterPart } from "./CharacterShapes";
+import { CharacterPart, useCharacterLowPoly } from "./CharacterShapes";
 import { HairStyle, Accessory } from "./PassengerAppearance";
 import type { NakamaArchetype } from "./passenger-archetypes";
 import PassengerCostume from "./PassengerCostume";
@@ -15,6 +15,7 @@ export default function PassengerHead({ archetype, mats, motion, index = 0, redu
   archetype: NakamaArchetype; mats: Record<string, THREE.Material>;
   motion?: FacialMotionRef; index?: number; reducedMotion?: boolean;
 }) {
+  const lowPoly = useCharacterLowPoly();
   const {headWidth,headHeight,headDepth,headRadius}=getPassengerProportions(archetype.id);
   const front=-headDepth/2-.008, skull=archetype.id==="brook", reindeer=archetype.id==="chopper";
   const nami = archetype.id === "nami";
@@ -40,9 +41,9 @@ export default function PassengerHead({ archetype, mats, motion, index = 0, redu
       <CharacterPart material={identityMaterial("#1474c3")} size={[.037,.031,.026]} position={[0,-.032,front-.034]} radius={.013}/>
       <CharacterPart material={mats.faceDark} size={[.009,.020,.006]} position={[0,-.057,front-.024]}/>
     </>:archetype.id === "usopp" ? <mesh material={mats.skin} position={[0,-.005,front-.067]} rotation={[Math.PI/2,0,0]}>
-      <cylinderGeometry args={[0.021, 0.027, 0.17, 12]} />
+      <cylinderGeometry args={[0.021, 0.027, 0.17, lowPoly ? 6 : 12]} />
     </mesh> : archetype.accessory === "clown_nose" ? <mesh material={mats.red} position={[0, -0.005, -0.14]}>
-      <sphereGeometry args={[0.043, 16, 12]} />
+      <sphereGeometry args={[0.043, lowPoly ? 8 : 16, lowPoly ? 5 : 12]} />
     </mesh> : <CharacterPart material={archetype.id==="franky"?mats.steel:mats.skin}
       size={archetype.id==="franky"?[.061,.052,.044]:nami?[.024,.031,.029]:[.027,.037,.04]} position={[0,-.006,front-.004]}/>}
     <AnimatedCharacterMouth id={archetype.id} index={index} motion={motion} reducedMotion={reducedMotion}
@@ -50,7 +51,7 @@ export default function PassengerHead({ archetype, mats, motion, index = 0, redu
       dark={mats.faceDark} teeth={mats.teeth} tongue={identityMaterial("#b84c55")} skin={mats.skin} skull={skull}/>
     {archetype.id==="jinbe"&&<>
       {[-1,1].map(side=><group key={side}>
-        <mesh material={mats.teeth} position={[side*.061,-.066,front-.012]}><coneGeometry args={[.012,.05,8]}/></mesh>
+        <mesh material={mats.teeth} position={[side*.061,-.066,front-.012]}><coneGeometry args={[.012,.05,lowPoly?5:8]}/></mesh>
         <CharacterPart material={mats.hair} size={[.038,.14,.04]} position={[side*.13,-.015,.003]} rotation={[0,0,side*.22]}/>
       </group>)}
       <CharacterPart material={mats.hair} size={[.047,.045,.027]} position={[0,-.126,front+.04]}/>

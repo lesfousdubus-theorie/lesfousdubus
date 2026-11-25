@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { BUS_FRONT_Z } from "@/lib/bus-layout";
@@ -33,7 +33,7 @@ import type { WorldState } from "./constants";
 
 const Z_AXIS = new THREE.Vector3(0, 0, 1);
 
-export default function BusSpeedLines({
+const BusSpeedLines = memo(function BusSpeedLines({
   worldRef,
   focusZ,
   rearZ,
@@ -167,4 +167,6 @@ export default function BusSpeedLines({
       </instancedMesh>
     </group>
   );
-}
+});
+
+export default BusSpeedLines;

@@ -1,21 +1,21 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { memo, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { BUS_FRONT_Z } from "@/lib/bus-layout";
 import { CONFETTI_COLORS, createConfettiSeeds, getConfettiZ } from "@/lib/bus-confetti";
 
-/** Un seul draw call : modéré pendant l'intro, dense dès que la danse démarre. */
-export default function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion, dancing = false }: {
-  focusZ: number; rearZ: number; lowPower: boolean; reducedMotion: boolean; dancing?: boolean;
+/** Un seul draw call : reste monté en permanence (zéro compilation/allocation au début/fin de la danse). */
+const BusConfetti = memo(function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion, active = true, dancing = false }: {
+  focusZ: number; rearZ: number; lowPower: boolean; reducedMotion: boolean; active?: boolean; dancing?: boolean;
 }) {
   const mesh = useRef<THREE.InstancedMesh>(null);
   const from = BUS_FRONT_Z + 0.35;
   const to = rearZ - 0.35;
   const cabinSpan = Math.max(8, to - from);
-  const maxCount = lowPower ? 900 : Math.min(3600, Math.max(2400, Math.round(cabinSpan * 55)));
-  const introCount = lowPower ? 90 : Math.min(320, Math.max(180, Math.round(cabinSpan * 4.5)));
+  const maxCount = lowPower ? 700 : Math.min(1800, Math.max(1200, Math.round(cabinSpan * 48)));
+  const introCount = lowPower ? 90 : Math.min(260, Math.max(140, Math.round(cabinSpan * 4.5)));
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const cameraLocal = useMemo(() => new THREE.Vector3(), []);
   const seeds = useMemo(() => createConfettiSeeds(maxCount, to - from), [maxCount, from, to]);
@@ -52,6 +52,13 @@ export default function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion, da
 
   useLayoutEffect(() => {
     if (!mesh.current) return;
+    mesh.current.visible = active;
+    if (!active) {
+      started.current = null;
+      activeCountRef.current = introCount;
+      mesh.current.count = introCount;
+      return;
+    }
     const targetCount = dancing ? maxCount : introCount;
     if (reducedMotion) {
       activeCountRef.current = targetCount;
@@ -62,10 +69,15 @@ export default function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion, da
     } else {
       mesh.current.count = Math.round(activeCountRef.current);
     }
-  }, [dancing, introCount, maxCount, reducedMotion]);
+  }, [active, dancing, introCount, maxCount, reducedMotion]);
 
   useFrame(({ clock, camera }, dt) => {
     if (!mesh.current) return;
+    if (!active) {
+      if (mesh.current.visible) mesh.current.visible = false;
+      return;
+    }
+    if (!mesh.current.visible) mesh.current.visible = true;
     const targetCount = dancing ? maxCount : introCount;
     if (reducedMotion) {
       mesh.current.count = targetCount;
@@ -86,7 +98,17 @@ export default function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion, da
 
     camera.getWorldPosition(cameraLocal);
     mesh.current.worldToLocal(cameraLocal);
-    const denseFocus = THREE.MathUtils.clamp(cameraLocal.z, from, to);
+    // Centre toujours la fenêtre dense de confettis autour de la zone du bus observée par la caméra
+    // (aussi bien à l'extérieur qu'à l'intérieur), pour couvrir 100 % du bus visible sans jamais laisser de vide.
+    const viewCenterZ = THREE.MathUtils.clamp(cameraLocal.z, from, to);
+    const visibleSpan = Math.min(
+      cabinSpan,
+      Math.max(140, Math.min(380, Math.abs(cameraLocal.x) * 3.0 + Math.abs(cameraLocal.y) * 2.2 + 120)),
+    );
+    const halfWin = visibleSpan * 0.5;
+    const winFrom = Math.max(from, Math.min(to - visibleSpan, viewCenterZ - halfWin));
+    const winTo = Math.min(to, winFrom + visibleSpan);
+    const denseFocus = THREE.MathUtils.clamp(viewCenterZ, winFrom, winTo);
     const speedBoost = dancing ? 1.35 : 0.72;
     const spinBoost = dancing ? 1.35 : 0.75;
 
@@ -98,7 +120,7 @@ export default function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion, da
       dummy.position.set(
         (seed.x - 0.5) * 1.82 + swirlX,
         3.06 - fall * 2.34,
-        getConfettiZ(seed, from, to, denseFocus) + swirlZ,
+        getConfettiZ(seed, winFrom, winTo, denseFocus) + swirlZ,
       );
       dummy.rotation.set(
         seed.spin + t * 1.9 * spinBoost,
@@ -112,8 +134,10 @@ export default function BusConfetti({ focusZ, rearZ, lowPower, reducedMotion, da
     mesh.current.instanceMatrix.needsUpdate = true;
   });
 
-  return <instancedMesh key={maxCount} name="bus-party-confetti" ref={mesh} args={instancedArgs} raycast={() => null}>
+  return <instancedMesh key={maxCount} name="bus-party-confetti" ref={mesh} args={instancedArgs} visible={active} raycast={() => null}>
     <planeGeometry args={[0.036, 0.056]}/>
     <meshBasicMaterial side={THREE.DoubleSide} toneMapped={false}/>
   </instancedMesh>;
-}
+});
+
+export default BusConfetti;

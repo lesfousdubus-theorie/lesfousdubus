@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { type WorldState } from "./constants";
 import { getShadowCameraFraming, type ShadowCameraFraming } from "@/lib/scene-performance";
+import { computeScrollLockedShadowCenterZ, installSmoothPcfShadowFilter } from "@/lib/shadow-filter";
+
+installSmoothPcfShadowFilter();
 
 interface Props {
   worldRef: React.RefObject<WorldState>;
@@ -15,9 +18,11 @@ interface Props {
   fogNear?: number;
   fogFar?: number;
   shadowsEnabled?: boolean;
-  shadowMapSize?: 1024 | 2048;
+  shadowMapSize?: 1024 | 2048 | 4096;
   shadowsType?: false | "basic" | "percentage" | "soft";
   shadowsQuality?: "off" | "basic" | "standard" | "high";
+  maxTextureSize?: number;
+  mobileDevice?: boolean;
   starCount?: number;
   cabinCenterZ?: number;
   cabinLength?: number;
@@ -38,7 +43,7 @@ function smoothstep(a: number, b: number, x: number) {
   return t * t * (3 - 2 * t);
 }
 
-export default function DayNight({
+const DayNight = memo(function DayNight({
   worldRef,
   modeOverride,
   lowPower = false,
@@ -50,6 +55,8 @@ export default function DayNight({
   shadowMapSize,
   shadowsType,
   shadowsQuality,
+  maxTextureSize = 4096,
+  mobileDevice = false,
   starCount,
   cabinCenterZ = 0,
   cabinLength = 9.2,
@@ -68,6 +75,13 @@ export default function DayNight({
     height: number;
     type: false | "basic" | "percentage" | "soft" | undefined;
   } | null>(null);
+  const appliedFrustumRef = useRef<{
+    halfWidth: number;
+    halfDepth: number;
+    sunDistance: number;
+    near: number;
+    far: number;
+  } | null>(null);
   const sunTarget = useMemo(() => {
     const obj = new THREE.Object3D();
     obj.position.set(0, 1.2, 0);
@@ -75,6 +89,7 @@ export default function DayNight({
   }, []);
 
   // Position du soleil lissée pour permettre des transitions douces lors du clic Jour/Nuit
+  const sunInitRef = useRef(false);
   const curSunY = useRef(0.85);
   const curSunX = useRef(0.1);
 
@@ -86,9 +101,9 @@ export default function DayNight({
     halfWidth: 105,
     halfDepth: 185,
     centerZ: -115,
-    sunDistance: 268,
-    near: 1,
-    far: 750,
+    sunDistance: 250,
+    near: 60,
+    far: 480,
     normalBias: 0.014,
   }), []);
 
@@ -96,7 +111,10 @@ export default function DayNight({
   const resolvedFogFar = fogFarProp ?? Math.max(750, cameraFar * 0.85);
   const skyDist = Math.max(300, cameraFar * 0.82);
   const resolvedShadowsEnabled = shadowsEnabled ?? !lowPower;
-  const resolvedShadowMapSize = shadowMapSize ?? (lowPower ? 1024 : 2048);
+  const resolvedShadowMapSize: 1024 | 2048 | 4096 =
+    shadowsQuality === "high" && !lowPower && !mobileDevice && maxTextureSize >= 4096
+      ? 4096
+      : (shadowMapSize ?? (lowPower ? 1024 : 2048));
   const resolvedStarCount = starCount ?? (lowPower ? 700 : 1800);
 
   const starGeo = useMemo(() => {
@@ -127,13 +145,9 @@ export default function DayNight({
 
   useFrame((state, dt) => {
     const targetGlShadowType = shadowsType === "basic" ? THREE.BasicShadowMap : THREE.PCFShadowMap;
-    const maxGpuTex = state.gl.capabilities.maxTextureSize || 2048;
-    const targetMapW = resolvedShadowMapSize >= 2048 && shadowsQuality === "high" && maxGpuTex >= 4096
-      ? 4096
-      : resolvedShadowMapSize;
-    const targetMapH = resolvedShadowMapSize >= 2048 && maxGpuTex >= 4096
-      ? 4096
-      : resolvedShadowMapSize;
+    // Plafonner la shadow map à 2048px max (4096px = 16,7M texels/frame, trop coûteux sur GPU moyen/faible)
+    const targetMapW = resolvedShadowMapSize;
+    const targetMapH = resolvedShadowMapSize;
     const glShadowChanged =
       state.gl.shadowMap.enabled !== resolvedShadowsEnabled
       || state.gl.shadowMap.type !== targetGlShadowType;
@@ -151,6 +165,7 @@ export default function DayNight({
     ) {
       state.gl.shadowMap.enabled = resolvedShadowsEnabled;
       state.gl.shadowMap.type = targetGlShadowType;
+      state.gl.shadowMap.autoUpdate = true;
       sun.current.castShadow = resolvedShadowsEnabled;
       if (
         glShadowChanged
@@ -158,6 +173,7 @@ export default function DayNight({
         || sun.current.shadow.mapSize.height !== targetMapH
       ) {
         sun.current.shadow.mapSize.set(targetMapW, targetMapH);
+        sun.current.shadow.map?.depthTexture?.dispose();
         sun.current.shadow.map?.dispose();
         sun.current.shadow.map = null;
       }
@@ -181,6 +197,9 @@ export default function DayNight({
         type: shadowsType,
       };
     }
+    if (resolvedShadowsEnabled && !state.gl.shadowMap.autoUpdate) {
+      state.gl.shadowMap.autoUpdate = true;
+    }
 
     let targetSunY = 0.85;
     let targetSunX = 0.1;
@@ -192,9 +211,11 @@ export default function DayNight({
       targetSunY = -0.75;
       targetSunX = 0.4;
     } else {
-      // Heure locale réelle dans la vraie vie
+      // Heure locale réelle quantifiée par pas de 5 minutes : suit fidèlement le soleil réel
+      // sans jamais faire vibrer la matrice d'ombres toutes les secondes.
       const now = new Date();
-      const realHour = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+      const quantizedMinutes = Math.round((now.getHours() * 60 + now.getMinutes()) / 5) * 5;
+      const realHour = quantizedMinutes / 60;
 
       // Lever du soleil ~06:45, Coucher ~20:45
       if (realHour >= 6.75 && realHour <= 20.75) {
@@ -211,10 +232,21 @@ export default function DayNight({
       }
     }
 
-    // Interpolation fluide vers la cible (transition douce au clic ou au fil des secondes)
-    const blend = reducedMotion ? 1 : Math.min(1, Math.min(dt, 0.1) * 2.8);
-    curSunY.current += (targetSunY - curSunY.current) * blend;
-    curSunX.current += (targetSunX - curSunX.current) * blend;
+    // Initialisation instantanée au premier rendu, puis interpolation douce au clic Jour/Nuit
+    // avec verrouillage exact à l'arrivée pour éviter toute micro-dérive résiduelle des ombres.
+    if (!sunInitRef.current || reducedMotion) {
+      sunInitRef.current = true;
+      curSunY.current = targetSunY;
+      curSunX.current = targetSunX;
+    } else {
+      const blend = Math.min(1, Math.min(dt, 0.1) * 2.8);
+      curSunY.current = Math.abs(targetSunY - curSunY.current) < 0.0005
+        ? targetSunY
+        : curSunY.current + (targetSunY - curSunY.current) * blend;
+      curSunX.current = Math.abs(targetSunX - curSunX.current) < 0.0005
+        ? targetSunX
+        : curSunX.current + (targetSunX - curSunX.current) * blend;
+    }
 
     const sunY = curSunY.current;
     const sunX = curSunX.current;
@@ -256,15 +288,85 @@ export default function DayNight({
       fogFar: resolvedFogFar,
       shadowMapSize: resolvedShadowMapSize,
     }, shadowFraming);
-    sunTarget.position.set(0, 1.2, framing.centerZ);
-    sunTarget.updateMatrixWorld();
+
+    // En zoom très rapproché sur le bus (< 12 m), resserre le frustum d'ombres (2x plus fin) et verrouille
+    // la grille de texels sur le bus lui-même (zéro tremblement sur le chapeau de paille et la carrosserie).
+    const busMinZ = cabinCenterZ - cabinLength * 0.5;
+    const busMaxZ = cabinCenterZ + cabinLength * 0.5;
+    const nearestBusZ = THREE.MathUtils.clamp(state.camera.position.z, busMinZ, busMaxZ);
+    const busCamDist = Math.hypot(
+      state.camera.position.x,
+      Math.max(0, state.camera.position.y - 2),
+      state.camera.position.z - nearestBusZ,
+    );
+    const closeOnBus = busCamDist < 12;
+    const desiredHalfWidth = closeOnBus ? 64 : framing.halfWidth;
+    const desiredHalfDepth = closeOnBus ? 96 : framing.halfDepth;
+
+    // Quantifie le frustum par paliers de 16 m avec hystérésis pour éviter tout redimensionnement
+    // de la grille de texels lors des petites rotations ou légers mouvements de caméra.
+    const prevFrustum = appliedFrustumRef.current;
+    let activeHalfWidth: number;
+    let activeHalfDepth: number;
+    let activeSunDistance: number;
+    let activeNear: number;
+    let activeFar: number;
+    if (
+      !prevFrustum
+      || Math.abs(desiredHalfWidth - prevFrustum.halfWidth) >= 14
+      || Math.abs(desiredHalfDepth - prevFrustum.halfDepth) >= 14
+    ) {
+      activeHalfWidth = Math.max(64, Math.round(desiredHalfWidth / 16) * 16);
+      activeHalfDepth = Math.max(96, Math.round(desiredHalfDepth / 16) * 16);
+      const maxSpan = Math.max(activeHalfWidth, activeHalfDepth);
+      activeSunDistance = Math.max(160, Math.round(maxSpan * 1.35));
+      activeNear = Math.max(12, activeSunDistance - 190);
+      activeFar = activeSunDistance + 230;
+      appliedFrustumRef.current = {
+        halfWidth: activeHalfWidth,
+        halfDepth: activeHalfDepth,
+        sunDistance: activeSunDistance,
+        near: activeNear,
+        far: activeFar,
+      };
+    } else {
+      activeHalfWidth = prevFrustum.halfWidth;
+      activeHalfDepth = prevFrustum.halfDepth;
+      activeSunDistance = prevFrustum.sunDistance;
+      activeNear = prevFrustum.near;
+      activeFar = prevFrustum.far;
+    }
+
     // Garde un angle d'ombre assez haut au crépuscule pour éviter l'étirement diagonal crénelé
     const shadowLightY = Math.max(lightY, 0.52);
     const shadowHorizScale = 0.85 + 0.15 * Math.min(1, Math.max(0, (lightY - 0.16) / 0.36));
+    const rawDirX = lightX * shadowHorizScale;
+    const rawDirY = shadowLightY;
+    const rawDirZ = -0.42;
+    const dirLen = Math.hypot(rawDirX, rawDirY, rawDirZ) || 1;
+    const vx = rawDirX / dirLen;
+    const vy = rawDirY / dirLen;
+    const vz = rawDirZ / dirLen;
+
+    // En zoom très proche sur le bus, ancre la grille sur le bus (scrollLock = 0) pour figer l'ombre du chapeau ;
+    // en vue normale/dézoomée, ancre sur `scroll` pour figer les ombres sur tous les paysages qui défilent.
+    const scrollLock = closeOnBus ? 0 : (worldRef.current?.scroll ?? 0);
+    const targetShadowZ = closeOnBus ? nearestBusZ : framing.centerZ;
+    const { snappedCenterZ, worldTexelZ } = computeScrollLockedShadowCenterZ(
+      targetShadowZ,
+      scrollLock,
+      activeHalfDepth,
+      resolvedShadowMapSize,
+      vx,
+      vy,
+      vz,
+    );
+    sunTarget.position.set(0, 1.2, snappedCenterZ);
+    sunTarget.updateMatrixWorld();
     sunPosition.set(
-      lightX * shadowHorizScale * framing.sunDistance,
-      shadowLightY * framing.sunDistance,
-      framing.centerZ - framing.sunDistance * 0.42,
+      sunTarget.position.x + vx * activeSunDistance,
+      sunTarget.position.y + vy * activeSunDistance,
+      sunTarget.position.z + vz * activeSunDistance,
     );
     lightColor.copy(MOON_LIGHT).lerp(SUN_LIGHT, smoothstep(0.05, 0.45, daylight)).lerp(DUSK_LIGHT, duskGlow * 0.65);
     if (sun.current) {
@@ -275,21 +377,25 @@ export default function DayNight({
       const shadowCam = sun.current.shadow.camera;
       if (
         shadowCam.up.z > -0.9
-        || Math.abs(shadowCam.right - framing.halfWidth) > 0.5
-        || Math.abs(shadowCam.top - framing.halfDepth) > 0.5
-        || Math.abs(shadowCam.far - framing.far) > 1
+        || Math.abs(shadowCam.right - activeHalfWidth) > 0.25
+        || Math.abs(shadowCam.top - activeHalfDepth) > 0.25
+        || Math.abs(shadowCam.near - activeNear) > 0.5
+        || Math.abs(shadowCam.far - activeFar) > 0.5
       ) {
         // Aligne la boîte d'ombres sur l'axe de la route (-Z) même quand le soleil rase à l'est/ouest
         shadowCam.up.set(0, 0, -1);
-        shadowCam.left = -framing.halfWidth;
-        shadowCam.right = framing.halfWidth;
-        shadowCam.top = framing.halfDepth;
-        shadowCam.bottom = -framing.halfDepth;
-        shadowCam.near = framing.near;
-        shadowCam.far = framing.far;
+        shadowCam.left = -activeHalfWidth;
+        shadowCam.right = activeHalfWidth;
+        shadowCam.top = activeHalfDepth;
+        shadowCam.bottom = -activeHalfDepth;
+        shadowCam.near = activeNear;
+        shadowCam.far = activeFar;
         shadowCam.updateProjectionMatrix();
       }
-      sun.current.shadow.normalBias = framing.normalBias;
+      const texelX = (activeHalfWidth * 2) / resolvedShadowMapSize;
+      const maxTexelWorld = Math.max(texelX, worldTexelZ);
+      sun.current.shadow.normalBias = Math.min(0.16, Math.max(0.04, maxTexelWorld * 0.85));
+      sun.current.shadow.bias = -0.00014;
     }
 
     if (celestial.current) celestial.current.position.copy(state.camera.position);
@@ -305,8 +411,8 @@ export default function DayNight({
       moonMesh.current.scale.setScalar(celestialScale);
       moonMesh.current.visible = -sunY > -0.1;
     }
-    if (ambient.current) ambient.current.intensity = 0.12 + daylight * 0.5;
-    if (hemi.current) hemi.current.intensity = 0.15 + daylight * 0.6;
+    if (ambient.current) ambient.current.intensity = 0.2 + daylight * 0.46;
+    if (hemi.current) hemi.current.intensity = 0.22 + daylight * 0.56;
     if (starsMat.current) starsMat.current.opacity = Math.max(0, 1 - daylight * 1.4);
     if (starsRef.current) {
       starsRef.current.scale.setScalar(skyDist / 900);
@@ -361,4 +467,6 @@ export default function DayNight({
       </group>
     </>
   );
-}
+});
+
+export default DayNight;

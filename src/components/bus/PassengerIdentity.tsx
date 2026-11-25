@@ -1,7 +1,7 @@
 "use client";
 
 import * as THREE from "three";
-import { CharacterPart, joinCharacterParts } from "./CharacterShapes";
+import { CharacterPart, joinCharacterParts, useCharacterLowPoly } from "./CharacterShapes";
 import type { NakamaArchetype } from "./passenger-archetypes";
 
 const materials = new Map<string, THREE.MeshStandardMaterial>();
@@ -29,7 +29,7 @@ export function identityMaterial(color: string, metallic = false) {
 export function NamiHair({ material }: { material: THREE.Material }) {
   return <group name="nakama-hair">
     <CharacterPart name="nakama-nami-hair-cap" material={material} size={[.245,.095,.244]} position={[0,.112,.008]} radius={.035} detail={2}/>
-    <CharacterPart material={material} size={[.236,.40,.067]} position={[0,-.074,.097]} radius={.022}/>
+    <CharacterPart material={material} size={[.246,.40,.072]} position={[0,-.074,.108]} radius={.022}/>
     {[-1,1].map(side=><CharacterPart key={side} material={material} size={[.055,.32,.105]}
       position={[side*.116,-.048,.020]} radius={.016}/>)}
     <CharacterPart material={material} size={[.155,.035,.034]} position={[-.027,.119,-.123]} rotation={[0,0,.14]} radius={.009}/>
@@ -97,21 +97,31 @@ export function PassengerUpperArm({ archetype, mats, side, width }: LimbProps) {
 
 let skeletonForearm: THREE.BufferGeometry | undefined;
 let skeletonHand: THREE.BufferGeometry | undefined;
-function brookBones() {
-  skeletonForearm ??= joinCharacterParts([-.018,.018].map(x=>({size:[.022,.205,.027],position:[x,-.105,0]})));
-  skeletonHand ??= joinCharacterParts([
-    {size:[.071,.057,.041],position:[0,-.215,0]},
+let skeletonForearmLow: THREE.BufferGeometry | undefined;
+let skeletonHandLow: THREE.BufferGeometry | undefined;
+function brookBones(lowPoly = false) {
+  const armParts = [-.018,.018].map(x=>({size:[.022,.205,.027] as [number,number,number],position:[x,-.105,0] as [number,number,number]}));
+  const handParts = [
+    {size:[.071,.057,.041] as [number,number,number],position:[0,-.215,0] as [number,number,number]},
     ...[-.025,-.008,.008,.025].map((x,i)=>({size:[.012,.031+(i===1||i===2?.008:0),.017] as [number,number,number],position:[x,-.251,-.002] as [number,number,number]})),
-    {size:[.021,.034,.02],position:[-.04,-.216,-.003]},
-  ]);
+    {size:[.021,.034,.02] as [number,number,number],position:[-.04,-.216,-.003] as [number,number,number]},
+  ];
+  if (lowPoly) {
+    skeletonForearmLow ??= joinCharacterParts(armParts, true);
+    skeletonHandLow ??= joinCharacterParts(handParts, true);
+    return {arm:skeletonForearmLow,hand:skeletonHandLow};
+  }
+  skeletonForearm ??= joinCharacterParts(armParts, false);
+  skeletonHand ??= joinCharacterParts(handParts, false);
   return {arm:skeletonForearm,hand:skeletonHand};
 }
 
 /** Avant-bras anatomiques distincts, attachés aux coudes de l'animation existante. */
 export function PassengerForearm({ archetype, mats, side, width, handName }: LimbProps & {handName?:string}) {
+  const lowPoly = useCharacterLowPoly();
   if (archetype.id === "shanks" && side < 0) return null;
   if (archetype.id === "brook") {
-    const bones = brookBones();
+    const bones = brookBones(lowPoly);
     return <>
       <mesh material={mats.skin} geometry={bones.arm} dispose={null}/>
       <mesh name={handName} material={mats.skin} geometry={bones.hand} dispose={null}/>

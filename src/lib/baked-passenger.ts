@@ -4,7 +4,9 @@ import { recordPassengerHeadHeight } from "@/components/bus/usePassengerHeadHeig
 
 export type IdentityRole = "body"|"head"|"neck"|"legs"|"upperLeft"|"upperRight"|"foreLeft"|"foreRight"|"signatureLeft"|"signatureRight"|"rest";
 export interface IdentityPart { role: IdentityRole; geometry: THREE.BufferGeometry; material: THREE.Material }
+export interface StaticIdentityPart { geometry: THREE.BufferGeometry; material: THREE.Material }
 export const bakedPassengerIdentities = new Map<string, IdentityPart[]>();
+export const bakedStaticPassengerIdentities = new Map<string, StaticIdentityPart[]>();
 const solidMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .72 });
 const metalMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .25, metalness: .8 });
 const basicMaterial = new THREE.MeshBasicMaterial({ vertexColors: true });
@@ -39,9 +41,7 @@ export function bakePassengerIdentity(root: THREE.Group, id?: string): IdentityP
           ? material
           : material instanceof THREE.MeshBasicMaterial
             ? basicMaterial
-            : "metalness" in material && material.metalness > 0.4
-              ? metalMaterial
-              : solidMaterial;
+            : solidMaterial;
         let batch = batches.get(target);
         if (!batch) { batch = { geometries:[],names:new Set() }; batches.set(target,batch); }
         let geometry = object.geometry.clone();
@@ -74,5 +74,57 @@ export function bakePassengerIdentity(root: THREE.Group, id?: string): IdentityP
     }
   }
   if (id && Number.isFinite(headTop)) recordPassengerHeadHeight(id, headTop);
+
+  // Version statique fusionnée (1 à 2 draw calls par archétype hors fête/klaxon)
+  if (!id || !bakedStaticPassengerIdentities.has(id)) {
+    const rootInverse = root.matrixWorld.clone().invert();
+    const staticBatches = new Map<THREE.Material, THREE.BufferGeometry[]>();
+    const visitStatic = (object: THREE.Object3D) => {
+      if (object !== root && !object.visible) return;
+      if (object.name === "nakama-signature-left" || object.name === "nakama-signature-right") return;
+      if (object instanceof THREE.Mesh && object.geometry) {
+        const material = object.material as THREE.MeshStandardMaterial | THREE.MeshBasicMaterial;
+        const mapped = Boolean(material.map || material.transparent);
+        const target = mapped
+          ? material
+          : material instanceof THREE.MeshBasicMaterial
+            ? basicMaterial
+            : solidMaterial;
+        let list = staticBatches.get(target);
+        if (!list) { list = []; staticBatches.set(target, list); }
+        let geometry = object.geometry.clone();
+        if (geometry.index) { const flat = geometry.toNonIndexed(); geometry.dispose(); geometry = flat; }
+        relative.multiplyMatrices(rootInverse, object.matrixWorld);
+        geometry.applyMatrix4(relative);
+        for (const key of Object.keys(geometry.attributes)) {
+          if (!["position", "normal", "uv"].includes(key)) geometry.deleteAttribute(key);
+        }
+        if (!geometry.attributes.normal) geometry.computeVertexNormals();
+        if (!geometry.attributes.uv) {
+          geometry.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(geometry.attributes.position.count * 2), 2));
+        }
+        if (!mapped) {
+          const color = material.color ?? new THREE.Color("white");
+          const colors = new Float32Array(geometry.attributes.position.count * 3);
+          for (let i = 0; i < colors.length; i += 3) {
+            colors[i] = color.r; colors[i + 1] = color.g; colors[i + 2] = color.b;
+          }
+          geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+        }
+        list.push(geometry);
+      }
+      object.children.forEach(visitStatic);
+    };
+    visitStatic(root);
+    const staticParts: StaticIdentityPart[] = [];
+    for (const [material, geos] of staticBatches) {
+      const geometry = mergeGeometries(geos)!;
+      geos.forEach((part) => part.dispose());
+      geometry.computeBoundingSphere();
+      staticParts.push({ geometry, material });
+    }
+    if (id) bakedStaticPassengerIdentities.set(id, staticParts);
+  }
+
   return result;
 }

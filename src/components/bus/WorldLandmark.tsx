@@ -85,6 +85,8 @@ const MATS = {
   jadeRoof: new THREE.MeshStandardMaterial({ color: "#2d7c75", roughness: 0.72 }),
 };
 
+const LANDMARK_BAKED_MATTE = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88 });
+
 function LandmarkModel({ def }: { def: PropDef }) {
   const s = def.s;
   switch (def.type) {
@@ -1006,13 +1008,31 @@ export function WorldLandmark({ def, onReady }: { def: PropDef; onReady?: () => 
       if (!(object instanceof THREE.Mesh) || Array.isArray(object.material)) return;
       const cast = object.castShadow;
       const receive = object.receiveShadow;
-      const key = `${object.material.uuid}:${cast}:${receive}`;
-      const batch = batches.get(key) ?? { material: object.material, cast, receive, shapes: [] as THREE.BufferGeometry[] };
+      const mat = object.material as THREE.MeshStandardMaterial;
+      const bakeMatte = !mat.transparent
+        && !mat.map
+        && !mat.vertexColors
+        && mat.emissiveIntensity === 0
+        && mat.emissive.getHex() === 0
+        && mat.metalness < 0.3;
+      const targetMat = bakeMatte ? LANDMARK_BAKED_MATTE : object.material;
+      const key = `${targetMat.uuid}:${cast}:${receive}`;
+      const batch = batches.get(key) ?? { material: targetMat, cast, receive, shapes: [] as THREE.BufferGeometry[] };
       const geometry = object.geometry.index ? object.geometry.toNonIndexed() : object.geometry.clone();
       for (const attr of Object.keys(geometry.attributes)) {
         if (attr !== "position" && attr !== "normal") geometry.deleteAttribute(attr);
       }
       if (!geometry.hasAttribute("normal")) geometry.computeVertexNormals();
+      if (bakeMatte) {
+        const pos = geometry.getAttribute("position");
+        const colors = new Float32Array(pos.count * 3);
+        for (let i = 0; i < colors.length; i += 3) {
+          colors[i] = mat.color.r;
+          colors[i + 1] = mat.color.g;
+          colors[i + 2] = mat.color.b;
+        }
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+      }
       geometry.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse, object.matrixWorld));
       geometry.computeBoundingBox();
       batch.shapes.push(geometry);

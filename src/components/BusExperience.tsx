@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BusHud, type ToastMessage } from "./BusHud";
+import { BusHud, BusSeatNav, type ToastMessage } from "./BusHud";
 import { getSeatCountInRow } from "@/lib/bus-layout";
 import { getBusPhysicalRows, getRegisteredSeat } from "@/lib/bus-occupancy";
 import { type Phase, type WorldState } from "./bus/constants";
@@ -47,6 +47,8 @@ export default function BusExperience() {
   const [resetViewToken, setResetViewToken] = useState(0);
   const [freeView, setFreeView] = useState(false);
   const [sceneAvailable, setSceneAvailable] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
+  const [sceneProgress, setSceneProgress] = useState(0);
   const [loadingPhase, setLoadingPhase] = useState<"visible" | "exiting" | "hidden">("visible");
   const [graphicsTelemetry, setGraphicsTelemetry] = useState<SceneGraphicsTelemetry | null>(null);
   const [bgmPlaying, setBgmPlaying] = useState(false);
@@ -602,9 +604,11 @@ export default function BusExperience() {
     }
   }, [applyBusSnapshot, dismissToast, clearDirectory, clearProfile, transitionPhase]);
 
-  // Sortir du bus : le son reste audible de loin (25%), la TV reste allumée
+  // Sortir du bus : arrêter immédiatement la TV (vidéo + son)
   const exitBus = useCallback(() => {
     if (phase !== "inside") return;
+    setTvOn(false);
+    emitBusAudioEvent("tvToggle", false);
     setBoardingFromSeat(false);
     dismissToast();
     transitionPhase("exiting");
@@ -690,16 +694,31 @@ export default function BusExperience() {
     return () => window.removeEventListener("keydown", openComfort);
   }, [busy, overlayOpen]);
 
+  const statsReady = count !== null || statsLoadError;
+  const loadingProgress = loadingPhase === "exiting" || loadingPhase === "hidden"
+    ? 100
+    : Math.min(
+        100,
+        Math.round((statsReady ? 10 : 5) + sceneProgress * 85 + (sceneReady && statsReady ? 5 : 0)),
+      );
+
   useEffect(() => {
     if (loadingPhase !== "visible") return;
-    const statsReady = count !== null || statsLoadError;
-    if (!sceneAvailable || !statsReady) {
-      const fallbackTimer = window.setTimeout(() => setLoadingPhase("exiting"), 7000);
+    if (!sceneReady || !statsReady) {
+      const fallbackTimer = window.setTimeout(() => setLoadingPhase("exiting"), 15000);
       return () => window.clearTimeout(fallbackTimer);
     }
-    const settleTimer = window.setTimeout(() => setLoadingPhase("exiting"), 1400);
+    // Laisse les derniers lots WebGL (monuments, avant-plans, graffitis, passagers) afficher quelques frames propres.
+    const settleTimer = window.setTimeout(() => setLoadingPhase("exiting"), 450);
     return () => window.clearTimeout(settleTimer);
-  }, [count, loadingPhase, sceneAvailable, statsLoadError]);
+  }, [loadingPhase, sceneReady, statsReady]);
+
+  const openTheoryModal = useCallback(() => setShowTheoryModal(true), []);
+  const openPlaceModal = useCallback(() => setShowPlaceModal(true), []);
+  const toggleFreeView = useCallback(() => setFreeView((value) => !value), []);
+  const handleEnterBus = useCallback(() => enterBus(), [enterBus]);
+  const resetView = useCallback(() => setResetViewToken((token) => token + 1), []);
+  const [hudImmersive, setHudImmersive] = useState(false);
 
   useEffect(() => {
     if (loadingPhase !== "exiting") return;
@@ -747,18 +766,20 @@ export default function BusExperience() {
         modeOverride={manualDayNight}
         resetViewToken={resetViewToken}
         onAvailabilityChange={setSceneAvailable}
-        onReadTheory={() => setShowTheoryModal(true)}
+        onReadyChange={setSceneReady}
+        onLoadProgress={setSceneProgress}
+        onReadTheory={openTheoryModal}
       />
 
       <BusHud
         hasSavedPlace={currentPassengerSeatIndex !== null}
         entryNumber={effectiveEntryNumber}
-        openPlaceModal={() => setShowPlaceModal(true)}
+        openPlaceModal={openPlaceModal}
         openAvatarModal={profile.openAvatarModal}
         phase={phase}
         phaseEpoch={phaseEpoch}
         freeView={freeView}
-        toggleFreeView={() => setFreeView(value => !value)}
+        toggleFreeView={toggleFreeView}
         hidden={overlayOpen || loadingPhase !== "hidden"}
         sceneAvailable={sceneAvailable}
         toast={toast}
@@ -773,8 +794,6 @@ export default function BusExperience() {
         isNight={isNight}
         manualDayNight={manualDayNight}
         speedMultiplier={speedMultiplier}
-        seatRow={seatRow}
-        seatColumn={effectiveSeatColumn}
         exteriorControlsVisible={exteriorControlsVisible}
         interiorControlsVisible={interiorControlsVisible}
         headlights={headlights}
@@ -792,8 +811,7 @@ export default function BusExperience() {
         onResetGraphicsSettings={preferences.resetGraphicsSettings}
         setStatsLoadError={setStatsLoadError}
         setStatsRetryToken={setStatsRetryToken}
-        setSeatRow={setSeatRow}
-        setSeatColumn={setSeatColumn}
+        onImmersiveChange={setHudImmersive}
         toggleTv={toggleTv}
         openPassengerManifest={openPassengerManifest}
         toggleDayNight={toggleDayNight}
@@ -801,14 +819,23 @@ export default function BusExperience() {
         accelerateBus={accelerateBus}
         toggleHeadlights={toggleHeadlights}
         honk={honk}
-        enterBus={() => enterBus()}
+        enterBus={handleEnterBus}
         openProfileModal={openProfileModal}
         exitBus={exitBus}
-        resetView={() => setResetViewToken((token) => token + 1)}
+        resetView={resetView}
         bgmPlaying={bgmPlaying}
         toggleBgm={toggleBgm}
         bgmVolume={bgmVolume}
         setBgmVolume={handleSetBgmVolume}
+      />
+
+      <BusSeatNav
+        visible={phase === "inside" && !overlayOpen && loadingPhase === "hidden" && !hudImmersive}
+        seatRow={seatRow}
+        seatColumn={effectiveSeatColumn}
+        numRows={numRows}
+        setSeatRow={setSeatRow}
+        setSeatColumn={setSeatColumn}
       />
 
       {/* Lecteur de musique de fond (Howard Harper-Barnes - Life in Pieces) */}
@@ -853,7 +880,7 @@ export default function BusExperience() {
         saving={profile.profileSaving} error={profile.avatarError} onClose={profile.closeAvatarModal}
         onChoose={avatarId => void profile.submitAvatar(avatarId)} />}
       <TheoryAgeModal isOpen={showTheoryAge} onClose={() => setShowTheoryAge(false)} />
-      {loadingPhase !== "hidden" && <BusLoadingScreen exiting={loadingPhase === "exiting"} />}
+      {loadingPhase !== "hidden" && <BusLoadingScreen exiting={loadingPhase === "exiting"} progress={loadingProgress} />}
     </div>
   );
 }

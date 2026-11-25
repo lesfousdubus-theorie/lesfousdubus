@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { fetchJson } from "@/lib/client/bus-api";
 import { pickLocale, useLocale } from "@/lib/i18n";
@@ -20,6 +20,56 @@ function subscribeToMotionPreference(callback: () => void) {
 const prefersReducedMotion = () => window.matchMedia(reducedMotionQuery).matches;
 const serverMotionPreference = () => true;
 
+const PAGE_LIMIT = 100;
+const MAX_FLOATING_BUBBLES = 100;
+const GRID_BATCH_SIZE = 80;
+
+function pickRandomMessages(pool: Message[], count: number, excludeSeats?: Set<number>): Message[] {
+  if (pool.length <= count) return [...pool];
+  const candidates = excludeSeats ? pool.filter((m) => !excludeSeats.has(m.seatIndex)) : pool;
+  const source = candidates.length >= count ? candidates : pool;
+  const copy = [...source];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, count);
+}
+
+type FloatingSlot = { current: Message; previous: Message | null; version: number };
+
+const FloatingMessageBubble = memo(function FloatingMessageBubble({
+  slot,
+  index,
+  onRead,
+}: {
+  slot: FloatingSlot;
+  index: number;
+  onRead: (message: Message, button: HTMLButtonElement) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(event) => onRead(slot.current, event.currentTarget)}
+      className="message-bubble"
+      style={{ zIndex: index + 1 }}
+    >
+      <span className="message-bubble-stage">
+        {slot.previous && (
+          <span key={`out-${slot.version}`} aria-hidden="true" className="message-bubble-inner message-bubble-outgoing">
+            <span className="message-bubble-preview">{slot.previous.comment}</span>
+            <span className="message-bubble-author">— {slot.previous.displayName}</span>
+          </span>
+        )}
+        <span key={`in-${slot.version}`} className={`message-bubble-inner${slot.version > 0 ? " message-bubble-incoming" : ""}`}>
+          <span className="message-bubble-preview">{slot.current.comment}</span>
+          <span className="message-bubble-author">— {slot.current.displayName}</span>
+        </span>
+      </span>
+    </button>
+  );
+});
+
 export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => void; returnFocusRef: RefObject<HTMLElement | null> }) {
   const locale = useLocale();
   const dialogRef = useRef<HTMLElement>(null);
@@ -28,58 +78,199 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
   const closeMessageRef = useRef<HTMLButtonElement>(null);
   const activeBubble = useRef<HTMLButtonElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [floatingSlots, setFloatingSlots] = useState<FloatingSlot[]>([]);
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [pauseOverride, setPauseOverride] = useState<boolean>();
   const [ordered, setOrdered] = useState(false);
+  const [gridLimit, setGridLimit] = useState(GRID_BATCH_SIZE);
   const [reading, setReading] = useState<Message | null>(null);
   const request = useRef<AbortController | null>(null);
+  const randomPoolRef = useRef<Message[]>([]);
+  const randomCursorRef = useRef(0);
+  const swapCountRef = useRef(0);
+  const scheduleRef = useRef<Array<{ nextAt: number; swapAt: number }>>([]);
   const nextFrom = useRef(0);
+  const loadingPageRef = useRef(false);
   const reducedMotion = useSyncExternalStore(subscribeToMotionPreference, prefersReducedMotion, serverMotionPreference);
   const paused = pauseOverride ?? reducedMotion;
   const handleKeyDown = useModalAccessibility(true, onClose, dialogRef, buttonRef, returnFocusRef);
 
-  const load = useCallback(async () => {
+  const fetchRandomBatch = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const page = await fetchJson<MessagePage>(`/api/bus-entries?messages=1&random=1&limit=${MAX_FLOATING_BUBBLES}`, { cache: "no-store", signal });
+      if (signal?.aborted) return;
+      if (page.messages.length > 0) {
+        randomPoolRef.current = page.messages;
+        randomCursorRef.current = 0;
+      }
+    } catch {
+      /* Ignorer les erreurs réseau ponctuelles en arrière-plan pour la rotation aléatoire. */
+    }
+  }, []);
+
+  const loadNextPage = useCallback(async () => {
+    if (loadingPageRef.current) return;
+    loadingPageRef.current = true;
     request.current?.abort();
     const controller = new AbortController();
     request.current = controller;
     setLoading(true);
     setError(false);
     try {
-      while (!controller.signal.aborted) {
-        const from = nextFrom.current;
-        const page = await fetchJson<MessagePage>(`/api/bus-entries?messages=1&from=${from}&limit=60`, { cache: "no-store", signal: controller.signal });
-        if (controller.signal.aborted) return;
-        if (page.hasMore && page.nextFrom <= from) throw new Error("Invalid message cursor");
-        nextFrom.current = page.nextFrom;
-        setMessages(current => [...current, ...page.messages]);
-        if (!page.hasMore) break;
+      const from = nextFrom.current;
+      const page = await fetchJson<MessagePage>(`/api/bus-entries?messages=1&from=${from}&limit=${PAGE_LIMIT}`, { cache: "no-store", signal: controller.signal });
+      if (controller.signal.aborted) return;
+      if (page.hasMore && page.nextFrom <= from) throw new Error("Invalid message cursor");
+      nextFrom.current = page.nextFrom;
+      setHasMore(page.hasMore);
+      setMessages((current) => [...current, ...page.messages]);
+      setFloatingSlots((current) => {
+        if (current.length > 0) return current;
+        const now = performance.now();
+        const initial = page.messages.slice(0, MAX_FLOATING_BUBBLES);
+        scheduleRef.current = initial.map(() => ({
+          nextAt: now + 2500 + Math.random() * 8000,
+          swapAt: 0,
+        }));
+        return initial.map((message) => ({ current: message, previous: null, version: 0 }));
+      });
+      if (page.hasMore) {
+        void fetchRandomBatch(controller.signal);
       }
     } catch {
       if (!controller.signal.aborted) setError(true);
     } finally {
+      loadingPageRef.current = false;
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, []);
+  }, [fetchRandomBatch]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => void load(), 0);
+    const timer = window.setTimeout(() => void loadNextPage(), 0);
     return () => { window.clearTimeout(timer); request.current?.abort(); };
-  }, [load]);
+  }, [loadNextPage]);
 
+  const floatingCount = floatingSlots.length;
+  const gridMessages = messages.slice(0, gridLimit);
   const messageCount = messages.length;
-  const moving = !ordered && !paused && !reading && messageCount > 0;
+  const moving = !ordered && !paused && !reading && floatingCount > 0;
   useLayoutEffect(() => {
     const wall = wallRef.current;
-    if (!wall || ordered || messageCount === 0) return;
+    if (!wall || ordered || floatingCount === 0) return;
     return startMessageMotion(wall, moving);
-  }, [moving, ordered, messageCount]);
+  }, [moving, ordered, floatingCount]);
 
-  function readMessage(message: Message, button: HTMLButtonElement) {
+  // Rotation aléatoire indépendante par bulle (entre 3 et 10 secondes chacune) :
+  // fondu enchaîné simultané (l'ancien message disparaît pendant que le nouveau apparaît par-dessus).
+  useEffect(() => {
+    if (!moving || (!hasMore && messages.length <= MAX_FLOATING_BUBBLES)) return;
+    const pickReplacement = (usedSeats: Set<number>, fallback: Message): Message => {
+      const pool = randomPoolRef.current.length > 0 ? randomPoolRef.current : messages;
+      for (let attempt = 0; attempt < pool.length; attempt++) {
+        const idx = randomCursorRef.current % pool.length;
+        randomCursorRef.current = (randomCursorRef.current + 1) % pool.length;
+        const candidate = pool[idx];
+        if (!usedSeats.has(candidate.seatIndex)) {
+          usedSeats.add(candidate.seatIndex);
+          return candidate;
+        }
+      }
+      return pool[Math.floor(Math.random() * pool.length)] ?? fallback;
+    };
+
+    const interval = window.setInterval(() => {
+      const now = performance.now();
+      const schedules = scheduleRef.current;
+      let anyChange = false;
+      for (let i = 0; i < schedules.length; i++) {
+        const s = schedules[i];
+        if (now >= s.nextAt || (s.swapAt > 0 && now >= s.swapAt)) {
+          anyChange = true;
+          break;
+        }
+      }
+      if (!anyChange) return;
+
+      let swappedNow = false;
+      setFloatingSlots((current) => {
+        const usedSeats = new Set(current.map((slot) => slot.current?.seatIndex).filter((v): v is number => v !== undefined));
+        let changed = false;
+        const next = current.map((slot, i) => {
+          const s = schedules[i] ?? (schedules[i] = { nextAt: now + 3000 + Math.random() * 7000, swapAt: 0 });
+          if (now >= s.nextAt) {
+            s.nextAt = now + 3000 + Math.random() * 7000;
+            s.swapAt = now + 450;
+            changed = true;
+            swappedNow = true;
+            return {
+              current: pickReplacement(usedSeats, slot.current),
+              previous: slot.current,
+              version: slot.version + 1,
+            };
+          }
+          if (s.swapAt > 0 && now >= s.swapAt && slot.previous !== null) {
+            s.swapAt = 0;
+            changed = true;
+            return { ...slot, previous: null };
+          }
+          return slot;
+        });
+        return changed ? next : current;
+      });
+
+      if (swappedNow) {
+        swapCountRef.current += 1;
+        if (hasMore && swapCountRef.current % 50 === 0) {
+          void fetchRandomBatch();
+        }
+      }
+    }, 250);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [fetchRandomBatch, hasMore, messages, moving]);
+
+  const swapTimerRef = useRef(0);
+  useEffect(() => () => window.clearTimeout(swapTimerRef.current), []);
+  const handleCycleScattered = useCallback(() => {
+    window.clearTimeout(swapTimerRef.current);
+    const now = performance.now();
+    setFloatingSlots((current) => {
+      const currentSeats = new Set(current.map((s) => s.current.seatIndex));
+      const pool = randomPoolRef.current.length >= MAX_FLOATING_BUBBLES ? randomPoolRef.current : messages;
+      const picked = pickRandomMessages(pool, Math.min(MAX_FLOATING_BUBBLES, pool.length), currentSeats);
+      scheduleRef.current = picked.map(() => ({ nextAt: now + 3000 + Math.random() * 7000, swapAt: 0 }));
+      return picked.map((message, idx) => ({
+        current: message,
+        previous: current[idx]?.current ?? null,
+        version: (current[idx]?.version ?? 0) + 1,
+      }));
+    });
+    if (hasMore) void fetchRandomBatch();
+    swapTimerRef.current = window.setTimeout(() => {
+      setFloatingSlots((current) => current.map((slot) => (slot.previous ? { ...slot, previous: null } : slot)));
+    }, 450);
+  }, [fetchRandomBatch, hasMore, messages]);
+
+  const handleGridScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
+    const el = event.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight > 420) return;
+    if (gridLimit < messages.length) {
+      setGridLimit((current) => Math.min(messages.length, current + GRID_BATCH_SIZE));
+    } else if (hasMore && !loadingPageRef.current) {
+      setGridLimit((current) => current + GRID_BATCH_SIZE);
+      void loadNextPage();
+    }
+  }, [gridLimit, hasMore, loadNextPage, messages.length]);
+
+  const readMessage = useCallback((message: Message, button: HTMLButtonElement) => {
     activeBubble.current = button;
     setReading(message);
     window.requestAnimationFrame(() => closeMessageRef.current?.focus());
-  }
+  }, []);
 
   function closeMessage() {
     setReading(null);
@@ -101,8 +292,21 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           {messageCount > 0 && loading && <p role="status" className="hidden text-xs text-white/75 sm:block">{pickLocale(locale, "Chargement…", "Loading…")}</p>}
           {messageCount > 0 && error && !reading && (
-            <button type="button" onClick={() => void load()} className="messages-wall-control px-2.5 text-xs">
+            <button type="button" onClick={() => void loadNextPage()} className="messages-wall-control px-2.5 text-xs">
               {pickLocale(locale, "Réessayer", "Try again")}
+            </button>
+          )}
+          {!ordered && (messageCount > MAX_FLOATING_BUBBLES || hasMore) && (
+            <button
+              type="button"
+              onClick={handleCycleScattered}
+              disabled={loading && floatingCount === 0}
+              aria-label={pickLocale(locale, "Afficher d'autres messages", "Show other messages")}
+              title={pickLocale(locale, "Afficher d'autres messages", "Show other messages")}
+              className="messages-wall-control shrink-0"
+            >
+              <ShuffleIcon className="h-3.5 w-3.5 text-[#dcd3ff]" />
+              <span>{pickLocale(locale, "Autres", "More")}</span>
             </button>
           )}
           <button
@@ -146,12 +350,13 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
       <div className="messages-wall-stage relative min-h-0 overflow-hidden">
         {ordered ? (
           <div
+            onScroll={handleGridScroll}
             className="h-full overflow-y-auto px-3 py-4 sm:px-6 sm:py-6"
             aria-hidden={reading ? true : undefined}
             inert={reading ? true : undefined}
           >
             <div className="mx-auto grid max-w-7xl gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {messages.map((message) => (
+              {gridMessages.map((message) => (
                 <button
                   type="button"
                   key={message.seatIndex}
@@ -168,16 +373,31 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
                 </button>
               ))}
             </div>
+            {(hasMore || gridLimit < messages.length) && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => {
+                    if (gridLimit < messages.length) {
+                      setGridLimit((current) => Math.min(messages.length, current + GRID_BATCH_SIZE));
+                    } else {
+                      setGridLimit((current) => current + GRID_BATCH_SIZE);
+                      void loadNextPage();
+                    }
+                  }}
+                  className="messages-wall-control"
+                >
+                  {loading ? pickLocale(locale, "Chargement…", "Loading…") : pickLocale(locale, "Charger plus de messages", "Load more messages")}
+                </button>
+              </div>
+            )}
           </div>
         ) : (
-          <div ref={wallRef} className="messages-wall-track" data-moving={moving} data-count={messageCount}
-            data-dense={messageCount > 40} aria-hidden={reading ? true : undefined} inert={reading ? true : undefined}>
-            {messages.map((message, index) => (
-              <button type="button" key={message.seatIndex} onClick={event => readMessage(message, event.currentTarget)}
-                className="message-bubble" style={{ zIndex: index + 1 }}>
-                <span className="message-bubble-preview">{message.comment}</span>
-                <span className="message-bubble-author">— {message.displayName}</span>
-              </button>
+          <div ref={wallRef} className="messages-wall-track" data-moving={moving} data-count={floatingCount}
+            data-dense={floatingCount > 40} aria-hidden={reading ? true : undefined} inert={reading ? true : undefined}>
+            {floatingSlots.map((slot, index) => (
+              <FloatingMessageBubble key={index} slot={slot} index={index} onRead={readMessage} />
             ))}
           </div>
         )}
@@ -197,7 +417,7 @@ export function PassengerMessages({ onClose, returnFocusRef }: { onClose: () => 
           <div className="messages-wall-state z-20 text-center">
             {loading && <p role="status">{pickLocale(locale, "Chargement des messages…", "Loading messages…")}</p>}
             {error && <div role="alert"><p>{pickLocale(locale, "Impossible de charger les messages.", "Unable to load messages.")}</p>
-              <button type="button" onClick={() => void load()} className="messages-wall-control mt-2">{pickLocale(locale, "Réessayer", "Try again")}</button>
+              <button type="button" onClick={() => void loadNextPage()} className="messages-wall-control mt-2">{pickLocale(locale, "Réessayer", "Try again")}</button>
             </div>}
             {!loading && !error && <p>{pickLocale(locale, "Aucun message pour le moment.", "No messages yet.")}</p>}
           </div>

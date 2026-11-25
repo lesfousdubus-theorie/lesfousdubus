@@ -5,10 +5,19 @@ export const FITTED_COSTUME_CLEARANCE = .0015;
 const costumes = new Map<string, THREE.BufferGeometry>();
 
 /** The cloth follows the actual faceted torso, rather than a plane in front of it. */
-export function getFittedCostumeGeometry(width: number, height: number, depth: number, radius = .045) {
-  const key = [width, height, depth, radius].join(":");
+export function getFittedCostumeGeometry(width: number, height: number, depth: number, radius = .045, lowPoly = false) {
+  const key = [width, height, depth, radius, lowPoly ? "lp" : "hi"].join(":");
   const existing = costumes.get(key);
   if (existing) return existing;
+  if (lowPoly) {
+    const plane = new THREE.PlaneGeometry(width, height, 1, 1);
+    plane.rotateY(Math.PI);
+    plane.translate(0, 0, -depth / 2 - FITTED_COSTUME_CLEARANCE);
+    plane.computeBoundingBox();
+    plane.userData.fittedTorso = { width, height, depth, radius, clearance: FITTED_COSTUME_CLEARANCE };
+    costumes.set(key, plane);
+    return plane;
+  }
   const bodyGeometry = new RoundedBoxGeometry(width, height, depth, 2, radius);
   const geometry = new THREE.BufferGeometry();
   const positions: number[] = [], normals: number[] = [], uvs: number[] = [];

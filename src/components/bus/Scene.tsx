@@ -1,10 +1,13 @@
 "use client";
 
 import PartyMusicClock from "./PartyMusicClock";
-import { Component, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
+import { Component, memo, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { BasicShadowMap, PCFShadowMap, type Camera } from "three";
+import { BasicShadowMap, PCFShadowMap, Vector3, type Camera } from "three";
+import { installSmoothPcfShadowFilter } from "@/lib/shadow-filter";
 import Bus from "./Bus";
+
+installSmoothPcfShadowFilter();
 import ShaderPrewarmer from "./ShaderPrewarmer";
 import World from "./World";
 import DayNight from "./DayNight";
@@ -15,7 +18,7 @@ import BoardingAvatar from "./BoardingAvatar";
 import { createJourneyState } from "@/lib/bus-journey";
 import { getAvatarSeat, getBusPhysicalRows } from "@/lib/bus-occupancy";
 import { getBusCameraFar, getExteriorMaxDistance } from "@/lib/bus-camera";
-import { getActiveTvIndex, getTvPositions, getBusRearWallZ, BUS_FRONT_Z } from "@/lib/bus-layout";
+import { getBusRearWallZ, getSeatRowZ, BUS_FRONT_Z } from "@/lib/bus-layout";
 import {
   DEFAULT_CAMERA_POS,
   TV_POSITION,
@@ -77,6 +80,8 @@ interface SceneProps {
   modeOverride?: "day" | "night" | null;
   resetViewToken?: number;
   onAvailabilityChange?: (available: boolean) => void;
+  onReadyChange?: (ready: boolean) => void;
+  onLoadProgress?: (progress: number) => void;
   onReadTheory?: () => void;
 }
 
@@ -332,6 +337,24 @@ function PerformanceDirector({
   const advance = useThree((state) => state.advance);
   const monitorRef = useRef<PerformanceMonitor | null>(null);
   const mountedRefreshRef = useRef<string | null>(null);
+  const wasPausedRef = useRef(paused);
+  const prevCamPosRef = useRef(new Vector3());
+  const prevCamDirRef = useRef(new Vector3(0, 0, -1));
+  const curCamPosScratch = useMemo(() => new Vector3(), []);
+  const curCamDirScratch = useMemo(() => new Vector3(), []);
+  const camInitRef = useRef(false);
+  const quietAfterRef = useRef(0);
+
+  useEffect(() => {
+    if (wasPausedRef.current && !paused && monitorRef.current) {
+      monitorRef.current.elapsed = 0;
+      monitorRef.current.frames = 0;
+      monitorRef.current.slowDprSamples = 0;
+      monitorRef.current.fastDprSamples = 0;
+      monitorRef.current.warmupRemaining = Math.max(monitorRef.current.warmupRemaining, 3.5);
+    }
+    wasPausedRef.current = paused;
+  }, [paused]);
 
   useEffect(() => {
     if (!monitorRef.current) {
@@ -369,7 +392,28 @@ function PerformanceDirector({
     }
   }, [advance, canRefreshPaused, get, paused, refreshKey]);
 
-  useFrame((_, dt) => {
+  useFrame(({ camera }, dt) => {
+    // Ne jamais redimensionner le backbuffer WebGL ni changer de palier pendant le chargement,
+    // en arrière-plan, sur un gel ponctuel ou en pleine rotation/déplacement rapide de la caméra.
+    if (paused || dt > 0.2 || (typeof document !== "undefined" && document.hidden)) return;
+    const now = performance.now();
+    camera.getWorldPosition(curCamPosScratch);
+    camera.getWorldDirection(curCamDirScratch);
+    if (camInitRef.current) {
+      const safeDt = Math.max(dt, 1 / 120);
+      const dot = Math.max(-1, Math.min(1, prevCamDirRef.current.dot(curCamDirScratch)));
+      const angularSpeed = Math.acos(dot) / safeDt;
+      const moveSpeed = prevCamPosRef.current.distanceTo(curCamPosScratch) / safeDt;
+      if (angularSpeed > 0.2 || moveSpeed > 1.5) {
+        quietAfterRef.current = now + 900;
+      }
+    } else {
+      camInitRef.current = true;
+    }
+    prevCamPosRef.current.copy(curCamPosScratch);
+    prevCamDirRef.current.copy(curCamDirScratch);
+    if (now < quietAfterRef.current) return;
+
     const monitor = (monitorRef.current ??= createPerformanceMonitor({
       tier: activeAutoTier,
       recommendedTier,
@@ -394,42 +438,113 @@ function PerformanceDirector({
   return null;
 }
 
-/** Laisse 1 image par vSync jusqu'à 90 Hz sans sauter sur gigue et plafonne les écrans 120/144 Hz+. */
-function CappedFrameLoop({ paused }: { paused: boolean }) {
+/**
+ * Pendant l'écran de chargement opaque (gouvernail), évite de rendre en boucle toute la scène 3D
+ * invisible + shadow maps 2048×2048 (ce qui saturait le processus GPU et faisait saccader le gouvernail),
+ * puis exécute un premier rendu complet juste avant de lever le rideau.
+ */
+function LoadingRenderSuppressor({
+  contentLoaded,
+  onWarmed,
+}: {
+  contentLoaded: boolean;
+  onWarmed: () => void;
+}) {
+  const contentLoadedRef = useRef(contentLoaded);
+  const onWarmedRef = useRef(onWarmed);
+  const warmedRef = useRef(false);
+  const settleFramesRef = useRef(0);
+
+  useEffect(() => {
+    contentLoadedRef.current = contentLoaded;
+  }, [contentLoaded]);
+  useEffect(() => {
+    onWarmedRef.current = onWarmed;
+  }, [onWarmed]);
+
+  // Priorité 1 : court-circuite le gl.render automatique de R3F (et les shadow maps)
+  // tant que le rideau opaque est affiché, laisse 3 frames aux StaticMeshBatch pour finir leur fusion,
+  // puis précompile et rend 2 frames complètes avant de lever le rideau sans aucun saut à l'arrivée.
+  useFrame(({ gl: renderer, scene, camera }) => {
+    if (!contentLoadedRef.current || warmedRef.current) return;
+    settleFramesRef.current += 1;
+    if (settleFramesRef.current < 3) return;
+    warmedRef.current = true;
+    renderer.shadowMap.needsUpdate = true;
+    renderer.compile(scene, camera);
+    renderer.render(scene, camera);
+    onWarmedRef.current();
+  }, 1);
+
+  return null;
+}
+
+/**
+ * Cadence le rendu sur un diviseur entier exact du taux de rafraîchissement écran :
+ * - 60 / 75 / 90 Hz : 1 rendu par vSync (aucune image sautée).
+ * - 120 / 144 / 165 / 240 Hz : 1 rendu toutes les N vSyncs (ex. 60 Hz exact sur 120 Hz,
+ *   72 Hz exact sur 144 Hz), ce qui supprime totalement les micro-sauts de pulldown 2:3.
+ */
+function CappedFrameLoop({ paused, loading = false }: { paused: boolean; loading?: boolean }) {
   const advance = useThree((state) => state.advance);
   const clock = useThree((state) => state.clock);
 
   useEffect(() => {
     if (paused) return;
-    const minFrameInterval = 1000 / 106;
     let frame = 0;
     let origin: number | null = null;
     let lastTick: number | null = null;
-    let sinceRender = minFrameInterval;
+    let lastRenderNow: number | null = null;
+    // Détecte les écrans >= 100 Hz (120/144/165/240 Hz) dès 3 ticks natifs < 10,2 ms
+    // pour verrouiller un diviseur entier exact (120→60 Hz, 144→72 Hz, 240→80 Hz) sans jamais glisser.
+    let fastVsyncMs = 0;
+    let fastTickCount = 0;
+    let lockedDivisor = 1;
 
     const tick = (now: number) => {
       if (origin === null) origin = now - clock.elapsedTime * 1000;
       if (lastTick !== null) {
         const elapsed = now - lastTick;
         if (elapsed > 100) {
-          // Recale l'horloge après un gel pour garder un dt sain dans sampleSceneDpr.
+          // Recale l'horloge après un gel ou retour d'onglet pour garder un dt sain.
           origin = now - (clock.elapsedTime * 1000 + 100);
-          sinceRender = minFrameInterval;
-        } else {
-          sinceRender += elapsed;
+          lastRenderNow = null;
+        } else if (!loading && elapsed >= 3.5 && elapsed < 10.2) {
+          fastTickCount += 1;
+          fastVsyncMs = fastTickCount === 1 ? elapsed : fastVsyncMs * 0.75 + elapsed * 0.25;
+          if (fastTickCount >= 3) {
+            lockedDivisor = Math.max(2, Math.round(14.5 / fastVsyncMs));
+          }
         }
       }
       lastTick = now;
-      if (sinceRender >= minFrameInterval) {
+
+      let shouldRender = lastRenderNow === null;
+      if (!shouldRender && lastRenderNow !== null) {
+        const sinceLastRender = now - lastRenderNow;
+        if (loading) {
+          // Pendant le chargement, ~30 Hz laisse le thread principal et le GPU 100 % libres pour le gouvernail.
+          shouldRender = sinceLastRender >= 34;
+        } else if (lockedDivisor <= 1) {
+          shouldRender = true;
+        } else {
+          // Seuil calé 35 % sous la cible entière (ex. 11,5 ms pour 13,89 ms en 144 Hz) :
+          // absorbe la gigue OS/rAF sans jamais glisser d'une vSync supplémentaire.
+          const targetGap = fastVsyncMs * (lockedDivisor - 0.35);
+          shouldRender = sinceLastRender >= targetGap;
+        }
+      }
+
+      if (shouldRender) {
+        lastRenderNow = now;
         advance((now - origin) / 1000);
-        sinceRender = 0;
       }
       frame = requestAnimationFrame(tick);
     };
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [advance, clock, paused]);
+  }, [advance, clock, loading, paused]);
 
   return null;
 }
@@ -471,7 +586,7 @@ function SuspenseReady({ onReady }: { onReady: (ready: boolean) => void }) {
   return null;
 }
 
-export default function Scene({
+const Scene = memo(function Scene({
   phase,
   freeView = false,
   headlights,
@@ -506,6 +621,8 @@ export default function Scene({
   modeOverride,
   resetViewToken = 0,
   onAvailabilityChange,
+  onReadyChange,
+  onLoadProgress,
   onReadTheory,
 }: SceneProps) {
   const locale = useLocale();
@@ -517,6 +634,11 @@ export default function Scene({
   const [canvasReady, setCanvasReady] = useState(false);
   const [busReady, setBusReady] = useState(false);
   const [shadersReady, setShadersReady] = useState(false);
+  const [busContentReady, setBusContentReady] = useState(false);
+  const [worldReady, setWorldReady] = useState(false);
+  const [firstFrameWarmed, setFirstFrameWarmed] = useState(false);
+  const [busProgress, setBusProgress] = useState(0);
+  const [worldProgress, setWorldProgress] = useState(0);
 
   const effectiveGpuParams = canvasGpuParams ?? webGLProbe.params;
   const hardware = useMemo(() => classifyGpuHardware({
@@ -548,6 +670,27 @@ export default function Scene({
   useEffect(() => {
     onAvailabilityChange?.(canvasReady && busReady && shadersReady && !contextLost);
   }, [busReady, canvasReady, contextLost, onAvailabilityChange, shadersReady]);
+
+  const contentLoaded = canvasReady && busReady && shadersReady && busContentReady && worldReady && !contextLost;
+  const sceneReady = webGLProbe.supported === false || (contentLoaded && firstFrameWarmed);
+
+  useEffect(() => {
+    onReadyChange?.(sceneReady);
+  }, [onReadyChange, sceneReady]);
+
+  useEffect(() => {
+    if (webGLProbe.supported === false) {
+      onLoadProgress?.(1);
+      return;
+    }
+    const progress = (canvasReady ? 0.1 : 0)
+      + (busReady ? 0.05 : 0)
+      + (shadersReady ? 0.2 : 0)
+      + busProgress * 0.25
+      + worldProgress * 0.35
+      + (firstFrameWarmed ? 0.05 : 0);
+    onLoadProgress?.(Math.min(1, progress));
+  }, [busProgress, busReady, canvasReady, firstFrameWarmed, onLoadProgress, shadersReady, webGLProbe.supported, worldProgress]);
   const renderPaused = hidden || contextLost || uiPaused;
   const playbackSuspended = hidden || contextLost;
   // Calcul géométrique de la cabine pour la caméra
@@ -596,10 +739,33 @@ export default function Scene({
   // Position Z du regard du passager (rangée choisie)
   const clampedRow = Math.max(0, Math.min(numRows - 1, currentSeatRow));
   const avatarSeat = getAvatarSeat(seatCapacity, clampedRow, currentPassengerSeatIndex, currentSeatColumn);
+  const physicalSeatIndexRef = useRef(avatarSeat.physicalSeatIndex);
+  useEffect(() => {
+    physicalSeatIndexRef.current = avatarSeat.physicalSeatIndex;
+  }, [avatarSeat.physicalSeatIndex]);
   const currentSeatZ = avatarSeat.seat.z + 0.03;
   const currentSeatX = avatarSeat.seat.x;
-  const tvPositions = useMemo(() => getTvPositions(numRows, TV_POSITION), [numRows]);
-  const tvTargetZ = tvPositions[getActiveTvIndex(tvPositions, clampedRow)][2];
+  // TV fixe la plus proche devant le passager en O(1) (toutes les 7 rangées à partir de la rangée 4)
+  const tvTargetZ = useMemo(() => {
+    let bestZ = TV_POSITION.z;
+    if (numRows > 6) {
+      const eyeZ = getSeatRowZ(clampedRow) + 0.15;
+      let bestDist = eyeZ - bestZ >= 0.25 ? eyeZ - bestZ : Number.POSITIVE_INFINITY;
+      const maxTvRow = numRows - 3;
+      const baseK = Math.floor((Math.min(clampedRow, maxTvRow) - 4) / 7);
+      for (let k = Math.max(0, baseK - 1); k <= baseK + 1; k++) {
+        const tvRow = 4 + k * 7;
+        if (tvRow < 4 || tvRow > maxTvRow) continue;
+        const z = getSeatRowZ(tvRow - 0.25);
+        const dist = eyeZ - z;
+        if (dist >= 0.25 && dist < bestDist) {
+          bestDist = dist;
+          bestZ = z;
+        }
+      }
+    }
+    return bestZ;
+  }, [numRows, clampedRow]);
   const currentPassengerProfile = useMemo<PassengerProfile | undefined>(() => {
     if (currentPassengerSeatIndex === null) return undefined;
     return passengerProfiles.find((p) => p.seatIndex === currentPassengerSeatIndex) ?? {
@@ -622,7 +788,7 @@ export default function Scene({
       frameloop="never"
       dpr={sceneDpr}
       camera={{ position: DEFAULT_CAMERA_POS.toArray(), fov: 55, near: 0.2, far: cameraFar }}
-      gl={{ antialias: profile.antialias, alpha: false, powerPreference: "high-performance" }}
+      gl={{ antialias: profile.antialias, alpha: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none", isolation: "isolate" }}
       onCreated={({ gl }) => {
         if (profile.canvasShadows !== false) {
@@ -647,7 +813,10 @@ export default function Scene({
     >
       <WebGLContextGuard setLost={setContextLost} />
       <PartyMusicClock />
-      <CappedFrameLoop paused={renderPaused} />
+      {!firstFrameWarmed && (
+        <LoadingRenderSuppressor contentLoaded={contentLoaded} onWarmed={() => setFirstFrameWarmed(true)} />
+      )}
+      <CappedFrameLoop paused={renderPaused} loading={!sceneReady} />
       <PerformanceDirector
         recommendedTier={recommendedTier}
         activeAutoTier={activeAutoTier}
@@ -657,29 +826,13 @@ export default function Scene({
         profile={profile}
         refreshKey={refreshKey}
         dprKey={dprKey}
-        paused={renderPaused}
+        paused={renderPaused || !sceneReady}
         canRefreshPaused={!hidden && !contextLost}
         onAutoTierChange={setAutoTierOverride}
         onDprChange={setDprOverride}
       />
       <BoardingController phase={phase} journey={journey} worldRef={worldRef} seatZ={currentSeatZ-0.03} seatX={currentSeatX}
         numRows={numRows} boardingPending={boardingPending} boardingFromSeat={boardingFromSeat} reducedMotion={reducedMotion}/>
-      <DayNight
-        worldRef={worldRef}
-        modeOverride={modeOverride}
-        lowPower={profile.lowPower}
-        reducedMotion={reducedMotion}
-        cameraFar={cameraFar}
-        fogNear={budgets.fogNear}
-        fogFar={budgets.fogFar}
-        shadowsEnabled={profile.canvasShadows !== false}
-        shadowMapSize={profile.shadowMapSize}
-        shadowsType={profile.canvasShadows}
-        shadowsQuality={profile.shadows}
-        starCount={profile.starCount}
-        cabinCenterZ={cabinCenterZ}
-        cabinLength={cabinLength}
-      />
       <Weather
         worldRef={worldRef}
         lowPower={profile.lowPower}
@@ -722,14 +875,16 @@ export default function Scene({
           simplifiedPassengerLimit={profile.simplifiedPassengerLimit}
           playbackSuspended={playbackSuspended}
           shadersReady={shadersReady}
+          onContentReady={setBusContentReady}
+          onLoadProgress={setBusProgress}
         />
         <ShaderPrewarmer onReady={() => setShadersReady(true)} />
       </Suspense>
-      <BoardingAvatar journey={journey} physicalSeatIndex={avatarSeat.physicalSeatIndex} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} profile={currentPassengerProfile} onSelect={phase !== "inside" || freeView ? onPassengerSelect : undefined} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion} firstPerson={phase === "inside" && !freeView}/>
+      <BoardingAvatar journey={journey} physicalSeatIndexRef={physicalSeatIndexRef} passengerIndex={currentPassengerSeatIndex} avatarId={currentPassengerAvatarId} profile={currentPassengerProfile} onSelect={phase !== "inside" || freeView ? onPassengerSelect : undefined} partyOn={partyDancing} hornPulse={hornPulse} reducedMotion={reducedMotion} firstPerson={phase === "inside" && !freeView}/>
       <World
         worldRef={worldRef}
         reducedMotion={reducedMotion}
-        lowPower={false}
+        lowPower={profile.lowPower}
         propFraction={1}
         islandCullDistance={budgets.islandCullDistance}
         propCullDistance={budgets.propCullDistance}
@@ -740,6 +895,8 @@ export default function Scene({
         phase={phase}
         cabinCenterZ={cabinCenterZ}
         cabinLength={cabinLength}
+        onReady={setWorldReady}
+        onLoadProgress={setWorldProgress}
       />
       <CameraRig
         letterShortcutsEnabled={letterShortcutsEnabled}
@@ -762,6 +919,25 @@ export default function Scene({
         tvTargetZ={tvTargetZ}
         reducedMotion={reducedMotion}
       />
+      {/* Monté après World et CameraRig pour lire le scroll et la position caméra exacts de la frame courante */}
+      <DayNight
+        worldRef={worldRef}
+        modeOverride={modeOverride}
+        lowPower={profile.lowPower}
+        reducedMotion={reducedMotion}
+        cameraFar={cameraFar}
+        fogNear={budgets.fogNear}
+        fogFar={budgets.fogFar}
+        shadowsEnabled={profile.canvasShadows !== false}
+        shadowMapSize={profile.shadowMapSize}
+        shadowsType={profile.canvasShadows}
+        shadowsQuality={profile.shadows}
+        maxTextureSize={hardware.maxTextureSize}
+        mobileDevice={hardware.mobileDevice}
+        starCount={profile.starCount}
+        cabinCenterZ={cabinCenterZ}
+        cabinLength={cabinLength}
+      />
       </Canvas>
       {contextLost && (
         <SceneFallback
@@ -773,4 +949,6 @@ export default function Scene({
       </div>
     </SceneErrorBoundary>
   );
-}
+});
+
+export default Scene;

@@ -4,7 +4,7 @@ import type * as THREE from "three";
 import { useRef, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { PassengerPose } from "@/lib/passenger-motion";
-import { CharacterPart, joinCharacterParts } from "./CharacterShapes";
+import { CharacterPart, joinCharacterParts, useCharacterLowPoly } from "./CharacterShapes";
 import { THIGH_LENGTH, SHIN_LENGTH } from "@/lib/passenger-gait";
 import type { NakamaArchetype } from "./passenger-archetypes";
 import { identityMaterial, passengerCalfMaterial, PassengerFoot } from "./PassengerIdentity";
@@ -17,14 +17,15 @@ export function hasPassengerSkirt(id: string) {
 }
 
 let seatedShapes: ReturnType<typeof makeSeatedShapes> | undefined;
-function makeSeatedShapes() {
+let seatedShapesLow: ReturnType<typeof makeSeatedShapes> | undefined;
+function makeSeatedShapes(lowPoly = false) {
   return {
     legs: joinCharacterParts([-0.09, 0.09].flatMap(x => [
       { size: [0.13, 0.14, THIGH_LENGTH + 0.025] as [number, number, number], position: [x, 0, -THIGH_LENGTH / 2] as [number, number, number] },
       { size: [0.12, SHIN_LENGTH + 0.01, 0.12] as [number, number, number], position: [x, -(SHIN_LENGTH - SEATED_ANKLE_OFFSET) / 2, -THIGH_LENGTH] as [number, number, number] },
-    ])),
-    shoes: joinCharacterParts([-0.09, 0.09].map(x => ({ size: [0.15, 0.1, 0.23], position: [x, -SHIN_LENGTH + SEATED_ANKLE_OFFSET - 0.03, -THIGH_LENGTH - 0.035] }))),
-    soles: joinCharacterParts([-0.09, 0.09].map(x => ({ size: [0.154, 0.016, 0.234], position: [x, -SHIN_LENGTH + SEATED_ANKLE_OFFSET - 0.072, -THIGH_LENGTH - 0.035] }))),
+    ]), lowPoly),
+    shoes: joinCharacterParts([-0.09, 0.09].map(x => ({ size: [0.15, 0.1, 0.23], position: [x, -SHIN_LENGTH + SEATED_ANKLE_OFFSET - 0.03, -THIGH_LENGTH - 0.035] })), lowPoly),
+    soles: joinCharacterParts([-0.09, 0.09].map(x => ({ size: [0.154, 0.016, 0.234], position: [x, -SHIN_LENGTH + SEATED_ANKLE_OFFSET - 0.072, -THIGH_LENGTH - 0.035] })), lowPoly),
   };
 }
 
@@ -35,7 +36,8 @@ export function PassengerPelvis({ material, archetype }: { material: THREE.Mater
 
 /** Même bassin et mêmes longueurs d'os que le personnage qui monte à bord. */
 export default function PassengerLowerBody({ mats, kickPose, archetype }: { mats: Record<string, THREE.Material>; kickPose?: RefObject<PassengerPose>; archetype?:NakamaArchetype }) {
-  const shapes = seatedShapes ??= makeSeatedShapes();
+  const lowPoly = useCharacterLowPoly();
+  const shapes = lowPoly ? (seatedShapesLow ??= makeSeatedShapes(true)) : (seatedShapes ??= makeSeatedShapes(false));
   const knee=useRef<THREE.Group>(null),foot=useRef<THREE.Group>(null);
   useFrame(()=>{
     if(knee.current)knee.current.rotation.x=kickPose?.current.rightKick??0;

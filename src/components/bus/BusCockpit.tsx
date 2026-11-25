@@ -1,9 +1,11 @@
 "use client";
 
+import { memo } from "react";
 import type * as THREE from "three";
 import { CREW_SEATS, SEAT_CUSHION_DEPTH, SEAT_CUSHION_Z } from "@/lib/bus-layout";
 import { DRIVER_DASHBOARD, DRIVER_SEAT_POSITIONS, NAVIGATOR_BAR, STEERING_WHEEL } from "@/lib/driver-arms";
 import BusDrivers from "./BusDrivers";
+import StaticMeshBatch from "./StaticMeshBatch";
 import type { BusMaterials } from "./useBusResources";
 
 interface Props {
@@ -15,8 +17,17 @@ interface Props {
 }
 
 /** Static cockpit geometry and its two guides share the parent's original materials. */
-export default function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedMotion }: Props) {
+const BusCockpit = memo(function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedMotion }: Props) {
   return <>
+      {/* CONDUCTEURS DU MONT CORVO : KAMAL AU VOLANT ET KYTA EN CO-PILOTE */}
+      <BusDrivers
+        hornPulse={hornPulse}
+        partyOn={partyOn}
+        reducedMotion={reducedMotion}
+      />
+
+      {/* Ensemble statique du poste de conduite fusionné par matériau (~8 draw calls au lieu de ~55). */}
+      <StaticMeshBatch name="bus-cockpit-static" cacheKey={dashTex.uuid}>
       {/* Siège conducteur ergonomique avec appuie-tête et embase (Kamal) */}
       <group name="bus-driver-seat" position={DRIVER_SEAT_POSITIONS.kamal}>
         {/* Embase métallique fixée au plancher */}
@@ -64,13 +75,6 @@ export default function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedM
           <boxGeometry args={[0.08, 0.08, 0.42]} />
         </mesh>
       </group>
-
-      {/* CONDUCTEURS DU MONT CORVO : KAMAL AU VOLANT ET KYTA EN CO-PILOTE */}
-      <BusDrivers
-        hornPulse={hornPulse}
-        partyOn={partyOn}
-        reducedMotion={reducedMotion}
-      />
 
       {/* Planche de bord complète du bus (jointement continu avec le pare-brise) */}
       <group name="bus-dashboard" position={[0, 0, 0]}>
@@ -272,6 +276,9 @@ export default function BusCockpit({ mats, dashTex, hornPulse, partyOn, reducedM
           </mesh>
         </group>
       </group>
+      </StaticMeshBatch>
 
   </>;
-}
+});
+
+export default BusCockpit;

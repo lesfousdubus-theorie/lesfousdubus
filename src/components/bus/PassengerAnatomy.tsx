@@ -1,7 +1,7 @@
 "use client";
 
 import type * as THREE from "three";
-import { CharacterPart } from "./CharacterShapes";
+import { CharacterPart, useCharacterLowPoly } from "./CharacterShapes";
 import type { NakamaArchetype } from "./passenger-archetypes";
 import { getPassengerProportions, getPassengerSkeleton } from "@/lib/passenger-proportions";
 import PassengerCostume from "./PassengerCostume";
@@ -12,10 +12,11 @@ interface Props { archetype: NakamaArchetype; mats: Record<string, THREE.Materia
 
 /** Le cou pénètre dans le buste et la mâchoire, même lorsque la tête pivote. */
 export function PassengerNeck({ archetype, mats }: Props) {
+  const lowPoly = useCharacterLowPoly();
   const { neckRadius } = getPassengerProportions(archetype.id);
   const { neckHeight } = getPassengerSkeleton(archetype.id);
   return <mesh name="nakama-neck" material={mats.skin} castShadow>
-    <cylinderGeometry args={[neckRadius, neckRadius * 1.12, neckHeight, 16]} />
+    <cylinderGeometry args={[neckRadius, neckRadius * 1.12, neckHeight, lowPoly ? 6 : 16]} />
   </mesh>;
 }
 

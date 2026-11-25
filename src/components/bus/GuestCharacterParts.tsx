@@ -1,7 +1,7 @@
 "use client";
 
 import type * as THREE from "three";
-import { CharacterPart, joinCharacterParts } from "./CharacterShapes";
+import { CharacterPart, joinCharacterParts, useCharacterLowPoly } from "./CharacterShapes";
 import { identityMaterial } from "./PassengerIdentity";
 
 type Mats = Record<string, THREE.Material>;
@@ -11,19 +11,20 @@ export function GuestHair({ id, material }: { id: string; material: THREE.Materi
   const vivi = id === "vivi";
   return <group name="nakama-hair">
     <CharacterPart material={material} size={[.245,.080,.238]} position={[0,.123,.006]} radius={.025} detail={2}/>
-    <CharacterPart material={material} size={[.236,vivi?.23:.38,.067]} position={[0,vivi?.015:-.074,.097]} radius={.018}/>
+    <CharacterPart material={material} size={[.246,vivi?.23:.38,.072]} position={[0,vivi?.015:-.074,.108]} radius={.018}/>
     {[-1,1].map(side=><CharacterPart key={side} material={material} size={[.055,vivi?.20:.32,.095]}
       position={[side*.116,vivi?.009:-.048,.036]} radius={.015}/>)}
     {[-1,1].map(side=><CharacterPart key={`fringe-${side}`} material={material} size={[.095,.034,.033]}
       position={[side*.058,.116,-.121]} rotation={[0,0,side*.17]} radius={.009}/>)}
     {vivi&&<>
-      <CharacterPart name="nakama-vivi-ponytail" material={material} size={[.075,.25,.048]} position={[0,-.004,.122]} radius={.015}/>
-      <CharacterPart material={identityMaterial("#deba48")} size={[.084,.036,.058]} position={[0,.086,.118]}/>
+      <CharacterPart name="nakama-vivi-ponytail" material={material} size={[.075,.25,.048]} position={[0,-.004,.134]} radius={.015}/>
+      <CharacterPart material={identityMaterial("#deba48")} size={[.084,.036,.058]} position={[0,.086,.130]}/>
     </>}
   </group>;
 }
 
 export function GuestHeadAccessory({ id, mats, front }: { id: string; mats: Mats; front: number }) {
+  const lowPoly = useCharacterLowPoly();
   if (id === "doflamingo") return <group name="nakama-doflamingo-glasses">
     {[-1,1].map(side=><group key={side}>
       <CharacterPart material={mats.teeth} size={[.090,.045,.025]} position={[side*.055,.025,front-.017]} rotation={[0,0,side*-.10]}/>
@@ -48,7 +49,7 @@ export function GuestHeadAccessory({ id, mats, front }: { id: string; mats: Mats
   </group>;
   if (id === "law") return <group name="nakama-law-spotted-hat">
     <mesh name="nakama-hat-base" material={mats.accessory} position={[0,.17,0]}>
-      <cylinderGeometry args={[.15,.13,.10,16]}/>
+      <cylinderGeometry args={[.15,.13,.10,lowPoly?10:16]}/>
     </mesh>
     <CharacterPart name="nakama-law-hat-brim" material={mats.accessory} size={[.22,.019,.075]} position={[0,.20,-.125]}/>
     {[[0,.14],[-.065,.15],[.065,.15],[-.035,.195],[.035,.195],[-.10,.19],[.10,.19]].map(([x,y],index)=>{
@@ -61,18 +62,23 @@ export function GuestHeadAccessory({ id, mats, front }: { id: string; mats: Mats
 }
 
 let pinkFeathers: THREE.BufferGeometry | undefined;
-function featherGeometry() {
-  return pinkFeathers ??= joinCharacterParts([-1,1].flatMap(side=>[0,1,2].map(row=>({
+let pinkFeathersLow: THREE.BufferGeometry | undefined;
+function featherGeometry(lowPoly = false) {
+  const parts = [-1,1].flatMap(side=>[0,1,2].map(row=>({
     size: [.10,.125,.071] as [number,number,number],
     position: [side*.160,.105-row*.105,.088] as [number,number,number],
-  }))));
+  })));
+  return lowPoly
+    ? (pinkFeathersLow ??= joinCharacterParts(parts, true))
+    : (pinkFeathers ??= joinCharacterParts(parts, false));
 }
 
 /** Cloaks stay joined to the torso; broad simple shapes carry the identity. */
 export function GuestTorsoExtras({ id, mats, front }: { id: string; mats: Mats; front: number }) {
+  const lowPoly = useCharacterLowPoly();
   if (id === "doflamingo") return <group name="nakama-doflamingo-pink-coat">
     <CharacterPart material={identityMaterial("#de6da4")} size={[.35,.43,.048]} position={[0,-.024,.100]} radius={.018}/>
-    <mesh material={identityMaterial("#f38bb9")} geometry={featherGeometry()} dispose={null}/>
+    <mesh material={identityMaterial("#f38bb9")} geometry={featherGeometry(lowPoly)} dispose={null}/>
     {[-1,1].map(side=><CharacterPart key={side} material={identityMaterial("#f38bb9")} size={[.11,.13,.12]}
       position={[side*.135,.175,.055]} rotation={[0,0,side*.16]} radius={.025}/>)}
   </group>;

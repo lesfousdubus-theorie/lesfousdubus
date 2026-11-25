@@ -34,6 +34,17 @@ const longBus = getTvPositions(40, front);
 assert(longBus.length <= 9, "The bus should mount at most eight secondary screens.");
 assert(longBus.every((position, index) => index === 0 || position[2] > longBus[index - 1][2]));
 
+const megaBusRearTvs = getTvPositions(5295, front, 5294);
+assert(megaBusRearTvs.length <= 9, "Mega bus keeps bounded secondary screen count.");
+const rearActiveIdx = getActiveTvIndex(megaBusRearTvs, 5294);
+const rearDist = (megaBusRearTvs[rearActiveIdx] ? (5294 * 1.2) : 0);
+assert(rearActiveIdx > 0, "Rear passenger selects a nearby rear TV.");
+assert(
+  megaBusRearTvs.some(([, , z]) => z > 6000),
+  "Rear passenger on a 20k bus gets a TV right in front of their seat.",
+);
+void rearDist;
+
 for (const rows of [6, 9, 10, 18, 41, 150]) {
   const doors = getBusDoors(rows);
   const rear = getBusRearWallZ(rows);

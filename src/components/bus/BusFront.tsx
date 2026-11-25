@@ -3,6 +3,7 @@
 import type { RefObject } from "react";
 import * as THREE from "three";
 import { RoundedBox } from "@react-three/drei";
+import StaticMeshBatch from "./StaticMeshBatch";
 import {
   FRONT_BADGE_CENTER_Y,
   FRONT_BADGE_RADIUS,
@@ -27,77 +28,99 @@ export default function BusFront({
 }: BusFrontProps) {
   return (
     <>
-      {/* ---------- Capot avant & Calandre chromée ---------- */}
-      <RoundedBox args={[2.4, 1.0, 1.4]} radius={0.1} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 1.0, -5.3]} />
-      <RoundedBox args={[2.2, 0.06, 1.3]} radius={0.025} smoothness={2} bevelSegments={3} material={mats.bodyDark} position={[0, 1.52, -5.3]} />
-      {/* Grille de calandre */}
-      <mesh material={mats.dark} position={[0, FRONT_GRILLE_CENTER_Y, -6.0]}>
-        <boxGeometry args={[1.1, FRONT_GRILLE_HEIGHT, 0.06]} />
-      </mesh>
-      {FRONT_GRILLE_SLAT_YS.map((y) => (
-        <mesh key={y} material={mats.chrome} position={[0, y, -6.04]}>
-          <boxGeometry args={[1.05, FRONT_GRILLE_SLAT_HEIGHT, 0.02]} />
+      {/* Tous les volumes fixes de la face avant fusionnés par matériau (~6 draw calls au lieu de ~34). */}
+      <StaticMeshBatch name="bus-front-static" cacheKey={`${licensePlateTex.uuid}:${montCorvoTex.uuid}`}>
+        {/* ---------- Capot avant & Calandre chromée ---------- */}
+        <RoundedBox args={[2.4, 1.0, 1.4]} radius={0.1} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 1.0, -5.3]} />
+        <RoundedBox args={[2.2, 0.06, 1.3]} radius={0.025} smoothness={2} bevelSegments={3} material={mats.bodyDark} position={[0, 1.52, -5.3]} />
+        {/* Grille de calandre */}
+        <mesh material={mats.dark} position={[0, FRONT_GRILLE_CENTER_Y, -6.0]}>
+          <boxGeometry args={[1.1, FRONT_GRILLE_HEIGHT, 0.06]} />
         </mesh>
-      ))}
+        {FRONT_GRILLE_SLAT_YS.map((y) => (
+          <mesh key={y} material={mats.chrome} position={[0, y, -6.04]}>
+            <boxGeometry args={[1.05, FRONT_GRILLE_SLAT_HEIGHT, 0.02]} />
+          </mesh>
+        ))}
 
-      {/* Le capot se termine à Z = -6 : le dos du badge entre légèrement
-          dans cette face pour qu'aucun vide ne soit visible de profil. */}
-      <group position={[0, FRONT_BADGE_CENTER_Y, -6.012]}>
-        {/* Solid backing joins the badge to the curved hood, including
-            the portion above the bonnet's upper edge. */}
-        <mesh material={mats.body} position={[0, 0, 0.122]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[FRONT_BADGE_RADIUS, FRONT_BADGE_RADIUS, 0.22, 32]} />
-        </mesh>
-        {/* Cerclage chromé d'emblème */}
-        <mesh material={mats.chrome} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[FRONT_BADGE_RADIUS, FRONT_BADGE_RADIUS, 0.025, 32]} />
-        </mesh>
-        {/* Fond sombre rond puis logo complet, ajusté dans le diamètre intérieur. */}
-        <mesh position={[0, 0, -0.017]} rotation={[0, Math.PI, 0]}>
-          <circleGeometry args={[0.24, 32]} />
-          <meshStandardMaterial
-            color="#101214"
-            roughness={0.2}
-            metalness={0.1}
-            side={THREE.DoubleSide}
-            polygonOffset
-            polygonOffsetFactor={-1}
-            polygonOffsetUnits={-1}
-          />
-        </mesh>
-        <mesh position={[0, 0, -0.022]} rotation={[0, Math.PI, 0]}>
-          <planeGeometry args={[0.334, 0.334]} />
-          <meshStandardMaterial
-            map={montCorvoTex}
-            roughness={0.2}
-            metalness={0.1}
-            polygonOffset
-            polygonOffsetFactor={-2}
-            polygonOffsetUnits={-2}
-          />
-        </mesh>
-      </group>
-      {/* Pare-chocs chromé massif */}
-      <RoundedBox args={[2.7, 0.28, 0.3]} radius={0.11} smoothness={2} bevelSegments={3} material={mats.chrome} castShadow position={[0, 0.6, -6.05]} />
-      {/* Plaque d'immatriculation avant */}
-      <mesh position={[0, 0.6, -6.21]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[0.85, 0.24]} />
-        <meshStandardMaterial map={licensePlateTex} roughness={0.3} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
-      </mesh>
-      {/* Bandes jaunes sur le capot */}
-      {[-1, 1].map((sx) => (
-        <mesh key={sx} material={mats.yellow} position={[sx * 1.205, 1.2, -5.3]}>
-          <boxGeometry args={[0.02, 0.14, 1.2]} />
-        </mesh>
-      ))}
-
-      {/* ---------- Feux avant & Phares ---------- */}
-      {[-0.8, 0.8].map((x, i) => (
-        <group key={x} position={[x, 1.02, -6.02]}>
-          {/* Cerclage chromé des phares */}
+        {/* Le capot se termine à Z = -6 : le dos du badge entre légèrement
+            dans cette face pour qu'aucun vide ne soit visible de profil. */}
+        <group position={[0, FRONT_BADGE_CENTER_Y, -6.012]}>
+          {/* Solid backing joins the badge to the curved hood, including
+              the portion above the bonnet's upper edge. */}
+          <mesh material={mats.body} position={[0, 0, 0.122]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[FRONT_BADGE_RADIUS, FRONT_BADGE_RADIUS, 0.22, 32]} />
+          </mesh>
+          {/* Cerclage chromé d'emblème */}
           <mesh material={mats.chrome} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[FRONT_BADGE_RADIUS, FRONT_BADGE_RADIUS, 0.025, 32]} />
+          </mesh>
+          {/* Fond sombre rond puis logo complet, ajusté dans le diamètre intérieur. */}
+          <mesh position={[0, 0, -0.017]} rotation={[0, Math.PI, 0]}>
+            <circleGeometry args={[0.24, 32]} />
+            <meshStandardMaterial
+              color="#101214"
+              roughness={0.2}
+              metalness={0.1}
+              side={THREE.DoubleSide}
+              polygonOffset
+              polygonOffsetFactor={-1}
+              polygonOffsetUnits={-1}
+            />
+          </mesh>
+          <mesh position={[0, 0, -0.022]} rotation={[0, Math.PI, 0]}>
+            <planeGeometry args={[0.334, 0.334]} />
+            <meshStandardMaterial
+              map={montCorvoTex}
+              roughness={0.2}
+              metalness={0.1}
+              polygonOffset
+              polygonOffsetFactor={-2}
+              polygonOffsetUnits={-2}
+            />
+          </mesh>
+        </group>
+        {/* Pare-chocs chromé massif */}
+        <RoundedBox args={[2.7, 0.28, 0.3]} radius={0.11} smoothness={2} bevelSegments={3} material={mats.chrome} castShadow position={[0, 0.6, -6.05]} />
+        {/* Plaque d'immatriculation avant */}
+        <mesh position={[0, 0.6, -6.21]} rotation={[0, Math.PI, 0]}>
+          <planeGeometry args={[0.85, 0.24]} />
+          <meshStandardMaterial map={licensePlateTex} roughness={0.3} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+        </mesh>
+        {/* Bandes jaunes sur le capot */}
+        {[-1, 1].map((sx) => (
+          <mesh key={sx} material={mats.yellow} position={[sx * 1.205, 1.2, -5.3]}>
+            <boxGeometry args={[0.02, 0.14, 1.2]} />
+          </mesh>
+        ))}
+        {/* Cerclages chromés des phares */}
+        {[-0.8, 0.8].map((x) => (
+          <mesh key={`ring-${x}`} material={mats.chrome} position={[x, 1.02, -6.02]} rotation={[Math.PI / 2, 0, 0]}>
             <torusGeometry args={[0.24, 0.05, 16, 32]} />
           </mesh>
+        ))}
+        {/* Feux clignotants orange */}
+        {[-0.8, 0.8].map((x) => (
+          <mesh key={`under${x}`} material={mats.orange} position={[x, 0.68, -6.04]}>
+            <boxGeometry args={[0.26, 0.1, 0.05]} />
+          </mesh>
+        ))}
+        {/* Feux orange sur les ailes et le pavillon */}
+        {[-1.0, 1.0].map((x) => (
+          <mesh key={`wing${x}`} material={mats.orange} position={[x, 1.56, -5.85]}>
+            <boxGeometry args={[0.26, 0.08, 0.16]} />
+          </mesh>
+        ))}
+        {[-0.95, -0.7, 0.7, 0.95].map((x) => (
+          <mesh key={`roof${x}`} material={mats.orange} position={[x, 3.21, -4.65]}>
+            <boxGeometry args={[0.16, 0.1, 0.06]} />
+          </mesh>
+        ))}
+      </StaticMeshBatch>
+
+      {/* ---------- Feux avant & Phares dynamiques ---------- */}
+      {[-0.8, 0.8].map((x, i) => (
+        <group key={x} position={[x, 1.02, -6.02]}>
           {/* Globe de phare lumineux */}
           <mesh scale={[1, 1, 0.5]}>
             <sphereGeometry args={[0.22, 24, 16]} />
@@ -140,25 +163,6 @@ export default function BusFront({
             />
           </mesh>
         </group>
-      ))}
-
-      {/* Feux clignotants orange */}
-      {[-0.8, 0.8].map((x) => (
-        <mesh key={`under${x}`} material={mats.orange} position={[x, 0.68, -6.04]}>
-          <boxGeometry args={[0.26, 0.1, 0.05]} />
-        </mesh>
-      ))}
-
-      {/* Feux orange sur les ailes et le pavillon */}
-      {[-1.0, 1.0].map((x) => (
-        <mesh key={`wing${x}`} material={mats.orange} position={[x, 1.56, -5.85]}>
-          <boxGeometry args={[0.26, 0.08, 0.16]} />
-        </mesh>
-      ))}
-      {[-0.95, -0.7, 0.7, 0.95].map((x) => (
-        <mesh key={`roof${x}`} material={mats.orange} position={[x, 3.21, -4.65]}>
-          <boxGeometry args={[0.16, 0.1, 0.06]} />
-        </mesh>
       ))}
 
     </>

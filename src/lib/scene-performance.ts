@@ -214,7 +214,7 @@ const SOFTWARE_RENDERER_RE = /swiftshader|llvmpipe|softpipe|software|basic rende
 const WEAK_GPU_RE = /mali-4|mali-t|mali-g3|mali-g5[12]|adreno\s*(?:[2345]\d{2}|61\d)|powervr|videocore|hd graphics\s*[23456]\d{2}|uhd graphics\s*6\d{2}|celeron|pentium|atom|geforce\s*(?:gt\s*[2-7]\d{2}|mx\s*[12]\d{2})/i;
 const ULTRA_FLAGSHIP_MOBILE_GPU_RE = /adreno\s*(?:7[45]\d|8\d{2})|immortalis|xclipse\s*9[24]\d|mali-g(?:71[05]|72\d|92\d)/i;
 const HIGH_END_MOBILE_GPU_RE = /adreno\s*(?:6[456]\d|7[123]\d)|xclipse|mali-g(?:6[18]\d?|7[6789])|maleoon|apple gpu/i;
-const ULTRA_DESKTOP_GPU_RE = /(?:geforce\s+)?rtx\s*(?:20[789]\d|30[789]\d|40[6789]\d|50\d{2}|a[456]\d{3}|[456]\d{3}\s*ada)|(?:radeon\s+)?rx\s*(?:6[789]\d{2}|7[789]\d{2}|90[6789]\d)|radeon\s+pro\s+(?:w[67]\d{3}|v\d{3})|navi2[12]|navi3[123]|navi4\d|gfx1[12]\d{2}|arc\s*(?:a7\d{2}|b[57]\d{2})|apple\s+m[1-9]\s*(?:pro|max|ultra)|apple\s+m[3-9]\b/i;
+const ULTRA_DESKTOP_GPU_RE = /(?:geforce\s+)?rtx\s*(?:20[789]\d|30[789]\d|40[6789]\d|50\d{2}|a[456]\d{3}|[456]\d{3}\s*ada)|(?:radeon\s+)?rx\s*(?:6[6789]\d{2}|7[6789]\d{2}|90[6789]\d)|radeon\s+pro\s+(?:w[67]\d{3}|v\d{3})|navi2[123]|navi3[123]|navi4\d|gfx1[12]\d{2}|arc\s*(?:a7\d{2}|b[57]\d{2})|apple\s+m[1-9]\s*(?:pro|max|ultra)|apple\s+m[3-9]\b/i;
 const HIGH_GPU_RE = /(?:geforce\s+)?(?:rtx|gtx\s*(?:10[678]\d|16[56]\d|9[78]\d))|(?:radeon\s+)?rx\s*(?:4[789]\d|5[789]\d|5[567]\d{2}|6[456]\d{2}|7[56]\d{2})|radeon\s*(?:780m|880m|890m|vega\s*(?:56|64)|vii)|arc\s*(?:a[357]\d{2}|b[57]\d{2}|1[34]0[vt])|nvidia\s+(?:quadro|t\d{3,4}|a\d{3,4})|navi\d+|gfx10\d{2}|apple\s+m[1-9]\b/i;
 const MODERN_INTEGRATED_GPU_RE = /iris|arc\s*graphics|uhd graphics\s*7\d{2}|uhd graphics\b|radeon\s*(?:6[168]0m|7[46]0m|vega|graphics)|gtx\s*(?:9[56]\d)/i;
 
@@ -493,18 +493,18 @@ const WORLD_DENSITY_TABLE: Record<Exclude<WorldDensityPreference, "auto">, {
 function resolvePixelQuality(pixelQuality: Exclude<PixelQualityPreference, "auto">, devicePixelRatio: number) {
   const dpr = Math.max(1, Number.isFinite(devicePixelRatio) ? devicePixelRatio : 1);
   if (pixelQuality === "eco") {
-    return { maxDpr: Math.min(dpr, 1.0), minDpr: 0.75, antialias: false };
+    return { maxDpr: Math.min(dpr, 1.0), minDpr: 0.65, antialias: false };
   }
   if (pixelQuality === "standard") {
     const maxDpr = Math.min(dpr, 1.35);
-    return { maxDpr, minDpr: Math.min(maxDpr, 0.85), antialias: true };
+    return { maxDpr, minDpr: Math.min(maxDpr, 0.75), antialias: true };
   }
   if (pixelQuality === "sharp") {
     const maxDpr = Math.min(dpr, 1.75);
-    return { maxDpr, minDpr: Math.min(maxDpr, 1.0), antialias: true };
+    return { maxDpr, minDpr: Math.min(maxDpr, 0.85), antialias: true };
   }
-  const maxDpr = Math.min(Math.max(dpr, 1.25), 2.25);
-  return { maxDpr, minDpr: Math.min(maxDpr, 1.0), antialias: true };
+  const maxDpr = Math.min(dpr, 2.25);
+  return { maxDpr, minDpr: Math.min(maxDpr, 0.9), antialias: true };
 }
 
 /** Traduit les réglages utilisateur et le palier actif en paramètres concrets de rendu. */
@@ -563,6 +563,7 @@ export interface PerformanceMonitor {
   recommendedTier: GraphicsQualityTier;
   canPromoteTier: boolean;
   demotedCeiling: GraphicsQualityTier | null;
+  dprCeiling: number | null;
   slowDprSamples: number;
   fastDprSamples: number;
   slowTierSamples: number;
@@ -594,6 +595,7 @@ export function createPerformanceMonitor(options: {
     recommendedTier: options.recommendedTier,
     canPromoteTier: options.canPromoteTier,
     demotedCeiling: null,
+    dprCeiling: null,
     slowDprSamples: 0,
     fastDprSamples: 0,
     slowTierSamples: 0,
@@ -619,6 +621,7 @@ export function syncPerformanceMonitorProfile(
   if (monitor.tier !== next.tier) {
     monitor.tier = next.tier;
     monitor.dpr = next.maxDpr;
+    monitor.dprCeiling = null;
     monitor.elapsed = 0;
     monitor.frames = 0;
     monitor.slowDprSamples = 0;
@@ -653,6 +656,7 @@ export function sampleScenePerformance(
     monitor.fastDprSamples = 0;
     monitor.slowTierSamples = 0;
     monitor.fastTierSamples = 0;
+    monitor.dprCeiling = null;
     const dprChanged = Math.abs(monitor.dpr - config.maxDpr) >= 0.01;
     monitor.dpr = config.maxDpr;
     return { dprChanged, tierChanged: false, dpr: monitor.dpr, tier: monitor.tier, fps: null };
@@ -687,15 +691,20 @@ export function sampleScenePerformance(
   monitor.slowDprSamples = fps < 46 ? monitor.slowDprSamples + 1 : 0;
   monitor.fastDprSamples = fps >= 54.5 ? monitor.fastDprSamples + 1 : 0;
   const dprAtFloorBefore = monitor.dpr <= config.minDpr + 0.08;
+  const maxAllowedDpr = monitor.dprCeiling !== null ? Math.min(config.maxDpr, monitor.dprCeiling) : config.maxDpr;
   let nextDpr = monitor.dpr;
   if (monitor.dprCooldown === 0 && (fps < 25 || monitor.slowDprSamples >= 2)) {
     nextDpr = Math.max(config.minDpr, monitor.dpr - (fps < 25 ? 0.25 : 0.15));
   } else if (monitor.dprCooldown === 0 && monitor.fastDprSamples >= 3) {
-    nextDpr = Math.min(config.maxDpr, monitor.dpr + 0.1);
+    nextDpr = Math.min(maxAllowedDpr, monitor.dpr + 0.1);
   }
 
   const dprChanged = Math.abs(nextDpr - monitor.dpr) >= 0.04;
   if (dprChanged) {
+    if (nextDpr < monitor.dpr) {
+      // Évite le ping-pong de redimensionnements WebGL (180 ms) en mémorisant le plafond soutenable.
+      monitor.dprCeiling = nextDpr;
+    }
     monitor.dpr = nextDpr;
     monitor.slowDprSamples = 0;
     monitor.fastDprSamples = 0;
@@ -791,31 +800,48 @@ export function getShadowCameraFraming(
 ): ShadowCameraFraming {
   const { cabinCenterZ, cabinLength, cameraX, cameraY, cameraZ, fogFar, shadowMapSize } = options;
   const clampedBusZ = Math.max(-42, Math.min(36, cabinCenterZ));
-  const cameraDistance = Math.hypot(cameraX, Math.max(0, cameraY - 2), cameraZ - clampedBusZ);
+  const busMinZ = cabinCenterZ - cabinLength * 0.5;
+  const busMaxZ = cabinCenterZ + cabinLength * 0.5;
+  // Sur un très long bus (ex. 6,5 km), mesurer la distance au tronçon du bus le plus proche
+  // de la caméra au lieu d'un point fixe, afin de ne pas gonfler le frustum d'ombres en vue proche.
+  const nearestBusZ = cabinLength > 40
+    ? Math.max(busMinZ, Math.min(busMaxZ, cameraZ))
+    : clampedBusZ;
+  const cameraDistance = Math.hypot(cameraX, Math.max(0, cameraY - 2), cameraZ - nearestBusZ);
   const highRes = shadowMapSize >= 2048;
   const baseHalfWidth = highRes ? 105 : 88;
   const baseHalfDepth = highRes ? 185 : 155;
-  const maxHalfWidth = Math.min(240, Math.max(baseHalfWidth, fogFar * 0.45));
-  const maxHalfDepth = Math.min(340, Math.max(baseHalfDepth, fogFar * 0.65));
-  const zoomExpand = Math.max(0, cameraDistance - 45);
-  const halfWidth = Math.min(maxHalfWidth, baseHalfWidth + zoomExpand * 0.8);
-  const halfDepth = Math.min(maxHalfDepth, baseHalfDepth + zoomExpand * 0.95 + Math.max(0, cabinLength - 18) * 0.25);
+  const maxHalfWidth = Math.min(185, Math.max(baseHalfWidth, fogFar * 0.42));
+  const maxHalfDepth = Math.min(260, Math.max(baseHalfDepth, fogFar * 0.56));
+  const zoomExpand = Math.max(0, cameraDistance - 55);
+  const halfWidth = Math.min(maxHalfWidth, baseHalfWidth + zoomExpand * 0.55);
+  const halfDepth = Math.min(maxHalfDepth, baseHalfDepth + zoomExpand * 0.65);
 
   const zoomBlend = Math.max(0, Math.min(0.6, (cameraDistance - 45) / 160));
-  const minCamZ = -fogFar * 0.45;
-  const maxCamZ = Math.max(fogFar * 0.4, cabinCenterZ + cabinLength * 0.3);
+  const minCamZ = cabinLength > 80 ? busMinZ - Math.min(480, fogFar * 0.45) : -fogFar * 0.45;
+  const maxCamZ = cabinLength > 80 ? busMaxZ + 220 : Math.max(fogFar * 0.4, cabinCenterZ + cabinLength * 0.3);
   const clampedCamZ = Math.max(minCamZ, Math.min(maxCamZ, cameraZ));
-  const busFocusZ = Math.min(18, clampedBusZ) - Math.min(115, halfDepth * 0.62);
-  const centerZ = busFocusZ + (clampedCamZ - busFocusZ) * zoomBlend;
+  let centerZ: number;
+  if (cabinLength > 80) {
+    // Près du nez du bus, anticipe vers l'avant (-Z) ; le long de la cabine, centre autour de la vue.
+    const frontBias = Math.max(0, Math.min(1, (28 - nearestBusZ) / 40));
+    const lookAhead = 25 + frontBias * Math.min(85, halfDepth * 0.42);
+    const busFocusZ = nearestBusZ - lookAhead;
+    centerZ = busFocusZ + (clampedCamZ - busFocusZ) * Math.max(zoomBlend, 0.35);
+  } else {
+    const busFocusZ = Math.min(18, clampedBusZ) - Math.min(115, halfDepth * 0.62);
+    centerZ = busFocusZ + (clampedCamZ - busFocusZ) * zoomBlend;
+  }
   const maxSpan = Math.max(halfWidth, halfDepth);
-  const sunDistance = Math.max(180, maxSpan * 1.45);
+  const sunDistance = Math.max(180, maxSpan * 1.35);
 
   out.halfWidth = halfWidth;
   out.halfDepth = halfDepth;
   out.centerZ = centerZ;
   out.sunDistance = sunDistance;
-  out.near = 1;
-  out.far = Math.max(520, sunDistance * 2.8);
+  // Resserrer near/far autour de la hauteur réelle de la scène double la précision du depth buffer d'ombres.
+  out.near = Math.max(12, Math.round(sunDistance - 190));
+  out.far = Math.round(sunDistance + 230);
   out.normalBias = Math.max(0.011, Math.min(0.022, maxSpan * 0.000075));
   return out;
 }

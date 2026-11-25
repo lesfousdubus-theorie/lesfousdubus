@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { PASSENGER_INSTANCED_MATERIALS } from "@/lib/baked-passenger";
-import { SCENERY_MATERIALS } from "@/lib/one-piece-scenery";
+import { SCENERY_BAKED_MATTE, SCENERY_BAKED_SHINY, SCENERY_MATERIALS } from "@/lib/one-piece-scenery";
 
 function createDummyTexture() {
   const texture = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, THREE.RGBAFormat);
@@ -114,6 +114,11 @@ export default function ShaderPrewarmer({ onReady }: { onReady?: () => void }) {
       toneMapped: false,
     }))));
 
+    // Décors One Piece cuits en vertexColors (îles détaillées + LOD instancié)
+    addMesh(colorGeo, SCENERY_BAKED_MATTE, true);
+    addMesh(colorGeo, SCENERY_BAKED_SHINY, true);
+    addInstanced(colorGeo, SCENERY_BAKED_MATTE);
+
     // Variantes de shaders custom d'Elbaf et d'Egghead sans répliquer les matériaux standards identiques
     addMesh(colorGeo, SCENERY_MATERIALS.elbafRainbow, true);
     addMesh(plainGeo, SCENERY_MATERIALS.elbafFalls, true);
@@ -137,25 +142,17 @@ export default function ShaderPrewarmer({ onReady }: { onReady?: () => void }) {
 
     const failSafe = window.setTimeout(() => {
       markReady();
-    }, 550);
+    }, 4500);
 
-    const hasParallelCompile = Boolean(gl.extensions.get("KHR_parallel_shader_compile"));
-    if (hasParallelCompile && typeof gl.compileAsync === "function") {
-      const root = new THREE.Group();
-      for (const obj of objects) root.add(obj);
-      void gl.compileAsync(root, camera, scene).then(() => {
-        markReady();
-        cleanup();
-      });
-    } else {
-      queueRef.current = {
-        objects,
-        index: 0,
-        nextAt: 0,
-        done: false,
-        cleanup,
-      };
-    }
+    // Compiler par micro-lots de 2 matériaux espacés d'au moins 32 ms afin de ne jamais
+    // saturer le processus GPU (et garder la rotation du gouvernail fluide à 60/120 FPS).
+    queueRef.current = {
+      objects,
+      index: 0,
+      nextAt: performance.now() + 40,
+      done: false,
+      cleanup,
+    };
 
     return () => {
       active = false;
@@ -170,10 +167,10 @@ export default function ShaderPrewarmer({ onReady }: { onReady?: () => void }) {
     if (!queue || queue.done) return;
     const now = performance.now();
     if (now < queue.nextAt) return;
-    queue.nextAt = now + (dt > 0.05 ? 32 : 16);
+    queue.nextAt = now + (dt > 0.04 ? 48 : 32);
 
     const batch = new THREE.Group();
-    const end = Math.min(queue.objects.length, queue.index + 4);
+    const end = Math.min(queue.objects.length, queue.index + 2);
     for (let i = queue.index; i < end; i++) {
       batch.add(queue.objects[i]);
     }

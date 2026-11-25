@@ -4,6 +4,7 @@ import * as THREE from "three";
 import type { NakamaArchetype } from "./passenger-archetypes";
 import { getPassengerProportions } from "@/lib/passenger-proportions";
 import { getFittedCostumeGeometry } from "@/lib/passenger-costume-geometry";
+import { useCharacterLowPoly } from "./CharacterShapes";
 
 // Les détails sont regroupés sur deux décalcomanies par personnage, pas en dizaines de meshes.
 const materials = new Map<string, THREE.MeshStandardMaterial>();
@@ -112,11 +113,12 @@ function costumeMaterial(id: string, face: boolean) {
 export default function PassengerCostume({ archetype, face=false }: {
   archetype:NakamaArchetype; width?:number; front?:number; face?:boolean; height?:number;
 }) {
+  const lowPoly = useCharacterLowPoly();
   if(face&&["foudubustv","chopper","doflamingo"].includes(archetype.id))return null;
   const proportions = getPassengerProportions(archetype.id);
   return <mesh name={face?"nakama-face-details":`nakama-${archetype.id}-top`} material={costumeMaterial(archetype.id,face)}
     geometry={getFittedCostumeGeometry(face?proportions.headWidth:proportions.torsoWidth,
       face?proportions.headHeight:proportions.torsoHeight,face?proportions.headDepth:proportions.torsoDepth,
-      face?proportions.headRadius:proportions.torsoRadius)} dispose={null}>
+      face?proportions.headRadius:proportions.torsoRadius, lowPoly)} dispose={null}>
   </mesh>;
 }

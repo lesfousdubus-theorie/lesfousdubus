@@ -10,7 +10,7 @@ const ROTATE_PER_VIEWPORT = Math.PI * 1.5;
 const WHEEL_GAP_MS = 180;
 const CURSOR_REFOCUS_PX = 14;
 
-type Gesture = { x: number; y: number; pan: boolean };
+type Gesture = { x: number; y: number; startX: number; startY: number; pan: boolean };
 
 export function isBusViewportInput(event: Event) {
   return !(event.target instanceof Element && event.target.closest(
@@ -20,8 +20,14 @@ export function isBusViewportInput(event: Event) {
 
 export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxDistance: number,
   reducedMotion: boolean, paused: boolean, canExplore: (start: boolean) => boolean) {
-  const { gl, get } = useThree();
+  const { gl, get, setEvents } = useThree();
   const [navigation] = useState(createBusExploration);
+  const eventsSuspendedRef = useRef(false);
+  const setRaycastingPaused = useCallback((nextPaused: boolean) => {
+    if (eventsSuspendedRef.current === nextPaused) return;
+    eventsSuspendedRef.current = nextPaused;
+    setEvents({ enabled: !nextPaused });
+  }, [setEvents]);
   const input = useRef({
     pointers: new Map<number, Gesture>(), cursor: new Vector2(), screen: new Vector2(),
     lastWheel: -Infinity, wheel: 0, pinch: 0, focus: false,
@@ -37,7 +43,8 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
   const cancel = useCallback(() => {
     input.current.pointers.clear();
     clearMovement();
-  }, [clearMovement]);
+    setRaycastingPaused(false);
+  }, [clearMovement, setRaycastingPaused]);
 
   useEffect(() => {
     const surface = gl.domElement.parentElement ?? gl.domElement;
@@ -56,9 +63,17 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
     const down = (event: PointerEvent) => {
       if ((event.pointerType === "mouse" && event.button !== 0 && event.button !== 2) || pointers.size >= 2 || !canStart(event)) return;
       clearMovement();
-      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY,
-        pan: event.button === 2 || event.shiftKey || event.ctrlKey || event.metaKey });
-      if (pointers.size === 2) state.focus = true;
+      pointers.set(event.pointerId, {
+        x: event.clientX,
+        y: event.clientY,
+        startX: event.clientX,
+        startY: event.clientY,
+        pan: event.button === 2 || event.shiftKey || event.ctrlKey || event.metaKey,
+      });
+      if (pointers.size === 2) {
+        state.focus = true;
+        setRaycastingPaused(true);
+      }
       try { surface.setPointerCapture(event.pointerId); } catch {}
     };
     const move = (event: PointerEvent) => {
@@ -66,9 +81,21 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
       if (!previous || !canExplore(false)) return;
       if (event.pointerType === "mouse" && event.buttons === 0) {
         pointers.delete(event.pointerId);
+        if (pointers.size === 0) setRaycastingPaused(false);
         return;
       }
-      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY, pan: previous.pan });
+      // Suspendre le raycasting R3F dès qu'un vrai glisser-déplacer de caméra démarre (> 5 px),
+      // sans jamais gêner un clic normal sur un passager.
+      if (!eventsSuspendedRef.current && Math.hypot(event.clientX - previous.startX, event.clientY - previous.startY) > 5) {
+        setRaycastingPaused(true);
+      }
+      pointers.set(event.pointerId, {
+        x: event.clientX,
+        y: event.clientY,
+        startX: previous.startX,
+        startY: previous.startY,
+        pan: previous.pan,
+      });
       const dx = event.clientX - previous.x, dy = event.clientY - previous.y;
       const height = Math.max(1, surface.clientHeight);
       if (pointers.size === 2) {
@@ -89,6 +116,7 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
     };
     const up = (event: PointerEvent) => {
       pointers.delete(event.pointerId);
+      if (pointers.size === 0) setRaycastingPaused(false);
       try { surface.releasePointerCapture(event.pointerId); } catch {}
     };
     const wheel = (event: WheelEvent) => {
@@ -130,7 +158,7 @@ export function useBusExploration(camera: PerspectiveCamera, rearZ: number, maxD
       window.removeEventListener("blur", cancel);
       cancel();
     };
-  }, [camera, canExplore, cancel, clearMovement, gl, get, paused]);
+  }, [camera, canExplore, cancel, clearMovement, gl, get, paused, setRaycastingPaused]);
 
   const keyboardCursorRef = useRef(new Vector2(0, 0));
   const stepKeyboardExploration = useCallback((azimuth: number, elevation: number, zoomGesture: number) => {
