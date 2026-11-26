@@ -41,6 +41,23 @@ export function getAvatarSeat(seatCapacity: number, row: number, passengerIndex:
   return { originSeatIndex, physicalSeatIndex, seat: getPhysicalSeat(physicalSeatIndex) };
 }
 
+/** Vérifie en O(log R) si une place persistante appartient à une plage vacante triée. */
+export function isSeatIndexVacant(
+  seatIndex: number,
+  vacantSeatRanges: ReadonlyArray<[number, number, number]>,
+): boolean {
+  if (seatIndex < 0 || !vacantSeatRanges.length) return false;
+  let low = 0;
+  let high = vacantSeatRanges.length;
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    if (vacantSeatRanges[middle][0] <= seatIndex) low = middle + 1;
+    else high = middle;
+  }
+  if (!low) return false;
+  return seatIndex <= vacantSeatRanges[low - 1][1];
+}
+
 export interface BusOccupant {
   index: number;
   physicalSeatIndex: number;

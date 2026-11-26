@@ -6,8 +6,8 @@ async function load(path) {
   const compiled = await build({ entryPoints: [path], bundle: true, format: "esm", platform: "node", write: false, logLevel: "silent" });
   return import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`);
 }
-const { getBusOccupancy, getVisibleBusRowRange, getAvatarSeat, getPhysicalSeat, getVisitorRows, getBusPhysicalRows, getRegisteredSeat, getRegisteredSeatIndex, PASSENGER_SEAT_X } = await load("src/lib/bus-occupancy.ts");
-const { getRenderedRowIndices, getNearestBusDoor, getSeatCountInRow, getSeatRowZ, getBusDoors, getBusRearWallZ, getBusDoorBounds, getWheelPositions } = await load("src/lib/bus-layout.ts");
+const { getBusOccupancy, getVisibleBusRowRange, getAvatarSeat, getPhysicalSeat, getVisitorRows, getBusPhysicalRows, getRegisteredSeat, getRegisteredSeatIndex, isSeatIndexVacant, PASSENGER_SEAT_X } = await load("src/lib/bus-occupancy.ts");
+const { getRenderedRowIndices, getNearestBusDoor, getSeatCountInRow, getSeatRowZ, getBusDoors, getBusDoorCount, getWindowedBusDoors, getBusRearWallZ, getBusDoorBounds, getWheelPositions } = await load("src/lib/bus-layout.ts");
 const { BUS_CREW, countPeopleOnBoard } = await load("src/lib/bus-crew.ts");
 const { createJourneyState, beginJourney, getPassengerWalkPath, updateJourney } = await load("src/lib/bus-journey.ts");
 const { formatPassengerJoinedAt } = await load("src/lib/i18n-shared.ts");
@@ -240,5 +240,41 @@ assert.equal(readSavedLocalSeat(), null, "Corrupted local seat JSON is safely ig
 writeSavedLocalSeat(12, 1);
 clearSavedLocalSeat();
 assert.equal(readSavedLocalSeat(), null);
+
+// Recherche dichotomique sur les plages vacantes
+assert.equal(isSeatIndexVacant(0, []), false);
+const sampleVacant = [[0, 0, 0], [5, 7, 1], [100, 149, 4]];
+assert.equal(isSeatIndexVacant(-1, sampleVacant), false);
+assert.equal(isSeatIndexVacant(0, sampleVacant), true);
+assert.equal(isSeatIndexVacant(1, sampleVacant), false);
+assert.equal(isSeatIndexVacant(4, sampleVacant), false);
+assert.equal(isSeatIndexVacant(5, sampleVacant), true);
+assert.equal(isSeatIndexVacant(7, sampleVacant), true);
+assert.equal(isSeatIndexVacant(8, sampleVacant), false);
+assert.equal(isSeatIndexVacant(100, sampleVacant), true);
+assert.equal(isSeatIndexVacant(149, sampleVacant), true);
+assert.equal(isSeatIndexVacant(150, sampleVacant), false);
+
+// Bus 1 000 000+ places : fenêtrage des portes O(1) et fidélité exacte sous le seuil
+for (const rows of [6, 9, 41, 150]) {
+  assert.deepEqual(
+    getWindowedBusDoors(rows, getSeatRowZ(0)),
+    getBusDoors(rows),
+    `Windowed doors match full doors verbatim below threshold for rows=${rows}`,
+  );
+}
+const oneMillionRows = getBusPhysicalRows(1_000_000);
+const expectedTotalDoors = 1 + Math.floor(oneMillionRows / 9);
+assert.equal(getBusDoorCount(oneMillionRows), expectedTotalDoors);
+const midFocusZ = getSeatRowZ(130_000);
+const t0 = performance.now();
+const oneMillionDoors = getWindowedBusDoors(oneMillionRows, midFocusZ);
+const windowMs = performance.now() - t0;
+assert(oneMillionDoors.length <= 96, `1M-seat bus keeps door count bounded (got ${oneMillionDoors.length}).`);
+assert.equal(oneMillionDoors[0].index, 0, "Front entrance door stays mounted.");
+assert.equal(oneMillionDoors.at(-1).index, expectedTotalDoors - 1, "Rear door stays mounted.");
+const nearestMidDoor = getNearestBusDoor(midFocusZ, oneMillionRows).index;
+assert(oneMillionDoors.some((d) => d.index === nearestMidDoor), "Camera-local door stays mounted.");
+assert(windowMs < 50, `Windowed door computation for 1M seats took ${windowMs.toFixed(2)}ms (<50ms).`);
 
 console.log("Bus occupancy passed: no artificial passengers, unchanged visitor IDs, real avatar columns, local visitor swaps, max two per bench, sparse vacancies and bounded rendering through 100000000 visitors.");

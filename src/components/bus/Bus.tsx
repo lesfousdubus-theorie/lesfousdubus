@@ -13,7 +13,7 @@ import BusSpeedLines from "./BusSpeedLines";
 import type { JourneyState } from "@/lib/bus-journey";
 import { BusTvFrame, BusTvHousings, BusTvPlayer } from "./BusTv";
 import { usePartyTvCards } from "./BusPartyTv";
-import { getRenderedRowIndices, getActiveTvIndex, getCabinTvPositions, getSeatRowZ, getBusDoors, getBusRearWallZ, getWheelPositions, BUS_FRONT_Z, FIRST_SEAT_Z, type TvPosition } from "@/lib/bus-layout";
+import { getRenderedRowIndices, getActiveTvIndex, getCabinTvPositions, getSeatRowZ, getBusDoorCount, getWindowedBusDoors, getBusRearWallZ, getWheelPositions, BUS_FRONT_Z, FIRST_SEAT_Z, type TvPosition } from "@/lib/bus-layout";
 import { createVisibleBusRowRangeScratch, getBusPhysicalRows, getVisibleBusRowRange } from "@/lib/bus-occupancy";
 import { advanceWiperAngle } from "@/lib/bus-wipers";
 import BusExterior, { PillarInstances } from "./BusExterior";
@@ -115,7 +115,7 @@ export default function Bus({
 
   // Calcul dynamique de la longueur et des rangées du bus
   const numRows = getBusPhysicalRows(seatCapacity);
-  const doors = useMemo(() => getBusDoors(numRows), [numRows]);
+  const totalDoorCount = getBusDoorCount(numRows);
 
   // Position Z de chaque rangée de sièges (suit dynamiquement la zone observée par la caméra sur les très longs bus).
   // En cabine (phase === "inside" / "entering"), on applique aussi une hystérésis (±36 rangées dans la fenêtre
@@ -138,6 +138,8 @@ export default function Bus({
     ? ((phase === "outside" || freeView) ? cameraFocusRow : seatedFocusRow)
     : reservedRow;
   const activeFocusZ = getSeatRowZ(activeFocusRow);
+  const doorFocusZ = Math.round(activeFocusZ / 160) * 160;
+  const doors = useMemo(() => getWindowedBusDoors(numRows, doorFocusZ, 420), [numRows, doorFocusZ]);
   const renderedRowIndices = useMemo(
     () => getRenderedRowIndices(numRows, activeFocusRow),
     [numRows, activeFocusRow],
@@ -409,6 +411,7 @@ export default function Bus({
         cabinCenterZ={cabinCenterZ}
         rearWallZ={rearWallZ}
         doors={doors}
+        totalDoorCount={totalDoorCount}
         numRows={numRows}
         focusZ={activeFocusZ}
         lowPower={lowPower}
@@ -442,6 +445,7 @@ export default function Bus({
           numRows={numRows}
           passengerCount={passengerCount}
           seatCapacity={seatCapacity}
+          vacantSeatRanges={vacantSeatRanges}
           renderedRowIndices={renderedRowIndices}
           seatMaterial={mats.seat}
           pillarMaterial={mats.bodyDark}

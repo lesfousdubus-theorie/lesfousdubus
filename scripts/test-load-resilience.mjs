@@ -225,6 +225,18 @@ try {
     `Expected partial comment index lookup, got: ${JSON.stringify(msgPlan.results)}`,
   );
 
+  const vacantEndPlan = await database.prepare(
+    `EXPLAIN QUERY PLAN
+     SELECT start_index FROM bus_vacant_seat_ranges WHERE end_index = 42`,
+  ).all();
+  assert(
+    vacantEndPlan.results.some((r) => {
+      const detail = String(r.detail);
+      return detail.includes("bus_vacant_seat_ranges_end_index") && detail.includes("USING ");
+    }),
+    `Expected end_index lookup on bus_vacant_seat_ranges, got: ${JSON.stringify(vacantEndPlan.results)}`,
+  );
+
   // 2. Peupler 500 passagers avec commentaires en batch, vérifier suppression O(1) et réutilisation.
   const insertSql = "INSERT INTO bus_entries (visitor_id, display_name, comment, seat_index, entry_number) VALUES (?, ?, ?, ?, ?)";
   const statements = [];
@@ -282,6 +294,21 @@ try {
   assert(namesRes.headers.get("cache-control")?.includes("s-maxage=20"));
   const namesData = await namesRes.json();
   assert.equal(namesData.names.length, 79);
+
+  // Canonisation des clés de cache (from non aligné / limit différent -> hit sur le même bloc).
+  const namesAliasRes = await worker.fetch("http://load.test/api/bus-entries?names=1&from=13&limit=25");
+  assert.equal(namesAliasRes.status, 200);
+  assert.equal(namesAliasRes.headers.get("x-bus-cache"), "hit", "Non-canonical names params must collapse to canonical block.");
+
+  const profilesRes = await worker.fetch("http://load.test/api/bus-entries?profiles=1&from=0&limit=48");
+  assert.equal(profilesRes.status, 200);
+  const profilesAliasRes = await worker.fetch("http://load.test/api/bus-entries?profiles=1&from=7&limit=19");
+  assert.equal(profilesAliasRes.status, 200);
+  assert.equal(profilesAliasRes.headers.get("x-bus-cache"), "hit", "Non-canonical profiles params must collapse to canonical block.");
+
+  const tooManySeats = Array.from({ length: 21 }, (_, i) => i).join(",");
+  const tooManySeatsRes = await worker.fetch(`http://load.test/api/bus-entries?names=1&seats=${tooManySeats}`);
+  assert.equal(tooManySeatsRes.status, 400, "Seat list > 20 must be rejected.");
 
   // 5. Coalescence de 50 GET concurrents + repli stale-on-error en cas de panne D1 simulée.
   await worker.fetch("http://load.test/__reset-cache");

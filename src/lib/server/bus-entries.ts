@@ -11,8 +11,8 @@ export const MESSAGES_READ_HEADERS = { "Cache-Control": "public, max-age=60, s-m
 export const PROFILES_READ_HEADERS = { "Cache-Control": "public, max-age=15, s-maxage=20, stale-while-revalidate=40" };
 export const WRITE_HEADERS = { "Cache-Control": "no-store, max-age=0" };
 const MAX_BODY_SIZE = 2_048;
-const RATE_LIMIT_PURGE_INTERVAL_SECONDS = 30 * 60;
-const RATE_LIMIT_PURGE_BATCH_SIZE = 500;
+const RATE_LIMIT_PURGE_INTERVAL_SECONDS = 5 * 60;
+const RATE_LIMIT_PURGE_BATCH_SIZE = 2_000;
 const MAX_BLOCKED_RATE_CACHE = 4_096;
 let nextReadTriggeredPurgeAt = 0;
 const blockedRateUntil = new Map<string, number>();
@@ -71,7 +71,7 @@ export async function readVacantSeatRanges(
       `SELECT start_index, end_index
        FROM bus_vacant_seat_ranges
        ORDER BY start_index ASC
-       LIMIT 256`,
+       LIMIT 1024`,
     ).all<{ start_index: number; end_index: number }>();
     let vacantBefore = 0;
     for (const range of ranges.results) {

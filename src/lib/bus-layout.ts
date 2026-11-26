@@ -57,6 +57,17 @@ export function getBusRearWallZ(numRows: number): number {
   return getSeatRowZ(Math.max(0, numRows - 1)) + SEAT_ROW_SPACING;
 }
 
+/** Nombre total de portes pour `numRows` rangées (porte d'entrée + 1 par section de 9 rangées). */
+export function getBusDoorCount(numRows: number): number {
+  return 1 + Math.floor(Math.max(0, numRows) / DOOR_SECTION_ROWS);
+}
+
+/** Calcule la géométrie exacte de la porte d'indice `index` en O(1). */
+export function getBusDoorAt(index: number): BusDoorLayout {
+  if (index <= 0) return { ...BUS_DOOR, index: 0 };
+  return { ...BUS_DOOR, index, z: getSeatRowZ(index * DOOR_SECTION_ROWS - 1) };
+}
+
 /** La porte d’entrée fait face au siège du relais, les autres à une demi-rangée. */
 export function getBusDoors(numRows: number): BusDoorLayout[] {
   const doors: BusDoorLayout[] = [{ ...BUS_DOOR, index: 0 }];
@@ -64,6 +75,29 @@ export function getBusDoors(numRows: number): BusDoorLayout[] {
     doors.push({ ...BUS_DOOR, index: doors.length, z: getSeatRowZ(row) });
   }
   return doors;
+}
+
+const MAX_FULL_DOOR_COUNT = 96;
+
+/** Retourne toutes les portes jusqu'à ~860 rangées, puis une fenêtre O(1) autour de `focusZ` (+ extrémités). */
+export function getWindowedBusDoors(numRows: number, focusZ: number, radiusM = 420): BusDoorLayout[] {
+  const totalDoors = getBusDoorCount(numRows);
+  if (totalDoors <= MAX_FULL_DOOR_COUNT) return getBusDoors(numRows);
+  const indices = new Set<number>();
+  for (let i = 0; i < Math.min(4, totalDoors); i++) {
+    indices.add(i);
+    indices.add(totalDoors - 1 - i);
+  }
+  const centerIndex = getNearestBusDoor(focusZ, numRows).index;
+  const halfWindow = Math.ceil(radiusM / DOOR_SECTION_LENGTH);
+  const start = Math.max(0, centerIndex - halfWindow);
+  const end = Math.min(totalDoors - 1, centerIndex + halfWindow);
+  for (let i = start; i <= end; i++) {
+    indices.add(i);
+  }
+  return Array.from(indices)
+    .sort((a, b) => a - b)
+    .map((index) => getBusDoorAt(index));
 }
 
 export function getBusDoorBounds(door: BusDoorLayout): { frontZ: number; rearZ: number } {

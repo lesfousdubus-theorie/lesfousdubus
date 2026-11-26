@@ -8,7 +8,7 @@ import { clampLocalSeat, clearSavedLocalSeat, readSavedLocalSeat } from "@/lib/c
 import type { PassengerProfile } from "@/types/passenger";
 import type { Phase } from "./bus/constants";
 import { countPeopleOnBoard } from "@/lib/bus-crew";
-import { getBusPhysicalRows, getRegisteredSeat, getRegisteredSeatIndex } from "@/lib/bus-occupancy";
+import { getBusPhysicalRows, getRegisteredSeat, getRegisteredSeatIndex, isSeatIndexVacant } from "@/lib/bus-occupancy";
 import type { PassengerAvatarId } from "@/lib/passenger-avatar";
 import type { OnboardingReason } from "./modals/OnboardingModal";
 import type { OnboardingSeed } from "./usePassengerProfile";
@@ -245,7 +245,7 @@ export function useBusSync({
   useEffect(() => {
     const focusRow = phase === "inside" ? seatRow : 0;
     const blockRow = Math.floor(Math.max(0, focusRow - 4) / 8) * 8;
-    const from = getRegisteredSeatIndex(blockRow);
+    const from = Math.floor(getRegisteredSeatIndex(blockRow) / 32) * 32;
     if (
       lastFetchedProfilesFromRef.current === from
       && lastFetchedProfileRevisionRef.current === profileRevision
@@ -308,9 +308,10 @@ export function useBusSync({
         setCount(d.count);
 
         const activeSeat = latestRegistrationRef.current.seatIndex;
-        const shrunk = (previousCount !== null && d.count < previousCount)
-          || d.seatCapacity < previousSeatCapacity
-          || (activeSeat !== null && activeSeat >= d.seatCapacity);
+        const shrunk = activeSeat !== null && (
+          activeSeat >= d.seatCapacity
+          || isSeatIndexVacant(activeSeat, d.vacantSeatRanges ?? [])
+        );
         if (shrunk && activeSeat !== null && !registrationPendingRef.current) {
           const visitorId = getExistingVisitorId();
           if (visitorId) {

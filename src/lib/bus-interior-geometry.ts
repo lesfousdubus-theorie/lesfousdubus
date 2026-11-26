@@ -56,11 +56,22 @@ export function getInteriorRailSpans(from: number, to: number, rightSide: boolea
   return splitAtDoors(from, to, doors, rightSide, DOOR_INNER_TRIM_HALF_Z + INTERIOR_RAIL_JOINT_GAP);
 }
 
-/** Un pilier a une demi-épaisseur longitudinale de 5 cm. */
+/** Un pilier a une demi-épaisseur longitudinale de 5 cm (recherche dichotomique O(log N)). */
 export function isWindowPillarClearOfDoor(z: number, doors: readonly BusDoorLayout[] = [{ ...BUS_DOOR, index: 0 }]): boolean {
+  if (!doors.length) return true;
   const clearance = DOOR_INNER_TRIM_HALF_Z + 0.05 + INTERIOR_RAIL_JOINT_GAP;
-  return doors.every(door => {
-    const { frontZ, rearZ } = getBusDoorBounds(door);
-    return z < frontZ - clearance || z > rearZ + clearance;
-  });
+  let lo = 0;
+  let hi = doors.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (doors[mid].z < z) lo = mid + 1;
+    else hi = mid;
+  }
+  const from = Math.max(0, lo - 1);
+  const to = Math.min(doors.length - 1, lo + 1);
+  for (let i = from; i <= to; i++) {
+    const { frontZ, rearZ } = getBusDoorBounds(doors[i]);
+    if (z >= frontZ - clearance && z <= rearZ + clearance) return false;
+  }
+  return true;
 }

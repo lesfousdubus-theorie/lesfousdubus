@@ -4,14 +4,17 @@ import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from "rea
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { getSeatCountInRow, getSeatRowZ, SEAT_CUSHION_DEPTH, SEAT_CUSHION_Z } from "@/lib/bus-layout";
-import { getRegisteredSeatIndex, PASSENGER_SEAT_X } from "@/lib/bus-occupancy";
+import { getRegisteredSeatIndex, isSeatIndexVacant, PASSENGER_SEAT_X } from "@/lib/bus-occupancy";
 import { getPartyDanceTime, PARTY_BEAT_SECONDS } from "@/lib/party-rhythm";
 import { getNakamaArchetype } from "./passenger-archetypes";
+
+const EMPTY_VACANT_RANGES: Array<[number, number, number]> = [];
 
 interface DistantBusCrowdProps {
   numRows: number;
   passengerCount: number;
   seatCapacity: number;
+  vacantSeatRanges?: Array<[number, number, number]>;
   renderedRowIndices: number[];
   seatMaterial: THREE.Material;
   pillarMaterial: THREE.Material;
@@ -34,8 +37,8 @@ interface ChunkRange {
 
 interface CrowdChunkProps {
   range: ChunkRange;
-  passengerCount: number;
   seatCapacity: number;
+  vacantSeatRanges: Array<[number, number, number]>;
   renderedRowSet: Set<number>;
   seatMaterial: THREE.Material;
   pillarMaterial: THREE.Material;
@@ -53,8 +56,8 @@ const FACE_WARM_BEIGE = new THREE.Color("#e8c8a8");
 
 const CrowdChunk = memo(function CrowdChunk({
   range,
-  passengerCount,
   seatCapacity,
+  vacantSeatRanges,
   renderedRowSet,
   seatMaterial,
   pillarMaterial,
@@ -74,6 +77,7 @@ const CrowdChunk = memo(function CrowdChunk({
     benchIdx: Int32Array;
     personStart: Int32Array;
     personLen: Uint8Array;
+    personCol: Uint8Array;
     hiddenRows: Set<number>;
   } | null>(null);
 
@@ -89,10 +93,10 @@ const CrowdChunk = memo(function CrowdChunk({
 
     const matrix = new THREE.Matrix4();
     const color = new THREE.Color();
-    const occupiedLimit = Math.max(0, Math.min(passengerCount, seatCapacity));
     const benchIdx = new Int32Array(rowCount);
     const personStart = new Int32Array(rowCount);
     const personLen = new Uint8Array(rowCount);
+    const personCol = new Uint8Array(range.maxPeople);
     let benchCount = 0;
     let personCount = 0;
 
@@ -120,7 +124,7 @@ const CrowdChunk = memo(function CrowdChunk({
       for (let c = 0; c < cols.length; c++) {
         const col = cols[c];
         const regIndex = getRegisteredSeatIndex(row, col);
-        if (regIndex >= occupiedLimit) continue;
+        if (regIndex >= seatCapacity || isSeatIndexVacant(regIndex, vacantSeatRanges)) continue;
         const archetype = getNakamaArchetype(regIndex);
         const x = PASSENGER_SEAT_X[col];
 
@@ -135,6 +139,7 @@ const CrowdChunk = memo(function CrowdChunk({
         color.set(archetype.skinColor || "#e8c8a8").lerp(FACE_WARM_BEIGE, 0.25);
         headMesh.setColorAt(personCount, color);
 
+        personCol[personCount] = col;
         personCount += 1;
       }
       personLen[local] = personCount - personStart[local];
@@ -167,8 +172,8 @@ const CrowdChunk = memo(function CrowdChunk({
     headMesh.instanceMatrix.needsUpdate = true;
     if (headMesh.instanceColor) headMesh.instanceColor.needsUpdate = true;
 
-    mapRef.current = { benchIdx, personStart, personLen, hiddenRows: new Set() };
-  }, [passengerCount, range, rowCount, seatCapacity]);
+    mapRef.current = { benchIdx, personStart, personLen, personCol, hiddenRows: new Set() };
+  }, [range, rowCount, seatCapacity, vacantSeatRanges]);
 
   // Mise à jour différentielle O(1) uniquement sur les rangées entrées/sorties de la fenêtre détaillée.
   useLayoutEffect(() => {
@@ -213,9 +218,8 @@ const CrowdChunk = memo(function CrowdChunk({
 
       const p0 = map.personStart[local];
       const pLen = map.personLen[local];
-      const cols = seatCount === 4 ? [0, 3] : [0];
       for (let k = 0; k < pLen; k++) {
-        const x = PASSENGER_SEAT_X[cols[k] ?? 0];
+        const x = PASSENGER_SEAT_X[map.personCol[p0 + k] ?? 0];
         matrix.makeTranslation(x, 1.54, z + 0.14);
         torsoMesh.setMatrixAt(p0 + k, matrix);
         matrix.makeTranslation(x, 1.9, z + 0.14);
@@ -325,14 +329,16 @@ const CrowdChunk = memo(function CrowdChunk({
  */
 const DistantBusCrowd = memo(function DistantBusCrowd({
   numRows,
-  passengerCount,
+  passengerCount: _passengerCount,
   seatCapacity,
+  vacantSeatRanges = EMPTY_VACANT_RANGES,
   renderedRowIndices,
   seatMaterial: _seatMaterial,
   pillarMaterial,
   partyOn = false,
   reducedMotion = false,
 }: DistantBusCrowdProps) {
+  void _passengerCount;
   void _seatMaterial;
   const peopleGroupsRef = useRef<Array<THREE.Group | null>>([]);
   const lastBounceYRef = useRef(0);
@@ -438,8 +444,8 @@ const DistantBusCrowd = memo(function DistantBusCrowd({
         <CrowdChunk
           key={range.chunkIdx}
           range={range}
-          passengerCount={passengerCount}
           seatCapacity={seatCapacity}
+          vacantSeatRanges={vacantSeatRanges}
           renderedRowSet={renderedRowSet}
           seatMaterial={shared.benchMat}
           pillarMaterial={pillarMaterial}

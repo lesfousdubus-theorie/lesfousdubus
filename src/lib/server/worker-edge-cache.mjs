@@ -55,7 +55,7 @@ export function getPublicBusApiCacheKey(url) {
 
   if (url.searchParams.get("messages") === "1") {
     const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
-    const limit = Math.min(100, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 60, 100)));
+    const limit = 100;
     if (url.searchParams.get("random") === "1") {
       const slot = parseNonNegativeInteger(url.searchParams.get("slot"), 0, 7);
       return `${url.origin}/api/bus-entries?messages=1&random=1&limit=${limit}&slot=${slot}`;
@@ -65,14 +65,14 @@ export function getPublicBusApiCacheKey(url) {
 
   if (url.searchParams.get("names") === "1") {
     if (url.searchParams.get("from") !== null) {
-      const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
-      const limit = Math.min(80, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 80, 80)));
+      const from = Math.floor(parseNonNegativeInteger(url.searchParams.get("from"), 0) / 80) * 80;
+      const limit = 80;
       return `${url.origin}/api/bus-entries?names=1&from=${from}&limit=${limit}`;
     }
     const rawSeats = url.searchParams.get("seats");
     const values = rawSeats?.split(",") ?? [];
     const seats = values.map((value) => (/^\d+$/.test(value) ? Number(value) : NaN));
-    if (!seats.length || seats.length > 80 || seats.some((seat) => !Number.isSafeInteger(seat))) {
+    if (!seats.length || seats.length > 20 || seats.some((seat) => !Number.isSafeInteger(seat))) {
       return null;
     }
     const normalizedSeats = [...new Set(seats)].sort((a, b) => a - b);
@@ -81,13 +81,13 @@ export function getPublicBusApiCacheKey(url) {
 
   if (url.searchParams.get("manifest") === "1") {
     const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
-    const limit = Math.min(100, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 60, 100)));
+    const limit = 60;
     return `${url.origin}/api/bus-entries?manifest=1&from=${from}&limit=${limit}`;
   }
 
   if (url.searchParams.get("profiles") === "1") {
-    const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
-    const limit = Math.min(48, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 32, 48)));
+    const from = Math.floor(parseNonNegativeInteger(url.searchParams.get("from"), 0) / 32) * 32;
+    const limit = 48;
     return `${url.origin}/api/bus-entries?profiles=1&from=${from}&limit=${limit}`;
   }
 
@@ -128,6 +128,7 @@ export function createEdgeCachedFetch(upstreamFetch) {
       const contentType = response.headers.get("content-type") ?? "";
       if (response.status === 200 && contentType.includes("text/html") && !response.headers.has("set-cookie")) {
         const headers = new Headers(response.headers);
+        headers.delete("vary");
         headers.set("Cache-Control", HTML_EDGE_CACHE_CONTROL);
         headers.set("X-Bus-Edge-Cache", "miss");
         const cacheable = new Response(response.body, {

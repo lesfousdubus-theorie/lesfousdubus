@@ -3,19 +3,19 @@ import { build } from "esbuild";
 
 const compiled = await build({
   stdin: {
-    contents: "export * from './src/lib/bus-layout'; export * from './src/lib/bus-theory-signs';",
+    contents: "export * from './src/lib/bus-layout'; export * from './src/lib/bus-theory-signs'; export * from './src/lib/bus-interior-geometry';",
     resolveDir: process.cwd(),
   },
   bundle: true,
   format: "esm",
-  platform: "neutral",
+  platform: "node",
   write: false,
   logLevel: "silent",
 });
 const moduleUrl = `data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString("base64")}`;
 const {
-  getActiveTvIndex, getTvPositions, getBusDoors, getBusRearWallZ, getWheelPositions,
-  getBusDoorBounds, getBusGraffitiPlacements,
+  getActiveTvIndex, getTvPositions, getBusDoors, getWindowedBusDoors, getBusRearWallZ, getWheelPositions,
+  getBusDoorBounds, getBusGraffitiPlacements, getSeatRowZ, isWindowPillarClearOfDoor,
 } = await import(moduleUrl);
 
 const front = { x: 0, y: 2.55, z: -4.2 };
@@ -66,6 +66,30 @@ for (const rows of [6, 9, 10, 18, 41, 150]) {
       assert.equal(inSection.length, 2, `Each full section has two tags per side, with ${rows} rows.`);
     }
   }
+
+  // Vérification dichotomique des piliers vs porte
+  for (const probeZ of [doors[0].z, doors[0].z - 1.0, doors.at(-1).z, doors.at(-1).z + 1.0]) {
+    const expected = doors.every((door) => {
+      const { frontZ, rearZ } = getBusDoorBounds(door);
+      return probeZ < frontZ - 0.127 || probeZ > rearZ + 0.127;
+    });
+    assert.equal(isWindowPillarClearOfDoor(probeZ, doors), expected, "Binary-search pillar check matches exact door clearance.");
+  }
+}
+
+// Bus 1 000 000 places : tags bornés, déterministes et absents des sauts de virtualisation
+const megaRows = 264_706;
+const megaWindowDoors = getWindowedBusDoors(megaRows, getSeatRowZ(130_000));
+const megaRear = getBusRearWallZ(megaRows);
+const megaAxles = [...new Set(getWheelPositions(megaRear, megaWindowDoors).map(([, z]) => z))];
+const megaTags = getBusGraffitiPlacements(megaWindowDoors, megaRear, megaAxles);
+assert(megaTags.length <= 400, `1M-seat bus keeps graffiti placements bounded (got ${megaTags.length}).`);
+for (const tag of megaTags) {
+  assert(tag.width <= 2.9, "No graffiti tag may span across a virtualization gap.");
+}
+const frontFullTags = getBusGraffitiPlacements(getBusDoors(36), getBusRearWallZ(36), [-4.3]);
+for (let i = 0; i < 4; i++) {
+  assert.deepEqual(megaTags[i], frontFullTags[i], "Windowed front tags keep deterministic slogan identity.");
 }
 
 console.log("TV layout and door-to-door graffiti checks passed.");

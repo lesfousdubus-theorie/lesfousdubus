@@ -55,15 +55,18 @@ export function getBusGraffitiPlacements(
     if (width >= 1.35) placements.push({ message, side, z: (from + to) / 2, width });
   };
 
-  for (const [section, door] of doors.entries()) {
+  for (let i = 0; i < doors.length; i++) {
+    const door = doors[i];
+    const next = doors[i + 1];
+    if (next && next.index !== door.index + 1) continue;
+    const section = door.index;
     const from = getBusDoorBounds(door).rearZ + .24;
-    const next = doors[section + 1];
     const to = (next ? getBusDoorBounds(next).frontZ : rearWallZ) - .3;
     // Only the rear axle can cross these spans. If it does, finish the signage
     // ahead of the wheel arch so the lettering always rests on painted metal.
     const lastAxle = axlePositions.find(z => z + .72 > from && z - .72 < to);
     const end = lastAxle === undefined ? to : lastAxle - .72;
-    const order = Array.from({ length: 4 }, (_, i) => (section * 4 + i) % THEORY_SIGN_MESSAGES.length);
+    const order = Array.from({ length: 4 }, (_, idx) => (section * 4 + idx) % THEORY_SIGN_MESSAGES.length);
     if (end - from >= 2.98) {
       const middle = (from + end) / 2;
       addTag(from, middle - .14, order[0], -1);

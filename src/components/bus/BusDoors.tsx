@@ -12,6 +12,7 @@ import BusDoor from "./BusDoor";
 
 interface Props {
   doors: BusDoorLayout[];
+  totalDoorCount?: number;
   numRows: number;
   focusZ: number;
   mats: Record<string, THREE.Material>;
@@ -22,7 +23,7 @@ interface Props {
 }
 
 /** Seules les portes proches sont articulées ; les autres gardent leur vraie baie. */
-const BusDoors = memo(function BusDoors({ doors, numRows, focusZ, mats, phase, journey, reducedMotion, lowPower }: Props) {
+const BusDoors = memo(function BusDoors({ doors, totalDoorCount, numRows, focusZ, mats, phase, journey, reducedMotion, lowPower }: Props) {
   const [focus, setFocus] = useState(() => getNearestBusDoor(focusZ, numRows).index);
   const focusRef = useRef(focus);
   const [active, setActive] = useState(0);
@@ -35,19 +36,21 @@ const BusDoors = memo(function BusDoors({ doors, numRows, focusZ, mats, phase, j
     if (nextFocus !== focusRef.current) { focusRef.current = nextFocus; setFocus(nextFocus); }
     if (nextActive !== activeRef.current) { activeRef.current = nextActive; setActive(nextActive); }
   });
+  const doorTotal = totalDoorCount ?? doors.length;
   const detailed = useMemo(() => {
     const indices = new Set([0, focus, active]);
-    if (phase !== "outside" || doors.length <= 10) {
-      indices.add(doors.length - 1);
+    if (phase !== "outside" || doorTotal <= 10) {
+      const lastDoorIndex = doors[doors.length - 1]?.index ?? 0;
+      indices.add(lastDoorIndex);
       if (!lowPower) {
         indices.add(focus - 1); indices.add(focus + 1);
         indices.add(active - 1); indices.add(active + 1);
       }
     }
     return doors.filter(door => indices.has(door.index));
-  }, [doors, focus, active, lowPower, phase]);
+  }, [doors, doorTotal, focus, active, lowPower, phase]);
   const distant = useMemo(() => doors.filter(door => !detailed.includes(door)), [doors, detailed]);
-  return <group name="bus-passenger-doors" userData={{ totalDoors: doors.length, detailedDoors: detailed.length }}>
+  return <group name="bus-passenger-doors" userData={{ totalDoors: doorTotal, detailedDoors: detailed.length }}>
     {detailed.map(door => <BusDoor key={door.index} door={door} mats={mats} phase={phase} journey={journey} reducedMotion={reducedMotion} />)}
     <ClosedDoors doors={distant} mats={mats} />
   </group>;

@@ -41,6 +41,7 @@ interface BusExteriorProps {
   cabinCenterZ: number;
   rearWallZ: number;
   doors: BusDoorLayout[];
+  totalDoorCount?: number;
   numRows: number;
   focusZ: number;
   lowPower: boolean;
@@ -65,7 +66,7 @@ interface BusExteriorProps {
 }
 
 const BusExterior = memo(function BusExterior({
-  headlights, phase, journey, mats, cabinLength, cabinCenterZ, rearWallZ, doors, numRows, focusZ, lowPower,
+  headlights, phase, journey, mats, cabinLength, cabinCenterZ, rearWallZ, doors, totalDoorCount, numRows, focusZ, lowPower,
   wheelPositions, wheels, leftWiper, rightWiper, leftTarget, rightTarget,
   sideLabel, reducedMotion, freeView, licensePlateTex, montCorvoTex, hatGeo, ribbonGeo, hat,
   hatBasePos, hatBaseRot, contactShadowTex,
@@ -167,7 +168,7 @@ const BusExterior = memo(function BusExterior({
       </group>
       {/* Girouette de destination lumineuse */}
       <BusDestination mats={mats} reducedMotion={reducedMotion} />
-      <BusDoors doors={doors} numRows={numRows} focusZ={focusZ} lowPower={lowPower} mats={mats} phase={phase} journey={journey} reducedMotion={reducedMotion} />
+      <BusDoors doors={doors} totalDoorCount={totalDoorCount} numRows={numRows} focusZ={focusZ} lowPower={lowPower} mats={mats} phase={phase} journey={journey} reducedMotion={reducedMotion} />
 
       {/* ---------- Face arrière dynamique (se recule avec la longueur) ---------- */}
       <group name="bus-rear-face" position={[0, 0, rearWallZ]}>

@@ -201,7 +201,7 @@ export async function GET(request: Request) {
 
     if (url.searchParams.get("messages") === "1") {
       const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
-      const limit = Math.min(100, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 60, 100)));
+      const limit = 100;
       const random = url.searchParams.get("random") === "1";
 
       if (random) {
@@ -311,8 +311,8 @@ export async function GET(request: Request) {
 
     if (url.searchParams.get("names") === "1") {
       if (url.searchParams.get("from") !== null) {
-        const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
-        const limit = Math.min(80, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 80, 80)));
+        const from = Math.floor(parseNonNegativeInteger(url.searchParams.get("from"), 0) / 80) * 80;
+        const limit = 80;
         return await cachedPublicJson(
           request,
           {
@@ -341,7 +341,7 @@ export async function GET(request: Request) {
 
       const values = url.searchParams.get("seats")?.split(",") ?? [];
       const seats = values.map((value) => /^\d+$/.test(value) ? Number(value) : NaN);
-      if (!seats.length || seats.length > 80 || seats.some((seat) => !Number.isSafeInteger(seat))) {
+      if (!seats.length || seats.length > 20 || seats.some((seat) => !Number.isSafeInteger(seat))) {
         return Response.json({ error: "Liste de places invalide." }, { status: 400, headers: WRITE_HEADERS });
       }
       const normalizedSeats = [...new Set(seats)].sort((a, b) => a - b);
@@ -371,7 +371,7 @@ export async function GET(request: Request) {
 
     if (wantsManifest) {
       const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
-      const limit = Math.min(100, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 60, 100)));
+      const limit = 60;
       return await cachedPublicJson(
         request,
         {
@@ -404,8 +404,8 @@ export async function GET(request: Request) {
     }
 
     if (wantsProfiles) {
-      const from = parseNonNegativeInteger(url.searchParams.get("from"), 0);
-      const limit = Math.min(48, Math.max(1, parseNonNegativeInteger(url.searchParams.get("limit"), 32, 48)));
+      const from = Math.floor(parseNonNegativeInteger(url.searchParams.get("from"), 0) / 32) * 32;
+      const limit = 48;
       return await cachedPublicJson(
         request,
         {
