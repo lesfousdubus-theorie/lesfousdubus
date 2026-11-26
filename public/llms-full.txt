@@ -1,4 +1,6 @@
-# Les Fous du Bus — La théorie du Mont Corvo
+# Les Fous du Bus — La théorie One Piece du Mont Corvo
+
+> Expérience 3D interactive de fans autour de la théorie One Piece « Le Siècle Oublié est le Présent » du Mont Corvo : monte à bord du bus sur Grand Line, choisis ton avatar et découvre comment les Ponéglyphes seraient la mémoire de l’avenir. Site créé par Epikaigle (@Epikaigle), relais X par FoudubusTV (@FoudubusTV_).
 
 ## Le Siècle Oublié est le Présent
 
@@ -32,7 +34,7 @@ Joy Boy serait le nom donné par les peuples à Luffy, leur libérateur. Sa vict
 
 Luffy serait son nom personnel, Joy Boy son nom légendaire et Nika son nom divin pour les croyants. La foi de Kuma jouerait un rôle concret : en protégeant les Mugiwara, il permettrait au libérateur espéré d’accomplir son parcours.
 
-Luffy, Joy Boy et Nika : https://x.com/FoudubusTV_/status/2088338383332311085
+- [Luffy, Joy Boy et Nika](https://x.com/FoudubusTV_/status/2088338383332311085)
 
 ### Vivi serait Lili
 
@@ -72,15 +74,15 @@ Usopp raconterait l’aventure de son capitaine sous la forme d’une légende t
 
 Les géants, peut-être des enfants, auraient illustré les textes reçus du futur avec leurs propres codes. Cela expliquerait les ressemblances avec les héros actuels et certaines différences. L’épée et le bouclier pourraient même évoquer Zoro et Sanji.
 
-La fresque du Haley : https://x.com/FoudubusTV_/status/2091193422019232206
+- [La fresque du Haley](https://x.com/FoudubusTV_/status/2091193422019232206)
 
-La piste de l’épée et du bouclier · spoilers : https://x.com/FoudubusTV_/status/2115801685972967828
+- [La piste de l’épée et du bouclier · spoilers](https://x.com/FoudubusTV_/status/2115801685972967828)
 
 ### Robin achèverait la volonté d’Ohara
 
 Clover, Olvia et Vegapunk auraient entretenu la recherche de vérité jusqu’à la génération de Luffy. En écrivant les Ponéglyphes, Robin achèverait cette transmission tout en participant à son origine. Cette transmission pourrait aussi éclairer la volonté du D.
 
-La volonté d’Ohara : https://x.com/FoudubusTV_/status/2087927875521429909
+- [La volonté d’Ohara](https://x.com/FoudubusTV_/status/2087927875521429909)
 
 ## Des inventions prises pour des vestiges
 
@@ -106,13 +108,13 @@ Imu connaîtrait les figures annoncées sans maîtriser leur identité ni leur �
 
 La prescience, illustrée par Shirley, pourrait permettre de recevoir des informations d’une autre époque, voire d’échanger avec elle. Cette piste prolongerait l’explication des connaissances d’Imu et de la découverte de Roger. Le fonctionnement d’une telle communication reste inconnu.
 
-La communication entre époques : https://x.com/FoudubusTV_/status/2077434523428548915
+- [La communication entre époques](https://x.com/FoudubusTV_/status/2077434523428548915)
 
 ### Roger aurait pu être pris pour Joy Boy
 
 Avec son chapeau, son rêve et son parcours, Roger aurait pu sembler être le libérateur attendu par Imu. Certaines évocations de Joy Boy pourraient alors renvoyer à cette erreur d’identification.
 
-L’ambiguïté autour de Roger : https://x.com/FoudubusTV_/status/2078143309671743663
+- [L’ambiguïté autour de Roger](https://x.com/FoudubusTV_/status/2078143309671743663)
 
 ## Un monde préparé à la même guerre
 
@@ -120,7 +122,7 @@ L’ambiguïté autour de Roger : https://x.com/FoudubusTV_/status/2078143309671
 
 Les hommes-poissons protégeraient Noah, Wano préparerait son ouverture et les Minks guideraient Zunesha. Les Shandiens garderaient leur cloche d’or, Alabasta les pierres, les Boucaniers et les géants l’espoir de Nika. Chaque peuple préparerait ainsi le jour du serment : la guerre libératrice.
 
-Le fonctionnement de la théorie : https://x.com/FoudubusTV_/status/2099136445512335403
+- [Le fonctionnement de la théorie](https://x.com/FoudubusTV_/status/2099136445512335403)
 
 ### Poséidon serait Shirahoshi
 
@@ -214,9 +216,13 @@ Teach serait la figure dont sa famille transmet la légende. En accomplissant sa
 
 Il serait lié à l’histoire complète de Luffy, découverte par Roger avant d’être vécue par les Mugiwara. Luffy serait ainsi à l’origine de son propre trésor. Cette lecture narrative ne résout pas encore la question de sa forme concrète.
 
-## Ressources
+## Ressources et crédits
 
-- Vidéo : https://www.youtube.com/watch?v=SgJ25zjMJyo
-- Fils sur X : https://x.com/FoudubusTV_/status/2088930077761315057
-- Fonctionnement : https://x.com/FoudubusTV_/status/2099136445512335403
-- Expérience du bus : https://lesfousdubus.sbs/
+- [Vidéo complète du Mont Corvo (3h27)](https://www.youtube.com/watch?v=SgJ25zjMJyo)
+- [Chaîne YouTube Mont Corvo](https://www.youtube.com/@MontCorvo)
+- [Fils sur X (@FoudubusTV_)](https://x.com/FoudubusTV_/status/2088930077761315057)
+- [Fonctionnement de la théorie (@FoudubusTV_)](https://x.com/FoudubusTV_/status/2099136445512335403)
+- [Relais X de la théorie : @FoudubusTV_](https://x.com/FoudubusTV_)
+- [Créateur du site : @Epikaigle](https://x.com/Epikaigle)
+- [Code source GitHub](https://github.com/lesfousdubus-theorie/lesfousdubus)
+- [Expérience du bus](https://lesfousdubus.sbs/)

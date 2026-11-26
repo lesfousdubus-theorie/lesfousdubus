@@ -6,6 +6,9 @@ import {
   THEORY_TITLE,
   THEORY_DESCRIPTION,
   SOCIAL_IMAGE,
+  SITE_CREATOR_NAME,
+  SITE_CREATOR_HANDLE,
+  SITE_CREATOR_URL,
 } from "@/lib/schema-ld";
 
 export const metadata: Metadata = {
@@ -16,12 +19,16 @@ export const metadata: Metadata = {
   },
   description: THEORY_DESCRIPTION,
   applicationName: "Les Fous du Bus",
-  authors: [{ name: "Les Fous du Bus", url: SITE_URL }],
+  authors: [
+    { name: SITE_CREATOR_NAME, url: SITE_CREATOR_URL },
+    { name: "Les Fous du Bus", url: SITE_URL },
+  ],
   generator: "Next.js",
   keywords: [
     "Théorie One Piece",
     "Les Fous du Bus",
     "Siècle Oublié est le présent",
+    "Void Century is the present",
     "Joy Boy Luffy",
     "Laugh Tale",
     "Ponéglyphes mémoire de l'avenir",
@@ -38,8 +45,9 @@ export const metadata: Metadata = {
     "Grand Line",
     "Red Line",
   ],
-  creator: "Les Fous du Bus",
+  creator: SITE_CREATOR_NAME,
   publisher: "Les Fous du Bus",
+  category: "entertainment",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -52,6 +60,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "fr_FR",
+    alternateLocale: ["en_US"],
     url: SITE_URL,
     siteName: "Les Fous du Bus — La Théorie One Piece",
     title: THEORY_TITLE,
@@ -62,12 +71,15 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: THEORY_TITLE,
     description: THEORY_DESCRIPTION,
-    images: ["/og-bus-preview.jpg"],
-    creator: "@lesfousdubus",
+    images: [SOCIAL_IMAGE],
+    creator: SITE_CREATOR_HANDLE,
   },
   robots: {
     index: true,
     follow: true,
+    "max-video-preview": -1,
+    "max-image-preview": "large",
+    "max-snippet": -1,
     googleBot: {
       index: true,
       follow: true,
@@ -89,6 +101,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" className="h-full overflow-hidden">
       <head>
+        <link rel="alternate" type="text/markdown" href="/llms.txt" title="Les Fous du Bus — Résumé pour IA (FR)" />
+        <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Les Fous du Bus — Théorie complète et FAQ (FR)" />
+        <link rel="alternate" type="text/markdown" href="/llms-en.txt" hrefLang="en" title="The Bus Fools Theory — Full Theory and FAQ (EN)" />
         <link rel="preload" href="/images/luffy-jolly-roger.png" as="image" fetchPriority="high" />
         <link rel="preconnect" href="https://www.youtube.com" />
         <link rel="preconnect" href="https://www.youtube-nocookie.com" />

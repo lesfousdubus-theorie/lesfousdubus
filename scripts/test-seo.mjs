@@ -6,15 +6,22 @@ const load = async (path, plugins = []) => {
   const result = await build({ entryPoints: [path], bundle: true, write: false, format: "esm", platform: "node", plugins });
   return import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
 };
-const { SITE_URL, SITE_UPDATED_AT, videoJsonLd } = await load("src/lib/schema-ld.ts");
+const { SITE_URL, SITE_UPDATED_AT, SITE_CREATOR_HANDLE, websiteJsonLd, webApplicationJsonLd, videoJsonLd } = await load("src/lib/schema-ld.ts");
 const { default: sitemap } = await load("src/app/sitemap.ts");
+const { default: robotsConfig } = await load("src/app/robots.ts");
 
 assert.match(videoJsonLd.uploadDate, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/, "Video publication needs a complete ISO datetime and explicit timezone.");
 assert.equal(new Date(videoJsonLd.uploadDate).toISOString(), "2026-04-10T10:00:56.000Z", "Publication must match YouTube's original metadata, not an invented midnight.");
+assert.equal(videoJsonLd.duration, "PT3H27M15S", "Video duration must match YouTube's real 207m15s runtime.");
 assert.equal(videoJsonLd.creator.name, "Mont Corvo");
 assert.equal(videoJsonLd.contentUrl, undefined, "A YouTube watch page is not a raw video file.");
+assert.equal(websiteJsonLd.creator.name, "Epikaigle");
+assert.equal(webApplicationJsonLd["@type"], "WebApplication");
+assert.equal(webApplicationJsonLd.isAccessibleForFree, true);
+assert.equal(SITE_CREATOR_HANDLE, "@Epikaigle");
 assert.deepEqual(sitemap().map(item => item.url), [SITE_URL]);
 assert(sitemap().every(item => item.lastModified === SITE_UPDATED_AT), "Sitemap dates must describe a real update rather than the request time.");
+assert(Array.isArray(robotsConfig().rules) && robotsConfig().rules.length >= 2, "Robots config must include explicit AI crawler rules.");
 
 // Exercise the actual edge entrypoint. Only the generated Next handler is a
 // fixture, so these assertions catch broken delegation, exports and redirects.
@@ -57,16 +64,22 @@ if (base) {
   assert.equal(home.status, 200);
   assert.equal(removed.status, 404, "The dedicated reading page has been removed.");
   assert.equal(missing.status, 404);
-  assert.deepEqual(jsonLd(home.html).map(item => item["@type"]).sort(), ["VideoObject", "WebSite"]);
+  assert.deepEqual(jsonLd(home.html).map(item => item["@type"]).sort(), ["VideoObject", "WebApplication", "WebSite"]);
   assert.equal(jsonLd(removed.html).length, 0);
   assert.equal(jsonLd(home.html).find(item => item["@type"] === "VideoObject").uploadDate, videoJsonLd.uploadDate);
+  assert.equal(jsonLd(home.html).find(item => item["@type"] === "VideoObject").duration, videoJsonLd.duration);
   assert.equal(jsonLd(missing.html).length, 0, "Error pages must not claim to contain an article or video.");
   assert(!home.html.includes('id="theorie-fous-du-bus-manifeste"'), "The crawler-only hidden article must be removed.");
+  assert.doesNotMatch(home.html, /<h1[^>]*id="bus-loading-title"/, "Loading screen must not emit an H1.");
+  assert.match(home.html, /href="\/llms\.txt"/);
+  assert.match(home.html, /href="\/llms-full\.txt"/);
+  assert.match(home.html, /href="\/llms-en\.txt"/);
   assert.doesNotMatch(home.html, /href="\/theorie"/);
   assert.match(home.html, /id="bus-loading-wheel"/);
   assert.equal(meta(home.html, "og:image"), `${SITE_URL}/og-bus-preview.jpg`);
   assert.equal(meta(home.html, "og:type"), "website");
   assert.equal(meta(home.html, "twitter:image"), `${SITE_URL}/og-bus-preview.jpg`);
+  assert.equal(meta(home.html, "twitter:creator"), "@Epikaigle");
   assert.doesNotMatch(xml.html, /<loc>https:\/\/lesfousdubus\.sbs\/theorie<\/loc>/);
   assert.match(robots.html, /Disallow: \/api\//);
   const legacy = await fetch(new URL("/sitemap-index.xml", base), { redirect: "manual" });

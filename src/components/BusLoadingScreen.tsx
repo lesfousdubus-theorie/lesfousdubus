@@ -259,14 +259,14 @@ export default function BusLoadingScreen({
           role={failed ? "alert" : "status"}
           className={failed ? "bus-case-elevated mt-6 w-full max-w-md rounded-2xl px-5 py-6 sm:px-7" : "mt-5 flex w-full max-w-[220px] flex-col items-center"}
         >
-          <h1
+          <p
             id="bus-loading-title"
             className={failed ? "text-2xl font-black leading-tight text-white" : "text-sm font-semibold tracking-wide text-[#dfe5ff]"}
           >
             {failed
               ? pickLocale(locale, "Le bus n’a pas pu démarrer", "The bus failed to start")
               : pickLocale(locale, "Chargement du bus…", "Loading the bus…")}
-          </h1>
+          </p>
           {!failed && (
             <div className="mt-3 flex w-full items-center gap-2.5">
               <div

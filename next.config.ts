@@ -42,7 +42,24 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    const markdownHeaders = [
+      ...securityHeaders,
+      { key: "Content-Type", value: "text/markdown; charset=utf-8" },
+      { key: "Cache-Control", value: "public, max-age=3600, stale-while-revalidate=86400" },
+    ];
     return [
+      {
+        source: "/llms.txt",
+        headers: markdownHeaders,
+      },
+      {
+        source: "/llms-full.txt",
+        headers: markdownHeaders,
+      },
+      {
+        source: "/llms-en.txt",
+        headers: markdownHeaders,
+      },
       {
         source: "/:path*",
         headers: securityHeaders,

@@ -1,4 +1,6 @@
-# Les Fous du Bus — La théorie du Mont Corvo
+# Les Fous du Bus — La théorie One Piece du Mont Corvo
+
+> Expérience 3D interactive de fans autour de la théorie One Piece « Le Siècle Oublié est le Présent » du Mont Corvo : monte à bord du bus sur Grand Line, choisis ton avatar et découvre comment les Ponéglyphes seraient la mémoire de l’avenir. Site créé par Epikaigle (@Epikaigle), relais X par FoudubusTV (@FoudubusTV_).
 
 ## Le Siècle Oublié est le Présent
 
@@ -22,23 +24,33 @@ Le futur compléterait le passé déjà connu. Le monde ne recommencerait pas : 
 
 Luffy agirait pour ses amis et ses convictions. Les légendes raconteraient ensuite ses choix : ce serait lui qui ferait naître Joy Boy en accomplissant sa propre aventure.
 
+## Documentation complète pour IA
+
+- [Théorie complète et FAQ (Français)](https://lesfousdubus.sbs/llms-full.txt) : tous les arguments, parallèles de personnages, sources X et 12 questions fréquentes.
+- [Full Theory and FAQ (English)](https://lesfousdubus.sbs/llms-en.txt) : complete English version of the Bus Fools One Piece theory and FAQ.
+- [Expérience interactive 3D](https://lesfousdubus.sbs/) : le bus des Fous du Bus sur Grand Line (français et anglais).
+
 ## Les thèmes de la théorie
 
-- Les héros derrière les légendes : Luffy deviendrait Joy Boy ; Nika, Joy Boy et Luffy : une même personne ; Vivi serait Lili ; Zoro serait Ryuma ; Sanji serait Sora, le guerrier des mers ; Teach deviendrait Davy D. Jones ; Le roi Donquixote serait Doflamingo ; Loki deviendrait Nidhogg.
+- **Les héros derrière les légendes** : Luffy deviendrait Joy Boy ; Nika, Joy Boy et Luffy : une même personne ; Vivi serait Lili ; Zoro serait Ryuma ; Sanji serait Sora, le guerrier des mers ; Teach deviendrait Davy D. Jones ; Le roi Donquixote serait Doflamingo ; Loki deviendrait Nidhogg.
 
-- Ceux qui transmettraient l’histoire : Robin écrirait le Rio Ponéglyphe ; Usopp écrirait le Haley ; La fresque serait l’histoire illustrée qui est en train de se passer ; Robin achèverait la volonté d’Ohara.
+- **Ceux qui transmettraient l’histoire** : Robin écrirait le Rio Ponéglyphe ; Usopp écrirait le Haley ; La fresque serait l’histoire illustrée qui est en train de se passer ; Robin achèverait la volonté d’Ohara.
 
-- Des inventions prises pour des vestiges : L’Ancien Royaume appartiendrait à l’avenir ; Emeth serait le dernier Battle Franky ; Le chapeau géant serait celui d’Emeth.
+- **Des inventions prises pour des vestiges** : L’Ancien Royaume appartiendrait à l’avenir ; Emeth serait le dernier Battle Franky ; Le chapeau géant serait celui d’Emeth.
 
-- Imu face à l’avenir : Imu chercherait à empêcher le futur ; Des époques pourraient communiquer ; Roger aurait pu être pris pour Joy Boy.
+- **Imu face à l’avenir** : Imu chercherait à empêcher le futur ; Des époques pourraient communiquer ; Roger aurait pu être pris pour Joy Boy.
 
-- Un monde préparé à la même guerre : Chaque peuple aurait sa mission ; Poséidon serait Shirahoshi ; La Galley-La réunirait les compagnons de Loki ; Pluton serait une création collective ; Mother Flame alimenterait Uranus ; Les familles du pouvoir formeraient les Vingt Rois ; Le Déluge accompagnerait la guerre finale ; Zunesha se souviendrait du futur.
+- **Un monde préparé à la même guerre** : Chaque peuple aurait sa mission ; Poséidon serait Shirahoshi ; La Galley-La réunirait les compagnons de Loki ; Pluton serait une création collective ; Mother Flame alimenterait Uranus ; Les familles du pouvoir formeraient les Vingt Rois ; Le Déluge accompagnerait la guerre finale ; Zunesha se souviendrait du futur.
 
-- Laugh Tale et l’accomplissement des rêves : Laugh Tale serait Roadstar à une autre époque ; Sanji participerait à la création d’All Blue ; Luffy serait à l’origine du One Piece.
+- **Laugh Tale et l’accomplissement des rêves** : Laugh Tale serait Roadstar à une autre époque ; Sanji participerait à la création d’All Blue ; Luffy serait à l’origine du One Piece.
 
-## Ressources
+## Ressources et crédits
 
-- Vidéo : https://www.youtube.com/watch?v=SgJ25zjMJyo
-- Fils sur X : https://x.com/FoudubusTV_/status/2088930077761315057
-- Fonctionnement : https://x.com/FoudubusTV_/status/2099136445512335403
-- Expérience du bus : https://lesfousdubus.sbs/
+- [Vidéo complète du Mont Corvo (3h27)](https://www.youtube.com/watch?v=SgJ25zjMJyo)
+- [Chaîne YouTube Mont Corvo](https://www.youtube.com/@MontCorvo)
+- [Fils sur X (@FoudubusTV_)](https://x.com/FoudubusTV_/status/2088930077761315057)
+- [Fonctionnement de la théorie (@FoudubusTV_)](https://x.com/FoudubusTV_/status/2099136445512335403)
+- [Relais X de la théorie : @FoudubusTV_](https://x.com/FoudubusTV_)
+- [Créateur du site : @Epikaigle](https://x.com/Epikaigle)
+- [Code source GitHub](https://github.com/lesfousdubus-theorie/lesfousdubus)
+- [Expérience du bus](https://lesfousdubus.sbs/)

@@ -1,7 +1,7 @@
 import BusClient from "@/components/BusClient";
 import type { Metadata } from "next";
 import { CENTRAL_THESIS } from "@/lib/theory-data";
-import { SITE_URL, websiteJsonLd, videoJsonLd } from "@/lib/schema-ld";
+import { SITE_URL, websiteJsonLd, webApplicationJsonLd, videoJsonLd } from "@/lib/schema-ld";
 import { THEORY_VIDEO_URL } from "@/lib/theory-video";
 import StructuredData from "@/components/StructuredData";
 
@@ -13,6 +13,7 @@ export default function HomePage() {
   return (
     <main id="site-content" className="relative h-dvh w-screen overflow-hidden">
       <StructuredData data={websiteJsonLd} />
+      <StructuredData data={webApplicationJsonLd} />
       <StructuredData data={videoJsonLd} />
       {/* Expérience 3D interactive (WebGL / Three.js / Canvas) */}
       <BusClient />
