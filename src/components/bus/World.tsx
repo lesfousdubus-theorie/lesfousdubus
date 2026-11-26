@@ -363,14 +363,27 @@ const World = memo(function World({
   const dirtyPropsRef = useRef<Set<number>>(new Set());
   const visibility = useMemo(() => createSceneryVisibility(), []);
 
-  const bridgeLength = Math.max(960, bridgeLengthOverride ?? Math.max(1600, cabinLength + 1400));
-  const horizonBound = Math.max(480, islandCullDistance ?? 580);
+  void bridgeLengthOverride;
 
   // Chaque île (détaillée ou LOD lointaine) embarque son propre tronçon de route (ZONE_LEN = 160 m)
   // ainsi que les vraies structures One Piece en géométrie allégée (instanciée par matériau) pour
   // qu'aucun paysage au loin ou au dézoom ne soit jamais vide.
+  // Capacités constantes O(1) fenêtrées autour de la caméra (±28 tuiles = ±4,48 km, >1,7× au-delà du brouillard) :
+  // zéro recréation de buffer GPU quand de nouveaux passagers allongent le bus et ~30× moins de tuiles à mettre à jour.
   const distantScrollGroupRef = useRef<THREE.Group>(null);
-  const lastDistantLayoutKeyRef = useRef("");
+  const distantOriginZRef = useRef(0);
+  const lastLayoutNumsRef = useRef({
+    winFirst: -999999,
+    winLast: -999999,
+    snappedEye: -999999,
+    landmarkRadius: -1,
+    stageMask: -1,
+    detailedTiles: new Int32Array(ZONES.length).fill(-999999),
+    layoutDirty: true,
+  });
+  const prevZoneTileHashRef = useRef<Int32Array>(new Int32Array(ZONES.length));
+  const prevZoneTileCountRef = useRef<Int32Array>(new Int32Array(ZONES.length).fill(-1));
+  const prevZoneOriginZRef = useRef<number>(Number.NaN);
   const nextFlightLayoutAtRef = useRef(0);
   const distantGroundRef = useRef<THREE.InstancedMesh>(null);
   const distantShoreRef = useRef<THREE.InstancedMesh>(null);
@@ -378,8 +391,9 @@ const World = memo(function World({
   const distantYellowRef = useRef<THREE.InstancedMesh>(null);
   const distantRailRef = useRef<THREE.InstancedMesh>(null);
   const distantDashRef = useRef<THREE.InstancedMesh>(null);
-  const distantTileCapacity = Math.max(32, Math.ceil((cabinLength + Math.max(bridgeLength, horizonBound * 2) + 2400) / ZONE_LEN) + 12);
-  const distantZoneCapacity = Math.max(8, Math.ceil(distantTileCapacity / ZONES.length) + 6);
+  const maxDistantTileRadius = 28;
+  const distantTileCapacity = maxDistantTileRadius * 2 + 8;
+  const distantZoneCapacity = Math.ceil(distantTileCapacity / ZONES.length) + 4;
   const distantDashCapacity = 24;
   useEffect(
     () => () => {
@@ -515,10 +529,13 @@ const World = memo(function World({
   }, [flushDirtyBounds, zoneSubStage, visibleProps.length, props, lowPower]);
 
   const zoneZ = useRef<number[]>(new Array<number>(ZONES.length).fill(0));
+  const smoothedScrollDtRef = useRef<number | null>(null);
   const seaWakesRef = useRef<THREE.Vector4[]>(
     Array.from({ length: SEA_WAKE_COUNT }, () => new THREE.Vector4(0, 0, 1, 0)),
   );
 
+  // Priorité -0.4 : s'exécute juste après CameraRig (-0.5) et AVANT WorldOcean, WorldSeaCreatures,
+  // Weather et DayNight (0) afin que les îles, vagues, créatures et ombres partagent le même scroll exact.
   useFrame((state, dt) => {
     // Charger chaque élément par micro-étapes espacées d'au moins 20 ms afin de ne jamais
     // bloquer le thread principal ni faire saccader le gouvernail de chargement.
@@ -535,7 +552,8 @@ const World = memo(function World({
         const nextBatches = distantZoneBatchesRef.current.slice();
         nextBatches[zIdx] = built;
         distantZoneBatchesRef.current = nextBatches;
-        lastDistantLayoutKeyRef.current = "";
+        prevZoneTileCountRef.current[zIdx] = -1;
+        lastLayoutNumsRef.current.layoutDirty = true;
         setDistantZoneBatches(nextBatches);
       } else if (!seaCreaturesReady) {
         loadStepNextAtRef.current = now + 20;
@@ -561,7 +579,22 @@ const World = memo(function World({
       }
     }
     const mult = (worldRef.current?.speedMultiplier ?? 1.0) * (worldRef.current.motionFactor ?? 1);
-    const scroll = (worldRef.current?.scroll ?? 0) + frameDt * WORLD_SPEED * mult;
+    // Lisse la micro-gigue rAF (±1–3 ms) sur l'avance du paysage afin d'éliminer les micro-saccades
+    // perceptibles sur le défilement des îles alors que le bus reste parfaitement fluide.
+    let scrollDt = frameDt;
+    if (frameDt > 0.003 && frameDt < 0.06) {
+      const prev = smoothedScrollDtRef.current;
+      if (prev === null || Math.abs(frameDt - prev) > 0.018) {
+        smoothedScrollDtRef.current = frameDt;
+      } else {
+        const nextSmooth = prev + (frameDt - prev) * 0.15;
+        smoothedScrollDtRef.current = nextSmooth;
+        scrollDt = nextSmooth + (frameDt - nextSmooth) * 0.2;
+      }
+    } else {
+      smoothedScrollDtRef.current = null;
+    }
+    const scroll = (worldRef.current?.scroll ?? 0) + scrollDt * WORLD_SPEED * mult;
     if (worldRef.current) worldRef.current.scroll = scroll;
 
     visibility.begin(state.camera);
@@ -631,10 +664,11 @@ const World = memo(function World({
     }
 
     // Tuiles d'îles simplifiées (LOD lointain) avec leur route intégrée et leurs vrais décors allégés :
-    // le groupe parent porte la translation continue +scroll (0 upload GPU/frame), les matrices d'instances
-    // ne sont reconstruites que lorsqu'une tuile change d'index (~toutes les 6 s).
+    // le groupe parent porte la translation continue scroll + originZ en float64 (0 upload GPU/frame et
+    // zéro tremblement float32 même à 300 km), les matrices locales ne sont reconstruites que lorsqu'une
+    // tuile change d'index autour de la caméra.
     if (distantScrollGroupRef.current) {
-      distantScrollGroupRef.current.position.z = scroll;
+      distantScrollGroupRef.current.position.z = scroll + distantOriginZRef.current;
     }
     if (
       distantGroundRef.current
@@ -646,69 +680,94 @@ const World = memo(function World({
     ) {
       const eye = state.camera.position;
       const eyeZ = eye.z;
-      const horizon = Math.max(640, islandCullDistance ?? 720);
+      const horizon = Math.min(3200, Math.max(640, islandCullDistance ?? 720));
       const spanMax = Math.max(busEndZ + 480, eyeZ + horizon, loopEnd);
       const firstIndex = minAllowedTileIdx;
-      // Aligner lastIndex et eyeTileIdx sur des multiples propres pour éviter de reconstruire les buffers
-      // 5 fois par tuile à des phases décalées pendant le défilement continu du bus.
       const tileSpan = Math.ceil((spanMax - minAllowedCenterZ) / ZONE_LEN) + 2;
       const lastIndex = firstIndex + tileSpan;
       const rawEyeTileIdx = Math.round((eyeZ - scroll + 40) / ZONE_LEN);
       const snappedEyeTileIdx = Math.round(rawEyeTileIdx / 4) * 4;
-      // Les socles d'îles et la route couvrent tout le bus (6,5 km+), tandis que les monuments 3D LOD
-      // couvrent ±1,1 à ±2,4 km autour de la caméra (évite de tracer 10 copies sub-pixel à 6 km).
+      const tileRadius = Math.min(maxDistantTileRadius, Math.ceil(horizon / ZONE_LEN) + 4);
+      const winFirst = Math.max(firstIndex, snappedEyeTileIdx - tileRadius);
+      const winLast = Math.min(lastIndex, snappedEyeTileIdx + tileRadius);
+      // Les socles d'îles et la route couvrent toute la portée visible autour de la caméra,
+      // tandis que les monuments 3D LOD couvrent ±1,1 à ±2,4 km autour de la caméra.
       const landmarkRadius = Math.max(
         1100,
         Math.min(2400, Math.round((Math.hypot(eye.x, eye.y) * 2.2 + 960) / 320) * 320),
       );
-      let detailedSig = "";
       const detailedTileByZone = detailedTileByZoneRef.current;
       detailedTileByZone.fill(-999999);
+      let stageMask = 0;
+      const layoutNums = lastLayoutNumsRef.current;
+      let layoutChanged = layoutNums.layoutDirty
+        || layoutNums.winFirst !== winFirst
+        || layoutNums.winLast !== winLast
+        || layoutNums.snappedEye !== snappedEyeTileIdx
+        || layoutNums.landmarkRadius !== landmarkRadius;
       for (let zIdx = 0; zIdx < ZONES.length; zIdx++) {
+        const hasDistant = zoneStageFor(zIdx) < 2;
+        if (hasDistant) stageMask |= 1 << zIdx;
         if (detailedVisibleRef.current[zIdx]) {
           const dTile = Math.round((zoneZ.current[zIdx] - scroll + 40) / ZONE_LEN);
           detailedTileByZone[zIdx] = dTile;
-          detailedSig += `${zIdx}:${dTile}:${zoneStageFor(zIdx) < 2 ? 0 : 1},`;
+          if (layoutNums.detailedTiles[zIdx] !== dTile) layoutChanged = true;
+        } else if (layoutNums.detailedTiles[zIdx] !== -999999) {
+          layoutChanged = true;
         }
       }
-      const layoutKey = `${firstIndex}|${lastIndex}|${snappedEyeTileIdx}|${landmarkRadius}|${distantTileCapacity}|${detailedSig}`;
+      if (layoutNums.stageMask !== stageMask) layoutChanged = true;
       const isBoardingFlight = phase === "entering" || phase === "exiting";
-      if (layoutKey !== lastDistantLayoutKeyRef.current && (!isBoardingFlight || now >= nextFlightLayoutAtRef.current)) {
+      if (layoutChanged && (!isBoardingFlight || now >= nextFlightLayoutAtRef.current)) {
         if (isBoardingFlight) nextFlightLayoutAtRef.current = now + 260;
-        lastDistantLayoutKeyRef.current = layoutKey;
+        layoutNums.winFirst = winFirst;
+        layoutNums.winLast = winLast;
+        layoutNums.snappedEye = snappedEyeTileIdx;
+        layoutNums.landmarkRadius = landmarkRadius;
+        layoutNums.stageMask = stageMask;
+        layoutNums.layoutDirty = false;
+        for (let zIdx = 0; zIdx < ZONES.length; zIdx++) {
+          layoutNums.detailedTiles[zIdx] = detailedTileByZone[zIdx];
+        }
+        const originZ = snappedEyeTileIdx * ZONE_LEN;
+        distantOriginZRef.current = originZ;
+        if (distantScrollGroupRef.current) {
+          distantScrollGroupRef.current.position.z = scroll + originZ;
+        }
         const distantZoneZs = distantZoneZsRef.current;
         for (let zIdx = 0; zIdx < ZONES.length; zIdx++) distantZoneZs[zIdx].length = 0;
         let tileCount = 0;
         let dashCountOut = 0;
-        for (let tileIdx = firstIndex; tileIdx <= lastIndex && tileCount < distantTileCapacity; tileIdx++) {
+        for (let tileIdx = winFirst; tileIdx <= winLast && tileCount < distantTileCapacity; tileIdx++) {
           const localZ = -40 + tileIdx * ZONE_LEN;
           const worldZ = localZ + scroll;
           if (worldZ - ZONE_LEN * 0.5 > spanMax) continue;
+          const relZ = localZ - originZ;
           const slot = ((-tileIdx % ZONES.length) + ZONES.length) % ZONES.length;
           const zoneIdx = zoneOrder[slot] ?? 0;
           const withinLandmarkHorizon = Math.abs(worldZ - eyeZ) <= landmarkRadius;
           if (detailedTileByZone[zoneIdx] === tileIdx) {
             if (zoneStageFor(zoneIdx) < 2 && withinLandmarkHorizon && distantZoneZs[zoneIdx].length < distantZoneCapacity) {
-              distantZoneZs[zoneIdx].push(localZ);
+              distantZoneZs[zoneIdx].push(relZ);
             }
             continue;
           }
           const zone = ZONES[zoneIdx];
 
-          distantMatrix.makeTranslation(0, -0.34, localZ);
+          distantMatrix.makeTranslation(0, -0.34, relZ);
           distantGroundRef.current.setMatrixAt(tileCount, distantMatrix);
           distantColor.set(zone.ground);
           distantGroundRef.current.setColorAt(tileCount, distantColor);
 
-          distantMatrix.makeTranslation(0, -0.44, localZ);
+          distantMatrix.makeTranslation(0, -0.44, relZ);
           distantShoreRef.current.setMatrixAt(tileCount, distantMatrix);
           distantColor.set(zone.shore);
           distantShoreRef.current.setColorAt(tileCount, distantColor);
 
-          distantMatrix.makeTranslation(0, 0.024, localZ);
+          distantMatrix.makeTranslation(0, 0.024, relZ);
           distantRoadRef.current.setMatrixAt(tileCount, distantMatrix);
 
-          distantMatrix.makeTranslation(0, 0, localZ);
+          distantMatrix.makeTranslation(0, 0, relZ);
           distantYellowRef.current.setMatrixAt(tileCount, distantMatrix);
           distantRailRef.current.setMatrixAt(tileCount, distantMatrix);
 
@@ -717,7 +776,7 @@ const World = memo(function World({
           }
 
           if (withinLandmarkHorizon && distantZoneZs[zoneIdx].length < distantZoneCapacity) {
-            distantZoneZs[zoneIdx].push(localZ);
+            distantZoneZs[zoneIdx].push(relZ);
           }
 
           tileCount += 1;
@@ -728,20 +787,47 @@ const World = memo(function World({
         distantYellowRef.current.count = tileCount;
         distantRailRef.current.count = tileCount;
         distantDashRef.current.count = dashCountOut;
-        distantGroundRef.current.instanceMatrix.needsUpdate = true;
-        distantShoreRef.current.instanceMatrix.needsUpdate = true;
-        distantRoadRef.current.instanceMatrix.needsUpdate = true;
-        distantYellowRef.current.instanceMatrix.needsUpdate = true;
-        distantRailRef.current.instanceMatrix.needsUpdate = true;
+        const matRange = tileCount * 16;
+        for (const inst of [
+          distantGroundRef.current,
+          distantShoreRef.current,
+          distantRoadRef.current,
+          distantYellowRef.current,
+          distantRailRef.current,
+        ]) {
+          inst.instanceMatrix.clearUpdateRanges();
+          if (matRange > 0) inst.instanceMatrix.addUpdateRange(0, matRange);
+          inst.instanceMatrix.needsUpdate = true;
+        }
+        distantDashRef.current.instanceMatrix.clearUpdateRanges();
+        if (dashCountOut > 0) distantDashRef.current.instanceMatrix.addUpdateRange(0, dashCountOut * 16);
         distantDashRef.current.instanceMatrix.needsUpdate = true;
-        if (distantGroundRef.current.instanceColor) distantGroundRef.current.instanceColor.needsUpdate = true;
-        if (distantShoreRef.current.instanceColor) distantShoreRef.current.instanceColor.needsUpdate = true;
+        for (const inst of [distantGroundRef.current, distantShoreRef.current]) {
+          if (inst.instanceColor) {
+            inst.instanceColor.clearUpdateRanges();
+            if (tileCount > 0) inst.instanceColor.addUpdateRange(0, tileCount * 3);
+            inst.instanceColor.needsUpdate = true;
+          }
+        }
 
+        const originSame = originZ === prevZoneOriginZRef.current;
+        prevZoneOriginZRef.current = originZ;
+        const prevCounts = prevZoneTileCountRef.current;
+        const prevHashes = prevZoneTileHashRef.current;
         for (let zIdx = 0; zIdx < ZONES.length; zIdx++) {
           const zs = distantZoneZs[zIdx];
           const meshes = distantZoneMeshRefs.current[zIdx];
           if (!meshes) continue;
           const count = zs.length;
+          let zHash = count;
+          for (let k = 0; k < count; k++) {
+            zHash = ((zHash * 31) ^ Math.round(zs[k])) | 0;
+          }
+          if (originSame && count === prevCounts[zIdx] && zHash === prevHashes[zIdx]) {
+            continue;
+          }
+          prevCounts[zIdx] = count;
+          prevHashes[zIdx] = zHash;
           const sphereCenterZ = count > 0 ? (zs[0] + zs[count - 1]) * 0.5 : 0;
           const sphereRadius = count > 0 ? Math.abs(zs[count - 1] - zs[0]) * 0.5 + 120 : 1;
           for (let bIdx = 0; bIdx < meshes.length; bIdx++) {
@@ -782,7 +868,7 @@ const World = memo(function World({
       worldRef.current.weatherIntensity +=
         (targetIntensity - worldRef.current.weatherIntensity) * Math.min(1, frameDt * 0.65);
     }
-  });
+  }, -0.4);
 
   return (
     <group>

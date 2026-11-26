@@ -48,7 +48,7 @@ export function PassengerTorso({ archetype, mats }: Props) {
       {[-1,1].map(side=><CharacterPart key={side} material={identityMaterial("#f9ac26")} size={[.065,.065,.035]} position={[side*.046,.136,front-.015]} rotation={[0,0,side*.32]}/>)}
     </>}
     {archetype.id==="jinbe"&&<>
-      <CharacterPart material={mats.skin} size={[.165,.09,.030]} position={[0,.128,front+.023]} radius={.020}/>
+      <CharacterPart material={mats.skin} size={[.145,.085,.024]} position={[0,.128,front+.014]} radius={.016}/>
       {[-1,1].map(side=><CharacterPart key={side} material={identityMaterial("#f3e4bf")} size={[.05,.29,.055]} position={[side*.185,.034,.104]} rotation={[0,0,side*.12]}/>)}
     </>}
     {archetype.id === "sanji" && <>

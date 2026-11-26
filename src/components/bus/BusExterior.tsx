@@ -17,6 +17,45 @@ import { WHEEL_ARCH_RADIUS, createLowerBodyGeometry } from "./BusBodyGeometry";
 import { isWindowPillarClearOfDoor } from "@/lib/bus-interior-geometry";
 import type { JourneyState } from "@/lib/bus-journey";
 
+const PLAIN_SIDE_PANEL_TEMPLATE_CACHE = new Map<string, THREE.BufferGeometry>();
+
+function getPlainSidePanelTemplate(len: number): THREE.BufferGeometry {
+  const key = len.toFixed(3);
+  let template = PLAIN_SIDE_PANEL_TEMPLATE_CACHE.get(key);
+  if (!template) {
+    if (PLAIN_SIDE_PANEL_TEMPLATE_CACHE.size >= 48) {
+      const oldestKey = PLAIN_SIDE_PANEL_TEMPLATE_CACHE.keys().next().value;
+      if (oldestKey !== undefined) {
+        PLAIN_SIDE_PANEL_TEMPLATE_CACHE.get(oldestKey)?.dispose();
+        PLAIN_SIDE_PANEL_TEMPLATE_CACHE.delete(oldestKey);
+      }
+    }
+    template = createLowerBodyGeometry(len, []);
+    PLAIN_SIDE_PANEL_TEMPLATE_CACHE.set(key, template);
+  }
+  return template;
+}
+
+function createExtrudedRoundedProfile(width: number, height: number, radius: number, curveSegments = 6): THREE.BufferGeometry {
+  const hw = width / 2;
+  const hh = height / 2;
+  const r = Math.min(radius, hw, hh);
+  const shape = new THREE.Shape();
+  shape.moveTo(-hw + r, -hh);
+  shape.lineTo(hw - r, -hh);
+  shape.quadraticCurveTo(hw, -hh, hw, -hh + r);
+  shape.lineTo(hw, hh - r);
+  shape.quadraticCurveTo(hw, hh, hw - r, hh);
+  shape.lineTo(-hw + r, hh);
+  shape.quadraticCurveTo(-hw, hh, -hw, hh - r);
+  shape.lineTo(-hw, -hh + r);
+  shape.quadraticCurveTo(-hw, -hh, -hw + r, -hh);
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false, curveSegments });
+  geometry.translate(0, 0, -0.5);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
 function splitAtWheels(spans: Array<[number, number]>, wheelZs: number[], margin = WHEEL_ARCH_RADIUS): Array<[number, number]> {
   let current = spans;
   for (const wheelZ of wheelZs) {
@@ -39,6 +78,8 @@ interface BusExteriorProps {
   mats: Record<string, THREE.Material>;
   cabinLength: number;
   cabinCenterZ: number;
+  hullStartZ?: number;
+  hullEndZ?: number;
   rearWallZ: number;
   doors: BusDoorLayout[];
   totalDoorCount?: number;
@@ -66,20 +107,46 @@ interface BusExteriorProps {
 }
 
 const BusExterior = memo(function BusExterior({
-  headlights, phase, journey, mats, cabinLength, cabinCenterZ, rearWallZ, doors, totalDoorCount, numRows, focusZ, lowPower,
+  headlights, phase, journey, mats, cabinLength, cabinCenterZ, hullStartZ = BUS_FRONT_Z, hullEndZ, rearWallZ, doors, totalDoorCount, numRows, focusZ, lowPower,
   wheelPositions, wheels, leftWiper, rightWiper, leftTarget, rightTarget,
   sideLabel, reducedMotion, freeView, licensePlateTex, montCorvoTex, hatGeo, ribbonGeo, hat,
   hatBasePos, hatBaseRot, contactShadowTex,
 }: BusExteriorProps) {
+  const spanEndZ = hullEndZ ?? rearWallZ;
+  const startsAtFront = hullStartZ <= BUS_FRONT_Z + 0.01;
+  const endsAtRear = spanEndZ >= rearWallZ - 0.01;
+  const roofCapStartZ = startsAtFront ? hullStartZ + 0.15 : hullStartZ;
+  const roofCapEndZ = endsAtRear ? spanEndZ - 0.15 : spanEndZ;
+  const roofMainStartZ = startsAtFront ? hullStartZ - 0.06 : hullStartZ;
+  const roofMainEndZ = endsAtRear ? spanEndZ + 0.06 : spanEndZ;
+  const chassisStartZ = startsAtFront ? hullStartZ - 1.2 : hullStartZ;
+  const shadowStartZ = startsAtFront ? hullStartZ - 1.9 : hullStartZ;
+  const shadowEndZ = endsAtRear ? spanEndZ + 0.9 : spanEndZ;
+  // Profils arrondis extrudés une seule fois (Z ∈ [-0,5, 0,5]) puis étirés par scale.z = cabinLength :
+  // évite de ré-extruder 4 RoundedBox sur le thread principal à chaque nouvelle rangée ajoutée au bus.
+  const stretchGeos = useMemo(() => ({
+    upperSide: createExtrudedRoundedProfile(0.08, 0.45, 0.035),
+    roofMain: createExtrudedRoundedProfile(2.68, 0.22, 0.1),
+    roofCap: createExtrudedRoundedProfile(2.3, 0.12, 0.05),
+    unitBox: new THREE.BoxGeometry(1, 1, 1),
+    unitPlane: new THREE.PlaneGeometry(1, 1),
+  }), []);
+  useEffect(() => () => {
+    stretchGeos.upperSide.dispose();
+    stretchGeos.roofMain.dispose();
+    stretchGeos.roofCap.dispose();
+    stretchGeos.unitBox.dispose();
+    stretchGeos.unitPlane.dispose();
+  }, [stretchGeos]);
+
   const wheelZs = useMemo(
     () => [...new Set(wheelPositions.map(([, z]) => z))].sort((a, b) => a - b),
     [wheelPositions],
   );
   const panelOriginZ = Math.round(focusZ / 160) * 160;
   const sidePanels = useMemo(() => {
-    const plainTemplateCache = new Map<string, THREE.BufferGeometry>();
-    const panels = [-1, 1].map((side) => {
-      const pieces = splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, side > 0).map(([from, to]) => {
+    return [-1, 1].map((side) => {
+      const pieces = splitAtDoors(hullStartZ, spanEndZ, doors, side > 0).map(([from, to]) => {
         const len = to - from;
         const center = (from + to) / 2;
         const localCenter = center - panelOriginZ;
@@ -87,29 +154,21 @@ const BusExterior = memo(function BusExterior({
         if (localWheelZs.length > 0) {
           return createLowerBodyGeometry(len, localWheelZs).translate(0, 0, localCenter);
         }
-        const key = len.toFixed(3);
-        let template = plainTemplateCache.get(key);
-        if (!template) {
-          template = createLowerBodyGeometry(len, []);
-          plainTemplateCache.set(key, template);
-        }
-        return template.clone().translate(0, 0, localCenter);
+        return getPlainSidePanelTemplate(len).clone().translate(0, 0, localCenter);
       });
       const geometry = mergeGeometries(pieces, false)!;
       pieces.forEach((piece) => piece.dispose());
       return { side, geometry };
     });
-    plainTemplateCache.forEach((template) => template.dispose());
-    return panels;
-  }, [rearWallZ, wheelZs, doors, panelOriginZ]);
+  }, [hullStartZ, spanEndZ, wheelZs, doors, panelOriginZ]);
   useEffect(() => () => sidePanels.forEach(({ geometry }) => geometry.dispose()), [sidePanels]);
   const leftOuterFloorSpans = useMemo(
-    () => splitAtWheels([[BUS_FRONT_Z, rearWallZ]], wheelZs),
-    [rearWallZ, wheelZs],
+    () => splitAtWheels([[hullStartZ, spanEndZ]], wheelZs),
+    [hullStartZ, spanEndZ, wheelZs],
   );
   const rightOuterFloorSpans = useMemo(
-    () => splitAtWheels(splitAtDoors(BUS_FRONT_Z, rearWallZ, doors), wheelZs),
-    [rearWallZ, doors, wheelZs],
+    () => splitAtWheels(splitAtDoors(hullStartZ, spanEndZ, doors), wheelZs),
+    [hullStartZ, spanEndZ, doors, wheelZs],
   );
 
   return (
@@ -126,9 +185,9 @@ const BusExterior = memo(function BusExterior({
             <mesh key={sx} name={`bus-body-side-${sx}-${BUS_FRONT_Z}`} geometry={geometry} material={mats.body} castShadow position={[sx * 1.3, 0, panelOriginZ]} />
           )}
           {/* Panneau latéral haut extensible */}
-          <RoundedBox args={[0.08, 0.45, cabinLength]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[sx * 1.3, 2.975, cabinCenterZ]} />
-          <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, sx > 0)} material={mats.windowGlass} x={sx * 1.3} y={2.25} width={0} height={1} planeSide={sx} />
-          <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, sx > 0)} material={mats.yellow} x={sx * 1.356} y={1.72} width={0.024} height={0.08} />
+          <mesh geometry={stretchGeos.upperSide} material={mats.body} castShadow position={[sx * 1.3, 2.975, cabinCenterZ]} scale={[1, 1, cabinLength]} dispose={null} />
+          <BusSpanMeshes spans={splitAtDoors(hullStartZ, spanEndZ, doors, sx > 0)} material={mats.windowGlass} x={sx * 1.3} y={2.25} width={0} height={1} planeSide={sx} />
+          <BusSpanMeshes spans={splitAtDoors(hullStartZ, spanEndZ, doors, sx > 0)} material={mats.yellow} x={sx * 1.356} y={1.72} width={0.024} height={0.08} />
 
         </group>
       ))}
@@ -209,27 +268,25 @@ const BusExterior = memo(function BusExterior({
       </group>
 
       {/* ---------- Toit et plancher extensibles ---------- */}
-      <RoundedBox args={[2.68, 0.22, cabinLength + 0.12]} radius={0.1} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[0, 3.26, cabinCenterZ]} />
-      <RoundedBox args={[2.3, 0.12, cabinLength - 0.3]} radius={0.05} smoothness={2} bevelSegments={3} material={mats.bodyDark} castShadow position={[0, 3.36, cabinCenterZ]} />
+      <mesh geometry={stretchGeos.roofMain} material={mats.body} castShadow position={[0, 3.26, (roofMainStartZ + roofMainEndZ) / 2]} scale={[1, 1, roofMainEndZ - roofMainStartZ]} dispose={null} />
+      <mesh geometry={stretchGeos.roofCap} material={mats.bodyDark} castShadow position={[0, 3.36, (roofCapStartZ + roofCapEndZ) / 2]} scale={[1, 1, Math.max(0.5, roofCapEndZ - roofCapStartZ)]} dispose={null} />
       {/* Plancher et châssis découpés aux passages de roue et au puits des marches. */}
-      <mesh material={mats.floor} castShadow position={[-0.37, 0.6, cabinCenterZ]}>
-        <boxGeometry args={[1.54, 0.08, cabinLength]} />
-      </mesh>
-      <mesh material={mats.dark} castShadow position={[-0.37, 0.4, cabinCenterZ - 0.6]}>
-        <boxGeometry args={[1.54, 0.3, cabinLength + 1.2]} />
-      </mesh>
-      <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z, rearWallZ, doors)} material={mats.floor} x={(BUS_DOOR.innerX + 1.14) / 2} y={0.6} width={1.14 - BUS_DOOR.innerX} height={0.08} castShadow />
+      <mesh geometry={stretchGeos.unitBox} material={mats.floor} castShadow position={[-0.37, 0.6, cabinCenterZ]} scale={[1.54, 0.08, cabinLength]} dispose={null} />
+      <mesh geometry={stretchGeos.unitBox} material={mats.dark} castShadow position={[-0.37, 0.4, (chassisStartZ + spanEndZ) / 2]} scale={[1.54, 0.3, spanEndZ - chassisStartZ]} dispose={null} />
+      <BusSpanMeshes spans={splitAtDoors(hullStartZ, spanEndZ, doors)} material={mats.floor} x={(BUS_DOOR.innerX + 1.14) / 2} y={0.6} width={1.14 - BUS_DOOR.innerX} height={0.08} castShadow />
       <BusSpanMeshes spans={leftOuterFloorSpans} material={mats.floor} x={-1.22} y={0.6} width={0.16} height={0.08} castShadow />
       <BusSpanMeshes spans={rightOuterFloorSpans} material={mats.floor} x={1.22} y={0.6} width={0.16} height={0.08} castShadow />
-      <BusSpanMeshes spans={splitAtDoors(BUS_FRONT_Z - 1.2, rearWallZ, doors)} material={mats.dark} x={0.77} y={0.4} width={0.74} height={0.3} castShadow />
+      <BusSpanMeshes spans={splitAtDoors(chassisStartZ, spanEndZ, doors)} material={mats.dark} x={0.77} y={0.4} width={0.74} height={0.3} castShadow />
 
       {/* Ombre de contact au sol sous le bus : ancre solidement le bus au sol */}
       <mesh
+        geometry={stretchGeos.unitPlane}
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.036, cabinCenterZ - 0.5]}
+        position={[0, 0.036, (shadowStartZ + shadowEndZ) / 2]}
+        scale={[3.2, shadowEndZ - shadowStartZ, 1]}
         renderOrder={1}
+        dispose={null}
       >
-        <planeGeometry args={[3.2, cabinLength + 2.8]} />
         <meshBasicMaterial
           map={contactShadowTex}
           transparent
@@ -250,7 +307,7 @@ const BusExterior = memo(function BusExterior({
         montCorvoTex={montCorvoTex}
       />
 
-      <BusCoachDetails mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ} rearWallZ={rearWallZ} wheelPositions={wheelPositions} doors={doors} />
+      <BusCoachDetails mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ} hullStartZ={hullStartZ} hullEndZ={spanEndZ} rearWallZ={rearWallZ} wheelPositions={wheelPositions} doors={doors} />
       <BusWheels positions={wheelPositions} wheels={wheels} mats={mats} visible={phase !== "inside" || freeView} />
 
       {/* ---------- CHAPEAU DE PAILLE DE LUFFY (AGRANDI ET DROIT) ---------- */}

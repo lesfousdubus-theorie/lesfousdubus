@@ -29,6 +29,8 @@ interface ChunkRange {
   chunkIdx: number;
   startRow: number;
   endRow: number;
+  startSeat: number;
+  endSeat: number;
   maxBenches: number;
   maxPeople: number;
   centerZ: number;
@@ -372,23 +374,40 @@ const DistantBusCrowd = memo(function DistantBusCrowd({
     shared.headMat.dispose();
   }, [shared]);
 
+  const chunkCacheRef = useRef<Map<string, ChunkRange>>(new Map());
   const chunks = useMemo<ChunkRange[]>(() => {
     if (numRows <= 180) return [];
+    const cache = chunkCacheRef.current;
+    const nextKeys = new Set<string>();
     const list: ChunkRange[] = [];
     for (let startRow = 0, chunkIdx = 0; startRow < numRows; startRow += CHUNK_ROWS, chunkIdx++) {
       const endRow = Math.min(numRows, startRow + CHUNK_ROWS);
-      const count = endRow - startRow;
-      const z0 = getSeatRowZ(startRow);
-      const z1 = getSeatRowZ(endRow - 1);
-      list.push({
-        chunkIdx,
-        startRow,
-        endRow,
-        maxBenches: Math.max(16, count),
-        maxPeople: Math.max(32, count * 2),
-        centerZ: (z0 + z1) * 0.5,
-        radius: Math.abs(z1 - z0) * 0.5 + 4,
-      });
+      const key = `${chunkIdx}:${startRow}:${endRow}`;
+      nextKeys.add(key);
+      let range = cache.get(key);
+      if (!range) {
+        const count = endRow - startRow;
+        const z0 = getSeatRowZ(startRow);
+        const z1 = getSeatRowZ(endRow - 1);
+        range = {
+          chunkIdx,
+          startRow,
+          endRow,
+          startSeat: getRegisteredSeatIndex(startRow, 0),
+          endSeat: getRegisteredSeatIndex(endRow, 0),
+          maxBenches: Math.max(16, count),
+          maxPeople: Math.max(32, count * 2),
+          centerZ: (z0 + z1) * 0.5,
+          radius: Math.abs(z1 - z0) * 0.5 + 4,
+        };
+        cache.set(key, range);
+      }
+      list.push(range);
+    }
+    if (cache.size > nextKeys.size + 16) {
+      for (const k of cache.keys()) {
+        if (!nextKeys.has(k)) cache.delete(k);
+      }
     }
     return list;
   }, [numRows]);
@@ -397,32 +416,95 @@ const DistantBusCrowd = memo(function DistantBusCrowd({
   const focusRow = renderedRowIndices.length > 0
     ? renderedRowIndices[Math.floor(renderedRowIndices.length / 2)]
     : 0;
-  // Au-delà de ~45 000 passagers (1M+), ne garder montés que le tronçon d'avant et les 23 tronçons
-  // les plus proches de la caméra (~15 km) pour borner la mémoire GPU en O(1).
+  // Au-delà de ~20 000 passagers (1M+), ne garder montés que le tronçon d'avant et les 9 tronçons
+  // les plus proches de la caméra (~6,4 km, >2× l'horizon de brouillard), triés par proximité caméra
+  // afin de monter 1 nouveau tronçon par frame sans aucun gel à l'entrée/sortie.
   const activeChunks = useMemo(() => {
-    const MAX_ACTIVE_CHUNKS = 24;
-    if (chunks.length <= MAX_ACTIVE_CHUNKS) return chunks;
+    const MAX_ACTIVE_CHUNKS = 10;
     const focusChunk = Math.floor(focusRow / CHUNK_ROWS);
-    const radius = Math.floor((MAX_ACTIVE_CHUNKS - 1) / 2);
-    let start = Math.max(1, focusChunk - radius);
-    let end = start + (MAX_ACTIVE_CHUNKS - 1);
-    if (end > chunks.length) {
-      end = chunks.length;
-      start = Math.max(1, end - (MAX_ACTIVE_CHUNKS - 1));
+    let selected: ChunkRange[];
+    if (chunks.length <= MAX_ACTIVE_CHUNKS) {
+      selected = chunks;
+    } else {
+      const radius = Math.floor((MAX_ACTIVE_CHUNKS - 1) / 2);
+      let start = Math.max(1, focusChunk - radius);
+      let end = start + (MAX_ACTIVE_CHUNKS - 1);
+      if (end > chunks.length) {
+        end = chunks.length;
+        start = Math.max(1, end - (MAX_ACTIVE_CHUNKS - 1));
+      }
+      selected = [chunks[0], ...chunks.slice(start, end)];
     }
-    return [chunks[0], ...chunks.slice(start, end)];
+    return [...selected].sort((a, b) => Math.abs(a.chunkIdx - focusChunk) - Math.abs(b.chunkIdx - focusChunk));
   }, [chunks, focusRow]);
-  const [mountedChunks, setMountedChunks] = useState(2);
-  const mountedChunksRef = useRef(2);
-  const totalChunksRef = useRef(activeChunks.length);
+
+  // Filtre les plages vacantes par tronçon avec référence stable : un nouvel arrivant ou une libération
+  // à 100 km ne reconstruit plus aucun tronçon déjà plein.
+  const vacantSliceCacheRef = useRef<Map<number, { sig: string; ranges: Array<[number, number, number]> }>>(new Map());
+  const chunkVacantRanges = useMemo(() => {
+    const cache = vacantSliceCacheRef.current;
+    const out = new Map<number, Array<[number, number, number]>>();
+    for (const range of activeChunks) {
+      if (vacantSeatRanges.length === 0) {
+        out.set(range.chunkIdx, EMPTY_VACANT_RANGES);
+        continue;
+      }
+      const overlapping: Array<[number, number, number]> = [];
+      for (let i = 0; i < vacantSeatRanges.length; i++) {
+        const entry = vacantSeatRanges[i];
+        if (entry[1] < range.startSeat || entry[0] >= range.endSeat) continue;
+        overlapping.push(entry);
+      }
+      if (overlapping.length === 0) {
+        out.set(range.chunkIdx, EMPTY_VACANT_RANGES);
+        continue;
+      }
+      const sig = overlapping.map((r) => `${r[0]}:${r[1]}`).join(",");
+      const prev = cache.get(range.chunkIdx);
+      if (prev && prev.sig === sig) {
+        out.set(range.chunkIdx, prev.ranges);
+      } else {
+        cache.set(range.chunkIdx, { sig, ranges: overlapping });
+        out.set(range.chunkIdx, overlapping);
+      }
+    }
+    return out;
+  }, [activeChunks, vacantSeatRanges]);
+
+  // Montage progressif par identifiant de tronçon : lorsqu'on saute de la rangée 0 à la rangée 79 412
+  // (ou inversement), les nouveaux tronçons se construisent 1 par frame (les plus proches d'abord) au lieu
+  // de reconstruire 10–23 tronçons synchronously dans une seule frame.
+  const [mountedIds, setMountedIds] = useState<number[]>(() => activeChunks.slice(0, 1).map((c) => c.chunkIdx));
+  const mountedIdsRef = useRef<number[]>(mountedIds);
+  const activeChunkIdsRef = useRef<number[]>([]);
   useEffect(() => {
-    totalChunksRef.current = activeChunks.length;
-  }, [activeChunks.length]);
+    const nextIds = activeChunks.map((c) => c.chunkIdx);
+    activeChunkIdsRef.current = nextIds;
+    const nextSet = new Set(nextIds);
+    const kept = mountedIdsRef.current.filter((id) => nextSet.has(id));
+    if (kept.length === 0 && nextIds.length > 0) {
+      kept.push(nextIds[0]);
+    }
+    if (
+      kept.length !== mountedIdsRef.current.length
+      || kept.some((id, i) => id !== mountedIdsRef.current[i])
+    ) {
+      mountedIdsRef.current = kept;
+      setMountedIds(kept);
+    }
+  }, [activeChunks]);
 
   useFrame(({ clock }) => {
-    if (mountedChunksRef.current < totalChunksRef.current) {
-      mountedChunksRef.current = Math.min(totalChunksRef.current, mountedChunksRef.current + 2);
-      setMountedChunks(mountedChunksRef.current);
+    const desired = activeChunkIdsRef.current;
+    const current = mountedIdsRef.current;
+    if (current.length < desired.length) {
+      const curSet = new Set(current);
+      const nextId = desired.find((id) => !curSet.has(id));
+      if (nextId !== undefined) {
+        const updated = [...current, nextId];
+        mountedIdsRef.current = updated;
+        setMountedIds(updated);
+      }
     }
     const groups = peopleGroupsRef.current;
     const bounceY = partyOn && !reducedMotion
@@ -438,26 +520,31 @@ const DistantBusCrowd = memo(function DistantBusCrowd({
 
   if (numRows <= 180) return null;
 
+  const mountedSet = new Set(mountedIds);
   return (
     <group name="bus-distant-crowd">
-      {activeChunks.slice(0, mountedChunks).map((range) => (
-        <CrowdChunk
-          key={range.chunkIdx}
-          range={range}
-          seatCapacity={seatCapacity}
-          vacantSeatRanges={vacantSeatRanges}
-          renderedRowSet={renderedRowSet}
-          seatMaterial={shared.benchMat}
-          pillarMaterial={pillarMaterial}
-          pillarGeo={shared.pillarGeo}
-          benchGeo={shared.benchGeo}
-          torsoGeo={shared.torsoGeo}
-          headGeo={shared.headGeo}
-          torsoMat={shared.torsoMat}
-          headMat={shared.headMat}
-          onPeopleGroup={handlePeopleGroup}
-        />
-      ))}
+      {activeChunks.filter((range) => mountedSet.has(range.chunkIdx)).map((range) => {
+        const chunkSeatCapacity = Math.max(range.startSeat, Math.min(seatCapacity, range.endSeat));
+        const chunkVacant = chunkVacantRanges.get(range.chunkIdx) ?? EMPTY_VACANT_RANGES;
+        return (
+          <CrowdChunk
+            key={range.chunkIdx}
+            range={range}
+            seatCapacity={chunkSeatCapacity}
+            vacantSeatRanges={chunkVacant}
+            renderedRowSet={renderedRowSet}
+            seatMaterial={shared.benchMat}
+            pillarMaterial={pillarMaterial}
+            pillarGeo={shared.pillarGeo}
+            benchGeo={shared.benchGeo}
+            torsoGeo={shared.torsoGeo}
+            headGeo={shared.headGeo}
+            torsoMat={shared.torsoMat}
+            headMat={shared.headMat}
+            onPeopleGroup={handlePeopleGroup}
+          />
+        );
+      })}
     </group>
   );
 });

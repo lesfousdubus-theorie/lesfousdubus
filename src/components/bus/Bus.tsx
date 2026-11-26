@@ -126,6 +126,14 @@ export default function Bus({
   if (Math.abs(reservedRow - seatedFocusRow) > 36) {
     setSeatedFocusRow(reservedRow);
   }
+  // Tant que le passager est assis, garde cameraFocusRow calé sur seatedFocusRow afin que le passage
+  // Ma place → Vue libre ne téléporte jamais la fenêtre du bus de 100 km (rangée 79 413 → 0 → 79 413).
+  if (phase === "inside" && !freeView && cameraFocusRow !== seatedFocusRow) {
+    setCameraFocusRow(seatedFocusRow);
+  }
+  useEffect(() => {
+    cameraFocusRowRef.current = cameraFocusRow;
+  }, [cameraFocusRow]);
   const focusNextAtRef = useRef(0);
   const fastMotionUntilRef = useRef(0);
   const prevCamPosRef = useRef(new THREE.Vector3());
@@ -139,11 +147,25 @@ export default function Bus({
     : reservedRow;
   const activeFocusZ = getSeatRowZ(activeFocusRow);
   const doorFocusZ = Math.round(activeFocusZ / 160) * 160;
-  const doors = useMemo(() => getWindowedBusDoors(numRows, doorFocusZ, 420), [numRows, doorFocusZ]);
-  const renderedRowIndices = useMemo(
+  const rawDoors = useMemo(() => getWindowedBusDoors(numRows, doorFocusZ, 420), [numRows, doorFocusZ]);
+  const [doors, setDoors] = useState(rawDoors);
+  if (
+    doors.length !== rawDoors.length
+    || doors.some((door, i) => door.index !== rawDoors[i].index || door.z !== rawDoors[i].z)
+  ) {
+    setDoors(rawDoors);
+  }
+  const rawRenderedRows = useMemo(
     () => getRenderedRowIndices(numRows, activeFocusRow),
     [numRows, activeFocusRow],
   );
+  const [renderedRowIndices, setRenderedRowIndices] = useState(rawRenderedRows);
+  if (
+    renderedRowIndices.length !== rawRenderedRows.length
+    || renderedRowIndices.some((row, i) => row !== rawRenderedRows[i])
+  ) {
+    setRenderedRowIndices(rawRenderedRows);
+  }
 
   // Une TV fixe toutes les 7 rangées sur toute la zone affichée du bus (boîtiers + écrans instanciés en 6 draw calls).
   const tvPositions = useMemo(
@@ -163,6 +185,12 @@ export default function Bus({
   const freeViewTvIndexRef = useRef(0);
   const [seatedTvIndex, setSeatedTvIndex] = useState(() => targetSeatedTvIndex);
   const seatedTvIndexRef = useRef(targetSeatedTvIndex);
+  if (phase === "inside" && !freeView && freeViewTvIndex !== seatedTvIndex) {
+    setFreeViewTvIndex(seatedTvIndex);
+  }
+  useEffect(() => {
+    freeViewTvIndexRef.current = freeViewTvIndex;
+  }, [freeViewTvIndex]);
   const tvFocusNextCheckRef = useRef(0);
   const tvCamScratch = useMemo(() => new THREE.Vector3(), []);
   useEffect(() => {
@@ -179,10 +207,19 @@ export default function Bus({
   const activeTvPosition = tvPositions[activeTvIndex] ?? tvPositions[0];
   const viewerZ = getSeatRowZ(reservedRow) + 0.15;
 
-  // Coordonnées Z dynamiques du bus
+  // Coordonnées Z dynamiques du bus + fenêtre locale de carrosserie (±2,6 km autour de la caméra,
+  // au-delà du brouillard) : évite des boîtes de 100–330 km dont les sommets perdent 8–31 mm en float32.
   const rearWallZ = getBusRearWallZ(numRows);
   const cabinLength = rearWallZ - BUS_FRONT_Z;
-  const cabinCenterZ = (BUS_FRONT_Z + rearWallZ) / 2;
+  const HULL_WINDOW_HALF = 2600;
+  const hullStartZ = cabinLength > HULL_WINDOW_HALF * 2
+    ? Math.max(BUS_FRONT_Z, doorFocusZ - HULL_WINDOW_HALF)
+    : BUS_FRONT_Z;
+  const hullEndZ = cabinLength > HULL_WINDOW_HALF * 2
+    ? Math.min(rearWallZ, doorFocusZ + HULL_WINDOW_HALF)
+    : rearWallZ;
+  const hullLength = hullEndZ - hullStartZ;
+  const hullCenterZ = (hullStartZ + hullEndZ) / 2;
 
   // Piliers de vitres : 2 avant + 1 par jointure de rangée
   const PILLARS = useMemo(() => {
@@ -315,8 +352,8 @@ export default function Bus({
         const dot = THREE.MathUtils.clamp(prevCamDirRef.current.dot(curCamDirScratch), -1, 1);
         const angularSpeed = Math.acos(dot) / safeDt;
         const moveSpeed = prevCamPosRef.current.distanceTo(curCamPosScratch) / safeDt;
-        if (angularSpeed > 1.5 || moveSpeed > 28) {
-          fastMotionUntilRef.current = now + 180;
+        if (angularSpeed > 0.35 || moveSpeed > 12) {
+          fastMotionUntilRef.current = now + 220;
         }
       } else {
         prevCamDirInitRef.current = true;
@@ -407,8 +444,10 @@ export default function Bus({
         phase={phase}
         journey={journey}
         mats={mats}
-        cabinLength={cabinLength}
-        cabinCenterZ={cabinCenterZ}
+        cabinLength={hullLength}
+        cabinCenterZ={hullCenterZ}
+        hullStartZ={hullStartZ}
+        hullEndZ={hullEndZ}
         rearWallZ={rearWallZ}
         doors={doors}
         totalDoorCount={totalDoorCount}
@@ -436,7 +475,8 @@ export default function Bus({
       <PillarInstances positions={PILLARS} doors={doors} material={mats.bodyDark} />
 
       {effectiveMountStage >= 1 && (
-        <BusCabinInterior mats={mats} cabinLength={cabinLength} cabinCenterZ={cabinCenterZ}
+        <BusCabinInterior mats={mats} cabinLength={hullLength} cabinCenterZ={hullCenterZ}
+          hullStartZ={hullStartZ} hullEndZ={hullEndZ}
           rearWallZ={rearWallZ} rows={renderedRowIndices} wheelPositions={wheelPositions}
           tvPositions={tvPositions} doors={doors} />
       )}
@@ -458,6 +498,7 @@ export default function Bus({
       {effectiveMountStage >= 3 && (
         <Passengers
           phase={phase}
+          freeView={freeView}
           passengerCount={passengerCount}
           seatCapacity={seatCapacity}
           numRows={numRows}

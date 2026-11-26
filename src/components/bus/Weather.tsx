@@ -48,9 +48,10 @@ const Weather = memo(function Weather({
   rainCount,
   snowCount,
   reducedMotion = false,
-  cabinCenterZ = 0,
+  cabinCenterZ: _cabinCenterZ = 0,
   cabinLength = 9.2,
 }: WeatherProps) {
+  void _cabinCenterZ;
   const groupRef = useRef<THREE.Group>(null);
   const rainRef = useRef<THREE.LineSegments>(null);
   const rainMaterialRef = useRef<THREE.LineBasicMaterial>(null);
@@ -73,7 +74,7 @@ const Weather = memo(function Weather({
       const x = (seededValue(i, 1) - 0.5) * AREA.x * 2;
       let y = seededValue(i, 2) * AREA.y;
       const z = (seededValue(i, 3) - 0.5) * areaZ * 2;
-      if (isInsideBusClearance(x, y + RAIN_STREAK_DY, z, cabinCenterZ, busMinZ, busMaxZ)) {
+      if (Math.abs(x) < BUS_CLEAR_HALF_X && y + RAIN_STREAK_DY < BUS_CLEAR_LOCAL_Y) {
         const minRoofY = BUS_CLEAR_LOCAL_Y - RAIN_STREAK_DY;
         y = minRoofY + seededValue(i, 11) * (AREA.y - minRoofY);
       }
@@ -88,7 +89,7 @@ const Weather = memo(function Weather({
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     return geometry;
-  }, [baseRainCount, areaZ, densityScale, cabinCenterZ, busMinZ, busMaxZ]);
+  }, [baseRainCount, areaZ, densityScale]);
 
   const snowGeometry = useMemo(() => {
     const count = Math.round(baseSnowCount * densityScale);
@@ -97,7 +98,7 @@ const Weather = memo(function Weather({
       const x = (seededValue(i, 4) - 0.5) * AREA.x * 2;
       let y = seededValue(i, 5) * AREA.y;
       const z = (seededValue(i, 6) - 0.5) * areaZ * 2;
-      if (isInsideBusClearance(x, y, z, cabinCenterZ, busMinZ, busMaxZ)) {
+      if (Math.abs(x) < BUS_CLEAR_HALF_X && y < BUS_CLEAR_LOCAL_Y) {
         y = BUS_CLEAR_LOCAL_Y + seededValue(i, 12) * (AREA.y - BUS_CLEAR_LOCAL_Y);
       }
       positions[i * 3] = x;
@@ -107,7 +108,7 @@ const Weather = memo(function Weather({
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     return geometry;
-  }, [baseSnowCount, areaZ, densityScale, cabinCenterZ, busMinZ, busMaxZ]);
+  }, [baseSnowCount, areaZ, densityScale]);
 
   useEffect(() => () => {
     rainGeometry.dispose();
@@ -180,7 +181,7 @@ const Weather = memo(function Weather({
   });
 
   return (
-    <group ref={groupRef} position={[0, GROUP_Y, cabinCenterZ]}>
+    <group ref={groupRef} position={[0, GROUP_Y, 0]}>
       <lineSegments ref={rainRef} geometry={rainGeometry} frustumCulled={false} renderOrder={20}>
         <lineBasicMaterial
           ref={rainMaterialRef}

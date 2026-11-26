@@ -7,12 +7,18 @@ const MIN_PIVOT_DEPTH = 0.4;
 const MAX_PITCH = Math.PI / 2 - 0.04;
 const UP = new Vector3(0, 1, 0);
 
+const MAX_EXTERIOR_DISTANCE = 2200;
+const MAX_CAMERA_FAR_CABIN = 1600;
+
 export function getExteriorMaxDistance(cabinLength: number): number {
-  return Math.max(140, cabinLength * 5);
+  return Math.min(MAX_EXTERIOR_DISTANCE, Math.max(140, cabinLength * 5));
 }
 
 export function getBusCameraFar(cabinLength: number, minimumFar = 2000): number {
-  return Math.max(minimumFar, getExteriorMaxDistance(cabinLength) + cabinLength + 100);
+  // Borner cameraFar à ~3,9 km (bien au-delà du brouillard à 2,56 km) préserve la précision du depth buffer 24 bits
+  // et supprime le Z-fighting / tremblement des surfaces intérieures sur les bus de 300k–1M passagers.
+  const effectiveCabin = Math.min(cabinLength, MAX_CAMERA_FAR_CABIN);
+  return Math.max(minimumFar, getExteriorMaxDistance(effectiveCabin) + effectiveCabin + 100);
 }
 
 export function wheelZoomRatio(delta: number, deltaMode: number, viewportHeight: number) {

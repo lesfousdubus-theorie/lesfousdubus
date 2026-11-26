@@ -292,6 +292,18 @@ assert(lowOnLongBus.cameraFar >= getBusCameraFar(longCabin, tierProfiles[0].base
 assert(lowOnLongBus.bridgeLength >= longCabin + lowOnLongBus.fogFar * 2);
 assert(lowOnLongBus.islandCullDistance >= lowOnLongBus.fogFar + 15);
 
+// Méga-bus (300k–1M passagers) : l'horizon de brouillard et de culling îles reste borné en O(1)
+// pour ne pas gonfler les buffers de tuiles à chaque nouvelle rangée.
+const megaCabin300k = 99_270;
+const megaCabin1M = 330_000;
+const megaBudgets300k = getSceneGeometryBudgets(tierProfiles[2], megaCabin300k, getExteriorMaxDistance(megaCabin300k));
+const megaBudgets1M = getSceneGeometryBudgets(tierProfiles[2], megaCabin1M, getExteriorMaxDistance(megaCabin1M));
+assert(megaBudgets300k.fogFar <= 3_000, "300k fogFar must stay bounded");
+assert(megaBudgets300k.cameraFar <= 5_000, "300k cameraFar must stay bounded for 24-bit depth precision");
+assert.equal(megaBudgets300k.fogFar, megaBudgets1M.fogFar, "fogFar must stay constant as mega-bus grows");
+assert.equal(megaBudgets300k.cameraFar, megaBudgets1M.cameraFar, "cameraFar must stay constant as mega-bus grows");
+assert.equal(megaBudgets300k.islandCullDistance, megaBudgets1M.islandCullDistance, "islandCullDistance must stay constant as mega-bus grows");
+
 // 6. Régulation FPS -> DPR d'abord -> rétrogradation de palier sans ping-pong
 const monitor = createPerformanceMonitor({
   tier: "high",

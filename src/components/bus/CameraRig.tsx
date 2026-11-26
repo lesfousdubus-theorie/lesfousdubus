@@ -112,7 +112,15 @@ export default function CameraRig({
   const arrivedRef = useRef(onArrived);
   const headApproach=useRef(false);
   const exitFromFreeView = useRef(false);
-  const cinematic = useMemo(() => ({pos: new THREE.Vector3(), target: new THREE.Vector3(), matrix: new THREE.Matrix4(), quaternion: new THREE.Quaternion()}), []);
+  const cinematic = useMemo(() => ({
+    pos: new THREE.Vector3(),
+    target: new THREE.Vector3(),
+    auxPos: new THREE.Vector3(),
+    auxTarget: new THREE.Vector3(),
+    auxQ: new THREE.Quaternion(),
+    matrix: new THREE.Matrix4(),
+    quaternion: new THREE.Quaternion(),
+  }), []);
   useEffect(() => {
     arrivedRef.current = onArrived;
   }, [onArrived]);
@@ -598,7 +606,7 @@ export default function CameraRig({
         cam.position.z - nearestBusZ,
       );
       const targetNear = (p === "inside" && !freeViewRef.current)
-        ? 0.18
+        ? 0.22
         : THREE.MathUtils.clamp(Math.min(distToBus, Math.max(0.2, cam.position.y)) * 0.08, 0.2, 24);
       if (Math.abs(targetNear - cam.near) / Math.max(0.18, cam.near) > 0.12) {
         cam.near = targetNear;
@@ -641,16 +649,29 @@ export default function CameraRig({
       }
       const aspect = Math.max(.55, size.width / Math.max(1, size.height));
       const setback = THREE.MathUtils.clamp(.83 / aspect, 1, 1.36);
+      const MEGA_FLIGHT_SPAN = 140;
       if (p === "entering") {
         if (trip.elapsed < trip.timing.entryCameraTime) {
           // Plan fixe reculé face à la porte (même distance qu'à la sortie) pendant que le passager entre et monte.
           cinematic.target.set(1.85, 1.35, trip.doorZ - 0.35);
           cinematic.pos.set(1.85 + 9.2 * setback, 3.6, trip.doorZ - 4.8 * setback);
           const approach = ease(trip.elapsed / 1.8);
-          cam.position.lerpVectors(a.from, cinematic.pos, approach);
           cinematic.matrix.lookAt(cinematic.pos, cinematic.target, CAMERA_UP);
           cinematic.quaternion.setFromRotationMatrix(cinematic.matrix);
-          cam.quaternion.slerpQuaternions(a.fromQ, cinematic.quaternion, approach);
+          if (Math.abs(a.from.z - cinematic.pos.z) > MEGA_FLIGHT_SPAN) {
+            // Sur un méga-bus (300k–1M), évite de traverser 100 km de vide à 55 km/s (ce qui saturait
+            // îles, ombres, portes et graffitis chaque frame) : approche fluide sur 65 m devant la porte.
+            const dirSign = Math.sign(a.from.z - cinematic.pos.z) || -1;
+            cinematic.auxPos.set(cinematic.pos.x + 10, cinematic.pos.y + 3.6, cinematic.pos.z + dirSign * 65);
+            cinematic.auxTarget.set(1.85, 1.8, trip.doorZ + dirSign * 8);
+            cinematic.matrix.lookAt(cinematic.auxPos, cinematic.auxTarget, CAMERA_UP);
+            cinematic.auxQ.setFromRotationMatrix(cinematic.matrix);
+            cam.position.lerpVectors(cinematic.auxPos, cinematic.pos, approach);
+            cam.quaternion.slerpQuaternions(cinematic.auxQ, cinematic.quaternion, approach);
+          } else {
+            cam.position.lerpVectors(a.from, cinematic.pos, approach);
+            cam.quaternion.slerpQuaternions(a.fromQ, cinematic.quaternion, approach);
+          }
         } else {
           if(!headApproach.current) {
             headApproach.current=true; a.from.copy(cam.position); a.fromQ.copy(cam.quaternion);
@@ -672,9 +693,32 @@ export default function CameraRig({
         } else {
           const departStart = trip.timing.exitWalkEnd + 0.7;
           const departSpan = Math.max(0.5, trip.timing.exitDuration - departStart);
-          const departure = ease((trip.elapsed - departStart) / departSpan);
-          cam.position.lerpVectors(cinematic.pos, a.to, departure);
-          cam.quaternion.slerpQuaternions(cinematic.quaternion, a.toQ, departure);
+          const rawDepart = THREE.MathUtils.clamp((trip.elapsed - departStart) / departSpan, 0, 1);
+          if (Math.abs(cinematic.pos.z - a.to.z) > MEGA_FLIGHT_SPAN) {
+            // Départ cinématique fluide : recul progressif devant sa section, puis approche fluide
+            // de 52 m vers l'avant du bus sans jamais survoler 100 km à vitesse supersonique.
+            if (rawDepart < 0.48) {
+              const t1 = ease(rawDepart / 0.48);
+              cinematic.auxPos.set(cinematic.pos.x + 9, cinematic.pos.y + 3.2, cinematic.pos.z - 42);
+              cinematic.auxTarget.set(1.2, 1.6, cinematic.pos.z - 10);
+              cinematic.matrix.lookAt(cinematic.auxPos, cinematic.auxTarget, CAMERA_UP);
+              cinematic.auxQ.setFromRotationMatrix(cinematic.matrix);
+              cam.position.lerpVectors(cinematic.pos, cinematic.auxPos, t1);
+              cam.quaternion.slerpQuaternions(cinematic.quaternion, cinematic.auxQ, t1);
+            } else {
+              const t2 = ease((rawDepart - 0.48) / 0.52);
+              cinematic.auxPos.set(a.to.x + 11, a.to.y + 3.2, a.to.z + 52);
+              cinematic.auxTarget.set(0, 1.7, a.to.z + 10);
+              cinematic.matrix.lookAt(cinematic.auxPos, cinematic.auxTarget, CAMERA_UP);
+              cinematic.auxQ.setFromRotationMatrix(cinematic.matrix);
+              cam.position.lerpVectors(cinematic.auxPos, a.to, t2);
+              cam.quaternion.slerpQuaternions(cinematic.auxQ, a.toQ, t2);
+            }
+          } else {
+            const departure = ease(rawDepart);
+            cam.position.lerpVectors(cinematic.pos, a.to, departure);
+            cam.quaternion.slerpQuaternions(cinematic.quaternion, a.toQ, departure);
+          }
         }
       }
       if (trip.completed) {

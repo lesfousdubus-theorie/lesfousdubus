@@ -106,7 +106,16 @@ function costumeMaterial(id: string, face: boolean) {
     }
   }
   const texture = new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=2;
-  const material = new THREE.MeshStandardMaterial({map:texture,transparent:true,alphaTest:.05,roughness:.72,depthWrite:false});
+  const material = new THREE.MeshStandardMaterial({
+    map: texture,
+    transparent: true,
+    alphaTest: 0.05,
+    roughness: 0.72,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2,
+  });
   materials.set(key,material);return material;
 }
 

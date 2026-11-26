@@ -28,11 +28,12 @@ const BusDoors = memo(function BusDoors({ doors, totalDoorCount, numRows, focusZ
   const focusRef = useRef(focus);
   const [active, setActive] = useState(0);
   const activeRef = useRef(active);
-  useFrame(({ camera }) => {
+  useFrame(() => {
     const nextActive = journey.current.doorIndex ?? 0;
-    // Hors embarquement/débarquement, toutes les portes restent fermées : éviter de permuter les portes
-    // articulées et de ré-uploader les instances de portes lors des déplacements caméra ou de rangée.
-    const nextFocus = (phase === "outside" || phase === "inside") ? nextActive : getNearestBusDoor(camera.position.z, numRows).index;
+    // Seule la porte d'embarquement/débarquement (et ses voisines immédiates) doit rester articulée :
+    // suivre camera.position.z pendant un vol d'entrée/sortie sur un bus de 100 km déclenchait
+    // un re-render React et un ré-upload complet des portes fermées à chaque frame.
+    const nextFocus = nextActive;
     if (nextFocus !== focusRef.current) { focusRef.current = nextFocus; setFocus(nextFocus); }
     if (nextActive !== activeRef.current) { activeRef.current = nextActive; setActive(nextActive); }
   });
@@ -224,6 +225,7 @@ function NearClosedDoorDetails({
 }) {
   const ref = useRef<THREE.InstancedMesh>(null);
   const lastCamZRef = useRef(Number.NaN);
+  const nextUpdateAtRef = useRef(0);
   const matrixRef = useRef<THREE.Matrix4 | null>(null);
   const windowed = doors.length > NEAR_DOOR_DETAIL_CAPACITY;
   const capacity = Math.max(1, windowed ? NEAR_DOOR_DETAIL_CAPACITY : doors.length);
@@ -249,6 +251,9 @@ function NearClosedDoorDetails({
     if (!mesh || !windowed) return;
     const camZ = camera.position.z;
     if (Number.isFinite(lastCamZRef.current) && Math.abs(camZ - lastCamZRef.current) < 36) return;
+    const now = performance.now();
+    if (now < nextUpdateAtRef.current) return;
+    nextUpdateAtRef.current = now + 120;
     lastCamZRef.current = camZ;
     const originZ = Math.round(camZ / 16) * 16;
     mesh.position.z = originZ;

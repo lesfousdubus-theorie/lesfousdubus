@@ -21,39 +21,48 @@ export default function WorldOcean({
 }) {
   const surface = useRef<THREE.Mesh>(null);
   const waterTime = useRef({ value: 0 });
-  const uScroll = useRef({ value: 0 });
+  const uWaveCenter = useRef({ value: new THREE.Vector2(0, -140) });
+  const uWavePhase = useRef({ value: new THREE.Vector3(0, 0, 0) });
+  const camDirScratch = useRef(new THREE.Vector3());
   const horizon = useRef({ value: new THREE.Color() });
   const seaWakes = useRef({
     value: Array.from({ length: SEA_WAKE_COUNT }, () => new THREE.Vector4(0, 0, 1, 0)),
   });
   const customize = useCallback<THREE.MeshStandardMaterial["onBeforeCompile"]>(shader => {
     shader.uniforms.waterTime = waterTime.current;
-    shader.uniforms.uScroll = uScroll.current;
+    shader.uniforms.uWaveCenter = uWaveCenter.current;
+    shader.uniforms.uWavePhase = uWavePhase.current;
     shader.uniforms.seaHorizon = horizon.current;
     shader.uniforms.seaWakes = seaWakes.current;
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", "#include <common>\nvarying vec2 seaPosition;")
-      .replace("#include <begin_vertex>", "#include <begin_vertex>\nseaPosition = (modelMatrix * vec4(position, 1.0)).xz;");
+      .replace("#include <common>", "#include <common>\nvarying vec2 seaPosition;\nvarying vec2 seaLocal;")
+      .replace("#include <begin_vertex>", `#include <begin_vertex>
+        vec3 seaWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+        seaPosition = seaWorld.xz;
+        seaLocal = seaWorld.xz - cameraPosition.xz;`);
     shader.fragmentShader = shader.fragmentShader
       .replace("#include <common>", `#include <common>
         varying vec2 seaPosition;
+        varying vec2 seaLocal;
         uniform float waterTime;
-        uniform float uScroll;
+        uniform vec2 uWaveCenter;
+        uniform vec3 uWavePhase;
         uniform vec3 seaHorizon;
         uniform vec4 seaWakes[${SEA_WAKE_COUNT}];`)
       .replace("#include <color_fragment>", `#include <color_fragment>
-        float waterDistance = distance(seaPosition, cameraPosition.xz);
-        if (waterDistance < 155.0) {
-          float detail = 1.0 - smoothstep(35.0, 150.0, waterDistance);
-          vec2 wavePosition = seaPosition;
-          wavePosition.y -= uScroll;
-          float current = sin(dot(wavePosition, vec2(0.15, 0.26)) - waterTime * 1.08);
-          float swell = sin(dot(wavePosition, vec2(0.31, -0.46)) - waterTime * 1.53 + current);
-          float ripples = sin(dot(wavePosition, vec2(1.12, 0.39)) + waterTime * 1.21 + swell * 1.2);
+        // Zone de vagues décalée devant le regard de la caméra (évite de gaspiller des vagues derrière
+        // et supprime le ressaut circulaire net en fondant aussi la teinte -0.04 vers 1.0 à l'horizon).
+        float waveDistance = distance(seaLocal, uWaveCenter);
+        if (waveDistance < 320.0) {
+          float detail = 1.0 - smoothstep(140.0, 310.0, waveDistance);
+          float current = sin(dot(seaLocal, vec2(0.15, 0.26)) + uWavePhase.x);
+          float swell = sin(dot(seaLocal, vec2(0.31, -0.46)) + uWavePhase.y + current);
+          float ripples = sin(dot(seaLocal, vec2(1.12, 0.39)) + uWavePhase.z + swell * 1.2);
           float crest = smoothstep(0.82, 0.99, ripples) * smoothstep(0.20, 0.94, swell);
-          diffuseColor.rgb *= 0.96 + (current * 0.047 + swell * 0.062) * detail;
+          diffuseColor.rgb *= 1.0 + (-0.04 + current * 0.047 + swell * 0.062) * detail;
           diffuseColor.rgb += vec3(0.021, 0.060, 0.084) * crest * detail;
         }
+        float waterDistance = length(seaLocal);
         if (waterDistance < 280.0) {
           float wakeBoost = 0.0;
           for (int i = 0; i < ${SEA_WAKE_COUNT}; i++) {
@@ -88,8 +97,29 @@ export default function WorldOcean({
     }
     surface.current.position.set(camera.position.x, SEA_LEVEL, camera.position.z);
     surface.current.scale.setScalar((extent + 24) * POLYGON_MARGIN);
-    waterTime.current.value = reducedMotion ? 0 : clock.elapsedTime;
-    uScroll.current.value = worldRef?.current?.scroll ?? 0;
+    const t = reducedMotion ? 0 : clock.elapsedTime;
+    waterTime.current.value = t;
+    const scroll = worldRef?.current?.scroll ?? 0;
+
+    // Centre le disque de vagues à +195 m devant la direction horizontale du regard :
+    // les vagues s'étendent jusqu'à ~505 m devant soi et s'arrêtent juste derrière la caméra.
+    const dir = camera.getWorldDirection(camDirScratch.current);
+    const horizLen = Math.hypot(dir.x, dir.z);
+    const fwdX = horizLen > 0.05 ? dir.x / horizLen : 0;
+    const fwdZ = horizLen > 0.05 ? dir.z / horizLen : -1;
+    uWaveCenter.current.value.set(fwdX * 195, fwdZ * 195);
+
+    // Calcule les phases trigonométriques en float64 JS (modulo 2π) pour garder des vagues
+    // parfaitement nettes même à Z = 100–330 km sur un bus de 300k–1M passagers.
+    const TWO_PI = Math.PI * 2;
+    const camX = camera.position.x;
+    const camZScrolled = camera.position.z - scroll;
+    const wrapPhase = (v: number) => ((v % TWO_PI) + TWO_PI) % TWO_PI;
+    uWavePhase.current.value.set(
+      wrapPhase(camX * 0.15 + camZScrolled * 0.26 - t * 1.08),
+      wrapPhase(camX * 0.31 - camZScrolled * 0.46 - t * 1.53),
+      wrapPhase(camX * 1.12 + camZScrolled * 0.39 + t * 1.21),
+    );
     const wakes = wakesRef?.current;
     for (let i = 0; i < SEA_WAKE_COUNT; i++) {
       if (!reducedMotion && wakes && wakes[i]) {

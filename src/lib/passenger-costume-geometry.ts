@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
-export const FITTED_COSTUME_CLEARANCE = .0015;
+export const FITTED_COSTUME_CLEARANCE = .003;
 const costumes = new Map<string, THREE.BufferGeometry>();
 
 /** The cloth follows the actual faceted torso, rather than a plane in front of it. */

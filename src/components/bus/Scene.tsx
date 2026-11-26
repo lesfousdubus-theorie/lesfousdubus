@@ -494,50 +494,71 @@ function CappedFrameLoop({ paused, loading = false }: { paused: boolean; loading
     let frame = 0;
     let origin: number | null = null;
     let lastTick: number | null = null;
-    let lastRenderNow: number | null = null;
-    // Détecte les écrans >= 100 Hz (120/144/165/240 Hz) dès 3 ticks natifs < 10,2 ms
-    // pour verrouiller un diviseur entier exact (120→60 Hz, 144→72 Hz, 240→80 Hz) sans jamais glisser.
+    let virtualClockMs = clock.elapsedTime * 1000;
+    // Détecte les écrans >= 100 Hz (120/144/165/240 Hz) dès 5 ticks natifs < 10,2 ms
+    // pour verrouiller un diviseur entier exact (120→60 Hz, 144→72 Hz, 240→80 Hz) par modulo vSync.
     let fastVsyncMs = 0;
     let fastTickCount = 0;
     let lockedDivisor = 1;
+    let nominalVsyncMs = 0;
+    let vsyncTick = 0;
+    let renderedFirst = false;
 
     const tick = (now: number) => {
-      if (origin === null) origin = now - clock.elapsedTime * 1000;
+      if (origin === null) {
+        origin = now - virtualClockMs;
+      }
       if (lastTick !== null) {
         const elapsed = now - lastTick;
         if (elapsed > 100) {
           // Recale l'horloge après un gel ou retour d'onglet pour garder un dt sain.
-          origin = now - (clock.elapsedTime * 1000 + 100);
-          lastRenderNow = null;
-        } else if (!loading && elapsed >= 3.5 && elapsed < 10.2) {
-          fastTickCount += 1;
-          fastVsyncMs = fastTickCount === 1 ? elapsed : fastVsyncMs * 0.75 + elapsed * 0.25;
-          if (fastTickCount >= 3) {
-            lockedDivisor = Math.max(2, Math.round(14.5 / fastVsyncMs));
+          virtualClockMs += 100;
+          origin = now - virtualClockMs;
+          vsyncTick = 0;
+          renderedFirst = false;
+        } else {
+          if (elapsed >= 3.5 && elapsed <= 22) {
+            nominalVsyncMs = nominalVsyncMs === 0 ? elapsed : nominalVsyncMs * 0.85 + elapsed * 0.15;
+          }
+          if (!loading && lockedDivisor === 1 && elapsed >= 3.5 && elapsed < 10.2) {
+            fastTickCount += 1;
+            fastVsyncMs = fastTickCount === 1 ? elapsed : fastVsyncMs * 0.75 + elapsed * 0.25;
+            if (fastTickCount >= 5) {
+              lockedDivisor = Math.max(2, Math.round(14.5 / fastVsyncMs));
+              vsyncTick = 0;
+            }
           }
         }
       }
       lastTick = now;
 
-      let shouldRender = lastRenderNow === null;
-      if (!shouldRender && lastRenderNow !== null) {
-        const sinceLastRender = now - lastRenderNow;
+      let shouldRender = !renderedFirst;
+      if (!shouldRender) {
         if (loading) {
           // Pendant le chargement, ~30 Hz laisse le thread principal et le GPU 100 % libres pour le gouvernail.
-          shouldRender = sinceLastRender >= 34;
+          shouldRender = (now - origin) - virtualClockMs >= 34;
         } else if (lockedDivisor <= 1) {
           shouldRender = true;
         } else {
-          // Seuil calé 35 % sous la cible entière (ex. 11,5 ms pour 13,89 ms en 144 Hz) :
-          // absorbe la gigue OS/rAF sans jamais glisser d'une vSync supplémentaire.
-          const targetGap = fastVsyncMs * (lockedDivisor - 0.35);
-          shouldRender = sinceLastRender >= targetGap;
+          vsyncTick += 1;
+          shouldRender = vsyncTick % lockedDivisor === 0;
         }
       }
 
       if (shouldRender) {
-        lastRenderNow = now;
-        advance((now - origin) / 1000);
+        if (!renderedFirst) {
+          renderedFirst = true;
+        } else {
+          const wallDelta = Math.max(0, Math.min(100, (now - origin) - virtualClockMs));
+          const expectedStepMs = nominalVsyncMs > 0 ? nominalVsyncMs * lockedDivisor : wallDelta;
+          if (!loading && nominalVsyncMs > 0 && Math.abs(wallDelta - expectedStepMs) < 3.5) {
+            const steppedMs = expectedStepMs + (wallDelta - expectedStepMs) * 0.12;
+            virtualClockMs = Math.max(virtualClockMs, virtualClockMs + steppedMs);
+          } else {
+            virtualClockMs = Math.max(virtualClockMs, now - origin);
+          }
+        }
+        advance(virtualClockMs / 1000);
       }
       frame = requestAnimationFrame(tick);
     };

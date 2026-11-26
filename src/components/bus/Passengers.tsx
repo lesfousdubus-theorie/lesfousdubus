@@ -111,6 +111,7 @@ export function getArchetypeMaterials(archetype: NakamaArchetype): Record<string
 
 interface PassengersProps {
   phase?: "outside" | "entering" | "inside" | "exiting";
+  freeView?: boolean;
   passengerCount: number;
   seatCapacity: number;
   numRows: number;
@@ -133,24 +134,29 @@ interface PassengersProps {
 
 function isCameraOutsideCabin(
   phase: "outside" | "entering" | "inside" | "exiting",
+  freeView: boolean,
   pos: THREE.Vector3,
   rearZ: number,
 ): boolean {
-  // En mode extérieur, la caméra reste toujours hors de la cabine : on garde 100 % des passagers
-  // en instancing GPU (zéro démontage/remontage React et zéro siège vide au zoom rapide près des vitres).
-  if (phase === "outside") return true;
-  return Math.abs(pos.x) > 6.5 || pos.y > 5.0 || pos.z < FIRST_SEAT_Z - 8.0 || pos.z > rearZ + 6.0;
+  // Hors cabine (extérieur, vue libre, ET vols d'entrée/sortie), on garde 100 % des passagers en
+  // instancing GPU (SimplifiedPassengers rend déjà visages, coiffures, chapeaux et costumes à l'identique)
+  // pour éviter tout montage/démontage React de 6 arbres complets pendant la trajectoire caméra.
+  if (phase !== "inside" || freeView) return true;
+  return Math.abs(pos.x) > 2.4 || pos.y > 3.6 || pos.z < FIRST_SEAT_Z - 6.0 || pos.z > rearZ + 4.0;
 }
 
 function isCameraNearLabels(
   phase: "outside" | "entering" | "inside" | "exiting",
   pos: THREE.Vector3,
 ): boolean {
+  // Pendant le vol d'entrée/sortie, on suspend les badges de pseudos pour éviter tout dessin Canvas2D
+  // ou montage de sprites en plein mouvement rapide.
+  if (phase === "entering" || phase === "exiting") return false;
   if (phase !== "outside") return true;
   return Math.abs(pos.x) <= 36 && pos.y <= 28;
 }
 
-function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, renderedRowIndices, vacantSeatRanges = [], hornPulse,
+function Passengers({ phase = "outside", freeView = false, passengerCount, seatCapacity, numRows, renderedRowIndices, vacantSeatRanges = [], hornPulse,
   partyOn = false, reservedRow = 3, reservedColumn = null, passengerProfiles = [], onPassengerSelect,
   profileRevision = 0, lowPower = false, detailLimit, simplifiedLimit, reducedMotion = false, excludedPassengerIndex = null, avatarAboard = false }: PassengersProps) {
   const camera = useThree(state => state.camera);
@@ -172,7 +178,7 @@ function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, 
       };
   });
   const [outsideCabin, setOutsideCabin] = useState(() =>
-    isCameraOutsideCabin(phase, camera.position, getSeatRowZ(Math.max(0, numRows - 1)) + 4),
+    isCameraOutsideCabin(phase, freeView, camera.position, getSeatRowZ(Math.max(0, numRows - 1)) + 4),
   );
   const outsideCabinRef = useRef(outsideCabin);
   const [showNearLabels, setShowNearLabels] = useState(() => isCameraNearLabels(phase, camera.position));
@@ -194,13 +200,63 @@ function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, 
   const detailedCountRef = useRef(0);
   const detailedBudgetRef = useRef(1);
   const detailedNextAtRef = useRef(0);
+  const renderedRowIndicesRef = useRef(renderedRowIndices);
+  const numRowsRef = useRef(numRows);
+  useEffect(() => {
+    renderedRowIndicesRef.current = renderedRowIndices;
+    numRowsRef.current = numRows;
+  }, [numRows, renderedRowIndices]);
+
+  // Réagit uniquement aux transitions de phase ou de vue libre sans attendre la fin du cooldown
+  // de mouvement rapide, tout en réinitialisant le budget détaillé à 1 avant l'arrivée au siège
+  // (évite de monter les 6 arbres React complets en une seule frame au retour de Vue libre → Ma place).
+  useEffect(() => {
+    if (phase === "entering" || phase === "exiting") {
+      if (!outsideCabinRef.current) {
+        outsideCabinRef.current = true;
+        setOutsideCabin(true);
+      }
+      if (showNearLabelsRef.current) {
+        showNearLabelsRef.current = false;
+        setShowNearLabels(false);
+      }
+      return;
+    }
+    if (phase === "inside" && freeView) {
+      if (!outsideCabinRef.current) {
+        outsideCabinRef.current = true;
+        setOutsideCabin(true);
+      }
+      // Laisse la glissade Ma place → Vue libre s'achever avant de recalculer les badges.
+      fastMotionUntilRef.current = Math.max(fastMotionUntilRef.current, performance.now() + 950);
+      return;
+    }
+    if (phase === "inside") {
+      // Pré-aligne la fenêtre visible sur renderedRowIndices pour éviter toute frame vide
+      // (plage obsolète 0..36 sur un bus de 79 000 rangées) au moment exact de l'arrivée.
+      const rows = renderedRowIndicesRef.current;
+      const curNumRows = numRowsRef.current;
+      const rMin = rows?.length ? rows[0] : 0;
+      const rMax = rows?.length ? rows[rows.length - 1] : curNumRows - 1;
+      const seededRange: BusRowRange = { minRow: rMin, maxRow: rMax };
+      visibleRangeRef.current = { ...seededRange, numRows: curNumRows, shrinkAt: performance.now() + 1200 };
+      setVisibleRowState({ numRows: curNumRows, range: seededRange });
+      detailedBudgetRef.current = 1;
+      setDetailedBudget(1);
+      lastFocus.current.time = -Infinity;
+    } else {
+      lastFocus.current.time = -Infinity;
+    }
+  }, [freeView, phase]);
+
   useFrame(({ camera: frameCamera }, dt) => {
     const now = performance.now();
     if (
       detailedBudgetRef.current < detailedCountRef.current
       && now >= detailedNextAtRef.current
+      && now >= fastMotionUntilRef.current
     ) {
-      detailedNextAtRef.current = now + (dt > 0.05 ? 60 : 30);
+      detailedNextAtRef.current = now + (dt > 0.05 ? 70 : 45);
       detailedBudgetRef.current += 1;
       setDetailedBudget(detailedBudgetRef.current);
     }
@@ -215,9 +271,9 @@ function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, 
       const dot = THREE.MathUtils.clamp(prevCamDirRef.current.dot(curCamDirScratch), -1, 1);
       const angularSpeed = Math.acos(dot) / safeDt;
       const moveSpeed = prevCamPosRef.current.distanceTo(curCamPosScratch) / safeDt;
-      const moveThreshold = outsideCabinRef.current ? 28 : 1.2;
-      if (angularSpeed > 1.4 || moveSpeed > moveThreshold) {
-        fastMotionUntilRef.current = now + 220;
+      const moveThreshold = outsideCabinRef.current ? 10 : 1.0;
+      if (angularSpeed > 0.35 || moveSpeed > moveThreshold) {
+        fastMotionUntilRef.current = now + 240;
       }
     } else {
       camMotionInitRef.current = true;
@@ -266,9 +322,13 @@ function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, 
     cameraPoint.copy(curCamPosScratch);
     root.current.worldToLocal(cameraPoint);
     const rearZ = getSeatRowZ(Math.max(0, numRows - 1)) + 4;
-    const nextOutside = isCameraOutsideCabin(phase, cameraPoint, rearZ);
+    const nextOutside = isCameraOutsideCabin(phase, freeView, cameraPoint, rearZ);
     if (nextOutside !== outsideCabinRef.current) {
       outsideCabinRef.current = nextOutside;
+      if (!nextOutside) {
+        detailedBudgetRef.current = 1;
+        setDetailedBudget(1);
+      }
       setOutsideCabin(nextOutside);
     }
     const nextShowLabels = isCameraNearLabels(phase, cameraPoint);
@@ -365,11 +425,17 @@ function Passengers({ phase = "outside", passengerCount, seatCapacity, numRows, 
       if (!prev.has(detailed[i].index)) newlyEntered += 1;
     }
     prevDetailedIdsRef.current = new Set(detailed.map((occupant) => occupant.index));
-    // Quand la caméra arrive sur une nouvelle section du bus, on monte les personnages
-    // détaillés progressivement (les versions simplifiées restent déjà affichées) pour éviter tout freeze.
-    if (newlyEntered >= 4) {
-      detailedBudgetRef.current = Math.min(detailedBudgetRef.current, 2);
-      setDetailedBudget(detailedBudgetRef.current);
+    // Dès qu'au moins 1 nouveau passager entre dans le lot détaillé (ex. clic Rangée/Colonne ou arrivée),
+    // on le laisse d'abord en version GPU instanciée puis on le monte 1 par frame après la glissade caméra.
+    if (newlyEntered >= 1) {
+      const safeBudget = newlyEntered >= 4
+        ? Math.min(detailedBudgetRef.current, 1)
+        : Math.max(0, Math.min(detailedBudgetRef.current, detailed.length - newlyEntered));
+      if (safeBudget !== detailedBudgetRef.current) {
+        detailedBudgetRef.current = safeBudget;
+        setDetailedBudget(safeBudget);
+      }
+      detailedNextAtRef.current = Math.max(detailedNextAtRef.current, performance.now() + 90);
     }
   }, [detailed]);
   const mountedDetailed = useMemo(

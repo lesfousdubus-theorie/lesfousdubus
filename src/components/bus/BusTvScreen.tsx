@@ -72,28 +72,23 @@ export default function BusTvScreen({ isOn, interactive, children }: {
     screen.updateMatrixWorld();
 
     const fovPx = camera.projectionMatrix.elements[5] * (size.height / 2);
-    const viewportKey = `${size.width}x${size.height}:${fovPx.toFixed(2)}`;
+    const viewportKey = `${size.width}x${size.height}`;
     if (lastState.current.viewport !== viewportKey) {
       lastState.current.viewport = viewportKey;
       viewport.style.width = `${size.width}px`;
       viewport.style.height = `${size.height}px`;
-      viewport.style.perspective = `${fovPx}px`;
       cameraLayer.style.width = `${size.width}px`;
       cameraLayer.style.height = `${size.height}px`;
     }
 
-    // Composer camera.matrixWorldInverse * screen.matrixWorld en float64 JS afin que le compositeur
-    // CSS (float32) ne soustraie jamais ±100 km de Z sur les très longs bus.
-    const cameraTransform = `translate3d(0,0,${eps(fovPx)}px) translate(${size.width / 2}px,${size.height / 2}px)`;
-    if (lastState.current.camera !== cameraTransform) {
-      lastState.current.camera = cameraTransform;
-      cameraLayer.style.transform = cameraTransform;
-    }
-
+    // Composer la projection complète en une seule transformée non-singulière sur #tv-frame :
+    // 1) camera.matrixWorldInverse * screen.matrixWorld est calculé en float64 JS (zéro tremblement à ±100 km) ;
+    // 2) l'échelle K = PLAYER_WIDTH / TV_SCREEN_WIDTH ramène la matrice à une rotation unitaire (det = 1) ;
+    // 3) aucun ancêtre intermédiaire ne repose sur le plan singulier z = +fovPx (w = 0), ce qui restaure
+    //    un hit-testing 100 % exact dans Chromium pour tous les boutons du lecteur YouTube (pause, barre, son, plein écran).
     const m = scratch.screenToView.multiplyMatrices(camera.matrixWorldInverse, screen.matrixWorld).elements;
-    const sx = TV_SCREEN_WIDTH / PLAYER_WIDTH;
-    const sy = TV_SCREEN_HEIGHT / PLAYER_HEIGHT;
-    const frameTransform = `translate3d(-50%,-50%,0) matrix3d(${eps(m[0] * sx)},${eps(-m[1] * sx)},${eps(m[2] * sx)},${eps(m[3] * sx)},${eps(-m[4] * sy)},${eps(m[5] * sy)},${eps(-m[6] * sy)},${eps(-m[7] * sy)},${eps(m[8])},${eps(-m[9])},${eps(m[10])},${eps(m[11])},${eps(m[12])},${eps(-m[13])},${eps(m[14])},${eps(m[15])})`;
+    const scale = PLAYER_WIDTH / TV_SCREEN_WIDTH;
+    const frameTransform = `translate(${size.width / 2}px,${size.height / 2}px) perspective(${eps(fovPx)}px) translate3d(0,0,${eps(fovPx)}px) matrix3d(${eps(m[0])},${eps(-m[1])},${eps(m[2])},0,${eps(-m[4])},${eps(m[5])},${eps(-m[6])},0,${eps(m[8])},${eps(-m[9])},${eps(m[10])},0,${eps(m[12] * scale)},${eps(-m[13] * scale)},${eps(m[14] * scale)},1) translate3d(-50%,-50%,0)`;
     if (lastState.current.frame !== frameTransform) {
       lastState.current.frame = frameTransform;
       html.style.transform = frameTransform;
@@ -258,13 +253,14 @@ export default function BusTvScreen({ isOn, interactive, children }: {
     <Html calculatePosition={screenOrigin} onOcclude={keepPortalMounted} zIndexRange={[1, 0]} position={[0, 0, SCREEN_Z]}
       style={{ position: "absolute", top: 0, left: 0, userSelect: "none", pointerEvents: "none" }}>
       <div ref={viewportRef} style={{ position: "absolute", top: 0, left: 0, overflow: "hidden", pointerEvents: "none" }}>
-        <div ref={cameraLayerRef} style={{ position: "absolute", top: 0, left: 0, transformStyle: "preserve-3d", pointerEvents: "none" }}>
+        <div ref={cameraLayerRef} style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}>
           <div ref={frame} id="tv-frame" style={{
             position: "absolute",
             top: 0,
             left: 0,
             width: PLAYER_WIDTH,
             height: PLAYER_HEIGHT,
+            transformOrigin: "0 0",
             background: "#05070c",
             overflow: "hidden",
             visibility: "hidden",

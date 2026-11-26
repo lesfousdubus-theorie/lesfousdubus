@@ -61,6 +61,7 @@ function BusGraffitiGroup({
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const scratchRef = useRef<THREE.Object3D | null>(null);
   const lastCamZRef = useRef(Number.NaN);
+  const nextUpdateAtRef = useRef(0);
   const windowed = instances.length > GRAFFITI_WINDOW_CAPACITY;
   const capacity = Math.max(1, windowed ? GRAFFITI_WINDOW_CAPACITY : instances.length);
 
@@ -91,6 +92,9 @@ function BusGraffitiGroup({
     if (!mesh || !windowed) return;
     const camZ = camera.position.z;
     if (Number.isFinite(lastCamZRef.current) && Math.abs(camZ - lastCamZRef.current) < 48) return;
+    const now = performance.now();
+    if (now < nextUpdateAtRef.current) return;
+    nextUpdateAtRef.current = now + 120;
     lastCamZRef.current = camZ;
     const originZ = Math.round(camZ / 16) * 16;
     mesh.position.z = originZ;

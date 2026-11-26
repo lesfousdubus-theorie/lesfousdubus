@@ -28,7 +28,7 @@ const BusConfetti = memo(function BusConfetti({ focusZ, rearZ, lowPower, reduced
   );
 
   useLayoutEffect(() => {
-    if (!mesh.current) return;
+    if (!mesh.current || !active) return;
     const originZ = Math.round(focusZ / 16) * 16;
     mesh.current.position.z = originZ;
     seeds.forEach((seed, i) => {
@@ -50,7 +50,7 @@ const BusConfetti = memo(function BusConfetti({ focusZ, rearZ, lowPower, reduced
       new THREE.Vector3(0, 1.9, (from + to) / 2 - originZ),
       Math.hypot(1.3, 1.3, (to - from) / 2 + 0.4),
     );
-  }, [seeds, color, dummy, from, to, focusZ]);
+  }, [active, seeds, color, dummy, from, to, focusZ]);
 
   useLayoutEffect(() => {
     if (!mesh.current) return;

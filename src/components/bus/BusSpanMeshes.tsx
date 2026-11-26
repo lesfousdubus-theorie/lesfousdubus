@@ -15,13 +15,33 @@ interface Props {
   castShadow?: boolean;
 }
 
-/** Toutes les découpes partagent un seul draw call instancié, sans allocation géométrique par tronçon. */
+const MAX_SPAN_SEGMENT_M = 256;
+
+/** Toutes les découpes partagent un seul draw call instancié, sans allocation géométrique par tronçon.
+ *  Les très longs tronçons (> 256 m) sont subdivisés pour garder des sommets locaux < ±128 m en float32. */
 export default function BusSpanMeshes({ spans, x, y, width, height, material, name, planeSide, castShadow = false }: Props) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
-  const key = spans.map(([from, to]) => `${from}:${to}`).join(",");
-  const capacity = Math.max(16, Math.ceil(spans.length / 64) * 64);
-  const originZ = spans.length > 0
-    ? (spans[Math.floor(spans.length / 2)][0] + spans[Math.floor(spans.length / 2)][1]) * 0.5
+  const segmentedSpans = useMemo(() => {
+    const out: Array<[number, number]> = [];
+    for (let i = 0; i < spans.length; i++) {
+      const [from, to] = spans[i];
+      const len = to - from;
+      if (len <= MAX_SPAN_SEGMENT_M) {
+        out.push([from, to]);
+      } else {
+        const count = Math.ceil(len / MAX_SPAN_SEGMENT_M);
+        const step = len / count;
+        for (let k = 0; k < count; k++) {
+          out.push([from + k * step, k === count - 1 ? to : from + (k + 1) * step]);
+        }
+      }
+    }
+    return out;
+  }, [spans]);
+  const key = segmentedSpans.map(([from, to]) => `${from}:${to}`).join(",");
+  const capacity = Math.max(16, Math.ceil(segmentedSpans.length / 64) * 64);
+  const originZ = segmentedSpans.length > 0
+    ? (segmentedSpans[Math.floor(segmentedSpans.length / 2)][0] + segmentedSpans[Math.floor(segmentedSpans.length / 2)][1]) * 0.5
     : 0;
 
   const geometry = useMemo(
@@ -67,7 +87,7 @@ export default function BusSpanMeshes({ spans, x, y, width, height, material, na
     }
   }, [key, originZ, x, y, width, height, planeSide, capacity]);
 
-  if (!spans.length) return null;
+  if (!segmentedSpans.length) return null;
   return (
     <instancedMesh
       key={`span-${capacity}-${planeSide ?? "box"}`}
@@ -75,7 +95,7 @@ export default function BusSpanMeshes({ spans, x, y, width, height, material, na
       name={name}
       position={[0, 0, originZ]}
       args={[geometry, material, capacity]}
-      count={spans.length}
+      count={segmentedSpans.length}
       castShadow={castShadow}
       dispose={null}
       raycast={planeSide === undefined ? undefined : () => null}

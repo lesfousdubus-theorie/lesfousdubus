@@ -534,13 +534,19 @@ export function resolveGraphicsProfile(
 }
 
 /** Garanti qu'un long bus ne soit jamais coupé par le brouillard, le pont ou le plan lointain. */
+const MAX_HORIZON_CABIN_LENGTH = 1600;
+
 export function getSceneGeometryBudgets(
   profile: ResolvedGraphicsProfile,
   cabinLength: number,
   exteriorMaxDistance: number,
 ): SceneGeometryBudgets {
-  const fogNear = Math.max(profile.fogNear, Math.round(cabinLength * 0.55));
-  const fogFar = Math.max(profile.fogFar, Math.round(cabinLength * 1.5 + 160));
+  // Sur les méga-bus (100k–1M+ passagers, plusieurs dizaines de km), borne l'horizon de brouillard
+  // à ~2,56 km : au-delà, le décor est sub-pixel et étirer fogFar à 150–500 km gonflait inutilement
+  // les buffers de tuiles lointaines à chaque nouvelle rangée.
+  const horizonCabin = Math.min(cabinLength, MAX_HORIZON_CABIN_LENGTH);
+  const fogNear = Math.max(profile.fogNear, Math.round(horizonCabin * 0.55));
+  const fogFar = Math.max(profile.fogFar, Math.round(horizonCabin * 1.5 + 160));
   const bridgePadding = cabinLength > 600
     ? Math.max(960, Math.min(fogFar * 2, 1600))
     : Math.max(520, fogFar * 2);
@@ -551,7 +557,7 @@ export function getSceneGeometryBudgets(
     // Garde tous les éléments proches/moyens visibles au dézoom ; seuls les props vraiment lointains sont masqués.
     propCullDistance: Math.max(profile.propCullDistance, 950),
     bridgeLength: Math.max(profile.bridgeBaseLength, cabinLength + bridgePadding),
-    cameraFar: Math.max(profile.baseCameraFar, fogFar + 260, exteriorMaxDistance + cabinLength + 100),
+    cameraFar: Math.max(profile.baseCameraFar, fogFar + 260, exteriorMaxDistance + horizonCabin + 100),
   };
 }
 

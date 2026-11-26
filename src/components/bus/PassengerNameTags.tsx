@@ -202,15 +202,15 @@ function nameTagSize(aspect: number): [number, number] {
 export type PassengerNameTag = { index: number; name: string; x: number; y: number; z: number };
 
 const ATLAS_W = 2048;
-const ATLAS_H = 2048;
+const ATLAS_H = 1024;
 const ATLAS_COLS = 4;
-const ATLAS_ROWS = 40;
+const ATLAS_ROWS = 24;
 const ATLAS_CAPACITY = ATLAS_COLS * ATLAS_ROWS;
 const ATLAS_SLOT_W = 512;
-const ATLAS_SLOT_H = 50;
-const ATLAS_PAD_Y = 4;
+const ATLAS_SLOT_H = 42;
+const ATLAS_PAD_Y = 3;
 const ATLAS_CONTENT_H = ATLAS_SLOT_H - ATLAS_PAD_Y * 2;
-const ATLAS_FONT = "800 30px ui-sans-serif, system-ui, sans-serif";
+const ATLAS_FONT = "800 28px ui-sans-serif, system-ui, sans-serif";
 
 const BILLBOARD_VERTEX_SHADER = `
 attribute vec4 aUvRect;
@@ -443,9 +443,9 @@ export const DistantPassengerNames = memo(function DistantPassengerNames({
     const now = performance.now();
     let drewAny = false;
     let remainingMissing = 0;
-    const canDrawMore = dt < 0.06 && now >= nextWarmAtRef.current;
+    const canDrawMore = dt < 0.045 && now >= nextWarmAtRef.current;
     let drawnThisFrame = 0;
-    const maxDrawsPerFrame = 32;
+    const maxDrawsPerFrame = 48;
 
     for (let i = 0; i < limit; i++) {
       const name = currentLabels[i].name;
@@ -480,7 +480,7 @@ export const DistantPassengerNames = memo(function DistantPassengerNames({
 
     if (drewAny) {
       markTextureDirty(atlas.texture);
-      nextWarmAtRef.current = now + 24;
+      nextWarmAtRef.current = now + 120;
     }
 
     if (versionChanged || drewAny) {

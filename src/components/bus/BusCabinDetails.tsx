@@ -15,17 +15,14 @@ const WHEELHOUSE_LAYERS: ReadonlyArray<{ xStart: number; xEnd: number; radius: n
   { xStart: 1.235, xEnd: 1.258, radius: 0.66 },
 ];
 
-function createWheelhouseGeometry(wheelPositions: [number, number][], rearWallZ: number): THREE.BufferGeometry {
+function createUnitWheelhousePairGeometry(): THREE.BufferGeometry {
   const yBase = 0.56;
   const parts: THREE.BufferGeometry[] = [];
-  for (const [x, z] of wheelPositions) {
-    const side = Math.sign(x);
-    const zMin = Math.max(BUS_FRONT_Z + 0.042, z - WHEEL_ARCH_RADIUS) - z;
-    const zMax = Math.min(rearWallZ - 0.042, z + WHEEL_ARCH_RADIUS) - z;
+  for (const side of [-1, 1]) {
     for (const { xStart, xEnd, radius } of WHEELHOUSE_LAYERS) {
       const halfChord = Math.sqrt(radius * radius - (yBase - WHEEL_CENTER_Y) ** 2);
-      const left = Math.max(zMin, -halfChord);
-      const right = Math.min(zMax, halfChord);
+      const left = Math.max(-WHEEL_ARCH_RADIUS, -halfChord);
+      const right = Math.min(WHEEL_ARCH_RADIUS, halfChord);
       if (right <= left) continue;
       const yLeft = WHEEL_CENTER_Y + Math.sqrt(Math.max(0, radius * radius - left * left));
       const startAngle = Math.acos(THREE.MathUtils.clamp(left / radius, -1, 1));
@@ -38,11 +35,11 @@ function createWheelhouseGeometry(wheelPositions: [number, number][], rearWallZ:
       shape.closePath();
       const geo = new THREE.ExtrudeGeometry(shape, { depth: xEnd - xStart, bevelEnabled: false, curveSegments: 24 });
       geo.rotateY(-Math.PI / 2);
-      geo.translate(side > 0 ? xEnd : -xStart, 0, z);
+      geo.translate(side > 0 ? xEnd : -xStart, 0, 0);
       parts.push(geo);
     }
   }
-  const merged = parts.length ? mergeGeometries(parts, false)! : new THREE.BufferGeometry();
+  const merged = mergeGeometries(parts, false)!;
   parts.forEach((part) => part.dispose());
   return merged;
 }
@@ -51,6 +48,8 @@ interface Props {
   mats: Record<string, THREE.Material>;
   cabinLength: number;
   cabinCenterZ: number;
+  hullStartZ?: number;
+  hullEndZ?: number;
   rearWallZ: number;
   rowZs: number[];
   wheelPositions: [number, number][];
@@ -98,29 +97,36 @@ function makeGrabRailBridges(from: number, to: number, bridges: Array<[number, n
   return { geometry, segments, originZ };
 }
 
-const BusCabinDetails = memo(function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearWallZ, rowZs, wheelPositions, tvPositions }: Props) {
+const BusCabinDetails = memo(function BusCabinDetails({ mats, hullStartZ = BUS_FRONT_Z, hullEndZ, rearWallZ, rowZs, wheelPositions, tvPositions }: Props) {
+  const spanEndZ = hullEndZ ?? rearWallZ;
+  const startsAtFront = hullStartZ <= BUS_FRONT_Z + 0.01;
+  const endsAtRear = spanEndZ >= rearWallZ - 0.01;
+  const railFrom = startsAtFront ? hullStartZ + 1.2 : hullStartZ;
+  const railTo = endsAtRear ? spanEndZ - 0.4 : spanEndZ;
+  const rackFrom = startsAtFront ? hullStartZ + 0.75 : hullStartZ;
+  const rackTo = endsAtRear ? spanEndZ - 0.35 : spanEndZ;
   // Quantité plafonnée, même quand le bus accueille des centaines de rangées.
   const detailZs = useMemo(() => rowZs.filter((_, index) => index % Math.max(1, Math.ceil(rowZs.length / 10)) === 0).slice(0, 10), [rowZs]);
-  const grabRailSpans = useMemo(() => getGrabRailSpans(
-    cabinCenterZ + .4 - (cabinLength - 1.6) / 2,
-    cabinCenterZ + .4 + (cabinLength - 1.6) / 2,
-    tvPositions,
-  ), [cabinCenterZ, cabinLength, tvPositions]);
+  const grabRailSpans = useMemo(() => getGrabRailSpans(railFrom, railTo, tvPositions), [railFrom, railTo, tvPositions]);
   const grabRailBridges = useMemo(() => {
-    const from = cabinCenterZ + .4 - (cabinLength - 1.6) / 2;
-    const to = cabinCenterZ + .4 + (cabinLength - 1.6) / 2;
     const bridgeOriginZ = tvPositions.length > 1 ? tvPositions[Math.floor(tvPositions.length / 2)][2] : 0;
-    return makeGrabRailBridges(from, to, getGrabRailBridgeSpans(from, to, tvPositions), bridgeOriginZ);
-  }, [cabinCenterZ, cabinLength, tvPositions]);
+    return makeGrabRailBridges(railFrom, railTo, getGrabRailBridgeSpans(railFrom, railTo, tvPositions), bridgeOriginZ);
+  }, [railFrom, railTo, tvPositions]);
   useEffect(() => () => grabRailBridges.geometry.dispose(), [grabRailBridges]);
-  const wheelKey = wheelPositions.map(([x, z]) => `${x}:${z}`).join(",");
-  const wheelhouseGeo = useMemo(() => {
-    const parsed = wheelKey
-      ? wheelKey.split(",").map((pair) => pair.split(":").map(Number) as [number, number])
-      : [];
-    return createWheelhouseGeometry(parsed, rearWallZ);
-  }, [wheelKey, rearWallZ]);
-  useEffect(() => () => wheelhouseGeo.dispose(), [wheelhouseGeo]);
+  const wheelAxleZs = useMemo(
+    () => [...new Set(wheelPositions.map(([, z]) => z))].sort((a, b) => a - b),
+    [wheelPositions],
+  );
+  // Géométrie de passage de roue et profils de porte-bagages construits une seule fois :
+  // évite de ré-extruder ou recréer des géométries chaque fois qu'un passager allonge le bus.
+  const unitWheelhouseGeo = useMemo(() => createUnitWheelhousePairGeometry(), []);
+  const unitBoxGeo = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
+  const unitRackBarGeo = useMemo(() => new THREE.CylinderGeometry(0.018, 0.018, 1, 8), []);
+  useEffect(() => () => {
+    unitWheelhouseGeo.dispose();
+    unitBoxGeo.dispose();
+    unitRackBarGeo.dispose();
+  }, [unitBoxGeo, unitRackBarGeo, unitWheelhouseGeo]);
   const exitTexture = useMemo(() => makeLabelTexture({ text: "ISSUE DE SECOURS", bg: "#087449", fg: "#ffffff", width: 512, height: 96, font: "bold 38px Arial, sans-serif" }), []);
   useEffect(() => () => exitTexture.dispose(), [exitTexture]);
 
@@ -137,12 +143,8 @@ const BusCabinDetails = memo(function BusCabinDetails({ mats, cabinLength, cabin
     </group>
     {[-1, 1].map((side) => <group key={side}>
       {/* Porte-bagages au-dessus des fenêtres, prolongé jusqu'à la paroi. */}
-      <mesh material={mats.interiorWall} position={[side * 1.07, 2.88, cabinCenterZ + 0.2]}>
-        <boxGeometry args={[0.35, 0.025, cabinLength - 1.1]} />
-      </mesh>
-      <mesh material={mats.chrome} position={[side * 0.89, 2.94, cabinCenterZ + 0.2]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.018, 0.018, cabinLength - 1.1, 8]} />
-      </mesh>
+      <mesh geometry={unitBoxGeo} material={mats.interiorWall} position={[side * 1.07, 2.88, (rackFrom + rackTo) / 2]} scale={[0.35, 0.025, Math.max(0.5, rackTo - rackFrom)]} dispose={null} />
+      <mesh geometry={unitRackBarGeo} material={mats.chrome} position={[side * 0.89, 2.94, (rackFrom + rackTo) / 2]} rotation={[Math.PI / 2, 0, 0]} scale={[1, Math.max(0.5, rackTo - rackFrom), 1]} dispose={null} />
       {/* Les barres remontent au-dessus des télés, avec de vrais raccords au plafond. */}
       {grabRailSpans.map(([start, end]) => <mesh key={start} name="bus-grab-rail" material={mats.yellow}
         position={[side * GRAB_HANDLE_X, GRAB_RAIL_Y, (start + end) / 2]} rotation={[Math.PI / 2, 0, 0]}>
@@ -154,7 +156,11 @@ const BusCabinDetails = memo(function BusCabinDetails({ mats, cabinLength, cabin
     </group>)}
     <CabinCeilingFixtures detailZs={detailZs} tvPositions={tvPositions} mats={mats} />
     {/* Coffrages fermés des passages de roue couvrant |x| ∈ [1.14, 1.258] et y ∈ [0.56, 1.14+]. */}
-    <mesh name="bus-wheelhouses" material={mats.dark} geometry={wheelhouseGeo} dispose={null} />
+    <group name="bus-wheelhouses">
+      {wheelAxleZs.map((z) => (
+        <mesh key={z} position={[0, 0, z]} material={mats.dark} geometry={unitWheelhouseGeo} dispose={null} />
+      ))}
+    </group>
     <mesh position={[0, 2.98, rearWallZ - 0.055]} rotation={[0, Math.PI, 0]}>
       <planeGeometry args={[1.14, 0.21]} />
       <meshBasicMaterial map={exitTexture} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
