@@ -150,7 +150,7 @@ export const BusSeatNav = memo(function BusSeatNav({
       <div className="bus-row-nav pointer-events-auto absolute right-3 top-[4.75rem] sm:right-4 sm:top-[6.25rem]">
         <div className="bus-case bus-glass flex flex-col gap-1 rounded-[1.25rem] p-1.5 backdrop-blur-md">
           {/* Déplacement dans l'allée */}
-          <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1">
+          <div className="grid grid-cols-[2.75rem_minmax(6.75rem,1fr)_2.75rem] items-center gap-1">
             <button
               type="button"
               onClick={() => setSeatRow((r) => Math.max(0, r - 1))}
@@ -161,7 +161,7 @@ export const BusSeatNav = memo(function BusSeatNav({
             >
               <ChevronLeftIcon className="h-4 w-4 shrink-0" />
             </button>
-            <span className="flex h-10 items-center justify-center text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
+            <span className="flex h-10 items-center justify-center px-1.5 text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
               <span>{pickLocale(locale, "Rangée", "Row")}</span>
               <span className="ml-1 text-[#c4b5fd]">{seatRow + 1}</span>
               <span className="mx-0.5 text-[#a3aed9]">/</span>
@@ -180,7 +180,7 @@ export const BusSeatNav = memo(function BusSeatNav({
           </div>
 
           {/* Déplacement latéral sur les sièges de la rangée */}
-          <div className="grid grid-cols-[2.75rem_6.75rem_2.75rem] items-center gap-1 border-t border-[#947eef]/20 pt-1">
+          <div className="grid grid-cols-[2.75rem_minmax(6.75rem,1fr)_2.75rem] items-center gap-1 border-t border-[#947eef]/20 pt-1">
             <button
               type="button"
               onClick={() => setSeatColumn(Math.max(0, seatColumn - 1))}
@@ -191,7 +191,7 @@ export const BusSeatNav = memo(function BusSeatNav({
             >
               <ChevronLeftIcon className="h-4 w-4 shrink-0" />
             </button>
-            <span className="flex h-10 items-center justify-center text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
+            <span className="flex h-10 items-center justify-center px-1.5 text-xs font-bold leading-none tabular-nums whitespace-nowrap text-white">
               <span>{pickLocale(locale, "Colonne", "Column")}</span>
               <span className="ml-1 text-[#c4b5fd]">{seatColumn + 1}</span>
               <span className="mx-0.5 text-[#a3aed9]">/</span>

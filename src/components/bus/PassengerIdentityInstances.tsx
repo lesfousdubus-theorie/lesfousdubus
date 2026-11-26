@@ -44,6 +44,7 @@ function Prototype({ id, onReady }: { id: string; onReady: (parts: IdentityPart[
 
 interface IdentityInstancesProps {
   passengers: BusOccupant[];
+  originZ?: number;
   drivers: IdentityDrivers;
   capacity: number;
   profilesBySeatIndex?: Map<number, PassengerProfile>;
@@ -57,6 +58,7 @@ interface IdentityGroupProps {
   id: string;
   indices: number[];
   groupHash: number;
+  originZ: number;
   passengers: BusOccupant[];
   drivers: IdentityDrivers;
   partyOn: boolean;
@@ -64,7 +66,7 @@ interface IdentityGroupProps {
 }
 
 /** Même tête, mêmes cheveux et même tenue à distance. Seule l'expression est figée. */
-const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, drivers, partyOn, reducedMotion }: IdentityGroupProps) {
+const IdentityGroup = memo(function IdentityGroup({ id, indices, originZ, passengers, drivers, partyOn, reducedMotion }: IdentityGroupProps) {
   const clock = useThree(state => state.clock);
   const [baked, setBaked] = useState<{ parts: IdentityPart[]; staticParts: StaticIdentityPart[] } | null>(() => {
     const p = bakedPassengerIdentities.get(id);
@@ -95,7 +97,7 @@ const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, dri
         const occ = passengers[indices[k]];
         seatHash = ((seatHash * 31) ^ (occ ? ((occ.index * 7) ^ occ.physicalSeatIndex) : -1)) | 0;
       }
-      const staticKey = `${groupCapacity}:${celebrating}:${seatHash}`;
+      const staticKey = `${groupCapacity}:${originZ}:${celebrating}:${seatHash}`;
       const staticChanged = lastStaticKey.current !== staticKey;
       lastStaticKey.current = staticKey;
       staticParts!.forEach((_, sIdx) => {
@@ -105,7 +107,7 @@ const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, dri
         if (!celebrating && (staticChanged || sm.count !== indices.length) && indices.length > 0) {
           indices.forEach((index, at) => {
             const { seat } = passengers[index];
-            sm.setMatrixAt(at, matrix.makeTranslation(seat.x, 0, seat.z));
+            sm.setMatrixAt(at, matrix.makeTranslation(seat.x, 0, seat.z - originZ));
           });
           sm.count = indices.length;
           sm.instanceMatrix.clearUpdateRanges();
@@ -119,8 +121,8 @@ const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, dri
     const gain = celebrating ? getPassengerSignatureGain(time, id, partyOn, reducedMotion) : 0;
     const roleMatrix = (role: IdentityRole, index: number) => {
       const { seat } = passengers[index];
-      if (role === "legs") return matrix.makeTranslation(seat.x, CABIN_FLOOR_Y + rig.seatedHipHeight, seat.z + rig.seatedHipZ);
-      if (role === "rest") return matrix.makeTranslation(seat.x, 0, seat.z);
+      if (role === "legs") return matrix.makeTranslation(seat.x, CABIN_FLOOR_Y + rig.seatedHipHeight, seat.z - originZ + rig.seatedHipZ);
+      if (role === "rest") return matrix.makeTranslation(seat.x, 0, seat.z - originZ);
       if (role === "body") {
         return matrix.copy(drivers.bodies[index]).multiply(adjust.makeScale(.32 / shape.torsoWidth, .42 / shape.torsoHeight, .22 / shape.torsoDepth));
       }
@@ -153,7 +155,7 @@ const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, dri
       mesh.instanceMatrix.needsUpdate = true;
       mesh.boundingSphere = null;
     });
-  }, [parts, staticParts, indices, passengers, drivers, partyOn, reducedMotion, id, rig, shape, scratch, groupCapacity]);
+  }, [parts, staticParts, indices, originZ, passengers, drivers, partyOn, reducedMotion, id, rig, shape, scratch, groupCapacity]);
 
   useLayoutEffect(() => {
     const onSync = () => {
@@ -187,7 +189,7 @@ const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, dri
       <Prototype id={id} onReady={handleReady} />
     </group>;
   }
-  return <group name={`bus-distant-identity-${id}`} userData={{ archetypeId: id }}>
+  return <group name={`bus-distant-identity-${id}`} position={[0, 0, originZ]} userData={{ archetypeId: id }}>
     {staticParts?.map((part, i) => <instancedMesh key={`static-${i}-${groupCapacity}`} name={`bus-distant-static-${id}-${i}`}
       ref={node => { staticMeshes.current[i] = node; }} geometry={part.geometry} material={part.material}
       args={instancedArgs} count={indices.length} frustumCulled={false} raycast={() => null} userData={{ archetypeId: id, static: true }}
@@ -203,6 +205,7 @@ const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, dri
   if (
     prev.id !== next.id
     || prev.groupHash !== next.groupHash
+    || prev.originZ !== next.originZ
     || prev.indices.length !== next.indices.length
     || prev.drivers !== next.drivers
     || prev.partyOn !== next.partyOn
@@ -224,7 +227,7 @@ const IdentityGroup = memo(function IdentityGroup({ id, indices, passengers, dri
 
 const EMPTY_INDICES: number[] = [];
 
-export default function PassengerIdentityInstances({ ids, passengers, drivers, partyOn, reducedMotion }:
+export default function PassengerIdentityInstances({ ids, passengers, originZ = 0, drivers, partyOn, reducedMotion }:
   IdentityInstancesProps & { ids: string[] }) {
   const groupsMap = useMemo(() => {
     const result = new Map<string, { indices: number[]; hash: number }>();
@@ -296,6 +299,7 @@ export default function PassengerIdentityInstances({ ids, passengers, drivers, p
         id={id}
         indices={entry?.indices ?? EMPTY_INDICES}
         groupHash={entry?.hash ?? 0}
+        originZ={originZ}
         passengers={passengers}
         drivers={drivers}
         partyOn={partyOn}

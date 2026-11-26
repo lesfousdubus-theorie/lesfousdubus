@@ -171,19 +171,30 @@ const BusPartyLights = memo(function BusPartyLights({
 
     let visibleFocus = 0;
     let visibleStride = 1;
+    let originZ = Math.round(focusZ / 16) * 16;
     if (stationCount > stationCapacity) {
       camera.getWorldPosition(cameraLocal);
-      anchor.worldToLocal(cameraLocal);
+      if (anchor.parent) anchor.parent.worldToLocal(cameraLocal);
       // Suit toujours la zone du bus observée par la caméra (intérieur ET extérieur).
       const viewZ = THREE.MathUtils.clamp(Number.isFinite(cameraLocal.z) ? cameraLocal.z : focusZ, from, to);
+      originZ = Math.round(viewZ / 16) * 16;
       const camDist = Math.hypot(cameraLocal.x, Math.max(0, cameraLocal.y - 2));
       visibleStride = camDist > 60 ? 3 : camDist > 22 ? 2 : 1;
       const quant = Math.max(4, visibleStride * 4);
       visibleFocus = Math.round((viewZ - from) / (step * quant)) * quant;
     }
+    const originChanged = anchor.position.z !== originZ;
+    if (originChanged) {
+      anchor.position.z = originZ;
+      const sphere = new THREE.Sphere(
+        new THREE.Vector3(0, 1.9, (from + to) / 2 - originZ),
+        Math.hypot(1.6, 1.45, (to - from) / 2 + 0.5),
+      );
+      for (const mesh of [cones, orbs, pools, bars]) mesh.boundingSphere = sphere;
+    }
     const time = reducedMotion ? 0 : getPartyDanceTime(clock.elapsedTime);
-    if (time === previous.time && visibleFocus === previous.focus && visibleStride === previous.stride) return;
-    const moved = visibleFocus !== previous.focus || visibleStride !== previous.stride;
+    if (!originChanged && time === previous.time && visibleFocus === previous.focus && visibleStride === previous.stride) return;
+    const moved = originChanged || visibleFocus !== previous.focus || visibleStride !== previous.stride;
     if (moved) previous.stations = sampleStations(stationCount, stationCapacity, visibleFocus, visibleStride);
     previous.time = time;
     previous.focus = visibleFocus;
@@ -209,14 +220,14 @@ const BusPartyLights = memo(function BusPartyLights({
         const hue = (station * 0.143 + fixture * 0.38 + beats / 24) % 1;
         color.setHSL(hue, 0.93, 0.56).multiplyScalar(beatGlow);
 
-        dummy.position.set(sourceX, BEAM_Y, sourceZ);
+        dummy.position.set(sourceX, BEAM_Y, sourceZ - originZ);
         dummy.quaternion.setFromUnitVectors(DOWN, direction.normalize());
         dummy.scale.set(1, beamLength, 1);
         dummy.updateMatrix();
         cones.setMatrixAt(index, dummy.matrix);
         cones.setColorAt(index, color);
 
-        dummy.position.set(targetX, FLOOR_Y, targetZ);
+        dummy.position.set(targetX, FLOOR_Y, targetZ - originZ);
         dummy.rotation.set(0, 0, 0);
         dummy.scale.setScalar(0.86 + 0.14 * beatGlow);
         dummy.updateMatrix();
@@ -224,7 +235,7 @@ const BusPartyLights = memo(function BusPartyLights({
         pools.setColorAt(index, color);
 
         if (moved) {
-          dummy.position.set(sourceX, BEAM_Y + 0.012, sourceZ);
+          dummy.position.set(sourceX, BEAM_Y + 0.012, sourceZ - originZ);
           dummy.scale.setScalar(1);
           dummy.updateMatrix();
           orbs.setMatrixAt(index, dummy.matrix);

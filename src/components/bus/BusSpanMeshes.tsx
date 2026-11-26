@@ -20,6 +20,9 @@ export default function BusSpanMeshes({ spans, x, y, width, height, material, na
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const key = spans.map(([from, to]) => `${from}:${to}`).join(",");
   const capacity = Math.max(16, Math.ceil(spans.length / 64) * 64);
+  const originZ = spans.length > 0
+    ? (spans[Math.floor(spans.length / 2)][0] + spans[Math.floor(spans.length / 2)][1]) * 0.5
+    : 0;
 
   const geometry = useMemo(
     () => (planeSide === undefined ? new THREE.BoxGeometry(1, 1, 1) : new THREE.PlaneGeometry(1, 1)),
@@ -43,7 +46,7 @@ export default function BusSpanMeshes({ spans, x, y, width, height, material, na
       const [from, to] = pairs[i].split(":").map(Number);
       if (from < minFrom) minFrom = from;
       if (to > maxTo) maxTo = to;
-      dummy.position.set(x, y, (from + to) * 0.5);
+      dummy.position.set(x, y, (from + to) * 0.5 - originZ);
       dummy.rotation.set(0, planeSide !== undefined ? (planeSide * Math.PI) / 2 : 0, 0);
       dummy.scale.set(
         planeSide !== undefined ? to - from : width,
@@ -57,12 +60,12 @@ export default function BusSpanMeshes({ spans, x, y, width, height, material, na
     mesh.visible = true;
     mesh.instanceMatrix.needsUpdate = true;
     if (Number.isFinite(minFrom) && Number.isFinite(maxTo)) {
-      const centerZ = (minFrom + maxTo) * 0.5;
+      const centerZ = (minFrom + maxTo) * 0.5 - originZ;
       const halfZ = Math.max(0.5, (maxTo - minFrom) * 0.5);
       const radius = Math.hypot(width * 0.5, height * 0.5, halfZ);
       mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(x, y, centerZ), radius);
     }
-  }, [key, x, y, width, height, planeSide, capacity]);
+  }, [key, originZ, x, y, width, height, planeSide, capacity]);
 
   if (!spans.length) return null;
   return (
@@ -70,6 +73,7 @@ export default function BusSpanMeshes({ spans, x, y, width, height, material, na
       key={`span-${capacity}-${planeSide ?? "box"}`}
       ref={meshRef}
       name={name}
+      position={[0, 0, originZ]}
       args={[geometry, material, capacity]}
       count={spans.length}
       castShadow={castShadow}

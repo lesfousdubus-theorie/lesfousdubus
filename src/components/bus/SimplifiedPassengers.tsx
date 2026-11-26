@@ -27,6 +27,10 @@ export const SimplifiedPassengers = memo(function SimplifiedPassengers({ passeng
       pose: getRegisteredPassengerPose(poses,index), target: createPassengerPose() };
   }), [passengers, profilesBySeatIndex,poses]);
   const ids=useMemo(()=>profiles.map(profile=>profile.archetype.id),[profiles]);
+  const originZ = useMemo(() => {
+    if (!passengers.length) return 0;
+    return Math.round(passengers[Math.floor(passengers.length / 2)].seat.z / 16) * 16;
+  }, [passengers]);
   const occupantsKey = useMemo(() => passengers.map((p, i) => `${p.index}:${p.physicalSeatIndex}:${ids[i]}`).join(","), [passengers, ids]);
   const neededCapacity = Math.max(768, Math.ceil(passengers.length / 256) * 256);
   const [capacity, setCapacity] = useState(neededCapacity);
@@ -54,7 +58,7 @@ export const SimplifiedPassengers = memo(function SimplifiedPassengers({ passeng
     passengers.forEach(({ seat }, i) => {
       const { rig, shape, archetype, pose } = profiles[i];
       keepPassengerHandsApart(pose, archetype.id, seat.seatInRow % 2 === 0 ? 1 : -1, seat.x);
-      local.position.set(seat.x, CABIN_FLOOR_Y + rig.seatedHipHeight + rig.torsoAboveHip + pose.bob * .5, seat.z + rig.seatedHipZ + BODY_BEHIND_HIP);
+      local.position.set(seat.x, CABIN_FLOOR_Y + rig.seatedHipHeight + rig.torsoAboveHip + pose.bob * .5, seat.z - originZ + rig.seatedHipZ + BODY_BEHIND_HIP);
       local.rotation.set(pose.torsoPitch, pose.torsoYaw + pose.rootYaw, pose.torsoRoll); local.scale.set(1, 1, 1); local.updateMatrix(); body.copy(local.matrix);
       part(matrices.bodies, i, body, 0, 0, 0, shape.torsoWidth / .32, shape.torsoHeight / .42, shape.torsoDepth / .22);
       const neckY = rig.neckAboveHip - rig.torsoAboveHip;
@@ -75,7 +79,7 @@ export const SimplifiedPassengers = memo(function SimplifiedPassengers({ passeng
       }
     });
     revision.current++;
-  }, [matrices, passengers, profiles, scratch]);
+  }, [matrices, originZ, passengers, profiles, scratch]);
   const snapReducedMotion = useCallback((time: number, hornElapsed: number, active: boolean) => {
     profiles.forEach(({ archetype, shape, pose, target }, i) => {
       const { index, seat } = passengers[i];
@@ -127,7 +131,7 @@ export const SimplifiedPassengers = memo(function SimplifiedPassengers({ passeng
     });
     writeMatrices();
   },-2);
-  return <PassengerIdentityInstances ids={ids} passengers={passengers} drivers={drivers} capacity={capacity}
+  return <PassengerIdentityInstances ids={ids} passengers={passengers} originZ={originZ} drivers={drivers} capacity={capacity}
     profilesBySeatIndex={profilesBySeatIndex} hornPulse={hornPulse} poses={poses}
     partyOn={partyOn} reducedMotion={reducedMotion}/>;
 });

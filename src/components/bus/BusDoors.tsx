@@ -193,16 +193,17 @@ function ClosedDoorChunkInstances({
     if (!mesh) return;
     const matrix = new THREE.Matrix4();
     for (let i = 0; i < doors.length; i++) {
-      mesh.setMatrixAt(i, matrix.makeTranslation(0, 0, doors[i].z));
+      mesh.setMatrixAt(i, matrix.makeTranslation(0, 0, doors[i].z - centerZ));
     }
     mesh.count = doors.length;
-    mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(1.2, 1.65, centerZ), radius);
+    mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(1.2, 1.65, 0), radius);
     mesh.instanceMatrix.needsUpdate = true;
   }, [centerZ, doors, radius]);
   return (
     <instancedMesh
       name="bus-closed-door-instances"
       ref={ref}
+      position={[0, 0, centerZ]}
       args={[geometry, material, DOOR_CHUNK_SIZE]}
       count={doors.length}
       frustumCulled
@@ -232,8 +233,10 @@ function NearClosedDoorDetails({
     if (!mesh) return;
     const matrix = (matrixRef.current ??= new THREE.Matrix4());
     const initial = Math.min(doors.length, capacity);
+    const originZ = initial > 0 ? doors[Math.floor(initial / 2)].z : 0;
+    mesh.position.z = originZ;
     for (let i = 0; i < initial; i++) {
-      mesh.setMatrixAt(i, matrix.makeTranslation(0, 0, doors[i].z));
+      mesh.setMatrixAt(i, matrix.makeTranslation(0, 0, doors[i].z - originZ));
     }
     mesh.count = initial;
     mesh.visible = initial > 0;
@@ -247,12 +250,14 @@ function NearClosedDoorDetails({
     const camZ = camera.position.z;
     if (Number.isFinite(lastCamZRef.current) && Math.abs(camZ - lastCamZRef.current) < 36) return;
     lastCamZRef.current = camZ;
+    const originZ = Math.round(camZ / 16) * 16;
+    mesh.position.z = originZ;
     const matrix = (matrixRef.current ??= new THREE.Matrix4());
     let out = 0;
     for (let i = 0; i < doors.length && out < capacity; i++) {
       const z = doors[i].z;
       if (Math.abs(z - camZ) > NEAR_DOOR_DETAIL_WINDOW_M) continue;
-      mesh.setMatrixAt(out++, matrix.makeTranslation(0, 0, z));
+      mesh.setMatrixAt(out++, matrix.makeTranslation(0, 0, z - originZ));
     }
     mesh.count = out;
     mesh.visible = out > 0;

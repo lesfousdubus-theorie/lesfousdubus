@@ -82,17 +82,18 @@ export default function BusTvScreen({ isOn, interactive, children }: {
       cameraLayer.style.height = `${size.height}px`;
     }
 
-    const c = camera.matrixWorldInverse.elements;
-    const cameraTransform = `translate3d(0,0,${eps(fovPx)}px) matrix3d(${eps(c[0])},${eps(-c[1])},${eps(c[2])},${eps(c[3])},${eps(c[4])},${eps(-c[5])},${eps(c[6])},${eps(c[7])},${eps(c[8])},${eps(-c[9])},${eps(c[10])},${eps(c[11])},${eps(c[12])},${eps(-c[13])},${eps(c[14])},${eps(c[15])}) translate(${size.width / 2}px,${size.height / 2}px)`;
+    // Composer camera.matrixWorldInverse * screen.matrixWorld en float64 JS afin que le compositeur
+    // CSS (float32) ne soustraie jamais ±100 km de Z sur les très longs bus.
+    const cameraTransform = `translate3d(0,0,${eps(fovPx)}px) translate(${size.width / 2}px,${size.height / 2}px)`;
     if (lastState.current.camera !== cameraTransform) {
       lastState.current.camera = cameraTransform;
       cameraLayer.style.transform = cameraTransform;
     }
 
-    const w = screen.matrixWorld.elements;
+    const m = scratch.screenToView.multiplyMatrices(camera.matrixWorldInverse, screen.matrixWorld).elements;
     const sx = TV_SCREEN_WIDTH / PLAYER_WIDTH;
     const sy = TV_SCREEN_HEIGHT / PLAYER_HEIGHT;
-    const frameTransform = `translate3d(-50%,-50%,0) matrix3d(${eps(w[0] * sx)},${eps(w[1] * sx)},${eps(w[2] * sx)},${eps(w[3] * sx)},${eps(-w[4] * sy)},${eps(-w[5] * sy)},${eps(-w[6] * sy)},${eps(-w[7] * sy)},${eps(w[8])},${eps(w[9])},${eps(w[10])},${eps(w[11])},${eps(w[12])},${eps(w[13])},${eps(w[14])},${eps(w[15])})`;
+    const frameTransform = `translate3d(-50%,-50%,0) matrix3d(${eps(m[0] * sx)},${eps(-m[1] * sx)},${eps(m[2] * sx)},${eps(m[3] * sx)},${eps(-m[4] * sy)},${eps(m[5] * sy)},${eps(-m[6] * sy)},${eps(-m[7] * sy)},${eps(m[8])},${eps(-m[9])},${eps(m[10])},${eps(m[11])},${eps(m[12])},${eps(-m[13])},${eps(m[14])},${eps(m[15])})`;
     if (lastState.current.frame !== frameTransform) {
       lastState.current.frame = frameTransform;
       html.style.transform = frameTransform;

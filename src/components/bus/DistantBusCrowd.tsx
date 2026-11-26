@@ -102,13 +102,13 @@ const CrowdChunk = memo(function CrowdChunk({
 
     for (let local = 0; local < rowCount; local++) {
       const row = range.startRow + local;
-      const z = getSeatRowZ(row);
+      const localZ = getSeatRowZ(row) - range.centerZ;
       const seatCount = getSeatCountInRow(row);
 
       // Piliers de vitres sombres légèrement à l'extérieur de la vitre (±1,305) pour délimiter nettement chaque fenêtre.
-      matrix.makeTranslation(-1.305, 2.255, z - 0.05);
+      matrix.makeTranslation(-1.305, 2.255, localZ - 0.05);
       pillarMesh.setMatrixAt(local * 2, matrix);
-      matrix.makeTranslation(1.305, 2.255, z - 0.05);
+      matrix.makeTranslation(1.305, 2.255, localZ - 0.05);
       pillarMesh.setMatrixAt(local * 2 + 1, matrix);
 
       // Une seule banquette transversale par rangée (divise par 2 le nombre d'instances de sièges au loin)
@@ -116,7 +116,7 @@ const CrowdChunk = memo(function CrowdChunk({
       // dépasser la paroi latérale gauche (-1,30 m) ni empiéter sur l'ouverture de porte droite.
       benchIdx[local] = benchCount;
       matrix.makeScale(seatCount > 2 ? 1 : 0.42, 1, 1);
-      matrix.setPosition(seatCount > 2 ? 0 : -0.72, 1.18, z + SEAT_CUSHION_Z);
+      matrix.setPosition(seatCount > 2 ? 0 : -0.72, 1.18, localZ + SEAT_CUSHION_Z);
       benchMesh.setMatrixAt(benchCount++, matrix);
 
       personStart[local] = personCount;
@@ -128,13 +128,13 @@ const CrowdChunk = memo(function CrowdChunk({
         const archetype = getNakamaArchetype(regIndex);
         const x = PASSENGER_SEAT_X[col];
 
-        matrix.makeTranslation(x, 1.54, z + 0.14);
+        matrix.makeTranslation(x, 1.54, localZ + 0.14);
         torsoMesh.setMatrixAt(personCount, matrix);
         color.set(archetype.shirtColor).lerp(INTERIOR_SHADE, 0.35);
         torsoMesh.setColorAt(personCount, color);
 
         // Visage beige naturel dans la continuité exacte des passagers détaillés vus par les vitres.
-        matrix.makeTranslation(x, 1.9, z + 0.14);
+        matrix.makeTranslation(x, 1.9, localZ + 0.14);
         headMesh.setMatrixAt(personCount, matrix);
         color.set(archetype.skinColor || "#e8c8a8").lerp(FACE_WARM_BEIGE, 0.25);
         headMesh.setColorAt(personCount, color);
@@ -145,7 +145,7 @@ const CrowdChunk = memo(function CrowdChunk({
       personLen[local] = personCount - personStart[local];
     }
 
-    const sphere = new THREE.Sphere(new THREE.Vector3(0, 1.6, range.centerZ), range.radius);
+    const sphere = new THREE.Sphere(new THREE.Vector3(0, 1.6, 0), range.radius);
     pillarMesh.count = rowCount * 2;
     pillarMesh.visible = rowCount > 0;
     pillarMesh.boundingSphere = sphere.clone();
@@ -200,18 +200,18 @@ const CrowdChunk = memo(function CrowdChunk({
     for (const row of prevHidden) {
       if (nextHidden.has(row)) continue;
       const local = row - range.startRow;
-      const z = getSeatRowZ(row);
+      const localZ = getSeatRowZ(row) - range.centerZ;
       const seatCount = getSeatCountInRow(row);
-      matrix.makeTranslation(-1.305, 2.255, z - 0.05);
+      matrix.makeTranslation(-1.305, 2.255, localZ - 0.05);
       pillarMesh.setMatrixAt(local * 2, matrix);
-      matrix.makeTranslation(1.305, 2.255, z - 0.05);
+      matrix.makeTranslation(1.305, 2.255, localZ - 0.05);
       pillarMesh.setMatrixAt(local * 2 + 1, matrix);
       if (local * 2 < minPillar) minPillar = local * 2;
       if (local * 2 + 1 > maxPillar) maxPillar = local * 2 + 1;
 
       const bIdx = map.benchIdx[local];
       matrix.makeScale(seatCount > 2 ? 1 : 0.42, 1, 1);
-      matrix.setPosition(seatCount > 2 ? 0 : -0.72, 1.18, z + SEAT_CUSHION_Z);
+      matrix.setPosition(seatCount > 2 ? 0 : -0.72, 1.18, localZ + SEAT_CUSHION_Z);
       benchMesh.setMatrixAt(bIdx, matrix);
       if (bIdx < minBench) minBench = bIdx;
       if (bIdx > maxBench) maxBench = bIdx;
@@ -220,9 +220,9 @@ const CrowdChunk = memo(function CrowdChunk({
       const pLen = map.personLen[local];
       for (let k = 0; k < pLen; k++) {
         const x = PASSENGER_SEAT_X[map.personCol[p0 + k] ?? 0];
-        matrix.makeTranslation(x, 1.54, z + 0.14);
+        matrix.makeTranslation(x, 1.54, localZ + 0.14);
         torsoMesh.setMatrixAt(p0 + k, matrix);
-        matrix.makeTranslation(x, 1.9, z + 0.14);
+        matrix.makeTranslation(x, 1.9, localZ + 0.14);
         headMesh.setMatrixAt(p0 + k, matrix);
       }
       if (pLen > 0) {
@@ -276,10 +276,10 @@ const CrowdChunk = memo(function CrowdChunk({
       headMesh.instanceMatrix.addUpdateRange(offset, count);
       headMesh.instanceMatrix.needsUpdate = true;
     }
-  }, [range.endRow, range.startRow, renderedRowSet]);
+  }, [range.centerZ, range.endRow, range.startRow, renderedRowSet]);
 
   return (
-    <group>
+    <group position={[0, 0, range.centerZ]}>
       <instancedMesh
         key={`dpillar-${range.chunkIdx}-${range.maxBenches}`}
         ref={pillarRef}

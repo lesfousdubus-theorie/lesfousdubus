@@ -29,12 +29,14 @@ const BusConfetti = memo(function BusConfetti({ focusZ, rearZ, lowPower, reduced
 
   useLayoutEffect(() => {
     if (!mesh.current) return;
+    const originZ = Math.round(focusZ / 16) * 16;
+    mesh.current.position.z = originZ;
     seeds.forEach((seed, i) => {
       mesh.current!.setColorAt(i, color.set(CONFETTI_COLORS[i % CONFETTI_COLORS.length]));
       dummy.position.set(
         (seed.x - 0.5) * 1.9,
         0.85 + seed.phase * 2.2,
-        getConfettiZ(seed, from, to, focusZ),
+        getConfettiZ(seed, from, to, focusZ) - originZ,
       );
       dummy.rotation.set(seed.spin, seed.spin * 0.7, seed.spin * 0.3);
       dummy.scale.setScalar(seed.scale);
@@ -45,7 +47,7 @@ const BusConfetti = memo(function BusConfetti({ focusZ, rearZ, lowPower, reduced
     if (mesh.current.instanceColor) mesh.current.instanceColor.needsUpdate = true;
     // La couche dense suit la caméra dans les bus très longs. Les bornes englobent toute la cabine.
     mesh.current.boundingSphere = new THREE.Sphere(
-      new THREE.Vector3(0, 1.9, (from + to) / 2),
+      new THREE.Vector3(0, 1.9, (from + to) / 2 - originZ),
       Math.hypot(1.3, 1.3, (to - from) / 2 + 0.4),
     );
   }, [seeds, color, dummy, from, to, focusZ]);
@@ -97,10 +99,18 @@ const BusConfetti = memo(function BusConfetti({ focusZ, rearZ, lowPower, reduced
     mesh.current.count = visibleCount;
 
     camera.getWorldPosition(cameraLocal);
-    mesh.current.worldToLocal(cameraLocal);
+    if (mesh.current.parent) mesh.current.parent.worldToLocal(cameraLocal);
     // Centre toujours la fenêtre dense de confettis autour de la zone du bus observée par la caméra
     // (aussi bien à l'extérieur qu'à l'intérieur), pour couvrir 100 % du bus visible sans jamais laisser de vide.
     const viewCenterZ = THREE.MathUtils.clamp(cameraLocal.z, from, to);
+    const originZ = Math.round(viewCenterZ / 16) * 16;
+    if (mesh.current.position.z !== originZ) {
+      mesh.current.position.z = originZ;
+      mesh.current.boundingSphere = new THREE.Sphere(
+        new THREE.Vector3(0, 1.9, (from + to) / 2 - originZ),
+        Math.hypot(1.3, 1.3, (to - from) / 2 + 0.4),
+      );
+    }
     const visibleSpan = Math.min(
       cabinSpan,
       Math.max(140, Math.min(380, Math.abs(cameraLocal.x) * 3.0 + Math.abs(cameraLocal.y) * 2.2 + 120)),
@@ -120,7 +130,7 @@ const BusConfetti = memo(function BusConfetti({ focusZ, rearZ, lowPower, reduced
       dummy.position.set(
         (seed.x - 0.5) * 1.82 + swirlX,
         3.06 - fall * 2.34,
-        getConfettiZ(seed, winFrom, winTo, denseFocus) + swirlZ,
+        getConfettiZ(seed, winFrom, winTo, denseFocus) - originZ + swirlZ,
       );
       dummy.rotation.set(
         seed.spin + t * 1.9 * spinBoost,

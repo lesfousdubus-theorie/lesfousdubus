@@ -343,6 +343,7 @@ export const DistantPassengerNames = memo(function DistantPassengerNames({
   const hasPendingRef = useRef(true);
   const nextWarmAtRef = useRef(0);
   const activeItemsRef = useRef<ActiveAtlasItem[]>([]);
+  const originZRef = useRef(0);
   const atlasRuntimeRef = useRef<{
     freeSlots: number[];
     nameToSlot: Map<string, AtlasSlot>;
@@ -483,6 +484,9 @@ export const DistantPassengerNames = memo(function DistantPassengerNames({
     }
 
     if (versionChanged || drewAny) {
+      const originZ = limit > 0 ? Math.round(currentLabels[Math.floor(limit / 2)].z / 16) * 16 : 0;
+      originZRef.current = originZ;
+      mesh.position.z = originZ;
       const items: ActiveAtlasItem[] = [];
       let out = 0;
       for (let i = 0; i < limit; i++) {
@@ -490,7 +494,7 @@ export const DistantPassengerNames = memo(function DistantPassengerNames({
         const entry = runtime.nameToSlot.get(label.name);
         if (!entry) continue;
         const [w, h] = nameTagSize(entry.aspect);
-        runtime.matrix.makeTranslation(label.x, label.y, label.z);
+        runtime.matrix.makeTranslation(label.x, label.y, label.z - originZ);
         mesh.setMatrixAt(out, runtime.matrix);
         writeAtlasInstance(atlas.uvAttr, atlas.sizeAttr, out, entry, w, h);
         items.push({ label, w, h });
@@ -524,9 +528,10 @@ export const DistantPassengerNames = memo(function DistantPassengerNames({
     const ray = raycaster.ray;
     const denom = normal.dot(ray.direction);
     if (Math.abs(denom) < 1e-6) return;
+    const originZ = originZRef.current;
     for (let i = 0; i < items.length; i++) {
       const { label, w, h } = items[i];
-      center.set(label.x, label.y, label.z).applyMatrix4(mesh.matrixWorld);
+      center.set(label.x, label.y, label.z - originZ).applyMatrix4(mesh.matrixWorld);
       const t = diff.subVectors(center, ray.origin).dot(normal) / denom;
       if (t < raycaster.near || t > raycaster.far) continue;
       hit.copy(ray.origin).addScaledVector(ray.direction, t);

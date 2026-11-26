@@ -80,6 +80,7 @@ function SeatInstances({
     const z = getSeatRowZ(row);
     return getSeatCountInRow(row) === 2 ? [[-0.72, z]] : [[-0.72, z], [0.72, z]];
   }), [rows]);
+  const originZ = benches.length > 0 ? benches[Math.floor(benches.length / 2)][1] : 0;
   useLayoutEffect(() => {
     const refs = [cushion, back, base, headrest];
     const offsets = [[1.05, SEAT_CUSHION_Z], [1.38, 0.33], [0.82, SEAT_CUSHION_Z], [1.7, 0.33]];
@@ -87,19 +88,19 @@ function SeatInstances({
     refs.forEach((meshRef, part) => {
       if (!meshRef.current) return;
       benches.forEach(([x, z], index) => {
-        matrix.makeTranslation(x, offsets[part][0], z + offsets[part][1]);
+        matrix.makeTranslation(x, offsets[part][0], z - originZ + offsets[part][1]);
         meshRef.current!.setMatrixAt(index, matrix);
       });
       meshRef.current.instanceMatrix.needsUpdate = true;
       // Le bus peut s'allonger : les bornes de visibilité doivent suivre les instances.
       meshRef.current.computeBoundingSphere();
     });
-  }, [benches]);
+  }, [benches, originZ]);
   const count = benches.length;
   // Capacité fixe large pour éviter toute recréation de buffer GPU lors du défilement caméra.
   const capacity = Math.max(384, Math.ceil(count / 128) * 128);
   return (
-    <>
+    <group position={[0, 0, originZ]}>
       <instancedMesh key={`sc-${capacity}`} name="bus-seat-cushions" ref={cushion} args={[undefined, undefined, capacity]} count={count} material={seatMaterial} raycast={() => null}>
         <boxGeometry args={[0.95, 0.15, SEAT_CUSHION_DEPTH]} />
       </instancedMesh>
@@ -112,6 +113,6 @@ function SeatInstances({
       <instancedMesh key={`sh-${capacity}`} ref={headrest} args={[undefined, undefined, capacity]} count={count} material={frameMaterial} raycast={() => null}>
         <boxGeometry args={[0.95, 0.05, 0.08]} />
       </instancedMesh>
-    </>
+    </group>
   );
 }

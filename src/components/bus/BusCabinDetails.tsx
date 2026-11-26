@@ -60,26 +60,26 @@ interface Props {
 type RailPoint = [number, number, number];
 interface RailSegment { from: RailPoint; to: RailPoint; radius: number }
 
-function makeGrabRailBridges(from: number, to: number, bridges: Array<[number, number]>) {
+function makeGrabRailBridges(from: number, to: number, bridges: Array<[number, number]>, originZ = 0) {
   const segments: RailSegment[] = [];
   const elbows: RailPoint[] = [];
   const supportZs = new Set([from, to]);
   for (const [start, end] of bridges) {
-    segments.push({ from: [0, GRAB_RAIL_BRIDGE_Y, start], to: [0, GRAB_RAIL_BRIDGE_Y, end], radius: .022 });
+    segments.push({ from: [0, GRAB_RAIL_BRIDGE_Y, start - originZ], to: [0, GRAB_RAIL_BRIDGE_Y, end - originZ], radius: .022 });
     for (const z of [start, end]) {
       // Au bout de la cabine, le pont est directement fixé au plafond.
       if (z > from && z < to) {
-        segments.push({ from: [0, GRAB_RAIL_Y, z], to: [0, GRAB_RAIL_BRIDGE_Y, z], radius: .022 });
-        elbows.push([0, GRAB_RAIL_Y, z]);
+        segments.push({ from: [0, GRAB_RAIL_Y, z - originZ], to: [0, GRAB_RAIL_BRIDGE_Y, z - originZ], radius: .022 });
+        elbows.push([0, GRAB_RAIL_Y, z - originZ]);
       }
-      elbows.push([0, GRAB_RAIL_BRIDGE_Y, z]);
+      elbows.push([0, GRAB_RAIL_BRIDGE_Y, z - originZ]);
       supportZs.add(z);
     }
   }
   for (const z of supportZs) {
     const y = bridges.some(([start, end]) => z >= start && z <= end) ? GRAB_RAIL_BRIDGE_Y : GRAB_RAIL_Y;
-    segments.push({ from: [0, y, z], to: [0, CABIN_CEILING_Y, z], radius: .014 });
-    if (y === GRAB_RAIL_Y) elbows.push([0, y, z]);
+    segments.push({ from: [0, y, z - originZ], to: [0, CABIN_CEILING_Y, z - originZ], radius: .014 });
+    if (y === GRAB_RAIL_Y) elbows.push([0, y, z - originZ]);
   }
   const axis = new THREE.Vector3(0, 1, 0);
   const parts: THREE.BufferGeometry[] = segments.map(({ from: start, to: end, radius }) => {
@@ -90,12 +90,12 @@ function makeGrabRailBridges(from: number, to: number, bridges: Array<[number, n
     return geometry;
   });
   for (const point of elbows) parts.push(new THREE.SphereGeometry(.022, 12, 8).translate(...point));
-  for (const z of supportZs) parts.push(new THREE.BoxGeometry(.065, .012, .065).translate(0, CABIN_CEILING_Y, z));
+  for (const z of supportZs) parts.push(new THREE.BoxGeometry(.065, .012, .065).translate(0, CABIN_CEILING_Y, z - originZ));
   // Les groupes gardent la géométrie de chaque raccord vérifiable ; un seul
   // matériau permet néanmoins un seul appel de dessin par côté.
   const geometry = mergeGeometries(parts, true)!;
   parts.forEach(part => part.dispose());
-  return { geometry, segments };
+  return { geometry, segments, originZ };
 }
 
 const BusCabinDetails = memo(function BusCabinDetails({ mats, cabinLength, cabinCenterZ, rearWallZ, rowZs, wheelPositions, tvPositions }: Props) {
@@ -109,7 +109,8 @@ const BusCabinDetails = memo(function BusCabinDetails({ mats, cabinLength, cabin
   const grabRailBridges = useMemo(() => {
     const from = cabinCenterZ + .4 - (cabinLength - 1.6) / 2;
     const to = cabinCenterZ + .4 + (cabinLength - 1.6) / 2;
-    return makeGrabRailBridges(from, to, getGrabRailBridgeSpans(from, to, tvPositions));
+    const bridgeOriginZ = tvPositions.length > 1 ? tvPositions[Math.floor(tvPositions.length / 2)][2] : 0;
+    return makeGrabRailBridges(from, to, getGrabRailBridgeSpans(from, to, tvPositions), bridgeOriginZ);
   }, [cabinCenterZ, cabinLength, tvPositions]);
   useEffect(() => () => grabRailBridges.geometry.dispose(), [grabRailBridges]);
   const wheelKey = wheelPositions.map(([x, z]) => `${x}:${z}`).join(",");
@@ -148,7 +149,7 @@ const BusCabinDetails = memo(function BusCabinDetails({ mats, cabinLength, cabin
         <cylinderGeometry args={[0.022, 0.022, end - start, 12]} />
       </mesh>)}
       <mesh name="bus-grab-rail-bridge" material={mats.yellow} geometry={grabRailBridges.geometry}
-        position={[side * GRAB_HANDLE_X, 0, 0]} dispose={null}
+        position={[side * GRAB_HANDLE_X, 0, grabRailBridges.originZ]} dispose={null}
         userData={{ side, segments: grabRailBridges.segments, ceilingY: CABIN_CEILING_Y }} />
     </group>)}
     <CabinCeilingFixtures detailZs={detailZs} tvPositions={tvPositions} mats={mats} />
@@ -196,6 +197,7 @@ const CabinCeilingFixtures = memo(function CabinCeilingFixtures({
   const strapsRef = useRef<THREE.InstancedMesh>(null);
   const ringsRef = useRef<THREE.InstancedMesh>(null);
   const maxItems = Math.max(1, detailZs.length * 2);
+  const originZ = detailZs.length > 0 ? detailZs[Math.floor(detailZs.length / 2)] : 0;
 
   useLayoutEffect(() => {
     const brackets = bracketsRef.current;
@@ -209,26 +211,27 @@ const CabinCeilingFixtures = memo(function CabinCeilingFixtures({
     for (const side of [-1, 1]) {
       for (let i = 0; i < detailZs.length; i++) {
         const z = detailZs[i];
-        dummy.position.set(side * 1.0675, 2.865, z);
+        const localZ = z - originZ;
+        dummy.position.set(side * 1.0675, 2.865, localZ);
         dummy.rotation.set(0, 0, Math.PI / 2);
         dummy.scale.set(1, 1, 1);
         dummy.updateMatrix();
         brackets.setMatrixAt(rackIdx, dummy.matrix);
 
-        dummy.position.set(side * 0.89, 3.005, z);
+        dummy.position.set(side * 0.89, 3.005, localZ);
         dummy.rotation.set(0, 0, 0);
         dummy.updateMatrix();
         stems.setMatrixAt(rackIdx, dummy.matrix);
         rackIdx += 1;
 
         if (isGrabHandleClearOfTv(z, tvPositions)) {
-          dummy.position.set(side * GRAB_HANDLE_X, 2.82, z);
+          dummy.position.set(side * GRAB_HANDLE_X, 2.82, localZ);
           dummy.rotation.set(0, 0, 0);
           dummy.scale.set(1, 1, 1);
           dummy.updateMatrix();
           straps.setMatrixAt(handleIdx, dummy.matrix);
 
-          dummy.position.set(side * GRAB_HANDLE_X, 2.67, z);
+          dummy.position.set(side * GRAB_HANDLE_X, 2.67, localZ);
           dummy.scale.set(1, 0.85, 1);
           dummy.updateMatrix();
           rings.setMatrixAt(handleIdx, dummy.matrix);
@@ -255,10 +258,10 @@ const CabinCeilingFixtures = memo(function CabinCeilingFixtures({
     rings.visible = handleIdx > 0;
     rings.instanceMatrix.needsUpdate = true;
     rings.computeBoundingSphere();
-  }, [detailZs, tvPositions]);
+  }, [detailZs, originZ, tvPositions]);
 
   return (
-    <>
+    <group position={[0, 0, originZ]}>
       <instancedMesh key={`brackets-${maxItems}`} ref={bracketsRef} args={[undefined, undefined, maxItems]} material={mats.chrome} raycast={() => null}>
         <cylinderGeometry args={[0.014, 0.014, 0.355, 8]} />
       </instancedMesh>
@@ -271,7 +274,7 @@ const CabinCeilingFixtures = memo(function CabinCeilingFixtures({
       <instancedMesh key={`rings-${maxItems}`} ref={ringsRef} name="bus-grab-handle-ring" args={[undefined, undefined, maxItems]} material={mats.yellow} raycast={() => null}>
         <torusGeometry args={[0.09, 0.015, 6, 16]} />
       </instancedMesh>
-    </>
+    </group>
   );
 });
 

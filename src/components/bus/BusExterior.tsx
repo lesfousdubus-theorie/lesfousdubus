@@ -75,15 +75,17 @@ const BusExterior = memo(function BusExterior({
     () => [...new Set(wheelPositions.map(([, z]) => z))].sort((a, b) => a - b),
     [wheelPositions],
   );
+  const panelOriginZ = Math.round(focusZ / 160) * 160;
   const sidePanels = useMemo(() => {
     const plainTemplateCache = new Map<string, THREE.BufferGeometry>();
     const panels = [-1, 1].map((side) => {
       const pieces = splitAtDoors(BUS_FRONT_Z, rearWallZ, doors, side > 0).map(([from, to]) => {
         const len = to - from;
         const center = (from + to) / 2;
+        const localCenter = center - panelOriginZ;
         const localWheelZs = wheelZs.filter((z) => z + WHEEL_ARCH_RADIUS > from && z - WHEEL_ARCH_RADIUS < to).map((z) => z - center);
         if (localWheelZs.length > 0) {
-          return createLowerBodyGeometry(len, localWheelZs).translate(0, 0, center);
+          return createLowerBodyGeometry(len, localWheelZs).translate(0, 0, localCenter);
         }
         const key = len.toFixed(3);
         let template = plainTemplateCache.get(key);
@@ -91,7 +93,7 @@ const BusExterior = memo(function BusExterior({
           template = createLowerBodyGeometry(len, []);
           plainTemplateCache.set(key, template);
         }
-        return template.clone().translate(0, 0, center);
+        return template.clone().translate(0, 0, localCenter);
       });
       const geometry = mergeGeometries(pieces, false)!;
       pieces.forEach((piece) => piece.dispose());
@@ -99,7 +101,7 @@ const BusExterior = memo(function BusExterior({
     });
     plainTemplateCache.forEach((template) => template.dispose());
     return panels;
-  }, [rearWallZ, wheelZs, doors]);
+  }, [rearWallZ, wheelZs, doors, panelOriginZ]);
   useEffect(() => () => sidePanels.forEach(({ geometry }) => geometry.dispose()), [sidePanels]);
   const leftOuterFloorSpans = useMemo(
     () => splitAtWheels([[BUS_FRONT_Z, rearWallZ]], wheelZs),
@@ -121,7 +123,7 @@ const BusExterior = memo(function BusExterior({
         <group key={sx}>
           {/* Panneau latéral bas extensible */}
           {sidePanels.filter(({ side }) => side === sx).map(({ geometry }) =>
-            <mesh key={sx} name={`bus-body-side-${sx}-${BUS_FRONT_Z}`} geometry={geometry} material={mats.body} castShadow position={[sx * 1.3, 0, 0]} />
+            <mesh key={sx} name={`bus-body-side-${sx}-${BUS_FRONT_Z}`} geometry={geometry} material={mats.body} castShadow position={[sx * 1.3, 0, panelOriginZ]} />
           )}
           {/* Panneau latéral haut extensible */}
           <RoundedBox args={[0.08, 0.45, cabinLength]} radius={0.035} smoothness={2} bevelSegments={3} material={mats.body} castShadow position={[sx * 1.3, 2.975, cabinCenterZ]} />
@@ -281,6 +283,7 @@ export default BusExterior;
 export const PillarInstances = memo(function PillarInstances({ positions, doors, material }: { positions: number[]; doors: BusDoorLayout[]; material: THREE.Material }) {
   const ref = useRef<THREE.InstancedMesh>(null);
   const capacity = Math.max(448, Math.ceil((positions.length * 2) / 128) * 128);
+  const originZ = positions.length > 0 ? positions[Math.floor(positions.length / 2)] : 0;
   useLayoutEffect(() => {
     if (!ref.current) return;
     const matrix = new THREE.Matrix4();
@@ -289,16 +292,16 @@ export const PillarInstances = memo(function PillarInstances({ positions, doors,
       for (const z of positions) {
         if (x > 0 && !isWindowPillarClearOfDoor(z, doors)) continue;
         if (index >= capacity) break;
-        matrix.makeTranslation(x, 2.255, z);
+        matrix.makeTranslation(x, 2.255, z - originZ);
         ref.current.setMatrixAt(index++, matrix);
       }
     }
     ref.current.count = index;
     ref.current.instanceMatrix.needsUpdate = true;
     ref.current.computeBoundingSphere();
-  }, [capacity, positions, doors]);
+  }, [capacity, positions, doors, originZ]);
   return (
-    <instancedMesh key={`pillars-${capacity}`} ref={ref} args={[undefined, undefined, capacity]} material={material} raycast={() => null}>
+    <instancedMesh key={`pillars-${capacity}`} ref={ref} position={[0, 0, originZ]} args={[undefined, undefined, capacity]} material={material} raycast={() => null}>
       <boxGeometry args={[0.08, 1.01, 0.1]} />
     </instancedMesh>
   );

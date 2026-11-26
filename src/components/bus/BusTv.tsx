@@ -50,6 +50,7 @@ export const BusTvHousings = memo(function BusTvHousings({
   const bezelRef = useRef<THREE.InstancedMesh>(null);
   const screenRef = useRef<THREE.InstancedMesh>(null);
   const count = positions.length;
+  const originZ = count > 0 ? positions[Math.floor(count / 2)][2] : 0;
 
   useLayoutEffect(() => {
     const m = new THREE.Matrix4();
@@ -67,7 +68,7 @@ export const BusTvHousings = memo(function BusTvHousings({
       if (!mesh) continue;
       for (let i = 0; i < count; i++) {
         const [x, y, z] = positions[i];
-        mesh.setMatrixAt(i, m.makeTranslation(x + ox, y + oy, z + oz));
+        mesh.setMatrixAt(i, m.makeTranslation(x + ox, y + oy, z - originZ + oz));
       }
       mesh.count = count;
       mesh.instanceMatrix.needsUpdate = true;
@@ -80,14 +81,14 @@ export const BusTvHousings = memo(function BusTvHousings({
           screen.setMatrixAt(i, zero);
         } else {
           const [x, y, z] = positions[i];
-          screen.setMatrixAt(i, m.makeTranslation(x, y, z + 0.053));
+          screen.setMatrixAt(i, m.makeTranslation(x, y, z - originZ + 0.053));
         }
       }
       screen.count = count;
       screen.instanceMatrix.needsUpdate = true;
       screen.computeBoundingSphere();
     }
-  }, [activeIdx, count, positions, tvOn]);
+  }, [activeIdx, count, originZ, positions, tvOn]);
 
   if (!count) return null;
   // Capacité par paliers de 32 pour éviter de détruire/recréer les 6 InstancedMesh quand la fenêtre glisse.
@@ -95,7 +96,7 @@ export const BusTvHousings = memo(function BusTvHousings({
   // Les écrans éteints ou non actifs restent bien noirs (tvOffTex) au lieu d'afficher l'affiche orange.
   const screenMap = tvOffTex ?? posterTex;
   return (
-    <group name="bus-tv-housings">
+    <group name="bus-tv-housings" position={[0, 0, originZ]}>
       <instancedMesh key={`tv-body-${capacity}`} ref={bodyRef} args={[undefined, undefined, capacity]} count={count} material={mats.dark} castShadow raycast={() => null}>
         <boxGeometry args={[1.36, 0.82, 0.08]} />
       </instancedMesh>

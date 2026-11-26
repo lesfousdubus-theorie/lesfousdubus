@@ -69,9 +69,11 @@ function BusGraffitiGroup({
     if (!instanced) return;
     const scratch = (scratchRef.current ??= new THREE.Object3D());
     const initialCount = Math.min(instances.length, capacity);
+    const originZ = initialCount > 0 ? instances[Math.floor(initialCount / 2)].z : 0;
+    instanced.position.z = originZ;
     for (let index = 0; index < initialCount; index++) {
       const { side, width, z } = instances[index];
-      scratch.position.set(side * 1.348, SIDE_LABEL_Y, z);
+      scratch.position.set(side * 1.348, SIDE_LABEL_Y, z - originZ);
       scratch.rotation.y = (side * Math.PI) / 2;
       scratch.scale.set(width, Math.min(0.78, width / 3), 1);
       scratch.updateMatrix();
@@ -90,12 +92,14 @@ function BusGraffitiGroup({
     const camZ = camera.position.z;
     if (Number.isFinite(lastCamZRef.current) && Math.abs(camZ - lastCamZRef.current) < 48) return;
     lastCamZRef.current = camZ;
+    const originZ = Math.round(camZ / 16) * 16;
+    mesh.position.z = originZ;
     const scratch = (scratchRef.current ??= new THREE.Object3D());
     let out = 0;
     for (let i = 0; i < instances.length && out < capacity; i++) {
       const { side, width, z } = instances[i];
       if (Math.abs(z - camZ) > GRAFFITI_WINDOW_M) continue;
-      scratch.position.set(side * 1.348, SIDE_LABEL_Y, z);
+      scratch.position.set(side * 1.348, SIDE_LABEL_Y, z - originZ);
       scratch.rotation.y = (side * Math.PI) / 2;
       scratch.scale.set(width, Math.min(0.78, width / 3), 1);
       scratch.updateMatrix();
